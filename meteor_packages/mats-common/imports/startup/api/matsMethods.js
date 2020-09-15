@@ -195,7 +195,7 @@ const _checkMetaDataRefresh = function () {
 // private middleware for getting the status - think health check
 const _status = function (params, req, res, next) {
     if (Meteor.isServer) {
-        settings = matsCollections.Settings.findOne();
+        const settings = matsCollections.Settings.findOne();
         res.end("<body><div id='status'>Running: version - " + settings.appVersion + " </div></body>");
     }
 };
@@ -258,9 +258,6 @@ const _getCSV = function (params, req, res, next) {
                     res.write(output);
                     res.end();
                 });
-                delete result;
-                delete statResultArray;
-                delete dataResultArray;
             });
         } catch (e) {
             console.log('error retrieving data: ', e);
@@ -288,8 +285,6 @@ const _getJSON = function (params, req, res, next) {
         res.setHeader('Content-Type', 'application/json');
         res.write(flatJSON);
         res.end();
-        delete flatJSON;
-        delete result;
     }
 };
 
@@ -797,7 +792,6 @@ const _getPagenatedData = function (rky, p, np) {
             ret.data[csi].glob_stats = rawReturn.data[csi].glob_stats;
         }
 
-        delete rawReturn;
         if (direction === 1) {
             ret.dsiRealPageIndex = Math.floor(dsiEnd / 100);
         } else {
@@ -1884,7 +1878,7 @@ const testSetMetaDataTableUpdatesLastRefreshedBack = new ValidatedMethod({
         return metaDataTableUpdates.find({}).fetch();
     }
 });
-
+var matsMethods;
 export default matsMethods = {
     addSentAddress: addSentAddress,
     applyAuthorization: applyAuthorization,
