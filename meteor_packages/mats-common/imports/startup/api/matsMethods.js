@@ -1878,7 +1878,6 @@ const testSetMetaDataTableUpdatesLastRefreshedBack = new ValidatedMethod({
         return metaDataTableUpdates.find({}).fetch();
     }
 });
-var matsMethods;
 export default matsMethods = {
     addSentAddress: addSentAddress,
     applyAuthorization: applyAuthorization,
