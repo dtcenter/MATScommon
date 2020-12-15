@@ -13,6 +13,14 @@ import matsMethods from "../imports/startup/api/matsMethods";
 var notes;
 
 Template.About.helpers({
+    isMetexpress: function () {
+        if (matsCollections.Settings.findOne({}) !== undefined && matsCollections.Settings.findOne({}).appType !== undefined) {
+            const appType = matsCollections.Settings.findOne({}).appType;
+            return appType === matsTypes.AppTypes.metexpress;
+        } else {
+            return false;
+        }
+    },
     version: function () {
         var settings = matsCollections.Settings.findOne({});
         var version = "unknown";
