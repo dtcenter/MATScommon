@@ -1373,10 +1373,9 @@ const getReleaseNotes = new ValidatedMethod({
             var fse = require('fs-extra');
             var dFuture = new future();
             var fData;
-            console.log(process.env.PWD);
             var file;
             if (process.env.NODE_ENV === "development") {
-                file = process.env.PWD + "/../../meteor_packages/mats-common/public/MATSReleaseNotes.html";
+                file = process.env.PWD + "/../../MATScommon/meteor_packages/mats-common/public/MATSReleaseNotes.html";
             } else {
                 file = process.env.PWD + "/programs/server/assets/packages/randyp_mats-common/public/MATSReleaseNotes.html";
             }
