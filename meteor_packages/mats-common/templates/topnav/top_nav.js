@@ -46,7 +46,12 @@ Template.topNav.helpers({
                 return "METexpress";
                 break;
             default:
-                return "Model Analysis Tool Suite (MATS)";
+                if (matsCollections.Settings.findOne({}) !== undefined && matsCollections.Settings.findOne({}).appType !== undefined) {
+                    const appType = matsCollections.Settings.findOne({}).appType;
+                    return appType === matsTypes.AppTypes.metexpress ? "METexpress" : "Model Analysis Tool Suite (MATS)";
+                } else {
+                    return "Model Analysis Tool Suite (MATS)";
+                }
         }
     },
     productLink: function () {
