@@ -13,6 +13,14 @@ Template.QCParamGroup.helpers({
     },
     noQC: function () {
         return true;
+    },
+    isMetexpress: function () {
+        if (matsCollections.Settings.findOne({}) !== undefined && matsCollections.Settings.findOne({}).appType !== undefined) {
+            const appType = matsCollections.Settings.findOne({}).appType;
+            return appType === matsTypes.AppTypes.metexpress;
+        } else {
+            return false;
+        }
     }
 });
 

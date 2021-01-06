@@ -1,4 +1,5 @@
 <template name="QCParamGroup">
+    {{#unless isMetexpress}}
     <div id="QCParamGroup" style="background-color:lightcyan;margin-top: 1.5em;float:left;">
         <label style="padding-left:1em;font-size:large;font-weight: normal;">QC parameters: </label>
         <span style="font-size:large;font-weight: normal;">
@@ -24,4 +25,5 @@
             {{/if}}
         </span>
     </div>
+    {{/unless}}
 </template>

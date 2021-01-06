@@ -22,6 +22,20 @@ Template.topNav.helpers({
     transparentGif: function() {
         return  document.location.href + "/img/noaa_transparent.gif";
     },
+    emailText: function () {
+        switch (getRunEnvironment()) {
+            case "metexpress":
+                return "METexpress";
+                break;
+            default:
+                if (matsCollections.Settings.findOne({}) !== undefined && matsCollections.Settings.findOne({}).appType !== undefined) {
+                    const appType = matsCollections.Settings.findOne({}).appType;
+                    return appType === matsTypes.AppTypes.metexpress ? "METexpress" : "MATS";
+                } else {
+                    return "MATS";
+                }
+        }
+    },
     agencyText: function () {
         switch (getRunEnvironment()) {
             case "metexpress":
@@ -59,6 +73,34 @@ Template.topNav.helpers({
             const locationArr = location.split('/');
             locationArr.pop();
             return locationArr.join('/');
+    },
+    bugsText: function () {
+        switch (getRunEnvironment()) {
+            case "metexpress":
+                return "Bugs/Issues (GitHub)";
+                break;
+            default:
+                if (matsCollections.Settings.findOne({}) !== undefined && matsCollections.Settings.findOne({}).appType !== undefined) {
+                    const appType = matsCollections.Settings.findOne({}).appType;
+                    return appType === matsTypes.AppTypes.metexpress ? "Bugs/Issues (GitHub)" : "Bugs/Issues (Vlab)";
+                } else {
+                    return "Bugs/Issues (Vlab)";
+                }
+        }
+    },
+    bugsLink: function () {
+        switch (getRunEnvironment()) {
+            case "metexpress":
+                return "https://github.com/dtcenter/METexpress/issues";
+                break;
+            default:
+                if (matsCollections.Settings.findOne({}) !== undefined && matsCollections.Settings.findOne({}).appType !== undefined) {
+                    const appType = matsCollections.Settings.findOne({}).appType;
+                    return appType === matsTypes.AppTypes.metexpress ? "https://github.com/dtcenter/METexpress/issues" : "https://vlab.ncep.noaa.gov/redmine/projects/mats-users/issues";
+                } else {
+                    return "https://vlab.ncep.noaa.gov/redmine/projects/mats-users/issues";
+                }
+        }
     },
     isMetexpress: function () {
         if (matsCollections.Settings.findOne({}) !== undefined && matsCollections.Settings.findOne({}).appType !== undefined) {

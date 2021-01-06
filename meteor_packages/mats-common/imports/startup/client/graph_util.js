@@ -247,6 +247,7 @@ const setTextView = function (plotType) {
     document.getElementById("graphView").style.display = "none";
     document.getElementById("textView").style.display = "block";
     document.getElementById('plot-control-button-group').style.display = "none";
+    document.getElementById('refresh-plot').style.display = "none";
 };
 
 // helper to bring up the graph page
@@ -274,6 +275,7 @@ const setGraphView = function (plotType) {
     document.getElementById("graphView").style.display = "block";
     document.getElementById("textView").style.display = "none";
     document.getElementById('plot-control-button-group').style.display = "block";
+    document.getElementById('refresh-plot').style.display = "block";
 };
 
 // helper to bring up the graph page in a pop-up window
@@ -309,6 +311,7 @@ const setDefaultView = function () {
     document.getElementById("curves").style.display = "none";
     document.getElementById("graphView").style.display = "none";
     document.getElementById("textView").style.display = "none";
+    document.getElementById('refresh-plot').style.display = "block";
 };
 
 
