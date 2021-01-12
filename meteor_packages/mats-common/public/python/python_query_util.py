@@ -85,11 +85,24 @@ class QueryUtil:
                     * (np.power(total, 2) * oobar - np.power(total, 2) * np.power(obar, 2))
             acc = (np.power(total, 2) * fobar - np.power(total, 2) * fbar * obar) / np.sqrt(denom)
         except TypeError as e:
-            self.error = "Error calculating RMS: " + str(e)
+            self.error = "Error calculating ACC: " + str(e)
             acc = np.empty(len(ffbar))
         except ValueError as e:
-            self.error = "Error calculating RMS: " + str(e)
+            self.error = "Error calculating ACC: " + str(e)
             acc = np.empty(len(ffbar))
+        return acc
+
+    # function for calculating vector anomaly correlation from MET partial sums
+    def calculate_vacc(self, ufbar, vfbar, uobar, vobar, uvfobar, uvffbar, uvoobar):
+        try:
+            acc = (uvfobar - ufbar * uobar - vfbar * vobar) / (np.sqrt(uvffbar - ufbar * ufbar - vfbar * vfbar)
+                            * np.sqrt(uvoobar - uobar * uobar - vobar * vobar))
+        except TypeError as e:
+            self.error = "Error calculating ACC: " + str(e)
+            acc = np.empty(len(ufbar))
+        except ValueError as e:
+            self.error = "Error calculating ACC: " + str(e)
+            acc = np.empty(len(ufbar))
         return acc
 
     # function for calculating RMSE from MET partial sums
@@ -634,6 +647,7 @@ class QueryUtil:
     def calculate_vector_stat(self, statistic, ufbar, vfbar, uobar, vobar, uvfobar, uvffbar, uvoobar, f_speed_bar,
                               o_speed_bar, total):
         stat_switch = {  # dispatcher of statistical calculation functions
+            'Vector ACC': self.calculate_vacc,
             'Forecast length of mean wind vector': self.calculate_fbar_speed,
             'Observed length of mean wind vector': self.calculate_obar_speed,
             'Forecast length - observed length of mean wind vector': self.calculate_speed_err,
@@ -658,6 +672,7 @@ class QueryUtil:
             'Observed stdev of wind vector length': self.calculate_ostdev
         }
         args_switch = {  # dispatcher of arguments for statistical calculation functions
+            'Vector ACC': (ufbar, vfbar, uobar, vobar, uvfobar, uvffbar, uvoobar),
             'Forecast length of mean wind vector': (ufbar, vfbar),
             'Observed length of mean wind vector': (uobar, vobar),
             'Forecast length - observed length of mean wind vector': (ufbar, vfbar, uobar, vobar),
@@ -818,15 +833,24 @@ class QueryUtil:
                         sub_uvfobar.append(float(sub_datum[4]) if float(sub_datum[4]) != -9999 else np.nan)
                         sub_uvffbar.append(float(sub_datum[5]) if float(sub_datum[5]) != -9999 else np.nan)
                         sub_uvoobar.append(float(sub_datum[6]) if float(sub_datum[6]) != -9999 else np.nan)
-                        sub_f_speed_bar.append(float(sub_datum[7]) if float(sub_datum[7]) != -9999 else np.nan)
-                        sub_o_speed_bar.append(float(sub_datum[8]) if float(sub_datum[8]) != -9999 else np.nan)
-                        sub_total.append(float(sub_datum[9]) if float(sub_datum[9]) != -9999 else np.nan)
-                        sub_secs.append(float(sub_datum[10]) if float(sub_datum[10]) != -9999 else np.nan)
-                        if len(sub_datum) > 11:
-                            if self.is_number(sub_datum[11]):
-                                sub_levs.append(int(sub_datum[11]) if float(sub_datum[11]) != -9999 else np.nan)
-                            else:
-                                sub_levs.append(sub_datum[11])
+                        if "ACC" not in statistic:
+                            sub_f_speed_bar.append(float(sub_datum[7]) if float(sub_datum[7]) != -9999 else np.nan)
+                            sub_o_speed_bar.append(float(sub_datum[8]) if float(sub_datum[8]) != -9999 else np.nan)
+                            sub_total.append(float(sub_datum[9]) if float(sub_datum[9]) != -9999 else np.nan)
+                            sub_secs.append(float(sub_datum[10]) if float(sub_datum[10]) != -9999 else np.nan)
+                            if len(sub_datum) > 11:
+                                if self.is_number(sub_datum[11]):
+                                    sub_levs.append(int(sub_datum[11]) if float(sub_datum[11]) != -9999 else np.nan)
+                                else:
+                                    sub_levs.append(sub_datum[11])
+                        else:
+                            sub_total.append(float(sub_datum[7]) if float(sub_datum[7]) != -9999 else np.nan)
+                            sub_secs.append(float(sub_datum[8]) if float(sub_datum[8]) != -9999 else np.nan)
+                            if len(sub_datum) > 9:
+                                if self.is_number(sub_datum[9]):
+                                    sub_levs.append(int(sub_datum[9]) if float(sub_datum[9]) != -9999 else np.nan)
+                                else:
+                                    sub_levs.append(sub_datum[9])
                     sub_ufbar = np.asarray(sub_ufbar)
                     sub_vfbar = np.asarray(sub_vfbar)
                     sub_uobar = np.asarray(sub_uobar)
@@ -858,10 +882,14 @@ class QueryUtil:
                         [float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_uvffbar']).split(','))])
                     sub_uvoobar = np.array(
                         [float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_uvoobar']).split(','))])
-                    sub_f_speed_bar = np.array(
-                        [float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_f_speed_bar']).split(','))])
-                    sub_o_speed_bar = np.array(
-                        [float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_o_speed_bar']).split(','))])
+                    if "ACC" not in statistic:
+                        sub_f_speed_bar = np.array(
+                            [float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_f_speed_bar']).split(','))])
+                        sub_o_speed_bar = np.array(
+                            [float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_o_speed_bar']).split(','))])
+                    else:
+                        sub_f_speed_bar = np.array([])
+                        sub_o_speed_bar = np.array([])
                     sub_total = np.array(
                         [float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_total']).split(','))])
                     sub_secs = np.array(
