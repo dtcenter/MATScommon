@@ -2,9 +2,6 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-/**
- * Created by pierce on 8/31/16.
- */
 import '../imports/startup/server/index.js';
 import '../imports/startup/both/index.js';
 import {ServiceConfiguration} from 'meteor/service-configuration';
