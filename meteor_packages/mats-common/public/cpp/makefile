@@ -1,4 +1,6 @@
 CC = gcc -ansi -c
+# Equivalent to:
+# CC = gcc -std=c90 -pedantic -c
 CL = gcc -ansi
 
 
@@ -13,7 +15,3 @@ OBJS = perm.o
 
 perm_file.x:    perm_file.o permutation_stats.o
 	$(CL) perm_file.o permutation_stats.o -lm -o perm_file.x $(INCS)
-
-perm_memory.x: perm_memory.o permutation_stats.o
-	$(CL) perm_memory.o permutation_stats.o -lm -o perm_memory.x $(INCS)
-
