@@ -8,7 +8,7 @@
 
 #include "permutations.h"
 
-/* this needs environment variables: STAT_TYPE, STAT_FILE */
+/* this needs environment variables: STAT_FILE */
 
 main(int argc, char *argv[]) {
   CTPair *ctp[MAX_PAIRS];
@@ -49,7 +49,7 @@ main(int argc, char *argv[]) {
   }
 
   if (fgets(line, 200, stream) == NULL) {
-    printf("No STAT_TYPE on first line of file!\n");
+    printf("No stat_type on first line of file!\n");
     exit(1);
   } else {
     sscanf(line, "%s", stat_type);

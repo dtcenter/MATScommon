@@ -9,7 +9,6 @@
 
 #include "permutations.h"
 
-/* this needs environment variable: STAT_TYPE */
 #define MAX_TRYS 1000
 #define MAX_PAIRS 1000000
 #define BAD_VAL 2e30
