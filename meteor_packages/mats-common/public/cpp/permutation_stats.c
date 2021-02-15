@@ -325,7 +325,7 @@ Stat *gen_stat(CTPair *ctp, char *stat_type, int pairs) {
       s->val[i] = val;
     }
   } else {
-    printf("Stat = %s not supported. (Set the 'STAT_TYPE' env variable.)\n",
+    printf("Stat = %s not supported.\n",
            stat_type);
     exit(1);
   }

@@ -48,24 +48,14 @@ main(int argc, char *argv[]) {
     exit(1);
   }
 
-  /* old way used environment variables
-  stat_type = getenv("STAT_TYPE");
-  if(stat_type == NULL) {
-    printf("set env variable STAT_TYPE!\n");
-    exit(1);
-  }
-  env_sd_limit = getenv("SD_LIMIT");
-  if(env_sd_limit != NULL) {
-    sscanf(env_sd_limit,"%f",&sd_limit);
-    }*/
-
   if (fgets(line, 200, stream) == NULL) {
-    printf("set env variable STAT_TYPE!\n");
+    printf("No STAT_TYPE on first line of file!\n");
     exit(1);
   } else {
     sscanf(line, "%s", stat_type);
     printf(";stat_type from input is %s\n", stat_type);
   }
+  
   if (fgets(line, 200, stream) == NULL) {
     printf("set env variable SD_LIMIT!\n");
     exit(1);
