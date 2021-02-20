@@ -18,8 +18,8 @@ const LayoutStoreCollection = new Mongo.Collection("LayoutStoreCollection"); // 
 const DownSampleResults = new Mongo.Collection("DownSampleResults");
 
 // utility to check for empty object
-const isEmpty = function(map) {
-    for(var key in map) {
+const isEmpty = function (map) {
+    for (var key in map) {
         if (map.hasOwnProperty(key)) {
             return false;
         }
@@ -708,7 +708,7 @@ const _getFlattenedResultData = function (rk, p, np) {
             returnData.dsiTextDirection = dsiTextDirection;
             return returnData;
         } catch (error) {
-           throw new Meteor.Error("Error in _getFlattenedResultData function: " + error.message);
+            throw new Meteor.Error("Error in _getFlattenedResultData function: " + error.message);
         }
     }
 };
@@ -801,7 +801,6 @@ const _getPagenatedData = function (rky, p, np) {
         return ret;
     }
 };
-
 
 // private define a middleware for refreshing the metadata
 const _refreshMetadataMWltData = function (params, req, res, next) {
@@ -919,17 +918,16 @@ const _saveResultData = function (result) {
     }
 };
 
-
 //Utility method for writing out the meteor.settings file
-const _write_settings = function(settings, appName) {
+const _write_settings = function (settings, appName) {
 
     const fs = require('fs');
     var settingsPath = process.env.METEOR_SETTINGS_DIR;
     if (settingsPath == null) {
-        console.log ("environment var METEOR_SETTINGS_DIR is undefined: setting it to /usr/app/settings");
+        console.log("environment var METEOR_SETTINGS_DIR is undefined: setting it to /usr/app/settings");
         settingsPath = "/usr/app/settings";
     }
-    if (! fs.existsSync(settingsPath)) {
+    if (!fs.existsSync(settingsPath)) {
         fs.mkdirSync(settingsPath, {recursive: true});
     }
     var appSettings = {};
@@ -955,7 +953,6 @@ const _write_settings = function(settings, appName) {
         flag: 'w'
     });
 }
-
 
 // PUBLIC METHODS
 //administration tools
@@ -1203,7 +1200,7 @@ const getRunEnvironment = new ValidatedMethod({
     }
 });
 
-const getDefaultGroupList =  new ValidatedMethod({
+const getDefaultGroupList = new ValidatedMethod({
     name: 'matsMethods.getDefaultGroupList',
     validate: new SimpleSchema({}).validator(),
     run() {
@@ -1563,13 +1560,13 @@ const applySettingsData = new ValidatedMethod({
     run(settingsParam) {
         if (Meteor.isServer) {
             // Read the existing settings file
-            const  settings = settingsParam.settings;
+            const settings = settingsParam.settings;
             console.log("applySettingsData - matsCollections.appName.findOne({}) is ", matsCollections.appName.findOne({}));
             const appName = matsCollections.appName.findOne({}).app;
             _write_settings(settings, appName);
             // in development - when being run by meteor, this should force a restart of the app.
             //in case I am in a container - exit and force a reload
-            console.log ('applySettingsData - process.env.NODE_ENV is: ' + process.env.NODE_ENV);
+            console.log('applySettingsData - process.env.NODE_ENV is: ' + process.env.NODE_ENV);
             if (process.env.NODE_ENV != "development") {
                 console.log("applySettingsData - exiting after writing new Settings");
                 process.exit(0);
@@ -1592,6 +1589,7 @@ const resetApp = function (appRef) {
         const appColor = matsTypes.AppTypes.mats ? "#3366bb" : "darkorchid";
         const appTimeOut = 300;
         var dep_env = process.env.NODE_ENV;
+        var curve_params = [];
         var mapboxKey = "undefined";
 
         // if there isn't an app listing in matsCollections create one here so that the configuration-> applySettingsData won't fail
@@ -1613,6 +1611,7 @@ const resetApp = function (appRef) {
             const settings = {
                 "private": {
                     "databases": [],
+                    "curve_params": curve_params,
                     "PYTHON_PATH": "/usr/bin/python3",
                     "MAPBOX_KEY": mapboxKey
                 },
@@ -1738,9 +1737,16 @@ const resetApp = function (appRef) {
         matsDataUtils.doColorScheme();
         matsCollections.Settings.remove({});
         matsDataUtils.doSettings(appTitle, appVersion, buildDate, appType, mapboxKey);
-        matsCollections.CurveParams.remove({});
         matsCollections.PlotParams.remove({});
         matsCollections.CurveTextPatterns.remove({});
+        // get the curve params for this app out of the settings file
+        if (Meteor.settings.public && Meteor.settings.public.curve_params) {
+            curve_params = Meteor.settings.public.curve_params;
+            matsCollections.CurveParamsInfo.remove({});
+            matsCollections.CurveParamsInfo.insert({"curve_params": curve_params});
+        } else {
+            throw new Meteor.Error("curve_params are not initialized in app settings--cannot build selectors");
+        }
         // invoke the app specific routines
         //const asrKeys = Object.keys(appSpecificResetRoutines);
         const asrKeys = appSpecificResetRoutines;
@@ -1773,7 +1779,14 @@ const saveLayout = new ValidatedMethod({
             var curveOpsUpdate = params.curveOpsUpdate;
             var annotation = params.annotation;
             try {
-                LayoutStoreCollection.upsert({key: key}, {$set: {"createdAt": new Date(), layout: layout, curveOpsUpdate: curveOpsUpdate, annotation: annotation}});
+                LayoutStoreCollection.upsert({key: key}, {
+                    $set: {
+                        "createdAt": new Date(),
+                        layout: layout,
+                        curveOpsUpdate: curveOpsUpdate,
+                        annotation: annotation
+                    }
+                });
             } catch (error) {
                 throw new Meteor.Error("Error in saveLayout function:" + key + " : " + error.message);
             }
@@ -1843,8 +1856,8 @@ const testGetTables = new ValidatedMethod({
                 });
                 connection.query("show tables;", function (err, result) {
                     if (err || result === undefined) {
-                       //return callback(err,null);
-                        return callback(err,null);
+                        //return callback(err,null);
+                        return callback(err, null);
                     }
                     const tables = result.map(function (a) {
                         return a;
@@ -1885,8 +1898,8 @@ export default matsMethods = {
     deleteSettings: deleteSettings,
     emailImage: emailImage,
     getAuthorizations: getAuthorizations,
-    getRunEnvironment:getRunEnvironment,
-    getDefaultGroupList:getDefaultGroupList,
+    getRunEnvironment: getRunEnvironment,
+    getDefaultGroupList: getDefaultGroupList,
     getGraphData: getGraphData,
     getGraphDataByKey: getGraphDataByKey,
     getLayout: getLayout,
