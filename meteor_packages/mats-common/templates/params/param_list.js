@@ -19,9 +19,11 @@ Template.paramList.helpers({
     CurveParamGroups: function () {
         var lastUpdate = Session.get('lastUpdate');
         var groupNums = [];
-        var params = matsCollections.CurveParams.find({}).fetch();
+        var params = matsCollections.CurveParamsInfo.find({"curve_params": {"$exists": true}}).fetch()[0]["curve_params"];
+        var param;
         for (var i = 0; i < params.length; i++) {
-            groupNums.push(params[i].displayGroup);
+            param = matsCollections[params[i]].find({}).fetch()[0];
+            groupNums.push(param.displayGroup);
         }
         var res = _.uniq(groupNums).sort();
         return res;
@@ -111,12 +113,17 @@ Template.paramList.events({
         var curves = Session.get('Curves');
         var p = {};
         var elems = event.target.valueOf().elements;
-        var curveParams = matsCollections.CurveParams.find({}, {fields: {name: 1}}).fetch();
-        var curveNames = _.pluck(curveParams, "name");
+        var curveNames = matsCollections.CurveParamsInfo.find({"curve_params": {"$exists": true}}).fetch()[0]["curve_params"];
+        var dateParamNames = [];
+        var param;
         // remove any hidden params or unused ones
         // iterate backwards so that we can splice to remove
         for (var cindex = curveNames.length - 1; cindex >= 0; cindex--) {
             var cname = curveNames[cindex];
+            param = matsCollections[cname].find({}).fetch()[0];
+            if (param.type === matsTypes.InputTypes.dateRange) {
+                dateParamNames.push(cname);
+            }
             var ctlElem = document.getElementById(cname + "-item");
             var isHidden = (matsParamUtils.getInputElementForParamName(cname) &&
                 matsParamUtils.getInputElementForParamName(cname).style &&
@@ -130,8 +137,6 @@ Template.paramList.events({
             }
         }
 
-        var dateParams = matsCollections.CurveParams.find({type: matsTypes.InputTypes.dateRange}, {fields: {name: 1}}).fetch();
-        var dateParamNames = _.pluck(dateParams, "name");
         // remove any hidden date params or unused ones
         // iterate backwards so that we can splice to remove
         // dates are a little different - there is no element named paramName-paramtype because of the way daterange widgets are attached
@@ -301,23 +306,27 @@ Template.paramList.onRendered(function () {
     elem = document.getElementById('sites-item');
     var sitesParamHidden;
     if (elem && elem.style) {
-        sitesParamHidden = matsCollections.CurveParams.findOne({name: 'sites'}).hiddenForPlotTypes;
-        if (sitesParamHidden) {
-            if (sitesParamHidden.indexOf(ptype) === -1) {
-                elem.style.display = "block";
-            } else {
-                elem.style.display = "none";
+        if (matsCollections['sites'] !== undefined) {
+            sitesParamHidden = matsCollections['sites'].findOne({name: 'sites'}).hiddenForPlotTypes;
+            if (sitesParamHidden) {
+                if (sitesParamHidden.indexOf(ptype) === -1) {
+                    elem.style.display = "block";
+                } else {
+                    elem.style.display = "none";
+                }
             }
         }
     }
     elem = document.getElementById('sitesMap-item');
     if (elem && elem.style) {
-        sitesParamHidden = matsCollections.CurveParams.findOne({name: 'sitesMap'}).hiddenForPlotTypes;
-        if (sitesParamHidden) {
-            if (sitesParamHidden.indexOf(ptype) === -1) {
-                elem.style.display = "block";
-            } else {
-                elem.style.display = "none";
+        if (matsCollections['sitesMap'] !== undefined) {
+            sitesParamHidden = matsCollections['sitesMap'].findOne({name: 'sitesMap'}).hiddenForPlotTypes;
+            if (sitesParamHidden) {
+                if (sitesParamHidden.indexOf(ptype) === -1) {
+                    elem.style.display = "block";
+                } else {
+                    elem.style.display = "none";
+                }
             }
         }
     }

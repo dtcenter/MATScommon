@@ -114,9 +114,26 @@ const setParamsToAxis = function(newAxis, currentParams) {
     // set param values to this curve
     // reset the form parameters for the superiors first
     var currentParamName;
-    var params = matsCollections.CurveParams.find({"dependentNames" : { "$exists" : true }}).fetch();
-    for (var p  = 0; p < params.length; p++) {
-        var plotParam = params[p];
+    var paramNames = matsCollections.CurveParamsInfo.find({"curve_params": {"$exists": true}}).fetch()[0]["curve_params"];
+    var params = [];
+    var superiors = [];
+    var dependents = [];
+    // get all of the curve param collections in one place
+    for (var pidx = 0; pidx < paramNames.length; pidx++) {
+        const param = matsCollections[paramNames[pidx]].find({}).fetch()[0];
+        // superiors
+        if (param.dependentNames !== undefined) {
+            superiors.push(param);
+        // dependents
+        } else if (param.superiorNames !== undefined) {
+            dependents.push(param);
+        // everything else
+        } else {
+            params.push(param);
+        }
+    }
+    for (var s  = 0; s < superiors.length; s++) {
+        var plotParam = superiors[p];
         // do any date parameters - there are no axis date params in a scatter plot
         if (plotParam.type === matsTypes.InputTypes.dateRange) {
             if (currentParams[plotParam.name] === undefined) {
@@ -137,9 +154,9 @@ const setParamsToAxis = function(newAxis, currentParams) {
         }
     }
     // now reset the form parameters for the dependents
-    params = matsCollections.CurveParams.find({"dependentNames" : { "$exists" : false }}).fetch();
-    for (var p  = 0; p < params.length; p++) {
-        var plotParam = params[p];
+    const combParams = _.union(params, dependents);
+    for (var p  = 0; p < combParams.length; p++) {
+        var plotParam = combParams[p];
         // do any plot date parameters
         currentParamName = currentParams[newAxis + "-" + plotParam.name] === undefined ?  plotParam.name : newAxis + "-" + plotParam.name;
         if (plotParam.type === matsTypes.InputTypes.dateRange) {
@@ -273,9 +290,26 @@ Template.curveItem.events({
         var currentParams = jQuery.extend({}, this);
         // set param values to this curve
         // reset the form parameters for the superiors first
-        var params = matsCollections.CurveParams.find({"dependentNames" : { "$exists" : true }}).fetch();
-        for (var p  = 0; p < params.length; p++) {
-            var plotParam = params[p];
+        var paramNames = matsCollections.CurveParamsInfo.find({"curve_params": {"$exists": true}}).fetch()[0]["curve_params"];
+        var params = [];
+        var superiors = [];
+        var hidden = [];
+        // get all of the curve param collections in one place
+        for (var pidx = 0; pidx < paramNames.length; pidx++) {
+            const param = matsCollections[paramNames[pidx]].find({}).fetch()[0];
+            // superiors
+            if (param.dependentNames !== undefined) {
+                superiors.push(param);
+            // hidden
+            } else if (param.hideOtherFor !== undefined || param.disableOtherFor !== undefined) {
+                hidden.push(param);
+            // everything else
+            } else {
+                params.push(param);
+            }
+        }
+        for (var p  = 0; p < superiors.length; p++) {
+            var plotParam = superiors[p];
             // do any curve date parameters
             if (plotParam.type === matsTypes.InputTypes.dateRange) {
                 if (currentParams[plotParam.name] === undefined) {
@@ -297,11 +331,9 @@ Template.curveItem.events({
             }
         }
         // now reset the form parameters for anything with hide/disable controls
-        params = matsCollections.CurveParams.find({"$and" : [{ "dependentNames" : { "$exists" : false }}, {"$or" : [{ "hideOtherFor" : { "$exists" : true }}, { "disableOtherFor" : { "$exists" : true }}]}]}).fetch();
-        correlateEditPanelToCurveItems(params, currentParams, true);
+        correlateEditPanelToCurveItems(hidden, currentParams, true);
 
         // now reset the form parameters for everything else
-        params = matsCollections.CurveParams.find({"$and" : [{ "dependentNames" : { "$exists" : false }}, {"$and" : [{ "hideOtherFor" : { "$exists" : false }}, { "disableOtherFor" : { "$exists" : false }}]}]}).fetch();
         correlateEditPanelToCurveItems(params, currentParams, false);
 
         // reset the scatter parameters

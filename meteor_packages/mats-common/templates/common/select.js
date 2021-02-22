@@ -21,8 +21,13 @@ Template.select.onRendered( function () {
 
         elem && elem.addEventListener('axisRefresh', function (event) {
             // Don't know why I have to do this, I expected the parameter data to be in the context....
-            const paramData = matsCollections.CurveParams.findOne({name: this.name}, {dependentNames: 1, peerName: 1});
-            matsSelectUtils.refreshPeer(event,paramData);
+            if (matsCollections[this.name] !== undefined) {
+                const paramData = matsCollections[this.name].findOne({name: this.name}, {
+                    dependentNames: 1,
+                    peerName: 1
+                });
+                matsSelectUtils.refreshPeer(event, paramData);
+            }
         });
 
         // register refresh event for any superior to use to enforce a refresh of the options list

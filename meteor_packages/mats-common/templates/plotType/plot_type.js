@@ -42,10 +42,10 @@ Template.plotType.helpers({
 
 const matchPlotTypeSelector = function (plotType) {
     // used in met apps to only display the options appropriate to a particular plot type in each selector
-    if (matsCollections.CurveParams.findOne({name: 'plot-type'}) !== undefined) {
+    if (matsCollections['plot-type'] !== undefined && matsCollections['plot-type'].findOne({name: 'plot-type'}) !== undefined) {
         const currentDatabase = matsParamUtils.getValueForParamName('database');
         const currentDataSource = matsParamUtils.getValueForParamName('data-source');
-        if (matsCollections.CurveParams.findOne({name: 'plot-type'}).optionsMap[currentDatabase][currentDataSource].indexOf(plotType) !== -1) {
+        if (matsCollections['plot-type'].findOne({name: 'plot-type'}).optionsMap[currentDatabase][currentDataSource].indexOf(plotType) !== -1) {
             matsParamUtils.setInputValueForParamAndTriggerChange('plot-type', plotType);
         } else {
             setInfo(('INFO:  Plot type ' + plotType + ' is not available for the database/model combination ' + currentDatabase + ' and ' + currentDataSource + '.'));
@@ -156,8 +156,8 @@ const changePlotType = function (plotType, selectorsToInitialize, dateSelector) 
                     if (dateSelector === 'curve-dates' && newDate !== 0) {
                         curves[ci]['curve-dates'] = newDate;
                     }
-                    if (!curves[ci][selectorsToInitialize[si]] && matsCollections.CurveParams.findOne({name: selectorsToInitialize[si]}) && matsCollections.CurveParams.findOne({name: selectorsToInitialize[si]}).default) {
-                        curves[ci][selectorsToInitialize[si]] = matsCollections.CurveParams.findOne({name: selectorsToInitialize[si]}).default;
+                    if (!curves[ci][selectorsToInitialize[si]] && matsCollections[selectorsToInitialize[si]].findOne({name: selectorsToInitialize[si]}) && matsCollections[selectorsToInitialize[si]].findOne({name: selectorsToInitialize[si]}).default) {
+                        curves[ci][selectorsToInitialize[si]] = matsCollections[selectorsToInitialize[si]].findOne({name: selectorsToInitialize[si]}).default;
                     }
                 }
             }
