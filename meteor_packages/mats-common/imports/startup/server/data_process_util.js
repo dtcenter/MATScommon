@@ -904,6 +904,17 @@ const processDataContour = function (dataset, curveInfoParams, plotParams, bookk
         });
     }
 
+    // if we have dates on one axis, make sure they're formatted correctly
+    if (data.xAxisKey.indexOf("Fcst lead time") !== -1) {
+        data.x = data.x.map(function (val) {
+            return Number(val.toString().replace(/0000/g, ""));
+        });
+    } else if (data.yAxisKey.indexOf("Fcst lead time") !== -1) {
+        data.y = data.y.map(function (val) {
+            return Number(val.toString().replace(/0000/g, ""));
+        });
+    }
+
     // build the tooltip, and store it in data.text
     var i;
     var j;

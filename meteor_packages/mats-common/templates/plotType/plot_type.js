@@ -156,7 +156,7 @@ const changePlotType = function (plotType, selectorsToInitialize, dateSelector) 
                     if (dateSelector === 'curve-dates' && newDate !== 0) {
                         curves[ci]['curve-dates'] = newDate;
                     }
-                    if (!curves[ci][selectorsToInitialize[si]] && matsCollections[selectorsToInitialize[si]].findOne({name: selectorsToInitialize[si]}) && matsCollections[selectorsToInitialize[si]].findOne({name: selectorsToInitialize[si]}).default) {
+                    if (!curves[ci][selectorsToInitialize[si]] && matsCollections[selectorsToInitialize[si]] && matsCollections[selectorsToInitialize[si]].findOne({name: selectorsToInitialize[si]}) && matsCollections[selectorsToInitialize[si]].findOne({name: selectorsToInitialize[si]}).default) {
                         curves[ci][selectorsToInitialize[si]] = matsCollections[selectorsToInitialize[si]].findOne({name: selectorsToInitialize[si]}).default;
                     }
                 }
