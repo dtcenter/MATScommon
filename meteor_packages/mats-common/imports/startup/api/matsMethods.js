@@ -1744,6 +1744,11 @@ const resetApp = function (appRef) {
             curve_params = Meteor.settings.public.curve_params;
             matsCollections.CurveParamsInfo.remove({});
             matsCollections.CurveParamsInfo.insert({"curve_params": curve_params});
+            for (var cp = 0; cp < curve_params.length; cp++) {
+                if (matsCollections[curve_params[cp]] !== undefined) {
+                    matsCollections[curve_params[cp]].remove({});
+                }
+            }
         } else {
             throw new Meteor.Error("curve_params are not initialized in app settings--cannot build selectors");
         }
