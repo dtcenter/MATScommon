@@ -60,7 +60,7 @@ Template.curveParamGroup.helpers({
             }
         }
         const displayOrders = Object.keys(paramMap).sort(function(a, b){return a - b});
-        for (var dor = 0; i < displayOrders.length; dor++) {
+        for (var dor = 0; dor < displayOrders.length; dor++) {
             params.push(paramMap[displayOrders[dor]]);
         }
         params = filterParams(params);
