@@ -13,7 +13,7 @@ import { matsSelectUtils } from 'meteor/randyp:mats-common';
  */
 Template.select.onRendered( function () {
     const ref = this.data.name + '-' + this.data.type;
-    $("#" + ref).select2({minimumResultsForSearch: 20,closeOnSelect: false});
+    $("#" + ref).select2({minimumResultsForSearch: 20, closeOnSelect: false, dropdownAutoWidth: true});
 
     const elem = document.getElementById(ref);
     try {
