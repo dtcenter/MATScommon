@@ -90,7 +90,7 @@ const generateSeriesPlotOptions = function (axisMap, errorMax) {
                 size: 18,
                 color: '#000000'
             },
-            tickformat: ".2f",
+            // tickformat: ".3r",
             linecolor: 'black',
             linewidth: 2,
             mirror: true,
@@ -223,7 +223,6 @@ const generateProfilePlotOptions = function (axisMap, errorMax) {
                 size: 18,
                 color: '#000000'
             },
-            tickformat: ".2f",
             linecolor: 'black',
             linewidth: 2,
             mirror: true,
@@ -346,7 +345,6 @@ const generateDieoffPlotOptions = function (axisMap, errorMax) {
                 size: 18,
                 color: '#000000'
             },
-            tickformat: ".2f",
             linecolor: 'black',
             linewidth: 2,
             mirror: true,
@@ -495,7 +493,6 @@ const generateThresholdPlotOptions = function (dataset, axisMap, errorMax) {
                 size: 18,
                 color: '#000000'
             },
-            tickformat: ".2f",
             linecolor: 'black',
             linewidth: 2,
             mirror: true,
@@ -618,7 +615,6 @@ const generateValidTimePlotOptions = function (axisMap, errorMax) {
                 size: 18,
                 color: '#000000'
             },
-            tickformat: ".2f",
             linecolor: 'black',
             linewidth: 2,
             mirror: true,
@@ -749,7 +745,6 @@ const generateGridScalePlotOptions = function (axisMap, errorMax) {
                 size: 18,
                 color: '#000000'
             },
-            tickformat: ".2f",
             linecolor: 'black',
             linewidth: 2,
             mirror: true,
@@ -857,7 +852,6 @@ const generateReliabilityPlotOptions = function () {
             size: 18,
             color: '#000000'
         },
-        tickformat: ".2f",
         tickvals: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
         ticktext: ["0.0", "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9", "1.0"],
         linecolor: 'black',
@@ -941,7 +935,6 @@ const generateROCPlotOptions = function () {
             size: 18,
             color: '#000000'
         },
-        tickformat: ".2f",
         tickvals: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
         ticktext: ["0.0", "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9", "1.0"],
         linecolor: 'black',
