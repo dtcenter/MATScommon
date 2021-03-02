@@ -239,7 +239,7 @@ Template.plotType.events({
     },
     'click .plot-type-Map': function (event) {
         const plotType = matsTypes.PlotTypes.map;
-        const selectorsToInitialize = ['statistic', 'threshold', 'scale', 'level', 'forecast-length', 'valid-time'];
+        const selectorsToInitialize = ['statistic', 'threshold', 'scale', 'level', 'forecast-length', 'valid-time', 'truth'];
         const dateSelector = 'dates';
         changePlotType(plotType, selectorsToInitialize, dateSelector);
     },
