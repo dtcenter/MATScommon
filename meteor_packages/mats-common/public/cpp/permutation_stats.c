@@ -34,7 +34,7 @@ int clean_data(char *stat_type, CTPair *ctp[], int n_ctp, int pairs,
   }
 
   sum = 0;
-  sum2 - 0;
+  sum2 = 0;
 
   /* only get here if we have pairs */
   for (i = 0; i < n_ctp; i++) {
@@ -59,7 +59,7 @@ int clean_data(char *stat_type, CTPair *ctp[], int n_ctp, int pairs,
          ctp[i]->ct[1]->crs;
     n_diff = n0 - n1;
 
-    if (abs(n_diff - mean) > sd_limit * sd) {
+    if (fabs(n_diff - mean) > sd_limit * sd) {
       /* flag this CTPair for elimination */
       printf(";bad ctp: ");
       printCTP(ctp[i]);
