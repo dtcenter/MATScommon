@@ -32,6 +32,7 @@ int clean_data(char *stat_type, CTPair *ctp[], int n_ctp, int pairs,
   if (n_ctp == 1 || pairs == 0) {
     return (good_ctp);
   }
+
   sum = 0;
   sum2 - 0;
 
@@ -45,6 +46,7 @@ int clean_data(char *stat_type, CTPair *ctp[], int n_ctp, int pairs,
     sum += n_diff;
     sum2 += n_diff * n_diff;
   }
+
   mean = sum / n_ctp;
   sd = sqrt(sum2 / n_ctp - mean * mean);
   printf(";mean N diff of %d CTs: %.3f, sd %.3f\n", n_ctp, mean, sd);
@@ -56,6 +58,7 @@ int clean_data(char *stat_type, CTPair *ctp[], int n_ctp, int pairs,
     n1 = ctp[i]->ct[1]->hits + ctp[i]->ct[1]->misss + ctp[i]->ct[1]->fas +
          ctp[i]->ct[1]->crs;
     n_diff = n0 - n1;
+
     if (abs(n_diff - mean) > sd_limit * sd) {
       /* flag this CTPair for elimination */
       printf(";bad ctp: ");
@@ -66,11 +69,13 @@ int clean_data(char *stat_type, CTPair *ctp[], int n_ctp, int pairs,
   }
   printf(";%d of %d CT pairs out of num of events difference range\n", n_oor,
          n_ctp);
+
   if (n_oor > 0) {
     /* put all the negative valid times at the end */
     qsort(ctp, n_ctp, sizeof(CTPair *), compareValidTimes);
     good_ctp = n_ctp - n_oor;
   }
+
   return (good_ctp);
 }
 
@@ -179,6 +184,7 @@ void get_stat1(char *stat_type, int avtime, CTPair *ctp[], int n_ctp,
     /* a standard deviation limit was input (via env variable SD_LIMIT) */
     good_ctp = clean_data(stat_type, ctp, n_ctp, pairs, sd_limit);
   }
+
   /* get actuall overall stat's (no permutation) */
   octp = gen_overall_ctp(ctp, good_ctp, 0, pairs);
   /*printf("overall ctp 0,1: %d %d %d %d / %d %d %d %d\n",
@@ -199,6 +205,7 @@ void get_stat1(char *stat_type, int avtime, CTPair *ctp[], int n_ctp,
     }
     return;
   }
+
   if (pairs != 0) {
     srand(time(NULL)); /* seed the random number generator */
     for (i = 0; i < MAX_TRYS; i++) {
@@ -220,6 +227,7 @@ void get_stat1(char *stat_type, int avtime, CTPair *ctp[], int n_ctp,
     top_95 = stat[i_max]->val_diff;
     /* printf("95%: +/-  %.3f\n",(top_95-bot_95)/2);*/
   }
+
   if (true_stat->val[0] > BAD_VAL / 2.0 || true_stat->val[1] > BAD_VAL / 2.0) {
     printf(";BAD at valid_time %d\n", avtime);
   } else {
@@ -240,6 +248,7 @@ Stat *gen_stat(CTPair *ctp, char *stat_type, int pairs) {
   } else {
     i_max = 2;
   }
+
   s = newStat();
   if (strncmp(stat_type, "CSI", 3) == 0) {
     for (i = 0; i < i_max; i++) {
@@ -353,12 +362,14 @@ CTPair *gen_overall_ctp(CTPair **ctp, int n_ctp, int perm, int pairs) {
   } else {
     j_max = 2;
   }
+
   overall_ct0 = newCT();
   overall_ct1 = newCT();
   overall_ctp = newCTPair();
   overall_ctp->ct[0] = overall_ct0;
   overall_ctp->ct[1] = overall_ct1;
   rand_tot = 0;
+
   for (i = 0; i < n_ctp; i++) {
     x = (double)RAND_MAX;
     y = (double)rand() / x;
@@ -430,6 +441,7 @@ int compareDiffs(const void *pp1, const void *pp2) {
   diff1 = p1->val_diff;
   diff2 = p2->val_diff;
   diffdiff = diff1 - diff2;
+
   if (diffdiff < 0) {
     return_val = -1;
   } else if (diffdiff > 0) {
@@ -437,6 +449,7 @@ int compareDiffs(const void *pp1, const void *pp2) {
   } else {
     return_val = 0;
   }
+
   return (return_val);
 }
 
