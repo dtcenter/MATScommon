@@ -5,16 +5,15 @@
 import { Meteor } from 'meteor/meteor';
 import matsCollections from 'meteor/randyp:mats-common';
 if (Meteor.isClient) {
-    Meteor.subscribe("CurveParams");
+    const params = Meteor.settings.public.curve_params;
+    for (var i = 0; i < params.length; i++) {
+        Meteor.subscribe(params[i]);
+    }
     Meteor.subscribe("Scatter2dParams");
+    Meteor.subscribe("CurveParamsInfo");
     Meteor.subscribe("SavedCurveParams");
     Meteor.subscribe("PlotParams");
     Meteor.subscribe("PlotGraphFunctions");
-    Meteor.subscribe("RegionsPerModel");
-    Meteor.subscribe("SitesPerModel");
-    Meteor.subscribe("RegionDescriptions");
-    Meteor.subscribe("Models");
-    Meteor.subscribe("FcstLensPerModel");
     Meteor.subscribe("ColorScheme");
     Meteor.subscribe("Settings");
     Meteor.subscribe("CurveSettings");

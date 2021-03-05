@@ -17,7 +17,7 @@ var duplicate = function(param) {
     return obj;
 };
 
-filterParams = function(params) {
+var filterParams = function(params) {
 /*
 If the plottype is a 2d scatter plot we need to basically create a new set of parameters (except for the label)
 for each axis. The double set of parameters will get sent back to the backend.
@@ -49,7 +49,20 @@ Template.curveParamGroup.helpers({
     CurveParams: function (num) {
         var restoreSettingsTime = Session.get("restoreSettingsTime"); // used to force re-render
         var lastUpdate = Session.get('lastUpdate');
-        var params = matsCollections.CurveParams.find({displayGroup:num},{sort:["displayOrder", "asc"]}).fetch();
+        var paramNames = matsCollections.CurveParamsInfo.find({"curve_params": {"$exists": true}}).fetch()[0]["curve_params"];
+        var paramMap = {};
+        var params = [];
+        var param;
+        for (var i = 0; i < paramNames.length; i++) {
+            param = matsCollections[paramNames[i]].find({}).fetch()[0];
+            if (param.displayGroup === num) {
+                paramMap[param.displayOrder] = param;
+            }
+        }
+        const displayOrders = Object.keys(paramMap).sort(function(a, b){return a - b});
+        for (var dor = 0; dor < displayOrders.length; dor++) {
+            params.push(paramMap[displayOrders[dor]]);
+        }
         params = filterParams(params);
         return params;
     },

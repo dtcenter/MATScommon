@@ -283,9 +283,27 @@ Template.plotList.events({
                     matsParamUtils.setInputForParamName(plotParam.name,val);
                 });
                 
+                var paramNames = matsCollections.CurveParamsInfo.find({"curve_params": {"$exists": true}}).fetch()[0]["curve_params"];
+                params = [];
+                var superiors = [];
+                var dependents = [];
+                // get all of the curve param collections in one place
+                for (var pidx = 0; pidx < paramNames.length; pidx++) {
+                    const param = matsCollections[paramNames[pidx]].find({}).fetch()[0];
+                    // superiors
+                    if (param.dependentNames !== undefined) {
+                        superiors.push(param);
+                    // dependents
+                    } else if (param.superiorNames !== undefined) {
+                        dependents.push(param);
+                    // everything else
+                    } else {
+                        params.push(param);
+                    }
+                }
+
                 // reset the form parameters for the superiors first
-                params = matsCollections.CurveParams.find({"dependentNames" : { "$exists" : true }}).fetch();
-                params.forEach(function(plotParam) {
+                superiors.forEach(function(plotParam) {
                     if (plotParam.type === matsTypes.InputTypes.dateRange) {
                         if (p.data.paramData.curveParams[plotParam.name] === undefined) {
                             return;   // just like continue
@@ -305,7 +323,7 @@ Template.plotList.events({
                 });
 
                 // now reset the form parameters for the dependents
-                params = matsCollections.CurveParams.find({"dependentNames" : { "$exists" : false }}).fetch();
+                params = _.union(dependents, params);
                 params.forEach(function(plotParam) {
                     if (plotParam.type === matsTypes.InputTypes.dateRange) {
                         if (p.data.paramData.curveParams[plotParam.name] === undefined) {

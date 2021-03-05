@@ -752,6 +752,7 @@ const showROCFace = function () {
 
 // method to display the appropriate selectors for a map
 const showMapFace = function () {
+    const appName = matsCollections.appName.findOne({}).app;
     const plotType = matsTypes.PlotTypes.map;
     var faceOptions = {
         'curve-dates': 'none',
@@ -789,6 +790,10 @@ const showMapFace = function () {
         } else {
             selectorsToReset['region-type'] = 'Select stations';
         }
+    }
+    // visibility15 can handle truth selection on maps
+    if (appName !== undefined && appName === "visibility15") {
+        faceOptions['truth'] = 'block';
     }
     setSelectorVisibility(plotType, faceOptions, selectorsToReset);
     return selectorsToReset;

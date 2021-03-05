@@ -6,7 +6,17 @@
  * Created by pierce on 8/31/16.
  */
 import { Mongo } from 'meteor/mongo';
-var CurveParams = new Mongo.Collection("CurveParams");
+import {Meteor} from "meteor/meteor";
+
+const params = Meteor.settings.public.curve_params;
+var paramCollections = {};
+var currParam;
+for (var i = 0; i < params.length; i++) {
+    currParam = params[i];
+    paramCollections[currParam] = new Mongo.Collection(currParam);
+}
+
+var CurveParamsInfo = new Mongo.Collection("CurveParamsInfo");
 var Scatter2dParams = new Mongo.Collection("Scatter2dParams");
 var CurveTextPatterns = new Mongo.Collection("CurveTextPatterns");
 var ScatterAxisTextPattern = new Mongo.Collection("ScatterAxisTextPattern");
@@ -15,12 +25,6 @@ var PlotParams = new Mongo.Collection("PlotParams");
 var SavedPlotParams = new Mongo.Collection("SavedPlotParams");
 var PlotGraphFunctions = new Mongo.Collection("PlotGraphFunctions");
 var SavedPlotGraphFunctions = new Mongo.Collection("SavedPlotGraphFunctions");
-var RegionsPerModel = new Mongo.Collection("RegionsPerModel");
-var SitesPerModel = new Mongo.Collection("SitesPerModel");
-var RegionDescriptions = new Mongo.Collection("RegionDescriptions");
-var Models = new Mongo.Collection("Models");
-var Instruments = new Mongo.Collection("Instruments");
-var FcstLensPerModel = new Mongo.Collection("FcstLensPerModel");
 var CurveSettings = new Mongo.Collection("CurveSettings");
 var Settings = new Mongo.Collection("Settings");
 var ColorScheme = new Mongo.Collection("ColorScheme");
@@ -36,8 +40,8 @@ var SiteMap = new Mongo.Collection("SiteMap");
 var StationMap = new Mongo.Collection("StationMap");
 var appName = new Mongo.Collection("appName");
 
-export default matsCollections = {
-    CurveParams:CurveParams,
+const explicitCollections = {
+    CurveParamsInfo:CurveParamsInfo,
     Scatter2dParams:Scatter2dParams,
     CurveTextPatterns:CurveTextPatterns,
     ScatterAxisTextPattern:ScatterAxisTextPattern,
@@ -46,12 +50,6 @@ export default matsCollections = {
     SavedPlotParams:SavedPlotParams,
     PlotGraphFunctions:PlotGraphFunctions,
     SavedPlotGraphFunctions:SavedPlotGraphFunctions,
-    RegionsPerModel:RegionsPerModel,
-    SitesPerModel:SitesPerModel,
-    RegionDescriptions:RegionDescriptions,
-    Models:Models,
-    Instruments:Instruments,
-    FcstLensPerModel:FcstLensPerModel,
     CurveSettings:CurveSettings,
     Settings:Settings,
     ColorScheme:ColorScheme,
@@ -66,4 +64,9 @@ export default matsCollections = {
     SiteMap:SiteMap,
     StationMap:StationMap,
     appName:appName
+};
+
+export default matsCollections = {
+    ...paramCollections,
+    ...explicitCollections
 };

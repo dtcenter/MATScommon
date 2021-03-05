@@ -30,9 +30,9 @@ const generateSeriesPlotOptions = function (axisMap, errorMax) {
             }
         },
         legend: {
-            orientation: "h", 
-            x: 0, 
-            y: 1, 
+            orientation: "h",
+            x: 0,
+            y: 1,
             font: {
                 size: 12,
                 color: '#000000'
@@ -90,6 +90,7 @@ const generateSeriesPlotOptions = function (axisMap, errorMax) {
                 size: 18,
                 color: '#000000'
             },
+            // tickformat: ".3r",
             linecolor: 'black',
             linewidth: 2,
             mirror: true,
@@ -1227,6 +1228,8 @@ const generateContourPlotOptions = function (dataset) {
 
     if (xAxisKey.indexOf("Date") > -1) {
         layout['xaxis']['range'] = [moment.utc(xmin * 1000).format("YYYY-MM-DD HH:mm"), moment.utc(xmax * 1000).format("YYYY-MM-DD HH:mm")];
+    } else if (xAxisKey.indexOf("Fcst lead time") > -1) {
+        layout['xaxis']['range'] = [Number(xmin.toString().replace(/0000/g, "")), Number(xmax.toString().replace(/0000/g, ""))];
     } else {
         layout['xaxis']['range'] = [xmin, xmax];
     }
@@ -1270,6 +1273,8 @@ const generateContourPlotOptions = function (dataset) {
 
     if (yAxisKey.indexOf("Date") > -1) {
         layout['yaxis']['range'] = [moment.utc(ymin * 1000).format("YYYY-MM-DD HH:mm"), moment.utc(ymax * 1000).format("YYYY-MM-DD HH:mm")];
+    } else if (yAxisKey.indexOf("Fcst lead time") > -1) {
+        layout['yaxis']['range'] = [Number(ymin.toString().replace(/0000/g, "")), Number(ymax.toString().replace(/0000/g, ""))];
     } else {
         layout['yaxis']['range'] = [ymin, ymax];
     }

@@ -118,21 +118,24 @@ Template.curveParamItemGroup.helpers({
             }
             const prefix = pNameArr[1];
             const pName = pNameArr[2];
-            const p = matsCollections.CurveParams.findOne({name:pName});
-            if (p.controlButtonText) {
-                return (prefix + p.controlButtonText).toUpperCase();
-            } else {
-                return elem.name.toUpperCase();
+            if (matsCollections[pName] !== undefined) {
+                const p = matsCollections[pName].findOne({name: pName});
+                if (p.controlButtonText) {
+                    return (prefix + p.controlButtonText).toUpperCase();
+                } else {
+                    return elem.name.toUpperCase();
+                }
             }
         } else {
-            const p = matsCollections.CurveParams.findOne({name:elem.name});
-            if (p.controlButtonText) {
-                return p.controlButtonText.toUpperCase();
-            } else {
-                return elem.name.toUpperCase();
+            if (matsCollections[elem.name] !== undefined) {
+                const p = matsCollections[elem.name].findOne({name: elem.name});
+                if (p.controlButtonText) {
+                    return p.controlButtonText.toUpperCase();
+                } else {
+                    return elem.name.toUpperCase();
+                }
             }
         }
-        // should never get here
         return elem.name.toUpperCase();
     },
     name: function(elem){

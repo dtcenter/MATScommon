@@ -1546,6 +1546,13 @@ Template.graph.events({
                     newOpts['xaxis' + (index === 0 ? "" : index + 1) + '.tickfont.size'] = elem.value;
                 }
             });
+            $("input[id^=x][id$=SigFigs]").get().forEach(function (elem, index) {
+                if (elem.value !== undefined && elem.value !== "") {
+                    if (!isNaN(elem.value)) {
+                        newOpts['xaxis' + (index === 0 ? "" : index + 1) + '.tickformat'] = "." + elem.value.toString() + "r";
+                    }
+                }
+            });
         }
         $("input[id^=y][id$=AxisLabel]").get().forEach(function (elem, index) {
             if (elem.value !== undefined && elem.value !== "") {
@@ -1605,6 +1612,13 @@ Template.graph.events({
             $("input[id^=y][id$=TickFont]").get().forEach(function (elem, index) {
                 if (elem.value !== undefined && elem.value !== "") {
                     newOpts['yaxis' + (index === 0 ? "" : index + 1) + '.tickfont.size'] = elem.value;
+                }
+            });
+            $("input[id^=y][id$=SigFigs]").get().forEach(function (elem, index) {
+                if (elem.value !== undefined && elem.value !== "") {
+                    if (!isNaN(elem.value)) {
+                        newOpts['yaxis' + (index === 0 ? "" : index + 1) + '.tickformat'] = "." + elem.value.toString() + "r";
+                    }
                 }
             });
         }

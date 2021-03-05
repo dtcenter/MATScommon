@@ -103,7 +103,9 @@ Template.dateRange.onRendered(function () {
                     var datesMap = undefined;
                     for (var si2 = 0; si2 < superiors.length; si2++) {
                         const thisSuperior = superiors[si2];
-                        datesMap = datesMap === undefined ? matsCollections.CurveParams.findOne({name: thisSuperior}).dates : datesMap;
+                        if (matsCollections[thisSuperior] !== undefined) {
+                            datesMap = datesMap === undefined ? matsCollections[thisSuperior].findOne({name: thisSuperior}).dates : datesMap;
+                        }
                         const sval = matsParamUtils.getInputElementForParamName(thisSuperior).options[matsParamUtils.getInputElementForParamName(thisSuperior).selectedIndex].text;
                         if (sval === matsTypes.InputTypes.unused ||
                             sval === null ||

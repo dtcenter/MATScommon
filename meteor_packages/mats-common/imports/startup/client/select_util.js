@@ -171,6 +171,11 @@ const refresh = function (event, paramName) {
     const disabledOptions = matsParamUtils.getDisabledOptionsForParamName(paramName);
     const optionsGroups = param.optionsGroups;
     const optionsMap = param.optionsMap;
+    const isMetexpress = matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
+    var statisticTranslations = {};
+    if (isMetexpress) {
+        statisticTranslations = matsCollections["statistic"].findOne({name: "statistic"}).valuesMap;
+    }
 
     const superiorNames = param.superiorNames;
     const superiorDimensionality = superiorNames !== undefined && superiorNames !== null && superiorNames.length > 0 && Array.isArray(superiorNames[0]) ? superiorNames.length : 1;
@@ -186,6 +191,9 @@ const refresh = function (event, paramName) {
         for (var sn = 0; sn < sNames.length; sn++) {
             var superiorElement = matsParamUtils.getInputElementForParamName(sNames[sn]);
             var selectedSuperiorValue = superiorElement.options[superiorElement.selectedIndex] === undefined ? matsParamUtils.getParameterForName(sNames[sn]).default : superiorElement.options[superiorElement.selectedIndex].text;
+            if (sNames[sn] === "statistic" && isMetexpress) {
+                selectedSuperiorValue = statisticTranslations[selectedSuperiorValue][0];
+            }
             superiors[0] = superiors[0] === undefined ? [] : superiors[0];
             superiors[0].push({element: superiorElement, value: selectedSuperiorValue});
         }
@@ -194,6 +202,9 @@ const refresh = function (event, paramName) {
             for (var sn = 0; sn < sNames.length; sn++) {
                 var superiorElement = matsParamUtils.getInputElementForParamName(sNames[sn]);
                 var selectedSuperiorValue = superiorElement.options[superiorElement.selectedIndex] === undefined ? matsParamUtils.getParameterForName(sNames[sn]).default : superiorElement.options[superiorElement.selectedIndex].text;
+                if (sNames[sn] === "statistic" && isMetexpress) {
+                    selectedSuperiorValue = statisticTranslations[selectedSuperiorValue][0];
+                }
                 superiors[sNameIndex] = superiors[sNameIndex] === undefined ? [] : superiors[sNameIndex];
                 superiors[sNameIndex].push({element: superiorElement, value: selectedSuperiorValue});
             }

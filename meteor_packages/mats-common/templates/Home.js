@@ -19,7 +19,7 @@ Template.Home.onCreated(function() {
 
 Template.Home.helpers({
     isUnderConstruction: function () {
-        return matsCollections.CurveParams.findOne({name:'underConstruction'}) !== undefined;
+        return matsCollections['underConstruction'] !== undefined && matsCollections['underConstruction'].findOne({name:'underConstruction'}) !== undefined;
     },
     resetDefaults: function() {
         matsMethods.refreshMetaData.call({}, function (error, result) {

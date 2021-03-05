@@ -181,7 +181,10 @@ Template.item.events({
     },
     'invalid' : function(event) {
         if (this.type === matsTypes.InputTypes.numberSpinner) {
-            const param = matsCollections.CurveParams.findOne( {name: event.currentTarget.name} );
+            var param;
+            if (matsCollections[event.currentTarget.name] !== undefined) {
+                param = matsCollections[event.currentTarget.name].findOne({name: event.currentTarget.name});
+            }
             if (param === undefined) {
                 return;
             }
@@ -193,7 +196,7 @@ Template.item.events({
             }
             setError(new Error(errMsg));
         }
-        const default_value = matsCollections.CurveParams.findOne( {name: event.currentTarget.name} ).default;
+        const default_value = matsCollections[event.currentTarget.name].findOne({name: event.currentTarget.name}).default;
         event.currentTarget.value = default_value;
     }
 });

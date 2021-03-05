@@ -10,25 +10,27 @@ import {moment} from 'meteor/momentjs:moment'
 
 // get the document id for the control button element that corresponds to the param name
 const getControlButtonIdForParamName = function (paramName) {
-    // scatter axis don't really exist in matsCollections.CurveParams but they are elements
+    // scatter axis don't really exist in CurveParams-related matsCollections but they are elements
     const pname = paramName.replace(/^.axis-/, '');
-    const param = matsCollections.CurveParams.findOne({name: pname});
-    if (param !== undefined) {
-        const id = "controlButton-" + param.name;
-        return id;
+    if (matsCollections[pname] !== undefined) {
+        const param = matsCollections[pname].findOne({name: pname});
+        if (param !== undefined) {
+            const id = "controlButton-" + param.name;
+            return id;
+        }
     }
 };
 
 // get the control Button Element that corresponds to the param name
 const getControlElementForParamName = function (paramName) {
-    // scatter axis don't really exist in matsCollections.CurveParams but they are elements
+    // scatter axis don't really exist in CurveParams-related matsCollections but they are elements
     const pname = paramName.replace(/^.axis-/, '');
     return document.getElementById(getControlButtonIdForParamName(pname));
 };
 
 // get the document element that corresponds to the param name
 const getValueElementForParamName = function (paramName) {
-    // scatter axis don't really exist in matsCollections.CurveParams but they are elements
+    // scatter axis don't really exist in CurveParams-related matsCollections but they are elements
     const pname = paramName.replace(/^.axis-/, '');
     const val = getValueIdForParamName(pname);
     return document.getElementById(val);
@@ -47,7 +49,7 @@ const getValueForParamName = function (paramName) {
 
 // get the VALUE BOX id for the element that corresponds to the param name
 const getValueIdForParamName = function (paramName) {
-    // scatter axis don't really exist in matsCollections.CurveParams but they are elements
+    // scatter axis don't really exist in CurveParams-related matsCollections but they are elements
     const pname = paramName.replace(/^.axis-/, '');
     return "controlButton-" + pname + "-value";
 };
@@ -56,7 +58,10 @@ const getValueIdForParamName = function (paramName) {
 const setValueTextForParamName = function (paramName, text) {
     try {
         var text = text;
-        var param = matsCollections.CurveParams.findOne({name: paramName});
+        var param;
+        if (matsCollections[paramName] !== undefined) {
+            param = matsCollections[paramName].findOne({name: paramName});
+        }
         if (param === undefined) {
             param = matsCollections.PlotParams.findOne({name: paramName});
         }
@@ -87,9 +92,12 @@ const setValueTextForParamName = function (paramName, text) {
 
 // get the document id for the element that corresponds to the param name
 const getInputIdForParamName = function (paramName) {
-    // scatter axis don't really exist in matsCollections.CurveParams but they are elements
+    // scatter axis don't really exist in CurveParams-related matsCollections but they are elements
     const pname = paramName.replace(/^.axis-/, '');
-    var param = matsCollections.CurveParams.findOne({name: pname});
+    var param;
+    if (matsCollections[pname] !== undefined) {
+        param = matsCollections[pname].findOne({name: pname});
+    }
     if (param === undefined) {
         param = matsCollections.PlotParams.findOne({name: pname});
     }
@@ -109,10 +117,13 @@ const getInputIdForParamName = function (paramName) {
 
 // get the parameter for the element that corresponds to the param name
 const getParameterForName = function (paramName) {
-    // scatter axis don't really exist in matsCollections.CurveParams but they are elements
+    // scatter axis don't really exist in CurveParams-related matsCollections but they are elements
     const pname = paramName.replace(/^.axis-/, '');
 
-    var param = matsCollections.CurveParams.findOne({name: pname});
+    var param;
+    if (matsCollections[pname] !== undefined) {
+        param = matsCollections[pname].findOne({name: pname});
+    }
     if (param === undefined) {
         param = matsCollections.PlotParams.findOne({name: pname});
     }
@@ -173,8 +184,10 @@ const getElementValues = function () {
         scatterParams: {}
     };
     const axis = ['xaxis-', 'yaxis-'];
-    var params = matsCollections.CurveParams.find({}).fetch();
-    params.forEach(function (param) {
+    var params = matsCollections.CurveParamsInfo.find({"curve_params": {"$exists": true}}).fetch()[0]["curve_params"];
+    var param;
+    for (var pidx = 0; pidx < params.length; pidx++) {
+        param = matsCollections[params[pidx]].find({}).fetch()[0];
         var val = "";
         if (param.type === matsTypes.InputTypes.radioGroup) {
             var selector = "input:radio[name='" + param.name + "']:checked";
@@ -211,7 +224,7 @@ const getElementValues = function () {
                 data.curveParams[name] = val;
             }
         }
-    });
+    }
 
     params = matsCollections.PlotParams.find({}).fetch();
     params.forEach(function (param) {
@@ -272,8 +285,10 @@ const getElementValues = function () {
 };
 
 const expandParams = function () {
-    const params = matsCollections.CurveParams.find({}).fetch();
-    params.forEach(function (param) {
+    var params = matsCollections.CurveParamsInfo.find({"curve_params": {"$exists": true}}).fetch()[0]["curve_params"];
+    var param;
+    for (var pidx = 0; pidx < params.length; pidx++) {
+        param = matsCollections[params[pidx]].find({}).fetch()[0];
         if (param.type !== matsTypes.InputTypes.selectMap) {
             const selector = "element" + "-" + param.name;
             const elem = document.getElementById(selector);
@@ -285,23 +300,28 @@ const expandParams = function () {
                 }
             }
         }
-    });
+    }
 };
 
 const collapseParams = function () {
-    const params = matsCollections.CurveParams.find({}).fetch();
-    params.forEach(function (param) {
+    var params = matsCollections.CurveParamsInfo.find({"curve_params": {"$exists": true}}).fetch()[0]["curve_params"];
+    var param;
+    for (var pidx = 0; pidx < params.length; pidx++) {
+        param = matsCollections[params[pidx]].find({}).fetch()[0];
         if (param.type !== matsTypes.InputTypes.selectMap) {
             const selector = "element" + "-" + param.name;
             if (document.getElementById(selector)) {
                 document.getElementById(selector).style.display = "none";
             }
         }
-    });
+    }
 };
 
 const collapseParam = function (paramName) {
-    const param = matsCollections.CurveParams.findOne({name: paramName});
+    var param;
+    if (matsCollections[paramName] !== undefined) {
+        param = matsCollections[paramName].findOne({name: paramName});
+    }
     if (param === undefined || param === null) {
         return;
     }
@@ -364,19 +384,22 @@ const setDefaultForParamName = function (param) {
     }
 };
 
-const getDefaultDateRange = function(name) {
-    var dateParam = matsCollections.CurveParams.findOne({name: name});
+const getDefaultDateRange = function (name) {
+    var dateParam;
+    if (matsCollections[name] !== undefined) {
+        dateParam = matsCollections[name].findOne({name: name});
+    }
     if (dateParam === undefined) {
         dateParam = matsCollections.PlotParams.findOne({name: name});
     }
     const startInit = dateParam.startDate;
     const stopInit = dateParam.stopDate;
     const dstr = dateParam.default;
-    return {startDate:startInit,stopDate:stopInit,dstr:dstr};
+    return {startDate: startInit, stopDate: stopInit, dstr: dstr};
 };
 
-const getMinMaxDates = function(minDate, maxDate) {
-    var minMoment = moment.utc(minDate,"MM/DD/YYYY HH:mm");
+const getMinMaxDates = function (minDate, maxDate) {
+    var minMoment = moment.utc(minDate, "MM/DD/YYYY HH:mm");
     var maxMoment = moment.utc(maxDate, "MM/DD/YYYY HH:mm");
     // There's a bug in daterangepicker that causes odd behavior if the startDsr includes 00 UTC,
     // so subtract 30 minutes from the minDate and add 30 minutes to the maxDate to prevent
@@ -388,14 +411,29 @@ const getMinMaxDates = function(minDate, maxDate) {
         maxDate = moment.utc(maxMoment).add(30, 'minutes');
         minDate = moment.utc(minMoment).subtract(30, 'minutes');
     }
-    return {minDate:minDate, maxDate:maxDate};
+    return {minDate: minDate, maxDate: maxDate};
 };
 
 const setAllParamsToDefault = function () {
     // default the superiors and refresh them so that they cause the dependent options to refresh
-    var params = matsCollections.CurveParams.find({}).fetch();
-
-    const superiors = matsCollections.CurveParams.find({"dependentNames": {"$exists": true}}).fetch();
+    var paramNames = matsCollections.CurveParamsInfo.find({"curve_params": {"$exists": true}}).fetch()[0]["curve_params"];
+    var params = [];
+    var superiors = [];
+    var dependents = [];
+    // get all of the curve param collections in one place
+    for (var pidx = 0; pidx < paramNames.length; pidx++) {
+        const param = matsCollections[paramNames[pidx]].find({}).fetch()[0];
+        // superiors
+        if (param.dependentNames !== undefined) {
+            superiors.push(param);
+        // dependents
+        } else if (param.superiorNames !== undefined) {
+            dependents.push(param);
+        // everything else
+        } else {
+            params.push(param);
+        }
+    }
     superiors.forEach(function (param) {
         setDefaultForParamName(param);
         // actually call the refresh directly - don't use an event, because we want this all to be synchronous
@@ -406,7 +444,6 @@ const setAllParamsToDefault = function () {
         });
     });
     // refresh all the dependents to their default values
-    const dependents = matsCollections.CurveParams.find({"superiorNames": {"$exists": true}}).fetch();
     dependents.forEach(function (param) {
         setDefaultForParamName(param);
         if (param.type === matsTypes.InputTypes.dateRange) {
@@ -477,13 +514,30 @@ const setInputValueForParamAndTriggerChange = function (paramName, value) {
 };
 
 const getOptionsMapForParam = function (paramName) {
-    const param = matsCollections.CurveParams.findOne({name: paramName});
+    var param;
+    if (matsCollections[paramName] !== undefined) {
+        param = matsCollections[paramName].findOne({name: paramName});
+    }
+    if (param === undefined) {
+        param = matsCollections.PlotParams.findOne({name: paramName});
+    }
+    if (param === undefined) {
+        return;
+    }
     return param.optionsMap;
 };
 
 const getOptionsForParam = function (paramName) {
-    const param = matsCollections.CurveParams.findOne({name: paramName});
-    return param.options;
+    var param;
+    if (matsCollections[paramName] !== undefined) {
+        param = matsCollections[paramName].findOne({name: paramName});
+    }
+    if (param === undefined) {
+        param = matsCollections.PlotParams.findOne({name: paramName});
+    }
+    if (param === undefined) {
+        return;
+    }    return param.options;
 };
 
 const getAppName = function () {
@@ -507,17 +561,19 @@ const visibilityControllerForParam = function (paramName) {
     hideOtherFor map.
     If it exists, that param is returned. Otherwise return undefined.
      */
-    var params = matsCollections.CurveParams.find({}).fetch();
     var found = undefined;
-    params.some(function (param) {
+    var params = matsCollections.CurveParamsInfo.find({"curve_params": {"$exists": true}}).fetch()[0]["curve_params"];
+    var param;
+    for (var pidx = 0; pidx < params.length; pidx++) {
+        param = matsCollections[params[pidx]].find({}).fetch()[0];
         if (param.hideOtherFor) {
             const pKeys = Object.keys(param.hideOtherFor);
             if (pKeys.indexOf(paramName) !== -1) {
                 found = param;
-                return;
+                break;
             }
         }
-    });
+    }
     return found;
 };
 
@@ -549,6 +605,6 @@ export default matsParamUtils = {
     getCurveItemValueForParamName: getCurveItemValueForParamName,
     visibilityControllerForParam: visibilityControllerForParam,
     getAppName: getAppName,
-    getDefaultDateRange:getDefaultDateRange,
-    getMinMaxDates:getMinMaxDates
+    getDefaultDateRange: getDefaultDateRange,
+    getMinMaxDates: getMinMaxDates
 };

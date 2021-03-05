@@ -5,9 +5,25 @@
 import { Meteor } from 'meteor/meteor';
 import {matsCollections} from 'meteor/randyp:mats-common';
 
+const _publishField = function(field) {
+    Meteor.publish(field, function () {
+        var data = matsCollections[field].find({});
+        if (data) {
+            return data;
+        }
+        return this.ready();
+    });
+}
+
 if (Meteor.isServer) {
-    Meteor.publish("CurveParams", function () {
-        var data = matsCollections.CurveParams.find({});
+    const params = Meteor.settings.public.curve_params;
+    var currParam;
+    for (var i = 0; i < params.length; i++) {
+        currParam = params[i];
+        _publishField(currParam);
+    }
+    Meteor.publish("CurveParamsInfo", function () {
+        var data = matsCollections.CurveParamsInfo.find({});
         if (data) {
             return data;
         }
@@ -50,41 +66,6 @@ if (Meteor.isServer) {
     });
     Meteor.publish("PlotGraphFunctions", function () {
         var data = matsCollections.PlotGraphFunctions.find({});
-        if (data) {
-            return data;
-        }
-        return this.ready();
-    });
-    Meteor.publish("RegionsPerModel", function () {
-        var data = matsCollections.RegionsPerModel.find({});
-        if (data) {
-            return data;
-        }
-        return this.ready();
-    });
-    Meteor.publish("SitesPerModel", function () {
-        var data = matsCollections.SitesPerModel.find({});
-        if (data) {
-            return data;
-        }
-        return this.ready();
-    });
-    Meteor.publish("RegionDescriptions", function () {
-        var data = matsCollections.RegionDescriptions.find({});
-        if (data) {
-            return data;
-        }
-        return this.ready();
-    });
-    Meteor.publish("Models", function () {
-        var data = matsCollections.Models.find({});
-        if (data) {
-            return data;
-        }
-        return this.ready();
-    });
-    Meteor.publish("FcstLensPerModel", function () {
-        var data = matsCollections.FcstLensPerModel.find({});
         if (data) {
             return data;
         }

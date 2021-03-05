@@ -199,8 +199,7 @@ Template.scatter2d.helpers({
 
 const apply = function(axis) {
     const elems = document.getElementsByClassName("data-input");
-    const curveParams = matsCollections.CurveParams.find({}, {fields: {name: 1}}).fetch();
-    const curveNames = _.pluck(curveParams, "name");
+    const curveNames = matsCollections.CurveParamsInfo.find({"curve_params": {"$exists": true}}).fetch()[0]["curve_params"];
     const param_elems = _.filter(elems, function (elem) {
         return _.contains(curveNames, elem.name);
     });
