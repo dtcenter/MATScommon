@@ -92,6 +92,19 @@ class QueryUtil:
             acc = np.empty(len(ffbar))
         return acc
 
+    # function for calculating vector anomaly correlation from MET partial sums
+    def calculate_vacc(self, ufbar, vfbar, uobar, vobar, uvfobar, uvffbar, uvoobar):
+        try:
+            acc = (uvfobar - ufbar * uobar - vfbar * vobar) / (np.sqrt(uvffbar - ufbar * ufbar - vfbar * vfbar)
+                            * np.sqrt(uvoobar - uobar * uobar - vobar * vobar))
+        except TypeError as e:
+            self.error = "Error calculating ACC: " + str(e)
+            acc = np.empty(len(ufbar))
+        except ValueError as e:
+            self.error = "Error calculating ACC: " + str(e)
+            acc = np.empty(len(ufbar))
+        return acc
+
     # function for calculating RMSE from MET partial sums
     def calculate_rmse(self, ffbar, oobar, fobar):
         try:
@@ -223,6 +236,268 @@ class QueryUtil:
             self.error = "Error calculating bias: " + str(e)
             pcc = np.empty(len(fbar))
         return pcc
+
+    # function for calculating forecast mean of wind vector length from MET partial sums
+    def calculate_fbar(self, f_speed_bar):
+        return f_speed_bar
+
+    # function for calculating observed mean of wind vector length from MET partial sums
+    def calculate_obar(self, o_speed_bar):
+        return o_speed_bar
+
+    # function for calculating forecast - observed mean of wind vector length from MET partial sums
+    def calculate_fbar_m_obar(self, f_speed_bar, o_speed_bar):
+        try:
+            fbar_m_obar = f_speed_bar - o_speed_bar
+        except TypeError as e:
+            self.error = "Error calculating forecast - observed mean of wind vector length: " + str(e)
+            fbar_m_obar = np.empty(len(f_speed_bar))
+        except ValueError as e:
+            self.error = "Error calculating forecast - observed mean of wind vector length: " + str(e)
+            fbar_m_obar = np.empty(len(f_speed_bar))
+        return fbar_m_obar
+
+    # function for calculating abs(forecast - observed mean of wind vector length) from MET partial sums
+    def calculate_fbar_m_obar_abs(self, f_speed_bar, o_speed_bar):
+        try:
+            fbar_m_obar_abs = np.absolute(self.calculate_fbar_m_obar(f_speed_bar, o_speed_bar))
+        except TypeError as e:
+            self.error = "Error calculating forecast - observed mean of wind vector length: " + str(e)
+            fbar_m_obar_abs = np.empty(len(f_speed_bar))
+        except ValueError as e:
+            self.error = "Error calculating forecast - observed mean of wind vector length: " + str(e)
+            fbar_m_obar_abs = np.empty(len(f_speed_bar))
+        return fbar_m_obar_abs
+
+    # function for calculating forecast mean of wind vector direction from MET partial sums
+    def calculate_fdir(self, ufbar, vfbar):
+        fdir = self.calculate_wind_vector_dir(ufbar, vfbar)
+        return fdir
+
+    # function for calculating observed mean of wind vector direction from MET partial sums
+    def calculate_odir(self, uobar, vobar):
+        odir = self.calculate_wind_vector_dir(uobar, vobar)
+        return odir
+
+    # function for calculating forecast - observed mean of wind vector direction from MET partial sums
+    def calculate_dir_err(self, ufbar, vfbar, uobar, vobar):
+        try:
+            dir_err = np.empty(len(ufbar))
+            dir_err[:] = np.nan
+
+            f_len = self.calculate_fbar_speed(ufbar, vfbar)
+            uf = ufbar / f_len
+            vf = vfbar / f_len
+
+            o_len = self.calculate_obar_speed(uobar, vobar)
+            uo = uobar / o_len
+            vo = vobar / o_len
+
+            a = vf * uo - uf * vo
+            b = uf * uo + vf * vo
+            dir_err = self.calculate_wind_vector_dir(a, b)
+
+        except TypeError as e:
+            self.error = "Error calculating forecast - observed mean of wind vector direction: " + str(e)
+            dir_err = np.empty(len(ufbar))
+        except ValueError as e:
+            self.error = "Error calculating forecast - observed mean of wind vector direction: " + str(e)
+            dir_err = np.empty(len(ufbar))
+        return dir_err
+
+    # function for calculating abs(forecast - observed mean of wind vector direction) from MET partial sums
+    def calculate_dir_err_abs(self, ufbar, vfbar, uobar, vobar):
+        try:
+            dir_err_abs = np.absolute(self.calculate_dir_err(ufbar, vfbar, uobar, vobar))
+        except TypeError as e:
+            self.error = "Error calculating abs(forecast - observed mean of wind vector direction): " + str(e)
+            dir_err_abs = np.empty(len(ufbar))
+        except ValueError as e:
+            self.error = "Error calculating abd(forecast - observed mean of wind vector direction): " + str(e)
+            dir_err_abs = np.empty(len(ufbar))
+        return dir_err_abs
+
+    # function for calculating RMSE of forecast wind vector length from MET partial sums
+    def calculate_fs_rms(self, uvffbar):
+        try:
+            fs_rms = np.sqrt(uvffbar)
+        except TypeError as e:
+            self.error = "Error calculating RMSE of forecast wind vector length: " + str(e)
+            fs_rms = np.empty(len(uvffbar))
+        except ValueError as e:
+            self.error = "Error calculating RMSE of forecast wind vector length: " + str(e)
+            fs_rms = np.empty(len(uvffbar))
+        return fs_rms
+
+    # function for calculating RMSE of observed wind vector length from MET partial sums
+    def calculate_os_rms(self, uvoobar):
+        try:
+            os_rms = np.sqrt(uvoobar)
+        except TypeError as e:
+            self.error = "Error calculating RMSE of observed wind vector length: " + str(e)
+            os_rms = np.empty(len(uvoobar))
+        except ValueError as e:
+            self.error = "Error calculating RMSE of observed wind vector length: " + str(e)
+            os_rms = np.empty(len(uvoobar))
+        return os_rms
+
+    # function for calculating vector wind speed MSVE from MET partial sums
+    def calculate_msve(self, uvffbar, uvfobar, uvoobar):
+        try:
+            msve = uvffbar - 2.0 * uvfobar + uvoobar
+        except TypeError as e:
+            self.error = "Error calculating vector wind speed MSVE: " + str(e)
+            msve = np.empty(len(uvffbar))
+        except ValueError as e:
+            self.error = "Error calculating vector wind speed MSVE: " + str(e)
+            msve = np.empty(len(uvffbar))
+        return msve
+
+    # function for calculating vector wind speed RMSVE from MET partial sums
+    def calculate_rmsve(self, uvffbar, uvfobar, uvoobar):
+        try:
+            rmsve = np.sqrt(uvffbar - 2.0 * uvfobar + uvoobar)
+        except TypeError as e:
+            self.error = "Error calculating vector wind speed RMSVE: " + str(e)
+            rmsve = np.empty(len(uvffbar))
+        except ValueError as e:
+            self.error = "Error calculating vector wind speed RMSVE: " + str(e)
+            rmsve = np.empty(len(uvffbar))
+        return rmsve
+
+    # function for calculating forecast stdev of wind vector length from MET partial sums
+    def calculate_fstdev(self, uvffbar, f_speed_bar):
+        try:
+            fstdev = np.sqrt(uvffbar - f_speed_bar**2)
+        except TypeError as e:
+            self.error = "Error calculating forecast stdev of wind vector length: " + str(e)
+            fstdev = np.empty(len(uvffbar))
+        except ValueError as e:
+            self.error = "Error calculating forecast stdev of wind vector length: " + str(e)
+            fstdev = np.empty(len(uvffbar))
+        return fstdev
+
+    # function for calculating observed stdev of wind vector length from MET partial sums
+    def calculate_ostdev(self, uvoobar, o_speed_bar):
+        try:
+            ostdev = np.sqrt(uvoobar - o_speed_bar**2)
+        except TypeError as e:
+            self.error = "Error calculating observed stdev of wind vector length: " + str(e)
+            ostdev = np.empty(len(uvoobar))
+        except ValueError as e:
+            self.error = "Error calculating observed stdev of wind vector length: " + str(e)
+            ostdev = np.empty(len(uvoobar))
+        return ostdev
+
+    # function for calculating forecast length of mean wind vector from MET partial sums
+    def calculate_fbar_speed(self, ufbar, vfbar):
+        fspeed = self.calculate_wind_vector_speed(ufbar, vfbar)
+        return fspeed
+
+    # function for calculating observed length of mean wind vector from MET partial sums
+    def calculate_obar_speed(self, uobar, vobar):
+        ospeed = self.calculate_wind_vector_speed(uobar, vobar)
+        return ospeed
+
+    # function for calculating forecast - observed length of mean wind vector from MET partial sums
+    def calculate_speed_err(self, ufbar, vfbar, uobar, vobar):
+        try:
+            speed_err = self.calculate_fbar_speed(ufbar, vfbar) - self.calculate_obar_speed(uobar, vobar)
+        except TypeError as e:
+            self.error = "Error calculating forecast - observed length of mean wind vector: " + str(e)
+            speed_err = np.empty(len(ufbar))
+        except ValueError as e:
+            self.error = "Error calculating forecast - observed length of mean wind vector: " + str(e)
+            speed_err = np.empty(len(ufbar))
+        return speed_err
+
+    # function for calculating abs(forecast - observed length of mean wind vector) from MET partial sums
+    def calculate_speed_err_abs(self, ufbar, vfbar, uobar, vobar):
+        try:
+            speed_err_abs = np.absolute(self.calculate_speed_err(ufbar, vfbar, uobar, vobar))
+        except TypeError as e:
+            self.error = "Error calculating abs(forecast - observed length of mean wind vector): " + str(e)
+            speed_err_abs = np.empty(len(ufbar))
+        except ValueError as e:
+            self.error = "Error calculating abs(forecast - observed length of mean wind vector): " + str(e)
+            speed_err_abs = np.empty(len(ufbar))
+        return speed_err_abs
+
+    # function for calculating length of forecast - observed mean wind vector from MET partial sums
+    def calculate_vdiff_speed(self, ufbar, vfbar, uobar, vobar):
+        try:
+            vdiff_speed = self.calculate_wind_vector_speed(ufbar-uobar, vfbar-vobar)
+        except TypeError as e:
+            self.error = "Error calculating length of forecast - observed mean wind vector: " + str(e)
+            vdiff_speed = np.empty(len(ufbar))
+        except ValueError as e:
+            self.error = "Error calculating length of forecast - observed mean wind vector: " + str(e)
+            vdiff_speed = np.empty(len(ufbar))
+        return vdiff_speed
+
+    # function for calculating abs(length of forecast - observed mean wind vector) from MET partial sums
+    def calculate_vdiff_speed_abs(self, ufbar, vfbar, uobar, vobar):
+        try:
+            speed_err_abs = np.absolute(self.calculate_vdiff_speed(ufbar, vfbar, uobar, vobar))
+        except TypeError as e:
+            self.error = "Error calculating abs(length of forecast - observed mean wind vector): " + str(e)
+            speed_err_abs = np.empty(len(ufbar))
+        except ValueError as e:
+            self.error = "Error calculating abs(length of forecast - observed mean wind vector): " + str(e)
+            speed_err_abs = np.empty(len(ufbar))
+        return speed_err_abs
+
+    # function for calculating direction of forecast - observed mean wind vector from MET partial sums
+    def calculate_vdiff_dir(self, ufbar, vfbar, uobar, vobar):
+        try:
+            vdiff_dir = self.calculate_wind_vector_dir(-(ufbar-uobar), -(vfbar-vobar))
+        except TypeError as e:
+            self.error = "Error calculating direction of forecast - observed mean wind vector: " + str(e)
+            vdiff_dir = np.empty(len(ufbar))
+        except ValueError as e:
+            self.error = "Error calculating direction of forecast - observed mean wind vector: " + str(e)
+            vdiff_dir = np.empty(len(ufbar))
+        return vdiff_dir
+
+    # function for calculating abs(direction of forecast - observed mean wind vector) from MET partial sums
+    def calculate_vdiff_dir_abs(self, ufbar, vfbar, uobar, vobar):
+        try:
+            vdiff_dir_abs = np.absolute(self.calculate_vdiff_dir(ufbar, vfbar, uobar, vobar))
+        except TypeError as e:
+            self.error = "Error calculating abs(direction of forecast - observed mean wind vector): " + str(e)
+            vdiff_dir_abs = np.empty(len(ufbar))
+        except ValueError as e:
+            self.error = "Error calculating abs(direction of forecast - observed mean wind vector): " + str(e)
+            vdiff_dir_abs = np.empty(len(ufbar))
+        return vdiff_dir_abs
+
+    # function for calculating wind direction from two vector components
+    def calculate_wind_vector_dir(self, ucomp, vcomp):
+        dirs = np.empty(len(ucomp))
+        dirs[:] = np.nan
+        try:
+            tolerance = 0.00001
+            np.arctan2(ucomp, vcomp, out=dirs, where=abs(ucomp) >= tolerance or abs(vcomp) >= tolerance)
+            dirs = dirs - 360 * np.floor(dirs / 360)
+        except TypeError as e:
+            self.error = "Error calculating wind vector direction: " + str(e)
+            dirs = np.empty(len(ucomp))
+        except ValueError as e:
+            self.error = "Error calculating wind vector direction: " + str(e)
+            dirs = np.empty(len(ucomp))
+        return dirs
+
+    # function for calculating wind speed from two vector components
+    def calculate_wind_vector_speed(self, ucomp, vcomp):
+        try:
+            speeds = np.sqrt(ucomp**2 + vcomp**2)
+        except TypeError as e:
+            self.error = "Error calculating wind vector speed: " + str(e)
+            speeds = np.empty(len(ucomp))
+        except ValueError as e:
+            self.error = "Error calculating wind vector speed: " + str(e)
+            speeds = np.empty(len(ucomp))
+        return speeds
 
     # function for calculating critical skill index from MET contingency table counts
     def calculate_csi(self, fy_oy, fy_on, fn_oy):
@@ -368,6 +643,73 @@ class QueryUtil:
             stat = 'null'
         return sub_stats, stat
 
+    # function for determining and calling the appropriate vector statistical calculation function
+    def calculate_vector_stat(self, statistic, ufbar, vfbar, uobar, vobar, uvfobar, uvffbar, uvoobar, f_speed_bar,
+                              o_speed_bar, total):
+        stat_switch = {  # dispatcher of statistical calculation functions
+            'Vector ACC': self.calculate_vacc,
+            'Forecast length of mean wind vector': self.calculate_fbar_speed,
+            'Observed length of mean wind vector': self.calculate_obar_speed,
+            'Forecast length - observed length of mean wind vector': self.calculate_speed_err,
+            'abs(Forecast length - observed length of mean wind vector)': self.calculate_speed_err_abs,
+            'Length of forecast - observed mean wind vector': self.calculate_vdiff_speed,
+            'abs(Length of forecast - observed mean wind vector)': self.calculate_vdiff_speed_abs,
+            'Forecast direction of mean wind vector': self.calculate_fdir,
+            'Observed direction of mean wind vector': self.calculate_odir,
+            'Angle between mean forecast and mean observed wind vectors': self.calculate_dir_err,      #Fix this
+            'abs(Angle between mean forecast and mean observed wind vectors)': self.calculate_dir_err_abs,      #Fix this
+            'Direction of forecast - observed mean wind vector': self.calculate_vdiff_dir,      #Fix this
+            'abs(Direction of forecast - observed mean wind vector)': self.calculate_vdiff_dir_abs,      #Fix this
+            'RMSE of forecast wind vector length': self.calculate_fs_rms,
+            'RMSE of observed wind vector length': self.calculate_os_rms,
+            'Vector wind speed MSVE': self.calculate_msve,
+            'Vector wind speed RMSVE': self.calculate_rmsve,
+            'Forecast mean of wind vector length': self.calculate_fbar,
+            'Observed mean of wind vector length': self.calculate_obar,
+            'Forecast mean - observed mean of wind vector length': self.calculate_fbar_m_obar,
+            'abs(Forecast mean - observed mean of wind vector length)': self.calculate_fbar_m_obar_abs,
+            'Forecast stdev of wind vector length': self.calculate_fstdev,
+            'Observed stdev of wind vector length': self.calculate_ostdev
+        }
+        args_switch = {  # dispatcher of arguments for statistical calculation functions
+            'Vector ACC': (ufbar, vfbar, uobar, vobar, uvfobar, uvffbar, uvoobar),
+            'Forecast length of mean wind vector': (ufbar, vfbar),
+            'Observed length of mean wind vector': (uobar, vobar),
+            'Forecast length - observed length of mean wind vector': (ufbar, vfbar, uobar, vobar),
+            'abs(Forecast length - observed length of mean wind vector)': (ufbar, vfbar, uobar, vobar),
+            'Length of forecast - observed mean wind vector': (ufbar, vfbar, uobar, vobar),
+            'abs(Length of forecast - observed mean wind vector)': (ufbar, vfbar, uobar, vobar),
+            'Forecast direction of mean wind vector': (ufbar, vfbar),
+            'Observed direction of mean wind vector': (uobar, vobar),
+            'Angle between mean forecast and mean observed wind vectors': (ufbar, vfbar, uobar, vobar),
+            'abs(Angle between mean forecast and mean observed wind vectors)': (ufbar, vfbar, uobar, vobar),
+            'Direction of forecast - observed mean wind vector': (ufbar, vfbar, uobar, vobar),
+            'abs(Direction of forecast - observed mean wind vector)': (ufbar, vfbar, uobar, vobar),
+            'RMSE of forecast wind vector length': (uvffbar,),
+            'RMSE of observed wind vector length': (uvoobar,),
+            'Vector wind speed MSVE': (uvffbar, uvfobar, uvoobar),
+            'Vector wind speed RMSVE': (uvffbar, uvfobar, uvoobar),
+            'Forecast mean of wind vector length': (f_speed_bar,),
+            'Observed mean of wind vector length': (o_speed_bar,),
+            'Forecast mean - observed mean of wind vector length': (f_speed_bar, o_speed_bar),
+            'abs(Forecast mean - observed mean of wind vector length)': (f_speed_bar, o_speed_bar),
+            'Forecast stdev of wind vector length': (uvffbar, f_speed_bar),
+            'Observed stdev of wind vector length': (uvoobar, o_speed_bar)
+        }
+        try:
+            stat_args = args_switch[statistic]  # get args
+            sub_stats = stat_switch[statistic](*stat_args)  # call stat function
+            stat = np.nanmean(sub_stats)  # calculate overall stat
+        except KeyError as e:
+            self.error = "Error choosing statistic: " + str(e)
+            sub_stats = np.empty(len(ufbar))
+            stat = 'null'
+        except ValueError as e:
+            self.error = "Error calculating statistic: " + str(e)
+            sub_stats = np.empty(len(ufbar))
+            stat = 'null'
+        return sub_stats, stat
+
     # function for determining and calling the appropriate contigency table count statistical calculation function
     def calculate_ctc_stat(self, statistic, fy_oy, fy_on, fn_oy, fn_on, total):
         stat_switch = {  # dispatcher of statistical calculation functions
@@ -466,6 +808,105 @@ class QueryUtil:
                 # calculate the scalar statistic
                 sub_values, stat = self.calculate_scalar_stat(statistic, sub_fbar, sub_obar, sub_ffbar, sub_oobar,
                                                               sub_fobar, sub_total)
+            elif stat_line_type == 'vector':
+                if 'sub_data' in row:
+                    # everything except contour plots should be in this format
+                    sub_data = str(row['sub_data']).split(',')
+                    sub_ufbar = []
+                    sub_vfbar = []
+                    sub_uobar = []
+                    sub_vobar = []
+                    sub_uvfobar = []
+                    sub_uvffbar = []
+                    sub_uvoobar = []
+                    sub_f_speed_bar = []
+                    sub_o_speed_bar = []
+                    sub_total = []
+                    sub_secs = []
+                    sub_levs = []
+                    for sub_datum in sub_data:
+                        sub_datum = sub_datum.split(';')
+                        sub_ufbar.append(float(sub_datum[0]) if float(sub_datum[0]) != -9999 else np.nan)
+                        sub_vfbar.append(float(sub_datum[1]) if float(sub_datum[1]) != -9999 else np.nan)
+                        sub_uobar.append(float(sub_datum[2]) if float(sub_datum[2]) != -9999 else np.nan)
+                        sub_vobar.append(float(sub_datum[3]) if float(sub_datum[3]) != -9999 else np.nan)
+                        sub_uvfobar.append(float(sub_datum[4]) if float(sub_datum[4]) != -9999 else np.nan)
+                        sub_uvffbar.append(float(sub_datum[5]) if float(sub_datum[5]) != -9999 else np.nan)
+                        sub_uvoobar.append(float(sub_datum[6]) if float(sub_datum[6]) != -9999 else np.nan)
+                        if "ACC" not in statistic:
+                            sub_f_speed_bar.append(float(sub_datum[7]) if float(sub_datum[7]) != -9999 else np.nan)
+                            sub_o_speed_bar.append(float(sub_datum[8]) if float(sub_datum[8]) != -9999 else np.nan)
+                            sub_total.append(float(sub_datum[9]) if float(sub_datum[9]) != -9999 else np.nan)
+                            sub_secs.append(float(sub_datum[10]) if float(sub_datum[10]) != -9999 else np.nan)
+                            if len(sub_datum) > 11:
+                                if self.is_number(sub_datum[11]):
+                                    sub_levs.append(int(sub_datum[11]) if float(sub_datum[11]) != -9999 else np.nan)
+                                else:
+                                    sub_levs.append(sub_datum[11])
+                        else:
+                            sub_total.append(float(sub_datum[7]) if float(sub_datum[7]) != -9999 else np.nan)
+                            sub_secs.append(float(sub_datum[8]) if float(sub_datum[8]) != -9999 else np.nan)
+                            if len(sub_datum) > 9:
+                                if self.is_number(sub_datum[9]):
+                                    sub_levs.append(int(sub_datum[9]) if float(sub_datum[9]) != -9999 else np.nan)
+                                else:
+                                    sub_levs.append(sub_datum[9])
+                    sub_ufbar = np.asarray(sub_ufbar)
+                    sub_vfbar = np.asarray(sub_vfbar)
+                    sub_uobar = np.asarray(sub_uobar)
+                    sub_vobar = np.asarray(sub_vobar)
+                    sub_uvfobar = np.asarray(sub_uvfobar)
+                    sub_uvffbar = np.asarray(sub_uvffbar)
+                    sub_uvoobar = np.asarray(sub_uvoobar)
+                    sub_f_speed_bar = np.asarray(sub_f_speed_bar)
+                    sub_o_speed_bar = np.asarray(sub_o_speed_bar)
+                    sub_total = np.asarray(sub_total)
+                    sub_secs = np.asarray(sub_secs)
+                    if len(sub_levs) == 0:
+                        sub_levs = np.empty(len(sub_secs))
+                    else:
+                        sub_levs = np.asarray(sub_levs)
+                else:
+                    # contour plot data
+                    sub_ufbar = np.array(
+                        [float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_ufbar']).split(','))])
+                    sub_vfbar = np.array(
+                        [float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_vfbar']).split(','))])
+                    sub_uobar = np.array(
+                        [float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_uobar']).split(','))])
+                    sub_vobar = np.array(
+                        [float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_vobar']).split(','))])
+                    sub_uvfobar = np.array(
+                        [float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_uvfobar']).split(','))])
+                    sub_uvffbar = np.array(
+                        [float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_uvffbar']).split(','))])
+                    sub_uvoobar = np.array(
+                        [float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_uvoobar']).split(','))])
+                    if "ACC" not in statistic:
+                        sub_f_speed_bar = np.array(
+                            [float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_f_speed_bar']).split(','))])
+                        sub_o_speed_bar = np.array(
+                            [float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_o_speed_bar']).split(','))])
+                    else:
+                        sub_f_speed_bar = np.array([])
+                        sub_o_speed_bar = np.array([])
+                    sub_total = np.array(
+                        [float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_total']).split(','))])
+                    sub_secs = np.array(
+                        [float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_secs']).split(','))])
+                    if has_levels:
+                        sub_levs_raw = str(row['sub_levs']).split(',')
+                        if self.is_number(sub_levs_raw[0]):
+                            sub_levs = np.array([int(i) if float(i) != -9999 else np.nan for i in sub_levs_raw])
+                        else:
+                            sub_levs = np.array(sub_levs_raw)
+                    else:
+                        sub_levs = np.empty(len(sub_secs))
+
+                # calculate the scalar statistic
+                sub_values, stat = self.calculate_vector_stat(statistic, sub_ufbar, sub_vfbar, sub_uobar, sub_vobar,
+                                                              sub_uvfobar, sub_uvffbar, sub_uvoobar, sub_f_speed_bar,
+                                                              sub_o_speed_bar, sub_total)
             elif stat_line_type == 'ctc':
                 if 'sub_data' in row:
                     # everything except contour plots should be in this format
@@ -773,8 +1214,10 @@ class QueryUtil:
             data_exists = False
             if stat_line_type == 'scalar':
                 data_exists = row['fbar'] != "null" and row['fbar'] != "NULL" and row['obar'] != "null" and row['obar'] != "NULL"
+            elif stat_line_type == 'vector':
+                data_exists = row['ufbar'] != "null" and row['ufbar'] != "NULL" and row['vfbar'] != "null" and row['vfbar'] != "NULL" and row['uobar'] != "null" and row['uobar'] != "NULL" and row['vobar'] != "null" and row['vobar'] != "NULL"
             elif stat_line_type == 'ctc':
-                data_exists = row['fy_oy'] != "null" and row['fy_oy'] != "NULL"
+                data_exists = row['fy_oy'] != "null" and row['fy_oy'] != "NULL" and row['fy_on'] != "null" and row['fy_on'] != "NULL" and row['fn_oy'] != "null" and row['fn_oy'] != "NULL" and row['fn_on'] != "null" and row['fn_on'] != "NULL"
             elif stat_line_type == 'precalculated':
                 data_exists = row['stat'] != "null" and row['stat'] != "NULL"
             self.n0.append(int(row['N0']))
@@ -918,8 +1361,10 @@ class QueryUtil:
             data_exists = False
             if stat_line_type == 'scalar':
                 data_exists = row['fbar'] != "null" and row['fbar'] != "NULL" and row['obar'] != "null" and row['obar'] != "NULL"
+            elif stat_line_type == 'vector':
+                data_exists = row['ufbar'] != "null" and row['ufbar'] != "NULL" and row['vfbar'] != "null" and row['vfbar'] != "NULL" and row['uobar'] != "null" and row['uobar'] != "NULL" and row['vobar'] != "null" and row['vobar'] != "NULL"
             elif stat_line_type == 'ctc':
-                data_exists = row['fy_oy'] != "null" and row['fy_oy'] != "NULL"
+                data_exists = row['fy_oy'] != "null" and row['fy_oy'] != "NULL" and row['fy_on'] != "null" and row['fy_on'] != "NULL" and row['fn_oy'] != "null" and row['fn_oy'] != "NULL" and row['fn_on'] != "null" and row['fn_on'] != "NULL"
             elif stat_line_type == 'precalculated':
                 data_exists = row['stat'] != "null" and row['stat'] != "NULL"
             self.n0.append(int(row['N0']))
@@ -1077,8 +1522,10 @@ class QueryUtil:
             data_exists = False
             if stat_line_type == 'scalar':
                 data_exists = row['fbar'] != "null" and row['fbar'] != "NULL" and row['obar'] != "null" and row['obar'] != "NULL"
+            elif stat_line_type == 'vector':
+                data_exists = row['ufbar'] != "null" and row['ufbar'] != "NULL" and row['vfbar'] != "null" and row['vfbar'] != "NULL" and row['uobar'] != "null" and row['uobar'] != "NULL" and row['vobar'] != "null" and row['vobar'] != "NULL"
             elif stat_line_type == 'ctc':
-                data_exists = row['fy_oy'] != "null" and row['fy_oy'] != "NULL"
+                data_exists = row['fy_oy'] != "null" and row['fy_oy'] != "NULL" and row['fy_on'] != "null" and row['fy_on'] != "NULL" and row['fn_oy'] != "null" and row['fn_oy'] != "NULL" and row['fn_on'] != "null" and row['fn_on'] != "NULL"
             elif stat_line_type == 'precalculated':
                 data_exists = row['stat'] != "null" and row['stat'] != "NULL"
             self.n0.append(int(row['N0']))
@@ -1271,8 +1718,10 @@ class QueryUtil:
             data_exists = False
             if stat_line_type == 'scalar':
                 data_exists = row['sub_fbar'] != "null" and row['sub_fbar'] != "NULL" and row['sub_obar'] != "null" and row['sub_obar'] != "NULL"
+            elif stat_line_type == 'vector':
+                data_exists = row['sub_ufbar'] != "null" and row['sub_ufbar'] != "NULL" and row['sub_vfbar'] != "null" and row['sub_vfbar'] != "NULL" and row['sub_uobar'] != "null" and row['sub_uobar'] != "NULL" and row['sub_vobar'] != "null" and row['sub_vobar'] != "NULL"
             elif stat_line_type == 'ctc':
-                data_exists = row['sub_fy_oy'] != "null" and row['sub_fy_oy'] != "NULL"
+                data_exists = row['sub_fy_oy'] != "null" and row['sub_fy_oy'] != "NULL" and row['sub_fy_on'] != "null" and row['sub_fy_on'] != "NULL" and row['sub_fn_oy'] != "null" and row['sub_fn_oy'] != "NULL" and row['sub_fn_on'] != "null" and row['sub_fn_on'] != "NULL"
             elif stat_line_type == 'precalculated':
                 data_exists = row['sub_precalc_stat'] != "null" and row['sub_precalc_stat'] != "NULL"
 
