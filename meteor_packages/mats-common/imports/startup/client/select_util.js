@@ -460,6 +460,9 @@ const refresh = function (event, paramName) {
             setInfo(e.message);
         }
     }
+    // These need to be done in the right order!
+    // always check to see if an "other" needs to be hidden or disabled before refreshing
+    matsSelectUtils.checkHideOther(param, false);
     refreshPeer(event, param);
 };  // refresh function
 

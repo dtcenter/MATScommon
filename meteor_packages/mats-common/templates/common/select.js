@@ -22,10 +22,12 @@ Template.select.onRendered( function () {
         elem && elem.addEventListener('axisRefresh', function (event) {
             // Don't know why I have to do this, I expected the parameter data to be in the context....
             if (matsCollections[this.name] !== undefined) {
+                const param = matsParamUtils.getParameterForName(this.name);
                 const paramData = matsCollections[this.name].findOne({name: this.name}, {
                     dependentNames: 1,
                     peerName: 1
                 });
+                matsSelectUtils.checkHideOther(param, false);
                 matsSelectUtils.refreshPeer(event, paramData);
             }
         });
@@ -37,6 +39,8 @@ Template.select.onRendered( function () {
         }
         elem.options = [];
         elem && elem.addEventListener('refresh', function (event) {
+            const param = matsParamUtils.getParameterForName(this.name);
+            matsSelectUtils.checkHideOther(param,false); // calls checkDisable
             matsSelectUtils.refresh(event,this.name);
         });
     } catch (e) {
