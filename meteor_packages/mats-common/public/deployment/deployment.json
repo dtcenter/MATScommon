@@ -37,6 +37,20 @@
       ]
     },
     {
+      "app": "raobamdar",
+      "title": "Upper Air (Combo)",
+      "version": "4.0.1-2021.03.16.18.44",
+      "buildDate": "2021.03.16.18.44",
+      "last_test_run": "",
+      "last_test_status": "",
+      "group": "Upper Air",
+      "dbroles": [
+        "model_data",
+        "sums_data",
+        "meta_data"
+      ]
+    },
+    {
       "app": "anomalycor",
       "title": "Anomaly Correlation",
       "version": "4.0.1-2021.03.10.09.01",
