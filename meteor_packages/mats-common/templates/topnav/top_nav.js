@@ -75,18 +75,7 @@ Template.topNav.helpers({
             return locationArr.join('/');
     },
     bugsText: function () {
-        switch (getRunEnvironment()) {
-            case "metexpress":
-                return "Bugs/Issues (GitHub)";
-                break;
-            default:
-                if (matsCollections.Settings.findOne({}) !== undefined && matsCollections.Settings.findOne({}).appType !== undefined) {
-                    const appType = matsCollections.Settings.findOne({}).appType;
-                    return appType === matsTypes.AppTypes.metexpress ? "Bugs/Issues (GitHub)" : "Bugs/Issues (Vlab)";
-                } else {
-                    return "Bugs/Issues (Vlab)";
-                }
-        }
+        return "Bugs/Issues (GitHub)";
     },
     bugsLink: function () {
         switch (getRunEnvironment()) {
@@ -96,9 +85,9 @@ Template.topNav.helpers({
             default:
                 if (matsCollections.Settings.findOne({}) !== undefined && matsCollections.Settings.findOne({}).appType !== undefined) {
                     const appType = matsCollections.Settings.findOne({}).appType;
-                    return appType === matsTypes.AppTypes.metexpress ? "https://github.com/dtcenter/METexpress/issues" : "https://vlab.ncep.noaa.gov/redmine/projects/mats-users/issues";
+                    return appType === matsTypes.AppTypes.metexpress ? "https://github.com/dtcenter/METexpress/issues" : "https://github.com/NOAA-GSL/MATS/issues";
                 } else {
-                    return "https://vlab.ncep.noaa.gov/redmine/projects/mats-users/issues";
+                    return "https://github.com/NOAA-GSL/MATS/issues";
                 }
         }
     },
