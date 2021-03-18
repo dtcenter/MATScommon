@@ -131,8 +131,9 @@ Template.paramList.events({
                 (ctlElem && ctlElem.style && ctlElem.style.display === 'none');
             var isUnused = matsParamUtils.getInputElementForParamName(cname) !== undefined &&
                 matsParamUtils.getValueForParamName(cname) == matsTypes.InputTypes.unused;
-            if ((isHidden || isUnused) && cname !== 'plot-type') {
+            if ((isHidden || isUnused) && cname !== 'plot-type' && cname !== 'phase') {
                 // MET apps have a hidden plot-type selector that needs to be included in the curve
+                // phase needs to be preserved in the raobamdar app
                 curveNames.splice(cindex, 1);
             }
         }

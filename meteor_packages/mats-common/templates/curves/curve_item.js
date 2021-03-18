@@ -300,11 +300,13 @@ Template.curveItem.events({
             // superiors
             if (param.dependentNames !== undefined) {
                 superiors.push(param);
+            }
             // hidden
-            } else if (param.hideOtherFor !== undefined || param.disableOtherFor !== undefined) {
+            if (param.hideOtherFor !== undefined || param.disableOtherFor !== undefined) {
                 hidden.push(param);
+            }
             // everything else
-            } else {
+            if (superiors.indexOf(param) === -1 && hidden.indexOf(param) === -1) {
                 params.push(param);
             }
         }
@@ -340,8 +342,7 @@ Template.curveItem.events({
         params = matsCollections.Scatter2dParams.find({}).fetch();
         for (var p  = 0; p < params.length; p++) {
             var plotParam = params[p];
-            const val =  currentParams[plotParam.name] === null ||
-            currentParams[plotParam.name] === undefined ? matsTypes.InputTypes.unused : currentParams[plotParam.name];
+            const val = (currentParams[plotParam.name] === null || currentParams[plotParam.name] === undefined) ? matsTypes.InputTypes.unused : currentParams[plotParam.name];
             matsParamUtils.setInputForParamName(plotParam.name, val);
         }
         matsParamUtils.collapseParams();
@@ -402,7 +403,7 @@ Template.curveItem.events({
         controlElem && controlElem.click();
         Session.set("elementChanged", Date.now());
     },
-    'click .cancle-lose-edits': function() {
+    'click .cancel-lose-edits': function() {
         // don't change the active button
         const name = Session.get("activeDisplayButton");
         const controlElem = matsParamUtils.getControlElementForParamName(name);

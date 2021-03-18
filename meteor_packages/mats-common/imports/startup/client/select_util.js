@@ -133,7 +133,8 @@ const checkHideOther = function (param, firstRender) {
                         selectorControlElem.style.display = "none";
                         selectorControlElem.purposelyHidden = true;
                     }
-                } else {
+                } else if (!((selectedText === matsTypes.InputTypes.unused || selectedText === "") && param.hideOtherFor[controlledSelectors[i]].indexOf(matsTypes.InputTypes.unused) === -1)) {
+                    // don't change anything if the parent parameter is unused in this curve and that situation isn't specified in hideOtherFor.
                     selectorControlElem = document.getElementById(controlledSelectors[i] + '-item');
                     if (selectorControlElem && selectorControlElem.style) {
                         selectorControlElem.style.display = "block";
