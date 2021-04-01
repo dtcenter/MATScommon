@@ -49,6 +49,7 @@ var PlotTypes = {
     dailyModelCycle: "DailyModelCycle",
     reliability: "Reliability",
     roc: "ROC",
+    performanceDiagram: "PerformanceDiagram",
     map: "Map",
     histogram: "Histogram",
     ensembleHistogram: "EnsembleHistogram",
