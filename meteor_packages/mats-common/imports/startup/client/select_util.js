@@ -192,7 +192,7 @@ const refresh = function (event, paramName) {
         for (var sn = 0; sn < sNames.length; sn++) {
             var superiorElement = matsParamUtils.getInputElementForParamName(sNames[sn]);
             var selectedSuperiorValue = superiorElement.options[superiorElement.selectedIndex] === undefined ? matsParamUtils.getParameterForName(sNames[sn]).default : superiorElement.options[superiorElement.selectedIndex].text;
-            if (sNames[sn] === "statistic" && isMetexpress) {
+            if (sNames[sn] === "statistic" && isMetexpress && matsCollections.appName.findOne({}).app !== 'met-tc') {
                 selectedSuperiorValue = statisticTranslations[selectedSuperiorValue][0];
             }
             superiors[0] = superiors[0] === undefined ? [] : superiors[0];
@@ -203,7 +203,7 @@ const refresh = function (event, paramName) {
             for (var sn = 0; sn < sNames.length; sn++) {
                 var superiorElement = matsParamUtils.getInputElementForParamName(sNames[sn]);
                 var selectedSuperiorValue = superiorElement.options[superiorElement.selectedIndex] === undefined ? matsParamUtils.getParameterForName(sNames[sn]).default : superiorElement.options[superiorElement.selectedIndex].text;
-                if (sNames[sn] === "statistic" && isMetexpress) {
+                if (sNames[sn] === "statistic" && isMetexpress && matsCollections.appName.findOne({}).app !== 'met-tc') {
                     selectedSuperiorValue = statisticTranslations[selectedSuperiorValue][0];
                 }
                 superiors[sNameIndex] = superiors[sNameIndex] === undefined ? [] : superiors[sNameIndex];
