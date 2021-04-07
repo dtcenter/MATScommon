@@ -12,13 +12,16 @@ var DatabaseRoles = {
     MODEL_DATA: 'model_data',
     META_DATA: 'meta_data',
     SUMS_DATA: 'sums_data',
-    SITE_DATA: 'site_data'
+    SITE_DATA: 'site_data',
+    COUCHBASE: 'couchbase'
 };
 
 var AppTypes = {
     mats: 'mats',
     metexpress: 'metexpress',
-    mats4met: 'mats4met'
+    mats4met: 'mats4met',
+    cbMats: 'couchbase-mats',
+    cbMetexpress: 'couchbase-metexpress'
 };
 
 var InputTypes = {

@@ -1586,7 +1586,22 @@ const resetApp = function (appRef) {
         const appName = appRef.app;
         const appTitle = appRef.title;
         const appGroup = appRef.group;
-        const appColor = matsTypes.AppTypes.mats ? "#3366bb" : "darkorchid";
+        var color;
+        switch (appRef.appType) {
+            case matsTypes.AppTypes.mats:
+                color = "#3366bb";
+                break;
+            case matsTypes.AppTypes.cbMats:
+                color = "#33abbb";
+                break;
+            case matsTypes.AppTypes.cbMetexpress:
+                color = "darkorchid";
+                break;
+        case matsTypes.AppTypes.metexpress:
+            color = "darkorchid";
+            break;
+        }
+        const appColor = color;
         const appTimeOut = 300;
         var dep_env = process.env.NODE_ENV;
         var curve_params = [];
@@ -1646,44 +1661,48 @@ const resetApp = function (appRef) {
         if (Meteor.settings.private && Meteor.settings.private.MAPBOX_KEY) {
             mapboxKey = Meteor.settings.private.MAPBOX_KEY;
         }
-        // timeout in seconds
-        var connectionTimeout = Meteor.settings.public.mysql_wait_timeout != undefined ? Meteor.settings.public.mysql_wait_timeout : 300;
-        delete Meteor.settings.public.undefinedRoles;
-        for (var pi = 0; pi < appPools.length; pi++) {
-            const record = appPools[pi];
-            const poolName = record.pool;
-            // if the database credentials have been set in the meteor.private.settings file then the global[poolName]
-            // will have been defined in the app main.js. Otherwise it will not have been defined.
-            // If it is undefined (requiring configuration) we will skip it but add
-            // the corresponding role to Meteor.settings.public.undefinedRoles -
-            // which will cause the app to route to the configuration page.
-            if (global[poolName] == undefined) {
-                console.log("resetApp adding " + global[poolName] + "to undefined roles");
-                // There was no pool defined for this poolName - probably needs to be configured so stash the role in the public settings
-                if (Meteor.settings.public.undefinedRoles == undefined) {
-                    Meteor.settings.public.undefinedRoles = [];
-                }
-                Meteor.settings.public.undefinedRoles.push(record.role);
-                continue;
-            }
-            try {
-                global[poolName].on('connection', function (connection) {
-                    connection.query('set group_concat_max_len = 4294967295');
-                    connection.query('set session wait_timeout = ' + connectionTimeout);
-                    console.log("opening new " + poolName + " connection");
-                });
-            } catch (e) {
-                console.log(poolName + ":  not initialized-- could not open connection: Error:" + e.message);
-                Meteor.settings.public.undefinedRoles = Meteor.settings.public.undefinedRoles == undefined ? [] : Meteor.settings.public.undefinedRoles == undefined;
-                Meteor.settings.public.undefinedRoles.push(record.role);
-                continue
-            }
-            // connections all work so make sure that Meteor.settings.public.undefinedRoles is undefined
+        //TODO - fix this stuff for couchbase apps
+        // don't bother with this stuff for couchbase apps right now
+        if (appRef.appType != matsTypes.AppTypes.cbMetexpress && appRef.appType != matsTypes.AppTypes.cbMats) {
+            // timeout in seconds
+            var connectionTimeout = Meteor.settings.public.mysql_wait_timeout != undefined ? Meteor.settings.public.mysql_wait_timeout : 300;
             delete Meteor.settings.public.undefinedRoles;
-        }
-        // just in case - should never happen.
-        if (Meteor.settings.public.undefinedRoles && Meteor.settings.public.undefinedRoles.length > 1) {
-            throw new Meteor.Error("dbpools not initialized " + Meteor.settings.public.undefinedRoles);
+            for (var pi = 0; pi < appPools.length; pi++) {
+                const record = appPools[pi];
+                const poolName = record.pool;
+                // if the database credentials have been set in the meteor.private.settings file then the global[poolName]
+                // will have been defined in the app main.js. Otherwise it will not have been defined.
+                // If it is undefined (requiring configuration) we will skip it but add
+                // the corresponding role to Meteor.settings.public.undefinedRoles -
+                // which will cause the app to route to the configuration page.
+                if (global[poolName] == undefined) {
+                    console.log("resetApp adding " + global[poolName] + "to undefined roles");
+                    // There was no pool defined for this poolName - probably needs to be configured so stash the role in the public settings
+                    if (Meteor.settings.public.undefinedRoles == undefined) {
+                        Meteor.settings.public.undefinedRoles = [];
+                    }
+                    Meteor.settings.public.undefinedRoles.push(record.role);
+                    continue;
+                }
+                try {
+                    global[poolName].on('connection', function (connection) {
+                        connection.query('set group_concat_max_len = 4294967295');
+                        connection.query('set session wait_timeout = ' + connectionTimeout);
+                        console.log("opening new " + poolName + " connection");
+                    });
+                } catch (e) {
+                    console.log(poolName + ":  not initialized-- could not open connection: Error:" + e.message);
+                    Meteor.settings.public.undefinedRoles = Meteor.settings.public.undefinedRoles == undefined ? [] : Meteor.settings.public.undefinedRoles == undefined;
+                    Meteor.settings.public.undefinedRoles.push(record.role);
+                    continue
+                }
+                // connections all work so make sure that Meteor.settings.public.undefinedRoles is undefined
+                delete Meteor.settings.public.undefinedRoles;
+            }
+            // just in case - should never happen.
+            if (Meteor.settings.public.undefinedRoles && Meteor.settings.public.undefinedRoles.length > 1) {
+                throw new Meteor.Error("dbpools not initialized " + Meteor.settings.public.undefinedRoles);
+            }
         }
         var deployment;
         var deploymentText = Assets.getText('public/deployment/deployment.json');
@@ -1713,7 +1732,8 @@ const resetApp = function (appRef) {
             }
          */
         // only create metadata tables if the resetApp was called with a real metaDataTables object
-        if (metaDataTableRecords instanceof matsTypes.MetaDataDBRecord) {
+        // couchbase apps don't need these - no special tables for metadata
+        if (metaDataTableRecords && metaDataTableRecords instanceof matsTypes.MetaDataDBRecord) {
             var metaDataTables = metaDataTableRecords.getRecords();
             for (var mdti = 0; mdti < metaDataTables.length; mdti++) {
                 const metaDataRef = metaDataTables[mdti];
@@ -1722,8 +1742,6 @@ const resetApp = function (appRef) {
                     metaDataTableUpdates.update({name: metaDataRef.name}, metaDataRef, {upsert: true});
                 }
             }
-        } else {
-            throw new Meteor.Error("Server error: ", "resetApp: bad pool-database entry");
         }
         // invoke the standard common routines
         matsCollections.Roles.remove({});
