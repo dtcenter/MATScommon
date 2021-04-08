@@ -33,7 +33,7 @@ class CBUtilities {
         }, function (err, aCluster) {
             if (err) {
                 console.log(err);
-                throw new Error("failed to create couchbase connection: " + err);
+                aFuture.throw (new Error("CBUtilities.connect: error: " + err));
             } else {
                 cluster = aCluster;
                 // get a reference to our bucket
@@ -42,7 +42,14 @@ class CBUtilities {
                 collection = bucket.defaultCollection();
                 aFuture.return();
             }
+            try {
+                aFuture.wait();
+            }
+            catch(err) {
+                throw new Meteor.Error( err);
+            }
         });
+
         aFuture.wait();
         this._conn.cluster = cluster;
         this._conn.collection = collection;
@@ -57,13 +64,18 @@ class CBUtilities {
         var results = this._conn.collection.upsert(key, doc, function (err, result) {
             if (err) {
                 console.error("CBUtilities.upsertDocument error: " + err);
-                throw new Error("\"CBUtilities.upsertDocument error: \" + err");
+                aFuture.throw (new Error("CBUtilities.upsertDocument error: " + err));
             } else {
                 ret = result;
             }
             aFuture.return()
         });
-        aFuture.wait()
+        try {
+            aFuture.wait();
+        }
+        catch(err) {
+            throw new Meteor.Error( err);
+        }
     };
 
     // get document function
@@ -73,11 +85,16 @@ class CBUtilities {
         var results = this._conn.collection.get(key, function (err, result) {
             if (err) {
                 console.error("CBUtilities.getDocumentByKey error: " + err);
-                throw new Error("\"CBUtilities.getDocumentByKey error: \" + err");
+                aFuture.throw (new Error("CBUtilities.getDocumentByKey error: " + err));
             } else {
                 ret = result;
             }
-            aFuture.return();
+            try {
+                aFuture.wait();
+            }
+            catch(err) {
+                throw new Meteor.Error( err);
+            }
         });
         aFuture.wait();
         return ret;
@@ -89,12 +106,18 @@ class CBUtilities {
         var results = this._conn.cluster.query(statement, function (err, result) {
             if (err) {
                 console.error("CBUtilities.query error: " + err);
+                aFuture.throw (new Error("CBUtilities.query error: " + err));
             } else {
                 ret = result.rows;
             }
             aFuture.return();
         });
-        aFuture.wait();
+        try {
+                aFuture.wait();
+            }
+        catch(err) {
+            throw new Meteor.Error( err);
+        }
         return ret;
     };
 
@@ -105,13 +128,19 @@ class CBUtilities {
         var geoBoundingBoxQuery = couchbase.SearchQuery.geoBoundingBox(topleft_lon, topleft_lat, bottomright_lon, bottomright_lat);
         var results = this._conn.cluster.searchQuery(index, geoBoundingBoxQuery, {fields:["*"], limit:10000}, function (err, result, meta) {
             if (err) {
-                console.error("CBUtilities.query error: " + err);
+                console.error("CBUtilities.searchStationsByBoundingBox error: " + err);
+                aFuture.throw (new Error("CBUtilities.searchStationsByBoundingBox error: " + err));
             } else {
                 ret = result;
             }
             aFuture.return();
         });
-        aFuture.wait();
+        try {
+            aFuture.wait();
+        }
+        catch(err) {
+            throw new Meteor.Error( err);
+        }
         return ret.rows;
     };
 };
