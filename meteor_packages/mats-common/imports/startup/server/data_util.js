@@ -288,7 +288,7 @@ const doRoles = function () {
 };
 
 // for use in matsMethods.resetApp() to establish default settings
-const doSettings = function (title, version, buildDate, appType, mapboxKey) {
+const doSettings = function (title, dbType, version, buildDate, appType, mapboxKey) {
     if (matsCollections.Settings.findOne({}) === undefined || matsCollections.Settings.findOne({}).resetFromCode === undefined || matsCollections.Settings.findOne({}).resetFromCode == true) {
         matsCollections.Settings.remove({});
     }
@@ -296,6 +296,7 @@ const doSettings = function (title, version, buildDate, appType, mapboxKey) {
         matsCollections.Settings.insert({
             LabelPrefix: "Curve",
             Title: title,
+            dbType: dbType,
             appVersion: version,
             buildDate: buildDate,
             appType: appType,

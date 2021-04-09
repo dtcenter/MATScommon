@@ -24,7 +24,6 @@ class CBUtilities {
         var cluster;
         var bucket;
         var collection;
-        var searchQuery;
         var bName = this._bucketName; // make this local to use in callback
         var aFuture = new Future();
         couchbase.connect("couchbase://" + this._host, {
@@ -66,9 +65,9 @@ class CBUtilities {
                 console.error("CBUtilities.upsertDocument error: " + err);
                 aFuture.throw (new Error("CBUtilities.upsertDocument error: " + err));
             } else {
-                ret = result;
+                ret = result.rows;
+                aFuture.return();
             }
-            aFuture.return()
         });
         try {
             aFuture.wait();
@@ -76,6 +75,7 @@ class CBUtilities {
         catch(err) {
             throw new Meteor.Error( err);
         }
+        return ret;
     };
 
     // get document function
@@ -87,16 +87,16 @@ class CBUtilities {
                 console.error("CBUtilities.getDocumentByKey error: " + err);
                 aFuture.throw (new Error("CBUtilities.getDocumentByKey error: " + err));
             } else {
-                ret = result;
-            }
-            try {
-                aFuture.wait();
-            }
-            catch(err) {
-                throw new Meteor.Error( err);
+                ret = result.content;
+                aFuture.return();
             }
         });
-        aFuture.wait();
+        try {
+            aFuture.wait();
+        }
+        catch(err) {
+            throw new Meteor.Error( err);
+        }
         return ret;
     };
 
@@ -109,8 +109,8 @@ class CBUtilities {
                 aFuture.throw (new Error("CBUtilities.query error: " + err));
             } else {
                 ret = result.rows;
+                aFuture.return();
             }
-            aFuture.return();
         });
         try {
                 aFuture.wait();
@@ -131,9 +131,9 @@ class CBUtilities {
                 console.error("CBUtilities.searchStationsByBoundingBox error: " + err);
                 aFuture.throw (new Error("CBUtilities.searchStationsByBoundingBox error: " + err));
             } else {
-                ret = result;
+                ret = result.rows;
+                aFuture.return();
             }
-            aFuture.return();
         });
         try {
             aFuture.wait();
@@ -141,7 +141,7 @@ class CBUtilities {
         catch(err) {
             throw new Meteor.Error( err);
         }
-        return ret.rows;
+        return ret;
     };
 };
 

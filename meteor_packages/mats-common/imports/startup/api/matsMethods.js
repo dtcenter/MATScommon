@@ -126,18 +126,22 @@ if (Meteor.isServer) {
 
 // private - used to see if the main page needs to update its selectors
 const _checkMetaDataRefresh = function () {
-    // This routine compares the current last modified time of the tables used for curveParameter metadata
-    // with the last update time to determine if an update is necessary. We really only do this for Curveparams
+    // This routine compares the current last modified time of the tables (MYSQL) or documents (Couchbase)
+    // used for curveParameter metadata with the last update time to determine if an update is necessary.
+    // We really only do this for Curveparams
     /*
         metaDataTableUpdates:
         {
-            name: dataBaseName,
+            name: dataBaseName(MYSQL) or bucketName(couchbase),
+            (for couchbase tables are documents)
             tables: [tableName1, tableName2 ..],
             lastRefreshed : timestamp
         }
      */
     var refresh = false;
     const tableUpdates = metaDataTableUpdates.find({}).fetch();
+    const settings = matsCollections.Settings.findOne();
+    const type = settings.dbType;
     for (var tui = 0; tui < tableUpdates.length; tui++) {
         var id = tableUpdates[tui]._id;
         var poolName = tableUpdates[tui].pool;
@@ -147,12 +151,25 @@ const _checkMetaDataRefresh = function () {
         var updatedEpoch = Number.MAX_VALUE;
         for (var ti = 0; ti < tableNames.length; ti++) {
             var tName = tableNames[ti];
-            var rows = matsDataQueryUtils.simplePoolQueryWrapSynchronous(global[poolName], "SELECT UNIX_TIMESTAMP(UPDATE_TIME)" +
-                "    FROM   information_schema.tables" +
-                "    WHERE  TABLE_SCHEMA = '" + dbName + "'" +
-                "    AND TABLE_NAME = '" + tName + "'");
             try {
-                updatedEpoch = rows[0]['UNIX_TIMESTAMP(UPDATE_TIME)'];
+                if (Meteor.isServer) {
+                    switch(type) {
+                        case matsTypes.DbTypes.mysql:
+                            var rows = matsDataQueryUtils.simplePoolQueryWrapSynchronous(global[poolName], "SELECT UNIX_TIMESTAMP(UPDATE_TIME)" +
+                                "    FROM   information_schema.tables" +
+                                "    WHERE  TABLE_SCHEMA = '" + dbName + "'" +
+                                "    AND TABLE_NAME = '" + tName + "'");
+                            updatedEpoch = rows[0]['UNIX_TIMESTAMP(UPDATE_TIME)'];
+                            break;
+                        case matsTypes.DbTypes.couchbase:
+                            // the tName for couchbase is supposed to be the document id
+                            var doc = cbPool.getDocumentByKey(tName);
+                            updatedEpoch = doc.updated;
+                            break;
+                        default:
+                            throw new Meteor.Error("resetApp: undefined DbType");
+                    }
+                }
                 console.log("DB says metadata for table " + dbName + "." + tName + " was updated at " + updatedEpoch);
                 if (updatedEpoch === undefined || updatedEpoch === null || updatedEpoch === "NULL" || updatedEpoch === Number.MAX_VALUE) {
                     // if time of last update isn't stored by the database (thanks, Aurora DB), refresh automatically
@@ -1583,18 +1600,20 @@ const resetApp = function (appRef) {
         const metaDataTableRecords = appRef.appMdr;
         const appPools = appRef.appPools;
         const type = appRef.appType;
+        const dbType = appRef.dbType ? appRef.dbType : matsTypes.dbType.mysql;
         const appName = appRef.app;
         const appTitle = appRef.title;
         const appGroup = appRef.group;
         var color;
-        switch (appRef.appType) {
+        switch (type) {
             case matsTypes.AppTypes.mats:
-                color = "#3366bb";
+                if (dbType == matsTypes.DbTypes.mysql) {
+                    color = "#3366bb";
+                } else {
+                    color = "#33abbb";
+                }
                 break;
-            case matsTypes.AppTypes.cbMats:
-                color = "#33abbb";
-                break;
-            case matsTypes.AppTypes.cbMetexpress:
+            case matsTypes.AppTypes.metexpress:
                 color = "darkorchid";
                 break;
         case matsTypes.AppTypes.metexpress:
@@ -1661,7 +1680,6 @@ const resetApp = function (appRef) {
         if (Meteor.settings.private && Meteor.settings.private.MAPBOX_KEY) {
             mapboxKey = Meteor.settings.private.MAPBOX_KEY;
         }
-        //if (appRef.appType != matsTypes.AppTypes.cbMetexpress && appRef.appType != matsTypes.AppTypes.cbMats) {
         // timeout in seconds
         var connectionTimeout = Meteor.settings.public.mysql_wait_timeout != undefined ? Meteor.settings.public.mysql_wait_timeout : 300;
         delete Meteor.settings.public.undefinedRoles;
@@ -1683,17 +1701,23 @@ const resetApp = function (appRef) {
                 continue;
             }
             try {
-                if (appRef.appType != matsTypes.AppTypes.cbMetexpress && appRef.appType != matsTypes.AppTypes.cbMats) {
-                    // mysql
-                    global[poolName].on('connection', function (connection) {
-                        connection.query('set group_concat_max_len = 4294967295');
-                        connection.query('set session wait_timeout = ' + connectionTimeout);
-                        console.log("opening new " + poolName + " connection");
-                    });
-                } else {
-                    //couchbase
-                    global[poolName].query("select NOW_MILLIS() as time;")
+                switch (dbType) {
+                    case matsTypes.DbTypes.mysql:
+                        // mysql
+                        global[poolName].on('connection', function (connection) {
+                            connection.query('set group_concat_max_len = 4294967295');
+                            connection.query('set session wait_timeout = ' + connectionTimeout);
+                            console.log("opening new " + poolName + " connection");
+                        });
+                        break;
+                    case matsTypes.DbTypes.couchbase:
+                        //simple couchbase test
+                        global[poolName].query("select NOW_MILLIS() as time;");
+                        break;
+                    default:
+                        throw new Meteor.Error("reset app: undefined dbType:" + dbType);
                 }
+
             } catch (e) {
                 console.log(poolName + ":  not initialized-- could not open connection: Error:" + e.message);
                 Meteor.settings.public.undefinedRoles = Meteor.settings.public.undefinedRoles == undefined ? [] : Meteor.settings.public.undefinedRoles == undefined;
@@ -1707,7 +1731,6 @@ const resetApp = function (appRef) {
         if (Meteor.settings.public.undefinedRoles && Meteor.settings.public.undefinedRoles.length > 1) {
             throw new Meteor.Error("dbpools not initialized " + Meteor.settings.public.undefinedRoles);
         }
-        //}
         var deployment;
         var deploymentText = Assets.getText('public/deployment/deployment.json');
         deployment = JSON.parse(deploymentText);
@@ -1736,8 +1759,7 @@ const resetApp = function (appRef) {
             }
          */
         // only create metadata tables if the resetApp was called with a real metaDataTables object
-        // couchbase apps don't need these - no special tables for metadata
-        if (metaDataTableRecords && metaDataTableRecords instanceof matsTypes.MetaDataDBRecord) {
+        if (metaDataTableRecords instanceof matsTypes.MetaDataDBRecord) {
             var metaDataTables = metaDataTableRecords.getRecords();
             for (var mdti = 0; mdti < metaDataTables.length; mdti++) {
                 const metaDataRef = metaDataTables[mdti];
@@ -1746,6 +1768,8 @@ const resetApp = function (appRef) {
                     metaDataTableUpdates.update({name: metaDataRef.name}, metaDataRef, {upsert: true});
                 }
             }
+        } else {
+            throw new Meteor.Error("Server error: ", "resetApp: bad pool-database entry");
         }
         // invoke the standard common routines
         matsCollections.Roles.remove({});
@@ -1758,7 +1782,7 @@ const resetApp = function (appRef) {
         matsCollections.ColorScheme.remove({});
         matsDataUtils.doColorScheme();
         matsCollections.Settings.remove({});
-        matsDataUtils.doSettings(appTitle, appVersion, buildDate, appType, mapboxKey);
+        matsDataUtils.doSettings(appTitle, dbType, appVersion, buildDate, appType, mapboxKey);
         matsCollections.PlotParams.remove({});
         matsCollections.CurveTextPatterns.remove({});
         // get the curve params for this app out of the settings file

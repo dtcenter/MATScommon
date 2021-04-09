@@ -17,6 +17,10 @@ const _publishField = function(field) {
 
 if (Meteor.isServer) {
     const params = Meteor.settings.public.curve_params;
+    if (!params) {
+        console.log("Curve_params are not defined in the settings. Did you forget the settings parameter?");
+        throw new Meteor.Error("Curve_params are not defined in the settings. Did you forget the settings parameter?");
+    }
     var currParam;
     for (var i = 0; i < params.length; i++) {
         currParam = params[i];

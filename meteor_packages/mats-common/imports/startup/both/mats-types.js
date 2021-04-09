@@ -19,9 +19,12 @@ var DatabaseRoles = {
 var AppTypes = {
     mats: 'mats',
     metexpress: 'metexpress',
-    mats4met: 'mats4met',
-    cbMats: 'couchbase-mats',
-    cbMetexpress: 'couchbase-metexpress'
+    mats4met: 'mats4met'
+};
+
+var DbTypes = {
+    couchbase: 'couchbase',
+    mysql: 'mysql'
 };
 
 var InputTypes = {
@@ -196,6 +199,7 @@ export default matsTypes = {
     ReservedWords: ReservedWords,
     MetaDataDBRecord: MetaDataDBRecord,
     AppTypes: AppTypes,
+    DbTypes: DbTypes,
     DatabaseRoles: DatabaseRoles,
     DEFAULT_GROUP_LIST: DEFAULT_GROUP_LIST
 }
