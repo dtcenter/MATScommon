@@ -1220,7 +1220,10 @@ class QueryUtil:
                 data_exists = row['fy_oy'] != "null" and row['fy_oy'] != "NULL" and row['fy_on'] != "null" and row['fy_on'] != "NULL" and row['fn_oy'] != "null" and row['fn_oy'] != "NULL" and row['fn_on'] != "null" and row['fn_on'] != "NULL"
             elif stat_line_type == 'precalculated':
                 data_exists = row['stat'] != "null" and row['stat'] != "NULL"
-            self.n0.append(int(row['N0']))
+            if hasattr(row, 'N0'):
+                self.n0.append(int(row['N0']))
+            else:
+                self.n0.append(int(row['N_times']))
             self.n_times.append(int(row['N_times']))
 
             if row_idx < len(query_data) - 1:  # make sure we have the smallest time interval for the while loop later
@@ -1367,7 +1370,10 @@ class QueryUtil:
                 data_exists = row['fy_oy'] != "null" and row['fy_oy'] != "NULL" and row['fy_on'] != "null" and row['fy_on'] != "NULL" and row['fn_oy'] != "null" and row['fn_oy'] != "NULL" and row['fn_on'] != "null" and row['fn_on'] != "NULL"
             elif stat_line_type == 'precalculated':
                 data_exists = row['stat'] != "null" and row['stat'] != "NULL"
-            self.n0.append(int(row['N0']))
+            if hasattr(row, 'N0'):
+                self.n0.append(int(row['N0']))
+            else:
+                self.n0.append(int(row['N_times']))
             self.n_times.append(int(row['N_times']))
 
             if data_exists:
@@ -1528,7 +1534,10 @@ class QueryUtil:
                 data_exists = row['fy_oy'] != "null" and row['fy_oy'] != "NULL" and row['fy_on'] != "null" and row['fy_on'] != "NULL" and row['fn_oy'] != "null" and row['fn_oy'] != "NULL" and row['fn_on'] != "null" and row['fn_on'] != "NULL"
             elif stat_line_type == 'precalculated':
                 data_exists = row['stat'] != "null" and row['stat'] != "NULL"
-            self.n0.append(int(row['N0']))
+            if hasattr(row, 'N0'):
+                self.n0.append(int(row['N0']))
+            else:
+                self.n0.append(int(row['N_times']))
             self.n_times.append(int(row['N_times']))
 
             if data_exists:
@@ -1577,7 +1586,10 @@ class QueryUtil:
             if data_exists:
                 bin_number = int(row['bin'])
                 bin_count = int(row['bin_count'])
-                self.n0.append(int(row['N0']))
+                if hasattr(row, 'N0'):
+                    self.n0.append(int(row['N0']))
+                else:
+                    self.n0.append(int(row['N_times']))
                 self.n_times.append(int(row['N_times']))
 
                 # this function deals with rhist/phist/relp and rhist_rank/phist_bin/relp_ens tables
@@ -1653,7 +1665,10 @@ class QueryUtil:
                 oy = int(row['oy_i'])
                 on = int(row['on_i'])
                 number_times = int(row['N_times'])
-                number_values = int(row['N0'])
+                if hasattr(row, 'N0'):
+                    number_values = int(row['N0'])
+                else:
+                    number_values = int(row['N_times'])
 
                 # we must add up all of the observed and not-observed values for each probability bin
                 observed_total = observed_total + oy

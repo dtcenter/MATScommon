@@ -18,6 +18,11 @@ Template.dateRange.onRendered(function () {
     const startInit = defaultDateRange.startDate;
     const stopInit = defaultDateRange.stopDate;
     const dstr = defaultDateRange.dstr;
+    const isMetexpress = matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
+    var statisticTranslations = {};
+    if (isMetexpress) {
+        statisticTranslations = matsCollections["statistic"].findOne({name: "statistic"}).valuesMap;
+    }
 
     $(function () {
         $('#' + idref).daterangepicker({
@@ -106,7 +111,10 @@ Template.dateRange.onRendered(function () {
                         if (matsCollections[thisSuperior] !== undefined) {
                             datesMap = datesMap === undefined ? matsCollections[thisSuperior].findOne({name: thisSuperior}).dates : datesMap;
                         }
-                        const sval = matsParamUtils.getInputElementForParamName(thisSuperior).options[matsParamUtils.getInputElementForParamName(thisSuperior).selectedIndex].text;
+                        var sval = matsParamUtils.getInputElementForParamName(thisSuperior).options[matsParamUtils.getInputElementForParamName(thisSuperior).selectedIndex].text;
+                        if (thisSuperior === "statistic" && isMetexpress) {
+                            sval = statisticTranslations[sval][0];
+                        }
                         if (sval === matsTypes.InputTypes.unused ||
                             sval === null ||
                             datesMap === undefined ||
