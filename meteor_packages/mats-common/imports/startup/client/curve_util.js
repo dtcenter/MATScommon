@@ -750,6 +750,42 @@ const showROCFace = function () {
     return selectorsToReset;
 };
 
+// method to display the appropriate selectors for a ROC curve
+const showPerformanceDiagramFace = function () {
+    const plotType = matsTypes.PlotTypes.performanceDiagram;
+    var faceOptions = {
+        'curve-dates': 'none',
+        'dates': 'block',
+        'statistic': 'none',
+        'threshold': 'block',
+        'scale': 'block',
+        'level': 'block',
+        'forecast-length': 'block',
+        'dieoff-type': 'none',
+        'average': 'none',
+        'valid-time': 'block',
+        'utc-cycle-start': 'none',
+        'histogram-type-controls': 'none',
+        'histogram-bin-controls': 'none',
+        'histogram-yaxis-controls': 'none',
+        'bin-number': 'none',
+        'bin-start': 'none',
+        'bin-stride': 'none',
+        'bin-pivot': 'none',
+        'bin-bounds': 'none',
+        'truth': 'block',
+        'region-type' : 'block',
+        'x-axis-parameter': 'none',
+        'y-axis-parameter': 'none',
+        'significance': 'none'
+    };
+    const selectorsToReset = {
+        'dieoff-type': 'Dieoff'
+    };
+    setSelectorVisibility(plotType, faceOptions, selectorsToReset);
+    return selectorsToReset;
+};
+
 // method to display the appropriate selectors for a map
 const showMapFace = function () {
     const appName = matsCollections.appName.findOne({}).app;
@@ -993,6 +1029,7 @@ export default matsCurveUtils = {
     showDailyModelCycleFace: showDailyModelCycleFace,
     showReliabilityFace: showReliabilityFace,
     showROCFace: showROCFace,
+    showPerformanceDiagramFace: showPerformanceDiagramFace,
     showMapFace: showMapFace,
     showHistogramFace: showHistogramFace,
     showEnsembleHistogramFace: showEnsembleHistogramFace,

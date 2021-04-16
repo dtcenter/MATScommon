@@ -1078,7 +1078,7 @@ class QueryUtil:
             x_var = 'threshold_all'
             y_var = 'hit_rate'
 
-        elif plot_type == 'ROC':
+        elif plot_type == 'ROC' or plot_type == "PerformanceDiagram":
             # determine the probability of detection (hit rate) and probability of false detection (false alarm ratio) for each probability bin
             for i in range(0, len(threshold_all)):
                 hit = 0
@@ -1103,12 +1103,20 @@ class QueryUtil:
                     hr = None
                 pody.append(hr)
 
-                # POFD
-                try:
-                    pofd = float(fa / (float(fa) + cn))
-                except ZeroDivisionError:
-                    pofd = None
-                far.append(pofd)
+                if plot_type == 'ROC':
+                    # POFD
+                    try:
+                        pofd = float(fa / (float(fa) + cn))
+                    except ZeroDivisionError:
+                        pofd = None
+                    far.append(pofd)
+                else:
+                    # FAR
+                    try:
+                        far1 = float(fa / (float(fa) + hit))
+                    except ZeroDivisionError:
+                        far1 = None
+                    far.append(far1)
 
             # Reverse all of the lists (easier to graph)
             pody = pody[::-1]
@@ -1128,11 +1136,12 @@ class QueryUtil:
             total_values.append(-999)
             total_times.append(-999)
 
-            # Calculate AUC
-            auc_sum = 0
-            for i in range(1, len(threshold_all)):
-                auc_sum = ((pody[i] + pody[i - 1]) * (far[i] - far[i - 1])) + auc_sum
-            auc = auc_sum / 2
+            if plot_type == 'ROC':
+                # Calculate AUC
+                auc_sum = 0
+                for i in range(1, len(threshold_all)):
+                    auc_sum = ((pody[i] + pody[i - 1]) * (far[i] - far[i - 1])) + auc_sum
+                auc = auc_sum / 2
             x_var = 'far'
             y_var = 'pody'
 
@@ -1822,7 +1831,7 @@ class QueryUtil:
                     self.parse_query_data_histogram(cursor, stat_line_type, statistic, has_levels)
                 elif plot_type == 'Contour':
                     self.parse_query_data_contour(cursor, stat_line_type, statistic, has_levels)
-                elif plot_type == 'Reliability' or plot_type == 'ROC':
+                elif plot_type == 'Reliability' or plot_type == 'ROC' or plot_type == 'PerformanceDiagram':
                     self.parse_query_data_ensemble(cursor, plot_type)
                 elif plot_type == 'EnsembleHistogram':
                     self.parse_query_data_ensemble_histogram(cursor, statistic, has_levels)

@@ -76,6 +76,7 @@ Template.graph.helpers({
                 case matsTypes.PlotTypes.dailyModelCycle:
                 case matsTypes.PlotTypes.reliability:
                 case matsTypes.PlotTypes.roc:
+                case matsTypes.PlotTypes.performanceDiagram:
                     // saved curve options for line graphs
                     var lineTypeResetOpts = [];
                     for (var lidx = 0; lidx < dataset.length; lidx++) {
@@ -161,6 +162,7 @@ Template.graph.helpers({
                         break;
                     case matsTypes.PlotTypes.reliability:
                     case matsTypes.PlotTypes.roc:
+                    case matsTypes.PlotTypes.performanceDiagram:
                     case matsTypes.PlotTypes.histogram:
                     case matsTypes.PlotTypes.ensembleHistogram:
                     case matsTypes.PlotTypes.contour:
@@ -270,6 +272,7 @@ Template.graph.helpers({
                     return "block";
                 case matsTypes.PlotTypes.reliability:
                 case matsTypes.PlotTypes.roc:
+                case matsTypes.PlotTypes.performanceDiagram:
                 case matsTypes.PlotTypes.map:
                 case matsTypes.PlotTypes.histogram:
                 case matsTypes.PlotTypes.ensembleHistogram:
@@ -315,6 +318,8 @@ Template.graph.helpers({
                     return "Reliability: " + p.dates + " : " + format;
                 case matsTypes.PlotTypes.roc:
                     return "ROC Curve: " + p.dates + " : " + format;
+                case matsTypes.PlotTypes.performanceDiagram:
+                    return "Performance Diagram: " + p.dates + " : " + format;
                 case matsTypes.PlotTypes.map:
                     return "Map " + p.dates + " ";
                 case matsTypes.PlotTypes.histogram:
@@ -390,6 +395,7 @@ Template.graph.helpers({
             case matsTypes.PlotTypes.dailyModelCycle:
             case matsTypes.PlotTypes.reliability:
             case matsTypes.PlotTypes.roc:
+            case matsTypes.PlotTypes.performanceDiagram:
                 return true;
             case matsTypes.PlotTypes.map:
             case matsTypes.PlotTypes.histogram:
@@ -484,6 +490,7 @@ Template.graph.helpers({
             case matsTypes.PlotTypes.dailyModelCycle:
             case matsTypes.PlotTypes.reliability:
             case matsTypes.PlotTypes.roc:
+            case matsTypes.PlotTypes.performanceDiagram:
             case matsTypes.PlotTypes.scatter2d:
                 return "block";
             case matsTypes.PlotTypes.map:
@@ -507,6 +514,7 @@ Template.graph.helpers({
             case matsTypes.PlotTypes.dailyModelCycle:
             case matsTypes.PlotTypes.reliability:
             case matsTypes.PlotTypes.roc:
+            case matsTypes.PlotTypes.performanceDiagram:
             case matsTypes.PlotTypes.scatter2d:
                 return "block";
             case matsTypes.PlotTypes.map:
@@ -533,6 +541,7 @@ Template.graph.helpers({
                     return "block";
                 case matsTypes.PlotTypes.reliability:
                 case matsTypes.PlotTypes.roc:
+                case matsTypes.PlotTypes.performanceDiagram:
                 case matsTypes.PlotTypes.map:
                 case matsTypes.PlotTypes.histogram:
                 case matsTypes.PlotTypes.ensembleHistogram:
@@ -569,6 +578,7 @@ Template.graph.helpers({
                 return 'block';
             case matsTypes.PlotTypes.reliability:
             case matsTypes.PlotTypes.roc:
+            case matsTypes.PlotTypes.performanceDiagram:
             case matsTypes.PlotTypes.histogram:
             case matsTypes.PlotTypes.ensembleHistogram:
             case matsTypes.PlotTypes.contour:
@@ -589,6 +599,7 @@ Template.graph.helpers({
             case matsTypes.PlotTypes.dailyModelCycle:
             case matsTypes.PlotTypes.reliability:
             case matsTypes.PlotTypes.roc:
+            case matsTypes.PlotTypes.performanceDiagram:
             case matsTypes.PlotTypes.histogram:
             case matsTypes.PlotTypes.ensembleHistogram:
             case matsTypes.PlotTypes.contour:
@@ -1448,6 +1459,7 @@ Template.graph.events({
                 case matsTypes.PlotTypes.dailyModelCycle:
                 case matsTypes.PlotTypes.reliability:
                 case matsTypes.PlotTypes.roc:
+                case matsTypes.PlotTypes.performanceDiagram:
                     // restyle for line plots
                     const lineTypeResetOpts = Session.get('lineTypeResetOpts');
                     for (var lidx = 0; lidx < lineTypeResetOpts.length; lidx++) {
@@ -1671,6 +1683,7 @@ Template.graph.events({
                     case matsTypes.PlotTypes.dailyModelCycle:
                     case matsTypes.PlotTypes.reliability:
                     case matsTypes.PlotTypes.roc:
+                    case matsTypes.PlotTypes.performanceDiagram:
                         // options for line plots
                         updates[index]['line.color'] = elem.value;
                         updates[index]['marker.color'] = elem.value;

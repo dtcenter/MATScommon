@@ -31,6 +31,7 @@ Template.curveList.helpers({
             switch (plotType) {
                 case matsTypes.PlotTypes.reliability:
                 case matsTypes.PlotTypes.roc:
+                case matsTypes.PlotTypes.performanceDiagram:
                 case matsTypes.PlotTypes.contour:
                     return "none";
                 case matsTypes.PlotTypes.timeSeries:

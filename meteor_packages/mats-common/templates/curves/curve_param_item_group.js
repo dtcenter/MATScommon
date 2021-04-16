@@ -49,6 +49,9 @@ Template.curveParamItemGroup.helpers({
             case matsTypes.PlotTypes.roc:
                 pattern = matsCollections.CurveTextPatterns.findOne({plotType: matsTypes.PlotTypes.roc});
                 break;
+            case matsTypes.PlotTypes.performanceDiagram:
+                pattern = matsCollections.CurveTextPatterns.findOne({plotType: matsTypes.PlotTypes.performanceDiagram});
+                break;
             case matsTypes.PlotTypes.map:
                 pattern = matsCollections.CurveTextPatterns.findOne({plotType: matsTypes.PlotTypes.map});
                 break;

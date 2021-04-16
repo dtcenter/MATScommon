@@ -249,6 +249,9 @@ Template.plotList.events({
                             case matsTypes.PlotTypes.roc:
                                 matsCurveUtils.showROCFace();
                                 break;
+                            case matsTypes.PlotTypes.performanceDiagram:
+                                matsCurveUtils.showPerformanceDiagramFace();
+                                break;
                             case matsTypes.PlotTypes.map:
                                 matsCurveUtils.showMapFace();
                                 break;
@@ -455,6 +458,9 @@ Template.plotList.onRendered( function() {
             break;
         case matsTypes.PlotTypes.roc:
             matsCurveUtils.showROCFace();
+            break;
+        case matsTypes.PlotTypes.performanceDiagram:
+            matsCurveUtils.showPerformanceDiagramFace();
             break;
         case matsTypes.PlotTypes.map:
             matsCurveUtils.showMapFace();

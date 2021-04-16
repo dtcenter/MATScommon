@@ -89,6 +89,9 @@ Template.textOutput.helpers({
                 header += "<th>label</th>\
                     <th>area under the ROC curve</th>";
                 break;
+            case matsTypes.PlotTypes.performanceDiagram:
+                header += "";
+                break;
             case matsTypes.PlotTypes.map:
                 header += "<th>label</th>\
                     <th>mean</th>\
@@ -189,7 +192,13 @@ Template.textOutput.helpers({
             case matsTypes.PlotTypes.roc:
                 header += "<th>" + curve.label + " threshold</th>\
                         <th>probability of detection</th>\
-                        <th>false alarm rate</th>\
+                        <th>probability of false detection</th>\
+                        ";
+                break;
+            case matsTypes.PlotTypes.performanceDiagram:
+                header += "<th>" + curve.label + " threshold</th>\
+                        <th>probability of detection</th>\
+                        <th>false alarm ratio</th>\
                         ";
                 break;
             case matsTypes.PlotTypes.map:
@@ -329,7 +338,12 @@ Template.textOutput.helpers({
             case matsTypes.PlotTypes.roc:
                 line += "<td>" + element[labelKey += " threshold"] + "</td>" +
                     "<td>" + (element['probability of detection'] != undefined && element['probability of detection'] !== null ? element['probability of detection'].toPrecision(4) : fillStr) + "</td>" +
-                    "<td>" + (element['false alarm rate'] != undefined && element['false alarm rate'] !== null ? element['false alarm rate'] : fillStr) + "</td>";
+                    "<td>" + (element['probability of false detection'] != undefined && element['probability of false detection'] !== null ? element['probability of false detection'] : fillStr) + "</td>";
+                break;
+            case matsTypes.PlotTypes.performanceDiagram:
+                line += "<td>" + element[labelKey += " threshold"] + "</td>" +
+                    "<td>" + (element['probability of detection'] != undefined && element['probability of detection'] !== null ? element['probability of detection'].toPrecision(4) : fillStr) + "</td>" +
+                    "<td>" + (element['false alarm ratio'] != undefined && element['false alarm ratio'] !== null ? element['false alarm ratio'] : fillStr) + "</td>";
                 break;
             case matsTypes.PlotTypes.map:
                 line += "<td>" + element["Site Name"] + "</td>" +
@@ -427,6 +441,9 @@ Template.textOutput.helpers({
             case matsTypes.PlotTypes.roc:
                 line += "<td>" + curve['label'] + "</td>" +
                     "<td>" + (stats['auc'] != undefined && stats['auc'] !== null ? stats['auc'].toPrecision(4) : "undefined").toString() + "</td>";
+                break;
+            case matsTypes.PlotTypes.performanceDiagram:
+                line += "";
                 break;
             case matsTypes.PlotTypes.map:
                 line += "<td>" + curve['label'] + "</td>" +

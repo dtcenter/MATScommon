@@ -904,7 +904,90 @@ const generateROCPlotOptions = function () {
 
     // x-axis options
     layout['xaxis'] = {
-        title: 'False Alarm Rate',
+        title: 'Probability of False Detection',
+        titlefont: {
+            size: 24,
+            color: '#000000'
+        },
+        tickfont: {
+            size: 18,
+            color: '#000000'
+        },
+        tickvals: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+        ticktext: ["0.0", "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9", "1.0"],
+        linecolor: 'black',
+        linewidth: 2,
+        mirror: true,
+        showgrid: true,
+        gridwidth: 1,
+        gridcolor: "rgb(238,238,238)",
+        range: [xmin, xmax + 0.05]
+    };
+
+    // y-axis options
+    layout['yaxis'] = {
+        title: 'Probability of Detection',
+        titlefont: {
+            size: 24,
+            color: '#000000'
+        },
+        tickfont: {
+            size: 18,
+            color: '#000000'
+        },
+        tickvals: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+        ticktext: ["0.0", "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9", "1.0"],
+        linecolor: 'black',
+        linewidth: 2,
+        mirror: true,
+        showgrid: true,
+        gridwidth: 1,
+        gridcolor: "rgb(238,238,238)",
+        range: [ymin, ymax + 0.05]
+    };
+
+    return layout;
+};
+
+// sets plot options for ROC plots
+const generatePerformanceDiagramPlotOptions = function () {
+    var xmin = 0;
+    var xmax = 1;
+    var ymin = 0;
+    var ymax = 1;
+
+    // overall plot options
+    var layout = {
+        margin: {
+            l: 80,
+            r: 80,
+            b: 80,
+            t: 20,
+            pad: 4
+        },
+        zeroline: true,
+        perfectLine: false,
+        hovermode: 'closest',
+        hoverlabel: {
+            font: {
+                size: 16,
+                color: '#FFFFFF'
+            }
+        },
+        legend: {
+            orientation: "h",
+            x: 0,
+            y: 1.1,
+            font: {
+                size: 12,
+                color: '#000000'
+            }
+        }
+    };
+
+    // x-axis options
+    layout['xaxis'] = {
+        title: 'False Alarm Ratio',
         titlefont: {
             size: 24,
             color: '#000000'
@@ -1292,6 +1375,7 @@ export default matsDataPlotOpsUtils = {
     generateGridScalePlotOptions: generateGridScalePlotOptions,
     generateReliabilityPlotOptions: generateReliabilityPlotOptions,
     generateROCPlotOptions: generateROCPlotOptions,
+    generatePerformanceDiagramPlotOptions: generatePerformanceDiagramPlotOptions,
     generateMapPlotOptions: generateMapPlotOptions,
     generateHistogramPlotOptions: generateHistogramPlotOptions,
     generateEnsembleHistogramPlotOptions: generateEnsembleHistogramPlotOptions,

@@ -95,6 +95,9 @@ const setDatesAndShowFace = function (plotType, dateSelector) {
         case matsTypes.PlotTypes.roc:
             selectorsToReset = matsCurveUtils.showROCFace();
             break;
+        case matsTypes.PlotTypes.performanceDiagram:
+            selectorsToReset = matsCurveUtils.showPerformanceDiagramFace();
+            break;
         case matsTypes.PlotTypes.histogram:
             selectorsToReset = matsCurveUtils.showHistogramFace();
             break;
@@ -233,6 +236,12 @@ Template.plotType.events({
     },
     'click .plot-type-ROC': function (event) {
         const plotType = matsTypes.PlotTypes.roc;
+        const selectorsToInitialize = ['threshold', 'scale', 'level', 'forecast-length', 'valid-time', 'truth', 'region-type', 'region'];
+        const dateSelector = 'dates';
+        changePlotType(plotType, selectorsToInitialize, dateSelector);
+    },
+    'click .plot-type-PerformanceDiagram': function (event) {
+        const plotType = matsTypes.PlotTypes.performanceDiagram;
         const selectorsToInitialize = ['threshold', 'scale', 'level', 'forecast-length', 'valid-time', 'truth', 'region-type', 'region'];
         const dateSelector = 'dates';
         changePlotType(plotType, selectorsToInitialize, dateSelector);

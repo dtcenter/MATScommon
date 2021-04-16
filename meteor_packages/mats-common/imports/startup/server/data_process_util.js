@@ -521,7 +521,7 @@ const processDataROC = function (dataset, appParams, curveInfoParams, plotParams
             data.stats[di] = {
                 threshold: data.threshold_all[di],
                 pody: data.y[di],
-                fa: data.x[di],
+                pofd: data.x[di],
                 obs_y: data.oy_all[di],
                 obs_n: data.on_all[di]
             };
@@ -529,7 +529,7 @@ const processDataROC = function (dataset, appParams, curveInfoParams, plotParams
             data.text[di] = label;
             data.text[di] = data.text[di] + "<br>threshold: " + data.threshold_all[di];
             data.text[di] = data.text[di] + "<br>probability of detection: " + data.y[di];
-            data.text[di] = data.text[di] + "<br>false alarm rate: " + data.x[di];
+            data.text[di] = data.text[di] + "<br>probability of false detection: " + data.x[di];
 
             di++;
         }
@@ -551,6 +551,69 @@ const processDataROC = function (dataset, appParams, curveInfoParams, plotParams
 
     // generate plot options
     var resultOptions = matsDataPlotOpsUtils.generateROCPlotOptions();
+
+    var totalProcessingFinish = moment();
+    bookkeepingParams.dataRequests["total retrieval and processing time for curve set"] = {
+        begin: bookkeepingParams.totalProcessingStart.format(),
+        finish: totalProcessingFinish.format(),
+        duration: moment.duration(totalProcessingFinish.diff(bookkeepingParams.totalProcessingStart)).asSeconds() + ' seconds'
+    };
+
+    // pass result to client-side plotting functions
+    return {
+        error: error,
+        data: dataset,
+        options: resultOptions,
+        basis: {
+            plotParams: plotParams,
+            queries: bookkeepingParams.dataRequests
+        }
+    };
+};
+
+const processDataPerformanceDiagram = function (dataset, appParams, curveInfoParams, plotParams, bookkeepingParams) {
+    var error = "";
+
+    // sort data statistics for each curve
+    for (var curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex++) {
+
+        var data = dataset[curveIndex];
+        const label = dataset[curveIndex].label;
+
+        var di = 0;
+        while (di < data.x.length) {
+            // store statistics for this di datapoint
+            data.stats[di] = {
+                threshold: data.threshold_all[di],
+                pody: data.y[di],
+                fa: data.x[di],
+                obs_y: data.oy_all[di],
+                obs_n: data.on_all[di]
+            };
+            // the tooltip is stored in data.text
+            data.text[di] = label;
+            data.text[di] = data.text[di] + "<br>threshold: " + data.threshold_all[di];
+            data.text[di] = data.text[di] + "<br>probability of detection: " + data.y[di];
+            data.text[di] = data.text[di] + "<br>false alarm rate: " + data.x[di];
+
+            di++;
+        }
+        dataset[curveIndex]['glob_stats'] = {};
+    }
+
+    // // add black no skill line curve
+    // const noSkillLine = matsDataCurveOpsUtils.getLinearValueLine(curveInfoParams.xmax, curveInfoParams.xmin, data.ymax, data.ymin, matsTypes.ReservedWords.noSkill);
+    // dataset.push(noSkillLine);
+    //
+    // // add perfect forecast lines
+    // const xPerfectLine = matsDataCurveOpsUtils.getHorizontalValueLine(curveInfoParams.xmax, curveInfoParams.xmin, data.ymax, matsTypes.ReservedWords.perfectForecast);
+    // dataset.push(xPerfectLine);
+    //
+    // const yPerfectLine = matsDataCurveOpsUtils.getVerticalValueLine(curveInfoParams.xmax, curveInfoParams.xmin, data.xmin, matsTypes.ReservedWords.perfectForecast);
+    // dataset.push(yPerfectLine);
+
+    // generate plot options
+    var resultOptions = matsDataPlotOpsUtils.generatePerformanceDiagramPlotOptions();
 
     var totalProcessingFinish = moment();
     bookkeepingParams.dataRequests["total retrieval and processing time for curve set"] = {
@@ -965,6 +1028,7 @@ export default matsDataProcessUtils = {
     processDataProfile: processDataProfile,
     processDataReliability: processDataReliability,
     processDataROC: processDataROC,
+    processDataPerformanceDiagram: processDataPerformanceDiagram,
     processDataHistogram: processDataHistogram,
     processDataEnsembleHistogram: processDataEnsembleHistogram,
     processDataContour: processDataContour

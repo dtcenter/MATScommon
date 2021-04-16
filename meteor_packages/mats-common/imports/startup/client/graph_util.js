@@ -128,6 +128,9 @@ const setNoDataLabelsMap = function (dataset) {
 // plot width helper used in multiple places
 const width = function (plotType) {
     switch (plotType) {
+        case matsTypes.PlotTypes.reliability:
+        case matsTypes.PlotTypes.roc:
+        case matsTypes.PlotTypes.performanceDiagram:
         case matsTypes.PlotTypes.scatter2d:
             // set the width square
             return squareWidthHeight();
@@ -139,8 +142,6 @@ const width = function (plotType) {
         case matsTypes.PlotTypes.threshold:
         case matsTypes.PlotTypes.validtime:
         case matsTypes.PlotTypes.gridscale:
-        case matsTypes.PlotTypes.reliability:
-        case matsTypes.PlotTypes.roc:
         case matsTypes.PlotTypes.map:
         case matsTypes.PlotTypes.histogram:
         case matsTypes.PlotTypes.ensembleHistogram:
@@ -156,6 +157,9 @@ const width = function (plotType) {
 // plot height helper used in multiple places
 const height = function (plotType) {
     switch (plotType) {
+        case matsTypes.PlotTypes.reliability:
+        case matsTypes.PlotTypes.roc:
+        case matsTypes.PlotTypes.performanceDiagram:
         case matsTypes.PlotTypes.scatter2d:
             // set the height square
             return squareWidthHeight();
@@ -167,8 +171,6 @@ const height = function (plotType) {
         case matsTypes.PlotTypes.threshold:
         case matsTypes.PlotTypes.validtime:
         case matsTypes.PlotTypes.gridscale:
-        case matsTypes.PlotTypes.reliability:
-        case matsTypes.PlotTypes.roc:
         case matsTypes.PlotTypes.map:
         case matsTypes.PlotTypes.histogram:
         case matsTypes.PlotTypes.ensembleHistogram:
