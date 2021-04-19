@@ -119,6 +119,8 @@ var ReservedWords = {
     perfectReliability: "Perfect Reliability",
     perfectForecast: "Perfect Forecast",
     noSkill: "No Skill",
+    constantBias: "Constant Bias",
+    constantCSI: "Constant CSI",
     blueCurveText: "Cold bias",
     blackCurveText: "Small bias",
     redCurveText: "Warm bias",

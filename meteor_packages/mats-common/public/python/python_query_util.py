@@ -1098,7 +1098,7 @@ class QueryUtil:
 
                 # POD
                 try:
-                    hr = float(hit / (float(hit) + miss))
+                    hr = hit / (hit + miss)
                 except ZeroDivisionError:
                     hr = None
                 pody.append(hr)
@@ -1106,14 +1106,14 @@ class QueryUtil:
                 if plot_type == 'ROC':
                     # POFD
                     try:
-                        pofd = float(fa / (float(fa) + cn))
+                        pofd = fa / (fa + cn)
                     except ZeroDivisionError:
                         pofd = None
                     far.append(pofd)
                 else:
-                    # FAR
+                    # 1- FAR for success ratio
                     try:
-                        far1 = float(fa / (float(fa) + hit))
+                        far1 = 1 - (fa / (fa + hit))
                     except ZeroDivisionError:
                         far1 = None
                     far.append(far1)

@@ -601,16 +601,41 @@ const processDataPerformanceDiagram = function (dataset, appParams, curveInfoPar
         dataset[curveIndex]['glob_stats'] = {};
     }
 
-    // // add black no skill line curve
-    // const noSkillLine = matsDataCurveOpsUtils.getLinearValueLine(curveInfoParams.xmax, curveInfoParams.xmin, data.ymax, data.ymin, matsTypes.ReservedWords.noSkill);
-    // dataset.push(noSkillLine);
-    //
-    // // add perfect forecast lines
-    // const xPerfectLine = matsDataCurveOpsUtils.getHorizontalValueLine(curveInfoParams.xmax, curveInfoParams.xmin, data.ymax, matsTypes.ReservedWords.perfectForecast);
-    // dataset.push(xPerfectLine);
-    //
-    // const yPerfectLine = matsDataCurveOpsUtils.getVerticalValueLine(curveInfoParams.xmax, curveInfoParams.xmin, data.xmin, matsTypes.ReservedWords.perfectForecast);
-    // dataset.push(yPerfectLine);
+    // add black lines of constant bias
+    var biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1, 0, 1, 0, matsTypes.ReservedWords.constantBias);
+    dataset.push(biasLine);
+    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1*2, 0, 1, 0, matsTypes.ReservedWords.constantBias);
+    dataset.push(biasLine);
+    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1*4, 0, 1, 0, matsTypes.ReservedWords.constantBias);
+    dataset.push(biasLine);
+    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1*8, 0, 1, 0, matsTypes.ReservedWords.constantBias);
+    dataset.push(biasLine);
+    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1/2, 0, 1, 0, matsTypes.ReservedWords.constantBias);
+    dataset.push(biasLine);
+    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1/4, 0, 1, 0, matsTypes.ReservedWords.constantBias);
+    dataset.push(biasLine);
+    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1/8, 0, 1, 0, matsTypes.ReservedWords.constantBias);
+    dataset.push(biasLine);
+
+    var xvals;
+    var yvals;
+    var cval;
+    var csiLine;
+    for (var csiidx = 1; csiidx < 10; csiidx++) {
+        cval = csiidx/10;
+        xvals = _.range(cval, 1.01, 0.01);
+        yvals = [];
+        var xval;
+        var yval;
+        for (var xidx = 0; xidx < xvals.length; xidx++) {
+            xval = xvals[xidx];
+            yval = xval * cval / (xval + xval * cval - cval);
+            yvals.push(yval);
+        }
+        csiLine = matsDataCurveOpsUtils.getCurveLine(1, 0, 1, 0, xvals, yvals, matsTypes.ReservedWords.constantCSI);
+        dataset.push(csiLine);
+    }
+
 
     // generate plot options
     var resultOptions = matsDataPlotOpsUtils.generatePerformanceDiagramPlotOptions();

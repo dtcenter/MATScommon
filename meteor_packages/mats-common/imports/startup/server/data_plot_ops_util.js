@@ -153,9 +153,9 @@ const generateProfilePlotOptions = function (axisMap, errorMax) {
             }
         },
         legend: {
-            orientation: "v",
-            x: 1.05,
-            y: 1,
+            orientation: "h",
+            x: 0,
+            y: 1.1,
             font: {
                 size: 12,
                 color: '#000000'
@@ -838,7 +838,7 @@ const generateReliabilityPlotOptions = function () {
         showgrid: true,
         gridwidth: 1,
         gridcolor: "rgb(238,238,238)",
-        range: [xmin, xmax + 0.05]
+        range: [xmin, xmax]
     };
 
     // y-axis options
@@ -860,7 +860,7 @@ const generateReliabilityPlotOptions = function () {
         showgrid: true,
         gridwidth: 1,
         gridcolor: "rgb(238,238,238)",
-        range: [ymin, ymax + 0.05]
+        range: [ymin, ymax]
     };
 
     return layout;
@@ -921,7 +921,7 @@ const generateROCPlotOptions = function () {
         showgrid: true,
         gridwidth: 1,
         gridcolor: "rgb(238,238,238)",
-        range: [xmin, xmax + 0.05]
+        range: [xmin, xmax]
     };
 
     // y-axis options
@@ -943,7 +943,7 @@ const generateROCPlotOptions = function () {
         showgrid: true,
         gridwidth: 1,
         gridcolor: "rgb(238,238,238)",
-        range: [ymin, ymax + 0.05]
+        range: [ymin, ymax]
     };
 
     return layout;
@@ -987,7 +987,7 @@ const generatePerformanceDiagramPlotOptions = function () {
 
     // x-axis options
     layout['xaxis'] = {
-        title: 'False Alarm Ratio',
+        title: 'Success Rate (1-False Alarm Ratio)',
         titlefont: {
             size: 24,
             color: '#000000'
@@ -1004,7 +1004,7 @@ const generatePerformanceDiagramPlotOptions = function () {
         showgrid: true,
         gridwidth: 1,
         gridcolor: "rgb(238,238,238)",
-        range: [xmin, xmax + 0.05]
+        range: [xmin, xmax]
     };
 
     // y-axis options
@@ -1026,7 +1026,7 @@ const generatePerformanceDiagramPlotOptions = function () {
         showgrid: true,
         gridwidth: 1,
         gridcolor: "rgb(238,238,238)",
-        range: [ymin, ymax + 0.05]
+        range: [ymin, ymax]
     };
 
     return layout;
