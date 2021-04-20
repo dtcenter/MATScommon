@@ -179,7 +179,7 @@ const getDashedLinearValueLine = function (xmax, xmin, ymax, ymin, cLabel) {
 };
 
 // adds a linear line
-const getCurveLine = function (xmax, xmin, ymax, ymin, xvals, yvals, cLabel) {
+const getCurveLine = function (xvals, yvals, cLabel) {
 
     const valueLine = {
         "label": cLabel,
@@ -202,10 +202,10 @@ const getCurveLine = function (xmax, xmin, ymax, ymin, xvals, yvals, cLabel) {
             "stde": 0
         }],
         "tooltip": "",
-        "xmin": xmin,
-        "xmax": xmax,
-        "ymin": ymin,
-        "ymax": ymax,
+        "xmin": Math.min(xvals),
+        "xmax": Math.max(xvals),
+        "ymin": Math.min(yvals),
+        "ymax": Math.max(yvals),
         "line": {
             "dash": "solid",
             "color": "rgb(0,0,0)",
@@ -262,7 +262,7 @@ const generateSeriesCurveOptions = function (curve, curveIndex, axisMap, dataSer
         }
     };
 
-    var lineMode = appParams.plotType === matsTypes.PlotTypes.performanceDiagram ? "markers" : "lines+markers";
+    // var lineMode = appParams.plotType === matsTypes.PlotTypes.performanceDiagram ? "markers" : "lines+markers";
     var curveOptions = {
         ...{
             label: label,
@@ -272,7 +272,7 @@ const generateSeriesCurveOptions = function (curve, curveIndex, axisMap, dataSer
             yaxis: "y" + (axisNumber + 1),
             annotation: annotation,
             annotateColor: curve['color'],
-            mode: lineMode,
+            mode: "lines+markers",
             marker: {
                 symbol: "circle",
                 color: curve['color'],

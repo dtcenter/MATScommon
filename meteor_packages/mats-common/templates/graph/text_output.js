@@ -74,6 +74,7 @@ Template.textOutput.helpers({
             case matsTypes.PlotTypes.threshold:
             case matsTypes.PlotTypes.validtime:
             case matsTypes.PlotTypes.gridscale:
+            case matsTypes.PlotTypes.yearToYear:
                 header += "<th>label</th>\
                     <th>mean</th>\
                     <th>standard deviation</th>\
@@ -178,6 +179,13 @@ Template.textOutput.helpers({
                 break;
             case matsTypes.PlotTypes.gridscale:
                 header += "<th>" + curve.label + " grid scale</th>\
+                        <th>raw stat from query</th>\
+                        <th>mean stat</th>\
+                        <th>std dev</th>\
+                        <th>n</th>";
+                break;
+            case matsTypes.PlotTypes.yearToYear:
+                header += "<th>" + curve.label + " year</th>\
                         <th>raw stat from query</th>\
                         <th>mean stat</th>\
                         <th>std dev</th>\
@@ -322,6 +330,13 @@ Template.textOutput.helpers({
                     "<td>" + (element['std dev'] != undefined && element['std dev'] !== null ? element['std dev'].toPrecision(4) : fillStr) + "</td>" +
                     "<td>" + (('n' in element) ? element['n'] : fillStr) + "</td>";
                 break;
+            case matsTypes.PlotTypes.yearToYear:
+                line += "<td>" + element[labelKey += " year"] + "</td>" +
+                    "<td>" + (element['raw stat from query'] != undefined && element['raw stat from query'] !== null ? element['raw stat from query'].toPrecision(4) : fillStr) + "</td>" +
+                    "<td>" + (element['mean stat'] != undefined && element['mean stat'] !== null ? element['mean stat'].toPrecision(4) : fillStr) + "</td>" +
+                    "<td>" + (element['std dev'] != undefined && element['std dev'] !== null ? element['std dev'].toPrecision(4) : fillStr) + "</td>" +
+                    "<td>" + (('n' in element) ? element['n'] : fillStr) + "</td>";
+                break;
             case matsTypes.PlotTypes.dailyModelCycle:
                 line += "<td>" + element[labelKey += " time"] + "</td>" +
                     "<td>" + (element['raw stat from query'] != undefined && element['raw stat from query'] !== null ? element['raw stat from query'].toPrecision(4) : fillStr) + "</td>" +
@@ -427,6 +442,7 @@ Template.textOutput.helpers({
             case matsTypes.PlotTypes.threshold:
             case matsTypes.PlotTypes.validtime:
             case matsTypes.PlotTypes.gridscale:
+            case matsTypes.PlotTypes.yearToYear:
                 line += "<td>" + curve['label'] + "</td>" +
                     "<td>" + (stats['mean'] != undefined && stats['mean'] !== null ? stats['mean'].toPrecision(4) : "undefined").toString() + "</td>" +
                     "<td>" + (stats['standard deviation'] != undefined && stats['standard deviation'] !== null ? stats['standard deviation'].toPrecision(4) : "undefined").toString() + "</td>" +

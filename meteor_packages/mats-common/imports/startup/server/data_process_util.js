@@ -130,6 +130,9 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
                 case matsTypes.PlotTypes.gridscale:
                     data.text[di] = data.text[di] + "<br>grid scale: " + data.x[di];
                     break;
+                case matsTypes.PlotTypes.yearToYear:
+                    data.text[di] = data.text[di] + "<br>year: " + data.x[di];
+                    break;
                 default:
                     data.text[di] = data.text[di] + "<br>" + data.x[di];
                     break;
@@ -229,6 +232,9 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
             break;
         case matsTypes.PlotTypes.gridscale:
             resultOptions = matsDataPlotOpsUtils.generateGridScalePlotOptions(curveInfoParams.axisMap, errorMax);
+            break;
+        case matsTypes.PlotTypes.yearToYear:
+            resultOptions = matsDataPlotOpsUtils.generateYearToYearPlotOptions(curveInfoParams.axisMap, errorMax);
             break;
         default:
             break;
@@ -594,7 +600,7 @@ const processDataPerformanceDiagram = function (dataset, appParams, curveInfoPar
             data.text[di] = label;
             data.text[di] = data.text[di] + "<br>threshold: " + data.threshold_all[di];
             data.text[di] = data.text[di] + "<br>probability of detection: " + data.y[di];
-            data.text[di] = data.text[di] + "<br>false alarm rate: " + data.x[di];
+            data.text[di] = data.text[di] + "<br>success ratio: " + data.x[di];
 
             di++;
         }
@@ -632,7 +638,7 @@ const processDataPerformanceDiagram = function (dataset, appParams, curveInfoPar
             yval = xval * cval / (xval + xval * cval - cval);
             yvals.push(yval);
         }
-        csiLine = matsDataCurveOpsUtils.getCurveLine(1, 0, 1, 0, xvals, yvals, matsTypes.ReservedWords.constantCSI);
+        csiLine = matsDataCurveOpsUtils.getCurveLine(xvals, yvals, matsTypes.ReservedWords.constantCSI);
         dataset.push(csiLine);
     }
 

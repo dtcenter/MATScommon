@@ -168,6 +168,8 @@ Template.GraphStandAlone.helpers({
                     return "GridScale: " + format;
                 case matsTypes.PlotTypes.dailyModelCycle:
                     return "DailyModelCycle " + p.dates + " : " + format;
+                case matsTypes.PlotTypes.yearToYear:
+                    return "YearToYear: " + format;
                 case matsTypes.PlotTypes.reliability:
                     return "Reliability: " + p.dates + " : " + format;
                 case matsTypes.PlotTypes.roc:

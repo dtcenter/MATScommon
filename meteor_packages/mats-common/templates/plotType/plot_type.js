@@ -60,7 +60,7 @@ const setDatesAndShowFace = function (plotType, dateSelector) {
     var oldDatesExist;
     if (dateSelector === 'dates') {
         oldDatesExist = matsParamUtils.isParamVisible('dates');
-    } else {
+    } else if (dateSelector === 'curve-dates') {
         oldDatesExist = matsParamUtils.isParamVisible('curve-dates');
     }
     var selectorsToReset = {};
@@ -85,6 +85,9 @@ const setDatesAndShowFace = function (plotType, dateSelector) {
             break;
         case matsTypes.PlotTypes.dailyModelCycle:
             selectorsToReset = matsCurveUtils.showDailyModelCycleFace();
+            break;
+        case matsTypes.PlotTypes.yearToYear:
+            selectorsToReset = matsCurveUtils.showYearToYearFace();
             break;
         case matsTypes.PlotTypes.map:
             selectorsToReset = matsCurveUtils.showMapFace();
@@ -120,7 +123,7 @@ const setDatesAndShowFace = function (plotType, dateSelector) {
         } else {
             return [0, selectorsToReset];
         }
-    } else {
+    } else if (dateSelector === 'curve-dates') {
         if (!oldDatesExist) {
             const tsDate = $('#controlButton-dates-value').text();
             matsParamUtils.setValueTextForParamName('curve-dates', tsDate);
@@ -128,6 +131,8 @@ const setDatesAndShowFace = function (plotType, dateSelector) {
         } else {
             return [0, selectorsToReset];
         }
+    } else {
+        return [0, selectorsToReset];
     }
 };
 
@@ -188,91 +193,97 @@ const changePlotType = function (plotType, selectorsToInitialize, dateSelector) 
 Template.plotType.events({
     'click .plot-type-TimeSeries': function (event) {
         const plotType = matsTypes.PlotTypes.timeSeries;
-        const selectorsToInitialize = ['statistic', 'threshold', 'scale', 'level', 'forecast-length', 'average', 'valid-time', 'truth', 'region-type', 'region'];
+        const selectorsToInitialize = ['statistic', 'threshold', 'scale', 'level', 'forecast-length', 'average', 'valid-time', 'truth', 'year', 'storm', 'region-type', 'region'];
         const dateSelector = 'dates';
         changePlotType(plotType, selectorsToInitialize, dateSelector);
     },
     'click .plot-type-Profile': function (event) {
         const plotType = matsTypes.PlotTypes.profile;
-        const selectorsToInitialize = ['statistic', 'threshold', 'scale', 'forecast-length', 'valid-time', 'truth', 'region-type', 'region'];
+        const selectorsToInitialize = ['statistic', 'threshold', 'scale', 'forecast-length', 'valid-time', 'truth', 'year', 'storm', 'region-type', 'region'];
         const dateSelector = 'curve-dates';
         changePlotType(plotType, selectorsToInitialize, dateSelector);
     },
     'click .plot-type-DieOff': function (event) {
         const plotType = matsTypes.PlotTypes.dieoff;
-        const selectorsToInitialize = ['statistic', 'threshold', 'scale', 'level', 'dieoff-type', 'valid-time', 'truth', 'region-type', 'region'];
+        const selectorsToInitialize = ['statistic', 'threshold', 'scale', 'level', 'dieoff-type', 'valid-time', 'truth', 'year', 'storm', 'region-type', 'region'];
         const dateSelector = 'curve-dates';
         changePlotType(plotType, selectorsToInitialize, dateSelector);
     },
     'click .plot-type-Threshold': function (event) {
         const plotType = matsTypes.PlotTypes.threshold;
-        const selectorsToInitialize = ['statistic', 'scale', 'level', 'forecast-length', 'valid-time', 'truth', 'region-type', 'region'];
+        const selectorsToInitialize = ['statistic', 'scale', 'level', 'forecast-length', 'valid-time', 'truth', 'year', 'storm', 'region-type', 'region'];
         const dateSelector = 'curve-dates';
         changePlotType(plotType, selectorsToInitialize, dateSelector);
     },
     'click .plot-type-ValidTime': function (event) {
         const plotType = matsTypes.PlotTypes.validtime;
-        const selectorsToInitialize = ['statistic', 'threshold', 'scale', 'level', 'forecast-length', 'truth', 'region-type', 'region'];
+        const selectorsToInitialize = ['statistic', 'threshold', 'scale', 'level', 'forecast-length', 'truth', 'year', 'storm', 'region-type', 'region'];
         const dateSelector = 'curve-dates';
         changePlotType(plotType, selectorsToInitialize, dateSelector);
     },
     'click .plot-type-GridScale': function (event) {
         const plotType = matsTypes.PlotTypes.gridscale;
-        const selectorsToInitialize = ['statistic', 'threshold', 'level', 'forecast-length', 'valid-time', 'truth', 'region-type', 'region'];
+        const selectorsToInitialize = ['statistic', 'threshold', 'level', 'forecast-length', 'valid-time', 'truth', 'year', 'storm', 'region-type', 'region'];
         const dateSelector = 'curve-dates';
         changePlotType(plotType, selectorsToInitialize, dateSelector);
     },
     'click .plot-type-DailyModelCycle': function (event) {
         const plotType = matsTypes.PlotTypes.dailyModelCycle;
-        const selectorsToInitialize = ['statistic', 'threshold', 'scale', 'level', 'utc-cycle-start', 'truth', 'region-type', 'region'];
+        const selectorsToInitialize = ['statistic', 'threshold', 'scale', 'level', 'utc-cycle-start', 'truth', 'year', 'storm', 'region-type', 'region'];
         const dateSelector = 'dates';
+        changePlotType(plotType, selectorsToInitialize, dateSelector);
+    },
+    'click .plot-type-YearToYear': function (event) {
+        const plotType = matsTypes.PlotTypes.yearToYear;
+        const selectorsToInitialize = ['statistic', 'threshold', 'scale', 'level', 'forecast-length', 'valid-time', 'truth', 'region-type', 'region'];
+        const dateSelector = 'none';
         changePlotType(plotType, selectorsToInitialize, dateSelector);
     },
     'click .plot-type-Reliability': function (event) {
         const plotType = matsTypes.PlotTypes.reliability;
-        const selectorsToInitialize = ['threshold', 'scale', 'level', 'forecast-length', 'valid-time', 'truth', 'region-type', 'region'];
+        const selectorsToInitialize = ['threshold', 'scale', 'level', 'forecast-length', 'valid-time', 'truth', 'year', 'storm', 'region-type', 'region'];
         const dateSelector = 'dates';
         changePlotType(plotType, selectorsToInitialize, dateSelector);
     },
     'click .plot-type-ROC': function (event) {
         const plotType = matsTypes.PlotTypes.roc;
-        const selectorsToInitialize = ['threshold', 'scale', 'level', 'forecast-length', 'valid-time', 'truth', 'region-type', 'region'];
+        const selectorsToInitialize = ['threshold', 'scale', 'level', 'forecast-length', 'valid-time', 'truth', 'year', 'storm', 'region-type', 'region'];
         const dateSelector = 'dates';
         changePlotType(plotType, selectorsToInitialize, dateSelector);
     },
     'click .plot-type-PerformanceDiagram': function (event) {
         const plotType = matsTypes.PlotTypes.performanceDiagram;
-        const selectorsToInitialize = ['threshold', 'scale', 'level', 'forecast-length', 'valid-time', 'truth', 'region-type', 'region'];
+        const selectorsToInitialize = ['threshold', 'scale', 'level', 'forecast-length', 'valid-time', 'truth', 'year', 'storm', 'region-type', 'region'];
         const dateSelector = 'dates';
         changePlotType(plotType, selectorsToInitialize, dateSelector);
     },
     'click .plot-type-Map': function (event) {
         const plotType = matsTypes.PlotTypes.map;
-        const selectorsToInitialize = ['statistic', 'threshold', 'scale', 'level', 'forecast-length', 'valid-time', 'truth'];
+        const selectorsToInitialize = ['statistic', 'threshold', 'scale', 'level', 'forecast-length', 'valid-time', 'truth', 'year', 'storm'];
         const dateSelector = 'dates';
         changePlotType(plotType, selectorsToInitialize, dateSelector);
     },
     'click .plot-type-Histogram': function (event) {
         const plotType = matsTypes.PlotTypes.histogram;
-        const selectorsToInitialize = ['statistic', 'threshold', 'scale', 'level', 'forecast-length', 'valid-time', 'truth', 'region-type', 'region'];
+        const selectorsToInitialize = ['statistic', 'threshold', 'scale', 'level', 'forecast-length', 'valid-time', 'truth', 'year', 'storm', 'region-type', 'region'];
         const dateSelector = 'curve-dates';
         changePlotType(plotType, selectorsToInitialize, dateSelector);
     },
     'click .plot-type-EnsembleHistogram': function (event) {
         const plotType = matsTypes.PlotTypes.ensembleHistogram;
-        const selectorsToInitialize = ['threshold', 'scale', 'level', 'forecast-length', 'valid-time', 'truth', 'region-type', 'region'];
+        const selectorsToInitialize = ['threshold', 'scale', 'level', 'forecast-length', 'valid-time', 'truth', 'year', 'storm', 'region-type', 'region'];
         const dateSelector = 'curve-dates';
         changePlotType(plotType, selectorsToInitialize, dateSelector);
     },
     'click .plot-type-Contour': function (event) {
         const plotType = matsTypes.PlotTypes.contour;
-        const selectorsToInitialize = ['statistic', 'threshold', 'scale', 'level', 'forecast-length', 'valid-time', 'truth', 'region-type', 'region', 'x-axis-parameter', 'y-axis-parameter'];
+        const selectorsToInitialize = ['statistic', 'threshold', 'scale', 'level', 'forecast-length', 'valid-time', 'truth', 'year', 'storm', 'region-type', 'region', 'x-axis-parameter', 'y-axis-parameter'];
         const dateSelector = 'dates';
         changePlotType(plotType, selectorsToInitialize, dateSelector);
     },
     'click .plot-type-ContourDiff': function (event) {
         const plotType = matsTypes.PlotTypes.contourDiff;
-        const selectorsToInitialize = ['statistic', 'threshold', 'scale', 'level', 'forecast-length', 'valid-time', 'truth', 'region-type', 'region', 'x-axis-parameter', 'y-axis-parameter'];
+        const selectorsToInitialize = ['statistic', 'threshold', 'scale', 'level', 'forecast-length', 'valid-time', 'truth', 'year', 'storm', 'region-type', 'region', 'x-axis-parameter', 'y-axis-parameter'];
         const dateSelector = 'dates';
         changePlotType(plotType, selectorsToInitialize, dateSelector);
     },

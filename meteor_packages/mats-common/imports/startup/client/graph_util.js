@@ -138,6 +138,7 @@ const width = function (plotType) {
             break;
         case matsTypes.PlotTypes.timeSeries:
         case matsTypes.PlotTypes.dailyModelCycle:
+        case matsTypes.PlotTypes.yearToYear:
         case matsTypes.PlotTypes.dieoff:
         case matsTypes.PlotTypes.threshold:
         case matsTypes.PlotTypes.validtime:
@@ -167,6 +168,7 @@ const height = function (plotType) {
             break;
         case matsTypes.PlotTypes.timeSeries:
         case matsTypes.PlotTypes.dailyModelCycle:
+        case matsTypes.PlotTypes.yearToYear:
         case matsTypes.PlotTypes.dieoff:
         case matsTypes.PlotTypes.threshold:
         case matsTypes.PlotTypes.validtime:
