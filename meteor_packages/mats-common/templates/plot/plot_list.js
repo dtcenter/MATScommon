@@ -243,6 +243,9 @@ Template.plotList.events({
                             case matsTypes.PlotTypes.dailyModelCycle:
                                 matsCurveUtils.showDailyModelCycleFace();
                                 break;
+                            case matsTypes.PlotTypes.yearToYear:
+                                matsCurveUtils.showYearToYearFace();
+                                break;
                             case matsTypes.PlotTypes.reliability:
                                 matsCurveUtils.showReliabilityFace();
                                 break;
@@ -452,6 +455,9 @@ Template.plotList.onRendered( function() {
             break;
         case matsTypes.PlotTypes.dailyModelCycle:
             matsCurveUtils.showDailyModelCycleFace();
+            break;
+        case matsTypes.PlotTypes.yearToYear:
+            matsCurveUtils.showYearToYearFace();
             break;
         case matsTypes.PlotTypes.reliability:
             matsCurveUtils.showReliabilityFace();

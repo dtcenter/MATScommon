@@ -74,6 +74,7 @@ Template.graph.helpers({
                 case matsTypes.PlotTypes.validtime:
                 case matsTypes.PlotTypes.gridscale:
                 case matsTypes.PlotTypes.dailyModelCycle:
+                case matsTypes.PlotTypes.yearToYear:
                 case matsTypes.PlotTypes.reliability:
                 case matsTypes.PlotTypes.roc:
                 case matsTypes.PlotTypes.performanceDiagram:
@@ -154,6 +155,7 @@ Template.graph.helpers({
                     case matsTypes.PlotTypes.validtime:
                     case matsTypes.PlotTypes.gridscale:
                     case matsTypes.PlotTypes.dailyModelCycle:
+                    case matsTypes.PlotTypes.yearToYear:
                     case matsTypes.PlotTypes.scatter2d:
                         localAnnotation = "<div id='" + dataset[i].curveId + "-annotation' style='color:" + dataset[i].annotateColor + "'>" + dataset[i].annotation + " </div>";
                         break;
@@ -269,6 +271,7 @@ Template.graph.helpers({
                 case matsTypes.PlotTypes.validtime:
                 case matsTypes.PlotTypes.gridscale:
                 case matsTypes.PlotTypes.dailyModelCycle:
+                case matsTypes.PlotTypes.yearToYear:
                     return "block";
                 case matsTypes.PlotTypes.reliability:
                 case matsTypes.PlotTypes.roc:
@@ -314,6 +317,8 @@ Template.graph.helpers({
                     return "GridScale: " + format;
                 case matsTypes.PlotTypes.dailyModelCycle:
                     return "DailyModelCycle " + p.dates + " : " + format;
+                case matsTypes.PlotTypes.yearToYear:
+                    return "Year to Year: " + format;
                 case matsTypes.PlotTypes.reliability:
                     return "Reliability: " + p.dates + " : " + format;
                 case matsTypes.PlotTypes.roc:
@@ -393,6 +398,7 @@ Template.graph.helpers({
             case matsTypes.PlotTypes.validtime:
             case matsTypes.PlotTypes.gridscale:
             case matsTypes.PlotTypes.dailyModelCycle:
+            case matsTypes.PlotTypes.yearToYear:
             case matsTypes.PlotTypes.reliability:
             case matsTypes.PlotTypes.roc:
             case matsTypes.PlotTypes.performanceDiagram:
@@ -488,6 +494,7 @@ Template.graph.helpers({
             case matsTypes.PlotTypes.validtime:
             case matsTypes.PlotTypes.gridscale:
             case matsTypes.PlotTypes.dailyModelCycle:
+            case matsTypes.PlotTypes.yearToYear:
             case matsTypes.PlotTypes.reliability:
             case matsTypes.PlotTypes.roc:
             case matsTypes.PlotTypes.performanceDiagram:
@@ -512,6 +519,7 @@ Template.graph.helpers({
             case matsTypes.PlotTypes.validtime:
             case matsTypes.PlotTypes.gridscale:
             case matsTypes.PlotTypes.dailyModelCycle:
+            case matsTypes.PlotTypes.yearToYear:
             case matsTypes.PlotTypes.reliability:
             case matsTypes.PlotTypes.roc:
             case matsTypes.PlotTypes.performanceDiagram:
@@ -538,6 +546,7 @@ Template.graph.helpers({
                 case matsTypes.PlotTypes.validtime:
                 case matsTypes.PlotTypes.gridscale:
                 case matsTypes.PlotTypes.dailyModelCycle:
+                case matsTypes.PlotTypes.yearToYear:
                     return "block";
                 case matsTypes.PlotTypes.reliability:
                 case matsTypes.PlotTypes.roc:
@@ -573,6 +582,7 @@ Template.graph.helpers({
             case matsTypes.PlotTypes.validtime:
             case matsTypes.PlotTypes.gridscale:
             case matsTypes.PlotTypes.dailyModelCycle:
+            case matsTypes.PlotTypes.yearToYear:
             case matsTypes.PlotTypes.scatter2d:
             case matsTypes.PlotTypes.map:
                 return 'block';
@@ -597,6 +607,7 @@ Template.graph.helpers({
             case matsTypes.PlotTypes.validtime:
             case matsTypes.PlotTypes.gridscale:
             case matsTypes.PlotTypes.dailyModelCycle:
+            case matsTypes.PlotTypes.yearToYear:
             case matsTypes.PlotTypes.reliability:
             case matsTypes.PlotTypes.roc:
             case matsTypes.PlotTypes.performanceDiagram:
@@ -622,7 +633,7 @@ Template.graph.helpers({
     xAxisControlsNumberVisibility: function () {
         Session.get('PlotResultsUpDated');
         var plotType = Session.get('plotType');
-        if (plotType === matsTypes.PlotTypes.timeSeries || plotType === matsTypes.PlotTypes.dailyModelCycle ||
+        if (plotType === matsTypes.PlotTypes.timeSeries || plotType === matsTypes.PlotTypes.dailyModelCycle || plotType === matsTypes.PlotTypes.yearToYear ||
             ((plotType === matsTypes.PlotTypes.contour || plotType === matsTypes.PlotTypes.contourDiff) && ($("#placeholder")[0].layout.xaxis.title.text).indexOf("Date") > -1)) {
             return "none";
         } else {
@@ -632,7 +643,7 @@ Template.graph.helpers({
     xAxisControlsTextVisibility: function () {
         Session.get('PlotResultsUpDated');
         var plotType = Session.get('plotType');
-        if (plotType === matsTypes.PlotTypes.timeSeries || plotType === matsTypes.PlotTypes.dailyModelCycle ||
+        if (plotType === matsTypes.PlotTypes.timeSeries || plotType === matsTypes.PlotTypes.dailyModelCycle || plotType === matsTypes.PlotTypes.yearToYear ||
             ((plotType === matsTypes.PlotTypes.contour || plotType === matsTypes.PlotTypes.contourDiff) && ($("#placeholder")[0].layout.xaxis.title.text).indexOf("Date") > -1)) {
             return "block";
         } else {
@@ -1457,6 +1468,7 @@ Template.graph.events({
                 case matsTypes.PlotTypes.validtime:
                 case matsTypes.PlotTypes.gridscale:
                 case matsTypes.PlotTypes.dailyModelCycle:
+                case matsTypes.PlotTypes.yearToYear:
                 case matsTypes.PlotTypes.reliability:
                 case matsTypes.PlotTypes.roc:
                 case matsTypes.PlotTypes.performanceDiagram:
@@ -1525,7 +1537,7 @@ Template.graph.events({
                 newOpts['xaxis' + (index === 0 ? "" : index + 1) + '.titlefont.size'] = elem.value;
             }
         });
-        if (plotType === matsTypes.PlotTypes.timeSeries || plotType === matsTypes.PlotTypes.dailyModelCycle ||
+        if (plotType === matsTypes.PlotTypes.timeSeries || plotType === matsTypes.PlotTypes.dailyModelCycle || plotType === matsTypes.PlotTypes.yearToYear ||
             ((plotType === matsTypes.PlotTypes.contour || plotType === matsTypes.PlotTypes.contourDiff) && ($("#placeholder")[0].layout.xaxis.title.text).indexOf("Date") > -1)) {
             $("input[id^=x][id$=AxisMinText]").get().forEach(function (elem, index) {
                 if (elem.value !== undefined && elem.value !== "") {
@@ -1681,6 +1693,7 @@ Template.graph.events({
                     case matsTypes.PlotTypes.validtime:
                     case matsTypes.PlotTypes.gridscale:
                     case matsTypes.PlotTypes.dailyModelCycle:
+                    case matsTypes.PlotTypes.yearToYear:
                     case matsTypes.PlotTypes.reliability:
                     case matsTypes.PlotTypes.roc:
                     case matsTypes.PlotTypes.performanceDiagram:

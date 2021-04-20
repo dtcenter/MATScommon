@@ -1367,6 +1367,8 @@ class QueryUtil:
                 ind_var = ind_var if ind_var % 10000 != 0 else ind_var / 10000
             elif plot_type == 'Threshold':
                 ind_var = float(row['thresh'].replace('=', '').replace('<', '').replace('>', ''))
+            elif plot_type == 'YearToYear':
+                ind_var = float(row['year'])
             else:
                 ind_var = int(row['avtime'])
 

@@ -41,6 +41,7 @@ Template.curveList.helpers({
                 case matsTypes.PlotTypes.validtime:
                 case matsTypes.PlotTypes.gridscale:
                 case matsTypes.PlotTypes.dailyModelCycle:
+                case matsTypes.PlotTypes.yearToYear:
                 case matsTypes.PlotTypes.map:
                 case matsTypes.PlotTypes.histogram:
                 case matsTypes.PlotTypes.ensembleHistogram:

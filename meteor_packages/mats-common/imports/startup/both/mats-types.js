@@ -47,6 +47,7 @@ var PlotTypes = {
     validtime: "ValidTime",
     gridscale: "GridScale",
     dailyModelCycle: "DailyModelCycle",
+    yearToYear: "YearToYear",
     reliability: "Reliability",
     roc: "ROC",
     performanceDiagram: "PerformanceDiagram",

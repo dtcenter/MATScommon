@@ -306,34 +306,34 @@ const _getFlattenedResultData = function (rk, p, np) {
             var dsiRealPageIndex = result.dsiRealPageIndex;
             var dsiTextDirection = result.dsiTextDirection;
             switch (plotType) {
+                /*
+                returnData is
+                {
+                    stats: {
+                                curve0: {label:someLabel, mean:someMean,sd:someSd....}
+                                curve1: {label:someLabel, mean:someMean,sd:someSd....}
+                                ...
+                            }
+                    data: {
+                                curve0: [
+                                            {time:someTime, stat: someStat, sd: someSd,....},
+                                            {time:someTime, stat: someStat, sd: someSd,....},
+                                            ....
+                                        ],
+                                curve1: [
+                                            {time:someTime, stat: someStat, sd: someSd,....},
+                                            {time:someTime, stat: someStat, sd: someSd,....},
+                                            ....
+                                        ],
+                                        ...
+                          }
+                }
+                 */
                 case matsTypes.PlotTypes.timeSeries:
                 case matsTypes.PlotTypes.dailyModelCycle:
                     var returnData = {};
                     returnData.stats = {};   // map of maps
                     returnData.data = {};  // map of arrays of maps
-                    /*
-                    returnData is
-                    {
-                        stats: {
-                                    curve0: {label:someLabel, mean:someMean,sd:someSd....}
-                                    curve1: {label:someLabel, mean:someMean,sd:someSd....}
-                                    ...
-                                }
-                        data: {
-                                    curve0: [
-                                                {time:someTime, stat: someStat, sd: someSd,....},
-                                                {time:someTime, stat: someStat, sd: someSd,....},
-                                                ....
-                                            ],
-                                    curve1: [
-                                                {time:someTime, stat: someStat, sd: someSd,....},
-                                                {time:someTime, stat: someStat, sd: someSd,....},
-                                                ....
-                                            ],
-                                            ...
-                              }
-                    }
-                     */
                     for (var ci = 0; ci < data.length; ci++) { // for each curve
                         // if the curve label is a reserved word do not process the curve (its a zero or max curve)
                         var reservedWords = Object.values(matsTypes.ReservedWords);
@@ -406,6 +406,7 @@ const _getFlattenedResultData = function (rk, p, np) {
                 case matsTypes.PlotTypes.threshold:
                 case matsTypes.PlotTypes.validtime:
                 case matsTypes.PlotTypes.gridscale:
+                case matsTypes.PlotTypes.yearToYear:
                     var labelSuffix;
                     switch (plotType) {
                         case matsTypes.PlotTypes.dieoff:
@@ -419,6 +420,9 @@ const _getFlattenedResultData = function (rk, p, np) {
                             break;
                         case matsTypes.PlotTypes.gridscale:
                             labelSuffix = " grid scale";
+                            break;
+                        case matsTypes.PlotTypes.yearToYear:
+                            labelSuffix = " year";
                             break;
                     }
                     var returnData = {};
@@ -526,7 +530,7 @@ const _getFlattenedResultData = function (rk, p, np) {
                             var curveDataElement = {};
                             curveDataElement[data[ci].label + ' threshold'] = data[ci].stats[cdi].threshold;
                             curveDataElement['probability of detection'] = data[ci].stats[cdi].pody;
-                            curveDataElement['false alarm ratio'] = data[ci].stats[cdi].fa;
+                            curveDataElement['success ratio'] = data[ci].stats[cdi].fa;
                             curveDataElement['oy'] = data[ci].stats[cdi].obs_y;
                             curveDataElement['on'] = data[ci].stats[cdi].obs_n;
                             curveData.push(curveDataElement);
