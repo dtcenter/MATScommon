@@ -170,12 +170,12 @@ const _checkMetaDataRefresh = async function () {
                             throw new Meteor.Error("resetApp: undefined DbType");
                     }
                 }
-                console.log("DB says metadata for table " + dbName + "." + tName + " was updated at " + updatedEpoch);
+                //console.log("DB says metadata for table " + dbName + "." + tName + " was updated at " + updatedEpoch);
                 if (updatedEpoch === undefined || updatedEpoch === null || updatedEpoch === "NULL" || updatedEpoch === Number.MAX_VALUE) {
                     // if time of last update isn't stored by the database (thanks, Aurora DB), refresh automatically
-                    console.log("_checkMetaDataRefresh - cannot find last update time for database: " + dbName + " and table: " + tName);
+                    //console.log("_checkMetaDataRefresh - cannot find last update time for database: " + dbName + " and table: " + tName);
                     refresh = true;
-                    console.log("FORCED Refreshing the metadata for table because updatedEpoch is undefined" + dbName + "." + tName + " : updated at " + updatedEpoch);
+                    //console.log("FORCED Refreshing the metadata for table because updatedEpoch is undefined" + dbName + "." + tName + " : updated at " + updatedEpoch);
                     break;
                 }
             } catch (e) {
@@ -183,15 +183,15 @@ const _checkMetaDataRefresh = async function () {
             }
             const lastRefreshedEpoch = moment.utc(lastRefreshed).valueOf() / 1000;
             const updatedEpochMoment = moment.utc(updatedEpoch).valueOf();
-            console.log("Epoch of when this app last refreshed metadata for table " + dbName + "." + tName + " is " + lastRefreshedEpoch);
-            console.log("Epoch of when the DB says table " + dbName + "." + tName + " was last updated is " + updatedEpochMoment);
+            //console.log("Epoch of when this app last refreshed metadata for table " + dbName + "." + tName + " is " + lastRefreshedEpoch);
+            //console.log("Epoch of when the DB says table " + dbName + "." + tName + " was last updated is " + updatedEpochMoment);
             if (lastRefreshedEpoch < updatedEpochMoment || updatedEpochMoment == 0) {
                 // Aurora DB sometimes returns a 0 for last updated. In that case, do refresh the metadata.
                 refresh = true;
-                console.log("Refreshing the metadata in the app selectors because table " + dbName + "." + tName + " was updated at " + moment.utc(updatedEpoch * 1000).format("YYYY-MM-DD HH:mm:ss") + " while the metadata was last refreshed at " + moment.utc(lastRefreshedEpoch * 1000).format("YYYY-MM-DD HH:mm:ss"));
+                //console.log("Refreshing the metadata in the app selectors because table " + dbName + "." + tName + " was updated at " + moment.utc(updatedEpoch * 1000).format("YYYY-MM-DD HH:mm:ss") + " while the metadata was last refreshed at " + moment.utc(lastRefreshedEpoch * 1000).format("YYYY-MM-DD HH:mm:ss"));
                 break;
             } else {
-                console.log("NOT Refreshing the metadata for table " + dbName + "." + tName + " : updated at " + moment.utc(updatedEpoch * 1000).format("YYYY-MM-DD HH:mm:ss") + " : metadata last refreshed at " + moment.utc(lastRefreshedEpoch * 1000).format("YYYY-MM-DD HH:mm:ss"));
+                //console.log("NOT Refreshing the metadata for table " + dbName + "." + tName + " : updated at " + moment.utc(updatedEpoch * 1000).format("YYYY-MM-DD HH:mm:ss") + " : metadata last refreshed at " + moment.utc(lastRefreshedEpoch * 1000).format("YYYY-MM-DD HH:mm:ss"));
             }
         }
         if (refresh === true) {
@@ -1480,7 +1480,7 @@ const refreshMetaData = new ValidatedMethod({
     run() {
         if (Meteor.isServer) {
             try {
-                console.log("GUI asked to refresh metadata");
+                //console.log("GUI asked to refresh metadata");
                 _checkMetaDataRefresh();
             } catch (e) {
                 console.log(e);
@@ -1707,7 +1707,7 @@ const resetApp = async function (appRef) {
                         global[poolName].on('connection', function (connection) {
                             connection.query('set group_concat_max_len = 4294967295');
                             connection.query('set session wait_timeout = ' + connectionTimeout);
-                            console.log("opening new " + poolName + " connection");
+                            //("opening new " + poolName + " connection");
                         });
                         break;
                     case matsTypes.DbTypes.couchbase:

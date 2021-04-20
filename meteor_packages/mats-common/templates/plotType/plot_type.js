@@ -25,18 +25,6 @@ Template.plotType.helpers({
         } else {
             return "";
         }
-    },
-    loadingMetadataVisibility: function () {    // let users know if metadata is updating
-        if (matsCollections.Settings === undefined || matsCollections.Settings.findOne({}, {fields: {loadingMetadata: 1}}) === undefined) {
-            return "none";
-        } else {
-            const loadingMetadata = matsCollections.Settings.findOne({}, {fields: {loadingMetadata: 1}}).loadingMetadata;
-            if (loadingMetadata) {  // loadingMetadata should be a boolean
-                return "block";
-            } else {
-                return "none";
-            }
-        }
     }
 });
 
