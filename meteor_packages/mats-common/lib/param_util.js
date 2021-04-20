@@ -4,7 +4,6 @@
 
 import {matsTypes} from 'meteor/randyp:mats-common';
 import {matsCollections} from 'meteor/randyp:mats-common';
-import {matsCurveUtils} from 'meteor/randyp:mats-common';
 import {matsPlotUtils} from 'meteor/randyp:mats-common';
 import {moment} from 'meteor/momentjs:moment'
 

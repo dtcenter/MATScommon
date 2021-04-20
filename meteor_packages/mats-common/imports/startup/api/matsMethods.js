@@ -5,7 +5,7 @@
 import {Meteor} from "meteor/meteor";
 import {ValidatedMethod} from 'meteor/mdg:validated-method';
 import {SimpleSchema} from 'meteor/aldeed:simple-schema';
-import {matsCache, matsCollections, matsDataQueryUtils, matsDataUtils, matsTypes} from 'meteor/randyp:mats-common';
+import {matsCache, matsCollections, matsDataQueryUtils, matsCouchbaseUtils, matsDataUtils, matsTypes} from 'meteor/randyp:mats-common';
 import {mysql} from 'meteor/pcel:mysql';
 import {url} from 'url';
 import {Mongo} from 'meteor/mongo';
@@ -125,7 +125,7 @@ if (Meteor.isServer) {
 }
 
 // private - used to see if the main page needs to update its selectors
-const _checkMetaDataRefresh = function () {
+const _checkMetaDataRefresh = async function () {
     // This routine compares the current last modified time of the tables (MYSQL) or documents (Couchbase)
     // used for curveParameter metadata with the last update time to determine if an update is necessary.
     // We really only do this for Curveparams
@@ -141,7 +141,7 @@ const _checkMetaDataRefresh = function () {
     var refresh = false;
     const tableUpdates = metaDataTableUpdates.find({}).fetch();
     const settings = matsCollections.Settings.findOne();
-    const type = settings.dbType;
+    const dbType = settings.dbType;
     for (var tui = 0; tui < tableUpdates.length; tui++) {
         var id = tableUpdates[tui]._id;
         var poolName = tableUpdates[tui].pool;
@@ -153,7 +153,7 @@ const _checkMetaDataRefresh = function () {
             var tName = tableNames[ti];
             try {
                 if (Meteor.isServer) {
-                    switch(type) {
+                    switch(dbType) {
                         case matsTypes.DbTypes.mysql:
                             var rows = matsDataQueryUtils.simplePoolQueryWrapSynchronous(global[poolName], "SELECT UNIX_TIMESTAMP(UPDATE_TIME)" +
                                 "    FROM   information_schema.tables" +
@@ -163,7 +163,7 @@ const _checkMetaDataRefresh = function () {
                             break;
                         case matsTypes.DbTypes.couchbase:
                             // the tName for couchbase is supposed to be the document id
-                            var doc = cbPool.getDocumentByKey(tName);
+                            var doc = await cbPool.getCB(tName);
                             updatedEpoch = doc.updated;
                             break;
                         default:
@@ -1594,18 +1594,18 @@ const applySettingsData = new ValidatedMethod({
 
 // makes sure all of the parameters display appropriate selections in relation to one another
 // for default settings ...
-const resetApp = function (appRef) {
+const resetApp = async function (appRef) {
     if (Meteor.isServer) {
         var fse = require('fs-extra');
         const metaDataTableRecords = appRef.appMdr;
         const appPools = appRef.appPools;
         const type = appRef.appType;
-        const dbType = appRef.dbType ? appRef.dbType : matsTypes.dbType.mysql;
+        const dbType = appRef.dbType ? appRef.dbType : matsTypes.DbTypes.mysql;
         const appName = appRef.app;
         const appTitle = appRef.title;
         const appGroup = appRef.group;
         var color;
-        switch (type) {
+        switch (dbType) {
             case matsTypes.AppTypes.mats:
                 if (dbType == matsTypes.DbTypes.mysql) {
                     color = "#3366bb";
@@ -1712,12 +1712,11 @@ const resetApp = function (appRef) {
                         break;
                     case matsTypes.DbTypes.couchbase:
                         //simple couchbase test
-                        global[poolName].query("select NOW_MILLIS() as time;");
+                        const time = await cbPool.queryCB("select NOW_MILLIS() as time;")
                         break;
                     default:
                         throw new Meteor.Error("reset app: undefined dbType:" + dbType);
                 }
-
             } catch (e) {
                 console.log(poolName + ":  not initialized-- could not open connection: Error:" + e.message);
                 Meteor.settings.public.undefinedRoles = Meteor.settings.public.undefinedRoles == undefined ? [] : Meteor.settings.public.undefinedRoles == undefined;
@@ -1894,38 +1893,54 @@ const testGetTables = new ValidatedMethod({
             password: {type: String},
             database: {type: String}
         }).validator(),
-    run(params) {
+    async run(params) {
         if (Meteor.isServer) {
-            const Future = require('fibers/future');
-            const queryWrap = Future.wrap(function (callback) {
-                const connection = mysql.createConnection({
-                    host: params.host,
-                    port: params.port,
-                    user: params.user,
-                    password: params.password,
-                    database: params.database
-                });
-                connection.query("show tables;", function (err, result) {
-                    if (err || result === undefined) {
-                        //return callback(err,null);
-                        return callback(err, null);
-                    }
-                    const tables = result.map(function (a) {
-                        return a;
-                    });
+            const settings = matsCollections.Settings.findOne();
+            const dbType = settings.dbType;
+            switch (dbtype) {
+                 case matsTypes.DbTypes.mysql:
+                    const Future = require('fibers/future');
+                    const queryWrap = Future.wrap(function (callback) {
+                        const connection = mysql.createConnection({
+                            host: params.host,
+                            port: params.port,
+                            user: params.user,
+                            password: params.password,
+                            database: params.database
+                        });
+                        connection.query("show tables;", function (err, result) {
+                            if (err || result === undefined) {
+                                //return callback(err,null);
+                                return callback(err, null);
+                            }
+                            const tables = result.map(function (a) {
+                                return a;
+                            });
 
-                    return callback(err, tables);
-                });
-                connection.end(function (err) {
-                    if (err) {
-                        console.log("testGetTables cannot end connection");
+                            return callback(err, tables);
+                        });
+                        connection.end(function (err) {
+                            if (err) {
+                                console.log("testGetTables cannot end connection");
+                            }
+                        });
+                    });
+                    try {
+                        return queryWrap().wait();
+                    } catch (e) {
+                        throw new Meteor.Error(e.message);
                     }
-                });
-            });
-            try {
-                return queryWrap().wait();
-            } catch (e) {
-                throw new Meteor.Error(e.message);
+                    break;
+                case matsTypes.DbTypes.couchbase:
+                    const cbUtilities = new matsCouchbaseUtils.CBUtilities(params.host, params.bucket, params.user, params.password);
+                    try {
+                        const result = await cbUtilities.queryCB("select NOW_MILLIS() as time");
+                    } catch (err) {
+                        throw new Meteor.Error(e.message);
+                    }
+                    break;
+                default:
+                    throw new Meteor.Error("testGetTables: undefined dbType:" + dbType);
             }
         }
     }

@@ -1,4 +1,4 @@
-const couchbase = require("couchbase");
+import {Meteor} from "meteor/meteor";
 class CBUtilities {
     constructor(host, bucketName, user, pwd) {
         this.host = host;
@@ -10,20 +10,28 @@ class CBUtilities {
 
     const
     getConnection = async () => {
-        if (this.conn == undefined || this.conn.cluster == undefined) {
-            const cluster = await couchbase.connect("couchbase://" + this.host, {
-                username: this.user,
-                password: this.pwd
-            });
-            const bucket = cluster.bucket(this.bucketName);
-            const collection = bucket.defaultCollection();
-            this.conn = {cluster: cluster, bucket: bucket, collection: collection};
+        // DO NOT require couchbase at the top of the file, the client breaks if it gets couchbase included into it.
+        const couchbase = require("couchbase");
+        try {
+            if (this.conn == undefined || this.conn.cluster == undefined) {
+                const cluster = await couchbase.connect("couchbase://" + this.host, {
+                    username: this.user,
+                    password: this.pwd
+                });
+                const bucket = cluster.bucket(this.bucketName);
+                const collection = bucket.defaultCollection();
+                this.conn = {cluster: cluster, bucket: bucket, collection: collection};
+            }
+            return this.conn;
+        } catch (err) {
+            console.log("CBUtilities.getConnection ERROR: " + err);
+            throw new Meteor.Error("CBUtilities.getConnection ERROR: " + err);
         }
-        return this.conn;
     };
 
     const
     upsertCB = async (key, doc) => {
+        const couchbase = require("couchbase");
         try {
             const conn = await this.getConnection();
             const result = await conn.collection.upsert(key, doc, {
@@ -33,55 +41,72 @@ class CBUtilities {
             return result;
         } catch (err) {
             console.log("upsertCB ERROR: ", err);
-            throw new Error("upsertCB ERROR: " + err);
+            throw new Meteor.Error("upsertCB ERROR: " + err);
         }
         return ret;
     };
 
     const
     removeCB = async (key) => {
+        const couchbase = require("couchbase");
         try {
             const conn = await this.getConnection();
             const result = await conn.collection.remove(key);
             return result;
         } catch (err) {
             console.log("removeCB ERROR: ", err);
-            throw new Error("removeCB ERROR: " + err);
+            throw new Meteor.Error("removeCB ERROR: " + err);
         }
     };
 
     const
     getCB = async (key) => {
+        const couchbase = require("couchbase");
         try {
-
             const conn = await this.getConnection();
             const result = await conn.collection.get(key);
             return result;
         } catch (err) {
             console.log("getCB ERROR: ", err);
-            throw new Error("getCB ERROR: " + err);
+            throw new Meteor.Error("getCB ERROR: " + err);
         }
     };
 
     const
     queryCB = async (statement) => {
+        const couchbase = require("couchbase");
         try {
             const conn = await this.getConnection();
             const result = await conn.cluster.query(statement);
-            return result;
+            return result.rows;
         } catch (err) {
             console.log("queryCB ERROR: ", err);
-            throw new Error("queryCB ERROR: " + err);
+            throw new Meteor.Error("queryCB ERROR: " + err);
         }
     };
 
+    const
+    searchStationsByBoundingBox = async (topleft_lon, topleft_lat, bottomright_lon, bottomright_lat) => {
+        const couchbase = require("couchbase");
+        const index = 'station_geo';
+        try {
+            const conn = await this.getConnection();
+            var geoBoundingBoxQuery = couchbase.SearchQuery.geoBoundingBox(topleft_lon, topleft_lat, bottomright_lon, bottomright_lat);
+            var results = await conn.cluster.searchQuery(index, geoBoundingBoxQuery, {fields: ["*"], limit: 10000});
+            return results.rows;
+        } catch (err) {
+            console.log("searchStationsByBoundingBox ERROR: ", err);
+            throw new Meteor.Error("searchStationsByBoundingBox ERROR: " + err);
+        }
+    }
 }
-const test = async() => {
+
+const test = async () => {
     const host = "adb-cb1.gsd.esrl.noaa.gov";
     const bucketName = "travel-sample";
     const user = "auser";
     const pwd = "apassword";
-    cbUtilities = new CBUtilities(host, bucketName, user, pwd);
+    const cbUtilities = new CBUtilities(host, bucketName, user, pwd);
 
     const airline = {
         type: "airline",
@@ -110,7 +135,7 @@ const test = async() => {
 }
 
 export default matsCouchbaseUtils = {
-    CBUtilities: CBUtilities.constructor,
-    test:test
+    CBUtilities: CBUtilities,
+    test: test
 }
 

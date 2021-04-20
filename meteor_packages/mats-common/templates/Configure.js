@@ -146,7 +146,8 @@ Template.Configure.events({
             port: document.getElementById(roleStr + '-port').value,
             user: document.getElementById(roleStr + '-user').value,
             password: document.getElementById(roleStr + '-password').value,
-            database: document.getElementById(roleStr + '-database').value
+            database: document.getElementById(roleStr + '-database').value,
+            database_type: document.getElementById(roleStr + '-database_type').value
         }, function (error, result) {
             document.getElementById(role + "-spinner").style.display = "none";
             if(error) {

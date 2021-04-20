@@ -5,146 +5,6 @@
 import {matsDataUtils, matsTypes} from 'meteor/randyp:mats-common';
 import {Meteor} from "meteor/meteor";
 
-const Future = require('fibers/future');
-const couchbase = require("couchbase");
-
-class CBUtilities {
-    constructor(host, bucketName, user, pwd) {
-        if (!CBUtilities.instance) {
-            this._host = host;
-            this._bucketName = bucketName;
-            this._user = user;
-            this._pwd = pwd;
-            this._conn = {};
-            CBUtilities.instance = this;
-        }
-        return CBUtilities.instance;
-    };
-    getConnection(){
-        var cluster;
-        var bucket;
-        var collection;
-        var bName = this._bucketName; // make this local to use in callback
-        var aFuture = new Future();
-        couchbase.connect("couchbase://" + this._host, {
-            username: this._user,
-            password: this._pwd
-        }, function (err, aCluster) {
-            if (err) {
-                console.log(err);
-                aFuture.throw (new Error("CBUtilities.connect: error: " + err));
-            } else {
-                cluster = aCluster;
-                // get a reference to our bucket
-                bucket = cluster.bucket(bName);
-                // get a reference to the default collection
-                collection = bucket.defaultCollection();
-                aFuture.return();
-            }
-            try {
-                aFuture.wait();
-            }
-            catch(err) {
-                throw new Meteor.Error( err);
-            }
-        });
-
-        aFuture.wait();
-        this._conn.cluster = cluster;
-        this._conn.collection = collection;
-        this._conn.bucket = bucket;
-    };
-
-    upsertDocument(key, doc){
-        // We will probably never need this (read only client) but I wanted to save
-        // how to do it
-        var ret;
-        var aFuture = new Future();
-        var results = this._conn.collection.upsert(key, doc, function (err, result) {
-            if (err) {
-                console.error("CBUtilities.upsertDocument error: " + err);
-                aFuture.throw (new Error("CBUtilities.upsertDocument error: " + err));
-            } else {
-                ret = result.rows;
-                aFuture.return();
-            }
-        });
-        try {
-            aFuture.wait();
-        }
-        catch(err) {
-            throw new Meteor.Error( err);
-        }
-        return ret;
-    };
-
-    // get document function
-    getDocumentByKey(key){
-        var ret;
-        var aFuture = new Future();
-        var results = this._conn.collection.get(key, function (err, result) {
-            if (err) {
-                console.error("CBUtilities.getDocumentByKey error: " + err);
-                aFuture.throw (new Error("CBUtilities.getDocumentByKey error: " + err));
-            } else {
-                ret = result.content;
-                aFuture.return();
-            }
-        });
-        try {
-            aFuture.wait();
-        }
-        catch(err) {
-            throw new Meteor.Error( err);
-        }
-        return ret;
-    };
-
-    query(statement){
-        var ret;
-        var aFuture = new Future();
-        var results = this._conn.cluster.query(statement, function (err, result) {
-            if (err) {
-                console.error("CBUtilities.query error: " + err);
-                aFuture.throw (new Error("CBUtilities.query error: " + err));
-            } else {
-                ret = result.rows;
-                aFuture.return();
-            }
-        });
-        try {
-                aFuture.wait();
-            }
-        catch(err) {
-            throw new Meteor.Error( err);
-        }
-        return ret;
-    };
-
-    searchStationsByBoundingBox(topleft_lon, topleft_lat, bottomright_lon, bottomright_lat){
-        var ret;
-        const index = 'station_geo';
-        var aFuture = new Future();
-        var geoBoundingBoxQuery = couchbase.SearchQuery.geoBoundingBox(topleft_lon, topleft_lat, bottomright_lon, bottomright_lat);
-        var results = this._conn.cluster.searchQuery(index, geoBoundingBoxQuery, {fields:["*"], limit:10000}, function (err, result, meta) {
-            if (err) {
-                console.error("CBUtilities.searchStationsByBoundingBox error: " + err);
-                aFuture.throw (new Error("CBUtilities.searchStationsByBoundingBox error: " + err));
-            } else {
-                ret = result.rows;
-                aFuture.return();
-            }
-        });
-        try {
-            aFuture.wait();
-        }
-        catch(err) {
-            throw new Meteor.Error( err);
-        }
-        return ret;
-    };
-};
-
 // utility to get the cadence for a particular model, so that the query function
 // knows where to include null points for missing data.
 const getModelCadence = function (pool, dataSource, startDate, endDate) {
@@ -1705,14 +1565,15 @@ const parseQueryDataContour = function (rows, d) {
 };
 
 export default matsDataQueryUtils = {
+
     simplePoolQueryWrapSynchronous: simplePoolQueryWrapSynchronous,
     queryDBPython: queryDBPython,
     queryDBTimeSeries: queryDBTimeSeries,
     queryDBSpecialtyCurve: queryDBSpecialtyCurve,
     queryDBMap: queryDBMap,
     queryDBMapCTC: queryDBMapCTC,
-    queryDBContour: queryDBContour,
-    CBUtilities: CBUtilities
+    queryDBContour: queryDBContour
+
 }
 
 

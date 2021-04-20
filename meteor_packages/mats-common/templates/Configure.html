@@ -110,9 +110,17 @@
                                 </div>
 
                                 <div class="form-group-sm row">
-                                    <label for="database" class="col-sm-2 col-form-label">Database:</label>
+                                    <label for="database" class="col-sm-2 col-form-label">Database or Bucket:</label>
                                     <div class="col-sm-4">
                                         <input id="{{role}}-database" class="form-control input-sm" type="text" name="database" placeholder=""/>
+                                    </div>
+                                </div>
+
+                                <div class="form-group-sm row">
+                                    <label for="database" class="col-sm-2 col-form-label">Database Type:</label>
+                                    <div class="col-sm-4">
+                                        <input id="{{role}}-databaseType-mysql" class="form-control database-type" type=radio name="database-type" mysql value="mysql" checked={{checked}} /> <label style="font-size: large;">mysql</label>
+                                        <input id="{{role}}-databaseType-couchbase" class="form-control database-type" type=radio name="database-type" couchbase value="couchbase" /> <label style="font-size: large;">couchbase</label>
                                     </div>
                                 </div>
 

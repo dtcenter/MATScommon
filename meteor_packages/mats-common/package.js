@@ -70,6 +70,7 @@ Package.onUse(function (api) {
     api.export("matsPlotUtils", ['client', 'server']);
     api.export("matsDataUtils", ['server']);
     api.export("matsDataQueryUtils", ['server']);
+    api.export("matsCouchbaseUtils", ['server']);
     api.export("matsDataDiffUtils", ['server']);
     api.export("matsDataMatchUtils", ['server']);
     api.export("matsDataCurveOpsUtils", ['server']);
@@ -105,6 +106,7 @@ Package.onUse(function (api) {
     //server
     api.addFiles('imports/startup/server/data_util.js');
     api.addFiles('imports/startup/server/data_query_util.js');
+    api.addFiles('imports/startup/server/cb_utilities.js');
     api.addFiles('imports/startup/server/data_diff_util.js');
     api.addFiles('imports/startup/server/data_match_util.js');
     api.addFiles('imports/startup/server/data_curve_ops_util.js');

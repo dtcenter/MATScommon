@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import {matsCollections, matsMethods, matsParamUtils, matsPlotUtils, matsTypes} from 'meteor/randyp:mats-common';
+import {matsCollections, matsParamUtils, matsPlotUtils, matsTypes} from 'meteor/randyp:mats-common';
 
 // method to refresh the peers of the current selector
 const refreshPeer = function (event, param) {
