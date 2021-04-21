@@ -206,7 +206,7 @@ Template.textOutput.helpers({
             case matsTypes.PlotTypes.performanceDiagram:
                 header += "<th>" + curve.label + " threshold</th>\
                         <th>probability of detection</th>\
-                        <th>false alarm ratio</th>\
+                        <th>success ratio</th>\
                         ";
                 break;
             case matsTypes.PlotTypes.map:
@@ -358,7 +358,7 @@ Template.textOutput.helpers({
             case matsTypes.PlotTypes.performanceDiagram:
                 line += "<td>" + element[labelKey += " threshold"] + "</td>" +
                     "<td>" + (element['probability of detection'] != undefined && element['probability of detection'] !== null ? element['probability of detection'].toPrecision(4) : fillStr) + "</td>" +
-                    "<td>" + (element['false alarm ratio'] != undefined && element['false alarm ratio'] !== null ? element['false alarm ratio'] : fillStr) + "</td>";
+                    "<td>" + (element['success ratio'] != undefined && element['success ratio'] !== null ? element['success ratio'] : fillStr) + "</td>";
                 break;
             case matsTypes.PlotTypes.map:
                 line += "<td>" + element["Site Name"] + "</td>" +
