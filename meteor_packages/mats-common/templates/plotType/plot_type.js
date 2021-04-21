@@ -253,7 +253,7 @@ Template.plotType.events({
     },
     'click .plot-type-PerformanceDiagram': function (event) {
         const plotType = matsTypes.PlotTypes.performanceDiagram;
-        const selectorsToInitialize = ['threshold', 'scale', 'level', 'forecast-length', 'valid-time', 'truth', 'year', 'storm', 'region-type', 'region'];
+        const selectorsToInitialize = ['threshold', 'scale', 'level', 'forecast-length', 'valid-time', 'truth', 'year', 'storm', 'region-type', 'region', 'bin-parameter'];
         const dateSelector = 'dates';
         changePlotType(plotType, selectorsToInitialize, dateSelector);
     },

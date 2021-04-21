@@ -204,7 +204,7 @@ Template.textOutput.helpers({
                         ";
                 break;
             case matsTypes.PlotTypes.performanceDiagram:
-                header += "<th>" + curve.label + " threshold</th>\
+                header += "<th>" + curve.label + " bin threshold</th>\
                         <th>probability of detection</th>\
                         <th>success ratio</th>\
                         ";
@@ -356,7 +356,7 @@ Template.textOutput.helpers({
                     "<td>" + (element['probability of false detection'] != undefined && element['probability of false detection'] !== null ? element['probability of false detection'] : fillStr) + "</td>";
                 break;
             case matsTypes.PlotTypes.performanceDiagram:
-                line += "<td>" + element[labelKey += " threshold"] + "</td>" +
+                line += "<td>" + element[labelKey += " bin threshold"] + "</td>" +
                     "<td>" + (element['probability of detection'] != undefined && element['probability of detection'] !== null ? element['probability of detection'].toPrecision(4) : fillStr) + "</td>" +
                     "<td>" + (element['success ratio'] != undefined && element['success ratio'] !== null ? element['success ratio'] : fillStr) + "</td>";
                 break;
