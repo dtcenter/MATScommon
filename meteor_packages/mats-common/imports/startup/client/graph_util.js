@@ -137,12 +137,12 @@ const width = function (plotType) {
             return squareWidthHeight();
             break;
         case matsTypes.PlotTypes.timeSeries:
-        case matsTypes.PlotTypes.dailyModelCycle:
-        case matsTypes.PlotTypes.yearToYear:
         case matsTypes.PlotTypes.dieoff:
         case matsTypes.PlotTypes.threshold:
         case matsTypes.PlotTypes.validtime:
         case matsTypes.PlotTypes.gridscale:
+        case matsTypes.PlotTypes.dailyModelCycle:
+        case matsTypes.PlotTypes.yearToYear:
         case matsTypes.PlotTypes.map:
         case matsTypes.PlotTypes.histogram:
         case matsTypes.PlotTypes.ensembleHistogram:
@@ -167,12 +167,12 @@ const height = function (plotType) {
             return squareWidthHeight();
             break;
         case matsTypes.PlotTypes.timeSeries:
-        case matsTypes.PlotTypes.dailyModelCycle:
-        case matsTypes.PlotTypes.yearToYear:
         case matsTypes.PlotTypes.dieoff:
         case matsTypes.PlotTypes.threshold:
         case matsTypes.PlotTypes.validtime:
         case matsTypes.PlotTypes.gridscale:
+        case matsTypes.PlotTypes.dailyModelCycle:
+        case matsTypes.PlotTypes.yearToYear:
         case matsTypes.PlotTypes.map:
         case matsTypes.PlotTypes.histogram:
         case matsTypes.PlotTypes.ensembleHistogram:

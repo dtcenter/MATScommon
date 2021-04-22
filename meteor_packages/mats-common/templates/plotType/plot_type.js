@@ -89,9 +89,6 @@ const setDatesAndShowFace = function (plotType, dateSelector) {
         case matsTypes.PlotTypes.yearToYear:
             selectorsToReset = matsCurveUtils.showYearToYearFace();
             break;
-        case matsTypes.PlotTypes.map:
-            selectorsToReset = matsCurveUtils.showMapFace();
-            break;
         case matsTypes.PlotTypes.reliability:
             selectorsToReset = matsCurveUtils.showReliabilityFace();
             break;
@@ -100,6 +97,9 @@ const setDatesAndShowFace = function (plotType, dateSelector) {
             break;
         case matsTypes.PlotTypes.performanceDiagram:
             selectorsToReset = matsCurveUtils.showPerformanceDiagramFace();
+            break;
+        case matsTypes.PlotTypes.map:
+            selectorsToReset = matsCurveUtils.showMapFace();
             break;
         case matsTypes.PlotTypes.histogram:
             selectorsToReset = matsCurveUtils.showHistogramFace();

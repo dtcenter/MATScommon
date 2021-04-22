@@ -330,15 +330,15 @@ Template.textOutput.helpers({
                     "<td>" + (element['std dev'] != undefined && element['std dev'] !== null ? element['std dev'].toPrecision(4) : fillStr) + "</td>" +
                     "<td>" + (('n' in element) ? element['n'] : fillStr) + "</td>";
                 break;
-            case matsTypes.PlotTypes.yearToYear:
-                line += "<td>" + element[labelKey += " year"] + "</td>" +
+            case matsTypes.PlotTypes.dailyModelCycle:
+                line += "<td>" + element[labelKey += " time"] + "</td>" +
                     "<td>" + (element['raw stat from query'] != undefined && element['raw stat from query'] !== null ? element['raw stat from query'].toPrecision(4) : fillStr) + "</td>" +
                     "<td>" + (element['mean stat'] != undefined && element['mean stat'] !== null ? element['mean stat'].toPrecision(4) : fillStr) + "</td>" +
                     "<td>" + (element['std dev'] != undefined && element['std dev'] !== null ? element['std dev'].toPrecision(4) : fillStr) + "</td>" +
                     "<td>" + (('n' in element) ? element['n'] : fillStr) + "</td>";
                 break;
-            case matsTypes.PlotTypes.dailyModelCycle:
-                line += "<td>" + element[labelKey += " time"] + "</td>" +
+            case matsTypes.PlotTypes.yearToYear:
+                line += "<td>" + element[labelKey += " year"] + "</td>" +
                     "<td>" + (element['raw stat from query'] != undefined && element['raw stat from query'] !== null ? element['raw stat from query'].toPrecision(4) : fillStr) + "</td>" +
                     "<td>" + (element['mean stat'] != undefined && element['mean stat'] !== null ? element['mean stat'].toPrecision(4) : fillStr) + "</td>" +
                     "<td>" + (element['std dev'] != undefined && element['std dev'] !== null ? element['std dev'].toPrecision(4) : fillStr) + "</td>" +
