@@ -454,7 +454,7 @@ const showTimeseriesFace = function () {
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
-        'bin-parameter': 'Init UTC hour'
+        'bin-parameter': 'Valid Date'
     };
     setSelectorVisibility(plotType, faceOptions, selectorsToReset);
     return selectorsToReset;
@@ -494,7 +494,7 @@ const showProfileFace = function () {
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
-        'bin-parameter': 'Init UTC hour'
+        'bin-parameter': 'Valid Date'
     };
     setSelectorVisibility(plotType, faceOptions, selectorsToReset);
     return selectorsToReset;
@@ -534,7 +534,7 @@ const showDieOffFace = function () {
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
-        'bin-parameter': 'Init UTC hour'
+        'bin-parameter': 'Valid Date'
     };
     setSelectorVisibility(plotType, faceOptions, selectorsToReset);
     return selectorsToReset;
@@ -575,7 +575,7 @@ const showThresholdFace = function () {
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
-        'bin-parameter': 'Init UTC hour'
+        'bin-parameter': 'Valid Date'
     };
     // ctc thresholds need to have the region be in predefined mode
     if (appName !== undefined && (appName.includes("ceiling") || appName.includes("visibility")) && matsParamUtils.getParameterForName('region-type') !== undefined) {
@@ -620,7 +620,7 @@ const showValidTimeFace = function () {
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
-        'bin-parameter': 'Init UTC hour'
+        'bin-parameter': 'Valid Date'
     };
     setSelectorVisibility(plotType, faceOptions, selectorsToReset);
     return selectorsToReset;
@@ -660,7 +660,7 @@ const showGridScaleFace = function () {
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
-        'bin-parameter': 'Init UTC hour'
+        'bin-parameter': 'Valid Date'
     };
     setSelectorVisibility(plotType, faceOptions, selectorsToReset);
     return selectorsToReset;
@@ -700,7 +700,7 @@ const showDailyModelCycleFace = function () {
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff for a specified UTC cycle init hour',
-        'bin-parameter': 'Init UTC hour'
+        'bin-parameter': 'Valid Date'
     };
     setSelectorVisibility(plotType, faceOptions, selectorsToReset);
     return selectorsToReset;
@@ -740,7 +740,7 @@ const showYearToYearFace = function () {
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
-        'bin-parameter': 'Init UTC hour'
+        'bin-parameter': 'Valid Date'
     };
     setSelectorVisibility(plotType, faceOptions, selectorsToReset);
     return selectorsToReset;
@@ -780,7 +780,7 @@ const showReliabilityFace = function () {
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
-        'bin-parameter': 'Init UTC hour'
+        'bin-parameter': 'Valid Date'
     };
     setSelectorVisibility(plotType, faceOptions, selectorsToReset);
     return selectorsToReset;
@@ -820,7 +820,7 @@ const showROCFace = function () {
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
-        'bin-parameter': 'Init UTC hour'
+        'bin-parameter': 'Valid Date'
     };
     setSelectorVisibility(plotType, faceOptions, selectorsToReset);
     return selectorsToReset;
@@ -861,7 +861,7 @@ const showPerformanceDiagramFace = function () {
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
-        'bin-parameter': 'Init UTC hour'
+        'bin-parameter': 'Valid Date'
     };
     // in metexpress, users don't get to choose how to bin data
     if (isMetexpress) {
@@ -906,7 +906,7 @@ const showMapFace = function () {
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
-        'bin-parameter': 'Init UTC hour'
+        'bin-parameter': 'Valid Date'
     };
     // maps need to have the region be station-select mode
     if (matsParamUtils.getParameterForName('region-type') !== undefined) {
@@ -959,7 +959,7 @@ const showHistogramFace = function () {
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
-        'bin-parameter': 'Init UTC hour'
+        'bin-parameter': 'Valid Date'
     };
     // ctc histograms need to have the region be in predefined mode
     if (appName !== undefined && (appName.includes("ceiling") || appName.includes("visibility")) && matsParamUtils.getParameterForName('region-type') !== undefined) {
@@ -1004,7 +1004,7 @@ const showEnsembleHistogramFace = function () {
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
-        'bin-parameter': 'Init UTC hour'
+        'bin-parameter': 'Valid Date'
     };
     setSelectorVisibility(plotType, faceOptions, selectorsToReset);
     return selectorsToReset;
@@ -1044,7 +1044,7 @@ const showContourFace = function () {
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
-        'bin-parameter': 'Init UTC hour'
+        'bin-parameter': 'Valid Date'
     };
     // contours need to have the region be in predefined mode
     if (matsParamUtils.getParameterForName('region-type') !== undefined) {
@@ -1088,7 +1088,7 @@ const showScatterFace = function () {
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
-        'bin-parameter': 'Init UTC hour'
+        'bin-parameter': 'Valid Date'
     };
     setSelectorVisibility(plotType, faceOptions, selectorsToReset);
     return selectorsToReset;
