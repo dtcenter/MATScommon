@@ -1127,16 +1127,16 @@ class QueryUtil:
             total_values = total_values[::-1]
             total_times = total_times[::-1]
 
-            # Add one final point to allow for the AUC score to be calculated
-            pody.append(1)
-            far.append(1)
-            threshold_all.append(-999)
-            oy_all.append(-999)
-            on_all.append(-999)
-            total_values.append(-999)
-            total_times.append(-999)
-
             if plot_type == 'ROC':
+                # Add one final point to allow for the AUC score to be calculated
+                pody.append(1)
+                far.append(1)
+                threshold_all.append(-999)
+                oy_all.append(-999)
+                on_all.append(-999)
+                total_values.append(-999)
+                total_times.append(-999)
+
                 # Calculate AUC
                 auc_sum = 0
                 for i in range(1, len(threshold_all)):

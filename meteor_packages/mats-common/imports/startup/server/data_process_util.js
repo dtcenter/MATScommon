@@ -590,7 +590,7 @@ const processDataPerformanceDiagram = function (dataset, appParams, curveInfoPar
         while (di < data.x.length) {
             // store statistics for this di datapoint
             data.stats[di] = {
-                bin_threshold: curveInfoParams.statType.includes("met-") ? data.threshold_all[di] : data.binVals[di],
+                bin_value: curveInfoParams.statType.includes("met-") ? data.threshold_all[di] : data.binVals[di],
                 pody: data.y[di],
                 fa: data.x[di],
                 obs_y: data.oy_all[di],
@@ -598,7 +598,7 @@ const processDataPerformanceDiagram = function (dataset, appParams, curveInfoPar
             };
             // the tooltip is stored in data.text
             data.text[di] = label;
-            data.text[di] = data.text[di] + "<br>bin threshold: " + (curveInfoParams.statType.includes("met-") ? data.threshold_all[di] : data.binVals[di]);
+            data.text[di] = data.text[di] + "<br>bin value: " + (curveInfoParams.statType.includes("met-") ? data.threshold_all[di] : data.binVals[di]);
             data.text[di] = data.text[di] + "<br>probability of detection: " + data.y[di];
             data.text[di] = data.text[di] + "<br>success ratio: " + data.x[di];
 
