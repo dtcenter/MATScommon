@@ -853,7 +853,7 @@ const showPerformanceDiagramFace = function () {
         'truth': 'block',
         'year': 'block',
         'storm': 'block',
-        'region-type' : 'block',
+        'region-type' : 'none',
         'x-axis-parameter': 'none',
         'y-axis-parameter': 'none',
         'bin-parameter': 'block',
@@ -866,6 +866,10 @@ const showPerformanceDiagramFace = function () {
     // in metexpress, users don't get to choose how to bin data
     if (isMetexpress) {
         faceOptions['bin-parameter'] = 'none';
+    }
+    // performance diagrams need to have the region be in predefined mode
+    if (matsParamUtils.getParameterForName('region-type') !== undefined) {
+        selectorsToReset['region-type'] = 'Predefined region';
     }
     setSelectorVisibility(plotType, faceOptions, selectorsToReset);
     return selectorsToReset;
