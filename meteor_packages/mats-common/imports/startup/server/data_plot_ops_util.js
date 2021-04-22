@@ -1111,7 +1111,7 @@ const generatePerformanceDiagramPlotOptions = function () {
 
     // x-axis options
     layout['xaxis'] = {
-        title: 'Success Rate (1-False Alarm Ratio)',
+        title: 'Success Ratio (1-FAR)',
         titlefont: {
             size: 24,
             color: '#000000'
