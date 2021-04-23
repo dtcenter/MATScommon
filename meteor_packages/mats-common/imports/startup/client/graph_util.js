@@ -185,11 +185,80 @@ const height = function (plotType) {
     }
 };
 
-const standAloneWidth = function () {
-    var vpw = Math.min(document.documentElement.clientWidth, window.innerWidth || 0);
-    return (.9 * vpw).toString() + "px";
+// plot width helper used in stand alone graphs
+const standAloneWidth = function (plotType) {
+    switch (plotType) {
+        case matsTypes.PlotTypes.profile:
+        case matsTypes.PlotTypes.reliability:
+        case matsTypes.PlotTypes.roc:
+        case matsTypes.PlotTypes.performanceDiagram:
+        case matsTypes.PlotTypes.scatter2d:
+            // set the width square
+            return standAloneSquareWidthHeight();
+            break;
+        case matsTypes.PlotTypes.timeSeries:
+        case matsTypes.PlotTypes.dieoff:
+        case matsTypes.PlotTypes.threshold:
+        case matsTypes.PlotTypes.validtime:
+        case matsTypes.PlotTypes.gridscale:
+        case matsTypes.PlotTypes.dailyModelCycle:
+        case matsTypes.PlotTypes.yearToYear:
+        case matsTypes.PlotTypes.map:
+        case matsTypes.PlotTypes.histogram:
+        case matsTypes.PlotTypes.ensembleHistogram:
+        case matsTypes.PlotTypes.contour:
+        case matsTypes.PlotTypes.contourDiff:
+        default:
+            // set the width wide
+            return standAloneRectangleWidth();
+            break;
+    }
 };
-const standAloneHeight = function () {
+
+// plot height helper used in stand alone graphs
+const standAloneHeight = function (plotType) {
+    switch (plotType) {
+        case matsTypes.PlotTypes.profile:
+        case matsTypes.PlotTypes.reliability:
+        case matsTypes.PlotTypes.roc:
+        case matsTypes.PlotTypes.performanceDiagram:
+        case matsTypes.PlotTypes.scatter2d:
+            // set the height square
+            return standAloneSquareWidthHeight();
+            break;
+        case matsTypes.PlotTypes.timeSeries:
+        case matsTypes.PlotTypes.dieoff:
+        case matsTypes.PlotTypes.threshold:
+        case matsTypes.PlotTypes.validtime:
+        case matsTypes.PlotTypes.gridscale:
+        case matsTypes.PlotTypes.dailyModelCycle:
+        case matsTypes.PlotTypes.yearToYear:
+        case matsTypes.PlotTypes.map:
+        case matsTypes.PlotTypes.histogram:
+        case matsTypes.PlotTypes.ensembleHistogram:
+        case matsTypes.PlotTypes.contour:
+        case matsTypes.PlotTypes.contourDiff:
+        default:
+            // set the height wide
+            return standAloneRectangleHeight();
+            break;
+    }
+};
+
+const standAloneSquareWidthHeight = function () {
+    console.log("squareWidthHeight")
+    var vpw = Math.min(document.documentElement.clientWidth, window.innerWidth || 0);
+    var vph = Math.min(document.documentElement.clientHeight, window.innerHeight || 0);
+    var min = Math.min(vpw, vph);
+    return (.9 * min).toString() + "px";
+};
+const standAloneRectangleWidth = function () {
+    console.log("rectangleWidth")
+    var vpw = Math.min(document.documentElement.clientWidth, window.innerWidth || 0);
+    return (.925 * vpw).toString() + "px";
+};
+const standAloneRectangleHeight = function () {
+    console.log("rectangleHeight")
     var vph = Math.min(document.documentElement.clientHeight, window.innerHeight || 0);
     return (.825 * vph).toString() + "px";
 };
