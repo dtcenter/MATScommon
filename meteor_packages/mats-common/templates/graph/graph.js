@@ -1512,13 +1512,35 @@ Template.graph.events({
                             $('#' + dataset[lidx].label + "-curve-show-hide-legend")[0].value = "hide legend";
 
                             // revert the annotation to the original colors
-                            const thisAnnotation = $("#legendContainer" + dataset[lidx].label);
-                            const annotationCurrentlyHidden = thisAnnotation[0].hidden;
-                            const localAnnotation = "<div id='" + dataset[lidx].label + "-annotation' style='color:" + lineTypeResetOpts[lidx]["line.color"] + "'>" + dataset[lidx].annotation + " </div>";
-                            thisAnnotation.empty().append(localAnnotation);
-                            thisAnnotation[0].hidden = annotationCurrentlyHidden;
-                            thisAnnotation[0].style.display = thisAnnotation[0].hidden ? "none" : "block";
-                            annotation = $("#curves")[0].innerHTML;
+                            switch (plotType) {
+                                case matsTypes.PlotTypes.timeSeries:
+                                case matsTypes.PlotTypes.profile:
+                                case matsTypes.PlotTypes.dieoff:
+                                case matsTypes.PlotTypes.threshold:
+                                case matsTypes.PlotTypes.validtime:
+                                case matsTypes.PlotTypes.gridscale:
+                                case matsTypes.PlotTypes.dailyModelCycle:
+                                case matsTypes.PlotTypes.yearToYear:
+                                case matsTypes.PlotTypes.scatter2d:
+                                case matsTypes.PlotTypes.map:
+                                    const thisAnnotation = $("#legendContainer" + dataset[lidx].label);
+                                    const annotationCurrentlyHidden = thisAnnotation[0].hidden;
+                                    const localAnnotation = "<div id='" + dataset[lidx].label + "-annotation' style='color:" + lineTypeResetOpts[lidx]["line.color"] + "'>" + dataset[lidx].annotation + " </div>";
+                                    thisAnnotation.empty().append(localAnnotation);
+                                    thisAnnotation[0].hidden = annotationCurrentlyHidden;
+                                    thisAnnotation[0].style.display = thisAnnotation[0].hidden ? "none" : "block";
+                                    annotation = $("#curves")[0].innerHTML;
+                                    break;
+                                case matsTypes.PlotTypes.reliability:
+                                case matsTypes.PlotTypes.roc:
+                                case matsTypes.PlotTypes.performanceDiagram:
+                                case matsTypes.PlotTypes.histogram:
+                                case matsTypes.PlotTypes.ensembleHistogram:
+                                case matsTypes.PlotTypes.contour:
+                                case matsTypes.PlotTypes.contourDiff:
+                                default:
+                                    break;
+                            }
                         }
                     }
                     break;
