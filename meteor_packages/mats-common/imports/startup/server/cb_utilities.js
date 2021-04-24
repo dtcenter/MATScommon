@@ -32,56 +32,79 @@ class CBUtilities {
     const
     upsertCB = async (key, doc) => {
         const couchbase = require("couchbase");
-        try {
-            const conn = await this.getConnection();
-            const result = await conn.collection.upsert(key, doc, {
-                expiry: 60,
-                persist_to: 1
-            });
-            return result;
-        } catch (err) {
-            console.log("upsertCB ERROR: ", err);
-            throw new Meteor.Error("upsertCB ERROR: " + err);
+        var retry = 0;
+        while (retry < 3) {
+            try {
+                const conn = await this.getConnection();
+                const result = await conn.collection.upsert(key, doc, {
+                    expiry: 60,
+                    persist_to: 1
+                });
+                return result;
+            } catch (err) {
+                console.log("upsertCB ERROR: ", err);
+                throw new Meteor.Error("upsertCB ERROR: " + err);
+            }
+            if (retry >= 2) {
+                throw new Meteor.Error("searchStationsByBoundingBox ERROR: " + err);
+            }
         }
-        return ret;
     };
 
     const
     removeCB = async (key) => {
         const couchbase = require("couchbase");
-        try {
-            const conn = await this.getConnection();
-            const result = await conn.collection.remove(key);
-            return result;
-        } catch (err) {
-            console.log("removeCB ERROR: ", err);
-            throw new Meteor.Error("removeCB ERROR: " + err);
+        var retry = 0;
+        while (retry < 3) {
+            try {
+                const conn = await this.getConnection();
+                const result = await conn.collection.remove(key);
+                return result;
+            } catch (err) {
+                console.log("removeCB ERROR: ", err);
+                throw new Meteor.Error("removeCB ERROR: " + err);
+            }
+            if (retry >= 2) {
+                throw new Meteor.Error("searchStationsByBoundingBox ERROR: " + err);
+            }
         }
     };
 
     const
     getCB = async (key) => {
         const couchbase = require("couchbase");
-        try {
-            const conn = await this.getConnection();
-            const result = await conn.collection.get(key);
-            return result;
-        } catch (err) {
-            console.log("getCB ERROR: ", err);
-            throw new Meteor.Error("getCB ERROR: " + err);
+        var retry = 0;
+        while (retry < 3) {
+            try {
+                const conn = await this.getConnection();
+                const result = await conn.collection.get(key);
+                return result;
+            } catch (err) {
+                console.log("getCB ERROR: ", err);
+                throw new Meteor.Error("getCB ERROR: " + err);
+            }
+            if (retry >= 2) {
+                throw new Meteor.Error("searchStationsByBoundingBox ERROR: " + err);
+            }
         }
     };
 
     const
     queryCB = async (statement) => {
         const couchbase = require("couchbase");
-        try {
-            const conn = await this.getConnection();
-            const result = await conn.cluster.query(statement);
-            return result.rows;
-        } catch (err) {
-            console.log("queryCB ERROR: ", err);
-            throw new Meteor.Error("queryCB ERROR: " + err);
+        var retry = 0;
+        while (retry < 3) {
+            try {
+                const conn = await this.getConnection();
+                const result = await conn.cluster.query(statement);
+                return result.rows;
+            } catch (err) {
+                console.log("queryCB ERROR: ", err);
+                throw new Meteor.Error("queryCB ERROR: " + err);
+            }
+            if (retry >= 2) {
+                throw new Meteor.Error("searchStationsByBoundingBox ERROR: " + err);
+            }
         }
     };
 
@@ -89,19 +112,25 @@ class CBUtilities {
     searchStationsByBoundingBox = async (topleft_lon, topleft_lat, bottomright_lon, bottomright_lat) => {
         const couchbase = require("couchbase");
         const index = 'station_geo';
-        try {
-            const conn = await this.getConnection();
-            var geoBoundingBoxQuery = couchbase.SearchQuery.geoBoundingBox(topleft_lon, topleft_lat, bottomright_lon, bottomright_lat);
-            var results = await conn.cluster.searchQuery(index, geoBoundingBoxQuery, {fields: ["*"], limit: 10000});
-            return results.rows;
-        } catch (err) {
-            console.log("searchStationsByBoundingBox ERROR: ", err);
-            throw new Meteor.Error("searchStationsByBoundingBox ERROR: " + err);
+        var retry = 0;
+        while (retry < 3) {
+            try {
+                const conn = await this.getConnection();
+                var geoBoundingBoxQuery = couchbase.SearchQuery.geoBoundingBox(topleft_lon, topleft_lat, bottomright_lon, bottomright_lat);
+                var results = await conn.cluster.searchQuery(index, geoBoundingBoxQuery, {fields: ["*"], limit: 10000});
+                return results.rows;
+            } catch (err) {
+                console.log("searchStationsByBoundingBox ERROR: ", err);
+                if (retry >= 2) {
+                    throw new Meteor.Error("searchStationsByBoundingBox ERROR: " + err);
+                }
+            }
+            retry += 1;
         }
     }
 }
 
-const test = async () => {
+const test = async() => {
     const host = "adb-cb1.gsd.esrl.noaa.gov";
     const bucketName = "travel-sample";
     const user = "auser";

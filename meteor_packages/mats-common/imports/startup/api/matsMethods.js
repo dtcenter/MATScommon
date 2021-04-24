@@ -140,8 +140,7 @@ const _checkMetaDataRefresh = async function () {
      */
     var refresh = false;
     const tableUpdates = metaDataTableUpdates.find({}).fetch();
-    const settings = matsCollections.Settings.findOne();
-    const dbType = settings.dbType;
+    const dbType = matsCollections.Settings.findOne().dbType;
     for (var tui = 0; tui < tableUpdates.length; tui++) {
         var id = tableUpdates[tui]._id;
         var poolName = tableUpdates[tui].pool;
@@ -1607,10 +1606,11 @@ const resetApp = async function (appRef) {
         var color;
         switch (dbType) {
             case matsTypes.AppTypes.mats:
-                if (dbType == matsTypes.DbTypes.mysql) {
-                    color = "#3366bb";
-                } else {
+                if (dbType == matsTypes.DbTypes.couchbase) {
                     color = "#33abbb";
+                } else {
+                    // default to mysql do that old apps won't break
+                    color = "#3366bb";
                 }
                 break;
             case matsTypes.AppTypes.metexpress:
@@ -1701,21 +1701,17 @@ const resetApp = async function (appRef) {
                 continue;
             }
             try {
-                switch (dbType) {
-                    case matsTypes.DbTypes.mysql:
-                        // mysql
-                        global[poolName].on('connection', function (connection) {
-                            connection.query('set group_concat_max_len = 4294967295');
-                            connection.query('set session wait_timeout = ' + connectionTimeout);
-                            //("opening new " + poolName + " connection");
-                        });
-                        break;
-                    case matsTypes.DbTypes.couchbase:
-                        //simple couchbase test
-                        const time = await cbPool.queryCB("select NOW_MILLIS() as time;")
-                        break;
-                    default:
-                        throw new Meteor.Error("reset app: undefined dbType:" + dbType);
+                if (dbType === matsTypes.DbTypes.couchbase) {
+                    //simple couchbase test
+                    const time = await cbPool.queryCB("select NOW_MILLIS() as time;")
+                    break;
+                } else {
+                    // default to mysql so that old apps won't break
+                    global[poolName].on('connection', function (connection) {
+                        connection.query('set group_concat_max_len = 4294967295');
+                        connection.query('set session wait_timeout = ' + connectionTimeout);
+                        //("opening new " + poolName + " connection");
+                    });
                 }
             } catch (e) {
                 console.log(poolName + ":  not initialized-- could not open connection: Error:" + e.message);
@@ -1895,52 +1891,46 @@ const testGetTables = new ValidatedMethod({
         }).validator(),
     async run(params) {
         if (Meteor.isServer) {
-            const settings = matsCollections.Settings.findOne();
-            const dbType = settings.dbType;
-            switch (dbtype) {
-                 case matsTypes.DbTypes.mysql:
-                    const Future = require('fibers/future');
-                    const queryWrap = Future.wrap(function (callback) {
-                        const connection = mysql.createConnection({
-                            host: params.host,
-                            port: params.port,
-                            user: params.user,
-                            password: params.password,
-                            database: params.database
-                        });
-                        connection.query("show tables;", function (err, result) {
-                            if (err || result === undefined) {
-                                //return callback(err,null);
-                                return callback(err, null);
-                            }
-                            const tables = result.map(function (a) {
-                                return a;
-                            });
-
-                            return callback(err, tables);
-                        });
-                        connection.end(function (err) {
-                            if (err) {
-                                console.log("testGetTables cannot end connection");
-                            }
-                        });
+            if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
+                const cbUtilities = new matsCouchbaseUtils.CBUtilities(params.host, params.bucket, params.user, params.password);
+                try {
+                    const result = await cbUtilities.queryCB("select NOW_MILLIS() as time");
+                } catch (err) {
+                    throw new Meteor.Error(e.message);
+                }
+            } else {
+                // default to mysql so that old apps won't break
+                const Future = require('fibers/future');
+                const queryWrap = Future.wrap(function (callback) {
+                    const connection = mysql.createConnection({
+                        host: params.host,
+                        port: params.port,
+                        user: params.user,
+                        password: params.password,
+                        database: params.database
                     });
-                    try {
-                        return queryWrap().wait();
-                    } catch (e) {
-                        throw new Meteor.Error(e.message);
-                    }
-                    break;
-                case matsTypes.DbTypes.couchbase:
-                    const cbUtilities = new matsCouchbaseUtils.CBUtilities(params.host, params.bucket, params.user, params.password);
-                    try {
-                        const result = await cbUtilities.queryCB("select NOW_MILLIS() as time");
-                    } catch (err) {
-                        throw new Meteor.Error(e.message);
-                    }
-                    break;
-                default:
-                    throw new Meteor.Error("testGetTables: undefined dbType:" + dbType);
+                    connection.query("show tables;", function (err, result) {
+                        if (err || result === undefined) {
+                            //return callback(err,null);
+                            return callback(err, null);
+                        }
+                        const tables = result.map(function (a) {
+                            return a;
+                        });
+
+                        return callback(err, tables);
+                    });
+                    connection.end(function (err) {
+                        if (err) {
+                            console.log("testGetTables cannot end connection");
+                        }
+                    });
+                });
+                try {
+                    return queryWrap().wait();
+                } catch (e) {
+                    throw new Meteor.Error(e.message);
+                }
             }
         }
     }

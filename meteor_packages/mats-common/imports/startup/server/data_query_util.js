@@ -7,18 +7,31 @@ import {Meteor} from "meteor/meteor";
 
 // utility to get the cadence for a particular model, so that the query function
 // knows where to include null points for missing data.
-const getModelCadence = function (pool, dataSource, startDate, endDate) {
+const getModelCadence = async function (pool, dataSource, startDate, endDate) {
     var rows = [];
     var cycles;
     try {
         // this query should only return data if the model cadence is irregular.
         // otherwise, the cadence will be calculated later by the query function.
-        rows = simplePoolQueryWrapSynchronous(pool, "select cycle_seconds " +
-            "from mats_common.primary_model_orders " +
-            "where model = " +
-            "(select new_model as display_text from mats_common.standardized_model_list where old_model = '" + dataSource + "');");
-        var cycles_raw = JSON.parse(rows[0].cycle_seconds);
-        var cycles_keys = Object.keys(cycles_raw).sort();
+        var cycles_raw;
+        if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
+            /*
+            we have to call the couchbase utilities as async functions but this
+            routine  'queryDBTimeSeries' cannot itslef be async because the graph page needs to wait
+            for its result, so we use an anomynous async() function here to wrap the queryCB call
+            */
+                const doc = await pool.getCb("MD:matsAux:COMMON:V01");
+                const newModel = doc.standardizedModleList[dataSource];
+                cycles_raw = doc.primaryModelOrders[newModel] ? doc.primaryModelOrders[newModel].cycleSecnds : undefined;
+        } else {
+            // we will default to mysql so old apps won't break
+                rows = simplePoolQueryWrapSynchronous(pool, "select cycle_seconds " +
+                    "from mats_common.primary_model_orders " +
+                    "where model = " +
+                    "(select new_model as display_text from mats_common.standardized_model_list where old_model = '" + dataSource + "');");
+                cycles_raw = rows[0].cycle_seconds ? JSON.parse(rows[0].cycle_seconds) : undefined;
+        }
+        var cycles_keys = cycles_raw ? Object.keys(cycles_raw).sort() : undefined;
         // there can be difference cadences for different time periods (each time period is a key in cycles_keys,
         // with the cadences for that period represented as values in cycles_raw), so this section identifies all
         // time periods relevant to the requested date range, and returns the union of their cadences.
@@ -284,7 +297,18 @@ const queryDBPython = function (pool, statement, statLineType, statistic, appPar
 // this method queries the database for timeseries plots
 const queryDBTimeSeries = function (pool, statement, dataSource, forecastOffset, startDate, endDate, averageStr, statisticStr, validTimes, appParams, forceRegularCadence) {
     // upper air is only verified at 00Z and 12Z, so you need to force irregular models to verify at that regular cadence
-    const Future = require('fibers/future');
+
+    function parseData(appParams, statisticStr, rows, cycles, regular, d) {
+        var parsedData;
+        if (appParams.hideGaps) {
+            // if we don't care about gaps, use the general purpose curve parsing function.
+            // the only reason to use the timeseries one is to correctly insert gaps for missing forecast cycles
+            parsedData = parseQueryDataSpecialtyCurve(rows, d, appParams, statisticStr);
+        } else {
+            parsedData = parseQueryDataTimeSeries(rows, d, appParams, averageStr, statisticStr, forecastOffset, cycles, regular);
+        }
+        return parsedData;
+    }
 
     if (Meteor.isServer) {
         var cycles = getModelCadence(pool, dataSource, startDate, endDate); // if irregular model cadence, get cycle times. If regular, get empty array.
@@ -302,7 +326,6 @@ const queryDBTimeSeries = function (pool, statement, dataSource, forecastOffset,
         }
         const regular = (forceRegularCadence || averageStr !== "None" || !(cycles !== null && cycles.length > 0)); // If curves have averaging, the cadence is always regular, i.e. it's the cadence of the average
 
-        var dFuture = new Future();
         var d = {// d will contain the curve data
             x: [],
             y: [],
@@ -323,32 +346,48 @@ const queryDBTimeSeries = function (pool, statement, dataSource, forecastOffset,
         var error = "";
         var N0 = [];
         var N_times = [];
+        const Future = require('fibers/future');
+        var dFuture = new Future();
 
-        pool.query(statement, function (err, rows) {
-            // query callback - build the curve data from the results - or set an error
-            if (err !== undefined && err !== null) {
-                error = err.message;
-            } else if (rows === undefined || rows === null || rows.length === 0) {
-                error = matsTypes.Messages.NO_DATA_FOUND;
-            } else {
-                var parsedData;
-                if (appParams.hideGaps) {
-                    // if we don't care about gaps, use the general purpose curve parsing function.
-                    // the only reason to use the timeseries one is to correctly insert gaps for missing forecast cycles
-                    parsedData = parseQueryDataSpecialtyCurve(rows, d, appParams, statisticStr);
-                } else {
-                    parsedData = parseQueryDataTimeSeries(pool, rows, d, appParams, averageStr, statisticStr, forecastOffset, cycles, regular);
+        if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
+            /*
+            we have to call the couchbase utilities as async functions but this
+            routine  'queryDBTimeSeries' cannot itslef be async because the graph page needs to wait
+            for its result, so we use an anomynous async() function here to wrap the queryCB call
+            */
+            (async() => {
+                const rows =  await pool.queryCB(statement);
+                if (rows === undefined || rows === null || rows.length === 0) {
+                    error = matsTypes.Messages.NO_DATA_FOUND;
                 }
+                const parsedData = parseData(appParams, statisticStr, rows, cycles, regular, d);
                 d = parsedData.d;
                 N0 = parsedData.N0;
                 N_times = parsedData.N_times;
-            }
-            // done waiting - have results
-            dFuture['return']();
-        });
-
-        // wait for future to finish
+                dFuture.return();
+            })();
+        } else {
+            // we will default to mysql so old apps won't break
+            pool.query(statement, function (err, ret) {
+                // query callback - build the curve data from the results - or set an error
+                if (err !== undefined && err !== null) {
+                    error = err.message;
+                } else if (ret === undefined || ret === null || ret.length === 0) {
+                    error = matsTypes.Messages.NO_DATA_FOUND;
+                } else {
+                    const rows = ret;
+                    const parsedData = parseData(appParams, statisticStr, rows, cycles, regular, d);
+                    d = parsedData.d;
+                    N0 = parsedData.N0;
+                    N_times = parsedData.N_times;
+                    // done waiting - have results
+                }
+                dFuture.return();
+            });
+        }
+        // wait for the future to finish - sort of like 'back to the future' ;)
         dFuture.wait();
+
         return {
             data: d,
             error: error,
@@ -711,7 +750,7 @@ const queryDBContour = function (pool, statement) {
 };
 
 // this method parses the returned query data for timeseries plots
-const parseQueryDataTimeSeries = function (pool, rows, d, appParams, averageStr, statisticStr, foreCastOffset, cycles, regular) {
+const parseQueryDataTimeSeries = function (rows, d, appParams, averageStr, statisticStr, foreCastOffset, cycles, regular) {
     /*
         var d = {// d will contain the curve data
             x: [],
