@@ -207,6 +207,7 @@ Template.textOutput.helpers({
                 header += "<th>" + curve.label + " bin value</th>\
                         <th>probability of detection</th>\
                         <th>success ratio</th>\
+                        <th>n</th>\
                         ";
                 break;
             case matsTypes.PlotTypes.map:
@@ -358,7 +359,8 @@ Template.textOutput.helpers({
             case matsTypes.PlotTypes.performanceDiagram:
                 line += "<td>" + element[labelKey += " bin value"] + "</td>" +
                     "<td>" + (element['probability of detection'] != undefined && element['probability of detection'] !== null ? element['probability of detection'].toPrecision(4) : fillStr) + "</td>" +
-                    "<td>" + (element['success ratio'] != undefined && element['success ratio'] !== null ? element['success ratio'] : fillStr) + "</td>";
+                    "<td>" + (element['success ratio'] != undefined && element['success ratio'] !== null ? element['success ratio'] : fillStr) + "</td>" +
+                    "<td>" + (element['n'] != undefined && element['n'] !== null ? element['n'] : fillStr) + "</td>";
                 break;
             case matsTypes.PlotTypes.map:
                 line += "<td>" + element["Site Name"] + "</td>" +

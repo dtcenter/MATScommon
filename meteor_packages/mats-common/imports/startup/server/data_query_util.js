@@ -430,6 +430,7 @@ const queryDBPerformanceDiagram = function (pool, statement) {
             binVals: [],
             oy_all: [],
             on_all: [],
+            n: [],
             stats: [],
             text: [],
             xmin: Number.MAX_VALUE,
@@ -1184,6 +1185,7 @@ const parseQueryDataPerformanceDiagram = function (rows, d) {
             binVals: [],
             oy_all: [],
             on_all: [],
+            n: [],
             stats: [],
             text: [],
             xmin: Number.MAX_VALUE,
@@ -1232,6 +1234,7 @@ const parseQueryDataPerformanceDiagram = function (rows, d) {
     d.binVals = binVals;
     d.oy_all = oy_all;
     d.on_all = on_all;
+    d.n = N0;
 
     var successMin = Number.MAX_VALUE;
     var successMax = -1 * Number.MAX_VALUE;

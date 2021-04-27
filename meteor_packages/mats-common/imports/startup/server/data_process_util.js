@@ -579,6 +579,7 @@ const processDataROC = function (dataset, appParams, curveInfoParams, plotParams
 
 const processDataPerformanceDiagram = function (dataset, appParams, curveInfoParams, plotParams, bookkeepingParams) {
     var error = "";
+    const appName = matsCollections.appName.findOne({}).app;
 
     // sort data statistics for each curve
     for (var curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex++) {
@@ -593,6 +594,7 @@ const processDataPerformanceDiagram = function (dataset, appParams, curveInfoPar
                 bin_value: curveInfoParams.statType.includes("met-") ? data.threshold_all[di] : data.binVals[di],
                 pody: data.y[di],
                 fa: data.x[di],
+                n: data.n[di],
                 obs_y: data.oy_all[di],
                 obs_n: data.on_all[di]
             };
@@ -601,6 +603,7 @@ const processDataPerformanceDiagram = function (dataset, appParams, curveInfoPar
             data.text[di] = data.text[di] + "<br>bin value: " + (curveInfoParams.statType.includes("met-") ? data.threshold_all[di] : data.binVals[di]);
             data.text[di] = data.text[di] + "<br>probability of detection: " + data.y[di];
             data.text[di] = data.text[di] + "<br>success ratio: " + data.x[di];
+            data.text[di] = data.text[di] + "<br>n: " + data.n[di];
 
             di++;
         }

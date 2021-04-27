@@ -1719,6 +1719,7 @@ class QueryUtil:
         self.data['threshold_all'] = ens_stats["threshold_all"]
         self.data['oy_all'] = ens_stats["oy_all"]
         self.data['on_all'] = ens_stats["on_all"]
+        self.data['n'] = total_values
         self.data['auc'] = ens_stats["auc"]
         self.data['xmax'] = 1.0
         self.data['xmin'] = 0.0

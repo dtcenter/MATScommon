@@ -33,7 +33,15 @@ Template.curveList.helpers({
                 case matsTypes.PlotTypes.roc:
                 case matsTypes.PlotTypes.performanceDiagram:
                 case matsTypes.PlotTypes.contour:
-                    return "none";
+                    // allow matching for non-metexpress performance diagrams
+                    if ((matsCollections.Settings.findOne({}) !== undefined
+                        && matsCollections.Settings.findOne({}).appType !== undefined
+                        && matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress)
+                        || plotType !== matsTypes.PlotTypes.performanceDiagram) {
+                        return "none";
+                    } else {
+                        return "block";
+                    }
                 case matsTypes.PlotTypes.timeSeries:
                 case matsTypes.PlotTypes.profile:
                 case matsTypes.PlotTypes.dieoff:

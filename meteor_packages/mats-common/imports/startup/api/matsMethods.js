@@ -531,6 +531,7 @@ const _getFlattenedResultData = function (rk, p, np) {
                             curveDataElement[data[ci].label + ' bin value'] = data[ci].stats[cdi].bin_value;
                             curveDataElement['probability of detection'] = data[ci].stats[cdi].pody;
                             curveDataElement['success ratio'] = data[ci].stats[cdi].fa;
+                            curveDataElement['n'] = data[ci].stats[cdi].n;
                             curveDataElement['oy'] = data[ci].stats[cdi].obs_y;
                             curveDataElement['on'] = data[ci].stats[cdi].obs_n;
                             curveData.push(curveDataElement);
