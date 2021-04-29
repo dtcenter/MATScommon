@@ -1703,7 +1703,7 @@ const resetApp = async function (appRef) {
             try {
                 if (dbType === matsTypes.DbTypes.couchbase) {
                     //simple couchbase test
-                    const time = await cbPool.queryCB("select NOW_MILLIS() as time;")
+                    const time = await cbPool.queryCB("select NOW_MILLIS() as time;");
                     break;
                 } else {
                     // default to mysql so that old apps won't break

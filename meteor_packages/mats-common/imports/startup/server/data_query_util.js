@@ -355,17 +355,18 @@ const queryDBTimeSeries = function (pool, statement, dataSource, forecastOffset,
             routine  'queryDBTimeSeries' cannot itslef be async because the graph page needs to wait
             for its result, so we use an anomynous async() function here to wrap the queryCB call
             */
-            (async() => {
-                const rows =  await pool.queryCB(statement);
-                if (rows === undefined || rows === null || rows.length === 0) {
-                    error = matsTypes.Messages.NO_DATA_FOUND;
-                }
-                const parsedData = parseData(appParams, statisticStr, rows, cycles, regular, d);
-                d = parsedData.d;
-                N0 = parsedData.N0;
-                N_times = parsedData.N_times;
-                dFuture.return();
-            })();
+                (async () => {
+                    const rows = await pool.queryCB(statement);
+                    if (rows === undefined || rows === null || rows.length === 0) {
+                        error = matsTypes.Messages.NO_DATA_FOUND;
+                    } else {
+                        const parsedData = parseData(appParams, statisticStr, rows, cycles, regular, d);
+                        d = parsedData.d;
+                        N0 = parsedData.N0;
+                        N_times = parsedData.N_times;
+                    }
+                    dFuture.return();
+                })();
         } else {
             // we will default to mysql so old apps won't break
             pool.query(statement, function (err, ret) {
