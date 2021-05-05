@@ -458,6 +458,58 @@ const queryDBSpecialtyCurve = function (pool, statement, appParams, statisticStr
     }
 };
 
+// this method queries the database for performance diagrams
+const queryDBPerformanceDiagram = function (pool, statement) {
+    if (Meteor.isServer) {
+        const Future = require('fibers/future');
+
+        var dFuture = new Future();
+        var d = {// d will contain the curve data
+            x: [],
+            y: [],
+            binVals: [],
+            oy_all: [],
+            on_all: [],
+            n: [],
+            stats: [],
+            text: [],
+            xmin: Number.MAX_VALUE,
+            xmax: Number.MIN_VALUE,
+            ymin: Number.MAX_VALUE,
+            ymax: Number.MIN_VALUE
+        };
+
+        var error = "";
+        var N0 = [];
+        var N_times = [];
+
+        pool.query(statement, function (err, rows) {
+            // query callback - build the curve data from the results - or set an error
+            if (err !== undefined && err !== null) {
+                error = err.message;
+            } else if (rows === undefined || rows === null || rows.length === 0) {
+                error = matsTypes.Messages.NO_DATA_FOUND;
+            } else {
+                var parsedData = parseQueryDataPerformanceDiagram(rows, d);
+                d = parsedData.d;
+                N0 = parsedData.N0;
+                N_times = parsedData.N_times;
+            }
+            // done waiting - have results
+            dFuture['return']();
+        });
+
+        // wait for future to finish
+        dFuture.wait();
+        return {
+            data: d,
+            error: error,
+            N0: N0,
+            N_times: N_times,
+        };
+    }
+};
+
 // this method queries the database for map plots
 const queryDBMap = function (pool, statement, dataSource, variable, varUnits, siteMap, orderOfMagnitude) {
     if (Meteor.isServer) {
@@ -1058,7 +1110,7 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
 
         // deal with missing forecast cycles for dailyModelCycle plot type
         if (plotType === matsTypes.PlotTypes.dailyModelCycle && rowIndex > 0 && (Number(independentVar) - Number(rows[rowIndex - 1].avtime * 1000)) > 3600 * 24 * 1000) {
-            const cycles_missing = Math.ceil((Number(independentVar) - Number(rows[rowIndex - 1].avtime * 1000)) / (3600 * 24 * 1000))-1;
+            const cycles_missing = Math.ceil((Number(independentVar) - Number(rows[rowIndex - 1].avtime * 1000)) / (3600 * 24 * 1000)) - 1;
             for (var missingIdx = cycles_missing; missingIdx > 0; missingIdx--) {
                 curveIndependentVars.push(independentVar - 3600 * 24 * 1000 * missingIdx);
                 curveStats.push(null);
@@ -1156,6 +1208,90 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
 
     d.ctc_stats = ctc_stats;
     d.sum = sum;
+
+    return {
+        d: d,
+        N0: N0,
+        N_times: N_times
+    };
+};
+
+// this method parses the returned query data for performance diagrams
+const parseQueryDataPerformanceDiagram = function (rows, d) {
+    /*
+        var d = {// d will contain the curve data
+            x: [],
+            y: [],
+            binVals: [],
+            oy_all: [],
+            on_all: [],
+            n: [],
+            stats: [],
+            text: [],
+            xmin: Number.MAX_VALUE,
+            xmax: Number.MIN_VALUE,
+            ymin: Number.MAX_VALUE,
+            ymax: Number.MIN_VALUE,
+        };
+    */
+
+    // initialize local variables
+    var N0 = [];
+    var N_times = [];
+    var successes = [];
+    var pods = [];
+    var binVals = [];
+    var oy_all = [];
+    var on_all = [];
+    for (var rowIndex = 0; rowIndex < rows.length; rowIndex++) {
+        var binVal = Number(rows[rowIndex].binVal);
+        var pod;
+        var success;
+        var oy;
+        var on;
+        if (rows[rowIndex].pod !== undefined && rows[rowIndex].far !== undefined) {
+            pod = rows[rowIndex].pod === "NULL" ? null : Number(rows[rowIndex].pod);
+            success = rows[rowIndex].far === "NULL" ? null : 1 - Number(rows[rowIndex].far);
+            oy = rows[rowIndex].oy === "NULL" ? null : Number(rows[rowIndex].oy_all);
+            on = rows[rowIndex].on === "NULL" ? null : Number(rows[rowIndex].on_all);
+        } else {
+            pod = null;
+            success = null;
+            oy = null;
+            on = null;
+        }
+        N0.push(rows[rowIndex].N0);             // number of values that go into a point on the graph
+        N_times.push(rows[rowIndex].N_times);   // number of times that go into a point on the graph
+        successes.push(success);
+        pods.push(pod);
+        binVals.push(binVal);
+        oy_all.push(oy);
+        on_all.push(on);
+    }
+
+    d.x = successes;
+    d.y = pods;
+    d.binVals = binVals;
+    d.oy_all = oy_all;
+    d.on_all = on_all;
+    d.n = N0;
+
+    var successMin = Number.MAX_VALUE;
+    var successMax = -1 * Number.MAX_VALUE;
+    var podMin = Number.MAX_VALUE;
+    var podMax = -1 * Number.MAX_VALUE;
+
+    for (var d_idx = 0; d_idx < binVals.length; d_idx++) {
+        successMin = successes[d_idx] !== null && successes[d_idx] < successMin ? successes[d_idx] : successMin;
+        successMax = successes[d_idx] !== null && successes[d_idx] > successMax ? successes[d_idx] : successMax;
+        podMin = podMin[d_idx] !== null && pods[d_idx] < podMin ? pods[d_idx] : podMin;
+        podMax = podMin[d_idx] !== null && pods[d_idx] > podMax ? pods[d_idx] : podMax;
+    }
+
+    d.xmin = successMin;
+    d.xmax = successMax;
+    d.ymin = podMin;
+    d.ymax = podMax;
 
     return {
         d: d,
@@ -1610,6 +1746,7 @@ export default matsDataQueryUtils = {
     queryDBPython: queryDBPython,
     queryDBTimeSeries: queryDBTimeSeries,
     queryDBSpecialtyCurve: queryDBSpecialtyCurve,
+    queryDBPerformanceDiagram: queryDBPerformanceDiagram,
     queryDBMap: queryDBMap,
     queryDBMapCTC: queryDBMapCTC,
     queryDBContour: queryDBContour

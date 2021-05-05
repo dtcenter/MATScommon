@@ -130,6 +130,9 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
                 case matsTypes.PlotTypes.gridscale:
                     data.text[di] = data.text[di] + "<br>grid scale: " + data.x[di];
                     break;
+                case matsTypes.PlotTypes.yearToYear:
+                    data.text[di] = data.text[di] + "<br>year: " + data.x[di];
+                    break;
                 default:
                     data.text[di] = data.text[di] + "<br>" + data.x[di];
                     break;
@@ -229,6 +232,9 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
             break;
         case matsTypes.PlotTypes.gridscale:
             resultOptions = matsDataPlotOpsUtils.generateGridScalePlotOptions(curveInfoParams.axisMap, errorMax);
+            break;
+        case matsTypes.PlotTypes.yearToYear:
+            resultOptions = matsDataPlotOpsUtils.generateYearToYearPlotOptions(curveInfoParams.axisMap, errorMax);
             break;
         default:
             break;
@@ -521,7 +527,7 @@ const processDataROC = function (dataset, appParams, curveInfoParams, plotParams
             data.stats[di] = {
                 threshold: data.threshold_all[di],
                 pody: data.y[di],
-                fa: data.x[di],
+                pofd: data.x[di],
                 obs_y: data.oy_all[di],
                 obs_n: data.on_all[di]
             };
@@ -529,7 +535,7 @@ const processDataROC = function (dataset, appParams, curveInfoParams, plotParams
             data.text[di] = label;
             data.text[di] = data.text[di] + "<br>threshold: " + data.threshold_all[di];
             data.text[di] = data.text[di] + "<br>probability of detection: " + data.y[di];
-            data.text[di] = data.text[di] + "<br>false alarm rate: " + data.x[di];
+            data.text[di] = data.text[di] + "<br>probability of false detection: " + data.x[di];
 
             di++;
         }
@@ -551,6 +557,97 @@ const processDataROC = function (dataset, appParams, curveInfoParams, plotParams
 
     // generate plot options
     var resultOptions = matsDataPlotOpsUtils.generateROCPlotOptions();
+
+    var totalProcessingFinish = moment();
+    bookkeepingParams.dataRequests["total retrieval and processing time for curve set"] = {
+        begin: bookkeepingParams.totalProcessingStart.format(),
+        finish: totalProcessingFinish.format(),
+        duration: moment.duration(totalProcessingFinish.diff(bookkeepingParams.totalProcessingStart)).asSeconds() + ' seconds'
+    };
+
+    // pass result to client-side plotting functions
+    return {
+        error: error,
+        data: dataset,
+        options: resultOptions,
+        basis: {
+            plotParams: plotParams,
+            queries: bookkeepingParams.dataRequests
+        }
+    };
+};
+
+const processDataPerformanceDiagram = function (dataset, appParams, curveInfoParams, plotParams, bookkeepingParams) {
+    var error = "";
+    const appName = matsCollections.appName.findOne({}).app;
+
+    // sort data statistics for each curve
+    for (var curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex++) {
+
+        var data = dataset[curveIndex];
+        const label = dataset[curveIndex].label;
+
+        var di = 0;
+        while (di < data.x.length) {
+            // store statistics for this di datapoint
+            data.stats[di] = {
+                bin_value: curveInfoParams.statType.includes("met-") ? data.threshold_all[di] : data.binVals[di],
+                pody: data.y[di],
+                fa: data.x[di],
+                n: data.n[di],
+                obs_y: data.oy_all[di],
+                obs_n: data.on_all[di]
+            };
+            // the tooltip is stored in data.text
+            data.text[di] = label;
+            data.text[di] = data.text[di] + "<br>bin value: " + (curveInfoParams.statType.includes("met-") ? data.threshold_all[di] : data.binVals[di]);
+            data.text[di] = data.text[di] + "<br>probability of detection: " + data.y[di];
+            data.text[di] = data.text[di] + "<br>success ratio: " + data.x[di];
+            data.text[di] = data.text[di] + "<br>n: " + data.n[di];
+
+            di++;
+        }
+        dataset[curveIndex]['glob_stats'] = {};
+    }
+
+    // add black lines of constant bias
+    var biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1, 0, 1, 0, matsTypes.ReservedWords.constantBias);
+    dataset.push(biasLine);
+    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1*2, 0, 1, 0, matsTypes.ReservedWords.constantBias);
+    dataset.push(biasLine);
+    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1*4, 0, 1, 0, matsTypes.ReservedWords.constantBias);
+    dataset.push(biasLine);
+    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1*8, 0, 1, 0, matsTypes.ReservedWords.constantBias);
+    dataset.push(biasLine);
+    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1/2, 0, 1, 0, matsTypes.ReservedWords.constantBias);
+    dataset.push(biasLine);
+    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1/4, 0, 1, 0, matsTypes.ReservedWords.constantBias);
+    dataset.push(biasLine);
+    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1/8, 0, 1, 0, matsTypes.ReservedWords.constantBias);
+    dataset.push(biasLine);
+
+    var xvals;
+    var yvals;
+    var cval;
+    var csiLine;
+    for (var csiidx = 1; csiidx < 10; csiidx++) {
+        cval = csiidx/10;
+        xvals = _.range(cval, 1.01, 0.01);
+        yvals = [];
+        var xval;
+        var yval;
+        for (var xidx = 0; xidx < xvals.length; xidx++) {
+            xval = xvals[xidx];
+            yval = xval * cval / (xval + xval * cval - cval);
+            yvals.push(yval);
+        }
+        csiLine = matsDataCurveOpsUtils.getCurveLine(xvals, yvals, matsTypes.ReservedWords.constantCSI);
+        dataset.push(csiLine);
+    }
+
+
+    // generate plot options
+    var resultOptions = matsDataPlotOpsUtils.generatePerformanceDiagramPlotOptions();
 
     var totalProcessingFinish = moment();
     bookkeepingParams.dataRequests["total retrieval and processing time for curve set"] = {
@@ -965,6 +1062,7 @@ export default matsDataProcessUtils = {
     processDataProfile: processDataProfile,
     processDataReliability: processDataReliability,
     processDataROC: processDataROC,
+    processDataPerformanceDiagram: processDataPerformanceDiagram,
     processDataHistogram: processDataHistogram,
     processDataEnsembleHistogram: processDataEnsembleHistogram,
     processDataContour: processDataContour

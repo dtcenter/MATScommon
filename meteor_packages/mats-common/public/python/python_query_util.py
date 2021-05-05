@@ -1078,7 +1078,7 @@ class QueryUtil:
             x_var = 'threshold_all'
             y_var = 'hit_rate'
 
-        elif plot_type == 'ROC':
+        elif plot_type == 'ROC' or plot_type == "PerformanceDiagram":
             # determine the probability of detection (hit rate) and probability of false detection (false alarm ratio) for each probability bin
             for i in range(0, len(threshold_all)):
                 hit = 0
@@ -1098,17 +1098,25 @@ class QueryUtil:
 
                 # POD
                 try:
-                    hr = float(hit / (float(hit) + miss))
+                    hr = hit / (hit + miss)
                 except ZeroDivisionError:
                     hr = None
                 pody.append(hr)
 
-                # POFD
-                try:
-                    pofd = float(fa / (float(fa) + cn))
-                except ZeroDivisionError:
-                    pofd = None
-                far.append(pofd)
+                if plot_type == 'ROC':
+                    # POFD
+                    try:
+                        pofd = fa / (fa + cn)
+                    except ZeroDivisionError:
+                        pofd = None
+                    far.append(pofd)
+                else:
+                    # 1- FAR for success ratio
+                    try:
+                        far1 = 1 - (fa / (fa + hit))
+                    except ZeroDivisionError:
+                        far1 = None
+                    far.append(far1)
 
             # Reverse all of the lists (easier to graph)
             pody = pody[::-1]
@@ -1119,20 +1127,21 @@ class QueryUtil:
             total_values = total_values[::-1]
             total_times = total_times[::-1]
 
-            # Add one final point to allow for the AUC score to be calculated
-            pody.append(1)
-            far.append(1)
-            threshold_all.append(-999)
-            oy_all.append(-999)
-            on_all.append(-999)
-            total_values.append(-999)
-            total_times.append(-999)
+            if plot_type == 'ROC':
+                # Add one final point to allow for the AUC score to be calculated
+                pody.append(1)
+                far.append(1)
+                threshold_all.append(-999)
+                oy_all.append(-999)
+                on_all.append(-999)
+                total_values.append(-999)
+                total_times.append(-999)
 
-            # Calculate AUC
-            auc_sum = 0
-            for i in range(1, len(threshold_all)):
-                auc_sum = ((pody[i] + pody[i - 1]) * (far[i] - far[i - 1])) + auc_sum
-            auc = auc_sum / 2
+                # Calculate AUC
+                auc_sum = 0
+                for i in range(1, len(threshold_all)):
+                    auc_sum = ((pody[i] + pody[i - 1]) * (far[i] - far[i - 1])) + auc_sum
+                auc = auc_sum / 2
             x_var = 'far'
             y_var = 'pody'
 
@@ -1220,7 +1229,10 @@ class QueryUtil:
                 data_exists = row['fy_oy'] != "null" and row['fy_oy'] != "NULL" and row['fy_on'] != "null" and row['fy_on'] != "NULL" and row['fn_oy'] != "null" and row['fn_oy'] != "NULL" and row['fn_on'] != "null" and row['fn_on'] != "NULL"
             elif stat_line_type == 'precalculated':
                 data_exists = row['stat'] != "null" and row['stat'] != "NULL"
-            self.n0.append(int(row['N0']))
+            if hasattr(row, 'N0'):
+                self.n0.append(int(row['N0']))
+            else:
+                self.n0.append(int(row['N_times']))
             self.n_times.append(int(row['N_times']))
 
             if row_idx < len(query_data) - 1:  # make sure we have the smallest time interval for the while loop later
@@ -1355,6 +1367,8 @@ class QueryUtil:
                 ind_var = ind_var if ind_var % 10000 != 0 else ind_var / 10000
             elif plot_type == 'Threshold':
                 ind_var = float(row['thresh'].replace('=', '').replace('<', '').replace('>', ''))
+            elif plot_type == 'YearToYear':
+                ind_var = float(row['year'])
             else:
                 ind_var = int(row['avtime'])
 
@@ -1367,7 +1381,10 @@ class QueryUtil:
                 data_exists = row['fy_oy'] != "null" and row['fy_oy'] != "NULL" and row['fy_on'] != "null" and row['fy_on'] != "NULL" and row['fn_oy'] != "null" and row['fn_oy'] != "NULL" and row['fn_on'] != "null" and row['fn_on'] != "NULL"
             elif stat_line_type == 'precalculated':
                 data_exists = row['stat'] != "null" and row['stat'] != "NULL"
-            self.n0.append(int(row['N0']))
+            if hasattr(row, 'N0'):
+                self.n0.append(int(row['N0']))
+            else:
+                self.n0.append(int(row['N_times']))
             self.n_times.append(int(row['N_times']))
 
             if data_exists:
@@ -1528,7 +1545,10 @@ class QueryUtil:
                 data_exists = row['fy_oy'] != "null" and row['fy_oy'] != "NULL" and row['fy_on'] != "null" and row['fy_on'] != "NULL" and row['fn_oy'] != "null" and row['fn_oy'] != "NULL" and row['fn_on'] != "null" and row['fn_on'] != "NULL"
             elif stat_line_type == 'precalculated':
                 data_exists = row['stat'] != "null" and row['stat'] != "NULL"
-            self.n0.append(int(row['N0']))
+            if hasattr(row, 'N0'):
+                self.n0.append(int(row['N0']))
+            else:
+                self.n0.append(int(row['N_times']))
             self.n_times.append(int(row['N_times']))
 
             if data_exists:
@@ -1577,7 +1597,10 @@ class QueryUtil:
             if data_exists:
                 bin_number = int(row['bin'])
                 bin_count = int(row['bin_count'])
-                self.n0.append(int(row['N0']))
+                if hasattr(row, 'N0'):
+                    self.n0.append(int(row['N0']))
+                else:
+                    self.n0.append(int(row['N_times']))
                 self.n_times.append(int(row['N_times']))
 
                 # this function deals with rhist/phist/relp and rhist_rank/phist_bin/relp_ens tables
@@ -1653,7 +1676,10 @@ class QueryUtil:
                 oy = int(row['oy_i'])
                 on = int(row['on_i'])
                 number_times = int(row['N_times'])
-                number_values = int(row['N0'])
+                if hasattr(row, 'N0'):
+                    number_values = int(row['N0'])
+                else:
+                    number_values = int(row['N_times'])
 
                 # we must add up all of the observed and not-observed values for each probability bin
                 observed_total = observed_total + oy
@@ -1693,6 +1719,7 @@ class QueryUtil:
         self.data['threshold_all'] = ens_stats["threshold_all"]
         self.data['oy_all'] = ens_stats["oy_all"]
         self.data['on_all'] = ens_stats["on_all"]
+        self.data['n'] = total_values
         self.data['auc'] = ens_stats["auc"]
         self.data['xmax'] = 1.0
         self.data['xmin'] = 0.0
@@ -1807,7 +1834,7 @@ class QueryUtil:
                     self.parse_query_data_histogram(cursor, stat_line_type, statistic, has_levels)
                 elif plot_type == 'Contour':
                     self.parse_query_data_contour(cursor, stat_line_type, statistic, has_levels)
-                elif plot_type == 'Reliability' or plot_type == 'ROC':
+                elif plot_type == 'Reliability' or plot_type == 'ROC' or plot_type == 'PerformanceDiagram':
                     self.parse_query_data_ensemble(cursor, plot_type)
                 elif plot_type == 'EnsembleHistogram':
                     self.parse_query_data_ensemble_histogram(cursor, statistic, has_levels)

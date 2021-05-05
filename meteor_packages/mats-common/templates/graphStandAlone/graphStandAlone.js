@@ -31,8 +31,9 @@ Template.GraphStandAlone.onCreated(function () {
 Template.GraphStandAlone.onRendered(function () {
     // the window resize event needs to also resize the graph
     $(window).resize(function () {
-        document.getElementById('placeholder').style.width = matsGraphUtils.standAloneWidth();
-        document.getElementById('placeholder').style.height = matsGraphUtils.standAloneHeight();
+        var plotType = Session.get('plotType');
+        document.getElementById('placeholder').style.width = matsGraphUtils.standAloneWidth(plotType);
+        document.getElementById('placeholder').style.height = matsGraphUtils.standAloneHeight(plotType);
         var dataset = matsCurveUtils.getGraphResult().data;
         Plotly.newPlot($("#placeholder")[0], dataset, resizeOptions, {showLink: true});
     });
@@ -129,10 +130,12 @@ Template.GraphStandAlone.helpers({
         return Session.get('appName');
     },
     width: function () {
-        return matsGraphUtils.standAloneWidth();
+        var plotType = Session.get('plotType');
+        return matsGraphUtils.standAloneWidth(plotType);
     },
     height: function () {
-        return matsGraphUtils.standAloneHeight();
+        var plotType = Session.get('plotType');
+        return matsGraphUtils.standAloneHeight(plotType);
     },
     curves: function () {
         return Session.get('Curves');
@@ -168,10 +171,14 @@ Template.GraphStandAlone.helpers({
                     return "GridScale: " + format;
                 case matsTypes.PlotTypes.dailyModelCycle:
                     return "DailyModelCycle " + p.dates + " : " + format;
+                case matsTypes.PlotTypes.yearToYear:
+                    return "YearToYear: " + format;
                 case matsTypes.PlotTypes.reliability:
                     return "Reliability: " + p.dates + " : " + format;
                 case matsTypes.PlotTypes.roc:
-                    return "ROC: " + p.dates + " : " + format;
+                    return "ROC Curve: " + p.dates + " : " + format;
+                case matsTypes.PlotTypes.performanceDiagram:
+                    return "Performance Diagram: " + p.dates + " : " + format;
                 case matsTypes.PlotTypes.map:
                     return "Map " + p.dates + " ";
                 case matsTypes.PlotTypes.histogram:

@@ -74,6 +74,7 @@ Template.textOutput.helpers({
             case matsTypes.PlotTypes.threshold:
             case matsTypes.PlotTypes.validtime:
             case matsTypes.PlotTypes.gridscale:
+            case matsTypes.PlotTypes.yearToYear:
                 header += "<th>label</th>\
                     <th>mean</th>\
                     <th>standard deviation</th>\
@@ -88,6 +89,9 @@ Template.textOutput.helpers({
             case matsTypes.PlotTypes.roc:
                 header += "<th>label</th>\
                     <th>area under the ROC curve</th>";
+                break;
+            case matsTypes.PlotTypes.performanceDiagram:
+                header += "";
                 break;
             case matsTypes.PlotTypes.map:
                 header += "<th>label</th>\
@@ -180,6 +184,13 @@ Template.textOutput.helpers({
                         <th>std dev</th>\
                         <th>n</th>";
                 break;
+            case matsTypes.PlotTypes.yearToYear:
+                header += "<th>" + curve.label + " year</th>\
+                        <th>raw stat from query</th>\
+                        <th>mean stat</th>\
+                        <th>std dev</th>\
+                        <th>n</th>";
+                break;
             case matsTypes.PlotTypes.reliability:
                 header += "<th>" + curve.label + " probability bin</th>\
                         <th>hit rate</th>\
@@ -189,7 +200,14 @@ Template.textOutput.helpers({
             case matsTypes.PlotTypes.roc:
                 header += "<th>" + curve.label + " threshold</th>\
                         <th>probability of detection</th>\
-                        <th>false alarm rate</th>\
+                        <th>probability of false detection</th>\
+                        ";
+                break;
+            case matsTypes.PlotTypes.performanceDiagram:
+                header += "<th>" + curve.label + " bin value</th>\
+                        <th>probability of detection</th>\
+                        <th>success ratio</th>\
+                        <th>n</th>\
                         ";
                 break;
             case matsTypes.PlotTypes.map:
@@ -320,6 +338,13 @@ Template.textOutput.helpers({
                     "<td>" + (element['std dev'] != undefined && element['std dev'] !== null ? element['std dev'].toPrecision(4) : fillStr) + "</td>" +
                     "<td>" + (('n' in element) ? element['n'] : fillStr) + "</td>";
                 break;
+            case matsTypes.PlotTypes.yearToYear:
+                line += "<td>" + element[labelKey += " year"] + "</td>" +
+                    "<td>" + (element['raw stat from query'] != undefined && element['raw stat from query'] !== null ? element['raw stat from query'].toPrecision(4) : fillStr) + "</td>" +
+                    "<td>" + (element['mean stat'] != undefined && element['mean stat'] !== null ? element['mean stat'].toPrecision(4) : fillStr) + "</td>" +
+                    "<td>" + (element['std dev'] != undefined && element['std dev'] !== null ? element['std dev'].toPrecision(4) : fillStr) + "</td>" +
+                    "<td>" + (('n' in element) ? element['n'] : fillStr) + "</td>";
+                break;
             case matsTypes.PlotTypes.reliability:
                 line += "<td>" + element[labelKey += " probability bin"] + "</td>" +
                     "<td>" + (element['hit rate'] != undefined && element['hit rate'] !== null ? element['hit rate'].toPrecision(4) : fillStr) + "</td>" +
@@ -329,7 +354,13 @@ Template.textOutput.helpers({
             case matsTypes.PlotTypes.roc:
                 line += "<td>" + element[labelKey += " threshold"] + "</td>" +
                     "<td>" + (element['probability of detection'] != undefined && element['probability of detection'] !== null ? element['probability of detection'].toPrecision(4) : fillStr) + "</td>" +
-                    "<td>" + (element['false alarm rate'] != undefined && element['false alarm rate'] !== null ? element['false alarm rate'] : fillStr) + "</td>";
+                    "<td>" + (element['probability of false detection'] != undefined && element['probability of false detection'] !== null ? element['probability of false detection'] : fillStr) + "</td>";
+                break;
+            case matsTypes.PlotTypes.performanceDiagram:
+                line += "<td>" + element[labelKey += " bin value"] + "</td>" +
+                    "<td>" + (element['probability of detection'] != undefined && element['probability of detection'] !== null ? element['probability of detection'].toPrecision(4) : fillStr) + "</td>" +
+                    "<td>" + (element['success ratio'] != undefined && element['success ratio'] !== null ? element['success ratio'] : fillStr) + "</td>" +
+                    "<td>" + (element['n'] != undefined && element['n'] !== null ? element['n'] : fillStr) + "</td>";
                 break;
             case matsTypes.PlotTypes.map:
                 line += "<td>" + element["Site Name"] + "</td>" +
@@ -413,6 +444,7 @@ Template.textOutput.helpers({
             case matsTypes.PlotTypes.threshold:
             case matsTypes.PlotTypes.validtime:
             case matsTypes.PlotTypes.gridscale:
+            case matsTypes.PlotTypes.yearToYear:
                 line += "<td>" + curve['label'] + "</td>" +
                     "<td>" + (stats['mean'] != undefined && stats['mean'] !== null ? stats['mean'].toPrecision(4) : "undefined").toString() + "</td>" +
                     "<td>" + (stats['standard deviation'] != undefined && stats['standard deviation'] !== null ? stats['standard deviation'].toPrecision(4) : "undefined").toString() + "</td>" +
@@ -427,6 +459,9 @@ Template.textOutput.helpers({
             case matsTypes.PlotTypes.roc:
                 line += "<td>" + curve['label'] + "</td>" +
                     "<td>" + (stats['auc'] != undefined && stats['auc'] !== null ? stats['auc'].toPrecision(4) : "undefined").toString() + "</td>";
+                break;
+            case matsTypes.PlotTypes.performanceDiagram:
+                line += "";
                 break;
             case matsTypes.PlotTypes.map:
                 line += "<td>" + curve['label'] + "</td>" +

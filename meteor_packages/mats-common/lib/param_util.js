@@ -413,6 +413,17 @@ const getMinMaxDates = function (minDate, maxDate) {
     return {minDate: minDate, maxDate: maxDate};
 };
 
+const getMinMaxDatesTC = function (minDate, maxDate) {
+    var minMoment = moment.utc(minDate, "MM/DD/YYYY HH:mm");
+    var maxMoment = moment.utc(maxDate, "MM/DD/YYYY HH:mm");
+    // There's a bug in daterangepicker that causes odd behavior if the startDsr includes 00 UTC,
+    // so subtract 30 minutes from the minDate and add 30 minutes to the maxDate to prevent
+    // that circumstance from occurring.
+    maxDate = moment.utc(maxMoment).add(30, 'minutes');
+    minDate = moment.utc(minMoment).subtract(30, 'minutes');
+    return {minDate: minDate, maxDate: maxDate};
+};
+
 const setAllParamsToDefault = function () {
     // default the superiors and refresh them so that they cause the dependent options to refresh
     var paramNames = matsCollections.CurveParamsInfo.find({"curve_params": {"$exists": true}}).fetch()[0]["curve_params"];
@@ -605,5 +616,6 @@ export default matsParamUtils = {
     visibilityControllerForParam: visibilityControllerForParam,
     getAppName: getAppName,
     getDefaultDateRange: getDefaultDateRange,
-    getMinMaxDates: getMinMaxDates
+    getMinMaxDates: getMinMaxDates,
+    getMinMaxDatesTC: getMinMaxDatesTC
 };

@@ -43,11 +43,17 @@ Template.curveParamItemGroup.helpers({
             case matsTypes.PlotTypes.dailyModelCycle:
                 pattern = matsCollections.CurveTextPatterns.findOne({plotType: matsTypes.PlotTypes.dailyModelCycle});
                 break;
+            case matsTypes.PlotTypes.yearToYear:
+                pattern = matsCollections.CurveTextPatterns.findOne({plotType: matsTypes.PlotTypes.yearToYear});
+                break;
             case matsTypes.PlotTypes.reliability:
                 pattern = matsCollections.CurveTextPatterns.findOne({plotType: matsTypes.PlotTypes.reliability});
                 break;
             case matsTypes.PlotTypes.roc:
                 pattern = matsCollections.CurveTextPatterns.findOne({plotType: matsTypes.PlotTypes.roc});
+                break;
+            case matsTypes.PlotTypes.performanceDiagram:
+                pattern = matsCollections.CurveTextPatterns.findOne({plotType: matsTypes.PlotTypes.performanceDiagram});
                 break;
             case matsTypes.PlotTypes.map:
                 pattern = matsCollections.CurveTextPatterns.findOne({plotType: matsTypes.PlotTypes.map});

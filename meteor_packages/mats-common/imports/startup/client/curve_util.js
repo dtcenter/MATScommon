@@ -444,13 +444,17 @@ const showTimeseriesFace = function () {
         'bin-pivot': 'none',
         'bin-bounds': 'none',
         'truth': 'block',
+        'year': 'block',
+        'storm': 'block',
         'region-type' : 'block',
         'x-axis-parameter': 'none',
         'y-axis-parameter': 'none',
+        'bin-parameter': 'none',
         'significance': 'none'
     };
     const selectorsToReset = {
-        'dieoff-type': 'Dieoff'
+        'dieoff-type': 'Dieoff',
+        'bin-parameter': 'Valid Date'
     };
     setSelectorVisibility(plotType, faceOptions, selectorsToReset);
     return selectorsToReset;
@@ -480,13 +484,17 @@ const showProfileFace = function () {
         'bin-pivot': 'none',
         'bin-bounds': 'none',
         'truth': 'block',
+        'year': 'block',
+        'storm': 'block',
         'region-type' : 'block',
         'x-axis-parameter': 'none',
         'y-axis-parameter': 'none',
+        'bin-parameter': 'none',
         'significance': 'none'
     };
     const selectorsToReset = {
-        'dieoff-type': 'Dieoff'
+        'dieoff-type': 'Dieoff',
+        'bin-parameter': 'Valid Date'
     };
     setSelectorVisibility(plotType, faceOptions, selectorsToReset);
     return selectorsToReset;
@@ -516,13 +524,17 @@ const showDieOffFace = function () {
         'bin-pivot': 'none',
         'bin-bounds': 'none',
         'truth': 'block',
+        'year': 'block',
+        'storm': 'block',
         'region-type' : 'block',
         'x-axis-parameter': 'none',
         'y-axis-parameter': 'none',
+        'bin-parameter': 'none',
         'significance': 'none'
     };
     const selectorsToReset = {
-        'dieoff-type': 'Dieoff'
+        'dieoff-type': 'Dieoff',
+        'bin-parameter': 'Valid Date'
     };
     setSelectorVisibility(plotType, faceOptions, selectorsToReset);
     return selectorsToReset;
@@ -553,13 +565,17 @@ const showThresholdFace = function () {
         'bin-pivot': 'none',
         'bin-bounds': 'none',
         'truth': 'block',
+        'year': 'block',
+        'storm': 'block',
         'region-type' : 'block',
         'x-axis-parameter': 'none',
         'y-axis-parameter': 'none',
+        'bin-parameter': 'none',
         'significance': 'none'
     };
     const selectorsToReset = {
-        'dieoff-type': 'Dieoff'
+        'dieoff-type': 'Dieoff',
+        'bin-parameter': 'Valid Date'
     };
     // ctc thresholds need to have the region be in predefined mode
     if (appName !== undefined && (appName.includes("ceiling") || appName.includes("visibility")) && matsParamUtils.getParameterForName('region-type') !== undefined) {
@@ -594,13 +610,17 @@ const showValidTimeFace = function () {
         'bin-pivot': 'none',
         'bin-bounds': 'none',
         'truth': 'block',
+        'year': 'block',
+        'storm': 'block',
         'region-type' : 'block',
         'x-axis-parameter': 'none',
         'y-axis-parameter': 'none',
+        'bin-parameter': 'none',
         'significance': 'none'
     };
     const selectorsToReset = {
-        'dieoff-type': 'Dieoff'
+        'dieoff-type': 'Dieoff',
+        'bin-parameter': 'Valid Date'
     };
     setSelectorVisibility(plotType, faceOptions, selectorsToReset);
     return selectorsToReset;
@@ -630,13 +650,17 @@ const showGridScaleFace = function () {
         'bin-pivot': 'none',
         'bin-bounds': 'none',
         'truth': 'block',
+        'year': 'block',
+        'storm': 'block',
         'region-type' : 'block',
         'x-axis-parameter': 'none',
         'y-axis-parameter': 'none',
+        'bin-parameter': 'none',
         'significance': 'none'
     };
     const selectorsToReset = {
-        'dieoff-type': 'Dieoff'
+        'dieoff-type': 'Dieoff',
+        'bin-parameter': 'Valid Date'
     };
     setSelectorVisibility(plotType, faceOptions, selectorsToReset);
     return selectorsToReset;
@@ -666,13 +690,57 @@ const showDailyModelCycleFace = function () {
         'bin-pivot': 'none',
         'bin-bounds': 'none',
         'truth': 'block',
+        'year': 'block',
+        'storm': 'block',
         'region-type' : 'block',
         'x-axis-parameter': 'none',
         'y-axis-parameter': 'none',
+        'bin-parameter': 'none',
         'significance': 'none'
     };
     const selectorsToReset = {
-        'dieoff-type': 'Dieoff for a specified UTC cycle init hour'
+        'dieoff-type': 'Dieoff for a specified UTC cycle init hour',
+        'bin-parameter': 'Valid Date'
+    };
+    setSelectorVisibility(plotType, faceOptions, selectorsToReset);
+    return selectorsToReset;
+};
+
+// method to display the appropriate selectors for a year to year curve
+const showYearToYearFace = function () {
+    const plotType = matsTypes.PlotTypes.yearToYear;
+    var faceOptions = {
+        'curve-dates': 'none',
+        'dates': 'none',
+        'statistic': 'block',
+        'threshold': 'block',
+        'scale': 'block',
+        'level': 'block',
+        'forecast-length': 'block',
+        'dieoff-type': 'none',
+        'average': 'none',
+        'valid-time': 'block',
+        'utc-cycle-start': 'none',
+        'histogram-type-controls': 'none',
+        'histogram-bin-controls': 'none',
+        'histogram-yaxis-controls': 'none',
+        'bin-number': 'none',
+        'bin-start': 'none',
+        'bin-stride': 'none',
+        'bin-pivot': 'none',
+        'bin-bounds': 'none',
+        'truth': 'block',
+        'year': 'none',
+        'storm': 'none',
+        'region-type' : 'block',
+        'x-axis-parameter': 'none',
+        'y-axis-parameter': 'none',
+        'bin-parameter': 'none',
+        'significance': 'none'
+    };
+    const selectorsToReset = {
+        'dieoff-type': 'Dieoff',
+        'bin-parameter': 'Valid Date'
     };
     setSelectorVisibility(plotType, faceOptions, selectorsToReset);
     return selectorsToReset;
@@ -702,13 +770,17 @@ const showReliabilityFace = function () {
         'bin-pivot': 'none',
         'bin-bounds': 'none',
         'truth': 'block',
+        'year': 'block',
+        'storm': 'block',
         'region-type' : 'block',
         'x-axis-parameter': 'none',
         'y-axis-parameter': 'none',
+        'bin-parameter': 'none',
         'significance': 'none'
     };
     const selectorsToReset = {
-        'dieoff-type': 'Dieoff'
+        'dieoff-type': 'Dieoff',
+        'bin-parameter': 'Valid Date'
     };
     setSelectorVisibility(plotType, faceOptions, selectorsToReset);
     return selectorsToReset;
@@ -738,14 +810,67 @@ const showROCFace = function () {
         'bin-pivot': 'none',
         'bin-bounds': 'none',
         'truth': 'block',
+        'year': 'block',
+        'storm': 'block',
         'region-type' : 'block',
         'x-axis-parameter': 'none',
         'y-axis-parameter': 'none',
+        'bin-parameter': 'none',
         'significance': 'none'
     };
     const selectorsToReset = {
-        'dieoff-type': 'Dieoff'
+        'dieoff-type': 'Dieoff',
+        'bin-parameter': 'Valid Date'
     };
+    setSelectorVisibility(plotType, faceOptions, selectorsToReset);
+    return selectorsToReset;
+};
+
+// method to display the appropriate selectors for a ROC curve
+const showPerformanceDiagramFace = function () {
+    const isMetexpress = matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
+    const plotType = matsTypes.PlotTypes.performanceDiagram;
+    var faceOptions = {
+        'curve-dates': 'none',
+        'dates': 'block',
+        'statistic': 'none',
+        'threshold': 'block',
+        'scale': 'block',
+        'level': 'block',
+        'forecast-length': 'block',
+        'dieoff-type': 'none',
+        'average': 'none',
+        'valid-time': 'block',
+        'utc-cycle-start': 'none',
+        'histogram-type-controls': 'none',
+        'histogram-bin-controls': 'none',
+        'histogram-yaxis-controls': 'none',
+        'bin-number': 'none',
+        'bin-start': 'none',
+        'bin-stride': 'none',
+        'bin-pivot': 'none',
+        'bin-bounds': 'none',
+        'truth': 'block',
+        'year': 'block',
+        'storm': 'block',
+        'region-type' : 'none',
+        'x-axis-parameter': 'none',
+        'y-axis-parameter': 'none',
+        'bin-parameter': 'block',
+        'significance': 'none'
+    };
+    const selectorsToReset = {
+        'dieoff-type': 'Dieoff',
+        'bin-parameter': 'Valid Date'
+    };
+    // in metexpress, users don't get to choose how to bin data
+    if (isMetexpress) {
+        faceOptions['bin-parameter'] = 'none';
+    }
+    // performance diagrams need to have the region be in predefined mode
+    if (matsParamUtils.getParameterForName('region-type') !== undefined) {
+        selectorsToReset['region-type'] = 'Predefined region';
+    }
     setSelectorVisibility(plotType, faceOptions, selectorsToReset);
     return selectorsToReset;
 };
@@ -775,13 +900,17 @@ const showMapFace = function () {
         'bin-pivot': 'none',
         'bin-bounds': 'none',
         'truth': 'none',
+        'year': 'block',
+        'storm': 'block',
         'region-type' : 'none',
         'x-axis-parameter': 'none',
         'y-axis-parameter': 'none',
+        'bin-parameter': 'none',
         'significance': 'none'
     };
     const selectorsToReset = {
-        'dieoff-type': 'Dieoff'
+        'dieoff-type': 'Dieoff',
+        'bin-parameter': 'Valid Date'
     };
     // maps need to have the region be station-select mode
     if (matsParamUtils.getParameterForName('region-type') !== undefined) {
@@ -824,13 +953,17 @@ const showHistogramFace = function () {
         'bin-pivot': 'none',
         'bin-bounds': 'none',
         'truth': 'block',
+        'year': 'block',
+        'storm': 'block',
         'region-type' : 'block',
         'x-axis-parameter': 'none',
         'y-axis-parameter': 'none',
+        'bin-parameter': 'none',
         'significance': 'none'
     };
     const selectorsToReset = {
-        'dieoff-type': 'Dieoff'
+        'dieoff-type': 'Dieoff',
+        'bin-parameter': 'Valid Date'
     };
     // ctc histograms need to have the region be in predefined mode
     if (appName !== undefined && (appName.includes("ceiling") || appName.includes("visibility")) && matsParamUtils.getParameterForName('region-type') !== undefined) {
@@ -865,13 +998,17 @@ const showEnsembleHistogramFace = function () {
         'bin-pivot': 'none',
         'bin-bounds': 'none',
         'truth': 'block',
+        'year': 'block',
+        'storm': 'block',
         'region-type' : 'block',
         'x-axis-parameter': 'none',
         'y-axis-parameter': 'none',
+        'bin-parameter': 'none',
         'significance': 'none'
     };
     const selectorsToReset = {
-        'dieoff-type': 'Dieoff'
+        'dieoff-type': 'Dieoff',
+        'bin-parameter': 'Valid Date'
     };
     setSelectorVisibility(plotType, faceOptions, selectorsToReset);
     return selectorsToReset;
@@ -901,13 +1038,17 @@ const showContourFace = function () {
         'bin-pivot': 'none',
         'bin-bounds': 'none',
         'truth': 'block',
+        'year': 'block',
+        'storm': 'block',
         'region-type' : 'none',
         'x-axis-parameter': 'block',
         'y-axis-parameter': 'block',
+        'bin-parameter': 'none',
         'significance': plotType === matsTypes.PlotTypes.contourDiff ? 'block' : 'none'
     };
     const selectorsToReset = {
-        'dieoff-type': 'Dieoff'
+        'dieoff-type': 'Dieoff',
+        'bin-parameter': 'Valid Date'
     };
     // contours need to have the region be in predefined mode
     if (matsParamUtils.getParameterForName('region-type') !== undefined) {
@@ -941,13 +1082,17 @@ const showScatterFace = function () {
         'bin-pivot': 'none',
         'bin-bounds': 'none',
         'truth': 'block',
+        'year': 'block',
+        'storm': 'block',
         'region-type' : 'block',
         'x-axis-parameter': 'none',
         'y-axis-parameter': 'none',
+        'bin-parameter': 'none',
         'significance': 'none'
     };
     const selectorsToReset = {
-        'dieoff-type': 'Dieoff'
+        'dieoff-type': 'Dieoff',
+        'bin-parameter': 'Valid Date'
     };
     setSelectorVisibility(plotType, faceOptions, selectorsToReset);
     return selectorsToReset;
@@ -991,8 +1136,10 @@ export default matsCurveUtils = {
     showValidTimeFace: showValidTimeFace,
     showGridScaleFace: showGridScaleFace,
     showDailyModelCycleFace: showDailyModelCycleFace,
+    showYearToYearFace: showYearToYearFace,
     showReliabilityFace: showReliabilityFace,
     showROCFace: showROCFace,
+    showPerformanceDiagramFace: showPerformanceDiagramFace,
     showMapFace: showMapFace,
     showHistogramFace: showHistogramFace,
     showEnsembleHistogramFace: showEnsembleHistogramFace,

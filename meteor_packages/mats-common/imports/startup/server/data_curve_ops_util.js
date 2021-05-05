@@ -135,6 +135,91 @@ const getLinearValueLine = function (xmax, xmin, ymax, ymin, cLabel) {
     return valueLine
 };
 
+// adds a linear line
+const getDashedLinearValueLine = function (xmax, xmin, ymax, ymin, cLabel) {
+
+    const valueLine = {
+        "label": cLabel,
+        "curveId": cLabel,
+        "annotation": "",
+        "name": cLabel,
+        "mode": "lines",
+        "x": [xmin, xmax],
+        "x_epoch": [xmin, xmax],
+        "y": [ymin, ymax],
+        "error_x": [null, null],
+        "error_y": [null, null],
+        "subVals": [],
+        "subSecs": [],
+        "subLevs": [],
+        "stats": [{"d_mean": 0, "sd": 0, "n_good": 0, "lag1": 0, "stde": 0}, {
+            "d_mean": 0,
+            "sd": 0,
+            "n_good": 0,
+            "lag1": 0,
+            "stde": 0
+        }],
+        "tooltip": "",
+        "xmin": xmin,
+        "xmax": xmax,
+        "ymin": ymin,
+        "ymax": ymax,
+        "line": {
+            "dash": "dot",
+            "color": "rgb(0,0,0)",
+            "width": 1
+        },
+        "marker": {
+            "symbol": "circle",
+        },
+        "showlegend": false
+    };
+
+    return valueLine
+};
+
+// adds a linear line
+const getCurveLine = function (xvals, yvals, cLabel) {
+
+    const valueLine = {
+        "label": cLabel,
+        "curveId": cLabel,
+        "annotation": "",
+        "name": cLabel,
+        "mode": "lines",
+        "x": xvals,
+        "y": yvals,
+        "error_x": [null, null],
+        "error_y": [null, null],
+        "subVals": [],
+        "subSecs": [],
+        "subLevs": [],
+        "stats": [{"d_mean": 0, "sd": 0, "n_good": 0, "lag1": 0, "stde": 0}, {
+            "d_mean": 0,
+            "sd": 0,
+            "n_good": 0,
+            "lag1": 0,
+            "stde": 0
+        }],
+        "tooltip": "",
+        "xmin": Math.min(xvals),
+        "xmax": Math.max(xvals),
+        "ymin": Math.min(yvals),
+        "ymax": Math.max(yvals),
+        "line": {
+            "dash": "solid",
+            "color": "rgb(0,0,0)",
+            "width": 1
+        },
+        "marker": {
+            "symbol": "circle",
+        },
+        "showlegend": false
+    };
+
+    return valueLine
+};
+
 // provides curve options for all plot types with an independent x axis and a dependent y axis
 const generateSeriesCurveOptions = function (curve, curveIndex, axisMap, dataSeries, appParams) {
 
@@ -176,6 +261,8 @@ const generateSeriesCurveOptions = function (curve, curveIndex, axisMap, dataSer
             // width: 0
         }
     };
+
+    // var lineMode = appParams.plotType === matsTypes.PlotTypes.performanceDiagram ? "markers" : "lines+markers";
     var curveOptions = {
         ...{
             label: label,
@@ -212,7 +299,7 @@ const generateSeriesCurveOptions = function (curve, curveIndex, axisMap, dataSer
 const generateProfileCurveOptions = function (curve, curveIndex, axisMap, dataProfile, appParams) {
 
     const label = curve['label'];
-    const longLabel = matsPlotUtils.getCurveTextWrapping(appParams.plotType, curve);
+    const longLabel = matsPlotUtils.getCurveText(appParams.plotType, curve);
     const annotation = curve['annotation'];
 
     // adjust axes for later setting of the plot options
@@ -547,6 +634,8 @@ export default matsDataCurveOpsUtils = {
     getHorizontalValueLine: getHorizontalValueLine,
     getVerticalValueLine: getVerticalValueLine,
     getLinearValueLine: getLinearValueLine,
+    getDashedLinearValueLine: getDashedLinearValueLine,
+    getCurveLine: getCurveLine,
     getContourSignificanceLayer: getContourSignificanceLayer,
 
     generateSeriesCurveOptions: generateSeriesCurveOptions,

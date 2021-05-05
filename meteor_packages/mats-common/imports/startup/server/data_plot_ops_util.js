@@ -153,9 +153,9 @@ const generateProfilePlotOptions = function (axisMap, errorMax) {
             }
         },
         legend: {
-            orientation: "v",
-            x: 1.05,
-            y: 1,
+            orientation: "h",
+            x: 0,
+            y: 1.1,
             font: {
                 size: 12,
                 color: '#000000'
@@ -165,14 +165,12 @@ const generateProfilePlotOptions = function (axisMap, errorMax) {
 
     // y-axis options
     var tickVals;
-    var tickText;
     if (matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress) {
         tickVals = [1000, 850, 700, 600, 500, 400, 300, 250, 200, 150, 100, 50, 10];
-        tickText = ['1000', '850', '700', '600', '500', '400', '300', '250', '200', '150', '100', '50', '10'];
     } else {
         tickVals = [1000, 900, 800, 700, 600, 500, 400, 300, 200, 100];
-        tickText = ['1000', '900', '800', '700', '600', '500', '400', '300', '200', '100'];
     }
+    var tickText = tickVals.map(String);
     layout['yaxis'] = {
         title: 'Pressure Level (hPa)',
         titlefont: {
@@ -783,6 +781,132 @@ const generateGridScalePlotOptions = function (axisMap, errorMax) {
     return layout;
 };
 
+// sets plot options for grid scale plots
+const generateYearToYearPlotOptions = function (axisMap, errorMax) {
+    var xmin = axisMap[Object.keys(axisMap)[0]].xmin;
+    var xmax = axisMap[Object.keys(axisMap)[0]].xmax;
+    const yAxisNumber = Object.keys(axisMap).length;
+
+    // overall plot options
+    var layout = {
+        margin: {
+            l: 80,
+            r: 80,
+            b: 80,
+            t: 20,
+            pad: 4
+        },
+        zeroline: false,
+        hovermode: 'closest',
+        hoverlabel: {
+            font: {
+                size: 16,
+                color: '#FFFFFF'
+            }
+        },
+        legend: {
+            orientation: "h",
+            x: 0,
+            y: 1,
+            font: {
+                size: 12,
+                color: '#000000'
+            }
+        }
+    };
+
+    // x-axis options
+    var tickVals = _.range(xmin, xmax+1, 1);
+    var tickText = tickVals.map(String);
+    layout['xaxis'] = {
+        title: "Year",
+        titlefont: {
+            size: 24,
+            color: '#000000'
+        },
+        tickfont: {
+            size: 18,
+            color: '#000000'
+        },
+        tickvals: tickVals,
+        ticktext: tickText,
+        linecolor: 'black',
+        linewidth: 2,
+        mirror: true,
+        showgrid: true,
+        gridwidth: 1,
+        gridcolor: "rgb(238,238,238)"
+    };
+
+    // allow support for multiple y-axes (currently 8)
+    const axisAnchor = {0: 'x', 1: 'x', 2: 'free', 3: 'free', 4: 'free', 5: 'free', 6: 'free', 7: 'free'};
+    const axisSide = {0: 'left', 1: 'right', 2: 'left', 3: 'right', 4: 'left', 5: 'right', 6: 'left', 7: 'right'};
+    const axisPosition = {0: 0, 1: 1, 2: 0.1, 3: 0.9, 4: 0.2, 5: 0.8, 6: 0.3, 7: 0.7};
+
+    // loop over all y-axes
+    var axisKey;
+    var axisIdx;
+    var axisLabel;
+    for (axisIdx = 0; axisIdx < yAxisNumber; axisIdx++) {
+        // get max and min values and label for curves on this y-axis
+        axisKey = Object.keys(axisMap)[axisIdx];
+        var ymin = axisMap[axisKey].ymin;
+        var ymax = axisMap[axisKey].ymax;
+        ymax = ymax + errorMax;
+        ymin = ymin - errorMax;
+        const yPad = ((ymax - ymin) * 0.025) !== 0 ? (ymax - ymin) * 0.025 : 0.025;
+        xmin = axisMap[axisKey].xmin < xmin ? axisMap[axisKey].xmin : xmin;
+        xmax = axisMap[axisKey].xmax > xmax ? axisMap[axisKey].xmax : xmax;
+        axisLabel = axisMap[axisKey].axisLabel;
+        var axisObjectKey;
+        var axisObjectBegin = {
+            title: axisLabel,
+            titlefont: {
+                size: 24,
+                color: '#000000'
+            },
+            tickfont: {
+                size: 18,
+                color: '#000000'
+            },
+            linecolor: 'black',
+            linewidth: 2,
+            mirror: true,
+            showgrid: true,
+            gridwidth: 1,
+            gridcolor: "rgb(238,238,238)",
+            range: [ymin - yPad, ymax + 8 * yPad],  // need to allow room at the top for the legend
+            zeroline: false
+        };
+        if (axisIdx === 0) {
+            // the first (and main) y-axis
+            axisObjectKey = 'yaxis';
+            layout[axisObjectKey] = axisObjectBegin;
+        } else if (axisIdx < Object.keys(axisPosition).length) {
+            // subsequent y-axes, up to the 8 we support
+            axisObjectKey = 'yaxis' + (axisIdx + 1);
+            layout[axisObjectKey] = axisObjectBegin;
+            layout[axisObjectKey].anchor = axisAnchor[axisIdx];
+            layout[axisObjectKey].overlaying = 'y';
+            layout[axisObjectKey].side = axisSide[axisIdx];
+            layout[axisObjectKey].position = axisPosition[axisIdx];
+        } else {
+            // if the user by some miracle wants more than 8 y-axes, just shove them all into the position of the 8th
+            axisObjectKey = 'yaxis' + (axisIdx + 1);
+            layout[axisObjectKey] = axisObjectBegin;
+            layout[axisObjectKey].anchor = axisAnchor[Object.keys(axisPosition).length - 1];
+            layout[axisObjectKey].overlaying = 'y';
+            layout[axisObjectKey].side = axisSide[Object.keys(axisPosition).length - 1];
+            layout[axisObjectKey].position = axisPosition[Object.keys(axisPosition).length - 1];
+        }
+    }
+    const xPad = ((xmax - xmin) * 0.025) !== 0 ? (xmax - xmin) * 0.025 : 0.025;
+    xmax = xmax + (xPad * Math.ceil(yAxisNumber / 2));
+    xmin = xmin - (xPad * Math.ceil(yAxisNumber / 2));
+    layout['xaxis']['range'] = [xmin, xmax];
+    return layout;
+};
+
 // sets plot options for reliability plots
 const generateReliabilityPlotOptions = function () {
     var xmin = 0;
@@ -838,7 +962,7 @@ const generateReliabilityPlotOptions = function () {
         showgrid: true,
         gridwidth: 1,
         gridcolor: "rgb(238,238,238)",
-        range: [xmin, xmax + 0.05]
+        range: [xmin, xmax]
     };
 
     // y-axis options
@@ -860,7 +984,7 @@ const generateReliabilityPlotOptions = function () {
         showgrid: true,
         gridwidth: 1,
         gridcolor: "rgb(238,238,238)",
-        range: [ymin, ymax + 0.05]
+        range: [ymin, ymax]
     };
 
     return layout;
@@ -904,7 +1028,7 @@ const generateROCPlotOptions = function () {
 
     // x-axis options
     layout['xaxis'] = {
-        title: 'False Alarm Rate',
+        title: 'Probability of False Detection',
         titlefont: {
             size: 24,
             color: '#000000'
@@ -921,7 +1045,7 @@ const generateROCPlotOptions = function () {
         showgrid: true,
         gridwidth: 1,
         gridcolor: "rgb(238,238,238)",
-        range: [xmin, xmax + 0.05]
+        range: [xmin, xmax]
     };
 
     // y-axis options
@@ -943,7 +1067,90 @@ const generateROCPlotOptions = function () {
         showgrid: true,
         gridwidth: 1,
         gridcolor: "rgb(238,238,238)",
-        range: [ymin, ymax + 0.05]
+        range: [ymin, ymax]
+    };
+
+    return layout;
+};
+
+// sets plot options for ROC plots
+const generatePerformanceDiagramPlotOptions = function () {
+    var xmin = 0;
+    var xmax = 1;
+    var ymin = 0;
+    var ymax = 1;
+
+    // overall plot options
+    var layout = {
+        margin: {
+            l: 80,
+            r: 80,
+            b: 80,
+            t: 20,
+            pad: 4
+        },
+        zeroline: true,
+        perfectLine: false,
+        hovermode: 'closest',
+        hoverlabel: {
+            font: {
+                size: 16,
+                color: '#FFFFFF'
+            }
+        },
+        legend: {
+            orientation: "h",
+            x: 0,
+            y: 1.1,
+            font: {
+                size: 12,
+                color: '#000000'
+            }
+        }
+    };
+
+    // x-axis options
+    layout['xaxis'] = {
+        title: 'Success Ratio (1-FAR)',
+        titlefont: {
+            size: 24,
+            color: '#000000'
+        },
+        tickfont: {
+            size: 18,
+            color: '#000000'
+        },
+        tickvals: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+        ticktext: ["0.0", "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9", "1.0"],
+        linecolor: 'black',
+        linewidth: 2,
+        mirror: true,
+        showgrid: true,
+        gridwidth: 1,
+        gridcolor: "rgb(238,238,238)",
+        range: [xmin, xmax]
+    };
+
+    // y-axis options
+    layout['yaxis'] = {
+        title: 'Probability of Detection',
+        titlefont: {
+            size: 24,
+            color: '#000000'
+        },
+        tickfont: {
+            size: 18,
+            color: '#000000'
+        },
+        tickvals: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+        ticktext: ["0.0", "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9", "1.0"],
+        linecolor: 'black',
+        linewidth: 2,
+        mirror: true,
+        showgrid: true,
+        gridwidth: 1,
+        gridcolor: "rgb(238,238,238)",
+        range: [ymin, ymax]
     };
 
     return layout;
@@ -1290,8 +1497,10 @@ export default matsDataPlotOpsUtils = {
     generateThresholdPlotOptions: generateThresholdPlotOptions,
     generateValidTimePlotOptions: generateValidTimePlotOptions,
     generateGridScalePlotOptions: generateGridScalePlotOptions,
+    generateYearToYearPlotOptions: generateYearToYearPlotOptions,
     generateReliabilityPlotOptions: generateReliabilityPlotOptions,
     generateROCPlotOptions: generateROCPlotOptions,
+    generatePerformanceDiagramPlotOptions: generatePerformanceDiagramPlotOptions,
     generateMapPlotOptions: generateMapPlotOptions,
     generateHistogramPlotOptions: generateHistogramPlotOptions,
     generateEnsembleHistogramPlotOptions: generateEnsembleHistogramPlotOptions,
