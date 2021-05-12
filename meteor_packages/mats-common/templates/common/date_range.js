@@ -222,6 +222,4 @@ Template.dateRange.onRendered(function () {
     elem.addEventListener('refresh', function (e) {
         refresh();
     });
-    //RTP I think this causes it to refresh too quickly. If we need this we should find a better way.
-    //refresh();   // initial value based on what is in the superior
 });
