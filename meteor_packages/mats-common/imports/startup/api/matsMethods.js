@@ -1621,7 +1621,7 @@ const resetApp = function (appRef) {
         const appColor = matsTypes.AppTypes.mats ? "#3366bb" : "darkorchid";
         const appTimeOut = 300;
         var dep_env = process.env.NODE_ENV;
-        var curve_params = [];
+        var curve_params = appRef.appCurveParams;
         var mapboxKey = "undefined";
 
         // if there isn't an app listing in matsCollections create one here so that the configuration-> applySettingsData won't fail
