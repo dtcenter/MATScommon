@@ -1636,7 +1636,7 @@ const resetApp = async function (appRef) {
         const appTitle = appRef.title;
         const appGroup = appRef.group;
         var color;
-        switch (dbType) {
+        switch (type) {
             case matsTypes.AppTypes.mats:
                 if (dbType == matsTypes.DbTypes.couchbase) {
                     color = "#33abbb";
@@ -1648,9 +1648,6 @@ const resetApp = async function (appRef) {
             case matsTypes.AppTypes.metexpress:
                 color = "darkorchid";
                 break;
-        case matsTypes.AppTypes.metexpress:
-            color = "darkorchid";
-            break;
         }
         const appColor = color;
         const appTimeOut = 300;
