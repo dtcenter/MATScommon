@@ -222,5 +222,4 @@ Template.dateRange.onRendered(function () {
     elem.addEventListener('refresh', function (e) {
         refresh();
     });
-    refresh();   // initial value based on what is in the superior
 });
