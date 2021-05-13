@@ -19,6 +19,7 @@ Template.dateRange.onRendered(function () {
     const stopInit = defaultDateRange.stopDate;
     const dstr = defaultDateRange.dstr;
     const isMetexpress = matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
+    const appName = matsCollections.appName.findOne({}).app;
     var statisticTranslations = {};
     if (isMetexpress) {
         statisticTranslations = matsCollections["statistic"].findOne({name: "statistic"}).valuesMap;
@@ -188,24 +189,29 @@ Template.dateRange.onRendered(function () {
             }
             // now we have a normalized date range for the selected superiors.
             // evaluate DRS
-            if ((dataEnd.isBefore(startDsr) || (dataStart.isAfter(endDsr)))) {
-                // the current user setting and the valid range do not overlap so just set the DSR to the most recent 30 days of the valid range
-                endDsr = dataEnd;
-                // set startDsr to the endDsr less 30 days or less the startDsr whichever is later
-                var endDsrLess30 = moment.utc(endDsr).subtract(30, "days");
-                if (endDsrLess30.isAfter(dataStart)) {
-                    startDsr = endDsrLess30;
+            if ( appName !== "met-tc") {    // we want the exact duration of the selected hurricane season
+                if ((dataEnd.isBefore(startDsr) || (dataStart.isAfter(endDsr)))) {
+                    // the current user setting and the valid range do not overlap so just set the DSR to the most recent 30 days of the valid range
+                    endDsr = dataEnd;
+                    // set startDsr to the endDsr less 30 days or less the startDsr whichever is later
+                    var endDsrLess30 = moment.utc(endDsr).subtract(30, "days");
+                    if (endDsrLess30.isAfter(dataStart)) {
+                        startDsr = endDsrLess30;
+                    } else {
+                        startDsr = dataStart;
+                    }
                 } else {
-                    startDsr = dataStart;
+                    // the current user setting and the valid range overlap
+                    if (startDsr.isBefore(dataStart)) {
+                        startDsr = dataStart;
+                    }
+                    if (endDsr.isAfter(dataEnd)) {
+                        endDsr = dataEnd;
+                    }
                 }
             } else {
-                // the current user setting and the valid range overlap
-                if (startDsr.isBefore(dataStart)) {
-                    startDsr = dataStart;
-                }
-                if (endDsr.isAfter(dataEnd)) {
-                    endDsr = dataEnd;
-                }
+                startDsr = dataStart;
+                endDsr = dataEnd;
             }
             // now reset the DSR with the evaluated date range
             const jqIdRef = "#" + idref;
