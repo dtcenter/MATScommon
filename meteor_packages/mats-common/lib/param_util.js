@@ -56,7 +56,6 @@ const getValueIdForParamName = function (paramName) {
 // set the VALUE BOX text for the element that corresponds to the param name
 const setValueTextForParamName = function (paramName, text) {
     try {
-        var text = text;
         var param;
         if (matsCollections[paramName] !== undefined) {
             param = matsCollections[paramName].findOne({name: paramName});
