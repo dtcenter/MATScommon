@@ -13,5 +13,5 @@ OBJS = perm.o
 .c.o:
 	${CC} $*.c $(INCS)
 
-perm_file.x:    perm_file.o permutation_stats.o
-	$(CL) perm_file.o permutation_stats.o -lm -o perm_file.x $(INCS)
+contingency-errors:    perm_file.o permutation_stats.o
+	$(CL) perm_file.o permutation_stats.o -lm -o contingency-errors $(INCS)
