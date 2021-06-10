@@ -83,13 +83,15 @@ int clean_data(char *stat_type, CTPair *ctp[], int n_ctp, int pairs,
    This may not be a very good test for stats that bounce around a lot on an
    hourly basis. If you want to use this in the future, rename this as
    'clean_data', and rename the other (newer) clean_data as something else. */
+// Note - not used as far as I can tell (IM - 2/21)
+/*
 int clean_data1(char *stat_type, CTPair *ctp[], int n_ctp, int pairs,
                 float sd_limit) {
-  /* returns number of ctpairs with that are "clean" (in terms of being within
-   * sd_limit*std from the mean) */
+   // returns number of ctpairs with that are "clean" (in terms of being within
+   //  sd_limit*std from the mean)
   Stat *this_s;
   int i, i_max, j, j_limit, n_oor, good_ctp;
-  int n_non_bad[2]; /* counts number of non BAD (i.e., non-nans) ctpairs */
+  int n_non_bad[2]; // counts number of non BAD (i.e., non-nans) ctpairs
   Stat *newStat();
   double val;
   double sum[2], sum2[2], mean[2], sd[2];
@@ -97,7 +99,7 @@ int clean_data1(char *stat_type, CTPair *ctp[], int n_ctp, int pairs,
   Stat *gen_stat(CTPair * ctp, char *stat_type, int pairs);
   int compareValidTimes(const void *pp1, const void *pp2);
 
-  n_oor = 0; /* counts number of out of range ctpairs */
+  n_oor = 0; // counts number of out of range ctpairs
   good_ctp = n_ctp;
 
   if (n_ctp == 1) {
@@ -125,23 +127,23 @@ int clean_data1(char *stat_type, CTPair *ctp[], int n_ctp, int pairs,
       }
     }
   }
-  /* first time through to get mean and sd for each stat */
+  // first time through to get mean and sd for each stat
   for (j = 0; j < j_limit; j++) {
     mean[j] = sum[j] / n_non_bad[j];
     sd[j] = sqrt(sum2[j] / n_non_bad[j] - mean[j] * mean[j]);
     printf(";%d mean of %d non-NAN stats: %.3f, sd %.3f\n", j, n_non_bad[j],
            mean[j], sd[j]);
   }
-  /* then find times that exceed the sd cutoff */
+  // then find times that exceed the sd cutoff
   for (i = 0; i < n_ctp; i++) {
     for (j = 0; j < j_limit; j++) {
       if (s[i]->val[j] < BAD_VAL / 2.0) {
         if (fabs(s[i]->val[j] - mean[j]) > sd_limit * sd[j]) {
-          /*printf("found bad stat at i=%d, %.3f, %d %d %d %d\n",
-            i,s[i]->val[j],ctp[i]->ct[0]->hits,
-            ctp[i]->ct[0]->misss,ctp[i]->ct[0]->fas,ctp[i]->ct[0]->crs);*/
+          // printf("found bad stat at i=%d, %.3f, %d %d %d %d\n",
+          //   i,s[i]->val[j],ctp[i]->ct[0]->hits,
+          //   ctp[i]->ct[0]->misss,ctp[i]->ct[0]->fas,ctp[i]->ct[0]->crs);
           n_oor++;
-          /* eliminate this CTPair */
+          // eliminate this CTPair
           ctp[i]->valid_time = -1;
         }
       }
@@ -150,17 +152,18 @@ int clean_data1(char *stat_type, CTPair *ctp[], int n_ctp, int pairs,
   printf(";n_pairs: %d, n out of range: %d (non-NAN stats: %d, %d)\n", n_ctp,
          n_oor, n_non_bad[0], n_non_bad[1]);
   if (n_oor > 0) {
-    /* put all the negative valid times at the end */
+    // put all the negative valid times at the end
     qsort(ctp, n_ctp, sizeof(CTPair *), compareValidTimes);
     good_ctp = n_ctp - n_oor;
-    /*for(i=0;i<n_ctp;i++) {
-      printf("%d: %d %d %d %d %d\n",i,
-             ctp[i]->valid_time,ctp[i]->ct[0]->hits,
-             ctp[i]->ct[0]->misss,ctp[i]->ct[0]->fas,ctp[i]->ct[0]->crs);
-             }*/
+    // for(i=0;i<n_ctp;i++) {
+    //   printf("%d: %d %d %d %d %d\n",i,
+    //          ctp[i]->valid_time,ctp[i]->ct[0]->hits,
+    //          ctp[i]->ct[0]->misss,ctp[i]->ct[0]->fas,ctp[i]->ct[0]->crs);
+    //          }
   }
   return (good_ctp);
 }
+*/
 
 void get_stat1(char *stat_type, int avtime, CTPair *ctp[], int n_ctp,
                int min_valid_time, int max_valid_time, int pairs,
