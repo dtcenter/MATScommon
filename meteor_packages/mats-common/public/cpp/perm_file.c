@@ -55,7 +55,7 @@ main(int argc, char *argv[]) {
     sscanf(line, "%s", stat_type);
     printf(";stat_type from input is %s\n", stat_type);
   }
-  
+
   if (fgets(line, 200, stream) == NULL) {
     printf("set env variable SD_LIMIT!\n");
     exit(1);
@@ -74,6 +74,8 @@ main(int argc, char *argv[]) {
     else {
       ct0 = newCT();
       ct1 = newCT();
+      // Parse the line into valid_time, avtime, ct0->hits, etc... variables
+      // and return number filled
       input_count =
           sscanf(line, "%d %d %d %d %d %d %d %d %d %d", &valid_time, &avtime,
                  &ct0->hits, &ct0->fas, &ct0->misss, &ct0->crs, &ct1->hits,
@@ -89,6 +91,7 @@ main(int argc, char *argv[]) {
         ct1->misss = 0;
         ct1->crs = 0;
       }
+
       ctpair = newCTPair();
       ctpair->ct[0] = ct0;
       ctpair->ct[1] = ct1;
@@ -97,14 +100,17 @@ main(int argc, char *argv[]) {
       if (valid_time < min_valid_time) {
         min_valid_time = valid_time;
       }
+
       if (valid_time > max_valid_time) {
         max_valid_time = valid_time;
       }
+
       if (i > MAX_PAIRS) {
         printf("too many pairs of contingency tables. Max = %d\n", MAX_PAIRS);
         exit(1);
       }
     }
+
     if (avtime != last_avtime && last_avtime != -1) {
       n_ctp--; /* don't include the last CTPair, because it's for the next time
                 */
@@ -115,8 +121,10 @@ main(int argc, char *argv[]) {
       i_start = i - 1;
       n_ctp = 1;
     }
+
     last_avtime = avtime;
   }
+
   get_stat1(stat_type, last_avtime, &ctp[i_start], n_ctp, min_valid_time,
             max_valid_time, pairs, sd_limit);
   max_ctp = i;

@@ -336,8 +336,7 @@ Stat *gen_stat(CTPair *ctp, char *stat_type, int pairs) {
       s->val[i] = val;
     }
   } else {
-    printf("Stat = %s not supported.\n",
-           stat_type);
+    printf("Stat = %s not supported.\n", stat_type);
     exit(1);
   }
   if (s->val[0] > BAD_VAL / 2.0 || s->val[1] > BAD_VAL / 2.0) {
