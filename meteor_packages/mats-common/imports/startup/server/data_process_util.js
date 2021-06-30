@@ -162,11 +162,20 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
         const filteredValues = values.filter(x => x);
         var miny = Math.min(...filteredValues);
         var maxy = Math.max(...filteredValues);
-        if (means.indexOf(0) !== -1 && 0 < miny) {
-            miny = 0;
-        }
-        if (means.indexOf(0) !== -1 && 0 > maxy) {
-            maxy = 0;
+        if (means.some(function (m) {return m !== null})) {
+            if (means.indexOf(0) !== -1 && 0 < miny) {
+                miny = 0;
+            }
+            if (means.indexOf(0) !== -1 && 0 > maxy) {
+                maxy = 0;
+            }
+        } else {
+            if (values.indexOf(0) !== -1 && 0 < miny) {
+                miny = 0;
+            }
+            if (values.indexOf(0) !== -1 && 0 > maxy) {
+                maxy = 0;
+            }
         }
         stats.miny = miny;
         stats.maxy = maxy;
