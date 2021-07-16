@@ -920,7 +920,7 @@ const generateReliabilityPlotOptions = function () {
             l: 80,
             r: 80,
             b: 80,
-            t: 20,
+            t: 80,
             pad: 4
         },
         zeroline: true,
@@ -1003,7 +1003,7 @@ const generateROCPlotOptions = function () {
             l: 80,
             r: 80,
             b: 80,
-            t: 20,
+            t: 80,
             pad: 4
         },
         zeroline: true,
@@ -1086,7 +1086,7 @@ const generatePerformanceDiagramPlotOptions = function () {
             l: 80,
             r: 80,
             b: 80,
-            t: 20,
+            t: 80,
             pad: 4
         },
         zeroline: true,
@@ -1505,5 +1505,4 @@ export default matsDataPlotOpsUtils = {
     generateHistogramPlotOptions: generateHistogramPlotOptions,
     generateEnsembleHistogramPlotOptions: generateEnsembleHistogramPlotOptions,
     generateContourPlotOptions: generateContourPlotOptions
-
 }
