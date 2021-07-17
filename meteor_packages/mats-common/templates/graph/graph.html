@@ -43,6 +43,9 @@
                         {{/if}}
                         {{#if isNotMap}}
                             <button id="legendTextButton" type="button" class="legendTextButton btn btn-primary fa fa-pencil" style="display:block;"  data-toggle="tooltip" data-placement="top" title="edit legend text">&nbsp;&nbsp;<strong>Edit Legend</strong></button>
+                            {{#if isLinePlot}}
+                                <button id="filterPointsButton" type="button" class="filterPointsButton btn btn-primary fa fa-check-square" style="display:block;"  data-toggle="tooltip" data-placement="top" title="filter graph points">&nbsp;&nbsp;<strong>Filter Points</strong></button>
+                            {{/if}}
                             <button id="replotZoomButton" type="button" class="replotZoomButton btn btn-primary fa fa-line-chart" style="display:{{displayReplotZoom}};"  data-toggle="tooltip" data-placement="top" title="replot graph to current zoom setting">&nbsp;&nbsp;<strong>Re-sample</strong></button>
                         {{/if}}
                         <button id="reCacheButton" type="button" class="reCacheButton btn btn-primary fa fa-line-chart" style="display:block;"  data-toggle="tooltip" data-placement="top" title="replot graph and refresh cache with new data">&nbsp;&nbsp;<strong>Re-cache</strong></button>
@@ -330,6 +333,37 @@
             </div>
             <!-- /.modal-dialog -->
         </div>
+        {{#if isLinePlot}}
+            <div id="filterPointsModal" class="modal container" role="dialog">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3>Uncheck points to exclude from graph: </h3>
+                        </div>
+                        <div class="modal-body" style="overflow-x: hidden; overflow-y: auto;">
+                            {{#each curves}}
+                                <div class="row">
+                                    <label class="col-12"><h3>&nbsp;&nbsp;{{this.label}}: </h3></label>
+                                </div>
+                                {{#each xVals this.label}}
+                                    <div class="row">
+                                        <label class="col-8">&nbsp;&nbsp;&nbsp;&nbsp;{{this.val}}&nbsp;&nbsp;</label>
+                                        <input id="{{this.label}}---filterPoint" class="filter-point data-input checkboxInput col-4" type="checkbox" value="" name="filterPoint" checked/>
+                                    </div>
+                                {{/each}}
+                            {{/each}}
+                        </div>
+                        <div class="modal-footer btn-group">
+                            <button type="button" class="cancel-send btn btn-info" data-dismiss="modal">&nbsp;&nbsp;Cancel</button>
+                            <button name="filterPointsSubmit" id="filterPointsSubmit" type="submit" class="send btn btn-primary">&nbsp;&nbsp;Submit
+                            </button>
+                        </div>
+                    </div>
+                    <!-- /.modal-content -->
+                </div>
+                <!-- /.modal-dialog -->
+            </div>
+        {{/if}}
         {{#if isContour}}
             <div id="colorbarModal" class="modal container" role="dialog">
                 <div class="modal-dialog">

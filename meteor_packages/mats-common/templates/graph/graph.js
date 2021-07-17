@@ -87,6 +87,7 @@ Template.graph.helpers({
                             'showlegend': dataset[lidx].showlegend,
                             'mode': dataset[lidx].mode,
                             'x': [dataset[lidx].x],
+                            'y': [dataset[lidx].y],
                             'error_y': dataset[lidx].error_y,
                             'error_x': dataset[lidx].error_x,
                             'line.dash': dataset[lidx].line.dash,
@@ -235,6 +236,25 @@ Template.graph.helpers({
     },
     curves: function () {
         return Session.get('Curves');
+    },
+    xVals: function (curveLabel) {
+        Session.get('PlotResultsUpDated');
+        var dataset = matsCurveUtils.getGraphResult().data;
+        var xVals = [];
+        if (dataset !== undefined && dataset !== null) {
+            for (var i = 0; i < dataset.length; i++) {
+                if (dataset[i].label === curveLabel) {
+                    for (var j = 0; j < dataset[i].x.length; j++) {
+                        xVals.push({
+                            val: dataset[i].x[j],
+                            label: curveLabel + "---" + dataset[i].x[j].toString()
+                        });
+                    }
+                    return xVals;
+                }
+            }
+        }
+        return [];
     },
     plotName: function () {
         return (Session.get('PlotParams') === [] || Session.get('PlotParams').plotAction === undefined) || Session.get('plotType') === matsTypes.PlotTypes.map ? "" : Session.get('PlotParams').plotAction.toUpperCase();
@@ -1003,6 +1023,9 @@ Template.graph.events({
     },
     'click .legendTextButton': function () {
         $("#legendTextModal").modal('show');
+    },
+    'click .filterPointsButton': function () {
+        $("#filterPointsModal").modal('show');
     },
     'click .colorbarButton': function () {
         $("#colorbarModal").modal('show');
@@ -1850,6 +1873,57 @@ Template.graph.events({
             curveOpsUpdate[uidx]['name'] = updates[uidx]['name'];
         }
         $("#legendTextModal").modal('hide');
+    },
+    // add filter points modal submit button
+    'click #filterPointsSubmit': function (event) {
+        event.preventDefault();
+        var dataset = matsCurveUtils.getGraphResult().data;
+        var updates = [];
+        // get input check box data
+        $("[id$=filterPoint]").get().forEach(function (elem, index) {
+            if (elem.checked === false) {
+                const splitElemId = elem.id.split("---");
+                const curveLabel = splitElemId[0];
+                const xVal = splitElemId[1];
+                for (var i = 0; i < dataset.length; i++) {
+                    if (dataset[i].label === curveLabel) {
+                        const j = dataset[i].x.indexOf(Number(xVal));
+                        if (j !== -1) {
+                            dataset[i].x.splice(j, 1);
+                            dataset[i].y.splice(j, 1);
+                            if (dataset[i].error_x && !Array.isArray(dataset[i].error_x) && typeof dataset[i].error_x === 'object') {
+                                dataset[i].error_x.array.splice(j, 1);
+                            }
+                            if (dataset[i].error_y && !Array.isArray(dataset[i].error_y) && typeof dataset[i].error_y === 'object') {
+                                dataset[i].error_y.array.splice(j, 1);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        for (var i = 0; i < dataset.length; i++) {
+            updates[i] = {
+                x: [dataset[i].x],
+                y: [dataset[i].y],
+                error_x: dataset[i].error_x,
+                error_y: dataset[i].error_y
+            };
+        }
+        for (var uidx = 0; uidx < updates.length; uidx++) {
+            // apply new settings
+            Plotly.restyle($("#placeholder")[0], updates[uidx], uidx);
+        }
+
+        // save the updates in case we want to pass them to a pop-out window.
+        for (uidx = 0; uidx < updates.length; uidx++) {
+            curveOpsUpdate[uidx] = curveOpsUpdate[uidx] === undefined ? {} : curveOpsUpdate[uidx];
+            curveOpsUpdate[uidx]['x'] = updates[uidx]['x'];
+            curveOpsUpdate[uidx]['y'] = updates[uidx]['y'];
+            curveOpsUpdate[uidx]['error_x'] = updates[uidx]['error_x'];
+            curveOpsUpdate[uidx]['error_y'] = updates[uidx]['error_y'];
+        }
+        $("#filterPointsModal").modal('hide');
     },
     // add colorbar customization modal submit button
     'click #colorbarSubmit': function (event) {
