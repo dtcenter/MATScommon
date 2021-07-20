@@ -1552,7 +1552,7 @@ Template.graph.events({
             }
         }
     },
-    // add refresh button
+    // add refresh button handler
     'click #refresh-plot': function (event) {
         event.preventDefault();
         var plotType = Session.get('plotType');
@@ -1941,6 +1941,26 @@ Template.graph.events({
     // add filter points modal submit button
     'click #filterPointsSubmit': function (event) {
         event.preventDefault();
+        // reset previously deleted points
+        const lineTypeResetOpts = Session.get('lineTypeResetOpts');
+        var resetAttrs = {};
+        for (var lidx = 0; lidx < lineTypeResetOpts.length; lidx++) {
+            resetAttrs = {
+                x: lineTypeResetOpts[lidx]['x'],
+                y: lineTypeResetOpts[lidx]['y'],
+                text: lineTypeResetOpts[lidx]['text'],
+                error_x: lineTypeResetOpts[lidx]['error_x'],
+                error_y: lineTypeResetOpts[lidx]['error_y'],
+            }
+            if (lineTypeResetOpts[lidx].binVals !== undefined) {
+                resetAttrs["binVals"] = lineTypeResetOpts[lidx].binVals;
+            } else if (lineTypeResetOpts[lidx].threshold_all !== undefined) {
+                resetAttrs["threshold_all"] = lineTypeResetOpts[lidx].threshold_all;
+            }
+            Plotly.restyle($("#placeholder")[0], resetAttrs, lidx);
+            resetAttrs = {};
+        }
+        // now remove this event's specified points
         var plotType = Session.get('plotType');
         var dataset = matsCurveUtils.getGraphResult().data;
         var updates = [];
