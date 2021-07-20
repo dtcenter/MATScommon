@@ -1112,6 +1112,7 @@ Template.graph.events({
         var newOpts = {};
         var updates = [];
         var origX = [];
+        var equiX = [];
         var tickvals = [];
         var ticktext = [];
         var didx;
@@ -1136,6 +1137,7 @@ Template.graph.events({
                         newX.push(xidx);
                     }
                 }
+                equiX.push([newX]);
 
                 // redraw the curves with equally-spaced x values
                 updates[didx] = updates[didx] === undefined ? {} : updates[didx];
@@ -1156,6 +1158,7 @@ Template.graph.events({
             }
             Session.set('thresholdEquiX', true);
             Session.set('origX', origX);
+            Session.set('equiX', equiX);
         } else {
             // axes not equally spaced, so make them not
             origX = Session.get('origX');   // get the original x values back out of the session
@@ -1941,6 +1944,8 @@ Template.graph.events({
     // add filter points modal submit button
     'click #filterPointsSubmit': function (event) {
         event.preventDefault();
+        var plotType = Session.get('plotType');
+        var dataset = matsCurveUtils.getGraphResult().data;
         // reset previously deleted points
         const lineTypeResetOpts = Session.get('lineTypeResetOpts');
         var resetAttrs = {};
@@ -1957,12 +1962,16 @@ Template.graph.events({
             } else if (lineTypeResetOpts[lidx].threshold_all !== undefined) {
                 resetAttrs["threshold_all"] = lineTypeResetOpts[lidx].threshold_all;
             }
+            // need to deal with different x values if this is a threshold plot and we've equi-spaced the x axis
+            if (plotType === matsTypes.PlotTypes.threshold && Session.get('thresholdEquiX')) {
+                resetAttrs.x = Session.get("equiX")[lidx];
+                dataset[lidx].x = Session.get("equiX")[lidx];
+                dataset[lidx]["origX"] = Session.get("origX")[lidx];
+            }
             Plotly.restyle($("#placeholder")[0], resetAttrs, lidx);
             resetAttrs = {};
         }
         // now remove this event's specified points
-        var plotType = Session.get('plotType');
-        var dataset = matsCurveUtils.getGraphResult().data;
         var updates = [];
         // get input check box data
         $("[id$=filterPoint]").get().forEach(function (elem, index) {
@@ -1985,12 +1994,14 @@ Template.graph.events({
                                 break;
                             case matsTypes.PlotTypes.timeSeries:
                             case matsTypes.PlotTypes.dieoff:
-                            case matsTypes.PlotTypes.threshold:
                             case matsTypes.PlotTypes.validtime:
                             case matsTypes.PlotTypes.gridscale:
                             case matsTypes.PlotTypes.dailyModelCycle:
                             case matsTypes.PlotTypes.yearToYear:
                                 j = dataset[i].x.indexOf(Number(indVal));
+                                break;
+                            case matsTypes.PlotTypes.threshold:
+                                j = Session.get('thresholdEquiX') ? dataset[i].origX.indexOf(Number(indVal)) : dataset[i].x.indexOf(Number(indVal));
                                 break;
                             default:
                                 j = -1;
@@ -2004,6 +2015,9 @@ Template.graph.events({
                                 dataset[i].binVals.splice(j, 1);
                             } else if (dataset[i].threshold_all !== undefined) {
                                 dataset[i].threshold_all.splice(j, 1);
+                            }
+                            if (dataset[i].origX !== undefined) {
+                                dataset[i].origX.splice(j, 1);
                             }
                             if (dataset[i].error_x && !Array.isArray(dataset[i].error_x) && typeof dataset[i].error_x === 'object' && dataset[i].error_x.array !== undefined) {
                                 dataset[i].error_x.array.splice(j, 1);
