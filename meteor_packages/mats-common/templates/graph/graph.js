@@ -2012,11 +2012,14 @@ Template.graph.events({
                                 dataset[i].error_y.array.splice(j, 1);
                             }
                         }
+                        break;
                     }
                 }
             }
         });
+
         for (var i = 0; i < dataset.length; i++) {
+            // extract relevant fields from dataset to update the plot
             updates[i] = {
                 x: [dataset[i].x],
                 y: [dataset[i].y],
@@ -2029,24 +2032,21 @@ Template.graph.events({
             } else if (dataset[i].threshold_all !== undefined) {
                 updates[i]["threshold_all"] = [dataset[i].threshold_all];
             }
-        }
-        for (var uidx = 0; uidx < updates.length; uidx++) {
             // apply new settings
-            Plotly.restyle($("#placeholder")[0], updates[uidx], uidx);
-        }
+            Plotly.restyle($("#placeholder")[0], updates[i], i);
 
-        // save the updates in case we want to pass them to a pop-out window.
-        for (uidx = 0; uidx < updates.length; uidx++) {
-            curveOpsUpdate[uidx] = curveOpsUpdate[uidx] === undefined ? {} : curveOpsUpdate[uidx];
-            curveOpsUpdate[uidx]['x'] = updates[uidx]['x'];
-            curveOpsUpdate[uidx]['y'] = updates[uidx]['y'];
-            curveOpsUpdate[uidx]['text'] = updates[uidx]['text'];
-            curveOpsUpdate[uidx]['error_x'] = updates[uidx]['error_x'];
-            curveOpsUpdate[uidx]['error_y'] = updates[uidx]['error_y'];
-            if (updates[uidx].binVals !== undefined) {
-                curveOpsUpdate[uidx]["binVals"] = updates[uidx].binVals;
-            } else if (updates[uidx].threshold_all !== undefined) {
-                curveOpsUpdate[uidx]["threshold_all"] = updates[uidx].threshold_all;
+            // save the updates in case we want to pass them to a pop-out window.
+            // curveOpsUpdate maintains a record of changes from all curve styling fields, not just this one.
+            curveOpsUpdate[i] = curveOpsUpdate[i] === undefined ? {} : curveOpsUpdate[i];
+            curveOpsUpdate[i]['x'] = updates[i]['x'];
+            curveOpsUpdate[i]['y'] = updates[i]['y'];
+            curveOpsUpdate[i]['text'] = updates[i]['text'];
+            curveOpsUpdate[i]['error_x'] = updates[i]['error_x'];
+            curveOpsUpdate[i]['error_y'] = updates[i]['error_y'];
+            if (updates[i].binVals !== undefined) {
+                curveOpsUpdate[i]["binVals"] = updates[i].binVals;
+            } else if (updates[i].threshold_all !== undefined) {
+                curveOpsUpdate[i]["threshold_all"] = updates[i].threshold_all;
             }
         }
         $("#filterPointsModal").modal('hide');
