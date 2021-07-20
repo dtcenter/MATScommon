@@ -88,8 +88,9 @@ Template.graph.helpers({
                             'mode': dataset[lidx].mode,
                             'x': [dataset[lidx].x],
                             'y': [dataset[lidx].y],
-                            'error_y': dataset[lidx].error_y,
-                            'error_x': dataset[lidx].error_x,
+                            'text': [dataset[lidx].text],
+                            'error_y': [dataset[lidx].error_y],
+                            'error_x': [dataset[lidx].error_x],
                             'line.dash': dataset[lidx].line.dash,
                             'line.width': dataset[lidx].line.width,
                             'line.color': dataset[lidx].line.color,
@@ -97,6 +98,11 @@ Template.graph.helpers({
                             'marker.size': dataset[lidx].marker.size,
                             'marker.color': dataset[lidx].marker.color
                         });
+                        if (dataset[lidx].binVals !== undefined) {
+                            lineTypeResetOpts[lidx]["binVals"] = [dataset[lidx].binVals];
+                        } else if (dataset[lidx].threshold_all !== undefined) {
+                            lineTypeResetOpts[lidx]["threshold_all"] = [dataset[lidx].threshold_all];
+                        }
                     }
                     Session.set('lineTypeResetOpts', lineTypeResetOpts);
                     break;
@@ -237,20 +243,78 @@ Template.graph.helpers({
     curves: function () {
         return Session.get('Curves');
     },
-    xVals: function (curveLabel) {
+    indValLabel: function (curveLabel) {
+        var plotType = Session.get('plotType');
+        if (plotType !== undefined) {
+            var fieldName;
+            switch (plotType) {
+                // line plots only
+                case matsTypes.PlotTypes.profile:
+                    fieldName = " levels:";
+                    break;
+                case matsTypes.PlotTypes.reliability:
+                case matsTypes.PlotTypes.roc:
+                case matsTypes.PlotTypes.performanceDiagram:
+                    fieldName = " bin values:";
+                    break;
+                case matsTypes.PlotTypes.timeSeries:
+                case matsTypes.PlotTypes.dieoff:
+                case matsTypes.PlotTypes.threshold:
+                case matsTypes.PlotTypes.validtime:
+                case matsTypes.PlotTypes.gridscale:
+                case matsTypes.PlotTypes.dailyModelCycle:
+                case matsTypes.PlotTypes.yearToYear:
+                    fieldName = " x-values:";
+                    break;
+                default:
+                    fieldName = ":";
+                    break;
+            }
+            return fieldName;
+        }
+        return "";
+    },
+    indVals: function (curveLabel) {
         Session.get('PlotResultsUpDated');
-        var dataset = matsCurveUtils.getGraphResult().data;
-        var xVals = [];
-        if (dataset !== undefined && dataset !== null) {
-            for (var i = 0; i < dataset.length; i++) {
-                if (dataset[i].label === curveLabel) {
-                    for (var j = 0; j < dataset[i].x.length; j++) {
-                        xVals.push({
-                            val: dataset[i].x[j],
-                            label: curveLabel + "---" + dataset[i].x[j].toString()
-                        });
+        var plotType = Session.get('plotType');
+        if (plotType !== undefined) {
+            var dataset = matsCurveUtils.getGraphResult().data;
+            var indVals = [];
+            if (dataset !== undefined && dataset !== null) {
+                for (var i = 0; i < dataset.length; i++) {
+                    if (dataset[i].label === curveLabel) {
+                        var indValsArray;
+                        switch (plotType) {
+                            // line plots only
+                            case matsTypes.PlotTypes.profile:
+                                indValsArray = dataset[i].y;
+                                break;
+                            case matsTypes.PlotTypes.reliability:
+                            case matsTypes.PlotTypes.roc:
+                            case matsTypes.PlotTypes.performanceDiagram:
+                                indValsArray = dataset[i].binVals !== undefined ? dataset[i].binVals : dataset[i].threshold_all;
+                                break;
+                            case matsTypes.PlotTypes.timeSeries:
+                            case matsTypes.PlotTypes.dieoff:
+                            case matsTypes.PlotTypes.threshold:
+                            case matsTypes.PlotTypes.validtime:
+                            case matsTypes.PlotTypes.gridscale:
+                            case matsTypes.PlotTypes.dailyModelCycle:
+                            case matsTypes.PlotTypes.yearToYear:
+                                indValsArray = dataset[i].x;
+                                break;
+                            default:
+                                indValsArray = [];
+                                break;
+                        }
+                        for (var j = 0; j < indValsArray.length; j++) {
+                            indVals.push({
+                                val: indValsArray[j],
+                                label: curveLabel + "---" + indValsArray[j].toString()
+                            });
+                        }
+                        return indVals;
                     }
-                    return xVals;
                 }
             }
         }
@@ -1877,6 +1941,7 @@ Template.graph.events({
     // add filter points modal submit button
     'click #filterPointsSubmit': function (event) {
         event.preventDefault();
+        var plotType = Session.get('plotType');
         var dataset = matsCurveUtils.getGraphResult().data;
         var updates = [];
         // get input check box data
@@ -1884,17 +1949,46 @@ Template.graph.events({
             if (elem.checked === false) {
                 const splitElemId = elem.id.split("---");
                 const curveLabel = splitElemId[0];
-                const xVal = splitElemId[1];
+                const indVal = splitElemId[1];
                 for (var i = 0; i < dataset.length; i++) {
                     if (dataset[i].label === curveLabel) {
-                        const j = dataset[i].x.indexOf(Number(xVal));
+                        var j;
+                        switch (plotType) {
+                            // line plots only
+                            case matsTypes.PlotTypes.profile:
+                                j = dataset[i].y.indexOf(Number(indVal));
+                                break;
+                            case matsTypes.PlotTypes.reliability:
+                            case matsTypes.PlotTypes.roc:
+                            case matsTypes.PlotTypes.performanceDiagram:
+                                j = dataset[i].binVals !== undefined ? dataset[i].binVals.indexOf(Number(indVal)) : dataset[i].threshold_all.indexOf(Number(indVal));
+                                break;
+                            case matsTypes.PlotTypes.timeSeries:
+                            case matsTypes.PlotTypes.dieoff:
+                            case matsTypes.PlotTypes.threshold:
+                            case matsTypes.PlotTypes.validtime:
+                            case matsTypes.PlotTypes.gridscale:
+                            case matsTypes.PlotTypes.dailyModelCycle:
+                            case matsTypes.PlotTypes.yearToYear:
+                                j = dataset[i].x.indexOf(Number(indVal));
+                                break;
+                            default:
+                                j = -1;
+                                break;
+                        }
                         if (j !== -1) {
                             dataset[i].x.splice(j, 1);
                             dataset[i].y.splice(j, 1);
-                            if (dataset[i].error_x && !Array.isArray(dataset[i].error_x) && typeof dataset[i].error_x === 'object') {
+                            dataset[i].text.splice(j, 1);
+                            if (dataset[i].binVals !== undefined) {
+                                dataset[i].binVals.splice(j, 1);
+                            } else if (dataset[i].threshold_all !== undefined) {
+                                dataset[i].threshold_all.splice(j, 1);
+                            }
+                            if (dataset[i].error_x && !Array.isArray(dataset[i].error_x) && typeof dataset[i].error_x === 'object' && dataset[i].error_x.array !== undefined) {
                                 dataset[i].error_x.array.splice(j, 1);
                             }
-                            if (dataset[i].error_y && !Array.isArray(dataset[i].error_y) && typeof dataset[i].error_y === 'object') {
+                            if (dataset[i].error_y && !Array.isArray(dataset[i].error_y) && typeof dataset[i].error_y === 'object' && dataset[i].error_y.array !== undefined) {
                                 dataset[i].error_y.array.splice(j, 1);
                             }
                         }
@@ -1906,9 +2000,15 @@ Template.graph.events({
             updates[i] = {
                 x: [dataset[i].x],
                 y: [dataset[i].y],
-                error_x: dataset[i].error_x,
-                error_y: dataset[i].error_y
+                text: [dataset[i].text],
+                error_x: [dataset[i].error_x],
+                error_y: [dataset[i].error_y]
             };
+            if (dataset[i].binVals !== undefined) {
+                updates[i]["binVals"] = [dataset[i].binVals];
+            } else if (dataset[i].threshold_all !== undefined) {
+                updates[i]["threshold_all"] = [dataset[i].threshold_all];
+            }
         }
         for (var uidx = 0; uidx < updates.length; uidx++) {
             // apply new settings
@@ -1920,8 +2020,14 @@ Template.graph.events({
             curveOpsUpdate[uidx] = curveOpsUpdate[uidx] === undefined ? {} : curveOpsUpdate[uidx];
             curveOpsUpdate[uidx]['x'] = updates[uidx]['x'];
             curveOpsUpdate[uidx]['y'] = updates[uidx]['y'];
+            curveOpsUpdate[uidx]['text'] = updates[uidx]['text'];
             curveOpsUpdate[uidx]['error_x'] = updates[uidx]['error_x'];
             curveOpsUpdate[uidx]['error_y'] = updates[uidx]['error_y'];
+            if (updates[uidx].binVals !== undefined) {
+                curveOpsUpdate[uidx]["binVals"] = updates[uidx].binVals;
+            } else if (updates[uidx].threshold_all !== undefined) {
+                curveOpsUpdate[uidx]["threshold_all"] = updates[uidx].threshold_all;
+            }
         }
         $("#filterPointsModal").modal('hide');
     },

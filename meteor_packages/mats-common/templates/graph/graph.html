@@ -343,9 +343,9 @@
                         <div class="modal-body" style="overflow-x: hidden; overflow-y: auto;">
                             {{#each curves}}
                                 <div class="row">
-                                    <label class="col-12"><h3>&nbsp;&nbsp;{{this.label}}: </h3></label>
+                                    <label class="col-12"><h3>&nbsp;&nbsp;{{this.label}}{{indValLabel}} </h3></label>
                                 </div>
-                                {{#each xVals this.label}}
+                                {{#each indVals this.label}}
                                     <div class="row">
                                         <label class="col-8">&nbsp;&nbsp;&nbsp;&nbsp;{{this.val}}&nbsp;&nbsp;</label>
                                         <input id="{{this.label}}---filterPoint" class="filter-point data-input checkboxInput col-4" type="checkbox" value="" name="filterPoint" checked/>
