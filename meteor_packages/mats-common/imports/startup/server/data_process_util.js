@@ -588,7 +588,6 @@ const processDataROC = function (dataset, appParams, curveInfoParams, plotParams
 
 const processDataPerformanceDiagram = function (dataset, appParams, curveInfoParams, plotParams, bookkeepingParams) {
     var error = "";
-    const appName = matsCollections.appName.findOne({}).app;
 
     // sort data statistics for each curve
     for (var curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex++) {
@@ -598,9 +597,11 @@ const processDataPerformanceDiagram = function (dataset, appParams, curveInfoPar
 
         var di = 0;
         while (di < data.x.length) {
+            var binValue = curveInfoParams.statType.includes("met-") ? data.threshold_all[di] : data.binVals[di];
+            binValue = data.binParam.indexOf("Date") > -1 ? moment.utc(binValue * 1000).format("YYYY-MM-DD HH:mm") : binValue;
             // store statistics for this di datapoint
             data.stats[di] = {
-                bin_value: curveInfoParams.statType.includes("met-") ? data.threshold_all[di] : data.binVals[di],
+                bin_value: binValue,
                 pody: data.y[di],
                 fa: data.x[di],
                 n: data.n[di],
@@ -609,7 +610,7 @@ const processDataPerformanceDiagram = function (dataset, appParams, curveInfoPar
             };
             // the tooltip is stored in data.text
             data.text[di] = label;
-            data.text[di] = data.text[di] + "<br>bin value: " + (curveInfoParams.statType.includes("met-") ? data.threshold_all[di] : data.binVals[di]);
+            data.text[di] = data.text[di] + "<br>bin value: " + binValue;
             data.text[di] = data.text[di] + "<br>probability of detection: " + data.y[di];
             data.text[di] = data.text[di] + "<br>success ratio: " + data.x[di];
             data.text[di] = data.text[di] + "<br>n: " + data.n[di];

@@ -309,7 +309,8 @@ Template.graph.helpers({
                         }
                         for (var j = 0; j < indValsArray.length; j++) {
                             indVals.push({
-                                val: indValsArray[j],
+                                val: (plotType === matsTypes.PlotTypes.performanceDiagram && dataset[i].binParam !== undefined && dataset[i].binParam.indexOf("Date") > -1) ?
+                                    moment.utc(indValsArray[j] * 1000).format("YYYY-MM-DD HH:mm") : indValsArray[j],
                                 label: curveLabel + "---" + indValsArray[j].toString()
                             });
                         }
@@ -1989,15 +1990,17 @@ Template.graph.events({
                 for (var i = 0; i < dataset.length; i++) {
                     if (dataset[i].label === curveLabel) {
                         var j;
+                        var indArray;
                         switch (plotType) {
                             // line plots only
                             case matsTypes.PlotTypes.profile:
-                                j = dataset[i].y.indexOf(Number(indVal));
+                                j = isNaN(Number(indVal)) ? dataset[i].y.indexOf(indVal) : dataset[i].y.indexOf(Number(indVal));
                                 break;
                             case matsTypes.PlotTypes.reliability:
                             case matsTypes.PlotTypes.roc:
                             case matsTypes.PlotTypes.performanceDiagram:
-                                j = dataset[i].binVals !== undefined ? dataset[i].binVals.indexOf(Number(indVal)) : dataset[i].threshold_all.indexOf(Number(indVal));
+                                indArray = dataset[i].binVals !== undefined ? dataset[i].binVals : dataset[i].threshold_all;
+                                j = isNaN(Number(indVal)) ? indArray.indexOf(indVal) : indArray.indexOf(Number(indVal));
                                 break;
                             case matsTypes.PlotTypes.timeSeries:
                             case matsTypes.PlotTypes.dieoff:
@@ -2005,10 +2008,11 @@ Template.graph.events({
                             case matsTypes.PlotTypes.gridscale:
                             case matsTypes.PlotTypes.dailyModelCycle:
                             case matsTypes.PlotTypes.yearToYear:
-                                j = dataset[i].x.indexOf(Number(indVal));
+                                j = isNaN(Number(indVal)) ? dataset[i].x.indexOf(indVal) : dataset[i].x.indexOf(Number(indVal));
                                 break;
                             case matsTypes.PlotTypes.threshold:
-                                j = Session.get('thresholdEquiX') ? dataset[i].origX.indexOf(Number(indVal)) : dataset[i].x.indexOf(Number(indVal));
+                                indArray = Session.get('thresholdEquiX') ? dataset[i].origX : dataset[i].x;
+                                j = isNaN(Number(indVal)) ? indArray.indexOf(indVal) : indArray.indexOf(Number(indVal));
                                 break;
                             default:
                                 j = -1;

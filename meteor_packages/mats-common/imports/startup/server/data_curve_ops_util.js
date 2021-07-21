@@ -292,6 +292,11 @@ const generateSeriesCurveOptions = function (curve, curveIndex, axisMap, dataSer
 
     curveOptions['error_y'] = error_y_temp.error_y;
 
+    // for performance diagram point filtering, need to know what we're plotting
+    if (appParams.plotType === matsTypes.PlotTypes.performanceDiagram) {
+        curveOptions['binParam'] = curve['binParam'];
+    }
+
     return curveOptions;
 };
 
