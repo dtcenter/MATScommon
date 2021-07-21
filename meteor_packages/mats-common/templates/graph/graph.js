@@ -89,8 +89,8 @@ Template.graph.helpers({
                             'x': [dataset[lidx].x],
                             'y': [dataset[lidx].y],
                             'text': [dataset[lidx].text],
-                            'error_y': [dataset[lidx].error_y],
-                            'error_x': [dataset[lidx].error_x],
+                            'error_y': dataset[lidx].error_y,
+                            'error_x': dataset[lidx].error_x,
                             'line.dash': dataset[lidx].line.dash,
                             'line.width': dataset[lidx].line.width,
                             'line.color': dataset[lidx].line.color,
@@ -1160,7 +1160,7 @@ Template.graph.events({
             Session.set('origX', origX);
             Session.set('equiX', equiX);
         } else {
-            // axes not equally spaced, so make them not
+            // axes are equally spaced, so make them not
             origX = Session.get('origX');   // get the original x values back out of the session
             for (didx = 0; didx < dataset.length; didx++) {
                 // redraw the curves with the original x values
@@ -1962,6 +1962,13 @@ Template.graph.events({
             } else if (lineTypeResetOpts[lidx].threshold_all !== undefined) {
                 resetAttrs["threshold_all"] = lineTypeResetOpts[lidx].threshold_all;
             }
+            // make sure error bar visibility is correct
+            if (dataset[lidx].error_x && !Array.isArray(dataset[lidx].error_x) && typeof dataset[lidx].error_x === 'object' && dataset[lidx].error_x.array !== undefined) {
+                resetAttrs.error_x["visible"] = dataset[lidx].error_x.visible;
+            }
+            if (dataset[lidx].error_y && !Array.isArray(dataset[lidx].error_y) && typeof dataset[lidx].error_y === 'object' && dataset[lidx].error_y.array !== undefined) {
+                resetAttrs.error_y["visible"] = dataset[lidx].error_y.visible;
+            }
             // need to deal with different x values if this is a threshold plot and we've equi-spaced the x axis
             if (plotType === matsTypes.PlotTypes.threshold && Session.get('thresholdEquiX')) {
                 resetAttrs.x = Session.get("equiX")[lidx];
@@ -2038,8 +2045,8 @@ Template.graph.events({
                 x: [dataset[i].x],
                 y: [dataset[i].y],
                 text: [dataset[i].text],
-                error_x: [dataset[i].error_x],
-                error_y: [dataset[i].error_y]
+                error_x: dataset[i].error_x,
+                error_y: dataset[i].error_y
             };
             if (dataset[i].binVals !== undefined) {
                 updates[i]["binVals"] = [dataset[i].binVals];
