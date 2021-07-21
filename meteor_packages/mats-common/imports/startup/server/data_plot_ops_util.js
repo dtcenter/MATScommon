@@ -293,6 +293,16 @@ const generateDieoffPlotOptions = function (axisMap, errorMax) {
         }
     };
 
+    // people want the axis tick for fhr to be displayed in multiples of three
+    var dtick;
+    if (xmax < 50) {
+        dtick = 3;
+    } else if (xmax < 145) {
+        dtick = 6;
+    } else {
+        dtick = 12;
+    }
+
     // x-axis options
     layout['xaxis'] = {
         title: 'Forecast Hour',
@@ -304,6 +314,7 @@ const generateDieoffPlotOptions = function (axisMap, errorMax) {
             size: 18,
             color: '#000000'
         },
+        dtick: dtick,
         linecolor: 'black',
         linewidth: 2,
         mirror: true,
