@@ -293,6 +293,18 @@ const generateDieoffPlotOptions = function (axisMap, errorMax) {
         }
     };
 
+    // people want the axis tick for fhr to be displayed in multiples of three
+    var dtick;
+    if (xmax < 50) {
+        dtick = 3;
+    } else if (xmax < 122) {
+        dtick = 6;
+    } else if (xmax < 194) {
+        dtick = 12;
+    } else {
+        dtick = 24;
+    }
+
     // x-axis options
     layout['xaxis'] = {
         title: 'Forecast Hour',
@@ -304,6 +316,7 @@ const generateDieoffPlotOptions = function (axisMap, errorMax) {
             size: 18,
             color: '#000000'
         },
+        dtick: dtick,
         linecolor: 'black',
         linewidth: 2,
         mirror: true,
@@ -1437,6 +1450,16 @@ const generateContourPlotOptions = function (dataset) {
         layout['xaxis']['range'] = [moment.utc(xmin * 1000).format("YYYY-MM-DD HH:mm"), moment.utc(xmax * 1000).format("YYYY-MM-DD HH:mm")];
     } else if (xAxisKey.indexOf("Fcst lead time") > -1) {
         layout['xaxis']['range'] = [Number(xmin.toString().replace(/0000/g, "")), Number(xmax.toString().replace(/0000/g, ""))];
+        // people want the axis tick for fhr to be displayed in multiples of three
+        if (Number(xmax.toString().replace(/0000/g, "")) < 50) {
+            layout['xaxis']['dtick'] = 3;
+        } else if (Number(xmax.toString().replace(/0000/g, "")) < 122) {
+            layout['xaxis']['dtick'] = 6;
+        } else if (Number(xmax.toString().replace(/0000/g, "")) < 194) {
+            layout['xaxis']['dtick'] = 12;
+        } else {
+            layout['xaxis']['dtick'] = 24;
+        }
     } else {
         layout['xaxis']['range'] = [xmin, xmax];
     }
@@ -1482,6 +1505,16 @@ const generateContourPlotOptions = function (dataset) {
         layout['yaxis']['range'] = [moment.utc(ymin * 1000).format("YYYY-MM-DD HH:mm"), moment.utc(ymax * 1000).format("YYYY-MM-DD HH:mm")];
     } else if (yAxisKey.indexOf("Fcst lead time") > -1) {
         layout['yaxis']['range'] = [Number(ymin.toString().replace(/0000/g, "")), Number(ymax.toString().replace(/0000/g, ""))];
+        // people want the axis tick for fhr to be displayed in multiples of three
+        if (Number(ymax.toString().replace(/0000/g, "")) < 50) {
+            layout['yaxis']['dtick'] = 3;
+        } else if (Number(ymax.toString().replace(/0000/g, "")) < 122) {
+            layout['yaxis']['dtick'] = 6;
+        } else if (Number(ymax.toString().replace(/0000/g, "")) < 194) {
+            layout['yaxis']['dtick'] = 12;
+        } else {
+            layout['yaxis']['dtick'] = 24;
+        }
     } else {
         layout['yaxis']['range'] = [ymin, ymax];
     }
