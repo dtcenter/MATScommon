@@ -181,6 +181,9 @@ Template.graph.helpers({
                         break;
                 }
                 $("#legendContainer" + dataset[i].curveId).empty().append(localAnnotation);
+                if (localAnnotation === "") {
+                    $("#legendContainer" + dataset[i].curveId)[0].hidden = true;
+                }
 
                 // store the existing axes.
                 Object.keys($("#placeholder")[0].layout).filter(function (k) {
