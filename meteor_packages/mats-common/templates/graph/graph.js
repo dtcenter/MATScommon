@@ -1402,20 +1402,20 @@ Template.graph.events({
             var update;
             if (plotType !== matsTypes.PlotTypes.profile) {
                 update = {
-                    error_y: dataset[myDataIdx].error_y
+                    "error_y.visible": dataset[myDataIdx].error_y.visible
                 };
-                update.error_y.visible = !update.error_y.visible;
-                if (update.error_y.visible) {
+                update["error_y.visible"] = !update["error_y.visible"];
+                if (update["error_y.visible"]) {
                     $('#' + id)[0].value = "hide error bars";
                 } else {
                     $('#' + id)[0].value = "show error bars";
                 }
             } else {
                 update = {
-                    error_x: dataset[myDataIdx].error_x
+                    "error_x.visible": dataset[myDataIdx].error_x.visible
                 };
-                update.error_x.visible = !update.error_x.visible;
-                if (update.error_x.visible) {
+                update["error_x.visible"] = !update["error_x.visible"];
+                if (update["error_x.visible"]) {
                     $('#' + id)[0].value = "hide error bars";
                 } else {
                     $('#' + id)[0].value = "show error bars";
@@ -1953,23 +1953,20 @@ Template.graph.events({
         var resetAttrs = {};
         for (var lidx = 0; lidx < lineTypeResetOpts.length; lidx++) {
             resetAttrs = {
-                x: lineTypeResetOpts[lidx]['x'],
-                y: lineTypeResetOpts[lidx]['y'],
-                text: lineTypeResetOpts[lidx]['text'],
-                error_x: lineTypeResetOpts[lidx]['error_x'],
-                error_y: lineTypeResetOpts[lidx]['error_y'],
+                "x": lineTypeResetOpts[lidx]['x'],
+                "y": lineTypeResetOpts[lidx]['y'],
+                "text": lineTypeResetOpts[lidx]['text']
+            }
+            if (lineTypeResetOpts[lidx].error_x && !Array.isArray(lineTypeResetOpts[lidx].error_x) && typeof lineTypeResetOpts[lidx].error_x === 'object' && lineTypeResetOpts[lidx].error_x.array !== undefined) {
+                resetAttrs["error_x.array"] = [lineTypeResetOpts[lidx].error_x.array];
+            }
+            if (lineTypeResetOpts[lidx].error_y && !Array.isArray(lineTypeResetOpts[lidx].error_y) && typeof lineTypeResetOpts[lidx].error_y === 'object' && lineTypeResetOpts[lidx].error_y.array !== undefined) {
+                resetAttrs["error_y.array"] = [lineTypeResetOpts[lidx].error_y.array];
             }
             if (lineTypeResetOpts[lidx].binVals !== undefined) {
                 resetAttrs["binVals"] = lineTypeResetOpts[lidx].binVals;
             } else if (lineTypeResetOpts[lidx].threshold_all !== undefined) {
                 resetAttrs["threshold_all"] = lineTypeResetOpts[lidx].threshold_all;
-            }
-            // make sure error bar visibility is correct
-            if (dataset[lidx].error_x && !Array.isArray(dataset[lidx].error_x) && typeof dataset[lidx].error_x === 'object' && dataset[lidx].error_x.array !== undefined) {
-                resetAttrs.error_x["visible"] = dataset[lidx].error_x.visible;
-            }
-            if (dataset[lidx].error_y && !Array.isArray(dataset[lidx].error_y) && typeof dataset[lidx].error_y === 'object' && dataset[lidx].error_y.array !== undefined) {
-                resetAttrs.error_y["visible"] = dataset[lidx].error_y.visible;
             }
             // need to deal with different x values if this is a threshold plot and we've equi-spaced the x axis
             if (plotType === matsTypes.PlotTypes.threshold && Session.get('thresholdEquiX')) {
@@ -2047,12 +2044,16 @@ Template.graph.events({
         for (var i = 0; i < dataset.length; i++) {
             // extract relevant fields from dataset to update the plot
             updates[i] = {
-                x: [dataset[i].x],
-                y: [dataset[i].y],
-                text: [dataset[i].text],
-                error_x: dataset[i].error_x,
-                error_y: dataset[i].error_y
+                "x": [dataset[i].x],
+                "y": [dataset[i].y],
+                "text": [dataset[i].text],
             };
+            if (dataset[i].error_x && !Array.isArray(dataset[i].error_x) && typeof dataset[i].error_x === 'object' && dataset[i].error_x.array !== undefined) {
+                updates[i]["error_x.array"] = [dataset[i].error_x.array];
+            }
+            if (dataset[i].error_y && !Array.isArray(dataset[i].error_y) && typeof dataset[i].error_y === 'object' && dataset[i].error_y.array !== undefined) {
+                updates[i]["error_y.array"] = [dataset[i].error_y.array];
+            }
             if (dataset[i].binVals !== undefined) {
                 updates[i]["binVals"] = [dataset[i].binVals];
             } else if (dataset[i].threshold_all !== undefined) {
@@ -2064,15 +2065,12 @@ Template.graph.events({
             // save the updates in case we want to pass them to a pop-out window.
             // curveOpsUpdate maintains a record of changes from all curve styling fields, not just this one.
             curveOpsUpdate[i] = curveOpsUpdate[i] === undefined ? {} : curveOpsUpdate[i];
-            curveOpsUpdate[i]['x'] = updates[i]['x'];
-            curveOpsUpdate[i]['y'] = updates[i]['y'];
-            curveOpsUpdate[i]['text'] = updates[i]['text'];
-            curveOpsUpdate[i]['error_x'] = updates[i]['error_x'];
-            curveOpsUpdate[i]['error_y'] = updates[i]['error_y'];
-            if (updates[i].binVals !== undefined) {
-                curveOpsUpdate[i]["binVals"] = updates[i].binVals;
-            } else if (updates[i].threshold_all !== undefined) {
-                curveOpsUpdate[i]["threshold_all"] = updates[i].threshold_all;
+            const updatedKeys = Object.keys(updates[i]);
+            for (var uidx = 0; uidx < updatedKeys.length; uidx++) {
+                var updatedKey = updatedKeys[uidx];
+                // json doesn't like . to be in keys, so replace it with a placeholder
+                var jsonHappyKey = updatedKey.split(".").join("____");
+                curveOpsUpdate[i][jsonHappyKey] = updates[i][updatedKey];
             }
         }
         $("#filterPointsModal").modal('hide');
