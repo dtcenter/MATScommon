@@ -180,8 +180,13 @@ Template.graph.helpers({
                         localAnnotation = "";
                         break;
                 }
-                $("#legendContainer" + dataset[i].curveId).empty().append(localAnnotation);
-                $("#legendContainer" + dataset[i].curveId)[0].hidden = localAnnotation === "";
+
+                if (plotType !== matsTypes.PlotTypes.contourDiff) {
+                    // contourDiffs don't have the right legend container for the combined curve1-curve0,
+                    // but that doesn't matter because we don't display a legend for contourDiffs.
+                    $("#legendContainer" + dataset[i].curveId).empty().append(localAnnotation);
+                    $("#legendContainer" + dataset[i].curveId)[0].hidden = localAnnotation === "";
+                }
 
                 // store the existing axes.
                 Object.keys($("#placeholder")[0].layout).filter(function (k) {
