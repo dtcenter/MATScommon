@@ -20,6 +20,7 @@ var openWindows = [];
 var xAxes = [];
 var yAxes = [];
 var curveOpsUpdate = [];
+var singleCurveIsolated;
 
 Template.graph.onCreated(function () {
     // the window resize event needs to also resize the graph
@@ -147,6 +148,136 @@ Template.graph.helpers({
                 return false;
             }
             Plotly.newPlot($("#placeholder")[0], dataset, options, {showLink: true});
+
+            // there seems to be a bug in the plotly API, where if you have a handler for plotly_legendclick, 
+            // it will always supersede the handler for plotly_legenddoubleclick. If you comment out the 
+            // handler for plotly_legendclick, then the one for plotly_legenddoubleclick will fire. This 
+            // is not the behavior that the plotly instruction manual implies should occur, but seems to 
+            // be the reality (the broader plotly_click and plotly_doubleclick work as expected, accurately 
+            // recognizing double clicks even if a single click handler exists). I'm going to add handlers 
+            // for both plotly_legendclick and plotly_legenddoubleclick anyway, in the hopes that they 
+            // eventually fix this and it gets pushed to https://cdn.plot.ly/plotly-latest.min.js, but 
+            // until then, the double click show/hide all curves functionality will not exist.
+            $("#placeholder")[0].on('plotly_legendclick', function(data){
+                var dataset = matsCurveUtils.getGraphResult().data;
+                const curveToShowHide = data.curveNumber;
+                const label = dataset[curveToShowHide].label;
+                var plotType = Session.get('plotType');
+                switch (plotType) {
+                    case matsTypes.PlotTypes.timeSeries:
+                    case matsTypes.PlotTypes.profile:
+                    case matsTypes.PlotTypes.dieoff:
+                    case matsTypes.PlotTypes.threshold:
+                    case matsTypes.PlotTypes.validtime:
+                    case matsTypes.PlotTypes.gridscale:
+                    case matsTypes.PlotTypes.dailyModelCycle:
+                    case matsTypes.PlotTypes.yearToYear:
+                    case matsTypes.PlotTypes.reliability:
+                    case matsTypes.PlotTypes.roc:
+                    case matsTypes.PlotTypes.performanceDiagram:
+                        document.getElementById(label + "-curve-show-hide").click();
+                        return false;
+                    case matsTypes.PlotTypes.scatter2d:
+                        document.getElementById(label + "-curve-show-hide-points").click();
+                        return false;
+                    case matsTypes.PlotTypes.histogram:
+                    case matsTypes.PlotTypes.ensembleHistogram:
+                        document.getElementById(label + "-curve-show-hide-bars").click();
+                        return false;
+                    case matsTypes.PlotTypes.map:
+                    case matsTypes.PlotTypes.contour:
+                    case matsTypes.PlotTypes.contourDiff:
+                    default:
+                        // keep the plotly default event behavior
+                        return true;
+                }
+            });
+            singleCurveIsolated = false;
+            $("#placeholder")[0].on('plotly_legenddoubleclick', function(data){
+                var dataset = matsCurveUtils.getGraphResult().data;
+                const curveToShowHide = data.curveNumber;
+                var label = dataset[curveToShowHide].label;
+                var plotType = Session.get('plotType');
+                var hideAllOtherCurves;
+                if (dataset[curveToShowHide].visible === 'legendonly') {
+                    // we want to show this hidden curve and hide all others
+                    hideAllOtherCurves = true;
+                    singleCurveIsolated = label;
+                    // update this curve
+                    switch (plotType) {
+                        case matsTypes.PlotTypes.timeSeries:
+                        case matsTypes.PlotTypes.profile:
+                        case matsTypes.PlotTypes.dieoff:
+                        case matsTypes.PlotTypes.threshold:
+                        case matsTypes.PlotTypes.validtime:
+                        case matsTypes.PlotTypes.gridscale:
+                        case matsTypes.PlotTypes.dailyModelCycle:
+                        case matsTypes.PlotTypes.yearToYear:
+                        case matsTypes.PlotTypes.reliability:
+                        case matsTypes.PlotTypes.roc:
+                        case matsTypes.PlotTypes.performanceDiagram:
+                            document.getElementById(label + "-curve-show-hide").click();
+                            break;
+                        case matsTypes.PlotTypes.scatter2d:
+                            document.getElementById(label + "-curve-show-hide-points").click();
+                            break;
+                        case matsTypes.PlotTypes.histogram:
+                        case matsTypes.PlotTypes.ensembleHistogram:
+                            document.getElementById(label + "-curve-show-hide-bars").click();
+                            break;
+                        case matsTypes.PlotTypes.map:
+                        case matsTypes.PlotTypes.contour:
+                        case matsTypes.PlotTypes.contourDiff:
+                        default:
+                            // keep the plotly default event behavior
+                            return true;
+                    }
+                } else if (singleCurveIsolated === label) {
+                    // we previously showed this curve and hid the others, so undo that now.
+                    hideAllOtherCurves = false;
+                    singleCurveIsolated = false;
+                } else {
+                    // we have a new curve to show at the expense of others, but it's already visible
+                    hideAllOtherCurves = true;
+                    singleCurveIsolated = label;
+                }
+                // update the other curves
+                for (var i = 0; i < dataset.length; i++) {
+                    if (Object.values(matsTypes.ReservedWords).indexOf(dataset[i].label) >= 0 || i === curveToShowHide) {
+                        continue; // don't process the zero or max curves
+                    }
+                    label = dataset[i].label;
+                    switch (plotType) {
+                        case matsTypes.PlotTypes.timeSeries:
+                        case matsTypes.PlotTypes.profile:
+                        case matsTypes.PlotTypes.dieoff:
+                        case matsTypes.PlotTypes.threshold:
+                        case matsTypes.PlotTypes.validtime:
+                        case matsTypes.PlotTypes.gridscale:
+                        case matsTypes.PlotTypes.dailyModelCycle:
+                        case matsTypes.PlotTypes.yearToYear:
+                        case matsTypes.PlotTypes.reliability:
+                        case matsTypes.PlotTypes.roc:
+                        case matsTypes.PlotTypes.performanceDiagram:
+                            if ((hideAllOtherCurves && dataset[i].visible !== 'legendonly') || (!hideAllOtherCurves && dataset[i].visible === 'legendonly')) {
+                                document.getElementById(label + "-curve-show-hide").click();
+                            }
+                            break;
+                        case matsTypes.PlotTypes.scatter2d:
+                            if ((hideAllOtherCurves && dataset[i].visible !== 'legendonly') || (!hideAllOtherCurves && dataset[i].visible === 'legendonly')) {
+                                document.getElementById(label + "-curve-show-hide-points").click();
+                            }
+                            break;
+                        case matsTypes.PlotTypes.histogram:
+                        case matsTypes.PlotTypes.ensembleHistogram:
+                            if ((hideAllOtherCurves && dataset[i].visible !== 'legendonly') || (!hideAllOtherCurves && dataset[i].visible === 'legendonly')) {
+                                document.getElementById(label + "-curve-show-hide-bars").click();
+                            }
+                            break;
+                    }
+                }
+                return false;
+            });
 
             // append annotations and other setup
             var localAnnotation;
@@ -589,8 +720,8 @@ Template.graph.helpers({
             case matsTypes.PlotTypes.reliability:
             case matsTypes.PlotTypes.roc:
             case matsTypes.PlotTypes.performanceDiagram:
-            case matsTypes.PlotTypes.scatter2d:
                 return "block";
+            case matsTypes.PlotTypes.scatter2d:
             case matsTypes.PlotTypes.map:
             case matsTypes.PlotTypes.histogram:
             case matsTypes.PlotTypes.ensembleHistogram:
@@ -1301,15 +1432,15 @@ Template.graph.events({
         });
         if (dataset[myDataIdx].x.length > 0) {
             var update;
-            if (dataset[myDataIdx].visible) {
+            if (dataset[myDataIdx].visible !== 'legendonly') {
                 if (dataset[myDataIdx].mode === "lines") {                  // in line mode, lines are visible, so make nothing visible
                     update = {
-                        visible: !dataset[myDataIdx].visible
+                        visible: 'legendonly'
                     };
                     $('#' + id)[0].value = "show curve";
                 } else if (dataset[myDataIdx].mode === "lines+markers") {   // in line and point mode, lines and points are visible, so make nothing visible
                     update = {
-                        visible: !dataset[myDataIdx].visible
+                        visible: 'legendonly'
                     };
                     $('#' + id)[0].value = "show curve";
                     $('#' + id + "-points")[0].value = "show points";
@@ -1322,12 +1453,12 @@ Template.graph.events({
             } else {
                 if (dataset[myDataIdx].mode === "lines") {                  // in line mode, nothing is visible, so make lines visible
                     update = {
-                        visible: !dataset[myDataIdx].visible
+                        visible: true
                     };
                     $('#' + id)[0].value = "hide curve";
                 } else if (dataset[myDataIdx].mode === "lines+markers") {   // in line and point mode, nothing is visible, so make lines and points visible
                     update = {
-                        visible: !dataset[myDataIdx].visible
+                        visible: true
                     };
                     $('#' + id)[0].value = "hide curve";
                     $('#' + id + "-points")[0].value = "hide points";
@@ -1356,7 +1487,7 @@ Template.graph.events({
         });
         if (dataset[myDataIdx].x.length > 0) {
             var update;
-            if (dataset[myDataIdx].visible) {
+            if (dataset[myDataIdx].visible !== 'legendonly') {
                 if (dataset[myDataIdx].mode === "lines") {                  // lines are visible, so make lines and points visible
                     update = {
                         mode: "lines+markers"
@@ -1369,14 +1500,14 @@ Template.graph.events({
                     $('#' + id)[0].value = "show points";
                 } else if (dataset[myDataIdx].mode === "markers") {         // points are visible, so make nothing visible
                     update = {
-                        visible: !dataset[myDataIdx].visible,
+                        visible: 'legendonly',
                         mode: "lines"
                     };
                     $('#' + id)[0].value = "show points";
                 }
             } else {                                                        // nothing is visible, so make points visible
                 update = {
-                    visible: !dataset[myDataIdx].visible,
+                    visible: true,
                     mode: "markers"
                 };
                 $('#' + id)[0].value = "hide points";
@@ -1448,13 +1579,17 @@ Template.graph.events({
             return d.curveId === label;
         });
         if (dataset[myDataIdx].x.length > 0) {
-            var update = {
-                visible: !dataset[myDataIdx].visible
-            };
-            if (update.visible) {
+            var update;
+            if (dataset[myDataIdx].visible === 'legendonly') {
                 $('#' + id)[0].value = "hide bars";
+                update = {
+                    visible: true
+                };
             } else {
                 $('#' + id)[0].value = "show bars";
+                update = {
+                    visible: 'legendonly'
+                };
             }
         }
         Plotly.restyle($("#placeholder")[0], update, myDataIdx);
