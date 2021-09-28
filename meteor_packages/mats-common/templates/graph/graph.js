@@ -20,7 +20,6 @@ var openWindows = [];
 var xAxes;
 var yAxes;
 var curveOpsUpdate;
-var singleCurveIsolated;
 
 Template.graph.onCreated(function () {
     // the window resize event needs to also resize the graph
@@ -194,7 +193,7 @@ Template.graph.helpers({
                         return true;
                 }
             });
-            singleCurveIsolated = false;
+            Session.set('singleCurveIsolated', false);
             $("#placeholder")[0].on('plotly_legenddoubleclick', function(data){
                 var dataset = matsCurveUtils.getGraphResult().data;
                 const curveToShowHide = data.curveNumber;
@@ -204,7 +203,7 @@ Template.graph.helpers({
                 if (dataset[curveToShowHide].visible === 'legendonly') {
                     // we want to show this hidden curve and hide all others
                     hideAllOtherCurves = true;
-                    singleCurveIsolated = label;
+                    Session.set('singleCurveIsolated', label);
                     // update this curve
                     switch (plotType) {
                         case matsTypes.PlotTypes.timeSeries:
@@ -234,14 +233,14 @@ Template.graph.helpers({
                             // keep the plotly default event behavior
                             return true;
                     }
-                } else if (singleCurveIsolated === label) {
+                } else if (Session.get('singleCurveIsolated') === label) {
                     // we previously showed this curve and hid the others, so undo that now.
                     hideAllOtherCurves = false;
-                    singleCurveIsolated = false;
+                    Session.set('singleCurveIsolated', false);
                 } else {
                     // we have a new curve to show at the expense of others, but it's already visible
                     hideAllOtherCurves = true;
-                    singleCurveIsolated = label;
+                    Session.set('singleCurveIsolated', label);
                 }
                 // update the other curves
                 for (var i = 0; i < dataset.length; i++) {
@@ -324,6 +323,7 @@ Template.graph.helpers({
                 // store the existing axes. Reset global arrays from previous plots.
                 xAxes = [];
                 yAxes = [];
+                Session.set('axesCollapsed', false);
                 Object.keys($("#placeholder")[0].layout).filter(function (k) {
                     if (k.startsWith('xaxis')) {
                         xAxes.push(k);
@@ -1272,51 +1272,88 @@ Template.graph.events({
         Plotly.relayout($("#placeholder")[0], newOpts);
     },
     'click .axisCombineButton': function () {
-        // combine all x- or y-axes into the same axis
         var newOpts = {};
         var updates = [];
         var plotType = Session.get('plotType');
         var dataset = matsCurveUtils.getGraphResult().data;
         var options = Session.get('options');
-        const reservedWords = Object.values(matsTypes.ReservedWords);
-        for (var didx = 0; didx < dataset.length; didx++) {
-            if (reservedWords.indexOf(dataset[didx].label) === -1) {
-                if (plotType === matsTypes.PlotTypes.profile) {
-                    updates[didx] = {
-                        xaxis: "x1"
-                    };
-                } else {
-                     updates[didx] = {
-                        yaxis: "y1"
-                    };
-               }
-                Plotly.restyle($("#placeholder")[0], updates[didx], didx);
-            }
-        }
+        var reservedWords = Object.values(matsTypes.ReservedWords);
         var newAxisLabel = "";
         var min = Number.MAX_VALUE;      // placeholder xmin
         var max = -1 * Number.MAX_VALUE;      // placeholder xmax
-        if (plotType === matsTypes.PlotTypes.profile) {
-            for (var xidx = 0; xidx < xAxes.length; xidx++) {
-                newAxisLabel = newAxisLabel === "" ? options[xAxes[xidx]].title : newAxisLabel + "/" + options[xAxes[xidx]].title;
-                min = options[xAxes[xidx]]['range'][0] < min ? options[xAxes[xidx]]['range'][0] : min;
-                max = options[xAxes[xidx]]['range'][1] > max ? options[xAxes[xidx]]['range'][1] : max;
+        var didx;
+        var xidx;
+        var yidx;
+        if (!Session.get('axesCollapsed')) {
+            // combine all x- or y-axes into the same axis
+            for (didx = 0; didx < dataset.length; didx++) {
+                if (reservedWords.indexOf(dataset[didx].label) === -1) {
+                    if (plotType === matsTypes.PlotTypes.profile) {
+                        updates[didx] = {
+                            xaxis: "x1"
+                        };
+                    } else {
+                        updates[didx] = {
+                            yaxis: "y1"
+                        };
+                }
+                    Plotly.restyle($("#placeholder")[0], updates[didx], didx);
+                }
             }
-            newOpts['xaxis.title'] = newAxisLabel;
-            newOpts['xaxis.range[0]'] = min;
-            newOpts['xaxis.range[1]'] = max;
+            if (plotType === matsTypes.PlotTypes.profile) {
+                for (var xidx = 0; xidx < xAxes.length; xidx++) {
+                    newAxisLabel = newAxisLabel === "" ? options[xAxes[xidx]].title : newAxisLabel + "/" + options[xAxes[xidx]].title;
+                    min = options[xAxes[xidx]]['range'][0] < min ? options[xAxes[xidx]]['range'][0] : min;
+                    max = options[xAxes[xidx]]['range'][1] > max ? options[xAxes[xidx]]['range'][1] : max;
+                }
+                newOpts['xaxis.title'] = newAxisLabel;
+                newOpts['xaxis.range[0]'] = min - ((max - min) * 0.125);
+                newOpts['xaxis.range[1]'] = max + ((max - min) * 0.125);
+            } else {
+                for (var yidx = 0; yidx < yAxes.length; yidx++) {
+                    newAxisLabel = newAxisLabel === "" ? options[yAxes[yidx]].title : newAxisLabel + "/" + options[yAxes[yidx]].title;
+                    min = options[yAxes[yidx]]['range'][0] < min ? options[yAxes[yidx]]['range'][0] : min;
+                    max = options[yAxes[yidx]]['range'][1] > max ? options[yAxes[yidx]]['range'][1] : max;
+                }
+                newOpts['yaxis.title'] = newAxisLabel;
+                newOpts['yaxis.range[0]'] = min - ((max - min) * 0.125);
+                newOpts['yaxis.range[1]'] = max + ((max - min) * 0.125);
+            }
+            Plotly.relayout($("#placeholder")[0], newOpts);
+            Session.set('axesCollapsed', true);
         } else {
-            for (var yidx = 0; yidx < yAxes.length; yidx++) {
-                newAxisLabel = newAxisLabel === "" ? options[yAxes[yidx]].title : newAxisLabel + "/" + options[yAxes[yidx]].title;
-                min = options[yAxes[yidx]]['range'][0] < min ? options[yAxes[yidx]]['range'][0] : min;
-                max = options[yAxes[yidx]]['range'][1] > max ? options[yAxes[yidx]]['range'][1] : max;
+            // separate x- or y-axes back out
+            const lineTypeResetOpts = Session.get('lineTypeResetOpts');
+            for (didx = 0; didx < dataset.length; didx++) {
+                if (reservedWords.indexOf(dataset[didx].label) === -1) {
+                    if (plotType === matsTypes.PlotTypes.profile) {
+                        updates[didx] = {
+                            xaxis: lineTypeResetOpts[didx].xaxis
+                        };
+                    } else {
+                        updates[didx] = {
+                            yaxis: lineTypeResetOpts[didx].yaxis
+                        };
+                    }
+                    Plotly.restyle($("#placeholder")[0], updates[didx], didx);
+                }
             }
-            newOpts['yaxis.title'] = newAxisLabel;
-            newOpts['yaxis.range[0]'] = min;
-            newOpts['yaxis.range[1]'] = max;
+            if (plotType === matsTypes.PlotTypes.profile) {
+                for (xidx = 0; xidx < xAxes.length; xidx++) {
+                    newOpts[xAxes[xidx] + '.title'] = options[xAxes[xidx]].title;
+                    newOpts[xAxes[xidx] + '.range[0]'] = options[xAxes[xidx]]['range'][0];
+                    newOpts[xAxes[xidx] + '.range[1]'] = options[xAxes[xidx]]['range'][1];
+                }
+            } else {
+                for (yidx = 0; yidx < yAxes.length; yidx++) {
+                    newOpts[yAxes[yidx] + '.title'] = options[yAxes[yidx]].title;
+                    newOpts[yAxes[yidx] + '.range[0]'] = options[yAxes[yidx]]['range'][0];
+                    newOpts[yAxes[yidx] + '.range[1]'] = options[yAxes[yidx]]['range'][1];
+                }
+            }
+            Plotly.relayout($("#placeholder")[0], newOpts);
+            Session.set('axesCollapsed', false);
         }
-        Plotly.relayout($("#placeholder")[0], newOpts);
-
         // save the updates in case we want to pass them to a pop-out window.
         for (var uidx = 0; uidx < updates.length; uidx++) {
             curveOpsUpdate[uidx] = curveOpsUpdate[uidx] === undefined ? {} : curveOpsUpdate[uidx];
@@ -1327,8 +1364,7 @@ Template.graph.events({
                 var jsonHappyKey = updatedKey.split(".").join("____");
                 curveOpsUpdate[uidx][jsonHappyKey] = updates[uidx][updatedKey];
             }
-        }
-        
+        }     
     },
     'click .axisXSpace': function (event) {
         // equally space the x values, or restore them.
@@ -1792,6 +1828,7 @@ Template.graph.events({
         var dataset = matsCurveUtils.getGraphResult().data;
         var options = Session.get('options');
         Session.set('thresholdEquiX', false);
+        Session.set('axesCollapsed', false);
         if (curveOpsUpdate.length === 0) {
             // we just need a relayout
             Plotly.relayout($("#placeholder")[0], options);
