@@ -25,13 +25,20 @@
                 <span id="plot-page-button-group" class="btn-group btn-group-sm" style="display:block;">
                     <span id="plot-control-button-group" class="btn-group btn-group-sm" style="display:block;">
                         {{#if isNotMap}}
-                            <button id="axisLimitButton" type="button" class="axisLimitButton btn btn-primary fa fa-arrows" style="display:block;"  data-toggle="tooltip" data-placement="top" title="modify axis">&nbsp;&nbsp;<strong>Axes</strong></button>
+                            <button id="axisLimitButton" type="button" class="axisLimitButton btn btn-primary fa fa-arrows" style="display:block;"  data-toggle="tooltip" data-placement="top" title="modify axes">&nbsp;&nbsp;<strong>Axes</strong></button>
                         {{/if}}
                         {{#if isProfile}}
                             <button id="axisYScale" type="button" class="axisYScale btn btn-primary fa fa-arrows" style="display:block;"  data-toggle="tooltip" data-placement="top" title="toggle linear/log Y axis">&nbsp;&nbsp;<strong>Y Linear/Log</strong></button>
                         {{/if}}
                         {{#if isThreshold}}
                             <button id="axisXSpace" type="button" class="axisXSpace btn btn-primary fa fa-arrows" style="display:block;"  data-toggle="tooltip" data-placement="top" title="toggle equi-spaced X axis">&nbsp;&nbsp;<strong>Equi-space X</strong></button>
+                        {{/if}}
+                        {{#if isMultiAxisLinePlot}}
+                            {{#if isProfile}}
+                                <button id="xAxisCombineButton" type="button" class="axisCombineButton btn btn-primary fa fa-arrows" style="display:block;"  data-toggle="tooltip" data-placement="top" title="combine x-axes">&nbsp;&nbsp;<strong>Merge X Axes</strong></button>
+                            {{else}}
+                                <button id="yAxisCombineButton" type="button" class="axisCombineButton btn btn-primary fa fa-arrows" style="display:block;"  data-toggle="tooltip" data-placement="top" title="combine y-axes">&nbsp;&nbsp;<strong>Merge Y Axes</strong></button>
+                            {{/if}}
                         {{/if}}
                         {{#if isContour}}
                             <button id="colorbarButton" type="button" class="colorbarButton btn btn-primary fa fa-paint-brush" style="display:block;"  data-toggle="tooltip" data-placement="top" title="modify colorbar">&nbsp;&nbsp;<strong>Colorbar</strong></button>

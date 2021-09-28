@@ -17,9 +17,9 @@ import {moment} from 'meteor/momentjs:moment'
 var pageIndex = 0;
 var annotation = "";
 var openWindows = [];
-var xAxes = [];
-var yAxes = [];
-var curveOpsUpdate = [];
+var xAxes;
+var yAxes;
+var curveOpsUpdate;
 var singleCurveIsolated;
 
 Template.graph.onCreated(function () {
@@ -87,6 +87,8 @@ Template.graph.helpers({
                             'visible': dataset[lidx].visible,
                             'showlegend': dataset[lidx].showlegend,
                             'mode': dataset[lidx].mode,
+                            'xaxis': dataset[lidx].xaxis,
+                            'yaxis': dataset[lidx].yaxis,
                             'x': [dataset[lidx].x],
                             'y': [dataset[lidx].y],
                             'text': [dataset[lidx].text],
@@ -319,7 +321,9 @@ Template.graph.helpers({
                     $("#legendContainer" + dataset[i].curveId)[0].hidden = localAnnotation === "";
                 }
 
-                // store the existing axes.
+                // store the existing axes. Reset global arrays from previous plots.
+                xAxes = [];
+                yAxes = [];
                 Object.keys($("#placeholder")[0].layout).filter(function (k) {
                     if (k.startsWith('xaxis')) {
                         xAxes.push(k);
@@ -625,6 +629,31 @@ Template.graph.helpers({
             case matsTypes.PlotTypes.roc:
             case matsTypes.PlotTypes.performanceDiagram:
                 return true;
+            case matsTypes.PlotTypes.map:
+            case matsTypes.PlotTypes.histogram:
+            case matsTypes.PlotTypes.ensembleHistogram:
+            case matsTypes.PlotTypes.scatter2d:
+            case matsTypes.PlotTypes.contour:
+            case matsTypes.PlotTypes.contourDiff:
+            default:
+                return false;
+        }
+    },
+    isMultiAxisLinePlot: function () {
+        var plotType = Session.get('plotType');
+        switch (plotType) {
+            case matsTypes.PlotTypes.timeSeries:
+            case matsTypes.PlotTypes.profile:
+            case matsTypes.PlotTypes.dieoff:
+            case matsTypes.PlotTypes.threshold:
+            case matsTypes.PlotTypes.validtime:
+            case matsTypes.PlotTypes.gridscale:
+            case matsTypes.PlotTypes.dailyModelCycle:
+            case matsTypes.PlotTypes.yearToYear:
+                return true;
+            case matsTypes.PlotTypes.reliability:
+            case matsTypes.PlotTypes.roc:
+            case matsTypes.PlotTypes.performanceDiagram:
             case matsTypes.PlotTypes.map:
             case matsTypes.PlotTypes.histogram:
             case matsTypes.PlotTypes.ensembleHistogram:
@@ -1241,6 +1270,65 @@ Template.graph.events({
             newOpts[yAxis + '.type'] = $("#placeholder")[0].layout[yAxis].type === 'linear' ? 'log' : 'linear';
         }
         Plotly.relayout($("#placeholder")[0], newOpts);
+    },
+    'click .axisCombineButton': function () {
+        // combine all x- or y-axes into the same axis
+        var newOpts = {};
+        var updates = [];
+        var plotType = Session.get('plotType');
+        var dataset = matsCurveUtils.getGraphResult().data;
+        var options = Session.get('options');
+        const reservedWords = Object.values(matsTypes.ReservedWords);
+        for (var didx = 0; didx < dataset.length; didx++) {
+            if (reservedWords.indexOf(dataset[didx].label) === -1) {
+                if (plotType === matsTypes.PlotTypes.profile) {
+                    updates[didx] = {
+                        xaxis: "x1"
+                    };
+                } else {
+                     updates[didx] = {
+                        yaxis: "y1"
+                    };
+               }
+                Plotly.restyle($("#placeholder")[0], updates[didx], didx);
+            }
+        }
+        var newAxisLabel = "";
+        var min = Number.MAX_VALUE;      // placeholder xmin
+        var max = -1 * Number.MAX_VALUE;      // placeholder xmax
+        if (plotType === matsTypes.PlotTypes.profile) {
+            for (var xidx = 0; xidx < xAxes.length; xidx++) {
+                newAxisLabel = newAxisLabel === "" ? options[xAxes[xidx]].title : newAxisLabel + "/" + options[xAxes[xidx]].title;
+                min = options[xAxes[xidx]]['range'][0] < min ? options[xAxes[xidx]]['range'][0] : min;
+                max = options[xAxes[xidx]]['range'][1] > max ? options[xAxes[xidx]]['range'][1] : max;
+            }
+            newOpts['xaxis.title'] = newAxisLabel;
+            newOpts['xaxis.range[0]'] = min;
+            newOpts['xaxis.range[1]'] = max;
+        } else {
+            for (var yidx = 0; yidx < yAxes.length; yidx++) {
+                newAxisLabel = newAxisLabel === "" ? options[yAxes[yidx]].title : newAxisLabel + "/" + options[yAxes[yidx]].title;
+                min = options[yAxes[yidx]]['range'][0] < min ? options[yAxes[yidx]]['range'][0] : min;
+                max = options[yAxes[yidx]]['range'][1] > max ? options[yAxes[yidx]]['range'][1] : max;
+            }
+            newOpts['yaxis.title'] = newAxisLabel;
+            newOpts['yaxis.range[0]'] = min;
+            newOpts['yaxis.range[1]'] = max;
+        }
+        Plotly.relayout($("#placeholder")[0], newOpts);
+
+        // save the updates in case we want to pass them to a pop-out window.
+        for (var uidx = 0; uidx < updates.length; uidx++) {
+            curveOpsUpdate[uidx] = curveOpsUpdate[uidx] === undefined ? {} : curveOpsUpdate[uidx];
+            var updatedKeys = Object.keys(updates[uidx]);
+            for (var kidx = 0; kidx < updatedKeys.length; kidx++) {
+                var updatedKey = updatedKeys[kidx];
+                // json doesn't like . to be in keys, so replace it with a placeholder
+                var jsonHappyKey = updatedKey.split(".").join("____");
+                curveOpsUpdate[uidx][jsonHappyKey] = updates[uidx][updatedKey];
+            }
+        }
+        
     },
     'click .axisXSpace': function (event) {
         // equally space the x values, or restore them.
