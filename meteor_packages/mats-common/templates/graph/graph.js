@@ -1932,68 +1932,102 @@ Template.graph.events({
     'click #axisSubmit': function (event) {
         event.preventDefault();
         var plotType = Session.get('plotType');
+        var axesCollapsed = Session.get('axesCollapsed');
         var changeYScaleBack = false;
         var newOpts = {};
         // get input axis limits and labels
         $("input[id^=x][id$=AxisLabel]").get().forEach(function (elem, index) {
             if (elem.value !== undefined && elem.value !== "") {
-                newOpts['xaxis' + (index === 0 ? "" : index + 1) + '.title'] = elem.value;
+                if (!axesCollapsed || index === 0) {
+                    // if we've collapsed the axes we only want to process the first one
+                    newOpts['xaxis' + (index === 0 ? "" : index + 1) + '.title'] = elem.value;
+                }
             }
         });
         $("input[id^=x][id$=AxisFont]").get().forEach(function (elem, index) {
             if (elem.value !== undefined && elem.value !== "") {
-                newOpts['xaxis' + (index === 0 ? "" : index + 1) + '.titlefont.size'] = elem.value;
+                if (!axesCollapsed || index === 0) {
+                    // if we've collapsed the axes we only want to process the first one
+                    newOpts['xaxis' + (index === 0 ? "" : index + 1) + '.titlefont.size'] = elem.value;
+                }
             }
         });
         if (plotType === matsTypes.PlotTypes.timeSeries || plotType === matsTypes.PlotTypes.dailyModelCycle || plotType === matsTypes.PlotTypes.yearToYear ||
             ((plotType === matsTypes.PlotTypes.contour || plotType === matsTypes.PlotTypes.contourDiff) && ($("#placeholder")[0].layout.xaxis.title.text).indexOf("Date") > -1)) {
             $("input[id^=x][id$=AxisMinText]").get().forEach(function (elem, index) {
                 if (elem.value !== undefined && elem.value !== "") {
-                    newOpts['xaxis' + (index === 0 ? "" : index + 1) + '.range[0]'] = elem.value;
+                    if (!axesCollapsed || index === 0) {
+                        // if we've collapsed the axes we only want to process the first one
+                        newOpts['xaxis' + (index === 0 ? "" : index + 1) + '.range[0]'] = elem.value;
+                    }
                 }
             });
             $("input[id^=x][id$=AxisMaxText]").get().forEach(function (elem, index) {
                 if (elem.value !== undefined && elem.value !== "") {
-                    newOpts['xaxis' + (index === 0 ? "" : index + 1) + '.range[1]'] = elem.value;
+                    if (!axesCollapsed || index === 0) {
+                        // if we've collapsed the axes we only want to process the first one
+                        newOpts['xaxis' + (index === 0 ? "" : index + 1) + '.range[1]'] = elem.value;
+                    }
                 }
             });
             $("input[id^=x][id$=TickFontText]").get().forEach(function (elem, index) {
                 if (elem.value !== undefined && elem.value !== "") {
-                    newOpts['xaxis' + (index === 0 ? "" : index + 1) + '.tickfont.size'] = elem.value;
+                    if (!axesCollapsed || index === 0) {
+                        // if we've collapsed the axes we only want to process the first one
+                        newOpts['xaxis' + (index === 0 ? "" : index + 1) + '.tickfont.size'] = elem.value;
+                    }
                 }
             });
         } else {
             $("input[id^=x][id$=AxisMin]").get().forEach(function (elem, index) {
                 if (elem.value !== undefined && elem.value !== "") {
-                    newOpts['xaxis' + (index === 0 ? "" : index + 1) + '.range[0]'] = elem.value;
+                    if (!axesCollapsed || index === 0) {
+                        // if we've collapsed the axes we only want to process the first one
+                        newOpts['xaxis' + (index === 0 ? "" : index + 1) + '.range[0]'] = elem.value;
+                    }
                 }
             });
             $("input[id^=x][id$=AxisMax]").get().forEach(function (elem, index) {
                 if (elem.value !== undefined && elem.value !== "") {
-                    newOpts['xaxis' + (index === 0 ? "" : index + 1) + '.range[1]'] = elem.value;
+                    if (!axesCollapsed || index === 0) {
+                        // if we've collapsed the axes we only want to process the first one
+                        newOpts['xaxis' + (index === 0 ? "" : index + 1) + '.range[1]'] = elem.value;
+                    }
                 }
             });
             $("input[id^=x][id$=TickFont]").get().forEach(function (elem, index) {
                 if (elem.value !== undefined && elem.value !== "") {
-                    newOpts['xaxis' + (index === 0 ? "" : index + 1) + '.tickfont.size'] = elem.value;
+                    if (!axesCollapsed || index === 0) {
+                        // if we've collapsed the axes we only want to process the first one
+                        newOpts['xaxis' + (index === 0 ? "" : index + 1) + '.tickfont.size'] = elem.value;
+                    }
                 }
             });
             $("input[id^=x][id$=SigFigs]").get().forEach(function (elem, index) {
                 if (elem.value !== undefined && elem.value !== "") {
-                    if (!isNaN(elem.value)) {
-                        newOpts['xaxis' + (index === 0 ? "" : index + 1) + '.tickformat'] = "." + elem.value.toString() + "r";
+                    if (!axesCollapsed || index === 0) {
+                        // if we've collapsed the axes we only want to process the first one
+                        if (!isNaN(elem.value)) {
+                            newOpts['xaxis' + (index === 0 ? "" : index + 1) + '.tickformat'] = "." + elem.value.toString() + "r";
+                        }
                     }
                 }
             });
         }
         $("input[id^=y][id$=AxisLabel]").get().forEach(function (elem, index) {
             if (elem.value !== undefined && elem.value !== "") {
-                newOpts['yaxis' + (index === 0 ? "" : index + 1) + '.title'] = elem.value;
+                if (!axesCollapsed || index === 0) {
+                    // if we've collapsed the axes we only want to process the first one
+                    newOpts['yaxis' + (index === 0 ? "" : index + 1) + '.title'] = elem.value;
+                }
             }
         });
         $("input[id^=y][id$=AxisFont]").get().forEach(function (elem, index) {
             if (elem.value !== undefined && elem.value !== "") {
-                newOpts['yaxis' + (index === 0 ? "" : index + 1) + '.titlefont.size'] = elem.value;
+                if (!axesCollapsed || index === 0) {
+                    // if we've collapsed the axes we only want to process the first one
+                    newOpts['yaxis' + (index === 0 ? "" : index + 1) + '.titlefont.size'] = elem.value;
+                }
             }
         });
         if ((plotType === matsTypes.PlotTypes.contour || plotType === matsTypes.PlotTypes.contourDiff) && ($("#placeholder")[0].layout.yaxis.title.text).indexOf("Date") > -1) {
@@ -2015,41 +2049,53 @@ Template.graph.events({
         } else {
             $("input[id^=y][id$=AxisMin]").get().forEach(function (elem, index) {
                 if (elem.value !== undefined && elem.value !== "") {
-                    if (plotType === matsTypes.PlotTypes.profile) {
-                        newOpts['yaxis' + (index === 0 ? "" : index + 1) + '.range[1]'] = elem.value;
-                        // plotly can't seem to set axis limits on a log axis, so this needs to be changed to linear
-                        if ($("#placeholder")[0].layout['yaxis' + (index === 0 ? "" : index + 1)].type === 'log') {
-                            $("#axisYScale").click();
-                            changeYScaleBack = true;
+                    if (!axesCollapsed || index === 0) {
+                        // if we've collapsed the axes we only want to process the first one
+                        if (plotType === matsTypes.PlotTypes.profile) {
+                            newOpts['yaxis' + (index === 0 ? "" : index + 1) + '.range[1]'] = elem.value;
+                            // plotly can't seem to set axis limits on a log axis, so this needs to be changed to linear
+                            if ($("#placeholder")[0].layout['yaxis' + (index === 0 ? "" : index + 1)].type === 'log') {
+                                $("#axisYScale").click();
+                                changeYScaleBack = true;
+                            }
+                        } else {
+                            newOpts['yaxis' + (index === 0 ? "" : index + 1) + '.range[0]'] = elem.value;
                         }
-                    } else {
-                        newOpts['yaxis' + (index === 0 ? "" : index + 1) + '.range[0]'] = elem.value;
                     }
                 }
             });
             $("input[id^=y][id$=AxisMax]").get().forEach(function (elem, index) {
                 if (elem.value !== undefined && elem.value !== "") {
-                    if (plotType === matsTypes.PlotTypes.profile) {
-                        newOpts['yaxis' + (index === 0 ? "" : index + 1) + '.range[0]'] = elem.value;
-                        // plotly can't seem to set axis limits on a log axis, so this needs to be changed to linear
-                        if ($("#placeholder")[0].layout['yaxis' + (index === 0 ? "" : index + 1)].type === 'log') {
-                            $("#axisYScale").click();
-                            changeYScaleBack = true;
+                    if (!axesCollapsed || index === 0) {
+                        // if we've collapsed the axes we only want to process the first one
+                        if (plotType === matsTypes.PlotTypes.profile) {
+                            newOpts['yaxis' + (index === 0 ? "" : index + 1) + '.range[0]'] = elem.value;
+                            // plotly can't seem to set axis limits on a log axis, so this needs to be changed to linear
+                            if ($("#placeholder")[0].layout['yaxis' + (index === 0 ? "" : index + 1)].type === 'log') {
+                                $("#axisYScale").click();
+                                changeYScaleBack = true;
+                            }
+                        } else {
+                            newOpts['yaxis' + (index === 0 ? "" : index + 1) + '.range[1]'] = elem.value;
                         }
-                    } else {
-                        newOpts['yaxis' + (index === 0 ? "" : index + 1) + '.range[1]'] = elem.value;
                     }
                 }
             });
             $("input[id^=y][id$=TickFont]").get().forEach(function (elem, index) {
                 if (elem.value !== undefined && elem.value !== "") {
-                    newOpts['yaxis' + (index === 0 ? "" : index + 1) + '.tickfont.size'] = elem.value;
+                    if (!axesCollapsed || index === 0) {
+                        // if we've collapsed the axes we only want to process the first one
+                        newOpts['yaxis' + (index === 0 ? "" : index + 1) + '.tickfont.size'] = elem.value;
+                    }
                 }
             });
             $("input[id^=y][id$=SigFigs]").get().forEach(function (elem, index) {
                 if (elem.value !== undefined && elem.value !== "") {
-                    if (!isNaN(elem.value)) {
-                        newOpts['yaxis' + (index === 0 ? "" : index + 1) + '.tickformat'] = "." + elem.value.toString() + "r";
+                    if (!axesCollapsed || index === 0) {
+                        // if we've collapsed the axes we only want to process the first one
+                        if (!isNaN(elem.value)) {
+                            newOpts['yaxis' + (index === 0 ? "" : index + 1) + '.tickformat'] = "." + elem.value.toString() + "r";
+                        }
                     }
                 }
             });
