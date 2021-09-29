@@ -1641,7 +1641,7 @@ const resetApp = async function (appRef) {
                 if (dbType == matsTypes.DbTypes.couchbase) {
                     color = "#33abbb";
                 } else {
-                    // default to mysql do that old apps won't break
+                    // default to mysql so that old apps won't break
                     color = "#3366bb";
                 }
                 break;

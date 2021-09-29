@@ -113,31 +113,6 @@ Template.curveList.helpers({
         }
         return "none"
     },
-    averagesDisabled: function () {
-        var curves = Session.get('Curves');
-        if (curves === undefined || curves.length === 0 || (Session.get('plotType') !== matsTypes.PlotTypes.timeSeries)) {
-            return "";
-        }
-        var average = curves[0].average;
-        for (var i = 0; i < curves.length; i++) {
-            if (average !== curves[i].average) {
-                return "disabled";
-            }
-        }
-    },
-    disabledPlotsHidden: function () {
-        var curves = Session.get('Curves');
-        if (curves === undefined || curves.length === 0 || (Session.get('plotType') !== matsTypes.PlotTypes.timeSeries)) {
-            return "none";
-        }
-        var average = curves[0].average;
-        for (var i = 0; i < curves.length; i++) {
-            if (average !== curves[i].average) {
-                return "block";
-            }
-        }
-        return "none"
-    },
     identicalContourDisabled: function () {
         var curves = Session.get('Curves');
         if (curves === undefined || curves.length === 0 || (Session.get('plotType') !== matsTypes.PlotTypes.contour)) {
