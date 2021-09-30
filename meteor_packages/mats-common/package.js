@@ -18,7 +18,6 @@ Package.onUse(function (api) {
     api.versionsFrom('2.3.5');
     Npm.depends({
         'fs-extra': '7.0.0',
-        "@babel/runtime": "7.10.4",
         "meteor-node-stubs": "0.4.1",
         "url": "0.11.0",
         "jquery-ui": "1.12.1",
@@ -27,7 +26,8 @@ Package.onUse(function (api) {
         "python-shell": "1.0.8",
         "daterangepicker": "3.1.0",
         "@popperjs/core": "2.9.3",
-        "bootstrap": "5.0.0"
+        "bootstrap": "5.1.0",
+        "jquery": "3.6.0"
     });
     api.mainModule("server/main.js", "server");
     api.mainModule("client/main.js", "client");
@@ -81,6 +81,7 @@ Package.onUse(function (api) {
     api.export("matsDataProcessUtils", ['server']);
     api.export("regression", ['client', 'server']);
     api.export("matsCache", ['server']);
+
 
     // add imports
     //both
