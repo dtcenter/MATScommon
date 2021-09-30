@@ -139,6 +139,10 @@ const changePlotType = function (plotType, selectorsToInitialize, dateSelector) 
 
         // make sure the curves already added also have the correct parameters displayed
         var curves = Session.get('Curves');
+        if (curves === undefined) {
+            // in a healthy session, there should either be an array of curves or an empty array of no curves
+            setError(new Error("It looks like your current browser session might have expired, so there is not enough information to successfully change the plot type. Please refresh your browser window."));
+        }
         if (curves.length > 0) {
             for (var ci = 0; ci < curves.length; ci++) {
                 // change options that were valid for the plot type where this curve was added but not for this one
@@ -152,8 +156,14 @@ const changePlotType = function (plotType, selectorsToInitialize, dateSelector) 
                     if (dateSelector === 'curve-dates' && newDate !== 0) {
                         curves[ci]['curve-dates'] = newDate;
                     }
-                    if (!curves[ci][selectorsToInitialize[si]] && matsCollections[selectorsToInitialize[si]] && matsCollections[selectorsToInitialize[si]].findOne({name: selectorsToInitialize[si]}) && matsCollections[selectorsToInitialize[si]].findOne({name: selectorsToInitialize[si]}).default) {
-                        curves[ci][selectorsToInitialize[si]] = matsCollections[selectorsToInitialize[si]].findOne({name: selectorsToInitialize[si]}).default;
+                    if (!curves[ci][selectorsToInitialize[si]] && matsCollections[selectorsToInitialize[si]] && matsCollections[selectorsToInitialize[si]].findOne({name: selectorsToInitialize[si]})) {
+                        if (matsCollections[selectorsToInitialize[si]].findOne({name: selectorsToInitialize[si]}).default) {
+                            // we have a default. Use that.
+                            curves[ci][selectorsToInitialize[si]] = matsCollections[selectorsToInitialize[si]].findOne({name: selectorsToInitialize[si]}).default;
+                        } else if (matsCollections[selectorsToInitialize[si]].findOne({name: selectorsToInitialize[si]}).options) {
+                            // we don't have a default, but we have a list of options. Use the first one of those.
+                            curves[ci][selectorsToInitialize[si]] = matsCollections[selectorsToInitialize[si]].findOne({name: selectorsToInitialize[si]}).options[0];
+                        }
                     }
                 }
             }

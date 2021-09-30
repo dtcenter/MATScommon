@@ -17,9 +17,9 @@ import {moment} from 'meteor/momentjs:moment'
 var pageIndex = 0;
 var annotation = "";
 var openWindows = [];
-var xAxes = [];
-var yAxes = [];
-var curveOpsUpdate = [];
+var xAxes;
+var yAxes;
+var curveOpsUpdate;
 
 Template.graph.onCreated(function () {
     // the window resize event needs to also resize the graph
@@ -86,6 +86,8 @@ Template.graph.helpers({
                             'visible': dataset[lidx].visible,
                             'showlegend': dataset[lidx].showlegend,
                             'mode': dataset[lidx].mode,
+                            'xaxis': dataset[lidx].xaxis,
+                            'yaxis': dataset[lidx].yaxis,
                             'x': [dataset[lidx].x],
                             'y': [dataset[lidx].y],
                             'text': [dataset[lidx].text],
@@ -148,6 +150,136 @@ Template.graph.helpers({
             }
             Plotly.newPlot($("#placeholder")[0], dataset, options, {showLink: true});
 
+            // there seems to be a bug in the plotly API, where if you have a handler for plotly_legendclick, 
+            // it will always supersede the handler for plotly_legenddoubleclick. If you comment out the 
+            // handler for plotly_legendclick, then the one for plotly_legenddoubleclick will fire. This 
+            // is not the behavior that the plotly instruction manual implies should occur, but seems to 
+            // be the reality (the broader plotly_click and plotly_doubleclick work as expected, accurately 
+            // recognizing double clicks even if a single click handler exists). I'm going to add handlers 
+            // for both plotly_legendclick and plotly_legenddoubleclick anyway, in the hopes that they 
+            // eventually fix this and it gets pushed to https://cdn.plot.ly/plotly-latest.min.js, but 
+            // until then, the double click show/hide all curves functionality will not exist.
+            $("#placeholder")[0].on('plotly_legendclick', function(data){
+                var dataset = matsCurveUtils.getGraphResult().data;
+                const curveToShowHide = data.curveNumber;
+                const label = dataset[curveToShowHide].label;
+                var plotType = Session.get('plotType');
+                switch (plotType) {
+                    case matsTypes.PlotTypes.timeSeries:
+                    case matsTypes.PlotTypes.profile:
+                    case matsTypes.PlotTypes.dieoff:
+                    case matsTypes.PlotTypes.threshold:
+                    case matsTypes.PlotTypes.validtime:
+                    case matsTypes.PlotTypes.gridscale:
+                    case matsTypes.PlotTypes.dailyModelCycle:
+                    case matsTypes.PlotTypes.yearToYear:
+                    case matsTypes.PlotTypes.reliability:
+                    case matsTypes.PlotTypes.roc:
+                    case matsTypes.PlotTypes.performanceDiagram:
+                        document.getElementById(label + "-curve-show-hide").click();
+                        return false;
+                    case matsTypes.PlotTypes.scatter2d:
+                        document.getElementById(label + "-curve-show-hide-points").click();
+                        return false;
+                    case matsTypes.PlotTypes.histogram:
+                    case matsTypes.PlotTypes.ensembleHistogram:
+                        document.getElementById(label + "-curve-show-hide-bars").click();
+                        return false;
+                    case matsTypes.PlotTypes.map:
+                    case matsTypes.PlotTypes.contour:
+                    case matsTypes.PlotTypes.contourDiff:
+                    default:
+                        // keep the plotly default event behavior
+                        return true;
+                }
+            });
+            Session.set('singleCurveIsolated', false);
+            $("#placeholder")[0].on('plotly_legenddoubleclick', function(data){
+                var dataset = matsCurveUtils.getGraphResult().data;
+                const curveToShowHide = data.curveNumber;
+                var label = dataset[curveToShowHide].label;
+                var plotType = Session.get('plotType');
+                var hideAllOtherCurves;
+                if (dataset[curveToShowHide].visible === 'legendonly') {
+                    // we want to show this hidden curve and hide all others
+                    hideAllOtherCurves = true;
+                    Session.set('singleCurveIsolated', label);
+                    // update this curve
+                    switch (plotType) {
+                        case matsTypes.PlotTypes.timeSeries:
+                        case matsTypes.PlotTypes.profile:
+                        case matsTypes.PlotTypes.dieoff:
+                        case matsTypes.PlotTypes.threshold:
+                        case matsTypes.PlotTypes.validtime:
+                        case matsTypes.PlotTypes.gridscale:
+                        case matsTypes.PlotTypes.dailyModelCycle:
+                        case matsTypes.PlotTypes.yearToYear:
+                        case matsTypes.PlotTypes.reliability:
+                        case matsTypes.PlotTypes.roc:
+                        case matsTypes.PlotTypes.performanceDiagram:
+                            document.getElementById(label + "-curve-show-hide").click();
+                            break;
+                        case matsTypes.PlotTypes.scatter2d:
+                            document.getElementById(label + "-curve-show-hide-points").click();
+                            break;
+                        case matsTypes.PlotTypes.histogram:
+                        case matsTypes.PlotTypes.ensembleHistogram:
+                            document.getElementById(label + "-curve-show-hide-bars").click();
+                            break;
+                        case matsTypes.PlotTypes.map:
+                        case matsTypes.PlotTypes.contour:
+                        case matsTypes.PlotTypes.contourDiff:
+                        default:
+                            // keep the plotly default event behavior
+                            return true;
+                    }
+                } else if (Session.get('singleCurveIsolated') === label) {
+                    // we previously showed this curve and hid the others, so undo that now.
+                    hideAllOtherCurves = false;
+                    Session.set('singleCurveIsolated', false);
+                } else {
+                    // we have a new curve to show at the expense of others, but it's already visible
+                    hideAllOtherCurves = true;
+                    Session.set('singleCurveIsolated', label);
+                }
+                // update the other curves
+                for (var i = 0; i < dataset.length; i++) {
+                    if (Object.values(matsTypes.ReservedWords).indexOf(dataset[i].label) >= 0 || i === curveToShowHide) {
+                        continue; // don't process the zero or max curves
+                    }
+                    label = dataset[i].label;
+                    switch (plotType) {
+                        case matsTypes.PlotTypes.timeSeries:
+                        case matsTypes.PlotTypes.profile:
+                        case matsTypes.PlotTypes.dieoff:
+                        case matsTypes.PlotTypes.threshold:
+                        case matsTypes.PlotTypes.validtime:
+                        case matsTypes.PlotTypes.gridscale:
+                        case matsTypes.PlotTypes.dailyModelCycle:
+                        case matsTypes.PlotTypes.yearToYear:
+                        case matsTypes.PlotTypes.reliability:
+                        case matsTypes.PlotTypes.roc:
+                        case matsTypes.PlotTypes.performanceDiagram:
+                            if ((hideAllOtherCurves && dataset[i].visible !== 'legendonly') || (!hideAllOtherCurves && dataset[i].visible === 'legendonly')) {
+                                document.getElementById(label + "-curve-show-hide").click();
+                            }
+                            break;
+                        case matsTypes.PlotTypes.scatter2d:
+                            if ((hideAllOtherCurves && dataset[i].visible !== 'legendonly') || (!hideAllOtherCurves && dataset[i].visible === 'legendonly')) {
+                                document.getElementById(label + "-curve-show-hide-points").click();
+                            }
+                            break;
+                        case matsTypes.PlotTypes.histogram:
+                        case matsTypes.PlotTypes.ensembleHistogram:
+                            if ((hideAllOtherCurves && dataset[i].visible !== 'legendonly') || (!hideAllOtherCurves && dataset[i].visible === 'legendonly')) {
+                                document.getElementById(label + "-curve-show-hide-bars").click();
+                            }
+                            break;
+                    }
+                }
+                return false;
+            });
+
             // append annotations and other setup
             var localAnnotation;
             for (var i = 0; i < dataset.length; i++) {
@@ -188,7 +320,10 @@ Template.graph.helpers({
                     $("#legendContainer" + dataset[i].curveId)[0].hidden = localAnnotation === "";
                 }
 
-                // store the existing axes.
+                // store the existing axes. Reset global arrays from previous plots.
+                xAxes = [];
+                yAxes = [];
+                Session.set('axesCollapsed', false);
                 Object.keys($("#placeholder")[0].layout).filter(function (k) {
                     if (k.startsWith('xaxis')) {
                         xAxes.push(k);
@@ -504,6 +639,31 @@ Template.graph.helpers({
                 return false;
         }
     },
+    isMultiAxisLinePlot: function () {
+        var plotType = Session.get('plotType');
+        switch (plotType) {
+            case matsTypes.PlotTypes.timeSeries:
+            case matsTypes.PlotTypes.profile:
+            case matsTypes.PlotTypes.dieoff:
+            case matsTypes.PlotTypes.threshold:
+            case matsTypes.PlotTypes.validtime:
+            case matsTypes.PlotTypes.gridscale:
+            case matsTypes.PlotTypes.dailyModelCycle:
+            case matsTypes.PlotTypes.yearToYear:
+                return true;
+            case matsTypes.PlotTypes.reliability:
+            case matsTypes.PlotTypes.roc:
+            case matsTypes.PlotTypes.performanceDiagram:
+            case matsTypes.PlotTypes.map:
+            case matsTypes.PlotTypes.histogram:
+            case matsTypes.PlotTypes.ensembleHistogram:
+            case matsTypes.PlotTypes.scatter2d:
+            case matsTypes.PlotTypes.contour:
+            case matsTypes.PlotTypes.contourDiff:
+            default:
+                return false;
+        }
+    },
     isContour: function () {
         return (Session.get('plotType') === matsTypes.PlotTypes.contour || Session.get('plotType') === matsTypes.PlotTypes.contourDiff)
     },
@@ -589,8 +749,8 @@ Template.graph.helpers({
             case matsTypes.PlotTypes.reliability:
             case matsTypes.PlotTypes.roc:
             case matsTypes.PlotTypes.performanceDiagram:
-            case matsTypes.PlotTypes.scatter2d:
                 return "block";
+            case matsTypes.PlotTypes.scatter2d:
             case matsTypes.PlotTypes.map:
             case matsTypes.PlotTypes.histogram:
             case matsTypes.PlotTypes.ensembleHistogram:
@@ -1111,6 +1271,101 @@ Template.graph.events({
         }
         Plotly.relayout($("#placeholder")[0], newOpts);
     },
+    'click .axisCombineButton': function () {
+        var newOpts = {};
+        var updates = [];
+        var plotType = Session.get('plotType');
+        var dataset = matsCurveUtils.getGraphResult().data;
+        var options = Session.get('options');
+        var reservedWords = Object.values(matsTypes.ReservedWords);
+        var newAxisLabel = "";
+        var min = Number.MAX_VALUE;      // placeholder xmin
+        var max = -1 * Number.MAX_VALUE;      // placeholder xmax
+        var didx;
+        var xidx;
+        var yidx;
+        if (!Session.get('axesCollapsed')) {
+            // combine all x- or y-axes into the same axis
+            for (didx = 0; didx < dataset.length; didx++) {
+                if (reservedWords.indexOf(dataset[didx].label) === -1) {
+                    if (plotType === matsTypes.PlotTypes.profile) {
+                        updates[didx] = {
+                            xaxis: "x1"
+                        };
+                    } else {
+                        updates[didx] = {
+                            yaxis: "y1"
+                        };
+                }
+                    Plotly.restyle($("#placeholder")[0], updates[didx], didx);
+                }
+            }
+            if (plotType === matsTypes.PlotTypes.profile) {
+                for (var xidx = 0; xidx < xAxes.length; xidx++) {
+                    newAxisLabel = newAxisLabel === "" ? options[xAxes[xidx]].title : newAxisLabel + "/" + options[xAxes[xidx]].title;
+                    min = options[xAxes[xidx]]['range'][0] < min ? options[xAxes[xidx]]['range'][0] : min;
+                    max = options[xAxes[xidx]]['range'][1] > max ? options[xAxes[xidx]]['range'][1] : max;
+                }
+                newOpts['xaxis.title'] = newAxisLabel;
+                newOpts['xaxis.range[0]'] = min - ((max - min) * 0.125);
+                newOpts['xaxis.range[1]'] = max + ((max - min) * 0.125);
+            } else {
+                for (var yidx = 0; yidx < yAxes.length; yidx++) {
+                    newAxisLabel = newAxisLabel === "" ? options[yAxes[yidx]].title : newAxisLabel + "/" + options[yAxes[yidx]].title;
+                    min = options[yAxes[yidx]]['range'][0] < min ? options[yAxes[yidx]]['range'][0] : min;
+                    max = options[yAxes[yidx]]['range'][1] > max ? options[yAxes[yidx]]['range'][1] : max;
+                }
+                newOpts['yaxis.title'] = newAxisLabel;
+                newOpts['yaxis.range[0]'] = min - ((max - min) * 0.125);
+                newOpts['yaxis.range[1]'] = max + ((max - min) * 0.125);
+            }
+            Plotly.relayout($("#placeholder")[0], newOpts);
+            Session.set('axesCollapsed', true);
+        } else {
+            // separate x- or y-axes back out
+            const lineTypeResetOpts = Session.get('lineTypeResetOpts');
+            for (didx = 0; didx < dataset.length; didx++) {
+                if (reservedWords.indexOf(dataset[didx].label) === -1) {
+                    if (plotType === matsTypes.PlotTypes.profile) {
+                        updates[didx] = {
+                            xaxis: lineTypeResetOpts[didx].xaxis
+                        };
+                    } else {
+                        updates[didx] = {
+                            yaxis: lineTypeResetOpts[didx].yaxis
+                        };
+                    }
+                    Plotly.restyle($("#placeholder")[0], updates[didx], didx);
+                }
+            }
+            if (plotType === matsTypes.PlotTypes.profile) {
+                for (xidx = 0; xidx < xAxes.length; xidx++) {
+                    newOpts[xAxes[xidx] + '.title'] = options[xAxes[xidx]].title;
+                    newOpts[xAxes[xidx] + '.range[0]'] = options[xAxes[xidx]]['range'][0];
+                    newOpts[xAxes[xidx] + '.range[1]'] = options[xAxes[xidx]]['range'][1];
+                }
+            } else {
+                for (yidx = 0; yidx < yAxes.length; yidx++) {
+                    newOpts[yAxes[yidx] + '.title'] = options[yAxes[yidx]].title;
+                    newOpts[yAxes[yidx] + '.range[0]'] = options[yAxes[yidx]]['range'][0];
+                    newOpts[yAxes[yidx] + '.range[1]'] = options[yAxes[yidx]]['range'][1];
+                }
+            }
+            Plotly.relayout($("#placeholder")[0], newOpts);
+            Session.set('axesCollapsed', false);
+        }
+        // save the updates in case we want to pass them to a pop-out window.
+        for (var uidx = 0; uidx < updates.length; uidx++) {
+            curveOpsUpdate[uidx] = curveOpsUpdate[uidx] === undefined ? {} : curveOpsUpdate[uidx];
+            var updatedKeys = Object.keys(updates[uidx]);
+            for (var kidx = 0; kidx < updatedKeys.length; kidx++) {
+                var updatedKey = updatedKeys[kidx];
+                // json doesn't like . to be in keys, so replace it with a placeholder
+                var jsonHappyKey = updatedKey.split(".").join("____");
+                curveOpsUpdate[uidx][jsonHappyKey] = updates[uidx][updatedKey];
+            }
+        }     
+    },
     'click .axisXSpace': function (event) {
         // equally space the x values, or restore them.
         event.preventDefault();
@@ -1301,15 +1556,15 @@ Template.graph.events({
         });
         if (dataset[myDataIdx].x.length > 0) {
             var update;
-            if (dataset[myDataIdx].visible) {
+            if (dataset[myDataIdx].visible !== 'legendonly') {
                 if (dataset[myDataIdx].mode === "lines") {                  // in line mode, lines are visible, so make nothing visible
                     update = {
-                        visible: !dataset[myDataIdx].visible
+                        visible: 'legendonly'
                     };
                     $('#' + id)[0].value = "show curve";
                 } else if (dataset[myDataIdx].mode === "lines+markers") {   // in line and point mode, lines and points are visible, so make nothing visible
                     update = {
-                        visible: !dataset[myDataIdx].visible
+                        visible: 'legendonly'
                     };
                     $('#' + id)[0].value = "show curve";
                     $('#' + id + "-points")[0].value = "show points";
@@ -1322,12 +1577,12 @@ Template.graph.events({
             } else {
                 if (dataset[myDataIdx].mode === "lines") {                  // in line mode, nothing is visible, so make lines visible
                     update = {
-                        visible: !dataset[myDataIdx].visible
+                        visible: true
                     };
                     $('#' + id)[0].value = "hide curve";
                 } else if (dataset[myDataIdx].mode === "lines+markers") {   // in line and point mode, nothing is visible, so make lines and points visible
                     update = {
-                        visible: !dataset[myDataIdx].visible
+                        visible: true
                     };
                     $('#' + id)[0].value = "hide curve";
                     $('#' + id + "-points")[0].value = "hide points";
@@ -1356,7 +1611,7 @@ Template.graph.events({
         });
         if (dataset[myDataIdx].x.length > 0) {
             var update;
-            if (dataset[myDataIdx].visible) {
+            if (dataset[myDataIdx].visible !== 'legendonly') {
                 if (dataset[myDataIdx].mode === "lines") {                  // lines are visible, so make lines and points visible
                     update = {
                         mode: "lines+markers"
@@ -1369,14 +1624,14 @@ Template.graph.events({
                     $('#' + id)[0].value = "show points";
                 } else if (dataset[myDataIdx].mode === "markers") {         // points are visible, so make nothing visible
                     update = {
-                        visible: !dataset[myDataIdx].visible,
+                        visible: 'legendonly',
                         mode: "lines"
                     };
                     $('#' + id)[0].value = "show points";
                 }
             } else {                                                        // nothing is visible, so make points visible
                 update = {
-                    visible: !dataset[myDataIdx].visible,
+                    visible: true,
                     mode: "markers"
                 };
                 $('#' + id)[0].value = "hide points";
@@ -1448,13 +1703,17 @@ Template.graph.events({
             return d.curveId === label;
         });
         if (dataset[myDataIdx].x.length > 0) {
-            var update = {
-                visible: !dataset[myDataIdx].visible
-            };
-            if (update.visible) {
+            var update;
+            if (dataset[myDataIdx].visible === 'legendonly') {
                 $('#' + id)[0].value = "hide bars";
+                update = {
+                    visible: true
+                };
             } else {
                 $('#' + id)[0].value = "show bars";
+                update = {
+                    visible: 'legendonly'
+                };
             }
         }
         Plotly.restyle($("#placeholder")[0], update, myDataIdx);
@@ -1569,6 +1828,7 @@ Template.graph.events({
         var dataset = matsCurveUtils.getGraphResult().data;
         var options = Session.get('options');
         Session.set('thresholdEquiX', false);
+        Session.set('axesCollapsed', false);
         if (curveOpsUpdate.length === 0) {
             // we just need a relayout
             Plotly.relayout($("#placeholder")[0], options);
@@ -1672,68 +1932,102 @@ Template.graph.events({
     'click #axisSubmit': function (event) {
         event.preventDefault();
         var plotType = Session.get('plotType');
+        var axesCollapsed = Session.get('axesCollapsed');
         var changeYScaleBack = false;
         var newOpts = {};
         // get input axis limits and labels
         $("input[id^=x][id$=AxisLabel]").get().forEach(function (elem, index) {
             if (elem.value !== undefined && elem.value !== "") {
-                newOpts['xaxis' + (index === 0 ? "" : index + 1) + '.title'] = elem.value;
+                if (!axesCollapsed || index === 0) {
+                    // if we've collapsed the axes we only want to process the first one
+                    newOpts['xaxis' + (index === 0 ? "" : index + 1) + '.title'] = elem.value;
+                }
             }
         });
         $("input[id^=x][id$=AxisFont]").get().forEach(function (elem, index) {
             if (elem.value !== undefined && elem.value !== "") {
-                newOpts['xaxis' + (index === 0 ? "" : index + 1) + '.titlefont.size'] = elem.value;
+                if (!axesCollapsed || index === 0) {
+                    // if we've collapsed the axes we only want to process the first one
+                    newOpts['xaxis' + (index === 0 ? "" : index + 1) + '.titlefont.size'] = elem.value;
+                }
             }
         });
         if (plotType === matsTypes.PlotTypes.timeSeries || plotType === matsTypes.PlotTypes.dailyModelCycle || plotType === matsTypes.PlotTypes.yearToYear ||
             ((plotType === matsTypes.PlotTypes.contour || plotType === matsTypes.PlotTypes.contourDiff) && ($("#placeholder")[0].layout.xaxis.title.text).indexOf("Date") > -1)) {
             $("input[id^=x][id$=AxisMinText]").get().forEach(function (elem, index) {
                 if (elem.value !== undefined && elem.value !== "") {
-                    newOpts['xaxis' + (index === 0 ? "" : index + 1) + '.range[0]'] = elem.value;
+                    if (!axesCollapsed || index === 0) {
+                        // if we've collapsed the axes we only want to process the first one
+                        newOpts['xaxis' + (index === 0 ? "" : index + 1) + '.range[0]'] = elem.value;
+                    }
                 }
             });
             $("input[id^=x][id$=AxisMaxText]").get().forEach(function (elem, index) {
                 if (elem.value !== undefined && elem.value !== "") {
-                    newOpts['xaxis' + (index === 0 ? "" : index + 1) + '.range[1]'] = elem.value;
+                    if (!axesCollapsed || index === 0) {
+                        // if we've collapsed the axes we only want to process the first one
+                        newOpts['xaxis' + (index === 0 ? "" : index + 1) + '.range[1]'] = elem.value;
+                    }
                 }
             });
             $("input[id^=x][id$=TickFontText]").get().forEach(function (elem, index) {
                 if (elem.value !== undefined && elem.value !== "") {
-                    newOpts['xaxis' + (index === 0 ? "" : index + 1) + '.tickfont.size'] = elem.value;
+                    if (!axesCollapsed || index === 0) {
+                        // if we've collapsed the axes we only want to process the first one
+                        newOpts['xaxis' + (index === 0 ? "" : index + 1) + '.tickfont.size'] = elem.value;
+                    }
                 }
             });
         } else {
             $("input[id^=x][id$=AxisMin]").get().forEach(function (elem, index) {
                 if (elem.value !== undefined && elem.value !== "") {
-                    newOpts['xaxis' + (index === 0 ? "" : index + 1) + '.range[0]'] = elem.value;
+                    if (!axesCollapsed || index === 0) {
+                        // if we've collapsed the axes we only want to process the first one
+                        newOpts['xaxis' + (index === 0 ? "" : index + 1) + '.range[0]'] = elem.value;
+                    }
                 }
             });
             $("input[id^=x][id$=AxisMax]").get().forEach(function (elem, index) {
                 if (elem.value !== undefined && elem.value !== "") {
-                    newOpts['xaxis' + (index === 0 ? "" : index + 1) + '.range[1]'] = elem.value;
+                    if (!axesCollapsed || index === 0) {
+                        // if we've collapsed the axes we only want to process the first one
+                        newOpts['xaxis' + (index === 0 ? "" : index + 1) + '.range[1]'] = elem.value;
+                    }
                 }
             });
             $("input[id^=x][id$=TickFont]").get().forEach(function (elem, index) {
                 if (elem.value !== undefined && elem.value !== "") {
-                    newOpts['xaxis' + (index === 0 ? "" : index + 1) + '.tickfont.size'] = elem.value;
+                    if (!axesCollapsed || index === 0) {
+                        // if we've collapsed the axes we only want to process the first one
+                        newOpts['xaxis' + (index === 0 ? "" : index + 1) + '.tickfont.size'] = elem.value;
+                    }
                 }
             });
             $("input[id^=x][id$=SigFigs]").get().forEach(function (elem, index) {
                 if (elem.value !== undefined && elem.value !== "") {
-                    if (!isNaN(elem.value)) {
-                        newOpts['xaxis' + (index === 0 ? "" : index + 1) + '.tickformat'] = "." + elem.value.toString() + "r";
+                    if (!axesCollapsed || index === 0) {
+                        // if we've collapsed the axes we only want to process the first one
+                        if (!isNaN(elem.value)) {
+                            newOpts['xaxis' + (index === 0 ? "" : index + 1) + '.tickformat'] = "." + elem.value.toString() + "r";
+                        }
                     }
                 }
             });
         }
         $("input[id^=y][id$=AxisLabel]").get().forEach(function (elem, index) {
             if (elem.value !== undefined && elem.value !== "") {
-                newOpts['yaxis' + (index === 0 ? "" : index + 1) + '.title'] = elem.value;
+                if (!axesCollapsed || index === 0) {
+                    // if we've collapsed the axes we only want to process the first one
+                    newOpts['yaxis' + (index === 0 ? "" : index + 1) + '.title'] = elem.value;
+                }
             }
         });
         $("input[id^=y][id$=AxisFont]").get().forEach(function (elem, index) {
             if (elem.value !== undefined && elem.value !== "") {
-                newOpts['yaxis' + (index === 0 ? "" : index + 1) + '.titlefont.size'] = elem.value;
+                if (!axesCollapsed || index === 0) {
+                    // if we've collapsed the axes we only want to process the first one
+                    newOpts['yaxis' + (index === 0 ? "" : index + 1) + '.titlefont.size'] = elem.value;
+                }
             }
         });
         if ((plotType === matsTypes.PlotTypes.contour || plotType === matsTypes.PlotTypes.contourDiff) && ($("#placeholder")[0].layout.yaxis.title.text).indexOf("Date") > -1) {
@@ -1755,41 +2049,53 @@ Template.graph.events({
         } else {
             $("input[id^=y][id$=AxisMin]").get().forEach(function (elem, index) {
                 if (elem.value !== undefined && elem.value !== "") {
-                    if (plotType === matsTypes.PlotTypes.profile) {
-                        newOpts['yaxis' + (index === 0 ? "" : index + 1) + '.range[1]'] = elem.value;
-                        // plotly can't seem to set axis limits on a log axis, so this needs to be changed to linear
-                        if ($("#placeholder")[0].layout['yaxis' + (index === 0 ? "" : index + 1)].type === 'log') {
-                            $("#axisYScale").click();
-                            changeYScaleBack = true;
+                    if (!axesCollapsed || index === 0) {
+                        // if we've collapsed the axes we only want to process the first one
+                        if (plotType === matsTypes.PlotTypes.profile) {
+                            newOpts['yaxis' + (index === 0 ? "" : index + 1) + '.range[1]'] = elem.value;
+                            // plotly can't seem to set axis limits on a log axis, so this needs to be changed to linear
+                            if ($("#placeholder")[0].layout['yaxis' + (index === 0 ? "" : index + 1)].type === 'log') {
+                                $("#axisYScale").click();
+                                changeYScaleBack = true;
+                            }
+                        } else {
+                            newOpts['yaxis' + (index === 0 ? "" : index + 1) + '.range[0]'] = elem.value;
                         }
-                    } else {
-                        newOpts['yaxis' + (index === 0 ? "" : index + 1) + '.range[0]'] = elem.value;
                     }
                 }
             });
             $("input[id^=y][id$=AxisMax]").get().forEach(function (elem, index) {
                 if (elem.value !== undefined && elem.value !== "") {
-                    if (plotType === matsTypes.PlotTypes.profile) {
-                        newOpts['yaxis' + (index === 0 ? "" : index + 1) + '.range[0]'] = elem.value;
-                        // plotly can't seem to set axis limits on a log axis, so this needs to be changed to linear
-                        if ($("#placeholder")[0].layout['yaxis' + (index === 0 ? "" : index + 1)].type === 'log') {
-                            $("#axisYScale").click();
-                            changeYScaleBack = true;
+                    if (!axesCollapsed || index === 0) {
+                        // if we've collapsed the axes we only want to process the first one
+                        if (plotType === matsTypes.PlotTypes.profile) {
+                            newOpts['yaxis' + (index === 0 ? "" : index + 1) + '.range[0]'] = elem.value;
+                            // plotly can't seem to set axis limits on a log axis, so this needs to be changed to linear
+                            if ($("#placeholder")[0].layout['yaxis' + (index === 0 ? "" : index + 1)].type === 'log') {
+                                $("#axisYScale").click();
+                                changeYScaleBack = true;
+                            }
+                        } else {
+                            newOpts['yaxis' + (index === 0 ? "" : index + 1) + '.range[1]'] = elem.value;
                         }
-                    } else {
-                        newOpts['yaxis' + (index === 0 ? "" : index + 1) + '.range[1]'] = elem.value;
                     }
                 }
             });
             $("input[id^=y][id$=TickFont]").get().forEach(function (elem, index) {
                 if (elem.value !== undefined && elem.value !== "") {
-                    newOpts['yaxis' + (index === 0 ? "" : index + 1) + '.tickfont.size'] = elem.value;
+                    if (!axesCollapsed || index === 0) {
+                        // if we've collapsed the axes we only want to process the first one
+                        newOpts['yaxis' + (index === 0 ? "" : index + 1) + '.tickfont.size'] = elem.value;
+                    }
                 }
             });
             $("input[id^=y][id$=SigFigs]").get().forEach(function (elem, index) {
                 if (elem.value !== undefined && elem.value !== "") {
-                    if (!isNaN(elem.value)) {
-                        newOpts['yaxis' + (index === 0 ? "" : index + 1) + '.tickformat'] = "." + elem.value.toString() + "r";
+                    if (!axesCollapsed || index === 0) {
+                        // if we've collapsed the axes we only want to process the first one
+                        if (!isNaN(elem.value)) {
+                            newOpts['yaxis' + (index === 0 ? "" : index + 1) + '.tickformat'] = "." + elem.value.toString() + "r";
+                        }
                     }
                 }
             });

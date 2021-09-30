@@ -116,7 +116,7 @@ Template.paramList.events({
         var curveNames = matsCollections.CurveParamsInfo.find({"curve_params": {"$exists": true}}).fetch()[0]["curve_params"];
         var dateParamNames = [];
         var param;
-        // remove any hidden params or unused ones
+        // remove any hidden params (not unused ones -- unused is a valid state)
         // iterate backwards so that we can splice to remove
         for (var cindex = curveNames.length - 1; cindex >= 0; cindex--) {
             var cname = curveNames[cindex];
@@ -129,9 +129,7 @@ Template.paramList.events({
                 matsParamUtils.getInputElementForParamName(cname).style &&
                 matsParamUtils.getInputElementForParamName(cname).style.display === 'none') ||
                 (ctlElem && ctlElem.style && ctlElem.style.display === 'none');
-            var isUnused = matsParamUtils.getInputElementForParamName(cname) !== undefined &&
-                matsParamUtils.getValueForParamName(cname) == matsTypes.InputTypes.unused;
-            if ((isHidden || isUnused) && cname !== 'plot-type' && cname !== 'phase') {
+            if (isHidden && cname !== 'plot-type' && cname !== 'phase') {
                 // MET apps have a hidden plot-type selector that needs to be included in the curve
                 // phase needs to be preserved in the raobamdar app
                 curveNames.splice(cindex, 1);
@@ -187,9 +185,14 @@ Template.paramList.events({
                 } else if (paramElems[i].type === "select-multiple") {
                     // define a p value if it doesn't exist (necessary for adding truth values)
                     p[paramElems[i].name] = (p[paramElems[i].name] === undefined) ? "" : p[paramElems[i].name];
-                    p[paramElems[i].name] = $(paramElems[i].selectedOptions).map(function () {
-                        return (this.value)
-                    }).get();
+                    // sometimes multi-selects will have "unused" as a value. This is fine, the data routines are set up to handle it.
+                    if (matsParamUtils.getValueForParamName(paramElems[i].name) === matsTypes.InputTypes.unused) {
+                        p[paramElems[i].name] = matsTypes.InputTypes.unused;
+                    } else {
+                        p[paramElems[i].name] = $(paramElems[i].selectedOptions).map(function () {
+                            return (this.value)
+                        }).get();
+                    }
                 } else {
                     if (paramElems[i].type === "radio") {
                         if (paramElems[i].checked) {
@@ -249,9 +252,14 @@ Template.paramList.events({
                     if ((paramElems[i] instanceof Element) === false) { // isn't really an element - must be a date field - these are only strings
                         p[paramElems[i]] = matsParamUtils.getValueForParamName(paramElems[i]);
                     } else if (paramElems[i].type === "select-multiple") {
-                        p[paramElems[i].name] = $(paramElems[i].selectedOptions).map(function () {
-                            return (this.value)
-                        }).get();
+                        // sometimes multi-selects will have "unused" as a value. This is fine, the data routines are set up to handle it.
+                        if (matsParamUtils.getValueForParamName(paramElems[i].name) === matsTypes.InputTypes.unused) {
+                            p[paramElems[i].name] = matsTypes.InputTypes.unused;
+                        } else {
+                            p[paramElems[i].name] = $(paramElems[i].selectedOptions).map(function () {
+                                return (this.value)
+                            }).get();
+                        }
                     } else {
                         if (paramElems[i].type === "radio") {
                             if (paramElems[i].checked) {
