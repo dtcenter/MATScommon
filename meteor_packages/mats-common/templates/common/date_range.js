@@ -3,7 +3,6 @@
  */
 
 import {matsCollections, matsCurveUtils, matsParamUtils, matsTypes} from 'meteor/randyp:mats-common';
-import {daterangepicker} from 'daterangepicker';
 
 Template.dateRange.onRendered(function () {
     //NOTE: Date fields are special in that they are qualified by plotType.
