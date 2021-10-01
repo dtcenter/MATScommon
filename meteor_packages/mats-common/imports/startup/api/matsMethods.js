@@ -1632,27 +1632,31 @@ const resetApp = async function (appRef) {
         const appPools = appRef.appPools;
         const type = appRef.appType;
         const dbType = appRef.dbType ? appRef.dbType : matsTypes.DbTypes.mysql;
-        const appName = appRef.app;
-        const appTitle = appRef.title;
-        const appGroup = appRef.group;
-        var color;
+        const appName = Meteor.settings.public.app ? Meteor.settings.public.app : "unnamed";
+        const appTitle = Meteor.settings.public.title ? Meteor.settings.public.title : "Unnamed App";
+        const appGroup = Meteor.settings.public.group ? Meteor.settings.public.group : "Misc. Apps";
+        var appDefaultGroup = "";
+        var appDefaultDB = "";
+        var appDefaultModel = "";
+        var appColor;
         switch (type) {
             case matsTypes.AppTypes.mats:
-                if (dbType == matsTypes.DbTypes.couchbase) {
-                    color = "#33abbb";
+                if (dbType === matsTypes.DbTypes.couchbase) {
+                    appColor = "#33abbb";
                 } else {
-                    // default to mysql so that old apps won't break
-                    color = "#3366bb";
+                    appColor = Meteor.settings.public.color ? Meteor.settings.public.color : "#3366bb";
                 }
                 break;
             case matsTypes.AppTypes.metexpress:
-                color = "darkorchid";
+                appColor = Meteor.settings.public.color ? Meteor.settings.public.color : "darkorchid";
+                appDefaultGroup = Meteor.settings.public.default_group ? Meteor.settings.public.default_group : "NO GROUP";
+                appDefaultDB = Meteor.settings.public.default_db ? Meteor.settings.public.default_db : "mv_default";
+                appDefaultModel = Meteor.settings.public.default_model ? Meteor.settings.public.default_model : "Default";
                 break;
         }
-        const appColor = color;
-        const appTimeOut = 300;
+        const appTimeOut = Meteor.settings.public.mysql_wait_timeout ? Meteor.settings.public.mysql_wait_timeout : 300;
         var dep_env = process.env.NODE_ENV;
-        var curve_params = appRef.appCurveParams;
+        var curve_params = Meteor.settings.public.curve_params ? Meteor.settings.public.curve_params : [];
         var mapboxKey = "undefined";
 
         // if there isn't an app listing in matsCollections create one here so that the configuration-> applySettingsData won't fail
@@ -1674,12 +1678,15 @@ const resetApp = async function (appRef) {
             const settings = {
                 "private": {
                     "databases": [],
-                    "curve_params": curve_params,
                     "PYTHON_PATH": "/usr/bin/python3",
                     "MAPBOX_KEY": mapboxKey
                 },
                 "public": {
                     "run_environment": dep_env,
+                    "curve_params": curve_params,
+                    "default_group": appDefaultGroup,
+                    "default_db": appDefaultDB,
+                    "default_model": appDefaultModel,
                     "proxy_prefix_path": "",
                     "home": homeUrl,
                     "mysql_wait_timeout": appTimeOut,
@@ -1806,7 +1813,7 @@ const resetApp = async function (appRef) {
         matsCollections.ColorScheme.remove({});
         matsDataUtils.doColorScheme();
         matsCollections.Settings.remove({});
-        matsDataUtils.doSettings(appTitle, dbType, appVersion, buildDate, appType, mapboxKey);
+        matsDataUtils.doSettings(appTitle, dbType, appVersion, buildDate, appType, mapboxKey, appDefaultGroup, appDefaultDB, appDefaultModel);
         matsCollections.PlotParams.remove({});
         matsCollections.CurveTextPatterns.remove({});
         // get the curve params for this app out of the settings file
