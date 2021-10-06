@@ -15,16 +15,19 @@ Package.describe({
 });
 
 Package.onUse(function (api) {
-    api.versionsFrom('1.4.1.1');
+    api.versionsFrom('2.3.5');
     Npm.depends({
         'fs-extra': '7.0.0',
-        "@babel/runtime": "7.10.4",
         "meteor-node-stubs": "0.4.1",
         "url": "0.11.0",
         "jquery-ui": "1.12.1",
         "csv-stringify": "4.3.1",
         "node-file-cache" : "1.0.2",
-        "python-shell": "1.0.8"
+        "python-shell": "1.0.8",
+        "daterangepicker": "3.1.0",
+        "@popperjs/core": "2.9.3",
+        "bootstrap": "5.1.0",
+        "jquery": "3.6.0"
     });
     api.mainModule("server/main.js", "server");
     api.mainModule("client/main.js", "client");
@@ -40,11 +43,11 @@ Package.onUse(function (api) {
     api.use("accounts-ui", 'client');
     api.use("service-configuration", 'server');
     api.use("yasinuslu:json-view", "client");
-    api.use("dangrossman:bootstrap-daterangepicker");
+    // api.use("dangrossman:bootstrap-daterangepicker"); // This needs to be an npm dependency
     api.use("mdg:validated-method");
     api.use('session');
     api.imply('session');
-    api.use("twbs:bootstrap");
+    // api.use("twbs:bootstrap");
     api.use("fortawesome:fontawesome");
     api.use("msavin:mongol");
     api.use("differential:event-hooks");
@@ -78,6 +81,7 @@ Package.onUse(function (api) {
     api.export("matsDataProcessUtils", ['server']);
     api.export("regression", ['client', 'server']);
     api.export("matsCache", ['server']);
+
 
     // add imports
     //both
