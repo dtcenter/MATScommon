@@ -19,9 +19,9 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
     const appName = matsCollections.appName.findOne({}).app;
     curveInfoParams.statType = curveInfoParams.statType === undefined ? 'scalar' : curveInfoParams.statType;
 
-    // if matching, pare down dataset to only matching data. Contingency table apps already did their matching in the query
-    if (curveInfoParams.curvesLength > 1 && appParams.matching && curveInfoParams.statType !== 'ctc') {
-        dataset = matsDataMatchUtils.getMatchedDataSet(dataset, curveInfoParams.curvesLength, appParams);
+    // if matching, pare down dataset to only matching data.
+    if (curveInfoParams.curvesLength > 1 && appParams.matching) {
+        dataset = matsDataMatchUtils.getMatchedDataSet(dataset, curveInfoParams.curvesLength, appParams, curveInfoParams.statType === 'ctc', curveInfoParams.curves.map(a => a.statistic));
     }
 
     // we may need to recalculate the axis limits after unmatched data and outliers are removed
@@ -91,6 +91,10 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
             }
 
             // remove sub values and times to save space
+            data.subHit[di] = [];
+            data.subFa[di] = [];
+            data.subMiss[di] = [];
+            data.subCn[di] = [];
             data.subVals[di] = [];
             data.subSecs[di] = [];
             data.subLevs[di] = [];

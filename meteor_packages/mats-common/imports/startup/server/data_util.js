@@ -325,6 +325,56 @@ const doSettings = function (title, dbType, version, buildDate, appType, mapboxK
     matsCollections.Settings.update(settingsId, {$set: settings});
 };
 
+// calculates the statistic for ctc station plots
+const calculateStatCTC = function (hit, fa, miss, cn, statistic) {
+    var queryVal;
+    switch (statistic) {
+        case 'TSS (True Skill Score)':
+            queryVal = ((hit * cn - fa * miss) / ((hit + miss) * (fa + cn))) * 100;
+            break;
+        case 'PODy (POD of ceiling < threshold)':
+            queryVal = hit / (hit + miss) * 100;
+            break;
+        case 'PODn (POD of ceiling > threshold)':
+            queryVal = cn / (cn + fa) * 100;
+            break;
+        case 'FAR (False Alarm Ratio)':
+            queryVal = fa / (fa + hit) * 100;
+            break;
+        case 'Bias (forecast/actual)':
+            queryVal = (hit + fa) / (hit + miss);
+            break;
+        case 'CSI (Critical Success Index)':
+            queryVal = hit / (hit + miss + fa) * 100;
+            break;
+        case 'HSS (Heidke Skill Score)':
+            queryVal = 2 * (cn * hit - miss * fa) / ((cn + fa) * (fa + hit) + (cn + miss) * (miss + hit)) * 100;
+            break;
+        case 'ETS (Equitable Threat Score)':
+            queryVal = (hit - ((hit + fa) * (hit + miss) / (hit + fa + miss + cn))) / ((hit + fa + miss) - ((hit + fa) * (hit + miss) / (hit + fa + miss + cn))) * 100;
+            break;
+        case 'Nlow (obs < threshold, avg per hr in predefined regions)':
+            queryVal = hit + miss;
+            break;
+        case 'Nhigh (obs > threshold, avg per hr in predefined regions)':
+            queryVal = cn + fa;
+            break;
+        case 'Ntot (total obs, avg per hr in predefined regions)':
+            queryVal = hit + fa + miss + cn;
+            break;
+        case 'Ratio (Nlow / Ntot)':
+            queryVal = (hit + miss) / (hit + fa + miss + cn);
+            break;
+        case 'Ratio (Nhigh / Ntot)':
+            queryVal = (cn + fa) / (hit + fa + miss + cn);
+            break;
+        case 'N per graph point':
+            queryVal = hit + fa + miss + cn;
+            break;
+    }
+    return queryVal;
+};
+
 // calculates mean, stdev, and other statistics for curve data points in all apps and plot types
 const get_err = function (sVals, sSecs, sLevs, appParams) {
     /* refer to perl error_library.pl sub  get_stats
@@ -1058,6 +1108,7 @@ export default matsDataUtils = {
     doCredentials: doCredentials,
     doRoles: doRoles,
     doSettings: doSettings,
+    calculateStatCTC: calculateStatCTC,
     get_err: get_err,
     checkDiffContourSignificance: checkDiffContourSignificance,
     setHistogramParameters: setHistogramParameters,

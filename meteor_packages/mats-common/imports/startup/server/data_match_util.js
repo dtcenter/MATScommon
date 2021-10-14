@@ -6,13 +6,21 @@ import {matsDataUtils} from 'meteor/randyp:mats-common';
 import {matsTypes} from 'meteor/randyp:mats-common';
 
 // function for removing unmatched data from a dataset containing multiple curves
-const getMatchedDataSet = function (dataset, curvesLength, appParams) {
+const getMatchedDataSet = function (dataset, curvesLength, appParams, isCTC, curveStats) {
 
     var subSecs = [];
     var subLevs = [];
+    var subHit = [];
+    var subFa = [];
+    var subMiss = [];
+    var subCn = [];
     var subValues = [];
     var newSubSecs = [];
     var newSubLevs = [];
+    var newSubHit = [];
+    var newSubFa = [];
+    var newSubMiss = [];
+    var newSubCn = [];
     var newSubValues = [];
     var independentVarGroups = [];
     var independentVarHasPoint = [];
@@ -116,7 +124,14 @@ const getMatchedDataSet = function (dataset, curvesLength, appParams) {
                     if (data[('error_' + statVarName)].array !== undefined) {
                         data[('error_' + statVarName)].array.splice(di, 1);
                     }
-                    data.subVals.splice(di, 1);
+                    if (isCTC) {
+                        data.subHit.splice(di, 1);
+                        data.subFa.splice(di, 1);
+                        data.subMiss.splice(di, 1);
+                        data.subCn.splice(di, 1);
+                    } else {
+                        data.subVals.splice(di, 1);
+                    }
                     data.subSecs.splice(di, 1);
                     if (hasLevels) {
                         data.subLevs.splice(di, 1);
@@ -125,7 +140,14 @@ const getMatchedDataSet = function (dataset, curvesLength, appParams) {
                     data.text.splice(di, 1);
                 } else {    // if all of the curves have either data or nulls at this independentVar, and there is at least one null, ensure all of the curves are null
                     data[statVarName][di] = null;
-                    data.subVals[di] = NaN;
+                    if (isCTC) {
+                        data.subHit[di] = NaN;
+                        data.subFa[di] = NaN;
+                        data.subMiss[di] = NaN;
+                        data.subCn[di] = NaN;
+                    } else {
+                        data.subVals[di] = NaN;
+                    }
                     data.subSecs[di] = NaN;
                     if (hasLevels) {
                         data.subLevs[di] = NaN;
@@ -134,13 +156,24 @@ const getMatchedDataSet = function (dataset, curvesLength, appParams) {
                 continue;   // then move on to the next independentVar. There's no need to mess with the subSecs or subLevs
             }
             subSecs = data.subSecs[di];
-            subValues = data.subVals[di];
+            if (isCTC) {
+                subHit = data.subHit[di];
+                subFa = data.subFa[di];
+                subMiss = data.subMiss[di];
+                subCn = data.subCn[di];
+            } else {
+                subValues = data.subVals[di];
+            }
             if (hasLevels) {
                 subLevs = data.subLevs[di];
             }
 
             if ((!hasLevels && subSecs.length > 0) || (hasLevels && subSecs.length > 0 && subLevs.length > 0)) {
                 currIndependentVar = data[independentVarName][di];
+                newSubHit = [];
+                newSubFa = [];
+                newSubMiss = [];
+                newSubCn = [];
                 newSubValues = [];
                 newSubSecs = [];
                 if (hasLevels) {
@@ -151,25 +184,71 @@ const getMatchedDataSet = function (dataset, curvesLength, appParams) {
                         tempPair = [subSecs[si], subLevs[si]]; //create sec-lev pair for each sub value
                     }
                     if ((!hasLevels && subSecIntersection[currIndependentVar].indexOf(subSecs[si]) !== -1) || (hasLevels && matsDataUtils.arrayContainsSubArray(subIntersections[currIndependentVar], tempPair))) { // keep the subValue only if its associated subSec/subLev is common to all curves for this independentVar
-                        var newVal = subValues[si];
+                        if (isCTC) {
+                            var newHit = subHit[si];
+                            var newFa = subFa[si];
+                            var newMiss = subMiss[si];
+                            var newCn = subCn[si];
+                        } else {
+                            var newVal = subValues[si];
+                        }
                         var newSec = subSecs[si];
                         if (hasLevels) {
                             var newLev = subLevs[si];
                         }
-                        if (newVal !== undefined) {
-                            newSubValues.push(newVal);
-                            newSubSecs.push(newSec);
-                            if (hasLevels) {
-                                newSubLevs.push(newLev);
+                        if (isCTC) {
+                            if (newHit !== undefined) {
+                                newSubHit.push(newHit);
+                                newSubFa.push(newFa);
+                                newSubMiss.push(newMiss);
+                                newSubCn.push(newCn);
+                                newSubSecs.push(newSec);
+                                if (hasLevels) {
+                                    newSubLevs.push(newLev);
+                                }
+                            }
+                        } else {
+                            if (newVal !== undefined) {
+                                newSubValues.push(newVal);
+                                newSubSecs.push(newSec);
+                                if (hasLevels) {
+                                    newSubLevs.push(newLev);
+                                }
                             }
                         }
                     }
                 }
                 // store the filtered data
+                data.subHit[di] = newSubHit;
+                data.subFa[di] = newSubFa;
+                data.subMiss[di] = newSubMiss;
+                data.subCn[di] = newSubCn;
                 data.subVals[di] = newSubValues;
                 data.subSecs[di] = newSubSecs;
                 if (hasLevels) {
                     data.subLevs[di] = newSubLevs;
+                }
+            }
+        }
+
+        if (isCTC) {
+            // need to recalculate the primary statistic with the newly matched hits, false alarms, etc.
+            dataLength = data[independentVarName].length;
+            for (di = 0; di < dataLength; di++) {
+                if (!isNaN(data.subHit[di])) {
+                    const hit = data.subHit[di].reduce(function (sum, value) {
+                        return value == null ? sum : sum + value;
+                    }, 0);
+                    const fa = data.subFa[di].reduce(function (sum, value) {
+                        return value == null ? sum : sum + value;
+                    }, 0);
+                    const miss = data.subMiss[di].reduce(function (sum, value) {
+                        return value == null ? sum : sum + value;
+                    }, 0);
+                    const cn = data.subCn[di].reduce(function (sum, value) {
+                        return value == null ? sum : sum + value;
+                    }, 0);
+                    data[statVarName][di] = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, curveStats[curveIndex]);
                 }
             }
         }

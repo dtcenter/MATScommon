@@ -126,56 +126,6 @@ const getTimeInterval = function (avTime, time_interval, foreCastOffset, cycles)
     return ti;
 };
 
-// calculates the statistic for ctc station plots
-const calculateStatCTC = function (yy, yn, ny, nn, statistic) {
-    var queryVal;
-    switch (statistic) {
-        case 'TSS (True Skill Score)':
-            queryVal = ((yy * nn - yn * ny) / ((yy + ny) * (yn + nn))) * 100;
-            break;
-        case 'PODy (POD of ceiling < threshold)':
-            queryVal = yy / (yy + ny) * 100;
-            break;
-        case 'PODn (POD of ceiling > threshold)':
-            queryVal = nn / (nn + yn) * 100;
-            break;
-        case 'FAR (False Alarm Ratio)':
-            queryVal = yn / (yn + yy) * 100;
-            break;
-        case 'Bias (forecast/actual)':
-            queryVal = (yy + yn) / (yy + ny);
-            break;
-        case 'CSI (Critical Success Index)':
-            queryVal = yy / (yy + ny + yn) * 100;
-            break;
-        case 'HSS (Heidke Skill Score)':
-            queryVal = 2 * (nn * yy - ny * yn) / ((nn + yn) * (yn + yy) + (nn + ny) * (ny + yy)) * 100;
-            break;
-        case 'ETS (Equitable Threat Score)':
-            queryVal = (yy - ((yy + yn) * (yy + ny) / (yy + yn + ny + nn))) / ((yy + yn + ny) - ((yy + yn) * (yy + ny) / (yy + yn + ny + nn))) * 100;
-            break;
-        case 'Nlow (obs < threshold, avg per hr in predefined regions)':
-            queryVal = yy + ny;
-            break;
-        case 'Nhigh (obs > threshold, avg per hr in predefined regions)':
-            queryVal = nn + yn;
-            break;
-        case 'Ntot (total obs, avg per hr in predefined regions)':
-            queryVal = yy + yn + ny + nn;
-            break;
-        case 'Ratio (Nlow / Ntot)':
-            queryVal = (yy + ny) / (yy + yn + ny + nn);
-            break;
-        case 'Ratio (Nhigh / Ntot)':
-            queryVal = (nn + yn) / (yy + yn + ny + nn);
-            break;
-        case 'N per graph point':
-            queryVal = yy + yn + ny + nn;
-            break;
-    }
-    return queryVal;
-};
-
 // utility for querying the DB
 const simplePoolQueryWrapSynchronous = function (pool, statement) {
     /*
@@ -296,7 +246,6 @@ const queryDBPython = function (pool, statement, statLineType, statistic, appPar
 
 // this method queries the database for timeseries plots
 const queryDBTimeSeries = function (pool, statement, dataSource, forecastOffset, startDate, endDate, averageStr, statisticStr, validTimes, appParams, forceRegularCadence) {
-    // upper air is only verified at 00Z and 12Z, so you need to force irregular models to verify at that regular cadence
 
     function parseData(appParams, statisticStr, rows, cycles, regular, d) {
         var parsedData;
@@ -311,6 +260,7 @@ const queryDBTimeSeries = function (pool, statement, dataSource, forecastOffset,
     }
 
     if (Meteor.isServer) {
+        // upper air is only verified at 00Z and 12Z, so you need to force irregular models to verify at that regular cadence
         var cycles = getModelCadence(pool, dataSource, startDate, endDate); // if irregular model cadence, get cycle times. If regular, get empty array.
         if (validTimes.length > 0 && validTimes !== matsTypes.InputTypes.unused) {
             var vtCycles = validTimes.map(function (x) {
@@ -331,12 +281,17 @@ const queryDBTimeSeries = function (pool, statement, dataSource, forecastOffset,
             y: [],
             error_x: [],
             error_y: [],
+            subHit: [],
+            subFa: [],
+            subMiss: [],
+            subCn: [],
             subVals: [],
             subSecs: [],
             subLevs: [],
             stats: [],
             ctc_stats: [],
             text: [],
+            glob_stats: {},
             xmin: Number.MAX_VALUE,
             xmax: Number.MIN_VALUE,
             ymin: Number.MAX_VALUE,
@@ -352,8 +307,8 @@ const queryDBTimeSeries = function (pool, statement, dataSource, forecastOffset,
         if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
             /*
             we have to call the couchbase utilities as async functions but this
-            routine  'queryDBTimeSeries' cannot itslef be async because the graph page needs to wait
-            for its result, so we use an anomynous async() function here to wrap the queryCB call
+            routine 'queryDBTimeSeries' cannot itself be async because the graph page needs to wait
+            for its result, so we use an anonymous async() function here to wrap the queryCB call
             */
                 (async () => {
                     const rows = await pool.queryCB(statement);
@@ -368,7 +323,7 @@ const queryDBTimeSeries = function (pool, statement, dataSource, forecastOffset,
                     dFuture.return();
                 })();
         } else {
-            // we will default to mysql so old apps won't break
+            // if this app isn't couchbase, use mysql
             pool.query(statement, function (err, ret) {
                 // query callback - build the curve data from the results - or set an error
                 if (err !== undefined && err !== null) {
@@ -376,13 +331,12 @@ const queryDBTimeSeries = function (pool, statement, dataSource, forecastOffset,
                 } else if (ret === undefined || ret === null || ret.length === 0) {
                     error = matsTypes.Messages.NO_DATA_FOUND;
                 } else {
-                    const rows = ret;
-                    const parsedData = parseData(appParams, statisticStr, rows, cycles, regular, d);
+                    const parsedData = parseData(appParams, statisticStr, ret, cycles, regular, d);
                     d = parsedData.d;
                     N0 = parsedData.N0;
                     N_times = parsedData.N_times;
-                    // done waiting - have results
                 }
+                // done waiting - have results
                 dFuture.return();
             });
         }
@@ -810,6 +764,10 @@ const parseQueryDataTimeSeries = function (rows, d, appParams, averageStr, stati
             y: [],
             error_x: [],
             error_y: [],
+            subHit: [],
+            subFa: [],
+            subMiss: [],
+            subCn: [],
             subVals: [],
             subSecs: [],
             subLevs: [],
@@ -826,6 +784,7 @@ const parseQueryDataTimeSeries = function (rows, d, appParams, averageStr, stati
     */
     const hasLevels = appParams.hasLevels;
     const completenessQCParam = Number(appParams.completeness) / 100;
+    var isCTC = false;
 
     // initialize local variables
     d.error_x = null;  // time series doesn't use x errorbars
@@ -836,6 +795,10 @@ const parseQueryDataTimeSeries = function (rows, d, appParams, averageStr, stati
     var xmax = -1 * Number.MAX_VALUE;
     var curveTime = [];
     var curveStats = [];
+    var subHit = [];
+    var subFa = [];
+    var subMiss = [];
+    var subCn = [];
     var subVals = [];
     var subSecs = [];
     var subLevs = [];
@@ -849,15 +812,16 @@ const parseQueryDataTimeSeries = function (rows, d, appParams, averageStr, stati
         xmin = avTime < xmin ? avTime : xmin;
         xmax = avTime > xmax ? avTime : xmax;
         var stat;
-        if (rows[rowIndex].stat === undefined && rows[rowIndex].yy !== undefined) {
-            const yy = Number(rows[rowIndex].yy);
-            const yn = Number(rows[rowIndex].yn);
-            const ny = Number(rows[rowIndex].ny);
-            const nn = Number(rows[rowIndex].nn);
-            if (yy + yn + ny + nn > 0) {
-                stat = calculateStatCTC(yy, yn, ny, nn, statisticStr);
+        if (rows[rowIndex].stat === undefined && rows[rowIndex].hit !== undefined) {
+            isCTC = true;
+            const hit = Number(rows[rowIndex].hit);
+            const fa = Number(rows[rowIndex].fa);
+            const miss = Number(rows[rowIndex].miss);
+            const cn = Number(rows[rowIndex].cn);
+            if (hit + fa + miss + cn > 0) {
+                stat = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, statisticStr);
                 stat = isNaN(Number(stat)) ? null : stat;
-                ctc_stats.push({yy: yy, yn: yn, ny: ny, nn: nn, N0: rows[rowIndex].N0});
+                ctc_stats.push({yy: hit, yn: fa, ny: miss, nn: cn, N0: rows[rowIndex].N0});
             } else {
                 stat = null;
             }
@@ -876,6 +840,10 @@ const parseQueryDataTimeSeries = function (rows, d, appParams, averageStr, stati
         }
 
         // store sub values that will later be used for calculating error bar statistics.
+        var sub_hit = [];
+        var sub_fa = [];
+        var sub_miss = [];
+        var sub_cn = [];
         var sub_values = [];
         var sub_secs = [];
         var sub_levs = [];
@@ -885,13 +853,28 @@ const parseQueryDataTimeSeries = function (rows, d, appParams, averageStr, stati
                 var curr_sub_data;
                 for (var sd_idx = 0; sd_idx < sub_data.length; sd_idx++) {
                     curr_sub_data = sub_data[sd_idx].split(';');
-                    sub_values.push(Number(curr_sub_data[0]));
-                    sub_secs.push(Number(curr_sub_data[1]));
-                    if (hasLevels) {
-                        if (!isNaN(Number(curr_sub_data[2]))) {
-                            sub_levs.push(Number(curr_sub_data[2]));
-                        } else {
-                            sub_levs.push(curr_sub_data[2]);
+                    if (isCTC) {
+                        sub_hit.push(Number(curr_sub_data[0]));
+                        sub_fa.push(Number(curr_sub_data[1]));
+                        sub_miss.push(Number(curr_sub_data[2]));
+                        sub_cn.push(Number(curr_sub_data[3]));
+                        sub_secs.push(Number(curr_sub_data[4]));
+                        if (hasLevels) {
+                            if (!isNaN(Number(curr_sub_data[5]))) {
+                                sub_levs.push(Number(curr_sub_data[5]));
+                            } else {
+                                sub_levs.push(curr_sub_data[5]);
+                            }
+                        }
+                    } else {
+                        sub_values.push(Number(curr_sub_data[0]));
+                        sub_secs.push(Number(curr_sub_data[1]));
+                        if (hasLevels) {
+                            if (!isNaN(Number(curr_sub_data[2]))) {
+                                sub_levs.push(Number(curr_sub_data[2]));
+                            } else {
+                                sub_levs.push(curr_sub_data[2]);
+                            }
                         }
                     }
                 }
@@ -901,7 +884,14 @@ const parseQueryDataTimeSeries = function (rows, d, appParams, averageStr, stati
                 throw new Error(e.message);
             }
         } else {
-            sub_values = NaN;
+            if (isCTC) {
+                sub_hit = NaN;
+                sub_fa = NaN;
+                sub_miss = NaN;
+                sub_cn = NaN;
+            } else {
+                sub_values = NaN;
+            }
             sub_secs = NaN;
             if (hasLevels) {
                 sub_levs = NaN;
@@ -909,6 +899,10 @@ const parseQueryDataTimeSeries = function (rows, d, appParams, averageStr, stati
         }
         curveTime.push(avTime);
         curveStats.push(stat);
+        subHit.push(sub_hit);
+        subFa.push(sub_fa);
+        subMiss.push(sub_miss);
+        subCn.push(sub_cn);
         subVals.push(sub_values);
         subSecs.push(sub_secs);
         if (hasLevels) {
@@ -935,6 +929,10 @@ const parseQueryDataTimeSeries = function (rows, d, appParams, averageStr, stati
             d.x.push(loopTime);
             d.y.push(null);
             d.error_y.push(null);   // placeholder
+            d.subHit.push(NaN);
+            d.subFa.push(NaN);
+            d.subMiss.push(NaN);
+            d.subCn.push(NaN);
             d.subVals.push(NaN);
             d.subSecs.push(NaN);
             if (hasLevels) {
@@ -949,6 +947,10 @@ const parseQueryDataTimeSeries = function (rows, d, appParams, averageStr, stati
                 d.x.push(loopTime);
                 d.y.push(null);
                 d.error_y.push(null); // placeholder
+                d.subHit.push(NaN);
+                d.subFa.push(NaN);
+                d.subMiss.push(NaN);
+                d.subCn.push(NaN);
                 d.subVals.push(NaN);
                 d.subSecs.push(NaN);
                 if (hasLevels) {
@@ -960,6 +962,10 @@ const parseQueryDataTimeSeries = function (rows, d, appParams, averageStr, stati
                 d.x.push(loopTime);
                 d.y.push(curveStats[d_idx]);
                 d.error_y.push(null);
+                d.subHit.push(subHit[d_idx]);
+                d.subFa.push(subFa[d_idx]);
+                d.subMiss.push(subMiss[d_idx]);
+                d.subCn.push(subCn[d_idx]);
                 d.subVals.push(subVals[d_idx]);
                 d.subSecs.push(subSecs[d_idx]);
                 if (hasLevels) {
@@ -1059,14 +1065,14 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
         }
         var stat;
         if (rows[rowIndex].stat === undefined && rows[rowIndex].yy !== undefined) {
-            const yy = Number(rows[rowIndex].yy);
-            const yn = Number(rows[rowIndex].yn);
-            const ny = Number(rows[rowIndex].ny);
-            const nn = Number(rows[rowIndex].nn);
-            if (yy + yn + ny + nn > 0) {
-                stat = calculateStatCTC(yy, yn, ny, nn, statisticStr);
+            const hit = Number(rows[rowIndex].yy);
+            const fa = Number(rows[rowIndex].yn);
+            const miss = Number(rows[rowIndex].ny);
+            const cn = Number(rows[rowIndex].nn);
+            if (hit + fa + miss + cn > 0) {
+                stat = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, statisticStr);
                 stat = isNaN(Number(stat)) ? null : stat;
-                ctc_stats.push({yy: yy, yn: yn, ny: ny, nn: nn, N0: rows[rowIndex].N0});
+                ctc_stats.push({yy: hit, yn: fa, ny: miss, nn: cn, N0: rows[rowIndex].N0});
             } else {
                 stat = null;
             }
@@ -1367,12 +1373,12 @@ const parseQueryDataMapCTC = function (rows, d, dPurple, dPurpleBlue, dBlue, dBl
     var highLimit = Number(rows[rows.length - 1].N0);
     for (var rowIndex = 0; rowIndex < rows.length; rowIndex++) {
         const site = rows[rowIndex].sta_id;
-        const yy = Number(rows[rowIndex].yy);
-        const yn = Number(rows[rowIndex].yn);
-        const ny = Number(rows[rowIndex].ny);
-        const nn = Number(rows[rowIndex].nn);
-        if (yy + yn + ny + nn > 0) {
-            queryVal = calculateStatCTC(yy, yn, ny, nn, statistic);
+        const hit = Number(rows[rowIndex].yy);
+        const fa = Number(rows[rowIndex].yn);
+        const miss = Number(rows[rowIndex].ny);
+        const cn = Number(rows[rowIndex].nn);
+        if (hit + fa + miss + cn > 0) {
+            queryVal = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, statistic);
             switch (statistic) {
                 case 'TSS (True Skill Score)':
                     lowLimit = -100;
