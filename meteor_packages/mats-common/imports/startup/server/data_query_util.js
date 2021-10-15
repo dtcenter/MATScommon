@@ -374,6 +374,7 @@ const queryDBSpecialtyCurve = function (pool, statement, appParams, statisticStr
             ctc_stats: [],
             text: [],
             glob_stats: {},
+            bin_stats: [],
             xmin: Number.MAX_VALUE,
             xmax: Number.MIN_VALUE,
             ymin: Number.MAX_VALUE,
@@ -395,7 +396,7 @@ const queryDBSpecialtyCurve = function (pool, statement, appParams, statisticStr
                 if (appParams.plotType !== matsTypes.PlotTypes.histogram) {
                     parsedData = parseQueryDataSpecialtyCurve(rows, d, appParams, statisticStr);
                 } else {
-                    parsedData = parseQueryDataHistogram(rows, d, appParams);
+                    parsedData = parseQueryDataHistogram(rows, d, appParams, statisticStr);
                 }
                 d = parsedData.d;
                 N0 = parsedData.N0;
@@ -1600,7 +1601,7 @@ const parseQueryDataMapCTC = function (rows, d, dPurple, dPurpleBlue, dBlue, dBl
 };
 
 // this method parses the returned query data for histograms
-const parseQueryDataHistogram = function (rows, d, appParams) {
+const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
     /*
         var d = {// d will contain the curve data
             x: [], // placeholder
@@ -1620,6 +1621,7 @@ const parseQueryDataHistogram = function (rows, d, appParams) {
         };
     */
     const hasLevels = appParams.hasLevels;
+    var isCTC = false;
 
     // these arrays hold all the sub values and seconds (and levels) until they are sorted into bins
     var curveSubStatsRaw = [];
@@ -1628,7 +1630,22 @@ const parseQueryDataHistogram = function (rows, d, appParams) {
 
     // parse the data returned from the query
     for (var rowIndex = 0; rowIndex < rows.length; rowIndex++) {
-        var stat = rows[rowIndex].stat === "NULL" ? null : rows[rowIndex].stat;
+        var stat;
+        if (rows[rowIndex].stat === undefined && rows[rowIndex].hit !== undefined) {
+            isCTC = true;
+            const hit = Number(rows[rowIndex].hit);
+            const fa = Number(rows[rowIndex].fa);
+            const miss = Number(rows[rowIndex].miss);
+            const cn = Number(rows[rowIndex].cn);
+            if (hit + fa + miss + cn > 0) {
+                stat = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, statisticStr);
+                stat = isNaN(Number(stat)) ? null : stat;
+            } else {
+                stat = null;
+            }
+        } else {
+            stat = rows[rowIndex].stat === "NULL" ? null : rows[rowIndex].stat;
+        }
         var sub_stats = [];
         var sub_secs = [];
         var sub_levs = [];
@@ -1638,19 +1655,31 @@ const parseQueryDataHistogram = function (rows, d, appParams) {
                 var curr_sub_data;
                 for (var sd_idx = 0; sd_idx < sub_data.length; sd_idx++) {
                     curr_sub_data = sub_data[sd_idx].split(';');
-                    sub_stats.push(Number(curr_sub_data[0]));
-                    sub_secs.push(Number(curr_sub_data[1]));
-                    if (hasLevels) {
-                        if (!isNaN(Number(curr_sub_data[2]))) {
-                            sub_levs.push(Number(curr_sub_data[2]));
-                        } else {
-                            sub_levs.push(curr_sub_data[2]);
+                    if (isCTC) {
+                        sub_stats.push(matsDataUtils.calculateStatCTC(Number(curr_sub_data[0]), Number(curr_sub_data[1]), Number(curr_sub_data[2]), Number(curr_sub_data[3]), statisticStr));
+                        sub_secs.push(Number(curr_sub_data[4]));
+                        if (hasLevels) {
+                            if (!isNaN(Number(curr_sub_data[5]))) {
+                                sub_levs.push(Number(curr_sub_data[5]));
+                            } else {
+                                sub_levs.push(curr_sub_data[5]);
+                            }
+                        }
+                    } else {
+                        sub_stats.push(Number(curr_sub_data[0]));
+                        sub_secs.push(Number(curr_sub_data[1]));
+                        if (hasLevels) {
+                            if (!isNaN(Number(curr_sub_data[2]))) {
+                                sub_levs.push(Number(curr_sub_data[2]));
+                            } else {
+                                sub_levs.push(curr_sub_data[2]);
+                            }
                         }
                     }
-                    curveSubLevsRaw.push(sub_levs);
                 }
                 curveSubStatsRaw.push(sub_stats);
                 curveSubSecsRaw.push(sub_secs);
+                curveSubLevsRaw.push(sub_levs);
             } catch (e) {
                 // this is an error produced by a bug in the query function, not an error returned by the mysql database
                 e.message = "Error in parseQueryDataHistogram. The expected fields don't seem to be present in the results cache: " + e.message;
