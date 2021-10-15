@@ -235,7 +235,7 @@ const getMatchedDataSet = function (dataset, curvesLength, appParams, isCTC, cur
             // need to recalculate the primary statistic with the newly matched hits, false alarms, etc.
             dataLength = data[independentVarName].length;
             for (di = 0; di < dataLength; di++) {
-                if (!isNaN(data.subHit[di])) {
+                if (data.subHit[di] instanceof Array) {
                     const hit = data.subHit[di].reduce(function (sum, value) {
                         return value == null ? sum : sum + value;
                     }, 0);

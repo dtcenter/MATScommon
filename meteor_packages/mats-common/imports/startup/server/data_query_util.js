@@ -324,14 +324,14 @@ const queryDBTimeSeries = function (pool, statement, dataSource, forecastOffset,
                 })();
         } else {
             // if this app isn't couchbase, use mysql
-            pool.query(statement, function (err, ret) {
+            pool.query(statement, function (err, rows) {
                 // query callback - build the curve data from the results - or set an error
                 if (err !== undefined && err !== null) {
                     error = err.message;
-                } else if (ret === undefined || ret === null || ret.length === 0) {
+                } else if (rows === undefined || rows === null || rows.length === 0) {
                     error = matsTypes.Messages.NO_DATA_FOUND;
                 } else {
-                    const parsedData = parseData(appParams, statisticStr, ret, cycles, regular, d);
+                    const parsedData = parseData(appParams, statisticStr, rows, cycles, regular, d);
                     d = parsedData.d;
                     N0 = parsedData.N0;
                     N_times = parsedData.N_times;
@@ -363,19 +363,23 @@ const queryDBSpecialtyCurve = function (pool, statement, appParams, statisticStr
             y: [],
             error_x: [],
             error_y: [],
+            subHit: [],
+            subFa: [],
+            subMiss: [],
+            subCn: [],
             subVals: [],
             subSecs: [],
             subLevs: [],
             stats: [],
             ctc_stats: [],
             text: [],
+            glob_stats: {},
             xmin: Number.MAX_VALUE,
             xmax: Number.MIN_VALUE,
             ymin: Number.MAX_VALUE,
             ymax: Number.MIN_VALUE,
             sum: 0
         };
-
         var error = "";
         var N0 = [];
         var N_times = [];
@@ -400,14 +404,14 @@ const queryDBSpecialtyCurve = function (pool, statement, appParams, statisticStr
             // done waiting - have results
             dFuture['return']();
         });
-
         // wait for future to finish
         dFuture.wait();
+
         return {
             data: d,
             error: error,
             N0: N0,
-            N_times: N_times,
+            N_times: N_times
         };
     }
 };
@@ -1010,6 +1014,10 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
             y: [],
             error_x: [],
             error_y: [],
+            subHit: [],
+            subFa: [],
+            subMiss: [],
+            subCn: [],
             subVals: [],
             subSecs: [],
             subLevs: [],
@@ -1027,6 +1035,7 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
     const plotType = appParams.plotType;
     const hasLevels = appParams.hasLevels;
     const completenessQCParam = Number(appParams.completeness) / 100;
+    var isCTC = false;
     const hideGaps = appParams.hideGaps;
 
     // initialize local variables
@@ -1035,6 +1044,10 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
     var ctc_stats = [];
     var curveIndependentVars = [];
     var curveStats = [];
+    var subHit = [];
+    var subFa = [];
+    var subMiss = [];
+    var subCn = [];
     var subVals = [];
     var subSecs = [];
     var subLevs = [];
@@ -1064,11 +1077,12 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
                 independentVar = Number(rows[rowIndex].avtime);
         }
         var stat;
-        if (rows[rowIndex].stat === undefined && rows[rowIndex].yy !== undefined) {
-            const hit = Number(rows[rowIndex].yy);
-            const fa = Number(rows[rowIndex].yn);
-            const miss = Number(rows[rowIndex].ny);
-            const cn = Number(rows[rowIndex].nn);
+        if (rows[rowIndex].stat === undefined && rows[rowIndex].hit !== undefined) {
+            isCTC = true;
+            const hit = Number(rows[rowIndex].hit);
+            const fa = Number(rows[rowIndex].fa);
+            const miss = Number(rows[rowIndex].miss);
+            const cn = Number(rows[rowIndex].cn);
             if (hit + fa + miss + cn > 0) {
                 stat = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, statisticStr);
                 stat = isNaN(Number(stat)) ? null : stat;
@@ -1082,7 +1096,11 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
         N0.push(rows[rowIndex].N0);             // number of values that go into a point on the graph
         N_times.push(rows[rowIndex].N_times);   // number of times that go into a point on the graph
 
-        var sub_stats = [];
+        var sub_hit = [];
+        var sub_fa = [];
+        var sub_miss = [];
+        var sub_cn = [];
+        var sub_values = [];
         var sub_secs = [];
         var sub_levs = [];
         if (stat !== null && rows[rowIndex].sub_data !== undefined) {
@@ -1091,13 +1109,28 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
                 var curr_sub_data;
                 for (var sd_idx = 0; sd_idx < sub_data.length; sd_idx++) {
                     curr_sub_data = sub_data[sd_idx].split(';');
-                    sub_stats.push(Number(curr_sub_data[0]));
-                    sub_secs.push(Number(curr_sub_data[1]));
-                    if (hasLevels) {
-                        if (!isNaN(Number(curr_sub_data[2]))) {
-                            sub_levs.push(Number(curr_sub_data[2]));
-                        } else {
-                            sub_levs.push(curr_sub_data[2]);
+                    if (isCTC) {
+                        sub_hit.push(Number(curr_sub_data[0]));
+                        sub_fa.push(Number(curr_sub_data[1]));
+                        sub_miss.push(Number(curr_sub_data[2]));
+                        sub_cn.push(Number(curr_sub_data[3]));
+                        sub_secs.push(Number(curr_sub_data[4]));
+                        if (hasLevels) {
+                            if (!isNaN(Number(curr_sub_data[5]))) {
+                                sub_levs.push(Number(curr_sub_data[5]));
+                            } else {
+                                sub_levs.push(curr_sub_data[5]);
+                            }
+                        }
+                    } else {
+                        sub_values.push(Number(curr_sub_data[0]));
+                        sub_secs.push(Number(curr_sub_data[1]));
+                        if (hasLevels) {
+                            if (!isNaN(Number(curr_sub_data[2]))) {
+                                sub_levs.push(Number(curr_sub_data[2]));
+                            } else {
+                                sub_levs.push(curr_sub_data[2]);
+                            }
                         }
                     }
                 }
@@ -1107,7 +1140,14 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
                 throw new Error(e.message);
             }
         } else {
-            sub_stats = NaN;
+            if (isCTC) {
+                sub_hit = NaN;
+                sub_fa = NaN;
+                sub_miss = NaN;
+                sub_cn = NaN;
+            } else {
+                sub_values = NaN;
+            }
             sub_secs = NaN;
             if (hasLevels) {
                 sub_levs = NaN;
@@ -1120,7 +1160,14 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
             for (var missingIdx = cycles_missing; missingIdx > 0; missingIdx--) {
                 curveIndependentVars.push(independentVar - 3600 * 24 * 1000 * missingIdx);
                 curveStats.push(null);
-                subVals.push(NaN);
+                if (isCTC) {
+                    subHit.push(NaN);
+                    subFa.push(NaN);
+                    subMiss.push(NaN);
+                    subCn.push(NaN);
+                } else {
+                    subVals.push(NaN);
+                }
                 subSecs.push(NaN);
                 if (hasLevels) {
                     subLevs.push(NaN);
@@ -1129,7 +1176,11 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
         }
         curveIndependentVars.push(independentVar);
         curveStats.push(stat);
-        subVals.push(sub_stats);
+        subHit.push(sub_hit);
+        subFa.push(sub_fa);
+        subMiss.push(sub_miss);
+        subCn.push(sub_cn);
+        subVals.push(sub_values);
         subSecs.push(sub_secs);
         if (hasLevels) {
             subLevs.push(sub_levs);
@@ -1156,14 +1207,22 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
                     // this is in the pattern of x-plotted-variable, y-plotted-variable.
                     d.x.push(null);
                     d.y.push(curveIndependentVars[d_idx]);
-                    d.error_y.push(null);  // placeholder
+                    d.error_x.push(null);   // placeholder
+                    d.subHit.push(NaN);
+                    d.subFa.push(NaN);
+                    d.subMiss.push(NaN);
+                    d.subCn.push(NaN);
                     d.subVals.push(NaN);
                     d.subSecs.push(NaN);
                     d.subLevs.push(NaN);
                 } else {
                     d.x.push(curveIndependentVars[d_idx]);
                     d.y.push(null);
-                    d.error_y.push(null);  // placeholder
+                    d.error_y.push(null); // placeholder
+                    d.subHit.push(NaN);
+                    d.subFa.push(NaN);
+                    d.subMiss.push(NaN);
+                    d.subCn.push(NaN);
                     d.subVals.push(NaN);
                     d.subSecs.push(NaN);
                     if (hasLevels) {
@@ -1180,6 +1239,10 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
                 d.x.push(curveStats[d_idx]);
                 d.y.push(curveIndependentVars[d_idx]);
                 d.error_x.push(null); // placeholder
+                d.subHit.push(subHit[d_idx]);
+                d.subFa.push(subFa[d_idx]);
+                d.subMiss.push(subMiss[d_idx]);
+                d.subCn.push(subCn[d_idx]);
                 d.subVals.push(subVals[d_idx]);
                 d.subSecs.push(subSecs[d_idx]);
                 d.subLevs.push(subLevs[d_idx]);
@@ -1187,6 +1250,10 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
                 d.x.push(curveIndependentVars[d_idx]);
                 d.y.push(curveStats[d_idx]);
                 d.error_y.push(null);  // placeholder
+                d.subHit.push(subHit[d_idx]);
+                d.subFa.push(subFa[d_idx]);
+                d.subMiss.push(subMiss[d_idx]);
+                d.subCn.push(subCn[d_idx]);
                 d.subVals.push(subVals[d_idx]);
                 d.subSecs.push(subSecs[d_idx]);
                 if (hasLevels) {
