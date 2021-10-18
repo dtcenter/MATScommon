@@ -29,6 +29,7 @@ Template.curveList.helpers({
         const plotType = Session.get('plotType');
         if (mode === undefined || mode === "") {
             switch (plotType) {
+                case matsTypes.PlotTypes.map:
                 case matsTypes.PlotTypes.reliability:
                 case matsTypes.PlotTypes.roc:
                 case matsTypes.PlotTypes.performanceDiagram:
@@ -50,7 +51,6 @@ Template.curveList.helpers({
                 case matsTypes.PlotTypes.gridscale:
                 case matsTypes.PlotTypes.dailyModelCycle:
                 case matsTypes.PlotTypes.yearToYear:
-                case matsTypes.PlotTypes.map:
                 case matsTypes.PlotTypes.histogram:
                 case matsTypes.PlotTypes.ensembleHistogram:
                 case matsTypes.PlotTypes.contourDiff:
