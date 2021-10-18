@@ -1441,10 +1441,10 @@ const parseQueryDataMapCTC = function (rows, d, dPurple, dPurpleBlue, dBlue, dBl
     var highLimit = Number(rows[rows.length - 1].N0);
     for (var rowIndex = 0; rowIndex < rows.length; rowIndex++) {
         const site = rows[rowIndex].sta_id;
-        const hit = Number(rows[rowIndex].yy);
-        const fa = Number(rows[rowIndex].yn);
-        const miss = Number(rows[rowIndex].ny);
-        const cn = Number(rows[rowIndex].nn);
+        const hit = Number(rows[rowIndex].hit);
+        const fa = Number(rows[rowIndex].fa);
+        const miss = Number(rows[rowIndex].miss);
+        const cn = Number(rows[rowIndex].cn);
         if (hit + fa + miss + cn > 0) {
             queryVal = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, statistic);
             switch (statistic) {
