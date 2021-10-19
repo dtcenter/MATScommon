@@ -715,7 +715,7 @@ const queryDBMapCTC = function (pool, statement, dataSource, statistic, siteMap)
 };
 
 // this method queries the database for contour plots
-const queryDBContour = function (pool, statement) {
+const queryDBContour = function (pool, statement, appParams, statisticStr) {
     if (Meteor.isServer) {
         const Future = require('fibers/future');
 
@@ -752,15 +752,15 @@ const queryDBContour = function (pool, statement) {
             } else if (rows === undefined || rows === null || rows.length === 0) {
                 error = matsTypes.Messages.NO_DATA_FOUND;
             } else {
-                const parsedData = parseQueryDataContour(rows, d);
+                const parsedData = parseQueryDataContour(rows, d, appParams, statisticStr);
                 d = parsedData.d;
             }
             // done waiting - have results
             dFuture['return']();
         });
-
         // wait for future to finish
         dFuture.wait();
+
         return {
             data: d,
             error: error
@@ -1789,7 +1789,7 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
 };
 
 // this method parses the returned query data for contour plots
-const parseQueryDataContour = function (rows, d) {
+const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
     /*
         var d = {// d will contain the curve data
             x: [],
@@ -1815,6 +1815,7 @@ const parseQueryDataContour = function (rows, d) {
             sum:num
         };
     */
+    var isCTC = false;
     // initialize local variables
     var curveStatLookup = {};
     var curveStdevLookup = {};
@@ -1825,7 +1826,22 @@ const parseQueryDataContour = function (rows, d) {
         var rowXVal = rows[rowIndex].xVal;
         var rowYVal = rows[rowIndex].yVal;
         var statKey = rowXVal.toString() + '_' + rowYVal.toString();
-        var stat = rows[rowIndex].stat === "NULL" ? null : rows[rowIndex].stat;
+        var stat;
+        if (rows[rowIndex].stat === undefined && rows[rowIndex].hit !== undefined) {
+            isCTC = true;
+            const hit = Number(rows[rowIndex].hit);
+            const fa = Number(rows[rowIndex].fa);
+            const miss = Number(rows[rowIndex].miss);
+            const cn = Number(rows[rowIndex].cn);
+            if (hit + fa + miss + cn > 0) {
+                stat = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, statisticStr);
+                stat = isNaN(Number(stat)) ? null : stat;
+            } else {
+                stat = null;
+            }
+        } else {
+            stat = rows[rowIndex].stat === "NULL" ? null : rows[rowIndex].stat;
+        }
         var stdev = rows[rowIndex].stdev !== undefined ? rows[rowIndex].stdev : null;
         var n = rows[rowIndex].sub_data !== undefined && rows[rowIndex].sub_data !== null ? rows[rowIndex].sub_data.toString().split(',').length : 0;
         var minDate = rows[rowIndex].min_secs;
