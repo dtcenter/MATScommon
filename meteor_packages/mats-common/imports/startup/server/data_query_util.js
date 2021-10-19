@@ -418,7 +418,7 @@ const queryDBSpecialtyCurve = function (pool, statement, appParams, statisticStr
 };
 
 // this method queries the database for performance diagrams
-const queryDBPerformanceDiagram = function (pool, statement) {
+const queryDBPerformanceDiagram = function (pool, statement, appParams) {
     if (Meteor.isServer) {
         const Future = require('fibers/future');
 
@@ -430,6 +430,13 @@ const queryDBPerformanceDiagram = function (pool, statement) {
             oy_all: [],
             on_all: [],
             n: [],
+            subHit: [],
+            subFa: [],
+            subMiss: [],
+            subCn: [],
+            subVals: [],
+            subSecs: [],
+            subLevs: [],
             stats: [],
             text: [],
             xmin: Number.MAX_VALUE,
@@ -449,7 +456,7 @@ const queryDBPerformanceDiagram = function (pool, statement) {
             } else if (rows === undefined || rows === null || rows.length === 0) {
                 error = matsTypes.Messages.NO_DATA_FOUND;
             } else {
-                var parsedData = parseQueryDataPerformanceDiagram(rows, d);
+                var parsedData = parseQueryDataPerformanceDiagram(rows, d, appParams);
                 d = parsedData.d;
                 N0 = parsedData.N0;
                 N_times = parsedData.N_times;
@@ -1291,7 +1298,7 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
 };
 
 // this method parses the returned query data for performance diagrams
-const parseQueryDataPerformanceDiagram = function (rows, d) {
+const parseQueryDataPerformanceDiagram = function (rows, d, appParams) {
     /*
         var d = {// d will contain the curve data
             x: [],
@@ -1300,6 +1307,13 @@ const parseQueryDataPerformanceDiagram = function (rows, d) {
             oy_all: [],
             on_all: [],
             n: [],
+            subHit: [],
+            subFa: [],
+            subMiss: [],
+            subCn: [],
+            subVals: [],
+            subSecs: [],
+            subLevs: [],
             stats: [],
             text: [],
             xmin: Number.MAX_VALUE,
@@ -1309,6 +1323,8 @@ const parseQueryDataPerformanceDiagram = function (rows, d) {
         };
     */
 
+    const hasLevels = appParams.hasLevels;
+
     // initialize local variables
     var N0 = [];
     var N_times = [];
@@ -1317,6 +1333,12 @@ const parseQueryDataPerformanceDiagram = function (rows, d) {
     var binVals = [];
     var oy_all = [];
     var on_all = [];
+    var subHit = [];
+    var subFa = [];
+    var subMiss = [];
+    var subCn = [];
+    var subSecs = [];
+    var subLevs = [];
     for (var rowIndex = 0; rowIndex < rows.length; rowIndex++) {
         var binVal = Number(rows[rowIndex].binVal);
         var pod;
@@ -1341,6 +1363,55 @@ const parseQueryDataPerformanceDiagram = function (rows, d) {
         binVals.push(binVal);
         oy_all.push(oy);
         on_all.push(on);
+
+        var sub_hit = [];
+        var sub_fa = [];
+        var sub_miss = [];
+        var sub_cn = [];
+        var sub_secs = [];
+        var sub_levs = [];
+        if (pod !== null && rows[rowIndex].sub_data !== undefined) {
+            try {
+                var sub_data = rows[rowIndex].sub_data.toString().split(',');
+                var curr_sub_data;
+                for (var sd_idx = 0; sd_idx < sub_data.length; sd_idx++) {
+                    curr_sub_data = sub_data[sd_idx].split(';');
+                    sub_hit.push(Number(curr_sub_data[0]));
+                    sub_fa.push(Number(curr_sub_data[1]));
+                    sub_miss.push(Number(curr_sub_data[2]));
+                    sub_cn.push(Number(curr_sub_data[3]));
+                    sub_secs.push(Number(curr_sub_data[4]));
+                    if (hasLevels) {
+                        if (!isNaN(Number(curr_sub_data[5]))) {
+                            sub_levs.push(Number(curr_sub_data[5]));
+                        } else {
+                            sub_levs.push(curr_sub_data[5]);
+                        }
+                    }
+                }
+            } catch (e) {
+                // this is an error produced by a bug in the query function, not an error returned by the mysql database
+                e.message = "Error in parseQueryDataPerformanceDiagram. The expected fields don't seem to be present in the results cache: " + e.message;
+                throw new Error(e.message);
+            }
+        } else {
+            sub_hit = NaN;
+            sub_fa = NaN;
+            sub_miss = NaN;
+            sub_cn = NaN;
+            sub_secs = NaN;
+            if (hasLevels) {
+                sub_levs = NaN;
+            }
+        }
+        subHit.push(sub_hit);
+        subFa.push(sub_fa);
+        subMiss.push(sub_miss);
+        subCn.push(sub_cn);
+        subSecs.push(sub_secs);
+        if (hasLevels) {
+            subLevs.push(sub_levs);
+        }
     }
 
     d.x = successes;
@@ -1348,6 +1419,12 @@ const parseQueryDataPerformanceDiagram = function (rows, d) {
     d.binVals = binVals;
     d.oy_all = oy_all;
     d.on_all = on_all;
+    d.subHit = subHit;
+    d.subFa = subFa;
+    d.subMiss = subMiss;
+    d.subCn = subCn;
+    d.subSecs = subSecs;
+    d.subLevs = subLevs;
     d.n = N0;
 
     var successMin = Number.MAX_VALUE;
@@ -1452,11 +1529,15 @@ const parseQueryDataMapCTC = function (rows, d, dPurple, dPurpleBlue, dBlue, dBl
                     lowLimit = -100;
                     highLimit = 100;
                     break;
-                case 'PODy (POD of ceiling < threshold)':
+                // some PODy measures look for a value over a threshold, some look for under
+                case 'PODy (POD of value < threshold)':
+                case 'PODy (POD of value > threshold)':
                     lowLimit = 0;
                     highLimit = 100;
                     break;
-                case 'PODn (POD of ceiling > threshold)':
+                // some PODn measures look for a value under a threshold, some look for over
+                case 'PODn (POD of value > threshold)':
+                case 'PODn (POD of value < threshold)':
                     lowLimit = 0;
                     highLimit = 100;
                     break;

@@ -593,6 +593,13 @@ const processDataROC = function (dataset, appParams, curveInfoParams, plotParams
 const processDataPerformanceDiagram = function (dataset, appParams, curveInfoParams, plotParams, bookkeepingParams) {
     var error = "";
 
+    curveInfoParams.statType = curveInfoParams.statType === undefined ? 'scalar' : curveInfoParams.statType;
+
+    // if matching, pare down dataset to only matching data.
+    if (curveInfoParams.curvesLength > 1 && appParams.matching) {
+        dataset = matsDataMatchUtils.getMatchedDataSet(dataset, curveInfoParams.curvesLength, appParams, curveInfoParams.statType === 'ctc', curveInfoParams.curves.map(a => a.statistic));
+    }
+
     // sort data statistics for each curve
     for (var curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex++) {
 

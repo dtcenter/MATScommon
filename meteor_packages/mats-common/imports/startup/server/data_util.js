@@ -332,10 +332,14 @@ const calculateStatCTC = function (hit, fa, miss, cn, statistic) {
         case 'TSS (True Skill Score)':
             queryVal = ((hit * cn - fa * miss) / ((hit + miss) * (fa + cn))) * 100;
             break;
-        case 'PODy (POD of ceiling < threshold)':
+        // some PODy measures look for a value over a threshold, some look for under
+        case 'PODy (POD of value < threshold)':
+        case 'PODy (POD of value > threshold)':
             queryVal = hit / (hit + miss) * 100;
             break;
-        case 'PODn (POD of ceiling > threshold)':
+        // some PODn measures look for a value under a threshold, some look for over
+        case 'PODn (POD of value > threshold)':
+        case 'PODn (POD of value < threshold)':
             queryVal = cn / (cn + fa) * 100;
             break;
         case 'FAR (False Alarm Ratio)':
@@ -370,6 +374,12 @@ const calculateStatCTC = function (hit, fa, miss, cn, statistic) {
             break;
         case 'N per graph point':
             queryVal = hit + fa + miss + cn;
+            break;
+        case 'All observed yes':
+            queryVal = hit + miss;
+            break;
+        case 'All observed no':
+            queryVal = fa + cn;
             break;
     }
     return queryVal;
