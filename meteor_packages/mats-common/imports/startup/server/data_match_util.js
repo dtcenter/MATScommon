@@ -6,7 +6,7 @@ import {matsDataUtils} from 'meteor/randyp:mats-common';
 import {matsTypes} from 'meteor/randyp:mats-common';
 
 // function for removing unmatched data from a dataset containing multiple curves
-const getMatchedDataSet = function (dataset, curvesLength, appParams, isCTC, curveStats) {
+const getMatchedDataSet = function (dataset, curvesLength, appParams, isCTC, curveStats, binStats) {
 
     var subSecsRaw = [];
     var subLevsRaw = [];
@@ -24,6 +24,7 @@ const getMatchedDataSet = function (dataset, curvesLength, appParams, isCTC, cur
     var newSubMiss = [];
     var newSubCn = [];
     var newSubValues = [];
+    var newCurveData = {};
     var independentVarGroups = [];
     var independentVarHasPoint = [];
     var subIntersections = [];
@@ -361,129 +362,8 @@ const getMatchedDataSet = function (dataset, curvesLength, appParams, isCTC, cur
                     }
                 }
             }
-        }
-        dataset[curveIndex] = data;
-    }
-
-    return dataset;
-};
-
-// function for removing unmatched data from a dataset containing multiple curves for a histogram.
-// separate matching functions are needed for histograms because you have to take all of the data out of the bins, then
-// match it, then recalculate the bins. For other plot types, you can just leave the data in its already-sorted fhr, level, etc.
-const getMatchedDataSetHistogram = function (dataset, curvesLength, binStats, appParams) {
-
-    var subStatsRaw = {};
-    var subSecsRaw = {};
-    var subLevsRaw = {};
-    var subStats = {};
-    var subSecs = {};
-    var subLevs = {};
-    var newSubStats = {};
-    var newSubSecs = {};
-    var newSubLevs = {};
-    var newCurveData = {};
-    var curveIndex;
-    var data;
-    var di;
-    var si;
-
-    const hasLevels = appParams.hasLevels;
-
-    // pull all subSecs and subStats out of their bins, and back into one master array
-    for (curveIndex = 0; curveIndex < curvesLength; curveIndex++) {
-        data = dataset[curveIndex];
-        subStatsRaw[curveIndex] = [];
-        subSecsRaw[curveIndex] = [];
-        subLevsRaw[curveIndex] = [];
-        subStats[curveIndex] = [];
-        subSecs[curveIndex] = [];
-        subLevs[curveIndex] = [];
-        for (di = 0; di < data.x.length; di++) {
-            subStatsRaw[curveIndex].push(data.subVals[di]);
-            subSecsRaw[curveIndex].push(data.subSecs[di]);
-            if (hasLevels) {
-                subLevsRaw[curveIndex].push(data.subLevs[di]);
-            }
-        }
-        subStats[curveIndex] = [].concat.apply([], subStatsRaw[curveIndex]);
-        subSecs[curveIndex] = [].concat.apply([], subSecsRaw[curveIndex]);
-        if (hasLevels) {
-            subLevs[curveIndex] = [].concat.apply([], subLevsRaw[curveIndex]);
-        }
-    }
-
-    if (hasLevels) {
-        // determine which seconds and levels are present in all curves
-        var subIntersections = [];       // eventually find the intersecting subSecs and subLevs across all curves
-        for (si = 0; si < subSecs[0].length; si++) {   // fill current intersection array with sec-lev pairs from the first curve
-            subIntersections.push([subSecs[0][si], subLevs[0][si]]);
-        }
-        for (curveIndex = 1; curveIndex < curvesLength; curveIndex++) { // loop over every curve after the first
-            var tempSubIntersections = [];
-            var tempPair;
-            for (si = 0; si < subSecs[curveIndex].length; si++) { // loop over every subSecs value
-                tempPair = [subSecs[curveIndex][si], subLevs[curveIndex][si]];    // create an individual sec-lev pair for each index in the subSecs and subLevs arrays
-                if (matsDataUtils.arrayContainsSubArray(subIntersections, tempPair)) {   // see if the individual sec-lev pair matches a pair from the current intersection array
-                    tempSubIntersections.push(tempPair);    // store matching pairs
-                }
-            }
-            subIntersections = tempSubIntersections;    //replace current intersection array with array of only pairs that matched from this loop through.
-        }
-    } else {
-        // determine which seconds are present in all curves
-        var subSecIntersection = subSecs[0];   // fill current subSecs intersection array with subSecs from the first curve
-        for (curveIndex = 1; curveIndex < curvesLength; curveIndex++) { // loop over every curve
-            subSecIntersection = _.intersection(subSecIntersection, subSecs[curveIndex]);   // keep taking the intersection of the current subSecs intersection array with each curve's subSecs array
-        }
-    }
-
-    // remove non-matching subSecs, subLevs, and subStats
-    for (curveIndex = 0; curveIndex < curvesLength; curveIndex++) { // loop over every curve
-        data = dataset[curveIndex];
-        if ((!hasLevels && subSecIntersection.length > 0) || (hasLevels && subIntersections.length > 0)) {
-            newSubStats[curveIndex] = [];
-            newSubSecs[curveIndex] = [];
-            newSubLevs[curveIndex] = [];
-
-            for (si = 0; si < subSecs[curveIndex].length; si++) {  // loop over all subSecs for this curve
-                if (hasLevels) {
-                    tempPair = [subSecs[curveIndex][si], subLevs[curveIndex][si]]; //create sec-lev pair for each subStat
-                }
-                if ((!hasLevels && subSecIntersection.indexOf(subSecs[curveIndex][si]) !== -1) || (hasLevels && matsDataUtils.arrayContainsSubArray(subIntersections, tempPair))) {  // keep the subStat only if its its sec-lev pair is common to all curves
-                    var newStat = subStats[curveIndex][si];
-                    var newSec = subSecs[curveIndex][si];
-                    if (hasLevels) {
-                        var newLev = subLevs[curveIndex][si];
-                    }
-                    if (newStat !== undefined) {
-                        newSubStats[curveIndex].push(newStat);
-                        newSubSecs[curveIndex].push(newSec);
-                        if (hasLevels) {
-                            newSubLevs[curveIndex].push(newLev);
-                        }
-                    }
-                }
-            }
-            // re-sort all of the data into histogram bins
-            var d = {// d will contain the curve data
-                x: [], //placeholder
-                y: [], //placeholder
-                subVals: [],
-                subSecs: [],
-                subLevs: [],
-                glob_stats: {}, // placeholder
-                bin_stats: [], // placeholder
-                text: [], //placeholder
-                xmin: Number.MAX_VALUE,
-                xmax: Number.MIN_VALUE,
-                ymin: Number.MAX_VALUE,
-                ymax: Number.MIN_VALUE,
-            };
-            newCurveData = matsDataUtils.sortHistogramBins(newSubStats[curveIndex], newSubSecs[curveIndex], newSubLevs[curveIndex], data.x.length, binStats, appParams, d);
-        } else {
-            // if there are no matching values, set data to an empty dataset
-            newCurveData["d"] = {
+        } else if (plotType === matsTypes.PlotTypes.histogram) {
+            var d = {// relevant fields to recalculate
                 x: [],
                 y: [],
                 subVals: [],
@@ -495,20 +375,38 @@ const getMatchedDataSetHistogram = function (dataset, curvesLength, binStats, ap
                 xmin: Number.MAX_VALUE,
                 xmax: Number.MIN_VALUE,
                 ymin: Number.MAX_VALUE,
-                ymax: Number.MIN_VALUE,
+                ymax: Number.MIN_VALUE
             };
+            if (data.x.length > 0) {
+                // need to recalculate bins and stats
+                var curveSubVals = [].concat.apply([], data.subVals);
+                var curveSubSecs = [].concat.apply([], data.subSecs);
+                var curveSubLevs;
+                if (hasLevels) {
+                    curveSubLevs = [].concat.apply([], data.subLevs);
+                } else {
+                    curveSubLevs = [];
+                }
+                var sortedData = matsDataUtils.sortHistogramBins(curveSubVals, curveSubSecs, curveSubLevs, data.x.length, binStats, appParams, d);
+                newCurveData = sortedData.d;
+            } else {
+                // if there are no matching values, set data to an empty dataset
+                newCurveData = d;
+            }
+            debugger;
+            var newCurveDataKeys = Object.keys(newCurveData);
+            for (var didx = 0; didx < newCurveDataKeys.length; didx++) {
+                dataset[curveIndex][newCurveDataKeys[didx]] = newCurveData[newCurveDataKeys[didx]];
+            }
         }
-        var newCurveDataKeys = Object.keys(newCurveData.d);
-        for (var didx = 0; didx < newCurveDataKeys.length; didx++) {
-            dataset[curveIndex][newCurveDataKeys[didx]] = newCurveData.d[newCurveDataKeys[didx]];
-        }
+        dataset[curveIndex] = data;
     }
+
     return dataset;
 };
 
 export default matsDataMatchUtils = {
 
-    getMatchedDataSet: getMatchedDataSet,
-    getMatchedDataSetHistogram: getMatchedDataSetHistogram
+    getMatchedDataSet: getMatchedDataSet
 
 }

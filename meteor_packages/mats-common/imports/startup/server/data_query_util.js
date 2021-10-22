@@ -1685,20 +1685,27 @@ const parseQueryDataMapCTC = function (rows, d, dPurple, dPurpleBlue, dBlue, dBl
 const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
     /*
         var d = {// d will contain the curve data
-            x: [], // placeholder
-            y: [], // placeholder
-            error_x: [], // unused
-            error_y: [], // unused
+            x: [],
+            y: [],
+            error_x: [],
+            error_y: [],
+            subHit: [],
+            subFa: [],
+            subMiss: [],
+            subCn: [],
             subVals: [],
             subSecs: [],
             subLevs: [],
-            glob_stats: [], // placeholder
-            bin_stats: [], // placeholder
-            text: [] // placeholder
-            xmin:num,
-            xmax:num,
-            ymin:num,
-            ymax:num
+            stats: [],
+            ctc_stats: [],
+            text: [],
+            glob_stats: {},
+            bin_stats: [],
+            xmin: Number.MAX_VALUE,
+            xmax: Number.MIN_VALUE,
+            ymin: Number.MAX_VALUE,
+            ymax: Number.MIN_VALUE,
+            sum: 0
         };
     */
     const hasLevels = appParams.hasLevels;

@@ -21,7 +21,7 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
 
     // if matching, pare down dataset to only matching data.
     if (curveInfoParams.curvesLength > 1 && appParams.matching) {
-        dataset = matsDataMatchUtils.getMatchedDataSet(dataset, curveInfoParams.curvesLength, appParams, curveInfoParams.statType === 'ctc', curveInfoParams.curves.map(a => a.statistic));
+        dataset = matsDataMatchUtils.getMatchedDataSet(dataset, curveInfoParams.curvesLength, appParams, curveInfoParams.statType === 'ctc', curveInfoParams.curves.map(a => a.statistic), {});
     }
 
     // we may need to recalculate the axis limits after unmatched data and outliers are removed
@@ -878,20 +878,27 @@ const processDataHistogram = function (allReturnedSubStats, allReturnedSubSecs, 
         label = curve.label;
 
         var d = {// d will contain the curve data
-            x: [], //placeholder
-            y: [], //placeholder
-            error_x: [], // unused
-            error_y: [], // unused
+            x: [],
+            y: [],
+            error_x: [],
+            error_y: [],
+            subHit: [],
+            subFa: [],
+            subMiss: [],
+            subCn: [],
             subVals: [],
             subSecs: [],
             subLevs: [],
-            glob_stats: {}, // placeholder
-            bin_stats: [], // placeholder
-            text: [], //placeholder
+            stats: [],
+            ctc_stats: [],
+            text: [],
+            glob_stats: {},
+            bin_stats: [],
             xmin: Number.MAX_VALUE,
             xmax: Number.MIN_VALUE,
             ymin: Number.MAX_VALUE,
             ymax: Number.MIN_VALUE,
+            sum: 0
         };
 
         if (diffFrom == null) {
@@ -905,7 +912,7 @@ const processDataHistogram = function (allReturnedSubStats, allReturnedSubSecs, 
             // this is a difference curve, so we're done with regular curves.
             // do any matching that needs to be done.
             if (appParams.matching && !bookkeepingParams.alreadyMatched) {
-                dataset = matsDataMatchUtils.getMatchedDataSetHistogram(dataset, curvesLengthSoFar, binStats, appParams);
+                dataset = matsDataMatchUtils.getMatchedDataSet(dataset, curvesLengthSoFar, appParams, false, curveInfoParams.curves.map(a => a.statistic), binStats);
                 bookkeepingParams.alreadyMatched = true;
             }
 
@@ -943,7 +950,7 @@ const processDataHistogram = function (allReturnedSubStats, allReturnedSubSecs, 
 
     // if matching, pare down dataset to only matching data. Only do this if we didn't already do it while calculating diffs.
     if (curveInfoParams.curvesLength > 1 && (appParams.matching && !bookkeepingParams.alreadyMatched)) {
-        dataset = matsDataMatchUtils.getMatchedDataSetHistogram(dataset, curveInfoParams.curvesLength, binStats, appParams);
+        dataset = matsDataMatchUtils.getMatchedDataSet(dataset, curveInfoParams.curvesLength, appParams, false, curveInfoParams.curves.map(a => a.statistic), binStats);
     }
 
     // calculate data statistics (including error bars) for each curve

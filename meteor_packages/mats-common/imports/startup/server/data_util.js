@@ -1012,20 +1012,27 @@ const sortHistogramBins = function (curveSubStats, curveSubSecs, curveSubLevs, b
 
         /*
         var d = {// d will contain the curve data
-            x: [], // placeholder
-            y: [], // placeholder
-            error_x: [], // unused
-            error_y: [], // unused
+            x: [],
+            y: [],
+            error_x: [],
+            error_y: [],
+            subHit: [],
+            subFa: [],
+            subMiss: [],
+            subCn: [],
             subVals: [],
             subSecs: [],
             subLevs: [],
-            glob_stats: {}, // placeholder
-            bin_stats: [], // placeholder
-            text: [], // placeholder
-            xmax: Number.MIN_VALUE,
+            stats: [],
+            ctc_stats: [],
+            text: [],
+            glob_stats: {},
+            bin_stats: [],
             xmin: Number.MAX_VALUE,
+            xmax: Number.MIN_VALUE,
+            ymin: Number.MAX_VALUE,
             ymax: Number.MIN_VALUE,
-            ymin: Number.MAX_VALUE
+            sum: 0
         };
         */
 
