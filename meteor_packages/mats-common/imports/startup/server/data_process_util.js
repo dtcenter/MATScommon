@@ -21,7 +21,7 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
 
     // if matching, pare down dataset to only matching data.
     if (curveInfoParams.curvesLength > 1 && appParams.matching) {
-        dataset = matsDataMatchUtils.getMatchedDataSet(dataset, curveInfoParams.curvesLength, appParams, curveInfoParams.statType === 'ctc', curveInfoParams.curves.map(a => a.statistic), {});
+        dataset = matsDataMatchUtils.getMatchedDataSet(dataset, curveInfoParams, appParams, {});
     }
 
     // we may need to recalculate the axis limits after unmatched data and outliers are removed
@@ -53,27 +53,27 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
 
             // store raw statistic from query before recalculating that statistic to account for data removed due to matching, QC, etc. Don't replace the stat for contingency table apps.
             rawStat = data.y[di];
-            if (curveInfoParams.statType !== 'ctc') {
-                // this ungainly if statement is because the surfrad3 database doesn't support recalculating some stats.
-                if (appName !== "surfrad" ||
-                    !(appName === "surfrad" &&
-                        (statisticSelect === 'Std deviation (do not plot matched)' || statisticSelect === 'RMS (do not plot matched)') &&
-                        !appParams.matching)) {
-                    if ((diffFrom === null || diffFrom === undefined) || !appParams.matching) {
+            // this ungainly if statement is because the surfrad3 database doesn't support recalculating some stats.
+            if (appName !== "surfrad" ||
+                !(appName === "surfrad" &&
+                    (statisticSelect === 'Std deviation (do not plot matched)' || statisticSelect === 'RMS (do not plot matched)') &&
+                    !appParams.matching)) {
+                if ((diffFrom === null || diffFrom === undefined) || !appParams.matching) {
+                    if (curveInfoParams.statType !== 'ctc') {
                         // assign recalculated statistic to data[di][1], which is the value to be plotted
                         if (statisticSelect === 'N' || statisticSelect === 'N per graph point') {
                             data.y[di] = errorResult.sum;
                         } else {
                             data.y[di] = errorResult.d_mean;
                         }
+                    }
+                } else {
+                    if (dataset[diffFrom[0]].y[di] !== null && dataset[diffFrom[1]].y[di] !== null) {
+                        // make sure that the diff curve actually shows the difference when matching. Otherwise outlier filtering etc. can make it slightly off.
+                        data.y[di] = dataset[diffFrom[0]].y[di] - dataset[diffFrom[1]].y[di];
                     } else {
-                        if (dataset[diffFrom[0]].y[di] !== null && dataset[diffFrom[1]].y[di] !== null) {
-                            // make sure that the diff curve actually shows the difference when matching. Otherwise outlier filtering etc. can make it slightly off.
-                            data.y[di] = dataset[diffFrom[0]].y[di] - dataset[diffFrom[1]].y[di];
-                        } else {
-                            // keep the null for no data at this point
-                            data.y[di] = null;
-                        }
+                        // keep the null for no data at this point
+                        data.y[di] = null;
                     }
                 }
             }
@@ -89,15 +89,6 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
                 errorMax = errorMax > errorBar ? errorMax : errorBar;
                 data.error_y.array[di] = errorBar;
             }
-
-            // remove sub values and times to save space
-            data.subHit[di] = [];
-            data.subFa[di] = [];
-            data.subMiss[di] = [];
-            data.subCn[di] = [];
-            data.subVals[di] = [];
-            data.subSecs[di] = [];
-            data.subLevs[di] = [];
 
             // store statistics for this di datapoint
             data.stats[di] = {
@@ -156,6 +147,16 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
             di++;
         }
 
+        // remove sub values and times to save space
+        data.subHit = [];
+        data.subFa = [];
+        data.subMiss = [];
+        data.subCn = [];
+        data.subVals = [];
+        data.subSecs = [];
+        data.subLevs = [];
+
+
         // enable error bars if matching and they aren't null. Don't show them for contingency table plots, because they don't really correspond to what's being plotted.
         if (appParams.matching && curveInfoParams.statType !== 'ctc' && data.error_y.array.filter(x => x).length > 0) {
             data.error_y.visible = true;
@@ -166,7 +167,9 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
         const filteredValues = values.filter(x => x);
         var miny = Math.min(...filteredValues);
         var maxy = Math.max(...filteredValues);
-        if (means.some(function (m) {return m !== null})) {
+        if (means.some(function (m) {
+            return m !== null
+        })) {
             if (means.indexOf(0) !== -1 && 0 < miny) {
                 miny = 0;
             }
@@ -280,9 +283,9 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
     const appName = matsCollections.appName.findOne({}).app;
     curveInfoParams.statType = curveInfoParams.statType === undefined ? 'scalar' : curveInfoParams.statType;
 
-    // if matching, pare down dataset to only matching data. Contingency table apps already did their matching in the query
-    if (curveInfoParams.curvesLength > 1 && appParams.matching && curveInfoParams.statType !== 'ctc') {
-        dataset = matsDataMatchUtils.getMatchedDataSet(dataset, curveInfoParams.curvesLength, appParams);
+    // if matching, pare down dataset to only matching data.
+    if (curveInfoParams.curvesLength > 1 && appParams.matching) {
+        dataset = matsDataMatchUtils.getMatchedDataSet(dataset, curveInfoParams, appParams, {});
     }
 
     // we may need to recalculate the axis limits after unmatched data and outliers are removed
@@ -309,22 +312,22 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
 
             // store raw statistic from query before recalculating that statistic to account for data removed due to matching, QC, etc. Don't replace the stat for contingency table apps.
             rawStat = data.x[di];
-            if (curveInfoParams.statType !== 'ctc') {
-                if ((diffFrom === null || diffFrom === undefined) || !appParams.matching) {
+            if ((diffFrom === null || diffFrom === undefined) || !appParams.matching) {
+                if (curveInfoParams.statType !== 'ctc') {
                     // assign recalculated statistic to data[di][1], which is the value to be plotted
                     if (statisticSelect === 'N' || statisticSelect === 'N per graph point') {
                         data.x[di] = errorResult.sum;
                     } else {
                         data.x[di] = errorResult.d_mean;
                     }
+                }
+            } else {
+                if (dataset[diffFrom[0]].x[di] !== null && dataset[diffFrom[1]].x[di] !== null) {
+                    // make sure that the diff curve actually shows the difference when matching. Otherwise outlier filtering etc. can make it slightly off.
+                    data.x[di] = dataset[diffFrom[0]].x[di] - dataset[diffFrom[1]].x[di];
                 } else {
-                    if (dataset[diffFrom[0]].x[di] !== null && dataset[diffFrom[1]].x[di] !== null) {
-                        // make sure that the diff curve actually shows the difference when matching. Otherwise outlier filtering etc. can make it slightly off.
-                        data.x[di] = dataset[diffFrom[0]].x[di] - dataset[diffFrom[1]].x[di];
-                    } else {
-                        // keep the null for no data at this point
-                        data.x[di] = null;
-                    }
+                    // keep the null for no data at this point
+                    data.x[di] = null;
                 }
             }
             values.push(data.x[di]);
@@ -339,11 +342,6 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
                 errorMax = errorMax > errorBar ? errorMax : errorBar;
                 data.error_x.array[di] = errorBar;
             }
-
-            // remove sub values and times to save space
-            data.subVals[di] = [];
-            data.subSecs[di] = [];
-            data.subLevs[di] = [];
 
             // store statistics for this di datapoint
             data.stats[di] = {
@@ -370,6 +368,16 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
 
             di++;
         }
+
+        // remove sub values and times to save space
+        data.subHit = [];
+        data.subFa = [];
+        data.subMiss = [];
+        data.subCn = [];
+        data.subVals = [];
+        data.subSecs = [];
+        data.subLevs = [];
+
 
         // enable error bars if matching and they aren't null. Don't show them for contingency table plots, because they don't really correspond to what's being plotted.
         if (appParams.matching && curveInfoParams.statType !== 'ctc' && data.error_x.array.filter(x => x).length > 0) {
@@ -597,7 +605,7 @@ const processDataPerformanceDiagram = function (dataset, appParams, curveInfoPar
 
     // if matching, pare down dataset to only matching data.
     if (curveInfoParams.curvesLength > 1 && appParams.matching) {
-        dataset = matsDataMatchUtils.getMatchedDataSet(dataset, curveInfoParams.curvesLength, appParams, curveInfoParams.statType === 'ctc', curveInfoParams.curves.map(a => a.statistic));
+        dataset = matsDataMatchUtils.getMatchedDataSet(dataset, curveInfoParams, appParams, {});
     }
 
     // sort data statistics for each curve
@@ -634,17 +642,17 @@ const processDataPerformanceDiagram = function (dataset, appParams, curveInfoPar
     // add black lines of constant bias
     var biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1, 0, 1, 0, matsTypes.ReservedWords.constantBias);
     dataset.push(biasLine);
-    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1*2, 0, 1, 0, matsTypes.ReservedWords.constantBias);
+    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1 * 2, 0, 1, 0, matsTypes.ReservedWords.constantBias);
     dataset.push(biasLine);
-    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1*4, 0, 1, 0, matsTypes.ReservedWords.constantBias);
+    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1 * 4, 0, 1, 0, matsTypes.ReservedWords.constantBias);
     dataset.push(biasLine);
-    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1*8, 0, 1, 0, matsTypes.ReservedWords.constantBias);
+    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1 * 8, 0, 1, 0, matsTypes.ReservedWords.constantBias);
     dataset.push(biasLine);
-    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1/2, 0, 1, 0, matsTypes.ReservedWords.constantBias);
+    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1 / 2, 0, 1, 0, matsTypes.ReservedWords.constantBias);
     dataset.push(biasLine);
-    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1/4, 0, 1, 0, matsTypes.ReservedWords.constantBias);
+    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1 / 4, 0, 1, 0, matsTypes.ReservedWords.constantBias);
     dataset.push(biasLine);
-    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1/8, 0, 1, 0, matsTypes.ReservedWords.constantBias);
+    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1 / 8, 0, 1, 0, matsTypes.ReservedWords.constantBias);
     dataset.push(biasLine);
 
     var xvals;
@@ -652,7 +660,7 @@ const processDataPerformanceDiagram = function (dataset, appParams, curveInfoPar
     var cval;
     var csiLine;
     for (var csiidx = 1; csiidx < 10; csiidx++) {
-        cval = csiidx/10;
+        cval = csiidx / 10;
         xvals = _.range(cval, 1.01, 0.01);
         yvals = [];
         var xval;
@@ -694,7 +702,7 @@ const processDataEnsembleHistogram = function (dataset, appParams, curveInfoPara
 
     // if matching, pare down dataset to only matching data
     if (curveInfoParams.curvesLength > 1 && appParams.matching) {
-        dataset = matsDataMatchUtils.getMatchedDataSet(dataset, curveInfoParams.curvesLength, appParams);
+        dataset = matsDataMatchUtils.getMatchedDataSet(dataset, curveInfoParams, appParams, {});
     }
 
     // we may need to recalculate the axis limits after unmatched data and outliers are removed
@@ -912,12 +920,15 @@ const processDataHistogram = function (allReturnedSubStats, allReturnedSubSecs, 
             // this is a difference curve, so we're done with regular curves.
             // do any matching that needs to be done.
             if (appParams.matching && !bookkeepingParams.alreadyMatched) {
-                dataset = matsDataMatchUtils.getMatchedDataSet(dataset, curvesLengthSoFar, appParams, false, curveInfoParams.curves.map(a => a.statistic), binStats);
+                var originalCurvesLength = curveInfoParams.curvesLength;
+                curveInfoParams.curvesLength = curvesLengthSoFar;
+                dataset = matsDataMatchUtils.getMatchedDataSet(dataset, curveInfoParams, appParams, binStats);
+                curveInfoParams.curvesLength = originalCurvesLength;
                 bookkeepingParams.alreadyMatched = true;
             }
 
             // then take diffs
-            const diffResult = matsDataDiffUtils.getDataForDiffCurve(dataset, diffFrom, appParams);
+            const diffResult = matsDataDiffUtils.getDataForDiffCurve(dataset, diffFrom, appParams, false);
 
             // adjust axis stats based on new data from diff curve
             d = diffResult.dataset;
@@ -950,7 +961,7 @@ const processDataHistogram = function (allReturnedSubStats, allReturnedSubSecs, 
 
     // if matching, pare down dataset to only matching data. Only do this if we didn't already do it while calculating diffs.
     if (curveInfoParams.curvesLength > 1 && (appParams.matching && !bookkeepingParams.alreadyMatched)) {
-        dataset = matsDataMatchUtils.getMatchedDataSet(dataset, curveInfoParams.curvesLength, appParams, false, curveInfoParams.curves.map(a => a.statistic), binStats);
+        dataset = matsDataMatchUtils.getMatchedDataSet(dataset, curveInfoParams, appParams, binStats);
     }
 
     // calculate data statistics (including error bars) for each curve

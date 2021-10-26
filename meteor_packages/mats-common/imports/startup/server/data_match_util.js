@@ -6,7 +6,7 @@ import {matsDataUtils} from 'meteor/randyp:mats-common';
 import {matsTypes} from 'meteor/randyp:mats-common';
 
 // function for removing unmatched data from a dataset containing multiple curves
-const getMatchedDataSet = function (dataset, curvesLength, appParams, isCTC, curveStats, binStats) {
+const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStats) {
 
     var subSecsRaw = [];
     var subLevsRaw = [];
@@ -40,6 +40,10 @@ const getMatchedDataSet = function (dataset, curvesLength, appParams, isCTC, cur
 
     const plotType = appParams.plotType;
     const hasLevels = appParams.hasLevels;
+    const curvesLength = curveInfoParams.curvesLength;
+    const isCTC = curveInfoParams.statType === 'ctc' && plotType !== matsTypes.PlotTypes.histogram;
+    const curveStats = curveInfoParams.curves.map(a => a.statistic);
+    const curveDiffs = curveInfoParams.curves.map(a => a.diffFrom);
     var removeNonMatchingIndVars;
     switch (plotType) {
         case matsTypes.PlotTypes.reliability:
@@ -335,7 +339,7 @@ const getMatchedDataSet = function (dataset, curvesLength, appParams, isCTC, cur
             }
         }
 
-        if (isCTC) {
+        if (isCTC && (curveDiffs[curveIndex] === undefined || curveDiffs[curveIndex] === null)) {
             // need to recalculate the primary statistic with the newly matched hits, false alarms, etc.
             dataLength = data[independentVarName].length;
             for (di = 0; di < dataLength; di++) {
@@ -393,7 +397,6 @@ const getMatchedDataSet = function (dataset, curvesLength, appParams, isCTC, cur
                 // if there are no matching values, set data to an empty dataset
                 newCurveData = d;
             }
-            debugger;
             var newCurveDataKeys = Object.keys(newCurveData);
             for (var didx = 0; didx < newCurveDataKeys.length; didx++) {
                 dataset[curveIndex][newCurveDataKeys[didx]] = newCurveData[newCurveDataKeys[didx]];

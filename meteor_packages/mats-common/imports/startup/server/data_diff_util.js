@@ -30,21 +30,26 @@ const getLargeIntervalCurveData = function (dataset, diffFrom, independentVarNam
 };
 
 // generates diff curves for all plot types that have diff curves.
-const getDataForDiffCurve = function (dataset, diffFrom, appParams) {
+const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC) {
     /*
      DATASET ELEMENTS:
         series: [data,data,data ...... ]   each data is itself an object
         d = {
             x: [],
             y: [],
-            error_x: [],   // curveTime
-            error_y: [],   // values
-            subVals: [],   //subVals
-            subSecs: [],   //subSecs
-            subLevs: [],   //subLevs
-            stats: [],     //pointStats
+            error_x: [],
+            error_y: [],
+            subHit: [],
+            subFa: [],
+            subMiss: [],
+            subCn: [],
+            subVals: [],
+            subSecs: [],
+            subLevs: [],
+            stats: [],
+            ctc_stats: [],
             text: [],
-            glob_stats: {},     //curveStats
+            glob_stats: {},
             xmin: Number.MAX_VALUE,
             xmax: Number.MIN_VALUE,
             ymin: Number.MAX_VALUE,
@@ -54,22 +59,6 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams) {
 
      NOTE -- for profiles, x is the statVarName and y is the independentVarName, because profiles plot the statVarName
         on the x axis and the independentVarName on the y axis.
-
-    For histograms:
-    DATASET ELEMENTS:
-        series: [data,data,data ...... ]   each data is itself an array
-        d = {
-            x: [], //placeholder
-            y: [], //placeholder
-            error_x: [], // unused
-            error_y: [], // unused
-            subVals: [],
-            subSecs: [],
-            subLevs: [],
-            glob_stats: [], // placeholder
-            bin_stats: [], // placeholder
-            text: [] //placeholder
-        };
 
      */
 
@@ -93,50 +82,35 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams) {
     var subtrahendIndex = 0;
     var minuendIndex = 0;
 
-    var d;
-    if (plotType !== matsTypes.PlotTypes.histogram) {
-        d = {
-            x: [],
-            y: [],
-            error_x: [],   // curveTime
-            error_y: [],   // values
-            subVals: [],   //subVals
-            subSecs: [],   //subSecs
-            subLevs: [],   //subLevs
-            glob_stats: [],
-            bin_stats: [],
-            stats: [],     //curveStats
-            text: [],
-            xmin: Number.MAX_VALUE,
-            xmax: Number.MIN_VALUE,
-            ymin: Number.MAX_VALUE,
-            ymax: Number.MIN_VALUE,
-            sum: 0
-        };
-    } else {
-        d = {
-            x: [],
-            y: [],
-            error_x: [],
-            error_y: [],
-            subVals: [],
-            subSecs: [],
-            subLevs: [],
-            glob_stats: {
-                'glob_mean': null,
-                'glob_sd': null,
-                'glob_n': null,
-                'glob_max': null,
-                'glob_min': null
-            },
-            bin_stats: [],
-            text: [],
-            xmin: Number.MAX_VALUE,
-            xmax: Number.MIN_VALUE,
-            ymin: Number.MAX_VALUE,
-            ymax: Number.MIN_VALUE,
-        };
-    }
+    var d = {
+        x: [],
+        y: [],
+        error_x: [],
+        error_y: [],
+        subHit: [],
+        subFa: [],
+        subMiss: [],
+        subCn: [],
+        subVals: [],
+        subSecs: [],
+        subLevs: [],
+        stats: [],
+        ctc_stats: [],
+        text: [],
+        bin_stats: [],
+        glob_stats: {
+            'glob_mean': null,
+            'glob_sd': null,
+            'glob_n': 0,
+            'glob_max': null,
+            'glob_min': null
+        },
+        xmin: Number.MAX_VALUE,
+        xmax: Number.MIN_VALUE,
+        ymin: Number.MAX_VALUE,
+        ymax: Number.MIN_VALUE,
+        sum: 0
+    };
 
     // make sure neither curve is empty
     if (minuendData.x.length === 0 || subtrahendData.x.length === 0) {
@@ -179,6 +153,10 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams) {
         }
 
         var diffValue = null;
+        var tempSubHitArray;
+        var tempSubFaArray;
+        var tempSubMissArray;
+        var tempSubCnArray;
         var tempSubValsArray;
         var tempSubSecsArray;
         var tempSubLevsArray;
@@ -190,6 +168,10 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams) {
                 d[statVarName].push(diffValue);
                 d.error_x.push(null);
                 d.error_y.push(null);
+                tempSubHitArray = [];
+                tempSubFaArray = [];
+                tempSubMissArray = [];
+                tempSubCnArray = [];
                 tempSubValsArray = [];
                 tempSubSecsArray = [];
                 if (hasLevels) {
@@ -197,31 +179,60 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams) {
                 }
 
                 if (plotType !== matsTypes.PlotTypes.histogram) {
-                    var minuendDataSubValues = minuendData.subVals[minuendIndex];
-                    var minuendDataSubSeconds = minuendData.subSecs[minuendIndex];
-                    if (hasLevels) {
-                        var minuendDataSubLevels = minuendData.subLevs[minuendIndex];
+                    if (isCTC) {
+                        var minuendDataSubHit = minuendData.subHit[minuendIndex];
+                        var minuendDataSubFa = minuendData.subFa[minuendIndex];
+                        var minuendDataSubMiss = minuendData.subMiss[minuendIndex];
+                        var minuendDataSubCn = minuendData.subCn[minuendIndex];
+                        var subtrahendDataSubHit = subtrahendData.subHit[subtrahendIndex];
+                        var subtrahendDataSubFa = subtrahendData.subFa[subtrahendIndex];
+                        var subtrahendDataSubMiss = subtrahendData.subMiss[subtrahendIndex];
+                        var subtrahendDataSubCn = subtrahendData.subCn[subtrahendIndex];
+                    } else {
+                        var minuendDataSubValues = minuendData.subVals[minuendIndex];
+                        var subtrahendDataSubValues = subtrahendData.subVals[subtrahendIndex];
                     }
-                    var subtrahendDataSubValues = subtrahendData.subVals[subtrahendIndex];
+                    var minuendDataSubSeconds = minuendData.subSecs[minuendIndex];
                     var subtrahendDataSubSeconds = subtrahendData.subSecs[subtrahendIndex];
                     if (hasLevels) {
+                        var minuendDataSubLevels = minuendData.subLevs[minuendIndex];
                         var subtrahendDataSubLevels = subtrahendData.subLevs[subtrahendIndex];
                     }
 
                     // find matching sub values and diff those
-                    for (var mvalIdx = 0; mvalIdx < minuendDataSubValues.length; mvalIdx++) {
-                        for (var svalIdx = 0; svalIdx < subtrahendDataSubValues.length; svalIdx++) {
+                    for (var mvalIdx = 0; mvalIdx < minuendDataSubSeconds.length; mvalIdx++) {
+                        for (var svalIdx = 0; svalIdx < subtrahendDataSubSeconds.length; svalIdx++) {
                             if (hasLevels && minuendDataSubSeconds[mvalIdx] === subtrahendDataSubSeconds[svalIdx] && minuendDataSubLevels[mvalIdx] === subtrahendDataSubLevels[svalIdx]) {
-                                tempSubValsArray.push(minuendDataSubValues[mvalIdx] - subtrahendDataSubValues[svalIdx]);
+                                if (isCTC) {
+                                    tempSubHitArray.push(minuendDataSubHit[mvalIdx] - subtrahendDataSubHit[svalIdx]);
+                                    tempSubFaArray.push(minuendDataSubFa[mvalIdx] - subtrahendDataSubFa[svalIdx]);
+                                    tempSubMissArray.push(minuendDataSubMiss[mvalIdx] - subtrahendDataSubMiss[svalIdx]);
+                                    tempSubCnArray.push(minuendDataSubCn[mvalIdx] - subtrahendDataSubCn[svalIdx]);
+                                } else {
+                                    tempSubValsArray.push(minuendDataSubValues[mvalIdx] - subtrahendDataSubValues[svalIdx]);
+                                }
                                 tempSubSecsArray.push(minuendDataSubSeconds[mvalIdx]);
                                 tempSubLevsArray.push(minuendDataSubLevels[mvalIdx]);
+                                d["glob_stats"]["glob_n"]++;
                             } else if (!hasLevels && minuendDataSubSeconds[mvalIdx] === subtrahendDataSubSeconds[svalIdx]) {
-                                tempSubValsArray.push(minuendDataSubValues[mvalIdx] - subtrahendDataSubValues[svalIdx]);
+                                if (isCTC) {
+                                    tempSubHitArray.push(minuendDataSubHit[mvalIdx] - subtrahendDataSubHit[svalIdx]);
+                                    tempSubFaArray.push(minuendDataSubFa[mvalIdx] - subtrahendDataSubFa[svalIdx]);
+                                    tempSubMissArray.push(minuendDataSubMiss[mvalIdx] - subtrahendDataSubMiss[svalIdx]);
+                                    tempSubCnArray.push(minuendDataSubCn[mvalIdx] - subtrahendDataSubCn[svalIdx]);
+                                } else {
+                                    tempSubValsArray.push(minuendDataSubValues[mvalIdx] - subtrahendDataSubValues[svalIdx]);
+                                }
                                 tempSubSecsArray.push(minuendDataSubSeconds[mvalIdx]);
+                                d["glob_stats"]["glob_n"]++;
                             }
                         }
                     }
 
+                    d.subHit.push(tempSubHitArray);
+                    d.subFa.push(tempSubFaArray);
+                    d.subMiss.push(tempSubMissArray);
+                    d.subCn.push(tempSubCnArray);
                     d.subVals.push(tempSubValsArray);
                     d.subSecs.push(tempSubSecsArray);
                     if (hasLevels) {
@@ -248,6 +259,10 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams) {
                 d[statVarName].push(null);
                 d.error_x.push(null);
                 d.error_y.push(null);
+                d.subHit.push([]);
+                d.subFa.push([]);
+                d.subMiss.push([]);
+                d.subCn.push([]);
                 d.subVals.push([]);
                 d.subSecs.push([]);
                 if (hasLevels) {
