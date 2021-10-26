@@ -144,25 +144,56 @@ const changePlotType = function (plotType, selectorsToInitialize, dateSelector) 
             setError(new Error("It looks like your current browser session might have expired, so there is not enough information to successfully change the plot type. Please refresh your browser window."));
         }
         if (curves.length > 0) {
-            for (var ci = 0; ci < curves.length; ci++) {
-                // change options that were valid for the plot type where this curve was added but not for this one
-                for (var ri = 0; ri < resetSelectors.length; ri++) {
-                    if (curves[ci][resetSelectors[ri]] !== undefined) {
-                        curves[ci][resetSelectors[ri]] = selectorsToReset[resetSelectors[ri]];
+            var curveGone = false;
+            for (var ci = curves.length-1; ci >= 0; ci--) {
+                // remove any difference curves for plot types that don't support them
+                if (curves[ci].diffFrom !== undefined && curves[ci].diffFrom !== null) {
+                    switch (plotType){
+                        case matsTypes.PlotTypes.reliability:
+                        case matsTypes.PlotTypes.roc:
+                        case matsTypes.PlotTypes.performanceDiagram:
+                        case matsTypes.PlotTypes.scatter2d:
+                        case matsTypes.PlotTypes.map:
+                        case matsTypes.PlotTypes.contour:
+                        case matsTypes.PlotTypes.contourDiff:
+                            curves.splice(ci, 1);
+                            curveGone = true;
+                            break;
+                        case matsTypes.PlotTypes.timeSeries:
+                        case matsTypes.PlotTypes.profile:
+                        case matsTypes.PlotTypes.dieoff:
+                        case matsTypes.PlotTypes.threshold:
+                        case matsTypes.PlotTypes.validtime:
+                        case matsTypes.PlotTypes.gridscale:
+                        case matsTypes.PlotTypes.dailyModelCycle:
+                        case matsTypes.PlotTypes.yearToYear:
+                        case matsTypes.PlotTypes.histogram:
+                        case matsTypes.PlotTypes.ensembleHistogram:
+                        default:
+                            curveGone = false;
+                            break;
                     }
                 }
-                // initialize options for parameters not used in the plot type where this curve was added
-                for (var si = 0; si < selectorsToInitialize.length; si++) {
-                    if (dateSelector === 'curve-dates' && newDate !== 0) {
-                        curves[ci]['curve-dates'] = newDate;
+                if (!curveGone) {
+                    // change options that were valid for the plot type where this curve was added but not for this one
+                    for (var ri = 0; ri < resetSelectors.length; ri++) {
+                        if (curves[ci][resetSelectors[ri]] !== undefined) {
+                            curves[ci][resetSelectors[ri]] = selectorsToReset[resetSelectors[ri]];
+                        }
                     }
-                    if (!curves[ci][selectorsToInitialize[si]] && matsCollections[selectorsToInitialize[si]] && matsCollections[selectorsToInitialize[si]].findOne({name: selectorsToInitialize[si]})) {
-                        if (matsCollections[selectorsToInitialize[si]].findOne({name: selectorsToInitialize[si]}).default) {
-                            // we have a default. Use that.
-                            curves[ci][selectorsToInitialize[si]] = matsCollections[selectorsToInitialize[si]].findOne({name: selectorsToInitialize[si]}).default;
-                        } else if (matsCollections[selectorsToInitialize[si]].findOne({name: selectorsToInitialize[si]}).options) {
-                            // we don't have a default, but we have a list of options. Use the first one of those.
-                            curves[ci][selectorsToInitialize[si]] = matsCollections[selectorsToInitialize[si]].findOne({name: selectorsToInitialize[si]}).options[0];
+                    // initialize options for parameters not used in the plot type where this curve was added
+                    for (var si = 0; si < selectorsToInitialize.length; si++) {
+                        if (dateSelector === 'curve-dates' && newDate !== 0) {
+                            curves[ci]['curve-dates'] = newDate;
+                        }
+                        if (!curves[ci][selectorsToInitialize[si]] && matsCollections[selectorsToInitialize[si]] && matsCollections[selectorsToInitialize[si]].findOne({name: selectorsToInitialize[si]})) {
+                            if (matsCollections[selectorsToInitialize[si]].findOne({name: selectorsToInitialize[si]}).default) {
+                                // we have a default. Use that.
+                                curves[ci][selectorsToInitialize[si]] = matsCollections[selectorsToInitialize[si]].findOne({name: selectorsToInitialize[si]}).default;
+                            } else if (matsCollections[selectorsToInitialize[si]].findOne({name: selectorsToInitialize[si]}).options) {
+                                // we don't have a default, but we have a list of options. Use the first one of those.
+                                curves[ci][selectorsToInitialize[si]] = matsCollections[selectorsToInitialize[si]].findOne({name: selectorsToInitialize[si]}).options[0];
+                            }
                         }
                     }
                 }
