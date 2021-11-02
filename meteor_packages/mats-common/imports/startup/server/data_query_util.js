@@ -20,16 +20,16 @@ const getModelCadence = async function (pool, dataSource, startDate, endDate) {
             routine  'queryDBTimeSeries' cannot itslef be async because the graph page needs to wait
             for its result, so we use an anomynous async() function here to wrap the queryCB call
             */
-                const doc = await pool.getCb("MD:matsAux:COMMON:V01");
-                const newModel = doc.standardizedModleList[dataSource];
-                cycles_raw = doc.primaryModelOrders[newModel] ? doc.primaryModelOrders[newModel].cycleSecnds : undefined;
+            const doc = await pool.getCb("MD:matsAux:COMMON:V01");
+            const newModel = doc.standardizedModleList[dataSource];
+            cycles_raw = doc.primaryModelOrders[newModel] ? doc.primaryModelOrders[newModel].cycleSecnds : undefined;
         } else {
             // we will default to mysql so old apps won't break
-                rows = simplePoolQueryWrapSynchronous(pool, "select cycle_seconds " +
-                    "from mats_common.primary_model_orders " +
-                    "where model = " +
-                    "(select new_model as display_text from mats_common.standardized_model_list where old_model = '" + dataSource + "');");
-                cycles_raw = rows[0].cycle_seconds ? JSON.parse(rows[0].cycle_seconds) : undefined;
+            rows = simplePoolQueryWrapSynchronous(pool, "select cycle_seconds " +
+                "from mats_common.primary_model_orders " +
+                "where model = " +
+                "(select new_model as display_text from mats_common.standardized_model_list where old_model = '" + dataSource + "');");
+            cycles_raw = rows[0].cycle_seconds ? JSON.parse(rows[0].cycle_seconds) : undefined;
         }
         var cycles_keys = cycles_raw ? Object.keys(cycles_raw).sort() : undefined;
         // there can be difference cadences for different time periods (each time period is a key in cycles_keys,
@@ -310,18 +310,18 @@ const queryDBTimeSeries = function (pool, statement, dataSource, forecastOffset,
             routine 'queryDBTimeSeries' cannot itself be async because the graph page needs to wait
             for its result, so we use an anonymous async() function here to wrap the queryCB call
             */
-                (async () => {
-                    const rows = await pool.queryCB(statement);
-                    if (rows === undefined || rows === null || rows.length === 0) {
-                        error = matsTypes.Messages.NO_DATA_FOUND;
-                    } else {
-                        const parsedData = parseData(appParams, statisticStr, rows, cycles, regular, d);
-                        d = parsedData.d;
-                        N0 = parsedData.N0;
-                        N_times = parsedData.N_times;
-                    }
-                    dFuture.return();
-                })();
+            (async () => {
+                const rows = await pool.queryCB(statement);
+                if (rows === undefined || rows === null || rows.length === 0) {
+                    error = matsTypes.Messages.NO_DATA_FOUND;
+                } else {
+                    const parsedData = parseData(appParams, statisticStr, rows, cycles, regular, d);
+                    d = parsedData.d;
+                    N0 = parsedData.N0;
+                    N_times = parsedData.N_times;
+                }
+                dFuture.return();
+            })();
         } else {
             // if this app isn't couchbase, use mysql
             pool.query(statement, function (err, rows) {
@@ -725,11 +725,22 @@ const queryDBContour = function (pool, statement, appParams, statisticStr) {
             y: [],
             z: [],
             n: [],
+            subHit: [],
+            subFa: [],
+            subMiss: [],
+            subCn: [],
+            subVals: [],
+            subSecs: [],
+            subLevs: [],
             text: [],
             xTextOutput: [],
             yTextOutput: [],
             zTextOutput: [],
             nTextOutput: [],
+            hitTextOutput: [],
+            faTextOutput: [],
+            missTextOutput: [],
+            cnTextOutput: [],
             minDateTextOutput: [],
             maxDateTextOutput: [],
             stdev: [],
@@ -1803,30 +1814,50 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
             y: [],
             z: [],
             n: [],
+            subHit: [],
+            subFa: [],
+            subMiss: [],
+            subCn: [],
+            subVals: [],
+            subSecs: [],
+            subLevs: [],
             text: [],
             xTextOutput: [],
             yTextOutput: [],
             zTextOutput: [],
             nTextOutput: [],
+            hitTextOutput: [],
+            faTextOutput: [],
+            missTextOutput: [],
+            cnTextOutput: [],
             minDateTextOutput: [],
             maxDateTextOutput: [],
             stdev: [],
             stats: [],
             glob_stats: {},
-            xmin:num,
-            ymin:num,
-            zmin:num,
-            xmax:num,
-            ymax:num,
-            zmax:num,
-            sum:num
+            xmin: Number.MAX_VALUE,
+            xmax: Number.MIN_VALUE,
+            ymin: Number.MAX_VALUE,
+            ymax: Number.MIN_VALUE,
+            zmin: Number.MAX_VALUE,
+            zmax: Number.MIN_VALUE,
+            sum: 0
         };
     */
+    const hasLevels = appParams.hasLevels;
     var isCTC = false;
+
     // initialize local variables
     var curveStatLookup = {};
     var curveStdevLookup = {};
     var curveNLookup = {};
+    var curveSubHitLookup = {};
+    var curveSubFaLookup = {};
+    var curveSubMissLookup = {};
+    var curveSubCnLookup = {};
+    var curveSubValLookup = {};
+    var curveSubSecLookup = {};
+    var curveSubLevLookup = {};
 
     // get all the data out of the query array
     for (var rowIndex = 0; rowIndex < rows.length; rowIndex++) {
@@ -1834,20 +1865,32 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
         var rowYVal = rows[rowIndex].yVal;
         var statKey = rowXVal.toString() + '_' + rowYVal.toString();
         var stat;
+        var hit;
+        var fa;
+        var miss;
+        var cn;
         if (rows[rowIndex].stat === undefined && rows[rowIndex].hit !== undefined) {
             isCTC = true;
-            const hit = Number(rows[rowIndex].hit);
-            const fa = Number(rows[rowIndex].fa);
-            const miss = Number(rows[rowIndex].miss);
-            const cn = Number(rows[rowIndex].cn);
+            hit = Number(rows[rowIndex].hit);
+            fa = Number(rows[rowIndex].fa);
+            miss = Number(rows[rowIndex].miss);
+            cn = Number(rows[rowIndex].cn);
             if (hit + fa + miss + cn > 0) {
                 stat = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, statisticStr);
                 stat = isNaN(Number(stat)) ? null : stat;
             } else {
                 stat = null;
+                hit = null;
+                fa = null;
+                miss = null;
+                cn = null;
             }
         } else {
             stat = rows[rowIndex].stat === "NULL" ? null : rows[rowIndex].stat;
+            hit = null;
+            fa = null;
+            miss = null;
+            cn = null;
         }
         var stdev = rows[rowIndex].stdev !== undefined ? rows[rowIndex].stdev : null;
         var n = rows[rowIndex].sub_data !== undefined && rows[rowIndex].sub_data !== null ? rows[rowIndex].sub_data.toString().split(',').length : 0;
@@ -1860,16 +1903,89 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
             minDate = null;
             maxDate = null;
         }
+        var sub_hit = [];
+        var sub_fa = [];
+        var sub_miss = [];
+        var sub_cn = [];
+        var sub_values = [];
+        var sub_secs = [];
+        var sub_levs = [];
+        if (stat !== null && rows[rowIndex].sub_data !== undefined) {
+            try {
+                var sub_data = rows[rowIndex].sub_data.toString().split(',');
+                var curr_sub_data;
+                for (var sd_idx = 0; sd_idx < sub_data.length; sd_idx++) {
+                    curr_sub_data = sub_data[sd_idx].split(';');
+                    if (isCTC) {
+                        sub_hit.push(Number(curr_sub_data[0]));
+                        sub_fa.push(Number(curr_sub_data[1]));
+                        sub_miss.push(Number(curr_sub_data[2]));
+                        sub_cn.push(Number(curr_sub_data[3]));
+                        sub_secs.push(Number(curr_sub_data[4]));
+                        if (hasLevels) {
+                            if (!isNaN(Number(curr_sub_data[5]))) {
+                                sub_levs.push(Number(curr_sub_data[5]));
+                            } else {
+                                sub_levs.push(curr_sub_data[5]);
+                            }
+                        }
+                    } else {
+                        sub_values.push(Number(curr_sub_data[0]));
+                        sub_secs.push(Number(curr_sub_data[1]));
+                        if (hasLevels) {
+                            if (!isNaN(Number(curr_sub_data[2]))) {
+                                sub_levs.push(Number(curr_sub_data[2]));
+                            } else {
+                                sub_levs.push(curr_sub_data[2]);
+                            }
+                        }
+                    }
+                }
+            } catch (e) {
+                // this is an error produced by a bug in the query function, not an error returned by the mysql database
+                e.message = "Error in parseQueryDataContour. The expected fields don't seem to be present in the results cache: " + e.message;
+                throw new Error(e.message);
+            }
+        } else {
+            if (isCTC) {
+                sub_hit = NaN;
+                sub_fa = NaN;
+                sub_miss = NaN;
+                sub_cn = NaN;
+            } else {
+                sub_values = NaN;
+            }
+            sub_secs = NaN;
+            if (hasLevels) {
+                sub_levs = NaN;
+            }
+        }
         // store flat arrays of all the parsed data, used by the text output and for some calculations later
         d.xTextOutput.push(Number(rowXVal));
         d.yTextOutput.push(Number(rowYVal));
         d.zTextOutput.push(stat);
         d.nTextOutput.push(n);
+        d.hitTextOutput.push(hit);
+        d.faTextOutput.push(fa);
+        d.missTextOutput.push(miss);
+        d.cnTextOutput.push(cn);
         d.minDateTextOutput.push(minDate);
         d.maxDateTextOutput.push(maxDate);
         curveStatLookup[statKey] = stat;
         curveStdevLookup[statKey] = stdev;
         curveNLookup[statKey] = n;
+        if (isCTC) {
+            curveSubHitLookup[statKey] = sub_hit;
+            curveSubFaLookup[statKey] = sub_fa;
+            curveSubMissLookup[statKey] = sub_miss;
+            curveSubCnLookup[statKey] = sub_cn;
+        } else {
+            curveSubValLookup[statKey] = sub_values;
+        }
+        curveSubSecLookup[statKey] = sub_secs;
+        if (hasLevels) {
+            curveSubLevLookup[statKey] = sub_levs;
+        }
     }
     // get the unique x and y values and sort the stats into the 2D z array accordingly
     d.x = matsDataUtils.arrayUnique(d.xTextOutput).sort(function (a, b) {
@@ -1886,10 +2002,24 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
     var currStat;
     var currStdev;
     var currN;
+    var currSubHit;
+    var currSubFa;
+    var currSubMiss;
+    var currSubCn;
+    var currSubVal;
+    var currSubSec;
+    var currSubLev;
     var currStatKey;
     var currYStatArray;
     var currYStdevArray;
     var currYNArray;
+    var currYSubHitArray;
+    var currYSubFaArray;
+    var currYSubMissArray;
+    var currYSubCnArray;
+    var currYSubValArray;
+    var currYSubSecArray;
+    var currYSubLevArray;
     var sum = 0;
     var nPoints = 0;
     var zmin = Number.MAX_VALUE;
@@ -1900,22 +2030,70 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
         currYStatArray = [];
         currYStdevArray = [];
         currYNArray = [];
+        if (isCTC) {
+            currYSubHitArray = [];
+            currYSubFaArray = [];
+            currYSubMissArray = [];
+            currYSubCnArray = [];
+        } else {
+            currYSubValArray = [];
+        }
+        currYSubSecArray = [];
+        if (hasLevels) {
+            currYSubLevArray = [];
+        }
         for (i = 0; i < d.x.length; i++) {
             currX = d.x[i];
             currStatKey = currX.toString() + '_' + currY.toString();
             currStat = curveStatLookup[currStatKey];
             currStdev = curveStdevLookup[currStatKey];
             currN = curveNLookup[currStatKey];
+            if (isCTC) {
+                currSubHit = curveSubHitLookup[currStatKey];
+                currSubFa = curveSubFaLookup[currStatKey];
+                currSubMiss = curveSubMissLookup[currStatKey];
+                currSubCn = curveSubCnLookup[currStatKey];
+            } else {
+                currSubVal = curveSubValLookup[currStatKey];
+            }
+            currSubSec = curveSubSecLookup[currStatKey];
+            if (hasLevels) {
+                currSubLev = curveSubLevLookup[currStatKey];
+            }
             if (currStat === undefined) {
                 currYStatArray.push(null);
                 currYStdevArray.push(null);
                 currYNArray.push(0);
+                if (isCTC) {
+                    currYSubHitArray.push(null);
+                    currYSubFaArray.push(null);
+                    currYSubMissArray.push(null);
+                    currYSubCnArray.push(null);
+                } else {
+                    currYSubValArray.push(null);
+                }
+                currYSubSecArray.push(null);
+                if (hasLevels) {
+                    currYSubLevArray.push(null);
+                }
             } else {
                 sum += currStat;
                 nPoints = nPoints + 1;
                 currYStatArray.push(currStat);
                 currYStdevArray.push(currStdev);
                 currYNArray.push(currN);
+                if (isCTC) {
+                    currYSubHitArray.push(currSubHit);
+                    currYSubFaArray.push(currSubFa);
+                    currYSubMissArray.push(currSubMiss);
+                    currYSubCnArray.push(currSubCn);
+                } else {
+                    currYSubValArray.push(currSubVal);
+                }
+                currYSubSecArray.push(currSubSec);
+                if (hasLevels) {
+                    currYSubLevArray.push(currSubLev);
+                }
                 zmin = currStat < zmin ? currStat : zmin;
                 zmax = currStat > zmax ? currStat : zmax;
             }
@@ -1923,6 +2101,18 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
         d.z.push(currYStatArray);
         d.stdev.push(currYStdevArray);
         d.n.push(currYNArray);
+        if (isCTC) {
+            d.subHit.push(currYSubHitArray);
+            d.subFa.push(currYSubFaArray);
+            d.subMiss.push(currYSubMissArray);
+            d.subCn.push(currYSubCnArray);
+        } else {
+            d.subVals.push(currYSubValArray);
+        }
+        d.subSecs.push(currYSubSecArray);
+        if (hasLevels) {
+            d.subLevs.push(currYSubLevArray);
+        }
     }
 
     // calculate statistics

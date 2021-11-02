@@ -344,18 +344,10 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
             dataLength = data[independentVarName].length;
             for (di = 0; di < dataLength; di++) {
                 if (data.subHit[di] instanceof Array) {
-                    const hit = data.subHit[di].reduce(function (sum, value) {
-                        return value == null ? sum : sum + value;
-                    }, 0);
-                    const fa = data.subFa[di].reduce(function (sum, value) {
-                        return value == null ? sum : sum + value;
-                    }, 0);
-                    const miss = data.subMiss[di].reduce(function (sum, value) {
-                        return value == null ? sum : sum + value;
-                    }, 0);
-                    const cn = data.subCn[di].reduce(function (sum, value) {
-                        return value == null ? sum : sum + value;
-                    }, 0);
+                    const hit = matsDataUtils.sum(data.subHit[di]);
+                    const fa = matsDataUtils.sum(data.subFa[di]);
+                    const miss = matsDataUtils.sum(data.subMiss[di]);
+                    const cn = matsDataUtils.sum(data.subCn[di]);
                     if (plotType === matsTypes.PlotTypes.performanceDiagram) {
                         data['x'][di] = 1 - Number(matsDataUtils.calculateStatCTC(hit, fa, miss, cn, 'FAR (False Alarm Ratio)')) / 100;
                         data['y'][di] = Number(matsDataUtils.calculateStatCTC(hit, fa, miss, cn, 'PODy (POD of value < threshold)')) / 100;

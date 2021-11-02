@@ -105,13 +105,18 @@ const objectContainsObject = function (superObject, subObject) {
     return false;
 };
 
+// utility for calculating the sum of an array
+const sum = function (data) {
+    if(data.length === 0) return null;
+    return data.reduce(function (sum, value) {
+        return value == null ? sum : sum + value;
+    }, 0);
+};
+
 // utility for calculating the average of an array
 const average = function (data) {
     if(data.length === 0) return null;
-    var sum = data.reduce(function (sum, value) {
-        return value == null ? sum : sum + value;
-    }, 0);
-    return sum / data.length;
+    return sum(data) / data.length;
 };
 
 // utility for calculating the median of an array
@@ -1114,6 +1119,7 @@ export default matsDataUtils = {
     arrayUnique: arrayUnique,
     findArrayInSubArray: findArrayInSubArray,
     objectContainsObject: objectContainsObject,
+    sum: sum,
     average: average,
     median: median,
     stdev: stdev,
