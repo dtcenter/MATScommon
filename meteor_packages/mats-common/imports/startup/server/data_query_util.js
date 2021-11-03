@@ -276,7 +276,7 @@ const queryDBTimeSeries = function (pool, statement, dataSource, forecastOffset,
         }
         const regular = (forceRegularCadence || averageStr !== "None" || !(cycles !== null && cycles.length > 0)); // If curves have averaging, the cadence is always regular, i.e. it's the cadence of the average
 
-        var d = {// d will contain the curve data
+        var d = {   // d will contain the curve data
             x: [],
             y: [],
             error_x: [],
@@ -301,6 +301,7 @@ const queryDBTimeSeries = function (pool, statement, dataSource, forecastOffset,
         var error = "";
         var N0 = [];
         var N_times = [];
+        var parsedData;
         const Future = require('fibers/future');
         var dFuture = new Future();
 
@@ -315,7 +316,13 @@ const queryDBTimeSeries = function (pool, statement, dataSource, forecastOffset,
                 if (rows === undefined || rows === null || rows.length === 0) {
                     error = matsTypes.Messages.NO_DATA_FOUND;
                 } else {
-                    const parsedData = parseData(appParams, statisticStr, rows, cycles, regular, d);
+                    if (appParams.hideGaps) {
+                        // if we don't care about gaps, use the general purpose curve parsing function.
+                        // the only reason to use the timeseries one is to correctly insert gaps for missing forecast cycles
+                        parsedData = parseQueryDataSpecialtyCurve(rows, d, appParams, statisticStr);
+                    } else {
+                        parsedData = parseQueryDataTimeSeries(rows, d, appParams, averageStr, statisticStr, forecastOffset, cycles, regular);
+                    }
                     d = parsedData.d;
                     N0 = parsedData.N0;
                     N_times = parsedData.N_times;
@@ -331,7 +338,13 @@ const queryDBTimeSeries = function (pool, statement, dataSource, forecastOffset,
                 } else if (rows === undefined || rows === null || rows.length === 0) {
                     error = matsTypes.Messages.NO_DATA_FOUND;
                 } else {
-                    const parsedData = parseData(appParams, statisticStr, rows, cycles, regular, d);
+                    if (appParams.hideGaps) {
+                        // if we don't care about gaps, use the general purpose curve parsing function.
+                        // the only reason to use the timeseries one is to correctly insert gaps for missing forecast cycles
+                        parsedData = parseQueryDataSpecialtyCurve(rows, d, appParams, statisticStr);
+                    } else {
+                        parsedData = parseQueryDataTimeSeries(rows, d, appParams, averageStr, statisticStr, forecastOffset, cycles, regular);
+                    }
                     d = parsedData.d;
                     N0 = parsedData.N0;
                     N_times = parsedData.N_times;
@@ -358,7 +371,7 @@ const queryDBSpecialtyCurve = function (pool, statement, appParams, statisticStr
         const Future = require('fibers/future');
 
         var dFuture = new Future();
-        var d = {// d will contain the curve data
+        var d = {   // d will contain the curve data
             x: [],
             y: [],
             error_x: [],
@@ -423,7 +436,7 @@ const queryDBPerformanceDiagram = function (pool, statement, appParams) {
         const Future = require('fibers/future');
 
         var dFuture = new Future();
-        var d = {// d will contain the curve data
+        var d = {   // d will contain the curve data
             x: [],
             y: [],
             binVals: [],
@@ -720,7 +733,7 @@ const queryDBContour = function (pool, statement, appParams, statisticStr) {
         const Future = require('fibers/future');
 
         var dFuture = new Future();
-        var d = {// d will contain the curve data
+        var d = {   // d will contain the curve data
             x: [],
             y: [],
             z: [],
@@ -782,7 +795,7 @@ const queryDBContour = function (pool, statement, appParams, statisticStr) {
 // this method parses the returned query data for timeseries plots
 const parseQueryDataTimeSeries = function (rows, d, appParams, averageStr, statisticStr, foreCastOffset, cycles, regular) {
     /*
-        var d = {// d will contain the curve data
+        var d = {   // d will contain the curve data
             x: [],
             y: [],
             error_x: [],
@@ -826,7 +839,7 @@ const parseQueryDataTimeSeries = function (rows, d, appParams, averageStr, stati
     var subSecs = [];
     var subLevs = [];
 
-    // default the time interval to an hour. It won't matter since it won't be used for only 0 or 1 data points.
+    // default the time interval to an hour. It won't matter since it won't be used unless there's more than one data point.
     var time_interval = rows.length > 1 ? Number(rows[1].avtime) - Number(rows[0].avtime) : 3600;
 
     for (var rowIndex = 0; rowIndex < rows.length; rowIndex++) {
@@ -836,6 +849,7 @@ const parseQueryDataTimeSeries = function (rows, d, appParams, averageStr, stati
         xmax = avTime > xmax ? avTime : xmax;
         var stat;
         if (rows[rowIndex].stat === undefined && rows[rowIndex].hit !== undefined) {
+            // this is a contingency table plot
             isCTC = true;
             const hit = Number(rows[rowIndex].hit);
             const fa = Number(rows[rowIndex].fa);
@@ -849,6 +863,7 @@ const parseQueryDataTimeSeries = function (rows, d, appParams, averageStr, stati
                 stat = null;
             }
         } else {
+            // not a contingency table plot
             stat = rows[rowIndex].stat === "NULL" ? null : rows[rowIndex].stat;
         }
         N0.push(rows[rowIndex].N0);             // number of values that go into a time series point
@@ -871,6 +886,7 @@ const parseQueryDataTimeSeries = function (rows, d, appParams, averageStr, stati
         var sub_secs = [];
         var sub_levs = [];
         if (stat !== null && rows[rowIndex].sub_data !== undefined) {
+            // parse the sub-data
             try {
                 var sub_data = rows[rowIndex].sub_data.toString().split(',');
                 var curr_sub_data;
@@ -964,8 +980,7 @@ const parseQueryDataTimeSeries = function (rows, d, appParams, averageStr, stati
         } else {
             var this_N0 = N0[d_idx];
             var this_N_times = N_times[d_idx];
-            // Make sure that we don't have any points with far less data than the rest of the graph, and that
-            // we don't have any points with a smaller completeness value than specified by the user.
+            // Make sure that we don't have any points with a smaller completeness value than specified by the user.
             if (curveStats[d_idx] === null || this_N_times < completenessQCParam * N_times_max) {
                 d.x.push(loopTime);
                 d.y.push(null);
@@ -1028,7 +1043,7 @@ const parseQueryDataTimeSeries = function (rows, d, appParams, averageStr, stati
 // this method parses the returned query data for specialty curves such as profiles, dieoffs, threshold plots, valid time plots, grid scale plots, and histograms
 const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr) {
     /*
-        var d = {// d will contain the curve data
+        var d = {   // d will contain the curve data
             x: [],
             y: [],
             error_x: [],
@@ -1097,6 +1112,7 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
         }
         var stat;
         if (rows[rowIndex].stat === undefined && rows[rowIndex].hit !== undefined) {
+            // this is a contingency table plot
             isCTC = true;
             const hit = Number(rows[rowIndex].hit);
             const fa = Number(rows[rowIndex].fa);
@@ -1110,6 +1126,7 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
                 stat = null;
             }
         } else {
+            // not a contingency table plot
             stat = rows[rowIndex].stat === "NULL" ? null : rows[rowIndex].stat;
         }
         N0.push(rows[rowIndex].N0);             // number of values that go into a point on the graph
@@ -1123,6 +1140,7 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
         var sub_secs = [];
         var sub_levs = [];
         if (stat !== null && rows[rowIndex].sub_data !== undefined) {
+            // parse the sub-data
             try {
                 var sub_data = rows[rowIndex].sub_data.toString().split(',');
                 var curr_sub_data;
@@ -1217,8 +1235,7 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
     for (var d_idx = 0; d_idx < curveIndependentVars.length; d_idx++) {
         var this_N0 = N0[d_idx];
         var this_N_times = N_times[d_idx];
-        // Make sure that we don't have any points with far less data than the rest of the graph, and that
-        // we don't have any points with a smaller completeness value than specified by the user.
+        // Make sure that we don't have any points with a smaller completeness value than specified by the user.
         if (curveStats[d_idx] === null || this_N_times < completenessQCParam * N_times_max) {
             if (!hideGaps) {
                 if (plotType === matsTypes.PlotTypes.profile) {
@@ -1311,7 +1328,7 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
 // this method parses the returned query data for performance diagrams
 const parseQueryDataPerformanceDiagram = function (rows, d, appParams) {
     /*
-        var d = {// d will contain the curve data
+        var d = {   // d will contain the curve data
             x: [],
             y: [],
             binVals: [],
@@ -1382,6 +1399,7 @@ const parseQueryDataPerformanceDiagram = function (rows, d, appParams) {
         var sub_secs = [];
         var sub_levs = [];
         if (pod !== null && rows[rowIndex].sub_data !== undefined) {
+            // parse the sub-data
             try {
                 var sub_data = rows[rowIndex].sub_data.toString().split(',');
                 var curr_sub_data;
@@ -1491,6 +1509,7 @@ const parseQueryDataMap = function (rows, d, dBlue, dRed, dBlack, dataSource, si
 
         var displayLength = orderOfMagnitude >= 0 ? 0 : Math.abs(orderOfMagnitude);
         var textMarker = queryVal === null ? "" : queryVal.toFixed(displayLength);
+        // sort data into color bins
         if (queryVal <= -1 * Math.pow(10, orderOfMagnitude)) {
             d.color.push("rgb(0,0,255)");
             dBlue.siteName.push(thisSite.origName);
@@ -1603,6 +1622,7 @@ const parseQueryDataMapCTC = function (rows, d, dPurple, dPurpleBlue, dBlue, dBl
                 d.lon.push(thisSite.point[1]);
 
                 var textMarker = queryVal === null ? "" : queryVal.toFixed(0);
+                // sort data into color bins
                 if (queryVal <= lowLimit + (highLimit - lowLimit) * .1) {
                     d.color.push("rgb(128,0,255)");
                     dPurple.siteName.push(thisSite.origName);
@@ -1695,7 +1715,7 @@ const parseQueryDataMapCTC = function (rows, d, dPurple, dPurpleBlue, dBlue, dBl
 // this method parses the returned query data for histograms
 const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
     /*
-        var d = {// d will contain the curve data
+        var d = {   // d will contain the curve data
             x: [],
             y: [],
             error_x: [],
@@ -1731,6 +1751,7 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
     for (var rowIndex = 0; rowIndex < rows.length; rowIndex++) {
         var stat;
         if (rows[rowIndex].stat === undefined && rows[rowIndex].hit !== undefined) {
+            // this is a contingency table plot
             isCTC = true;
             const hit = Number(rows[rowIndex].hit);
             const fa = Number(rows[rowIndex].fa);
@@ -1743,18 +1764,22 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
                 stat = null;
             }
         } else {
+            // not a contingency table plot
             stat = rows[rowIndex].stat === "NULL" ? null : rows[rowIndex].stat;
         }
         var sub_stats = [];
         var sub_secs = [];
         var sub_levs = [];
         if (stat !== null && rows[rowIndex].sub_data !== undefined) {
+            // parse the sub-data
             try {
                 var sub_data = rows[rowIndex].sub_data.toString().split(',');
                 var curr_sub_data;
                 for (var sd_idx = 0; sd_idx < sub_data.length; sd_idx++) {
                     curr_sub_data = sub_data[sd_idx].split(';');
                     if (isCTC) {
+                        // histograms care about the distribution of stats from individual events, so go ahead and
+                        // calculate the stat, don't preserve the hits, misses, etc.
                         sub_stats.push(matsDataUtils.calculateStatCTC(Number(curr_sub_data[0]), Number(curr_sub_data[1]), Number(curr_sub_data[2]), Number(curr_sub_data[3]), statisticStr));
                         sub_secs.push(Number(curr_sub_data[4]));
                         if (hasLevels) {
@@ -1809,7 +1834,7 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
 // this method parses the returned query data for contour plots
 const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
     /*
-        var d = {// d will contain the curve data
+        var d = {   // d will contain the curve data
             x: [],
             y: [],
             z: [],
@@ -1870,6 +1895,7 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
         var miss;
         var cn;
         if (rows[rowIndex].stat === undefined && rows[rowIndex].hit !== undefined) {
+            // this is a contingency table plot
             isCTC = true;
             hit = Number(rows[rowIndex].hit);
             fa = Number(rows[rowIndex].fa);
@@ -1886,6 +1912,7 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
                 cn = null;
             }
         } else {
+            // not a contingency table plot
             stat = rows[rowIndex].stat === "NULL" ? null : rows[rowIndex].stat;
             hit = null;
             fa = null;
@@ -1911,6 +1938,7 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
         var sub_secs = [];
         var sub_levs = [];
         if (stat !== null && rows[rowIndex].sub_data !== undefined) {
+            // parse the sub-data
             try {
                 var sub_data = rows[rowIndex].sub_data.toString().split(',');
                 var curr_sub_data;
@@ -1987,6 +2015,7 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
             curveSubLevLookup[statKey] = sub_levs;
         }
     }
+
     // get the unique x and y values and sort the stats into the 2D z array accordingly
     d.x = matsDataUtils.arrayUnique(d.xTextOutput).sort(function (a, b) {
         return a - b
@@ -1994,7 +2023,6 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
     d.y = matsDataUtils.arrayUnique(d.yTextOutput).sort(function (a, b) {
         return a - b
     });
-
     var i;
     var j;
     var currX;
