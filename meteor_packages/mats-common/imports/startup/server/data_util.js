@@ -332,6 +332,7 @@ const doSettings = function (title, dbType, version, buildDate, appType, mapboxK
 
 // calculates the statistic for ctc station plots
 const calculateStatCTC = function (hit, fa, miss, cn, statistic) {
+    if (isNaN(hit) || isNaN(fa) || isNaN(miss) || isNaN(cn)) return null;
     var queryVal;
     switch (statistic) {
         case 'TSS (True Skill Score)':
@@ -1101,6 +1102,32 @@ const getDiffContourCurveParams = function (curves) {
     return [newCurve];
 };
 
+const removePoint = function (data, di, plotType, statVarName, isCTC, hasLevels) {
+    data.x.splice(di, 1);
+    data.y.splice(di, 1);
+    if (plotType === matsTypes.PlotTypes.performanceDiagram) {
+        data.oy_all.splice(di, 1);
+        data.on_all.splice(di, 1);
+    }
+    if (data[('error_' + statVarName)].array !== undefined) {
+        data[('error_' + statVarName)].array.splice(di, 1);
+    }
+    if (isCTC) {
+        data.subHit.splice(di, 1);
+        data.subFa.splice(di, 1);
+        data.subMiss.splice(di, 1);
+        data.subCn.splice(di, 1);
+    } else {
+        data.subVals.splice(di, 1);
+    }
+    data.subSecs.splice(di, 1);
+    if (hasLevels) {
+        data.subLevs.splice(di, 1);
+    }
+    data.stats.splice(di, 1);
+    data.text.splice(di, 1);
+};
+
 // used for sorting arrays
 const sortFunction = function (a, b) {
     if (a[0] === b[0]) {
@@ -1140,5 +1167,5 @@ export default matsDataUtils = {
     sortHistogramBins: sortHistogramBins,
     getDiffContourCurveParams: getDiffContourCurveParams,
     sortFunction: sortFunction,
-
+    removePoint: removePoint
 }

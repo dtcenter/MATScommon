@@ -190,7 +190,6 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
     // remove non-matching independentVars and subSecs
     for (curveIndex = 0; curveIndex < curvesLength; curveIndex++) { // loop over every curve
         data = dataset[curveIndex];
-
         // need to loop backwards through the data array so that we can splice non-matching indices
         // while still having the remaining indices in the correct order
         var dataLength = data[independentVarName].length;
@@ -198,25 +197,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
             if (removeNonMatchingIndVars) {
                 if (matchingIndependentVars.indexOf(data[independentVarName][di]) === -1) {  // if this is not a common non-null independentVar value, we'll have to remove some data
                     if (matchingIndependentHasPoint.indexOf(data[independentVarName][di]) === -1) {   // if at least one curve doesn't even have a null here, much less a matching value (beacause of the cadence), just drop this independentVar
-                        data.x.splice(di, 1);
-                        data.y.splice(di, 1);
-                        if (data[('error_' + statVarName)].array !== undefined) {
-                            data[('error_' + statVarName)].array.splice(di, 1);
-                        }
-                        if (isCTC) {
-                            data.subHit.splice(di, 1);
-                            data.subFa.splice(di, 1);
-                            data.subMiss.splice(di, 1);
-                            data.subCn.splice(di, 1);
-                        } else {
-                            data.subVals.splice(di, 1);
-                        }
-                        data.subSecs.splice(di, 1);
-                        if (hasLevels) {
-                            data.subLevs.splice(di, 1);
-                        }
-                        data.stats.splice(di, 1);
-                        data.text.splice(di, 1);
+                        matsDataUtils.removePoint(data, di, plotType, statVarName, isCTC, hasLevels);
                     } else {    // if all of the curves have either data or nulls at this independentVar, and there is at least one null, ensure all of the curves are null
                         data[statVarName][di] = null;
                         if (isCTC) {
@@ -299,31 +280,24 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                         }
                     }
                 }
-                if (!removeNonMatchingIndVars && newSubSecs.length === 0) {
-                    data.x.splice(di, 1);
-                    data.y.splice(di, 1);
-                    if (plotType === matsTypes.PlotTypes.performanceDiagram) {
-                        data.oy_all.splice(di, 1);
-                        data.on_all.splice(di, 1);
-                    }
-                    data.y.splice(di, 1);
-                    if (data[('error_' + statVarName)].array !== undefined) {
-                        data[('error_' + statVarName)].array.splice(di, 1);
-                    }
-                    if (isCTC) {
-                        data.subHit.splice(di, 1);
-                        data.subFa.splice(di, 1);
-                        data.subMiss.splice(di, 1);
-                        data.subCn.splice(di, 1);
+                if (newSubSecs.length === 0) {
+                    if (removeNonMatchingIndVars) {
+                        matsDataUtils.removePoint(data, di, plotType, statVarName, isCTC, hasLevels);
                     } else {
-                        data.subVals.splice(di, 1);
+                        data[statVarName][di] = null;
+                        if (isCTC) {
+                            data.subHit[di] = NaN;
+                            data.subFa[di] = NaN;
+                            data.subMiss[di] = NaN;
+                            data.subCn[di] = NaN;
+                        } else {
+                            data.subVals[di] = NaN;
+                        }
+                        data.subSecs[di] = NaN;
+                        if (hasLevels) {
+                            data.subLevs[di] = NaN;
+                        }
                     }
-                    data.subSecs.splice(di, 1);
-                    if (hasLevels) {
-                        data.subLevs.splice(di, 1);
-                    }
-                    data.stats.splice(di, 1);
-                    data.text.splice(di, 1);
                 } else {
                     // store the filtered data
                     data.subHit[di] = newSubHit;
@@ -334,6 +308,24 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                     data.subSecs[di] = newSubSecs;
                     if (hasLevels) {
                         data.subLevs[di] = newSubLevs;
+                    }
+                }
+            } else {
+                if (removeNonMatchingIndVars) {
+                    matsDataUtils.removePoint(data, di, plotType, statVarName, isCTC, hasLevels);
+                } else {
+                    data[statVarName][di] = null;
+                    if (isCTC) {
+                        data.subHit[di] = NaN;
+                        data.subFa[di] = NaN;
+                        data.subMiss[di] = NaN;
+                        data.subCn[di] = NaN;
+                    } else {
+                        data.subVals[di] = NaN;
+                    }
+                    data.subSecs[di] = NaN;
+                    if (hasLevels) {
+                        data.subLevs[di] = NaN;
                     }
                 }
             }
@@ -393,6 +385,26 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
             for (var didx = 0; didx < newCurveDataKeys.length; didx++) {
                 dataset[curveIndex][newCurveDataKeys[didx]] = newCurveData[newCurveDataKeys[didx]];
             }
+        }
+
+        // save matched data
+        const filteredx = data.x.filter(x => x);
+        const filteredy = data.y.filter(y => y);
+        data.xmin = Math.min(...filteredx);
+        if (data.x.indexOf(0) !== -1 && 0 < data.xmin) {
+            data.xmin = 0;
+        }
+        data.xmax = Math.max(...filteredx);
+        if (data.x.indexOf(0) !== -1 && 0 > data.xmax) {
+            data.xmax = 0;
+        }
+        data.ymin = Math.min(...filteredy);
+        if (data.y.indexOf(0) !== -1 && 0 < data.ymin) {
+            data.ymin = 0;
+        }
+        data.ymax = Math.max(...filteredy);
+        if (data.y.indexOf(0) !== -1 && 0 > data.ymax) {
+            data.ymax = 0;
         }
         dataset[curveIndex] = data;
     }

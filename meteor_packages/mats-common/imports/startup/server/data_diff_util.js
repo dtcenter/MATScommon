@@ -160,6 +160,7 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC) {
         var tempSubValsArray;
         var tempSubSecsArray;
         var tempSubLevsArray;
+
         if (minuendData[independentVarName][minuendIndex] !== undefined && subtrahendData[independentVarName][subtrahendIndex] !== undefined) {  // make sure both curves actually have data at this index
             if ((minuendData[statVarName][minuendIndex] !== null && subtrahendData[statVarName][subtrahendIndex] !== null) && minuendData[independentVarName][minuendIndex] === subtrahendData[independentVarName][subtrahendIndex]) { // make sure data is not null at this point and the independentVars actually match
 
@@ -238,7 +239,6 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC) {
                     if (hasLevels) {
                         d.subLevs.push(tempSubLevsArray);
                     }
-
                     d.sum = d.sum + d[independentVarName][largeIntervalCurveIndex];
 
                 } else {
@@ -290,9 +290,21 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC) {
     const filteredx = d.x.filter(x => x);
     const filteredy = d.y.filter(y => y);
     d.xmin = Math.min(...filteredx);
+    if (d.x.indexOf(0) !== -1 && 0 < d.xmin) {
+        d.xmin = 0;
+    }
     d.xmax = Math.max(...filteredx);
+    if (d.x.indexOf(0) !== -1 && 0 > d.xmax) {
+        d.xmax = 0;
+    }
     d.ymin = Math.min(...filteredy);
+    if (d.y.indexOf(0) !== -1 && 0 < d.ymin) {
+        d.ymin = 0;
+    }
     d.ymax = Math.max(...filteredy);
+    if (d.y.indexOf(0) !== -1 && 0 > d.ymax) {
+        d.ymax = 0;
+    }
 
     return {'dataset': d};
 };
@@ -656,29 +668,27 @@ const getDataForDiffContour = function (dataset, appParams, showSignificance, si
     const filteredy = diffDataset.y.filter(y => y);
     const filteredz = diffDataset.zTextOutput.filter(z => z);
     diffDataset.xmin = Math.min(...filteredx);
-    diffDataset.xmax = Math.max(...filteredx);
-    diffDataset.ymin = Math.min(...filteredy);
-    diffDataset.ymax = Math.max(...filteredy);
-    diffDataset.zmin = Math.min(...filteredz);
-    diffDataset.zmax = Math.max(...filteredz);
-
     if (diffDataset.xmin == "-Infinity" || (diffDataset.x.indexOf(0) !== -1 && 0 < diffDataset.xmin)) {
         diffDataset.xmin = 0;
     }
+    diffDataset.xmax = Math.max(...filteredx);
+    if (diffDataset.xmax == "Infinity" || (diffDataset.x.indexOf(0) !== -1 && 0 > diffDataset.xmax)) {
+        diffDataset.xmax = 0;
+    }
+    diffDataset.ymin = Math.min(...filteredy);
     if (diffDataset.ymin == "-Infinity" || (diffDataset.y.indexOf(0) !== -1 && 0 < diffDataset.ymin)) {
         diffDataset.ymin = 0;
     }
-    if (diffDataset.zmin == "-Infinity" || (diffDataset.zTextOutput.indexOf(0) !== -1 && 0 < diffDataset.zmin)) {
-        diffDataset.zmin = 0;
-    }
-
-    if (diffDataset.xmax == "-Infinity") {
-        diffDataset.xmax = 0;
-    }
-    if (diffDataset.ymax == "-Infinity") {
+    diffDataset.ymax = Math.max(...filteredy);
+    if (diffDataset.ymax == "Infinity" || (diffDataset.y.indexOf(0) !== -1 && 0 > diffDataset.ymax)) {
         diffDataset.ymax = 0;
     }
-    if (diffDataset.zmax == "-Infinity") {
+    diffDataset.zmin = Math.min(...filteredz);
+    if (diffDataset.zmin == "-Infinity" || (diffDataset.z.indexOf(0) !== -1 && 0 < diffDataset.zmin)) {
+        diffDataset.zmin = 0;
+    }
+    diffDataset.zmax = Math.max(...filteredz);
+    if (diffDataset.zmax == "Infinity" || (diffDataset.z.indexOf(0) !== -1 && 0 > diffDataset.zmax)) {
         diffDataset.zmax = 0;
     }
 
