@@ -87,62 +87,80 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
     }
 
     // find the matching independentVars shared across all curves
-    for (curveIndex = 0; curveIndex < curvesLength; curveIndex++) { // every curve
-        independentVarGroups[curveIndex] = [];  // store the independentVars for each curve that are not null
-        independentVarHasPoint[curveIndex] = [];   // store the *all* of the independentVars for each curve
-        subSecs[curveIndex] = {};  // store the individual record times (subSecs) going into each independentVar for each curve
+    for (curveIndex = 0; curveIndex < curvesLength; curveIndex++) {
+        independentVarGroups[curveIndex] = [];  // array for the independentVars for each curve that are not null
+        independentVarHasPoint[curveIndex] = [];   // array for the *all* of the independentVars for each curve
+        subSecs[curveIndex] = {};  // map of the individual record times (subSecs) going into each independentVar for each curve
         if (hasLevels) {
-            subLevs[curveIndex] = {};  // store the individual record levels (subLevs) going into each independentVar for each curve
+            subLevs[curveIndex] = {};  // map of the individual record levels (subLevs) going into each independentVar for each curve
         }
         data = dataset[curveIndex];
-        for (di = 0; di < data[independentVarName].length; di++) { // loop over every independentVar value in this curve
+        // loop over every independentVar value in this curve
+        for (di = 0; di < data[independentVarName].length; di++) {
             currIndependentVar = data[independentVarName][di];
             if (data[statVarName][di] !== null) {
-                subSecs[curveIndex][currIndependentVar] = data.subSecs[di];   // store raw secs for this independentVar value, since it's not a null point
+                // store raw secs for this independentVar value, since it's not a null point
+                subSecs[curveIndex][currIndependentVar] = data.subSecs[di];
                 if (hasLevels) {
-                    subLevs[curveIndex][currIndependentVar] = data.subLevs[di];   // store raw levs for this independentVar value, since it's not a null point
+                    // store raw levs for this independentVar value, since it's not a null point
+                    subLevs[curveIndex][currIndependentVar] = data.subLevs[di];
                 }
-                independentVarGroups[curveIndex].push(currIndependentVar);   // store this independentVar value, since it's not a null point
+                // store this independentVar value, since it's not a null point
+                independentVarGroups[curveIndex].push(currIndependentVar);
             }
-            independentVarHasPoint[curveIndex].push(currIndependentVar);    // store all the independentVar values, regardless of whether they're null
+            // store all the independentVar values, regardless of whether they're null
+            independentVarHasPoint[curveIndex].push(currIndependentVar);
         }
     }
 
-    var matchingIndependentVars = _.intersection.apply(_, independentVarGroups);    // find all of the non-null independentVar values common across all the curves
-    var matchingIndependentHasPoint = _.intersection.apply(_, independentVarHasPoint);    // find all of the independentVar values common across all the curves, regardless of whether or not they're null
+    var matchingIndependentVars = _.intersection.apply(_, independentVarGroups);    // all of the non-null independentVar values common across all the curves
+    var matchingIndependentHasPoint = _.intersection.apply(_, independentVarHasPoint);    // all of the independentVar values common across all the curves, regardless of whether or not they're null
     if (removeNonMatchingIndVars) {
         if (hasLevels) {
-            for (fi = 0; fi < matchingIndependentVars.length; fi++) { // loop over each common non-null independentVar value
+            // loop over each common non-null independentVar value
+            for (fi = 0; fi < matchingIndependentVars.length; fi++) {
                 currIndependentVar = matchingIndependentVars[fi];
                 subIntersections[currIndependentVar] = [];
                 var currSubIntersections = [];
-                for (si = 0; si < subSecs[0][currIndependentVar].length; si++) {   // fill current intersection array with sec-lev pairs from the first curve
+                for (si = 0; si < subSecs[0][currIndependentVar].length; si++) {
+                    // fill current intersection array with sec-lev pairs from the first curve
                     currSubIntersections.push([subSecs[0][currIndependentVar][si], subLevs[0][currIndependentVar][si]]);
                 }
-                for (curveIndex = 1; curveIndex < curvesLength; curveIndex++) { // loop over every curve after the first
+                // loop over every curve after the first
+                for (curveIndex = 1; curveIndex < curvesLength; curveIndex++) {
                     tempSubIntersections = [];
-                    for (si = 0; si < subSecs[curveIndex][currIndependentVar].length; si++) { // loop over every subSecs value
-                        tempPair = [subSecs[curveIndex][currIndependentVar][si], subLevs[curveIndex][currIndependentVar][si]];    // create an individual sec-lev pair for each index in the subSecs and subLevs arrays
-                        if (matsDataUtils.arrayContainsSubArray(currSubIntersections, tempPair)) {   // see if the individual sec-lev pair matches a pair from the current intersection array
-                            tempSubIntersections.push(tempPair);    // store matching pairs
+                    for (si = 0; si < subSecs[curveIndex][currIndependentVar].length; si++) {
+                        // create an individual sec-lev pair for each index in the subSecs and subLevs arrays
+                        tempPair = [subSecs[curveIndex][currIndependentVar][si], subLevs[curveIndex][currIndependentVar][si]];
+                        // see if the individual sec-lev pair matches a pair from the current intersection array
+                        if (matsDataUtils.arrayContainsSubArray(currSubIntersections, tempPair)) {
+                            // store matching pairs
+                            tempSubIntersections.push(tempPair);
                         }
                     }
-                    currSubIntersections = tempSubIntersections;    // replace current intersection array with array of only pairs that matched from this loop through.
+                    // replace current intersection array with array of only pairs that matched from this loop through.
+                    currSubIntersections = tempSubIntersections;
                 }
-                subIntersections[currIndependentVar] = currSubIntersections;   // store the final intersecting subSecs array for this common non-null independentVar value
+                // store the final intersecting subSecs array for this common non-null independentVar value
+                subIntersections[currIndependentVar] = currSubIntersections;
             }
         } else {
-            for (fi = 0; fi < matchingIndependentVars.length; fi++) { // loop over each common non-null independentVar value
+            // loop over each common non-null independentVar value
+            for (fi = 0; fi < matchingIndependentVars.length; fi++) {
                 currIndependentVar = matchingIndependentVars[fi];
-                var currSubSecIntersection = subSecs[0][currIndependentVar];   // fill current subSecs intersection array with subSecs from the first curve
-                for (curveIndex = 1; curveIndex < curvesLength; curveIndex++) { // loop over every curve
-                    currSubSecIntersection = _.intersection(currSubSecIntersection, subSecs[curveIndex][currIndependentVar]);   // keep taking the intersection of the current subSecs intersection array with each curve's subSecs array for this independentVar value
+                // fill current subSecs intersection array with subSecs from the first curve
+                var currSubSecIntersection = subSecs[0][currIndependentVar];
+                // loop over every curve after the first
+                for (curveIndex = 1; curveIndex < curvesLength; curveIndex++) {
+                    // keep taking the intersection of the current subSecs intersection array with each curve's subSecs array for this independentVar value
+                    currSubSecIntersection = _.intersection(currSubSecIntersection, subSecs[curveIndex][currIndependentVar]);
                 }
-                subSecIntersection[currIndependentVar] = currSubSecIntersection;   // store the final intersecting subSecs array for this common non-null independentVar value
+                // store the final intersecting subSecs array for this common non-null independentVar value
+                subSecIntersection[currIndependentVar] = currSubSecIntersection;
             }
         }
     } else {
-        // pull all subSecs and subLevs out of their bins, and back into one master array
+        // pull all subSecs and subLevs out of their bins, and back into one main array
         for (curveIndex = 0; curveIndex < curvesLength; curveIndex++) {
             data = dataset[curveIndex];
             subSecsRaw[curveIndex] = [];
@@ -165,24 +183,33 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
 
         if (hasLevels) {
             // determine which seconds and levels are present in all curves
-            for (si = 0; si < subSecs[0].length; si++) {   // fill current intersection array with sec-lev pairs from the first curve
+            for (si = 0; si < subSecs[0].length; si++) {
+                // fill current intersection array with sec-lev pairs from the first curve
                 subIntersections.push([subSecs[0][si], subLevs[0][si]]);
             }
-            for (curveIndex = 1; curveIndex < curvesLength; curveIndex++) { // loop over every curve after the first
+            // loop over every curve after the first
+            for (curveIndex = 1; curveIndex < curvesLength; curveIndex++) {
                 tempSubIntersections = [];
-                for (si = 0; si < subSecs[curveIndex].length; si++) { // loop over every subSecs value
-                    tempPair = [subSecs[curveIndex][si], subLevs[curveIndex][si]];    // create an individual sec-lev pair for each index in the subSecs and subLevs arrays
-                    if (matsDataUtils.arrayContainsSubArray(subIntersections, tempPair)) {   // see if the individual sec-lev pair matches a pair from the current intersection array
-                        tempSubIntersections.push(tempPair);    // store matching pairs
+                for (si = 0; si < subSecs[curveIndex].length; si++) {
+                    // create an individual sec-lev pair for each index in the subSecs and subLevs arrays
+                    tempPair = [subSecs[curveIndex][si], subLevs[curveIndex][si]];
+                    // see if the individual sec-lev pair matches a pair from the current intersection array
+                    if (matsDataUtils.arrayContainsSubArray(subIntersections, tempPair)) {
+                        // store matching pairs
+                        tempSubIntersections.push(tempPair);
                     }
                 }
-                subIntersections = tempSubIntersections;    //replace current intersection array with array of only pairs that matched from this loop through.
+                //replace current intersection array with array of only pairs that matched from this loop through.
+                subIntersections = tempSubIntersections;
             }
         } else {
             // determine which seconds are present in all curves
-            subSecIntersection = subSecs[0];   // fill current subSecs intersection array with subSecs from the first curve
-            for (curveIndex = 1; curveIndex < curvesLength; curveIndex++) { // loop over every curve
-                subSecIntersection = _.intersection(subSecIntersection, subSecs[curveIndex]);   // keep taking the intersection of the current subSecs intersection array with each curve's subSecs array
+            // fill current subSecs intersection array with subSecs from the first curve
+            subSecIntersection = subSecs[0];
+            // loop over every curve after the first
+            for (curveIndex = 1; curveIndex < curvesLength; curveIndex++) {
+                // keep taking the intersection of the current subSecs intersection array with each curve's subSecs array
+                subSecIntersection = _.intersection(subSecIntersection, subSecs[curveIndex]);
             }
         }
     }
@@ -195,13 +222,17 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
         var dataLength = data[independentVarName].length;
         for (di = dataLength - 1; di >= 0; di--) {
             if (removeNonMatchingIndVars) {
-                if (matchingIndependentVars.indexOf(data[independentVarName][di]) === -1) {  // if this is not a common non-null independentVar value, we'll have to remove some data
-                    if (matchingIndependentHasPoint.indexOf(data[independentVarName][di]) === -1) {   // if at least one curve doesn't even have a null here, much less a matching value (beacause of the cadence), just drop this independentVar
+                if (matchingIndependentVars.indexOf(data[independentVarName][di]) === -1) {
+                    // if this is not a common non-null independentVar value, we'll have to remove some data
+                    if (matchingIndependentHasPoint.indexOf(data[independentVarName][di]) === -1) {
+                        // if at least one curve doesn't even have a null here, much less a matching value (because of the cadence), just drop this independentVar
                         matsDataUtils.removePoint(data, di, plotType, statVarName, isCTC, hasLevels);
-                    } else {    // if all of the curves have either data or nulls at this independentVar, and there is at least one null, ensure all of the curves are null
+                    } else {
+                        // if all of the curves have either data or nulls at this independentVar, and there is at least one null, ensure all of the curves are null
                         matsDataUtils.nullPoint(data, di, statVarName, isCTC, hasLevels);
                     }
-                    continue;   // then move on to the next independentVar. There's no need to mess with the subSecs or subLevs
+                    // then move on to the next independentVar. There's no need to mess with the subSecs or subLevs
+                    continue;
                 }
             }
             subSecs = data.subSecs[di];
@@ -228,12 +259,15 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                 if (hasLevels) {
                     newSubLevs = [];
                 }
-                for (si = 0; si < subSecs.length; si++) {  // loop over all subSecs for this independentVar
+                // loop over all subSecs for this independentVar
+                for (si = 0; si < subSecs.length; si++) {
                     if (hasLevels) {
-                        tempPair = [subSecs[si], subLevs[si]]; //create sec-lev pair for each sub value
+                        // create sec-lev pair for each sub value
+                        tempPair = [subSecs[si], subLevs[si]];
                     }
+                    // keep the subValue only if its associated subSec/subLev is common to all curves for this independentVar
                     if ((!removeNonMatchingIndVars && ((!hasLevels && subSecIntersection.indexOf(subSecs[si]) !== -1) || (hasLevels && matsDataUtils.arrayContainsSubArray(subIntersections, tempPair))))
-                        || (removeNonMatchingIndVars && ((!hasLevels && subSecIntersection[currIndependentVar].indexOf(subSecs[si]) !== -1) || (hasLevels && matsDataUtils.arrayContainsSubArray(subIntersections[currIndependentVar], tempPair))))) { // keep the subValue only if its associated subSec/subLev is common to all curves for this independentVar
+                        || (removeNonMatchingIndVars && ((!hasLevels && subSecIntersection[currIndependentVar].indexOf(subSecs[si]) !== -1) || (hasLevels && matsDataUtils.arrayContainsSubArray(subIntersections[currIndependentVar], tempPair))))) {
                         if (isCTC) {
                             var newHit = subHit[si];
                             var newFa = subFa[si];
@@ -269,6 +303,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                     }
                 }
                 if (newSubSecs.length === 0) {
+                    // no matching sub-values, so delete or null the point
                     if (removeNonMatchingIndVars) {
                         matsDataUtils.removePoint(data, di, plotType, statVarName, isCTC, hasLevels);
                     } else {
@@ -287,6 +322,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                     }
                 }
             } else {
+                // no sub-values to begin with, so delete or null the point
                 if (removeNonMatchingIndVars) {
                     matsDataUtils.removePoint(data, di, plotType, statVarName, isCTC, hasLevels);
                 } else {
@@ -315,7 +351,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                 }
             }
         } else if (plotType === matsTypes.PlotTypes.histogram) {
-            var d = {// relevant fields to recalculate
+            var d = {   // relevant fields to recalculate
                 x: [],
                 y: [],
                 subVals: [],
