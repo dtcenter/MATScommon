@@ -1102,6 +1102,7 @@ const getDiffContourCurveParams = function (curves) {
     return [newCurve];
 };
 
+// utility to remove a point on a graph
 const removePoint = function (data, di, plotType, statVarName, isCTC, hasLevels) {
     data.x.splice(di, 1);
     data.y.splice(di, 1);
@@ -1126,6 +1127,23 @@ const removePoint = function (data, di, plotType, statVarName, isCTC, hasLevels)
     }
     data.stats.splice(di, 1);
     data.text.splice(di, 1);
+};
+
+// utility to make null a point on a graph
+const nullPoint = function (data, di, statVarName, isCTC, hasLevels) {
+    data[statVarName][di] = null;
+    if (isCTC) {
+        data.subHit[di] = NaN;
+        data.subFa[di] = NaN;
+        data.subMiss[di] = NaN;
+        data.subCn[di] = NaN;
+    } else {
+        data.subVals[di] = NaN;
+    }
+    data.subSecs[di] = NaN;
+    if (hasLevels) {
+        data.subLevs[di] = NaN;
+    }
 };
 
 // used for sorting arrays
@@ -1167,5 +1185,6 @@ export default matsDataUtils = {
     sortHistogramBins: sortHistogramBins,
     getDiffContourCurveParams: getDiffContourCurveParams,
     sortFunction: sortFunction,
-    removePoint: removePoint
+    removePoint: removePoint,
+    nullPoint: nullPoint
 }

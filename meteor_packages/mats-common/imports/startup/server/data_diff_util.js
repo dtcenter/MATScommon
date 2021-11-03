@@ -663,6 +663,38 @@ const getDataForDiffContour = function (dataset, appParams, showSignificance, si
         }
     }
 
+    // trim empty points at the bottom of the plot
+    var dataLength = diffDataset.y.length;
+    for (diffDataYIndex = 0; diffDataYIndex < dataLength; diffDataYIndex++) {
+        // always check the 0-index, if points were previously removed something new will become 0-index.
+        if (!diffDataset.z[0].some(function (m) {
+            return m !== null
+        })) {
+            diffDataset.y.splice(0, 1);
+            diffDataset.z.splice(0, 1);
+            diffDataset.stdev.splice(0, 1);
+            diffDataset.n.splice(0, 1);
+        } else {
+            break;
+        }
+    }
+
+    // trim empty points at the end of the curve
+    dataLength = diffDataset.y.length;
+    for (diffDataYIndex = dataLength - 1; diffDataYIndex >= 0; diffDataYIndex--) {
+        // always check the 0-index, if points were previously removed something new will become 0-index.
+        if (!diffDataset.z[diffDataYIndex].some(function (m) {
+            return m !== null
+        })) {
+            diffDataset.y.splice(diffDataYIndex, 1);
+            diffDataset.z.splice(diffDataYIndex, 1);
+            diffDataset.stdev.splice(diffDataYIndex, 1);
+            diffDataset.n.splice(diffDataYIndex, 1);
+        } else {
+            break;
+        }
+    }
+
     // calculate statistics
     const filteredx = diffDataset.x.filter(x => x);
     const filteredy = diffDataset.y.filter(y => y);

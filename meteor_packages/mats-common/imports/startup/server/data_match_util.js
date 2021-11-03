@@ -199,19 +199,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                     if (matchingIndependentHasPoint.indexOf(data[independentVarName][di]) === -1) {   // if at least one curve doesn't even have a null here, much less a matching value (beacause of the cadence), just drop this independentVar
                         matsDataUtils.removePoint(data, di, plotType, statVarName, isCTC, hasLevels);
                     } else {    // if all of the curves have either data or nulls at this independentVar, and there is at least one null, ensure all of the curves are null
-                        data[statVarName][di] = null;
-                        if (isCTC) {
-                            data.subHit[di] = NaN;
-                            data.subFa[di] = NaN;
-                            data.subMiss[di] = NaN;
-                            data.subCn[di] = NaN;
-                        } else {
-                            data.subVals[di] = NaN;
-                        }
-                        data.subSecs[di] = NaN;
-                        if (hasLevels) {
-                            data.subLevs[di] = NaN;
-                        }
+                        matsDataUtils.nullPoint(data, di, statVarName, isCTC, hasLevels);
                     }
                     continue;   // then move on to the next independentVar. There's no need to mess with the subSecs or subLevs
                 }
@@ -284,19 +272,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                     if (removeNonMatchingIndVars) {
                         matsDataUtils.removePoint(data, di, plotType, statVarName, isCTC, hasLevels);
                     } else {
-                        data[statVarName][di] = null;
-                        if (isCTC) {
-                            data.subHit[di] = NaN;
-                            data.subFa[di] = NaN;
-                            data.subMiss[di] = NaN;
-                            data.subCn[di] = NaN;
-                        } else {
-                            data.subVals[di] = NaN;
-                        }
-                        data.subSecs[di] = NaN;
-                        if (hasLevels) {
-                            data.subLevs[di] = NaN;
-                        }
+                        matsDataUtils.nullPoint(data, di, statVarName, isCTC, hasLevels);
                     }
                 } else {
                     // store the filtered data
@@ -314,19 +290,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                 if (removeNonMatchingIndVars) {
                     matsDataUtils.removePoint(data, di, plotType, statVarName, isCTC, hasLevels);
                 } else {
-                    data[statVarName][di] = null;
-                    if (isCTC) {
-                        data.subHit[di] = NaN;
-                        data.subFa[di] = NaN;
-                        data.subMiss[di] = NaN;
-                        data.subCn[di] = NaN;
-                    } else {
-                        data.subVals[di] = NaN;
-                    }
-                    data.subSecs[di] = NaN;
-                    if (hasLevels) {
-                        data.subLevs[di] = NaN;
-                    }
+                    matsDataUtils.nullPoint(data, di, statVarName, isCTC, hasLevels);
                 }
             }
         }
