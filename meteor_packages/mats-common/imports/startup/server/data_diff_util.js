@@ -161,9 +161,11 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC) {
         var tempSubSecsArray;
         var tempSubLevsArray;
 
-        if (minuendData[independentVarName][minuendIndex] !== undefined && subtrahendData[independentVarName][subtrahendIndex] !== undefined) {  // make sure both curves actually have data at this index
+        // make sure both curves actually have data at this index
+        if (minuendData[independentVarName][minuendIndex] !== undefined && subtrahendData[independentVarName][subtrahendIndex] !== undefined) {
             if ((minuendData[statVarName][minuendIndex] !== null && subtrahendData[statVarName][subtrahendIndex] !== null) && minuendData[independentVarName][minuendIndex] === subtrahendData[independentVarName][subtrahendIndex]) { // make sure data is not null at this point and the independentVars actually match
 
+                // if they do both have data then calculate the difference and initialize the other data fields
                 diffValue = minuendData[statVarName][minuendIndex] - subtrahendData[statVarName][subtrahendIndex];
                 d[independentVarName].push(largeIntervalIndependentVar);
                 d[statVarName].push(diffValue);
@@ -179,6 +181,7 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC) {
                     tempSubLevsArray = [];
                 }
 
+                // calculate the differences in sub values
                 if (plotType !== matsTypes.PlotTypes.histogram) {
                     if (isCTC) {
                         var minuendDataSubHit = minuendData.subHit[minuendIndex];
@@ -287,6 +290,7 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC) {
         }
     }
 
+    // calculate the max and min for this curve
     const filteredx = d.x.filter(x => x);
     const filteredy = d.y.filter(y => y);
     d.xmin = Math.min(...filteredx);
@@ -434,17 +438,17 @@ const getDataForDiffContour = function (dataset, appParams, showSignificance, si
 
     // loop through common Ys
     for (var diffDataYIndex = 0; diffDataYIndex < diffDataset.y.length; diffDataYIndex++) {
-        //make sure that we are actually on the same y value for each curve
+        // make sure that we are actually on the same y value for each curve
         var diffDataY = diffDataset.y[diffDataYIndex];
         var minuendY = minuendData.y[minuendYIndex];
         var subtrahendY = subtrahendData.y[subtrahendYIndex];
 
-        //increment the minuendYIndex until it reaches this iteration's diffDataY
+        // increment the minuendYIndex until it reaches this iteration's diffDataY
         while (diffDataY > minuendY && minuendYIndex < minuendData.y.length - 1) {
             minuendY = minuendData.y[++minuendYIndex];
         }
 
-        //increment the subtrahendYIndex until it reaches this iteration's diffDataY
+        // increment the subtrahendYIndex until it reaches this iteration's diffDataY
         while (diffDataY > subtrahendY && subtrahendYIndex < subtrahendData.y.length - 1) {
             subtrahendY = subtrahendData.y[++subtrahendYIndex];
         }
@@ -457,17 +461,17 @@ const getDataForDiffContour = function (dataset, appParams, showSignificance, si
         var minuendXIndex = 0;
         var subtrahendXIndex = 0;
         for (var diffDataXIndex = 0; diffDataXIndex < diffDataset.x.length; diffDataXIndex++) {
-            //make sure that we are actually on the same x value for each curve
+            // make sure that we are actually on the same x value for each curve
             var diffDataX = diffDataset.x[diffDataXIndex];
             var minuendX = minuendData.x[minuendXIndex];
             var subtrahendX = subtrahendData.x[subtrahendXIndex];
 
-            //increment the minuendXIndex until it reaches this iteration's diffDataX
+            // increment the minuendXIndex until it reaches this iteration's diffDataX
             while (diffDataX > minuendX && minuendXIndex < minuendData.x.length - 1) {
                 minuendX = minuendData.x[++minuendXIndex];
             }
 
-            //increment the subtrahendXIndex until it reaches this iteration's diffDataX
+            // increment the subtrahendXIndex until it reaches this iteration's diffDataX
             while (diffDataX > subtrahendX && subtrahendXIndex < subtrahendData.x.length - 1) {
                 subtrahendX = subtrahendData.x[++subtrahendXIndex];
             }
@@ -628,6 +632,7 @@ const getDataForDiffContour = function (dataset, appParams, showSignificance, si
                         subtrahendData.subLevs[subtrahendYIndex][subtrahendXIndex] = tempSubLevsArray;
                     }
                 }
+
                 // calculate the difference values
                 diffValue = minuendData.z[minuendYIndex][minuendXIndex] - subtrahendData.z[subtrahendYIndex][subtrahendXIndex];
                 diffNumber = minuendData.n[minuendYIndex][minuendXIndex] <= subtrahendData.n[subtrahendYIndex][subtrahendXIndex] ? minuendData.n[minuendYIndex][minuendXIndex] : subtrahendData.n[subtrahendYIndex][subtrahendXIndex];

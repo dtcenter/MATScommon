@@ -387,7 +387,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
             }
         }
 
-        // save matched data
+        // save matched data and recalculate the max and min for this curve
         const filteredx = data.x.filter(x => x);
         const filteredy = data.y.filter(y => y);
         data.xmin = Math.min(...filteredx);
