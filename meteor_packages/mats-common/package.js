@@ -15,7 +15,7 @@ Package.describe({
 });
 
 Package.onUse(function (api) {
-    api.versionsFrom('2.4');
+    api.versionsFrom('2.3');
     Npm.depends({
         'fs-extra': '7.0.0',
         "@babel/runtime": "7.10.4",
