@@ -325,29 +325,6 @@ const _getFlattenedResultData = function (rk, p, np) {
             var dsiRealPageIndex = result.dsiRealPageIndex;
             var dsiTextDirection = result.dsiTextDirection;
             switch (plotType) {
-                /*
-                returnData is
-                {
-                    stats: {
-                                curve0: {label:someLabel, mean:someMean,sd:someSd....}
-                                curve1: {label:someLabel, mean:someMean,sd:someSd....}
-                                ...
-                            }
-                    data: {
-                                curve0: [
-                                            {time:someTime, stat: someStat, sd: someSd,....},
-                                            {time:someTime, stat: someStat, sd: someSd,....},
-                                            ....
-                                        ],
-                                curve1: [
-                                            {time:someTime, stat: someStat, sd: someSd,....},
-                                            {time:someTime, stat: someStat, sd: someSd,....},
-                                            ....
-                                        ],
-                                        ...
-                          }
-                }
-                 */
                 case matsTypes.PlotTypes.timeSeries:
                 case matsTypes.PlotTypes.dailyModelCycle:
                     var returnData = {};
@@ -611,11 +588,19 @@ const _getFlattenedResultData = function (rk, p, np) {
                     var curveData = [];  // map of maps
                     for (var si = 0; si < data[0].siteName.length; si++) {
                         var curveDataElement = {};
-                        curveDataElement['Site Name'] = data[0].siteName[si];
-                        curveDataElement['Number of Times'] = data[0].stats[si].N_times;
-                        curveDataElement['Start Date'] = moment.utc((data[0].stats[si].min_time) * 1000).format('YYYY-MM-DD HH:mm');
-                        curveDataElement['End Date'] = moment.utc((data[0].stats[si].max_time) * 1000).format('YYYY-MM-DD HH:mm');
-                        curveDataElement['Stat'] = data[0].queryVal[si];
+                        curveDataElement['site name'] = data[0].siteName[si];
+                        curveDataElement['number of times'] = data[0].stats[si].N_times;
+                        if (isCTC) {
+                            curveDataElement['stat'] = data[0].queryVal[si];
+                            curveDataElement['hit'] = data[0].stats[si].hit;
+                            curveDataElement['fa'] = data[0].stats[si].fa;
+                            curveDataElement['miss'] = data[0].stats[si].miss;
+                            curveDataElement['cn'] = data[0].stats[si].cn;
+                        } else {
+                            curveDataElement['start date'] = moment.utc((data[0].stats[si].min_time) * 1000).format('YYYY-MM-DD HH:mm');
+                            curveDataElement['end date'] = moment.utc((data[0].stats[si].max_time) * 1000).format('YYYY-MM-DD HH:mm');
+                            curveDataElement['stat'] = data[0].queryVal[si];
+                        }
                         curveData.push(curveDataElement);
                     }
                     returnData.data[data[0].label] = curveData;

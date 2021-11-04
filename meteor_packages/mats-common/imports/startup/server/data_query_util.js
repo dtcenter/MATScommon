@@ -1595,7 +1595,11 @@ const parseQueryDataMapCTC = function (rows, d, dPurple, dPurpleBlue, dBlue, dBl
                 d.stats.push({
                     N_times: rows[rowIndex].N_times,
                     min_time: rows[rowIndex].min_secs,
-                    max_time: rows[rowIndex].max_secs
+                    max_time: rows[rowIndex].max_secs,
+                    hit: rows[rowIndex].hit,
+                    fa: rows[rowIndex].fa,
+                    miss: rows[rowIndex].miss,
+                    cn: rows[rowIndex].cn
                 });
 
                 var thisSite = siteMap.find(obj => {
@@ -1605,7 +1609,11 @@ const parseQueryDataMapCTC = function (rows, d, dPurple, dPurpleBlue, dBlue, dBl
                 var tooltips = thisSite.origName +
                     "<br>" + "model: " + dataSource +
                     "<br>" + statistic + ": " + queryVal +
-                    "<br>" + "n: " + rows[rowIndex].N_times;
+                    "<br>" + "n: " + rows[rowIndex].N_times +
+                    "<br>" + "hits: " + rows[rowIndex].hit +
+                    "<br>" + "false alarms: " + rows[rowIndex].fa +
+                    "<br>" + "misses: " + rows[rowIndex].miss +
+                    "<br>" + "correct nulls: " + rows[rowIndex].cn;
                 d.text.push(tooltips);
                 d.siteName.push(thisSite.origName);
                 d.lat.push(thisSite.point[0]);

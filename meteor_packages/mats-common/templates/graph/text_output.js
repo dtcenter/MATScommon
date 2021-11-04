@@ -276,11 +276,21 @@ Template.textOutput.helpers({
                         ";
                 break;
             case matsTypes.PlotTypes.map:
-                header += "<th>Site Name</th>\
-                        <th>Number of Times</th>\
-                        <th>Start Date</th>\
-                        <th>End Date</th>\
-                        <th>Stat</th>";
+                if (isCTC) {
+                    header += "<th>site name</th>\
+                        <th>number of times</th>\
+                        <th>stat</th>\
+                        <th>hits</th>\
+                        <th>false alarms</th>\
+                        <th>misses</th>\
+                        <th>correct nulls</th>";
+                } else {
+                    header += "<th>site name</th>\
+                        <th>number of times</th>\
+                        <th>start date</th>\
+                        <th>end date</th>\
+                        <th>stat</th>";
+                }
                 break;
             case matsTypes.PlotTypes.histogram:
                 header += "<th>" + curve.label + "  bin range</th>\
@@ -520,11 +530,21 @@ Template.textOutput.helpers({
                     "<td>" + (element['n'] != undefined && element['n'] !== null ? element['n'] : fillStr) + "</td>";
                 break;
             case matsTypes.PlotTypes.map:
-                line += "<td>" + element["Site Name"] + "</td>" +
-                    "<td>" + (element['Number of Times'] != undefined && element['Number of Times'] !== null ? element['Number of Times'] : fillStr) + "</td>" +
-                    "<td>" + (element['Start Date'] != undefined && element['Start Date'] !== null ? element['Start Date'] : fillStr) + "</td>" +
-                    "<td>" + (element['End Date'] != undefined && element['End Date'] !== null ? element['End Date'] : fillStr) + "</td>" +
-                    "<td>" + (element['Stat'] != undefined && element['Stat'] !== null ? element['Stat'] : fillStr) + "</td>";
+                if (isCTC) {
+                    line += "<td>" + element["site name"] + "</td>" +
+                        "<td>" + (element['number of times'] != undefined && element['number of times'] !== null ? element['number of times'] : fillStr) + "</td>" +
+                        "<td>" + (element['stat'] != undefined && element['stat'] !== null ? element['stat'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (element['hit'] != undefined && element['hit'] !== null ? element['hit'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['fa'] != undefined && element['fa'] !== null ? element['fa'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['miss'] != undefined && element['miss'] !== null ? element['miss'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['cn'] != undefined && element['cn'] !== null ? element['cn'].toString() : fillStr) + "</td>";
+                } else {
+                    line += "<td>" + element["site name"] + "</td>" +
+                        "<td>" + (element['number of times'] != undefined && element['number of times'] !== null ? element['number of times'] : fillStr) + "</td>" +
+                        "<td>" + (element['start date'] != undefined && element['start date'] !== null ? element['start date'] : fillStr) + "</td>" +
+                        "<td>" + (element['end date'] != undefined && element['end date'] !== null ? element['end date'] : fillStr) + "</td>" +
+                        "<td>" + (element['stat'] != undefined && element['stat'] !== null ? element['stat'] : fillStr) + "</td>";
+                }
                 break;
             case matsTypes.PlotTypes.histogram:
                 line += "<td>" + element[labelKey += " bin range"] + "</td>" +
