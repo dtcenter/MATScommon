@@ -875,7 +875,7 @@ const _saveResultData = function (result) {
         var sizeof = require('object-sizeof');
         var hash = require('object-hash');
         var key = hash(result.basis.plotParams);
-        var threshold = 1000000;
+        var threshold = 1200000;
         var ret = {};
         try {
             var dSize = sizeof(result.data);
