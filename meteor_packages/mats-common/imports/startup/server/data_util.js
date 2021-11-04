@@ -1030,7 +1030,6 @@ const sortHistogramBins = function (curveSubStats, curveSubSecs, curveSubLevs, b
             subSecs: [],
             subLevs: [],
             stats: [],
-            ctc_stats: [],
             text: [],
             glob_stats: {},
             bin_stats: [],

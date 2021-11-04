@@ -47,7 +47,6 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC) {
             subSecs: [],
             subLevs: [],
             stats: [],
-            ctc_stats: [],
             text: [],
             glob_stats: {},
             xmin: Number.MAX_VALUE,
@@ -95,7 +94,6 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC) {
         subSecs: [],
         subLevs: [],
         stats: [],
-        ctc_stats: [],
         text: [],
         bin_stats: [],
         glob_stats: {

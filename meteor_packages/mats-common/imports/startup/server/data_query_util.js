@@ -289,7 +289,6 @@ const queryDBTimeSeries = function (pool, statement, dataSource, forecastOffset,
             subSecs: [],
             subLevs: [],
             stats: [],
-            ctc_stats: [],
             text: [],
             glob_stats: {},
             xmin: Number.MAX_VALUE,
@@ -384,7 +383,6 @@ const queryDBSpecialtyCurve = function (pool, statement, appParams, statisticStr
             subSecs: [],
             subLevs: [],
             stats: [],
-            ctc_stats: [],
             text: [],
             glob_stats: {},
             bin_stats: [],
@@ -808,7 +806,6 @@ const parseQueryDataTimeSeries = function (rows, d, appParams, averageStr, stati
             subSecs: [],
             subLevs: [],
             stats: [],
-            ctc_stats: [],
             text: [],
             glob_stats: {},
             xmin: Number.MAX_VALUE,
@@ -826,7 +823,6 @@ const parseQueryDataTimeSeries = function (rows, d, appParams, averageStr, stati
     d.error_x = null;  // time series doesn't use x errorbars
     var N0 = [];
     var N_times = [];
-    var ctc_stats = [];
     var xmin = Number.MAX_VALUE;
     var xmax = -1 * Number.MAX_VALUE;
     var curveTime = [];
@@ -858,7 +854,6 @@ const parseQueryDataTimeSeries = function (rows, d, appParams, averageStr, stati
             if (hit + fa + miss + cn > 0) {
                 stat = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, statisticStr);
                 stat = isNaN(Number(stat)) ? null : stat;
-                ctc_stats.push({yy: hit, yn: fa, ny: miss, nn: cn, N0: rows[rowIndex].N0});
             } else {
                 stat = null;
             }
@@ -1025,7 +1020,6 @@ const parseQueryDataTimeSeries = function (rows, d, appParams, averageStr, stati
         cycles = [time_interval];   // regular models will return one cycle cadence
     }
 
-    d.ctc_stats = ctc_stats;
     d.xmin = xmin;
     d.xmax = xmax;
     d.ymin = ymin;
@@ -1056,7 +1050,6 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
             subSecs: [],
             subLevs: [],
             stats: [],
-            ctc_stats: [],
             text: [],
             glob_stats: {},
             xmin: Number.MAX_VALUE,
@@ -1075,7 +1068,6 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
     // initialize local variables
     var N0 = [];
     var N_times = [];
-    var ctc_stats = [];
     var curveIndependentVars = [];
     var curveStats = [];
     var subHit = [];
@@ -1121,7 +1113,6 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
             if (hit + fa + miss + cn > 0) {
                 stat = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, statisticStr);
                 stat = isNaN(Number(stat)) ? null : stat;
-                ctc_stats.push({yy: hit, yn: fa, ny: miss, nn: cn, N0: rows[rowIndex].N0});
             } else {
                 stat = null;
             }
@@ -1315,7 +1306,6 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
         d.ymax = depVarMax;
     }
 
-    d.ctc_stats = ctc_stats;
     d.sum = sum;
 
     return {
@@ -1728,7 +1718,6 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
             subSecs: [],
             subLevs: [],
             stats: [],
-            ctc_stats: [],
             text: [],
             glob_stats: {},
             bin_stats: [],

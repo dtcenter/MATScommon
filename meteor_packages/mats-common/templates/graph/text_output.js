@@ -130,66 +130,131 @@ Template.textOutput.helpers({
     // get the table header for each curve's data
     elementHeaders: function (curve) {
         var header = "";
+        var isCTC = Session.get('isCTC') === undefined ? false : Session.get('isCTC');
         switch (Session.get('plotType')) {
             case matsTypes.PlotTypes.timeSeries:
-                header += "<th>" + curve.label + " time</th>\
+            case matsTypes.PlotTypes.dailyModelCycle:
+                if (isCTC) {
+                    header += "<th>" + curve.label + " time</th>\
+                        <th>stat</th>\
+                        <th>n</th>\
+                        <th>hits</th>\
+                        <th>false alarms</th>\
+                        <th>misses</th>\
+                        <th>correct nulls</th>";
+                } else {
+                    header += "<th>" + curve.label + " time</th>\
                         <th>raw stat from query</th>\
                         <th>mean stat</th>\
                         <th>std dev</th>\
                         <th>std error</th>\
                         <th>lag1</th>\
                         <th>n</th>";
-                break;
-            case matsTypes.PlotTypes.dailyModelCycle:
-                header += "<th>" + curve.label + " time</th>\
-                        <th>raw stat from query</th>\
-                        <th>mean stat</th>\
-                        <th>std dev</th>\
-                        <th>n</th>";
+                }
                 break;
             case matsTypes.PlotTypes.profile:
-                header += "<th>" + curve.label + " level</th>\
+                if (isCTC) {
+                    header += "<th>" + curve.label + " level</th>\
+                        <th>stat</th>\
+                        <th>n</th>\
+                        <th>hits</th>\
+                        <th>false alarms</th>\
+                        <th>misses</th>\
+                        <th>correct nulls</th>";
+                } else {
+                    header += "<th>" + curve.label + " level</th>\
                         <th>raw stat from query</th>\
                         <th>mean stat</th>\
                         <th>std dev</th>\
                         <th>std error</th>\
                         <th>lag1</th>\
                         <th>n</th>";
+                }
                 break;
             case matsTypes.PlotTypes.dieoff:
-                header += "<th>" + curve.label + " forecast lead time</th>\
+                if (isCTC) {
+                    header += "<th>" + curve.label + " forecast lead time</th>\
+                        <th>stat</th>\
+                        <th>n</th>\
+                        <th>hits</th>\
+                        <th>false alarms</th>\
+                        <th>misses</th>\
+                        <th>correct nulls</th>";
+                } else {
+                    header += "<th>" + curve.label + " forecast lead time</th>\
                         <th>raw stat from query</th>\
                         <th>mean stat</th>\
                         <th>std dev</th>\
                         <th>n</th>";
+                }
                 break;
             case matsTypes.PlotTypes.threshold:
-                header += "<th>" + curve.label + " threshold</th>\
+                if (isCTC) {
+                    header += "<th>" + curve.label + " threshold</th>\
+                        <th>stat</th>\
+                        <th>n</th>\
+                        <th>hits</th>\
+                        <th>false alarms</th>\
+                        <th>misses</th>\
+                        <th>correct nulls</th>";
+                } else {
+                    header += "<th>" + curve.label + " threshold</th>\
                         <th>raw stat from query</th>\
                         <th>mean stat</th>\
                         <th>std dev</th>\
                         <th>n</th>";
+                }
                 break;
             case matsTypes.PlotTypes.validtime:
-                header += "<th>" + curve.label + " hour of day</th>\
+                if (isCTC) {
+                    header += "<th>" + curve.label + " hour of day</th>\
+                        <th>stat</th>\
+                        <th>n</th>\
+                        <th>hits</th>\
+                        <th>false alarms</th>\
+                        <th>misses</th>\
+                        <th>correct nulls</th>";
+                } else {
+                    header += "<th>" + curve.label + " hour of day</th>\
                         <th>raw stat from query</th>\
                         <th>mean stat</th>\
                         <th>std dev</th>\
                         <th>n</th>";
+                }
                 break;
             case matsTypes.PlotTypes.gridscale:
-                header += "<th>" + curve.label + " grid scale</th>\
+                if (isCTC) {
+                    header += "<th>" + curve.label + " grid scale</th>\
+                        <th>stat</th>\
+                        <th>n</th>\
+                        <th>hits</th>\
+                        <th>false alarms</th>\
+                        <th>misses</th>\
+                        <th>correct nulls</th>";
+                } else {
+                    header += "<th>" + curve.label + " grid scale</th>\
                         <th>raw stat from query</th>\
                         <th>mean stat</th>\
                         <th>std dev</th>\
                         <th>n</th>";
+                }
                 break;
             case matsTypes.PlotTypes.yearToYear:
-                header += "<th>" + curve.label + " year</th>\
+                if (isCTC) {
+                    header += "<th>" + curve.label + " year</th>\
+                        <th>stat</th>\
+                        <th>n</th>\
+                        <th>hits</th>\
+                        <th>false alarms</th>\
+                        <th>misses</th>\
+                        <th>correct nulls</th>";
+                } else {
+                    header += "<th>" + curve.label + " year</th>\
                         <th>raw stat from query</th>\
                         <th>mean stat</th>\
                         <th>std dev</th>\
                         <th>n</th>";
+                }
                 break;
             case matsTypes.PlotTypes.reliability:
                 header += "<th>" + curve.label + " probability bin</th>\
@@ -233,12 +298,23 @@ Template.textOutput.helpers({
                 break;
             case matsTypes.PlotTypes.contour:
             case matsTypes.PlotTypes.contourDiff:
-                header += "<th>X Value</th>\
-                        <th>Y Value</th>\
-                        <th>Stat</th>\
-                        <th>Number</th>\
-                        <th>Start Date</th>\
-                        <th>End Date</th>";
+                if (isCTC) {
+                header += "<th>x value</th>\
+                        <th>y value</th>\
+                        <th>stat</th>\
+                        <th>n</th>\
+                        <th>hits</th>\
+                        <th>false alarms</th>\
+                        <th>misses</th>\
+                        <th>correct nulls</th>";
+                } else {
+                header += "<th>x value</th>\
+                        <th>y value</th>\
+                        <th>stat</th>\
+                        <th>n</th>\
+                        <th>start date</th>\
+                        <th>end date</th>";
+                }
                 break;
             case matsTypes.PlotTypes.scatter2d:
                 header += "<th>" + curve.label + " x axis</th>\
@@ -284,66 +360,147 @@ Template.textOutput.helpers({
         var labelKey = Template.parentData().label;
         var elementLabel = "";
         var line = "";
+        var isCTC = Session.get('isCTC') === undefined ? false : Session.get('isCTC');
         switch (Session.get('plotType')) {
             case matsTypes.PlotTypes.timeSeries:
-                line += "<td>" + element[labelKey += " time"] + "</td>" +
-                    "<td>" + (element['raw stat from query'] != undefined && element['raw stat from query'] !== null ? element['raw stat from query'].toPrecision(4) : fillStr) + "</td>" +
-                    "<td>" + (element['mean stat'] != undefined && element['mean stat'] !== null ? element['mean stat'].toPrecision(4) : fillStr) + "</td>" +
-                    "<td>" + (element['std dev'] != undefined && element['std dev'] !== null ? element['std dev'].toPrecision(4) : fillStr) + "</td>" +
-                    "<td>" + (element['std error'] != undefined && element['std error'] !== null ? element['std error'].toPrecision(4) : fillStr) + "</td>" +
-                    "<td>" + (element['lag1'] != undefined && element['lag1'] !== null ? element['lag1'].toPrecision(4) : fillStr) + "</td>" +
-                    "<td>" + (('n' in element) && element['n'] ? element['n'] : fillStr) + "</td>";
+                if (isCTC) {
+                    line += "<td>" + element[labelKey += " time"] + "</td>" +
+                        "<td>" + (element['stat'] != undefined && element['stat'] !== null ? element['stat'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (element['n'] != undefined && element['n'] !== null ? element['n'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['hit'] != undefined && element['hit'] !== null ? element['hit'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['fa'] != undefined && element['fa'] !== null ? element['fa'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['miss'] != undefined && element['miss'] !== null ? element['miss'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['cn'] != undefined && element['cn'] !== null ? element['cn'].toString() : fillStr) + "</td>";
+                } else {
+                    line += "<td>" + element[labelKey += " time"] + "</td>" +
+                        "<td>" + (element['raw stat from query'] != undefined && element['raw stat from query'] !== null ? element['raw stat from query'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (element['mean stat'] != undefined && element['mean stat'] !== null ? element['mean stat'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (element['std dev'] != undefined && element['std dev'] !== null ? element['std dev'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (element['std error'] != undefined && element['std error'] !== null ? element['std error'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (element['lag1'] != undefined && element['lag1'] !== null ? element['lag1'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (('n' in element) && element['n'] ? element['n'] : fillStr) + "</td>";
+                }
                 break;
             case matsTypes.PlotTypes.profile:
-                line += "<td>" + element[labelKey += " level"] + "</td>" +
-                    "<td>" + (element['raw stat from query'] != undefined && element['raw stat from query'] !== null ? element['raw stat from query'].toPrecision(4) : fillStr) + "</td>" +
-                    "<td>" + (element['mean stat'] != undefined && element['mean stat'] !== null ? element['mean stat'].toPrecision(4) : fillStr) + "</td>" +
-                    "<td>" + (element['std dev'] != undefined && element['std dev'] !== null ? element['std dev'].toPrecision(4) : fillStr) + "</td>" +
-                    "<td>" + (element['std error'] != undefined && element['std error'] !== null ? element['std error'].toPrecision(4) : fillStr) + "</td>" +
-                    "<td>" + (element['lag1'] != undefined && element['lag1'] !== null ? element['lag1'].toPrecision(4) : fillStr) + "</td>" +
-                    "<td>" + (('n' in element) ? element['n'] : fillStr) + "</td>";
+                if (isCTC) {
+                    line += "<td>" + element[labelKey += " level"] + "</td>" +
+                        "<td>" + (element['stat'] != undefined && element['stat'] !== null ? element['stat'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (element['n'] != undefined && element['n'] !== null ? element['n'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['hit'] != undefined && element['hit'] !== null ? element['hit'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['fa'] != undefined && element['fa'] !== null ? element['fa'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['miss'] != undefined && element['miss'] !== null ? element['miss'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['cn'] != undefined && element['cn'] !== null ? element['cn'].toString() : fillStr) + "</td>";
+                } else {
+                    line += "<td>" + element[labelKey += " level"] + "</td>" +
+                        "<td>" + (element['raw stat from query'] != undefined && element['raw stat from query'] !== null ? element['raw stat from query'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (element['mean stat'] != undefined && element['mean stat'] !== null ? element['mean stat'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (element['std dev'] != undefined && element['std dev'] !== null ? element['std dev'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (element['std error'] != undefined && element['std error'] !== null ? element['std error'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (element['lag1'] != undefined && element['lag1'] !== null ? element['lag1'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (('n' in element) && element['n'] ? element['n'] : fillStr) + "</td>";
+                }
                 break;
             case matsTypes.PlotTypes.dieoff:
-                line += "<td>" + element[labelKey += " forecast lead time"] + "</td>" +
-                    "<td>" + (element['raw stat from query'] != undefined && element['raw stat from query'] !== null ? element['raw stat from query'].toPrecision(4) : fillStr) + "</td>" +
-                    "<td>" + (element['mean stat'] != undefined && element['mean stat'] !== null ? element['mean stat'].toPrecision(4) : fillStr) + "</td>" +
-                    "<td>" + (element['std dev'] != undefined && element['std dev'] !== null ? element['std dev'].toPrecision(4) : fillStr) + "</td>" +
-                    "<td>" + (('n' in element) ? element['n'] : fillStr) + "</td>";
+                if (isCTC) {
+                    line += "<td>" + element[labelKey += " forecast lead time"] + "</td>" +
+                        "<td>" + (element['stat'] != undefined && element['stat'] !== null ? element['stat'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (element['n'] != undefined && element['n'] !== null ? element['n'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['hit'] != undefined && element['hit'] !== null ? element['hit'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['fa'] != undefined && element['fa'] !== null ? element['fa'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['miss'] != undefined && element['miss'] !== null ? element['miss'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['cn'] != undefined && element['cn'] !== null ? element['cn'].toString() : fillStr) + "</td>";
+                } else {
+                    line += "<td>" + element[labelKey += " forecast lead time"] + "</td>" +
+                        "<td>" + (element['raw stat from query'] != undefined && element['raw stat from query'] !== null ? element['raw stat from query'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (element['mean stat'] != undefined && element['mean stat'] !== null ? element['mean stat'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (element['std dev'] != undefined && element['std dev'] !== null ? element['std dev'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (('n' in element) && element['n'] ? element['n'] : fillStr) + "</td>";
+                }
                 break;
             case matsTypes.PlotTypes.threshold:
-                line += "<td>" + element[labelKey += " threshold"] + "</td>" +
-                    "<td>" + (element['raw stat from query'] != undefined && element['raw stat from query'] !== null ? element['raw stat from query'].toPrecision(4) : fillStr) + "</td>" +
-                    "<td>" + (element['mean stat'] != undefined && element['mean stat'] !== null ? element['mean stat'].toPrecision(4) : fillStr) + "</td>" +
-                    "<td>" + (element['std dev'] != undefined && element['std dev'] !== null ? element['std dev'].toPrecision(4) : fillStr) + "</td>" +
-                    "<td>" + (('n' in element) ? element['n'] : fillStr) + "</td>";
+                if (isCTC) {
+                    line += "<td>" + element[labelKey += " threshold"] + "</td>" +
+                        "<td>" + (element['stat'] != undefined && element['stat'] !== null ? element['stat'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (element['n'] != undefined && element['n'] !== null ? element['n'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['hit'] != undefined && element['hit'] !== null ? element['hit'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['fa'] != undefined && element['fa'] !== null ? element['fa'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['miss'] != undefined && element['miss'] !== null ? element['miss'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['cn'] != undefined && element['cn'] !== null ? element['cn'].toString() : fillStr) + "</td>";
+                } else {
+                    line += "<td>" + element[labelKey += " threshold"] + "</td>" +
+                        "<td>" + (element['raw stat from query'] != undefined && element['raw stat from query'] !== null ? element['raw stat from query'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (element['mean stat'] != undefined && element['mean stat'] !== null ? element['mean stat'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (element['std dev'] != undefined && element['std dev'] !== null ? element['std dev'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (('n' in element) && element['n'] ? element['n'] : fillStr) + "</td>";
+                }
                 break;
             case matsTypes.PlotTypes.validtime:
-                line += "<td>" + element[labelKey += " hour of day"] + "</td>" +
-                    "<td>" + (element['raw stat from query'] != undefined && element['raw stat from query'] !== null ? element['raw stat from query'].toPrecision(4) : fillStr) + "</td>" +
-                    "<td>" + (element['mean stat'] != undefined && element['mean stat'] !== null ? element['mean stat'].toPrecision(4) : fillStr) + "</td>" +
-                    "<td>" + (element['std dev'] != undefined && element['std dev'] !== null ? element['std dev'].toPrecision(4) : fillStr) + "</td>" +
-                    "<td>" + (('n' in element) ? element['n'] : fillStr) + "</td>";
+                if (isCTC) {
+                    line += "<td>" + element[labelKey += " hour of day"] + "</td>" +
+                        "<td>" + (element['stat'] != undefined && element['stat'] !== null ? element['stat'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (element['n'] != undefined && element['n'] !== null ? element['n'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['hit'] != undefined && element['hit'] !== null ? element['hit'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['fa'] != undefined && element['fa'] !== null ? element['fa'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['miss'] != undefined && element['miss'] !== null ? element['miss'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['cn'] != undefined && element['cn'] !== null ? element['cn'].toString() : fillStr) + "</td>";
+                } else {
+                    line += "<td>" + element[labelKey += " hour of day"] + "</td>" +
+                        "<td>" + (element['raw stat from query'] != undefined && element['raw stat from query'] !== null ? element['raw stat from query'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (element['mean stat'] != undefined && element['mean stat'] !== null ? element['mean stat'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (element['std dev'] != undefined && element['std dev'] !== null ? element['std dev'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (('n' in element) && element['n'] ? element['n'] : fillStr) + "</td>";
+                }
                 break;
             case matsTypes.PlotTypes.gridscale:
-                line += "<td>" + element[labelKey += " grid scale"] + "</td>" +
-                    "<td>" + (element['raw stat from query'] != undefined && element['raw stat from query'] !== null ? element['raw stat from query'].toPrecision(4) : fillStr) + "</td>" +
-                    "<td>" + (element['mean stat'] != undefined && element['mean stat'] !== null ? element['mean stat'].toPrecision(4) : fillStr) + "</td>" +
-                    "<td>" + (element['std dev'] != undefined && element['std dev'] !== null ? element['std dev'].toPrecision(4) : fillStr) + "</td>" +
-                    "<td>" + (('n' in element) ? element['n'] : fillStr) + "</td>";
+                if (isCTC) {
+                    line += "<td>" + element[labelKey += " grid scale"] + "</td>" +
+                        "<td>" + (element['stat'] != undefined && element['stat'] !== null ? element['stat'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (element['n'] != undefined && element['n'] !== null ? element['n'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['hit'] != undefined && element['hit'] !== null ? element['hit'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['fa'] != undefined && element['fa'] !== null ? element['fa'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['miss'] != undefined && element['miss'] !== null ? element['miss'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['cn'] != undefined && element['cn'] !== null ? element['cn'].toString() : fillStr) + "</td>";
+                } else {
+                    line += "<td>" + element[labelKey += " grid scale"] + "</td>" +
+                        "<td>" + (element['raw stat from query'] != undefined && element['raw stat from query'] !== null ? element['raw stat from query'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (element['mean stat'] != undefined && element['mean stat'] !== null ? element['mean stat'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (element['std dev'] != undefined && element['std dev'] !== null ? element['std dev'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (('n' in element) && element['n'] ? element['n'] : fillStr) + "</td>";
+                }
                 break;
             case matsTypes.PlotTypes.dailyModelCycle:
-                line += "<td>" + element[labelKey += " time"] + "</td>" +
-                    "<td>" + (element['raw stat from query'] != undefined && element['raw stat from query'] !== null ? element['raw stat from query'].toPrecision(4) : fillStr) + "</td>" +
-                    "<td>" + (element['mean stat'] != undefined && element['mean stat'] !== null ? element['mean stat'].toPrecision(4) : fillStr) + "</td>" +
-                    "<td>" + (element['std dev'] != undefined && element['std dev'] !== null ? element['std dev'].toPrecision(4) : fillStr) + "</td>" +
-                    "<td>" + (('n' in element) ? element['n'] : fillStr) + "</td>";
+                if (isCTC) {
+                    line += "<td>" + element[labelKey += " time"] + "</td>" +
+                        "<td>" + (element['stat'] != undefined && element['stat'] !== null ? element['stat'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (element['n'] != undefined && element['n'] !== null ? element['n'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['hit'] != undefined && element['hit'] !== null ? element['hit'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['fa'] != undefined && element['fa'] !== null ? element['fa'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['miss'] != undefined && element['miss'] !== null ? element['miss'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['cn'] != undefined && element['cn'] !== null ? element['cn'].toString() : fillStr) + "</td>";
+                } else {
+                    line += "<td>" + element[labelKey += " time"] + "</td>" +
+                        "<td>" + (element['raw stat from query'] != undefined && element['raw stat from query'] !== null ? element['raw stat from query'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (element['mean stat'] != undefined && element['mean stat'] !== null ? element['mean stat'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (element['std dev'] != undefined && element['std dev'] !== null ? element['std dev'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (('n' in element) && element['n'] ? element['n'] : fillStr) + "</td>";
+                }
                 break;
             case matsTypes.PlotTypes.yearToYear:
-                line += "<td>" + element[labelKey += " year"] + "</td>" +
-                    "<td>" + (element['raw stat from query'] != undefined && element['raw stat from query'] !== null ? element['raw stat from query'].toPrecision(4) : fillStr) + "</td>" +
-                    "<td>" + (element['mean stat'] != undefined && element['mean stat'] !== null ? element['mean stat'].toPrecision(4) : fillStr) + "</td>" +
-                    "<td>" + (element['std dev'] != undefined && element['std dev'] !== null ? element['std dev'].toPrecision(4) : fillStr) + "</td>" +
-                    "<td>" + (('n' in element) ? element['n'] : fillStr) + "</td>";
+                if (isCTC) {
+                    line += "<td>" + element[labelKey += " year"] + "</td>" +
+                        "<td>" + (element['stat'] != undefined && element['stat'] !== null ? element['stat'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (element['n'] != undefined && element['n'] !== null ? element['n'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['hit'] != undefined && element['hit'] !== null ? element['hit'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['fa'] != undefined && element['fa'] !== null ? element['fa'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['miss'] != undefined && element['miss'] !== null ? element['miss'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['cn'] != undefined && element['cn'] !== null ? element['cn'].toString() : fillStr) + "</td>";
+                } else {
+                    line += "<td>" + element[labelKey += " year"] + "</td>" +
+                        "<td>" + (element['raw stat from query'] != undefined && element['raw stat from query'] !== null ? element['raw stat from query'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (element['mean stat'] != undefined && element['mean stat'] !== null ? element['mean stat'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (element['std dev'] != undefined && element['std dev'] !== null ? element['std dev'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (('n' in element) && element['n'] ? element['n'] : fillStr) + "</td>";
+                }
                 break;
             case matsTypes.PlotTypes.reliability:
                 line += "<td>" + element[labelKey += " probability bin"] + "</td>" +
@@ -385,12 +542,23 @@ Template.textOutput.helpers({
                 break;
             case matsTypes.PlotTypes.contour:
             case matsTypes.PlotTypes.contourDiff:
-                line += "<td>" + element["xVal"] + "</td>" +
-                    "<td>" + element["yVal"] + "</td>" +
-                    "<td>" + (element['stat'] != undefined && element['stat'] !== null ? element['stat'] : fillStr) + "</td>" +
-                    "<td>" + (element['N'] != undefined && element['N'] !== null ? element['N'] : fillStr) + "</td>" +
-                    "<td>" + (element['Start Date'] != undefined && element['Start Date'] !== null ? element['Start Date'] : fillStr) + "</td>" +
-                    "<td>" + (element['End Date'] != undefined && element['End Date'] !== null ? element['End Date'] : fillStr) + "</td>";
+                if (isCTC) {
+                    line += "<td>" + element["xVal"] + "</td>" +
+                        "<td>" + element["yVal"] + "</td>" +
+                        "<td>" + (element['stat'] != undefined && element['stat'] !== null ? element['stat'] : fillStr) + "</td>" +
+                        "<td>" + (element['N'] != undefined && element['N'] !== null ? element['N'] : fillStr) + "</td>" +
+                        "<td>" + (element['hit'] != undefined && element['hit'] !== null ? element['hit'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['fa'] != undefined && element['fa'] !== null ? element['fa'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['miss'] != undefined && element['miss'] !== null ? element['miss'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['cn'] != undefined && element['cn'] !== null ? element['cn'].toString() : fillStr) + "</td>";
+                } else {
+                    line += "<td>" + element["xVal"] + "</td>" +
+                        "<td>" + element["yVal"] + "</td>" +
+                        "<td>" + (element['stat'] != undefined && element['stat'] !== null ? element['stat'] : fillStr) + "</td>" +
+                        "<td>" + (element['N'] != undefined && element['N'] !== null ? element['N'] : fillStr) + "</td>" +
+                        "<td>" + (element['Start Date'] != undefined && element['Start Date'] !== null ? element['Start Date'] : fillStr) + "</td>" +
+                        "<td>" + (element['End Date'] != undefined && element['End Date'] !== null ? element['End Date'] : fillStr) + "</td>";
+                }
                 break;
             case matsTypes.PlotTypes.scatter2d:
                 line += "<td>" + (element['xAxis'] != undefined && element['xAxis'] !== null ? element['xAxis'].toPrecision(4) : fillStr) + "</td>" +
