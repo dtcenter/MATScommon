@@ -15,7 +15,7 @@ Package.describe({
 });
 
 Package.onUse(function (api) {
-    api.versionsFrom('1.4.1.1');
+    api.versionsFrom('2.4');
     Npm.depends({
         'fs-extra': '7.0.0',
         "@babel/runtime": "7.10.4",
@@ -24,13 +24,12 @@ Package.onUse(function (api) {
         "jquery-ui": "1.12.1",
         "csv-stringify": "4.3.1",
         "node-file-cache" : "1.0.2",
-        "python-shell": "1.0.8"
+        "python-shell": "1.0.8",
+        "simpl-schema": "1.12.0"
     });
     api.mainModule("server/main.js", "server");
     api.mainModule("client/main.js", "client");
     api.use('natestrauser:select2', 'client');
-    api.use('aldeed:simple-schema');
-    api.imply('aldeed:simple-schema');
     api.use('mdg:validated-method');
     api.use('ecmascript');
     api.use('modules');
@@ -57,6 +56,8 @@ Package.onUse(function (api) {
     api.use("check");
     api.use("ostrio:flow-router-extra");
     api.use("meteorhacks:picker");
+    api.use("momentjs:moment");
+    api.use("pcel:mysql");
 
     // modules
     api.export("matsCollections", ['client', 'server']);
@@ -78,6 +79,7 @@ Package.onUse(function (api) {
     api.export("matsDataProcessUtils", ['server']);
     api.export("regression", ['client', 'server']);
     api.export("matsCache", ['server']);
+    api.export("versionInfo", ['server', 'client']);
 
     // add imports
     //both
@@ -87,6 +89,7 @@ Package.onUse(function (api) {
 
     //api
     api.addFiles('imports/startup/api/matsMethods.js');
+    api.addFiles('imports/startup/api/version-info.js');
 
     //layouts
     api.addFiles("imports/startup/ui/layouts/notFound.html", "client");
@@ -258,7 +261,51 @@ Package.onUse(function (api) {
 
 Package.onTest(function (api) {
     api.use('ecmascript');
-    api.use('tinytest');
+    api.use('meteortesting:mocha');
     api.use('randyp:mats-common');
-    api.addFiles('mats-common-tests.js');
+    api.addFiles('imports/startup/api/version-info-tests.js');
+
+    // try duplicating the runtime deps
+    Npm.depends({
+        'fs-extra': '7.0.0',
+        "@babel/runtime": "7.10.4",
+        "meteor-node-stubs": "0.4.1",
+        "url": "0.11.0",
+        "jquery-ui": "1.12.1",
+        "csv-stringify": "4.3.1",
+        "node-file-cache" : "1.0.2",
+        "python-shell": "1.0.8",
+        "simpl-schema": "1.12.0"
+    });
+    api.use('natestrauser:select2', 'client');
+    // api.use('aldeed:simple-schema');
+    // api.imply('aldeed:simple-schema');
+    api.use('mdg:validated-method');
+    api.use('ecmascript');
+    api.use('modules');
+    api.imply('ecmascript');
+    api.use(['templating'], 'client');
+    api.use("accounts-google", 'client');
+    api.use("accounts-ui", 'client');
+    api.use("service-configuration", 'server');
+    api.use("yasinuslu:json-view", "client");
+    api.use("dangrossman:bootstrap-daterangepicker");
+    api.use("mdg:validated-method");
+    api.use('session');
+    api.imply('session');
+    api.use("twbs:bootstrap");
+    api.use("fortawesome:fontawesome");
+    api.use("msavin:mongol");
+    api.use("differential:event-hooks");
+    api.use("risul:bootstrap-colorpicker");
+    api.use("logging");
+    api.use("reload");
+    api.use("random");
+    api.use("ejson");
+    api.use("spacebars");
+    api.use("check");
+    api.use("ostrio:flow-router-extra");
+    api.use("meteorhacks:picker");
+    api.use("momentjs:moment");
+    api.use("pcel:mysql");
 });
