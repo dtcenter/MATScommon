@@ -363,14 +363,20 @@ const calculateStatCTC = function (hit, fa, miss, cn, statistic) {
         case 'ETS (Equitable Threat Score)':
             queryVal = (hit - ((hit + fa) * (hit + miss) / (hit + fa + miss + cn))) / ((hit + fa + miss) - ((hit + fa) * (hit + miss) / (hit + fa + miss + cn))) * 100;
             break;
+        case 'Nlow (obs < threshold, avg per hr)':
+        case 'Nlow (obs < threshold, avg per 15 min)':
         case 'Nlow (obs < threshold, avg per hr in predefined regions)':
         case 'Nlow (obs < threshold, avg per 15 min in predefined regions)':
             queryVal = hit + miss;
             break;
+        case 'Nhigh (obs > threshold, avg per hr)':
+        case 'Nhigh (obs > threshold, avg per 15 min)':
         case 'Nhigh (obs > threshold, avg per hr in predefined regions)':
         case 'Nhigh (obs > threshold, avg per 15 min in predefined regions)':
             queryVal = cn + fa;
             break;
+        case 'Ntot (total obs, avg per hr)':
+        case 'Ntot (total obs, avg per 15 min)':
         case 'Ntot (total obs, avg per hr in predefined regions)':
         case 'Ntot (total obs, avg per 15 min in predefined regions)':
             queryVal = hit + fa + miss + cn;
