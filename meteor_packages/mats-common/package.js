@@ -278,8 +278,6 @@ Package.onTest(function (api) {
         "simpl-schema": "1.12.0"
     });
     api.use('natestrauser:select2', 'client');
-    // api.use('aldeed:simple-schema');
-    // api.imply('aldeed:simple-schema');
     api.use('mdg:validated-method');
     api.use('ecmascript');
     api.use('modules');
