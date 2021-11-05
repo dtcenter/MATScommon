@@ -436,7 +436,13 @@ Template.graph.helpers({
                             case matsTypes.PlotTypes.reliability:
                             case matsTypes.PlotTypes.roc:
                             case matsTypes.PlotTypes.performanceDiagram:
-                                indValsArray = dataset[i].binVals !== undefined ? dataset[i].binVals : dataset[i].threshold_all;
+                                if (dataset[i].binVals !== undefined) {
+                                    indValsArray = dataset[i].binVals;
+                                } else if (dataset[i].threshold_all !== undefined) {
+                                    indValsArray = dataset[i].threshold_all;
+                                } else {
+                                    indValsArray = dataset[i].x;
+                                }
                                 break;
                             case matsTypes.PlotTypes.timeSeries:
                             case matsTypes.PlotTypes.dieoff:

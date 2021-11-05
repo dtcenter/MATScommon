@@ -144,9 +144,9 @@ const changePlotType = function (plotType, selectorsToInitialize, dateSelector) 
             setError(new Error("It looks like your current browser session might have expired, so there is not enough information to successfully change the plot type. Please refresh your browser window."));
         }
         if (curves.length > 0) {
-            var curveGone = false;
             for (var ci = curves.length-1; ci >= 0; ci--) {
                 // remove any difference curves for plot types that don't support them
+                var curveGone = false;
                 if (curves[ci].diffFrom !== undefined && curves[ci].diffFrom !== null) {
                     switch (plotType){
                         case matsTypes.PlotTypes.reliability:
