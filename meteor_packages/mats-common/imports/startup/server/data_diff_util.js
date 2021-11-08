@@ -483,23 +483,22 @@ const getDataForDiffContour = function (dataset, appParams, showSignificance, si
             var diffMinDate = null;
             var diffMaxDate = null;
             var isDiffSignificant = null;
-            var tempSubHitArray;
-            var tempSubFaArray;
-            var tempSubMissArray;
-            var tempSubCnArray;
-            var tempSubValsArray;
-            var tempSubSecsArray;
-            var tempSubLevsArray;
+            var matchingSeconds = [];
+            var matchingSecLevs = [];
             var newMinuendSubHitArray;
             var newMinuendSubFaArray;
             var newMinuendSubMissArray;
             var newMinuendSubCnArray;
             var newMinuendSubValsArray;
+            var newMinuendSubSecsArray;
+            var newMinuendSubLevsArray;
             var newSubtrahendSubHitArray;
             var newSubtrahendSubFaArray;
             var newSubtrahendSubMissArray;
             var newSubtrahendSubCnArray;
             var newSubtrahendSubValsArray;
+            var newSubtrahendSubSecsArray;
+            var newSubtrahendSubLevsArray;
 
             if ((minuendData.z[minuendYIndex][minuendXIndex] !== undefined && subtrahendData.z[subtrahendYIndex][subtrahendXIndex] !== undefined)
                 && (minuendData.z[minuendYIndex][minuendXIndex] !== null && subtrahendData.z[subtrahendYIndex][subtrahendXIndex] !== null)
@@ -507,25 +506,22 @@ const getDataForDiffContour = function (dataset, appParams, showSignificance, si
 
                 if (isMatching) {
                     // match the sub-values and overwrite z with a new, matched value.
-                    tempSubHitArray = [];
-                    tempSubFaArray = [];
-                    tempSubMissArray = [];
-                    tempSubCnArray = [];
-                    tempSubValsArray = [];
-                    tempSubSecsArray = [];
-                    if (hasLevels) {
-                        tempSubLevsArray = [];
-                    }
                     newMinuendSubHitArray = [];
                     newMinuendSubFaArray = [];
                     newMinuendSubMissArray = [];
                     newMinuendSubCnArray = [];
                     newMinuendSubValsArray = [];
+                    newMinuendSubSecsArray = [];
                     newSubtrahendSubHitArray = [];
                     newSubtrahendSubFaArray = [];
                     newSubtrahendSubMissArray = [];
                     newSubtrahendSubCnArray = [];
                     newSubtrahendSubValsArray = [];
+                    newSubtrahendSubSecsArray = [];
+                    if (hasLevels) {
+                        newMinuendSubLevsArray = [];
+                        newSubtrahendSubLevsArray = [];
+                    }
 
                     if (isCTC) {
                         var minuendDataSubHit = minuendData.subHit[minuendYIndex][minuendXIndex];
@@ -548,49 +544,49 @@ const getDataForDiffContour = function (dataset, appParams, showSignificance, si
                     }
 
                     // find matching sub values and diff those
+                    if (hasLevels) {
+                        var minuendSecLevs = [];
+                        for (var midx = 0; midx < minuendDataSubSeconds.length; midx++) {
+                            minuendSecLevs.push([minuendDataSubSeconds[midx], minuendDataSubLevels[midx]]);
+                        }
+                        var subtrahendSecLevs = [];
+                        for (var sidx = 0; sidx < subtrahendDataSubSeconds.length; sidx++) {
+                            subtrahendSecLevs.push([subtrahendDataSubSeconds[sidx], subtrahendDataSubLevels[sidx]]);
+                        }
+                        matchingSecLevs = _.intersection(minuendSecLevs, subtrahendSecLevs);
+                    } else {
+                        matchingSeconds = _.intersection(minuendDataSubSeconds, subtrahendDataSubSeconds);
+                    }
+
                     for (var mvalIdx = 0; mvalIdx < minuendDataSubSeconds.length; mvalIdx++) {
-                        for (var svalIdx = 0; svalIdx < subtrahendDataSubSeconds.length; svalIdx++) {
-                            if (hasLevels && minuendDataSubSeconds[mvalIdx] === subtrahendDataSubSeconds[svalIdx] && minuendDataSubLevels[mvalIdx] === subtrahendDataSubLevels[svalIdx]) {
-                                if (isCTC) {
-                                    tempSubHitArray.push(minuendDataSubHit[mvalIdx] - subtrahendDataSubHit[svalIdx]);
-                                    tempSubFaArray.push(minuendDataSubFa[mvalIdx] - subtrahendDataSubFa[svalIdx]);
-                                    tempSubMissArray.push(minuendDataSubMiss[mvalIdx] - subtrahendDataSubMiss[svalIdx]);
-                                    tempSubCnArray.push(minuendDataSubCn[mvalIdx] - subtrahendDataSubCn[svalIdx]);
-                                    newMinuendSubHitArray.push(minuendDataSubHit[mvalIdx]);
-                                    newMinuendSubFaArray.push(minuendDataSubFa[mvalIdx]);
-                                    newMinuendSubMissArray.push(minuendDataSubMiss[mvalIdx]);
-                                    newMinuendSubCnArray.push(minuendDataSubCn[mvalIdx]);
-                                    newSubtrahendSubHitArray.push(subtrahendDataSubHit[svalIdx]);
-                                    newSubtrahendSubFaArray.push(subtrahendDataSubFa[svalIdx]);
-                                    newSubtrahendSubMissArray.push(subtrahendDataSubMiss[svalIdx]);
-                                    newSubtrahendSubCnArray.push(subtrahendDataSubCn[svalIdx]);
-                                } else {
-                                    tempSubValsArray.push(minuendDataSubValues[mvalIdx] - subtrahendDataSubValues[svalIdx]);
-                                    newMinuendSubValsArray.push(minuendDataSubValues[mvalIdx]);
-                                    newSubtrahendSubValsArray.push(subtrahendDataSubValues[svalIdx]);
-                                }
-                                tempSubSecsArray.push(minuendDataSubSeconds[mvalIdx]);
-                                tempSubLevsArray.push(minuendDataSubLevels[mvalIdx]);
-                            } else if (!hasLevels && minuendDataSubSeconds[mvalIdx] === subtrahendDataSubSeconds[svalIdx]) {
-                                if (isCTC) {
-                                    tempSubHitArray.push(minuendDataSubHit[mvalIdx] - subtrahendDataSubHit[svalIdx]);
-                                    tempSubFaArray.push(minuendDataSubFa[mvalIdx] - subtrahendDataSubFa[svalIdx]);
-                                    tempSubMissArray.push(minuendDataSubMiss[mvalIdx] - subtrahendDataSubMiss[svalIdx]);
-                                    tempSubCnArray.push(minuendDataSubCn[mvalIdx] - subtrahendDataSubCn[svalIdx]);
-                                    newMinuendSubHitArray.push(minuendDataSubHit[mvalIdx]);
-                                    newMinuendSubFaArray.push(minuendDataSubFa[mvalIdx]);
-                                    newMinuendSubMissArray.push(minuendDataSubMiss[mvalIdx]);
-                                    newMinuendSubCnArray.push(minuendDataSubCn[mvalIdx]);
-                                    newSubtrahendSubHitArray.push(subtrahendDataSubHit[svalIdx]);
-                                    newSubtrahendSubFaArray.push(subtrahendDataSubFa[svalIdx]);
-                                    newSubtrahendSubMissArray.push(subtrahendDataSubMiss[svalIdx]);
-                                    newSubtrahendSubCnArray.push(subtrahendDataSubCn[svalIdx]);
-                                } else {
-                                    tempSubValsArray.push(minuendDataSubValues[mvalIdx] - subtrahendDataSubValues[svalIdx]);
-                                    newMinuendSubValsArray.push(minuendDataSubValues[mvalIdx]);
-                                    newSubtrahendSubValsArray.push(subtrahendDataSubValues[svalIdx]);
-                                }
-                                tempSubSecsArray.push(minuendDataSubSeconds[mvalIdx]);
+                        if ((hasLevels && matsDataUtils.arrayContainsSubArray(matchingSecLevs, [minuendDataSubSeconds[mvalIdx], minuendDataSubLevels[mvalIdx]])) || (!hasLevels && matchingSeconds.includes(minuendDataSubSeconds[mvalIdx]))) {
+                            if (isCTC) {
+                                newMinuendSubHitArray.push(minuendDataSubHit[mvalIdx]);
+                                newMinuendSubFaArray.push(minuendDataSubFa[mvalIdx]);
+                                newMinuendSubMissArray.push(minuendDataSubMiss[mvalIdx]);
+                                newMinuendSubCnArray.push(minuendDataSubCn[mvalIdx]);
+                            } else {
+                                newMinuendSubValsArray.push(minuendDataSubValues[mvalIdx]);
+                            }
+                            newMinuendSubSecsArray.push(minuendDataSubSeconds[mvalIdx]);
+                            if (hasLevels) {
+                                newMinuendSubLevsArray.push(minuendDataSubLevels[mvalIdx]);
+                            }
+                        }
+                    }
+                    for (var svalIdx = 0; svalIdx < subtrahendDataSubSeconds.length; svalIdx++) {
+                        if ((hasLevels && matsDataUtils.arrayContainsSubArray(matchingSecLevs, [subtrahendDataSubSeconds[svalIdx], subtrahendDataSubLevels[svalIdx]])) || (!hasLevels && matchingSeconds.includes(subtrahendDataSubSeconds[svalIdx]))) {
+                            if (isCTC) {
+                                newSubtrahendSubHitArray.push(subtrahendDataSubHit[svalIdx]);
+                                newSubtrahendSubFaArray.push(subtrahendDataSubFa[svalIdx]);
+                                newSubtrahendSubMissArray.push(subtrahendDataSubMiss[svalIdx]);
+                                newSubtrahendSubCnArray.push(subtrahendDataSubCn[svalIdx]);
+                            } else {
+                                newSubtrahendSubValsArray.push(subtrahendDataSubValues[svalIdx]);
+                            }
+                            newSubtrahendSubSecsArray.push(subtrahendDataSubSeconds[svalIdx]);
+                            if (hasLevels) {
+                                newSubtrahendSubLevsArray.push(subtrahendDataSubLevels[svalIdx]);
                             }
                         }
                     }
@@ -621,16 +617,15 @@ const getDataForDiffContour = function (dataset, appParams, showSignificance, si
                         subtrahendData.subVals[subtrahendYIndex][subtrahendXIndex] = newSubtrahendSubValsArray;
                         subtrahendData.z[subtrahendYIndex][subtrahendXIndex] = matsDataUtils.average(newSubtrahendSubValsArray);
                     }
-                    minuendData.n[minuendYIndex][minuendXIndex] = tempSubSecsArray.length;
-                    subtrahendData.n[subtrahendYIndex][subtrahendXIndex] = tempSubSecsArray.length;
-                    minuendData.subSecs[minuendYIndex][minuendXIndex] = tempSubSecsArray;
-                    subtrahendData.subSecs[subtrahendYIndex][subtrahendXIndex] = tempSubSecsArray;
+                    minuendData.n[minuendYIndex][minuendXIndex] = newMinuendSubSecsArray.length;
+                    subtrahendData.n[subtrahendYIndex][subtrahendXIndex] = newSubtrahendSubSecsArray.length;
+                    minuendData.subSecs[minuendYIndex][minuendXIndex] = newMinuendSubSecsArray;
+                    subtrahendData.subSecs[subtrahendYIndex][subtrahendXIndex] = newSubtrahendSubSecsArray;
                     if (hasLevels) {
-                        minuendData.subLevs[minuendYIndex][minuendXIndex] = tempSubLevsArray;
-                        subtrahendData.subLevs[subtrahendYIndex][subtrahendXIndex] = tempSubLevsArray;
+                        minuendData.subLevs[minuendYIndex][minuendXIndex] = newMinuendSubLevsArray;
+                        subtrahendData.subLevs[subtrahendYIndex][subtrahendXIndex] = newSubtrahendSubLevsArray;
                     }
                 }
-
                 // calculate the difference values
                 diffValue = minuendData.z[minuendYIndex][minuendXIndex] - subtrahendData.z[subtrahendYIndex][subtrahendXIndex];
                 diffNumber = minuendData.n[minuendYIndex][minuendXIndex] <= subtrahendData.n[subtrahendYIndex][subtrahendXIndex] ? minuendData.n[minuendYIndex][minuendXIndex] : subtrahendData.n[subtrahendYIndex][subtrahendXIndex];
