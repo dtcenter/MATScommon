@@ -616,6 +616,8 @@ const getDataForDiffContour = function (dataset, appParams, showSignificance, si
                         minuendData.z[minuendYIndex][minuendXIndex] = matsDataUtils.average(newMinuendSubValsArray);
                         subtrahendData.subVals[subtrahendYIndex][subtrahendXIndex] = newSubtrahendSubValsArray;
                         subtrahendData.z[subtrahendYIndex][subtrahendXIndex] = matsDataUtils.average(newSubtrahendSubValsArray);
+                        minuendData.stdev[minuendYIndex][minuendXIndex] = matsDataUtils.stdev(minuendData.subVals[minuendYIndex][minuendXIndex]);
+                        subtrahendData.stdev[subtrahendYIndex][subtrahendXIndex] = matsDataUtils.stdev(subtrahendData.subVals[subtrahendYIndex][subtrahendXIndex]);
                     }
                     minuendData.n[minuendYIndex][minuendXIndex] = newMinuendSubSecsArray.length;
                     subtrahendData.n[subtrahendYIndex][subtrahendXIndex] = newSubtrahendSubSecsArray.length;
