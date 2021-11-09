@@ -247,18 +247,6 @@ const queryDBPython = function (pool, statement, statLineType, statistic, appPar
 // this method queries the database for timeseries plots
 const queryDBTimeSeries = function (pool, statement, dataSource, forecastOffset, startDate, endDate, averageStr, statisticStr, validTimes, appParams, forceRegularCadence) {
 
-    function parseData(appParams, statisticStr, rows, cycles, regular, d) {
-        var parsedData;
-        if (appParams.hideGaps) {
-            // if we don't care about gaps, use the general purpose curve parsing function.
-            // the only reason to use the timeseries one is to correctly insert gaps for missing forecast cycles
-            parsedData = parseQueryDataSpecialtyCurve(rows, d, appParams, statisticStr);
-        } else {
-            parsedData = parseQueryDataTimeSeries(rows, d, appParams, averageStr, statisticStr, forecastOffset, cycles, regular);
-        }
-        return parsedData;
-    }
-
     if (Meteor.isServer) {
         // upper air is only verified at 00Z and 12Z, so you need to force irregular models to verify at that regular cadence
         var cycles = getModelCadence(pool, dataSource, startDate, endDate); // if irregular model cadence, get cycle times. If regular, get empty array.
