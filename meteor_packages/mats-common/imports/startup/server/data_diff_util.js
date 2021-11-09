@@ -549,11 +549,12 @@ const getDataForDiffContour = function (dataset, appParams, showSignificance, si
                         for (var midx = 0; midx < minuendDataSubSeconds.length; midx++) {
                             minuendSecLevs.push([minuendDataSubSeconds[midx], minuendDataSubLevels[midx]]);
                         }
-                        var subtrahendSecLevs = [];
+                        matchingSecLevs = [];
                         for (var sidx = 0; sidx < subtrahendDataSubSeconds.length; sidx++) {
-                            subtrahendSecLevs.push([subtrahendDataSubSeconds[sidx], subtrahendDataSubLevels[sidx]]);
+                            if (matsDataUtils.arrayContainsSubArray(minuendSecLevs,[subtrahendDataSubSeconds[sidx], subtrahendDataSubLevels[sidx]])) {
+                                matchingSecLevs.push([subtrahendDataSubSeconds[sidx], subtrahendDataSubLevels[sidx]]);
+                            }
                         }
-                        matchingSecLevs = _.intersection(minuendSecLevs, subtrahendSecLevs);
                     } else {
                         matchingSeconds = _.intersection(minuendDataSubSeconds, subtrahendDataSubSeconds);
                     }
