@@ -614,11 +614,11 @@ const getDataForDiffContour = function (dataset, appParams, showSignificance, si
                         subtrahendData.z[subtrahendYIndex][subtrahendXIndex] = matsDataUtils.calculateStatCTC(sHit, sFa, sMiss, sCn, statistic)
                     } else {
                         minuendData.subVals[minuendYIndex][minuendXIndex] = newMinuendSubValsArray;
-                        minuendData.z[minuendYIndex][minuendXIndex] = matsDataUtils.average(newMinuendSubValsArray);
+                        minuendData.z[minuendYIndex][minuendXIndex] = newMinuendSubValsArray.length > 0 ? matsDataUtils.average(newMinuendSubValsArray) : null;
+                        minuendData.stdev[minuendYIndex][minuendXIndex] = newMinuendSubValsArray.length > 0 ? matsDataUtils.stdev(newMinuendSubValsArray) : 0;
                         subtrahendData.subVals[subtrahendYIndex][subtrahendXIndex] = newSubtrahendSubValsArray;
-                        subtrahendData.z[subtrahendYIndex][subtrahendXIndex] = matsDataUtils.average(newSubtrahendSubValsArray);
-                        minuendData.stdev[minuendYIndex][minuendXIndex] = matsDataUtils.stdev(minuendData.subVals[minuendYIndex][minuendXIndex]);
-                        subtrahendData.stdev[subtrahendYIndex][subtrahendXIndex] = matsDataUtils.stdev(subtrahendData.subVals[subtrahendYIndex][subtrahendXIndex]);
+                        subtrahendData.z[subtrahendYIndex][subtrahendXIndex] = newSubtrahendSubValsArray.length > 0 ? matsDataUtils.average(newSubtrahendSubValsArray) : null;
+                        subtrahendData.stdev[subtrahendYIndex][subtrahendXIndex] = newSubtrahendSubValsArray.length > 0 ? matsDataUtils.stdev(newSubtrahendSubValsArray) : 0;
                     }
                     minuendData.n[minuendYIndex][minuendXIndex] = newMinuendSubSecsArray.length;
                     subtrahendData.n[subtrahendYIndex][subtrahendXIndex] = newSubtrahendSubSecsArray.length;
@@ -630,7 +630,7 @@ const getDataForDiffContour = function (dataset, appParams, showSignificance, si
                     }
                 }
                 // calculate the difference values
-                diffValue = minuendData.z[minuendYIndex][minuendXIndex] - subtrahendData.z[subtrahendYIndex][subtrahendXIndex];
+                diffValue = minuendData.z[minuendYIndex][minuendXIndex] !== null && subtrahendData.z[subtrahendYIndex][subtrahendXIndex] !== null ? minuendData.z[minuendYIndex][minuendXIndex] - subtrahendData.z[subtrahendYIndex][subtrahendXIndex] : null;
                 diffNumber = minuendData.n[minuendYIndex][minuendXIndex] <= subtrahendData.n[subtrahendYIndex][subtrahendXIndex] ? minuendData.n[minuendYIndex][minuendXIndex] : subtrahendData.n[subtrahendYIndex][subtrahendXIndex];
                 if (isCTC) {
                     diffHit = matsDataUtils.sum(minuendData.subHit[minuendYIndex][minuendXIndex]) - matsDataUtils.sum(subtrahendData.subHit[subtrahendYIndex][subtrahendXIndex]);
