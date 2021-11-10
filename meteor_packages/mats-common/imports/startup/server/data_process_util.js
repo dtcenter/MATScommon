@@ -208,8 +208,12 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
         dataset[curveIndex]['glob_stats'] = stats;
 
         // recalculate axis options after QC and matching
-        const minx = Math.min(...indVars);
-        const maxx = Math.max(...indVars);
+        var filteredIndVars = [];
+        for (var vidx = 0; vidx < values.length; vidx++) {
+            if (values[vidx] !== null) filteredIndVars.push(indVars[vidx]);
+        }
+        const minx = Math.min(...filteredIndVars);
+        const maxx = Math.max(...filteredIndVars);
         curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey]['ymax'] = (curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey]['ymax'] < maxy || !axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey]) ? maxy : curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey]['ymax'];
         curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey]['ymin'] = (curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey]['ymin'] > miny || !axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey]) ? miny : curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey]['ymin'];
         curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey]['xmax'] = (curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey]['xmax'] < maxx || !axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey]) ? maxx : curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey]['xmax'];
@@ -446,8 +450,12 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
         dataset[curveIndex]['glob_stats'] = stats;
 
         // recalculate axis options after QC and matching
-        const miny = Math.min(...levels);
-        const maxy = Math.max(...levels);
+        var filteredLevels = [];
+        for (var vidx = 0; vidx < values.length; vidx++) {
+            if (values[vidx] !== null) filteredLevels.push(levels[vidx]);
+        }
+        const miny = Math.min(...filteredLevels);
+        const maxy = Math.max(...filteredLevels);
         curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey]['ymax'] = (curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey]['ymax'] < maxy || !axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey]) ? maxy : curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey]['ymax'];
         curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey]['ymin'] = (curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey]['ymin'] > miny || !axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey]) ? miny : curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey]['ymin'];
         curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey]['xmax'] = (curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey]['xmax'] < maxx || !axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey]) ? maxx : curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey]['xmax'];

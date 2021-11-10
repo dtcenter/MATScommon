@@ -303,12 +303,8 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                     }
                 }
                 if (newSubSecs.length === 0) {
-                    // no matching sub-values, so delete or null the point
-                    if (removeNonMatchingIndVars) {
-                        matsDataUtils.removePoint(data, di, plotType, statVarName, isCTC, hasLevels);
-                    } else {
-                        matsDataUtils.nullPoint(data, di, statVarName, isCTC, hasLevels);
-                    }
+                    // no matching sub-values, so null the point
+                    matsDataUtils.nullPoint(data, di, statVarName, isCTC, hasLevels);
                 } else {
                     // store the filtered data
                     data.subHit[di] = newSubHit;
@@ -322,12 +318,8 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                     }
                 }
             } else {
-                // no sub-values to begin with, so delete or null the point
-                if (removeNonMatchingIndVars) {
-                    matsDataUtils.removePoint(data, di, plotType, statVarName, isCTC, hasLevels);
-                } else {
-                    matsDataUtils.nullPoint(data, di, statVarName, isCTC, hasLevels);
-                }
+                // no sub-values to begin with, so null the point
+                matsDataUtils.nullPoint(data, di, statVarName, isCTC, hasLevels);
             }
         }
 
