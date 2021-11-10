@@ -4,8 +4,8 @@
 
 import {Meteor} from "meteor/meteor";
 import {ValidatedMethod} from 'meteor/mdg:validated-method';
-import {SimpleSchema} from 'meteor/aldeed:simple-schema';
-import {matsCache, matsCollections, matsDataQueryUtils, matsCouchbaseUtils, matsDataUtils, matsTypes} from 'meteor/randyp:mats-common';
+import SimpleSchema from 'simpl-schema';
+import {matsCache, matsCollections, matsDataQueryUtils, matsCouchbaseUtils, matsDataUtils, matsTypes, versionInfo} from 'meteor/randyp:mats-common';
 import {mysql} from 'meteor/pcel:mysql';
 import {url} from 'url';
 import {Mongo} from 'meteor/mongo';
@@ -1751,23 +1751,29 @@ const resetApp = async function (appRef) {
         if (Meteor.settings.public.undefinedRoles && Meteor.settings.public.undefinedRoles.length > 1) {
             throw new Meteor.Error("dbpools not initialized " + Meteor.settings.public.undefinedRoles);
         }
-        var deployment;
-        var deploymentText = Assets.getText('public/deployment/deployment.json');
-        deployment = JSON.parse(deploymentText);
-        var app = {};
-        // sort through the deployments to find the app that matches this deployment environment that is currently running
-        for (var ai = 0; ai < deployment.length; ai++) {
-            var dep = deployment[ai];
-            if (dep.deployment_environment == dep_env) {
-                app = dep.apps.filter(function (app) {
-                    return app.app === appName;
-                })[0];
+
+        // Try getting Version from env
+        let { version: appVersion, commit: buildDate, branch } = versionInfo.getVersionsFromEnv();
+        if (appVersion === 'Unknown') {
+            // Try getting versionInfo from the appProduction database
+            console.log("VERSION not set in the environment - try getting from deployment.json")
+            var deploymentText = Assets.getText('public/deployment/deployment.json');
+            var deployment = JSON.parse(deploymentText);
+            var app = {};
+            // sort through the deployments to find the app that matches this deployment environment that is currently running
+            for (var ai = 0; ai < deployment.length; ai++) {
+                var dep = deployment[ai];
+                if (dep.deployment_environment == dep_env) {
+                    app = dep.apps.filter(function (app) {
+                        return app.app === appName;
+                    })[0];
+                }
             }
+            appVersion = app ? app.version : "unknown";
+            buildDate = app ? app.buildDate : "unknown";
         }
-        const appVersion = app ? app.version : "unknown";
-        const buildDate = app ? app.buildDate : "unknown";
         const appType = type ? type : matsTypes.AppTypes.mats;
-        matsCollections.appName.upsert({app: appName}, {$set: {app: appName}});
+        matsCollections.appName.upsert({ app: appName }, { $set: { app: appName } });
 
         // remember that we updated the metadata tables just now - create metaDataTableUpdates
         /*

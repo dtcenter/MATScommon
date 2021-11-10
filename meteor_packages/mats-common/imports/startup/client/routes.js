@@ -133,10 +133,9 @@ FlowRouter.route(Meteor.settings.public.proxy_prefix_path + '/*/', {
     }
 });
 
-FlowRouter.route('*', {
+FlowRouter.route('/*', {
     action() {
         console.log ('route: ' + ' not found' );
         this.render('notFound');
     }
 });
-
