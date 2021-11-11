@@ -858,7 +858,7 @@ const _refreshMetadataMWltData = function (params, req, res, next) {
     }
 };
 
-// private save the result from the query into mongo and downsample if that result's size is greater than 1Mb
+// private save the result from the query into mongo and downsample if that result's size is greater than 1.2Mb
 const _saveResultData = function (result) {
     if (Meteor.isServer) {
         var sizeof = require('object-sizeof');
