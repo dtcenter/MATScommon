@@ -367,12 +367,14 @@ const calculateStatCTC = function (hit, fa, miss, cn, statistic) {
         case 'Nlow (obs < threshold, avg per 15 min)':
         case 'Nlow (obs < threshold, avg per hr in predefined regions)':
         case 'Nlow (obs < threshold, avg per 15 min in predefined regions)':
+        case 'All observed yes':
             queryVal = hit + miss;
             break;
         case 'Nhigh (obs > threshold, avg per hr)':
         case 'Nhigh (obs > threshold, avg per 15 min)':
         case 'Nhigh (obs > threshold, avg per hr in predefined regions)':
         case 'Nhigh (obs > threshold, avg per 15 min in predefined regions)':
+        case 'All observed no':
             queryVal = cn + fa;
             break;
         case 'Ntot (total obs, avg per hr)':
@@ -389,12 +391,6 @@ const calculateStatCTC = function (hit, fa, miss, cn, statistic) {
             break;
         case 'N per graph point':
             queryVal = hit + fa + miss + cn;
-            break;
-        case 'All observed yes':
-            queryVal = hit + miss;
-            break;
-        case 'All observed no':
-            queryVal = fa + cn;
             break;
     }
     return queryVal;
