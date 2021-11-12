@@ -19,9 +19,9 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
     const appName = matsCollections.appName.findOne({}).app;
     curveInfoParams.statType = curveInfoParams.statType === undefined ? 'scalar' : curveInfoParams.statType;
 
-    // if matching, pare down dataset to only matching data. Contingency table apps already did their matching in the query
-    if (curveInfoParams.curvesLength > 1 && appParams.matching && curveInfoParams.statType !== 'ctc') {
-        dataset = matsDataMatchUtils.getMatchedDataSet(dataset, curveInfoParams.curvesLength, appParams);
+    // if matching, pare down dataset to only matching data.
+    if (curveInfoParams.curvesLength > 1 && appParams.matching) {
+        dataset = matsDataMatchUtils.getMatchedDataSet(dataset, curveInfoParams, appParams, {});
     }
 
     // we may need to recalculate the axis limits after unmatched data and outliers are removed
@@ -51,29 +51,33 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
                 errorResult = matsDataUtils.get_err(data.subVals[di], data.subSecs[di], [], appParams);
             }
 
-            // store raw statistic from query before recalculating that statistic to account for data removed due to matching, QC, etc. Don't replace the stat for contingency table apps.
+            // store raw statistic from query before recalculating that statistic to account for data removed due to matching, QC, etc.
             rawStat = data.y[di];
-            if (curveInfoParams.statType !== 'ctc') {
-                // this ungainly if statement is because the surfrad3 database doesn't support recalculating some stats.
-                if (appName !== "surfrad" ||
-                    !(appName === "surfrad" &&
-                        (statisticSelect === 'Std deviation (do not plot matched)' || statisticSelect === 'RMS (do not plot matched)') &&
-                        !appParams.matching)) {
-                    if ((diffFrom === null || diffFrom === undefined) || !appParams.matching) {
+
+            // this ungainly if statement is because the surfrad3 database doesn't support recalculating some stats.
+            // we can eventually do the same for its stats that we did for ctc stats and get around that.
+            // because this section of code is just awful.
+            if (appName !== "surfrad" ||
+                !(appName === "surfrad" &&
+                    (statisticSelect === 'Std deviation (do not plot matched)' || statisticSelect === 'RMS (do not plot matched)') &&
+                    !appParams.matching)) {
+                if ((diffFrom === null || diffFrom === undefined) || !appParams.matching) {
+                    if (curveInfoParams.statType !== 'ctc') {
                         // assign recalculated statistic to data[di][1], which is the value to be plotted
                         if (statisticSelect === 'N' || statisticSelect === 'N per graph point') {
                             data.y[di] = errorResult.sum;
                         } else {
                             data.y[di] = errorResult.d_mean;
                         }
+                    }
+                } else {
+                    if (dataset[diffFrom[0]].y[di] !== null && dataset[diffFrom[1]].y[di] !== null) {
+                        // make sure that the diff curve actually shows the difference when matching.
+                        // otherwise outlier filtering etc. can make it slightly off.
+                        data.y[di] = dataset[diffFrom[0]].y[di] - dataset[diffFrom[1]].y[di];
                     } else {
-                        if (dataset[diffFrom[0]].y[di] !== null && dataset[diffFrom[1]].y[di] !== null) {
-                            // make sure that the diff curve actually shows the difference when matching. Otherwise outlier filtering etc. can make it slightly off.
-                            data.y[di] = dataset[diffFrom[0]].y[di] - dataset[diffFrom[1]].y[di];
-                        } else {
-                            // keep the null for no data at this point
-                            data.y[di] = null;
-                        }
+                        // keep the null for no data at this point
+                        data.y[di] = null;
                     }
                 }
             }
@@ -84,26 +88,12 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
             // store error bars if matching
             const errorBar = errorResult.stde_betsy * 1.96;
             if (!appParams.matching || curveInfoParams.statType === 'ctc') {
+                // this is where we'll employ code from Bill's new Poisson error bar distribution for ctc plots.
                 data.error_y.array[di] = null;
             } else {
                 errorMax = errorMax > errorBar ? errorMax : errorBar;
                 data.error_y.array[di] = errorBar;
             }
-
-            // remove sub values and times to save space
-            data.subVals[di] = [];
-            data.subSecs[di] = [];
-            data.subLevs[di] = [];
-
-            // store statistics for this di datapoint
-            data.stats[di] = {
-                raw_stat: rawStat,
-                d_mean: statisticSelect === 'N' || statisticSelect === 'N per graph point' ? errorResult.sum : errorResult.d_mean,
-                sd: errorResult.sd,
-                n_good: errorResult.n_good,
-                lag1: errorResult.lag1,
-                stde_betsy: errorResult.stde_betsy
-            };
 
             // the tooltip is stored in data.text
             // also change the x array from epoch to date for timeseries and DMC, as we are now done with it for calculations.
@@ -138,19 +128,53 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
                     break;
             }
 
-            data.text[di] = data.text[di] +
-                "<br>" + statisticSelect + ": " + (data.y[di] === null ? null : data.y[di].toPrecision(4)) +
-                "<br>sd: " + (errorResult.sd === null ? null : errorResult.sd.toPrecision(4)) +
-                "<br>mean: " + (errorResult.d_mean === null ? null : errorResult.d_mean.toPrecision(4)) +
-                "<br>n: " + errorResult.n_good +
-                "<br>stde: " + errorResult.stde_betsy;
-
-            if (curveInfoParams.statType !== 'ctc') {
-                data.text[di] = data.text[di] + "<br>errorbars: " + Number((data.y[di]) - (errorResult.stde_betsy * 1.96)).toPrecision(4) + " to " + Number((data.y[di]) + (errorResult.stde_betsy * 1.96)).toPrecision(4);
+            // store statistics for this di datapoint
+            if (curveInfoParams.statType === 'ctc') {
+                data.stats[di] = {
+                    stat: data.y[di],
+                    n: Array.isArray(data.subHit[di]) || !isNaN(data.subHit[di]) ? data.subHit[di].length : 0,
+                    hit: Array.isArray(data.subHit[di]) || !isNaN(data.subHit[di]) ? matsDataUtils.sum(data.subHit[di]) : null,
+                    fa: Array.isArray(data.subFa[di]) || !isNaN(data.subFa[di]) ? matsDataUtils.sum(data.subFa[di]) : null,
+                    miss: Array.isArray(data.subMiss[di]) || !isNaN(data.subMiss[di]) ? matsDataUtils.sum(data.subMiss[di]) : null,
+                    cn: Array.isArray(data.subCn[di]) || !isNaN(data.subCn[di]) ? matsDataUtils.sum(data.subCn[di]) : null,
+                };
+                data.text[di] = data.text[di] +
+                    "<br>" + statisticSelect + ": " + (data.y[di] === null ? null : data.y[di].toPrecision(4)) +
+                    "<br>n: " + (Array.isArray(data.subHit[di]) || !isNaN(data.subHit[di]) ? data.subHit[di].length : 0) +
+                    "<br>Hits: " + (Array.isArray(data.subHit[di]) || !isNaN(data.subHit[di]) ? matsDataUtils.sum(data.subHit[di]) : null) +
+                    "<br>False alarms: " + (Array.isArray(data.subFa[di]) || !isNaN(data.subFa[di]) ? matsDataUtils.sum(data.subFa[di]) : null) +
+                    "<br>Misses: " + (Array.isArray(data.subMiss[di]) || !isNaN(data.subMiss[di]) ? matsDataUtils.sum(data.subMiss[di]) : null) +
+                    "<br>Correct Nulls: " + (Array.isArray(data.subCn[di]) || !isNaN(data.subCn[di]) ? matsDataUtils.sum(data.subCn[di]) : null);
+            } else {
+                data.stats[di] = {
+                    raw_stat: rawStat,
+                    d_mean: statisticSelect === 'N' || statisticSelect === 'N per graph point' ? errorResult.sum : errorResult.d_mean,
+                    sd: errorResult.sd,
+                    n_good: errorResult.n_good,
+                    lag1: errorResult.lag1,
+                    stde_betsy: errorResult.stde_betsy
+                };
+                data.text[di] = data.text[di] +
+                    "<br>" + statisticSelect + ": " + (data.y[di] === null ? null : data.y[di].toPrecision(4)) +
+                    "<br>sd: " + (errorResult.sd === null ? null : errorResult.sd.toPrecision(4)) +
+                    "<br>mean: " + (errorResult.d_mean === null ? null : errorResult.d_mean.toPrecision(4)) +
+                    "<br>n: " + errorResult.n_good +
+                    "<br>stde: " + errorResult.stde_betsy +
+                    "<br>errorbars: " + Number((data.y[di]) - (errorResult.stde_betsy * 1.96)).toPrecision(4) + " to " + Number((data.y[di]) + (errorResult.stde_betsy * 1.96)).toPrecision(4);
             }
 
             di++;
         }
+
+        // remove sub values and times to save space
+        data.subHit = [];
+        data.subFa = [];
+        data.subMiss = [];
+        data.subCn = [];
+        data.subVals = [];
+        data.subSecs = [];
+        data.subLevs = [];
+
 
         // enable error bars if matching and they aren't null. Don't show them for contingency table plots, because they don't really correspond to what's being plotted.
         if (appParams.matching && curveInfoParams.statType !== 'ctc' && data.error_y.array.filter(x => x).length > 0) {
@@ -162,7 +186,9 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
         const filteredValues = values.filter(x => x);
         var miny = Math.min(...filteredValues);
         var maxy = Math.max(...filteredValues);
-        if (means.some(function (m) {return m !== null})) {
+        if (means.some(function (m) {
+            return m !== null
+        })) {
             if (means.indexOf(0) !== -1 && 0 < miny) {
                 miny = 0;
             }
@@ -182,8 +208,12 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
         dataset[curveIndex]['glob_stats'] = stats;
 
         // recalculate axis options after QC and matching
-        const minx = Math.min(...indVars);
-        const maxx = Math.max(...indVars);
+        var filteredIndVars = [];
+        for (var vidx = 0; vidx < values.length; vidx++) {
+            if (values[vidx] !== null) filteredIndVars.push(indVars[vidx]);
+        }
+        const minx = Math.min(...filteredIndVars);
+        const maxx = Math.max(...filteredIndVars);
         curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey]['ymax'] = (curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey]['ymax'] < maxy || !axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey]) ? maxy : curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey]['ymax'];
         curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey]['ymin'] = (curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey]['ymin'] > miny || !axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey]) ? miny : curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey]['ymin'];
         curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey]['xmax'] = (curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey]['xmax'] < maxx || !axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey]) ? maxx : curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey]['xmax'];
@@ -276,9 +306,9 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
     const appName = matsCollections.appName.findOne({}).app;
     curveInfoParams.statType = curveInfoParams.statType === undefined ? 'scalar' : curveInfoParams.statType;
 
-    // if matching, pare down dataset to only matching data. Contingency table apps already did their matching in the query
-    if (curveInfoParams.curvesLength > 1 && appParams.matching && curveInfoParams.statType !== 'ctc') {
-        dataset = matsDataMatchUtils.getMatchedDataSet(dataset, curveInfoParams.curvesLength, appParams);
+    // if matching, pare down dataset to only matching data.
+    if (curveInfoParams.curvesLength > 1 && appParams.matching) {
+        dataset = matsDataMatchUtils.getMatchedDataSet(dataset, curveInfoParams, appParams, {});
     }
 
     // we may need to recalculate the axis limits after unmatched data and outliers are removed
@@ -305,22 +335,23 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
 
             // store raw statistic from query before recalculating that statistic to account for data removed due to matching, QC, etc. Don't replace the stat for contingency table apps.
             rawStat = data.x[di];
-            if (curveInfoParams.statType !== 'ctc') {
-                if ((diffFrom === null || diffFrom === undefined) || !appParams.matching) {
+            if ((diffFrom === null || diffFrom === undefined) || !appParams.matching) {
+                if (curveInfoParams.statType !== 'ctc') {
                     // assign recalculated statistic to data[di][1], which is the value to be plotted
                     if (statisticSelect === 'N' || statisticSelect === 'N per graph point') {
                         data.x[di] = errorResult.sum;
                     } else {
                         data.x[di] = errorResult.d_mean;
                     }
+                }
+            } else {
+                if (dataset[diffFrom[0]].x[di] !== null && dataset[diffFrom[1]].x[di] !== null) {
+                    // make sure that the diff curve actually shows the difference when matching.
+                    // otherwise outlier filtering etc. can make it slightly off.
+                    data.x[di] = dataset[diffFrom[0]].x[di] - dataset[diffFrom[1]].x[di];
                 } else {
-                    if (dataset[diffFrom[0]].x[di] !== null && dataset[diffFrom[1]].x[di] !== null) {
-                        // make sure that the diff curve actually shows the difference when matching. Otherwise outlier filtering etc. can make it slightly off.
-                        data.x[di] = dataset[diffFrom[0]].x[di] - dataset[diffFrom[1]].x[di];
-                    } else {
-                        // keep the null for no data at this point
-                        data.x[di] = null;
-                    }
+                    // keep the null for no data at this point
+                    data.x[di] = null;
                 }
             }
             values.push(data.x[di]);
@@ -330,42 +361,62 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
             // store error bars if matching
             const errorBar = errorResult.stde_betsy * 1.96;
             if (!appParams.matching || curveInfoParams.statType === 'ctc') {
+                // this is where we'll employ code from Bill's new Poisson error bar distribution for ctc plots.
                 data.error_x.array[di] = null;
             } else {
                 errorMax = errorMax > errorBar ? errorMax : errorBar;
                 data.error_x.array[di] = errorBar;
             }
 
-            // remove sub values and times to save space
-            data.subVals[di] = [];
-            data.subSecs[di] = [];
-            data.subLevs[di] = [];
-
             // store statistics for this di datapoint
-            data.stats[di] = {
-                raw_stat: rawStat,
-                d_mean: statisticSelect === 'N' || statisticSelect === 'N per graph point' ? errorResult.sum : errorResult.d_mean,
-                sd: errorResult.sd,
-                n_good: errorResult.n_good,
-                lag1: errorResult.lag1,
-                stde_betsy: errorResult.stde_betsy
-            };
-
-            // the tooltip is stored in data.text
-            data.text[di] = label +
-                "<br>" + data.y[di] + "mb" +
-                "<br>" + statisticSelect + ": " + (data.x[di] === null ? null : data.x[di].toPrecision(4)) +
-                "<br>sd: " + (errorResult.sd === null ? null : errorResult.sd.toPrecision(4)) +
-                "<br>mean: " + (errorResult.d_mean === null ? null : errorResult.d_mean.toPrecision(4)) +
-                "<br>n: " + errorResult.n_good +
-                "<br>stde: " + errorResult.stde_betsy;
-
-            if (curveInfoParams.statType !== 'ctc') {
-                data.text[di] = data.text[di] + "<br>errorbars: " + Number((data.x[di]) - (errorResult.stde_betsy * 1.96)).toPrecision(4) + " to " + Number((data.x[di]) + (errorResult.stde_betsy * 1.96)).toPrecision(4);
+            if (curveInfoParams.statType === 'ctc') {
+                data.stats[di] = {
+                    stat: data.y[di],
+                    n: Array.isArray(data.subHit[di]) || !isNaN(data.subHit[di]) ? data.subHit[di].length : 0,
+                    hit: Array.isArray(data.subHit[di]) || !isNaN(data.subHit[di]) ? matsDataUtils.sum(data.subHit[di]) : null,
+                    fa: Array.isArray(data.subFa[di]) || !isNaN(data.subFa[di]) ? matsDataUtils.sum(data.subFa[di]) : null,
+                    miss: Array.isArray(data.subMiss[di]) || !isNaN(data.subMiss[di]) ? matsDataUtils.sum(data.subMiss[di]) : null,
+                    cn: Array.isArray(data.subCn[di]) || !isNaN(data.subCn[di]) ? matsDataUtils.sum(data.subCn[di]) : null,
+                };
+                data.text[di] = label +
+                    "<br>" + data.y[di] + "mb" +
+                    "<br>" + statisticSelect + ": " + (data.x[di] === null ? null : data.x[di].toPrecision(4)) +
+                    "<br>n: " + (Array.isArray(data.subHit[di]) || !isNaN(data.subHit[di]) ? data.subHit[di].length : 0) +
+                    "<br>Hits: " + (Array.isArray(data.subHit[di]) || !isNaN(data.subHit[di]) ? matsDataUtils.sum(data.subHit[di]) : null) +
+                    "<br>False alarms: " + (Array.isArray(data.subFa[di]) || !isNaN(data.subFa[di]) ? matsDataUtils.sum(data.subFa[di]) : null) +
+                    "<br>Misses: " + (Array.isArray(data.subMiss[di]) || !isNaN(data.subMiss[di]) ? matsDataUtils.sum(data.subMiss[di]) : null) +
+                    "<br>Correct Nulls: " + (Array.isArray(data.subCn[di]) || !isNaN(data.subCn[di]) ? matsDataUtils.sum(data.subCn[di]) : null);
+            } else {
+                data.stats[di] = {
+                    raw_stat: rawStat,
+                    d_mean: statisticSelect === 'N' || statisticSelect === 'N per graph point' ? errorResult.sum : errorResult.d_mean,
+                    sd: errorResult.sd,
+                    n_good: errorResult.n_good,
+                    lag1: errorResult.lag1,
+                    stde_betsy: errorResult.stde_betsy
+                };
+                data.text[di] = label +
+                    "<br>" + data.y[di] + "mb" +
+                    "<br>" + statisticSelect + ": " + (data.x[di] === null ? null : data.x[di].toPrecision(4)) +
+                    "<br>sd: " + (errorResult.sd === null ? null : errorResult.sd.toPrecision(4)) +
+                    "<br>mean: " + (errorResult.d_mean === null ? null : errorResult.d_mean.toPrecision(4)) +
+                    "<br>n: " + errorResult.n_good +
+                    "<br>stde: " + errorResult.stde_betsy +
+                    "<br>errorbars: " + Number((data.x[di]) - (errorResult.stde_betsy * 1.96)).toPrecision(4) + " to " + Number((data.x[di]) + (errorResult.stde_betsy * 1.96)).toPrecision(4);
             }
 
             di++;
         }
+
+        // remove sub values and times to save space
+        data.subHit = [];
+        data.subFa = [];
+        data.subMiss = [];
+        data.subCn = [];
+        data.subVals = [];
+        data.subSecs = [];
+        data.subLevs = [];
+
 
         // enable error bars if matching and they aren't null. Don't show them for contingency table plots, because they don't really correspond to what's being plotted.
         if (appParams.matching && curveInfoParams.statType !== 'ctc' && data.error_x.array.filter(x => x).length > 0) {
@@ -377,17 +428,36 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
         const filteredValues = values.filter(x => x);
         var minx = Math.min(...filteredValues);
         var maxx = Math.max(...filteredValues);
-        if (means.indexOf(0) !== -1 && 0 < minx) {
-            minx = 0;
-        }
-        if (means.indexOf(0) !== -1 && 0 > maxx) {
-            maxx = 0;
+        if (means.some(function (m) {
+            return m !== null
+        })) {
+            if (means.indexOf(0) !== -1 && 0 < minx) {
+                minx = 0;
+            }
+            if (means.indexOf(0) !== -1 && 0 > maxx) {
+                maxx = 0;
+            }
+        } else {
+            if (values.indexOf(0) !== -1 && 0 < minx) {
+                minx = 0;
+            }
+            if (values.indexOf(0) !== -1 && 0 > maxx) {
+                maxx = 0;
+            }
         }
         stats.minx = minx;
         stats.maxx = maxx;
         dataset[curveIndex]['glob_stats'] = stats;
 
         // recalculate axis options after QC and matching
+        var filteredLevels = [];
+        for (var vidx = 0; vidx < values.length; vidx++) {
+            if (values[vidx] !== null) filteredLevels.push(levels[vidx]);
+        }
+        const miny = Math.min(...filteredLevels);
+        const maxy = Math.max(...filteredLevels);
+        curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey]['ymax'] = (curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey]['ymax'] < maxy || !axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey]) ? maxy : curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey]['ymax'];
+        curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey]['ymin'] = (curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey]['ymin'] > miny || !axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey]) ? miny : curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey]['ymin'];
         curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey]['xmax'] = (curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey]['xmax'] < maxx || !axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey]) ? maxx : curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey]['xmax'];
         curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey]['xmin'] = (curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey]['xmin'] > minx || !axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey]) ? minx : curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey]['xmin'];
 
@@ -589,6 +659,13 @@ const processDataROC = function (dataset, appParams, curveInfoParams, plotParams
 const processDataPerformanceDiagram = function (dataset, appParams, curveInfoParams, plotParams, bookkeepingParams) {
     var error = "";
 
+    curveInfoParams.statType = curveInfoParams.statType === undefined ? 'scalar' : curveInfoParams.statType;
+
+    // if matching, pare down dataset to only matching data.
+    if (curveInfoParams.curvesLength > 1 && appParams.matching) {
+        dataset = matsDataMatchUtils.getMatchedDataSet(dataset, curveInfoParams, appParams, {});
+    }
+
     // sort data statistics for each curve
     for (var curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex++) {
 
@@ -623,17 +700,17 @@ const processDataPerformanceDiagram = function (dataset, appParams, curveInfoPar
     // add black lines of constant bias
     var biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1, 0, 1, 0, matsTypes.ReservedWords.constantBias);
     dataset.push(biasLine);
-    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1*2, 0, 1, 0, matsTypes.ReservedWords.constantBias);
+    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1 * 2, 0, 1, 0, matsTypes.ReservedWords.constantBias);
     dataset.push(biasLine);
-    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1*4, 0, 1, 0, matsTypes.ReservedWords.constantBias);
+    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1 * 4, 0, 1, 0, matsTypes.ReservedWords.constantBias);
     dataset.push(biasLine);
-    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1*8, 0, 1, 0, matsTypes.ReservedWords.constantBias);
+    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1 * 8, 0, 1, 0, matsTypes.ReservedWords.constantBias);
     dataset.push(biasLine);
-    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1/2, 0, 1, 0, matsTypes.ReservedWords.constantBias);
+    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1 / 2, 0, 1, 0, matsTypes.ReservedWords.constantBias);
     dataset.push(biasLine);
-    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1/4, 0, 1, 0, matsTypes.ReservedWords.constantBias);
+    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1 / 4, 0, 1, 0, matsTypes.ReservedWords.constantBias);
     dataset.push(biasLine);
-    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1/8, 0, 1, 0, matsTypes.ReservedWords.constantBias);
+    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1 / 8, 0, 1, 0, matsTypes.ReservedWords.constantBias);
     dataset.push(biasLine);
 
     var xvals;
@@ -641,7 +718,7 @@ const processDataPerformanceDiagram = function (dataset, appParams, curveInfoPar
     var cval;
     var csiLine;
     for (var csiidx = 1; csiidx < 10; csiidx++) {
-        cval = csiidx/10;
+        cval = csiidx / 10;
         xvals = _.range(cval, 1.01, 0.01);
         yvals = [];
         var xval;
@@ -683,7 +760,7 @@ const processDataEnsembleHistogram = function (dataset, appParams, curveInfoPara
 
     // if matching, pare down dataset to only matching data
     if (curveInfoParams.curvesLength > 1 && appParams.matching) {
-        dataset = matsDataMatchUtils.getMatchedDataSet(dataset, curveInfoParams.curvesLength, appParams);
+        dataset = matsDataMatchUtils.getMatchedDataSet(dataset, curveInfoParams, appParams, {});
     }
 
     // we may need to recalculate the axis limits after unmatched data and outliers are removed
@@ -867,20 +944,26 @@ const processDataHistogram = function (allReturnedSubStats, allReturnedSubSecs, 
         label = curve.label;
 
         var d = {// d will contain the curve data
-            x: [], //placeholder
-            y: [], //placeholder
-            error_x: [], // unused
-            error_y: [], // unused
+            x: [],
+            y: [],
+            error_x: [],
+            error_y: [],
+            subHit: [],
+            subFa: [],
+            subMiss: [],
+            subCn: [],
             subVals: [],
             subSecs: [],
             subLevs: [],
-            glob_stats: {}, // placeholder
-            bin_stats: [], // placeholder
-            text: [], //placeholder
+            stats: [],
+            text: [],
+            glob_stats: {},
+            bin_stats: [],
             xmin: Number.MAX_VALUE,
             xmax: Number.MIN_VALUE,
             ymin: Number.MAX_VALUE,
             ymax: Number.MIN_VALUE,
+            sum: 0
         };
 
         if (diffFrom == null) {
@@ -894,12 +977,15 @@ const processDataHistogram = function (allReturnedSubStats, allReturnedSubSecs, 
             // this is a difference curve, so we're done with regular curves.
             // do any matching that needs to be done.
             if (appParams.matching && !bookkeepingParams.alreadyMatched) {
-                dataset = matsDataMatchUtils.getMatchedDataSetHistogram(dataset, curvesLengthSoFar, binStats, appParams);
+                var originalCurvesLength = curveInfoParams.curvesLength;
+                curveInfoParams.curvesLength = curvesLengthSoFar;
+                dataset = matsDataMatchUtils.getMatchedDataSet(dataset, curveInfoParams, appParams, binStats);
+                curveInfoParams.curvesLength = originalCurvesLength;
                 bookkeepingParams.alreadyMatched = true;
             }
 
             // then take diffs
-            const diffResult = matsDataDiffUtils.getDataForDiffCurve(dataset, diffFrom, appParams);
+            const diffResult = matsDataDiffUtils.getDataForDiffCurve(dataset, diffFrom, appParams, false);
 
             // adjust axis stats based on new data from diff curve
             d = diffResult.dataset;
@@ -932,7 +1018,7 @@ const processDataHistogram = function (allReturnedSubStats, allReturnedSubSecs, 
 
     // if matching, pare down dataset to only matching data. Only do this if we didn't already do it while calculating diffs.
     if (curveInfoParams.curvesLength > 1 && (appParams.matching && !bookkeepingParams.alreadyMatched)) {
-        dataset = matsDataMatchUtils.getMatchedDataSetHistogram(dataset, curveInfoParams.curvesLength, binStats, appParams);
+        dataset = matsDataMatchUtils.getMatchedDataSet(dataset, curveInfoParams, appParams, binStats);
     }
 
     // calculate data statistics (including error bars) for each curve
@@ -990,7 +1076,6 @@ const processDataHistogram = function (allReturnedSubStats, allReturnedSubSecs, 
             queries: bookkeepingParams.dataRequests
         }
     };
-
 };
 
 const processDataContour = function (dataset, curveInfoParams, plotParams, bookkeepingParams) {
@@ -1011,7 +1096,7 @@ const processDataContour = function (dataset, curveInfoParams, plotParams, bookk
         });
     }
 
-    // if we have dates on one axis, make sure they're formatted correctly
+    // if we have forecast leads on one axis, make sure they're formatted correctly
     if (data.xAxisKey.indexOf("Fcst lead time") !== -1) {
         data.x = data.x.map(function (val) {
             return Number(val.toString().replace(/0000/g, ""));
@@ -1043,6 +1128,15 @@ const processDataContour = function (dataset, curveInfoParams, plotParams, bookk
         }
         data.text.push(currYTextArray);
     }
+
+    // remove sub values and times to save space
+    data.subHit = [];
+    data.subFa = [];
+    data.subMiss = [];
+    data.subCn = [];
+    data.subVals = [];
+    data.subSecs = [];
+    data.subLevs = [];
 
     // generate plot options
     const resultOptions = matsDataPlotOpsUtils.generateContourPlotOptions(dataset);

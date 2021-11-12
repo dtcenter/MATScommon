@@ -399,7 +399,11 @@ const setSelectorVisibility = function(plotType, faceOptions, selectorsToReset) 
         const resetSelectors = Object.keys(selectorsToReset);
         for (var ridx = 0; ridx < resetSelectors.length; ridx++) {
             if (matsParamUtils.getParameterForName(resetSelectors[ridx]) !== undefined) {
-                matsParamUtils.setInputValueForParamAndTriggerChange(resetSelectors[ridx], selectorsToReset[resetSelectors[ridx]]);
+                if (matsParamUtils.getParameterForName(resetSelectors[ridx]).type === matsTypes.InputTypes.radioGroup) {
+                    matsParamUtils.setInputForParamName(resetSelectors[ridx], selectorsToReset[resetSelectors[ridx]]);
+                } else {
+                    matsParamUtils.setInputValueForParamAndTriggerChange(resetSelectors[ridx], selectorsToReset[resetSelectors[ridx]]);
+                }
             }
         }
         // show/hide selectors appropriate to this plot type
@@ -450,7 +454,9 @@ const showTimeseriesFace = function () {
         'x-axis-parameter': 'none',
         'y-axis-parameter': 'none',
         'bin-parameter': 'none',
-        'significance': 'none'
+        'significance': 'none',
+        'plotFormat': 'block',
+        'QCParamGroup': 'block'
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
@@ -490,7 +496,9 @@ const showProfileFace = function () {
         'x-axis-parameter': 'none',
         'y-axis-parameter': 'none',
         'bin-parameter': 'none',
-        'significance': 'none'
+        'significance': 'none',
+        'plotFormat': 'block',
+        'QCParamGroup': 'block'
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
@@ -530,7 +538,9 @@ const showDieOffFace = function () {
         'x-axis-parameter': 'none',
         'y-axis-parameter': 'none',
         'bin-parameter': 'none',
-        'significance': 'none'
+        'significance': 'none',
+        'plotFormat': 'block',
+        'QCParamGroup': 'block'
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
@@ -571,7 +581,9 @@ const showThresholdFace = function () {
         'x-axis-parameter': 'none',
         'y-axis-parameter': 'none',
         'bin-parameter': 'none',
-        'significance': 'none'
+        'significance': 'none',
+        'plotFormat': 'block',
+        'QCParamGroup': 'block'
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
@@ -616,7 +628,9 @@ const showValidTimeFace = function () {
         'x-axis-parameter': 'none',
         'y-axis-parameter': 'none',
         'bin-parameter': 'none',
-        'significance': 'none'
+        'significance': 'none',
+        'plotFormat': 'block',
+        'QCParamGroup': 'block'
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
@@ -656,7 +670,9 @@ const showGridScaleFace = function () {
         'x-axis-parameter': 'none',
         'y-axis-parameter': 'none',
         'bin-parameter': 'none',
-        'significance': 'none'
+        'significance': 'none',
+        'plotFormat': 'block',
+        'QCParamGroup': 'block'
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
@@ -696,7 +712,9 @@ const showDailyModelCycleFace = function () {
         'x-axis-parameter': 'none',
         'y-axis-parameter': 'none',
         'bin-parameter': 'none',
-        'significance': 'none'
+        'significance': 'none',
+        'plotFormat': 'block',
+        'QCParamGroup': 'block'
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff for a specified UTC cycle init hour',
@@ -736,7 +754,9 @@ const showYearToYearFace = function () {
         'x-axis-parameter': 'none',
         'y-axis-parameter': 'none',
         'bin-parameter': 'none',
-        'significance': 'none'
+        'significance': 'none',
+        'plotFormat': 'block',
+        'QCParamGroup': 'block'
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
@@ -776,11 +796,14 @@ const showReliabilityFace = function () {
         'x-axis-parameter': 'none',
         'y-axis-parameter': 'none',
         'bin-parameter': 'none',
-        'significance': 'none'
+        'significance': 'none',
+        'plotFormat': 'none',
+        'QCParamGroup': 'none'
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
-        'bin-parameter': 'Valid Date'
+        'bin-parameter': 'Valid Date',
+        'plotFormat': matsTypes.PlotFormats.none
     };
     setSelectorVisibility(plotType, faceOptions, selectorsToReset);
     return selectorsToReset;
@@ -816,11 +839,14 @@ const showROCFace = function () {
         'x-axis-parameter': 'none',
         'y-axis-parameter': 'none',
         'bin-parameter': 'none',
-        'significance': 'none'
+        'significance': 'none',
+        'plotFormat': 'none',
+        'QCParamGroup': 'none'
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
-        'bin-parameter': 'Valid Date'
+        'bin-parameter': 'Valid Date',
+        'plotFormat': matsTypes.PlotFormats.none
     };
     setSelectorVisibility(plotType, faceOptions, selectorsToReset);
     return selectorsToReset;
@@ -857,11 +883,14 @@ const showPerformanceDiagramFace = function () {
         'x-axis-parameter': 'none',
         'y-axis-parameter': 'none',
         'bin-parameter': 'block',
-        'significance': 'none'
+        'significance': 'none',
+        'plotFormat': 'none',
+        'QCParamGroup': 'none'
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
-        'bin-parameter': 'Valid Date'
+        'bin-parameter': 'Valid Date',
+        'plotFormat': matsTypes.PlotFormats.none
     };
     // in metexpress, users don't get to choose how to bin data
     if (isMetexpress) {
@@ -906,11 +935,14 @@ const showMapFace = function () {
         'x-axis-parameter': 'none',
         'y-axis-parameter': 'none',
         'bin-parameter': 'none',
-        'significance': 'none'
+        'significance': 'none',
+        'plotFormat': 'none',
+        'QCParamGroup': 'none'
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
-        'bin-parameter': 'Valid Date'
+        'bin-parameter': 'Valid Date',
+        'plotFormat': matsTypes.PlotFormats.none
     };
     // maps need to have the region be station-select mode
     if (matsParamUtils.getParameterForName('region-type') !== undefined) {
@@ -959,7 +991,9 @@ const showHistogramFace = function () {
         'x-axis-parameter': 'none',
         'y-axis-parameter': 'none',
         'bin-parameter': 'none',
-        'significance': 'none'
+        'significance': 'none',
+        'plotFormat': 'block',
+        'QCParamGroup': 'none'
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
@@ -1004,7 +1038,9 @@ const showEnsembleHistogramFace = function () {
         'x-axis-parameter': 'none',
         'y-axis-parameter': 'none',
         'bin-parameter': 'none',
-        'significance': 'none'
+        'significance': 'none',
+        'plotFormat': 'block',
+        'QCParamGroup': 'none'
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
@@ -1044,11 +1080,14 @@ const showContourFace = function () {
         'x-axis-parameter': 'block',
         'y-axis-parameter': 'block',
         'bin-parameter': 'none',
-        'significance': plotType === matsTypes.PlotTypes.contourDiff ? 'block' : 'none'
+        'significance': plotType === matsTypes.PlotTypes.contourDiff ? 'block' : 'none',
+        'plotFormat': 'none',
+        'QCParamGroup': 'none'
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
-        'bin-parameter': 'Valid Date'
+        'bin-parameter': 'Valid Date',
+        'plotFormat': matsTypes.PlotFormats.none
     };
     // contours need to have the region be in predefined mode
     if (matsParamUtils.getParameterForName('region-type') !== undefined) {
@@ -1088,11 +1127,14 @@ const showScatterFace = function () {
         'x-axis-parameter': 'none',
         'y-axis-parameter': 'none',
         'bin-parameter': 'none',
-        'significance': 'none'
+        'significance': 'none',
+        'plotFormat': 'none',
+        'QCParamGroup': 'none'
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
-        'bin-parameter': 'Valid Date'
+        'bin-parameter': 'Valid Date',
+        'plotFormat': matsTypes.PlotFormats.none
     };
     setSelectorVisibility(plotType, faceOptions, selectorsToReset);
     return selectorsToReset;

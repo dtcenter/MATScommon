@@ -319,38 +319,18 @@ const _getFlattenedResultData = function (rk, p, np) {
             var plotType = (_.invert(plotTypes))[true];
             // extract data
             var data = result.data;
+            const isCTC = data[0] !== undefined &&
+                ((data[0].stats !== undefined && data[0].stats[0] !== undefined && data[0].stats[0].hit !== undefined)
+                || (data[0].hitTextOutput !== undefined && data[0].hitTextOutput.length > 0));
             var dsiRealPageIndex = result.dsiRealPageIndex;
             var dsiTextDirection = result.dsiTextDirection;
             switch (plotType) {
-                /*
-                returnData is
-                {
-                    stats: {
-                                curve0: {label:someLabel, mean:someMean,sd:someSd....}
-                                curve1: {label:someLabel, mean:someMean,sd:someSd....}
-                                ...
-                            }
-                    data: {
-                                curve0: [
-                                            {time:someTime, stat: someStat, sd: someSd,....},
-                                            {time:someTime, stat: someStat, sd: someSd,....},
-                                            ....
-                                        ],
-                                curve1: [
-                                            {time:someTime, stat: someStat, sd: someSd,....},
-                                            {time:someTime, stat: someStat, sd: someSd,....},
-                                            ....
-                                        ],
-                                        ...
-                          }
-                }
-                 */
                 case matsTypes.PlotTypes.timeSeries:
                 case matsTypes.PlotTypes.dailyModelCycle:
                     var returnData = {};
                     returnData.stats = {};   // map of maps
                     returnData.data = {};  // map of arrays of maps
-                    for (var ci = 0; ci < data.length; ci++) { // for each curve
+                    for (var ci = 0; ci < data.length; ci++) {  // for each curve
                         // if the curve label is a reserved word do not process the curve (its a zero or max curve)
                         var reservedWords = Object.values(matsTypes.ReservedWords);
                         if (reservedWords.indexOf(data[ci].label) >= 0) {
@@ -367,16 +347,25 @@ const _getFlattenedResultData = function (rk, p, np) {
                         stats['maximum'] = data[ci].glob_stats.maxVal;
                         returnData.stats[data[ci].label] = stats;
 
-                        var curveData = [];  // map of maps
-                        for (var cdi = 0; cdi < data[ci].x.length; cdi++) { //for each datapoint
+                        var curveData = [];  // array of maps
+                        for (var cdi = 0; cdi < data[ci].x.length; cdi++) {  // for each datapoint
                             var curveDataElement = {};
                             curveDataElement[data[ci].label + ' time'] = data[ci].x[cdi];
-                            curveDataElement['raw stat from query'] = data[ci].stats[cdi].raw_stat;
-                            curveDataElement['mean stat'] = data[ci].stats[cdi].d_mean;
-                            curveDataElement['std dev'] = data[ci].stats[cdi].sd;
-                            curveDataElement['std error'] = data[ci].stats[cdi].stde_betsy;
-                            curveDataElement['lag1'] = data[ci].stats[cdi].lag1;
-                            curveDataElement['n'] = data[ci].ctc_stats !== undefined && data[ci].ctc_stats.length > 0 ? data[ci].ctc_stats[cdi].N0 : data[ci].stats[cdi].n_good;
+                            if (isCTC) {
+                                curveDataElement['stat'] = data[ci].stats[cdi].stat;
+                                curveDataElement['n'] = data[ci].stats[cdi].n;
+                                curveDataElement['hit'] = data[ci].stats[cdi].hit;
+                                curveDataElement['fa'] = data[ci].stats[cdi].fa;
+                                curveDataElement['miss'] = data[ci].stats[cdi].miss;
+                                curveDataElement['cn'] = data[ci].stats[cdi].cn;
+                            } else {
+                                curveDataElement['raw stat from query'] = data[ci].stats[cdi].raw_stat;
+                                curveDataElement['mean stat'] = data[ci].stats[cdi].d_mean;
+                                curveDataElement['std dev'] = data[ci].stats[cdi].sd;
+                                curveDataElement['std error'] = data[ci].stats[cdi].stde_betsy;
+                                curveDataElement['lag1'] = data[ci].stats[cdi].lag1;
+                                curveDataElement['n'] = data[ci].stats[cdi].n_good;
+                            }
                             curveData.push(curveDataElement);
                         }
                         returnData.data[data[ci].label] = curveData;
@@ -385,8 +374,9 @@ const _getFlattenedResultData = function (rk, p, np) {
                 case matsTypes.PlotTypes.profile:
                     var returnData = {};
                     returnData.stats = {};   // map of maps
-                    returnData.data = {};  // map of arrays of map
+                    returnData.data = {};  // map of arrays of maps
                     for (var ci = 0; ci < data.length; ci++) {  // for each curve
+                        // if the curve label is a reserved word do not process the curve (its a zero or max curve)
                         var reservedWords = Object.values(matsTypes.ReservedWords);
                         if (reservedWords.indexOf(data[ci].label) >= 0) {
                             continue; // don't process the zero or max curves
@@ -402,17 +392,25 @@ const _getFlattenedResultData = function (rk, p, np) {
                         stats['maximum'] = data[ci].glob_stats.maxVal;
                         returnData.stats[data[ci].label] = stats;
 
-                        var cdata = data[ci].data;
                         var curveData = [];  // array of maps
                         for (var cdi = 0; cdi < data[ci].x.length; cdi++) {  // for each datapoint
                             var curveDataElement = {};
                             curveDataElement[data[ci].label + ' level'] = data[ci].y[cdi];
-                            curveDataElement['raw stat from query'] = data[ci].stats[cdi].raw_stat;
-                            curveDataElement['mean stat'] = data[ci].stats[cdi].d_mean;
-                            curveDataElement['std dev'] = data[ci].stats[cdi].sd;
-                            curveDataElement['std error'] = data[ci].stats[cdi].stde_betsy;
-                            curveDataElement['lag1'] = data[ci].stats[cdi].lag1;
-                            curveDataElement['n'] = data[ci].ctc_stats !== undefined && data[ci].ctc_stats.length > 0 ? data[ci].ctc_stats[cdi].N0 : data[ci].stats[cdi].n_good;
+                            if (isCTC) {
+                                curveDataElement['stat'] = data[ci].stats[cdi].stat;
+                                curveDataElement['n'] = data[ci].stats[cdi].n;
+                                curveDataElement['hit'] = data[ci].stats[cdi].hit;
+                                curveDataElement['fa'] = data[ci].stats[cdi].fa;
+                                curveDataElement['miss'] = data[ci].stats[cdi].miss;
+                                curveDataElement['cn'] = data[ci].stats[cdi].cn;
+                            } else {
+                                curveDataElement['raw stat from query'] = data[ci].stats[cdi].raw_stat;
+                                curveDataElement['mean stat'] = data[ci].stats[cdi].d_mean;
+                                curveDataElement['std dev'] = data[ci].stats[cdi].sd;
+                                curveDataElement['std error'] = data[ci].stats[cdi].stde_betsy;
+                                curveDataElement['lag1'] = data[ci].stats[cdi].lag1;
+                                curveDataElement['n'] = data[ci].stats[cdi].n_good;
+                            }
                             curveData.push(curveDataElement);
                         }
                         returnData.data[data[ci].label] = curveData;
@@ -444,8 +442,8 @@ const _getFlattenedResultData = function (rk, p, np) {
                     var returnData = {};
                     returnData.stats = {};   // map of maps
                     returnData.data = {};  // map of arrays of maps
-
                     for (var ci = 0; ci < data.length; ci++) {  // for each curve
+                        // if the curve label is a reserved word do not process the curve (its a zero or max curve)
                         var reservedWords = Object.values(matsTypes.ReservedWords);
                         if (reservedWords.indexOf(data[ci].label) >= 0) {
                             continue; // don't process the zero or max curves
@@ -459,14 +457,23 @@ const _getFlattenedResultData = function (rk, p, np) {
                         stats['maximum'] = data[ci].glob_stats.maxVal;
                         returnData.stats[data[ci].label] = stats;
 
-                        var curveData = [];  // map of maps
+                        var curveData = [];  // array of maps
                         for (var cdi = 0; cdi < data[ci].x.length; cdi++) {  // for each datapoint
                             var curveDataElement = {};
                             curveDataElement[data[ci].label + labelSuffix] = data[ci].x[cdi];
-                            curveDataElement['raw stat from query'] = data[ci].stats[cdi].raw_stat;
-                            curveDataElement['mean stat'] = data[ci].stats[cdi].d_mean;
-                            curveDataElement['std dev'] = data[ci].stats[cdi].sd;
-                            curveDataElement['n'] = data[ci].ctc_stats !== undefined && data[ci].ctc_stats.length > 0 ? data[ci].ctc_stats[cdi].N0 : data[ci].stats[cdi].n_good;
+                            if (isCTC) {
+                                curveDataElement['stat'] = data[ci].stats[cdi].stat;
+                                curveDataElement['n'] = data[ci].stats[cdi].n;
+                                curveDataElement['hit'] = data[ci].stats[cdi].hit;
+                                curveDataElement['fa'] = data[ci].stats[cdi].fa;
+                                curveDataElement['miss'] = data[ci].stats[cdi].miss;
+                                curveDataElement['cn'] = data[ci].stats[cdi].cn;
+                            } else {
+                                curveDataElement['raw stat from query'] = data[ci].stats[cdi].raw_stat;
+                                curveDataElement['mean stat'] = data[ci].stats[cdi].d_mean;
+                                curveDataElement['std dev'] = data[ci].stats[cdi].sd;
+                                curveDataElement['n'] = data[ci].stats[cdi].n_good;
+                            }
                             curveData.push(curveDataElement);
                         }
                         returnData.data[data[ci].label] = curveData;
@@ -475,8 +482,9 @@ const _getFlattenedResultData = function (rk, p, np) {
                 case matsTypes.PlotTypes.reliability:
                     var returnData = {};
                     returnData.stats = {};   // map of maps
-                    returnData.data = {};  // map of arrays of map
+                    returnData.data = {};  // map of arrays of maps
                     for (var ci = 0; ci < data.length; ci++) {  // for each curve
+                        // if the curve label is a reserved word do not process the curve (its a zero or max curve)
                         var reservedWords = Object.values(matsTypes.ReservedWords);
                         if (reservedWords.indexOf(data[ci].label) >= 0) {
                             continue; // don't process the zero or max curves
@@ -486,7 +494,6 @@ const _getFlattenedResultData = function (rk, p, np) {
                         stats['sample climo'] = data[ci].glob_stats.sample_climo;
                         returnData.stats[data[ci].label] = stats;
 
-                        var cdata = data[ci].data;
                         var curveData = [];  // array of maps
                         for (var cdi = 0; cdi < data[ci].y.length; cdi++) {  // for each datapoint
                             var curveDataElement = {};
@@ -502,8 +509,9 @@ const _getFlattenedResultData = function (rk, p, np) {
                 case matsTypes.PlotTypes.roc:
                     var returnData = {};
                     returnData.stats = {};   // map of maps
-                    returnData.data = {};  // map of arrays of map
+                    returnData.data = {};  // map of arrays of maps
                     for (var ci = 0; ci < data.length; ci++) {  // for each curve
+                        // if the curve label is a reserved word do not process the curve (its a zero or max curve)
                         var reservedWords = Object.values(matsTypes.ReservedWords);
                         if (reservedWords.indexOf(data[ci].label) >= 0) {
                             continue; // don't process the zero or max curves
@@ -513,7 +521,6 @@ const _getFlattenedResultData = function (rk, p, np) {
                         stats['auc'] = data[ci].glob_stats.auc;
                         returnData.stats[data[ci].label] = stats;
 
-                        var cdata = data[ci].data;
                         var curveData = [];  // array of maps
                         for (var cdi = 0; cdi < data[ci].y.length; cdi++) {  // for each datapoint
                             var curveDataElement = {};
@@ -530,8 +537,9 @@ const _getFlattenedResultData = function (rk, p, np) {
                 case matsTypes.PlotTypes.performanceDiagram:
                     var returnData = {};
                     returnData.stats = {};   // map of maps
-                    returnData.data = {};  // map of arrays of map
+                    returnData.data = {};  // map of arrays of maps
                     for (var ci = 0; ci < data.length; ci++) {  // for each curve
+                        // if the curve label is a reserved word do not process the curve (its a zero or max curve)
                         var reservedWords = Object.values(matsTypes.ReservedWords);
                         if (reservedWords.indexOf(data[ci].label) >= 0) {
                             continue; // don't process the zero or max curves
@@ -540,7 +548,6 @@ const _getFlattenedResultData = function (rk, p, np) {
                         stats['label'] = data[ci].label;
                         returnData.stats[data[ci].label] = stats;
 
-                        var cdata = data[ci].data;
                         var curveData = [];  // array of maps
                         for (var cdi = 0; cdi < data[ci].y.length; cdi++) {  // for each datapoint
                             var curveDataElement = {};
@@ -581,11 +588,19 @@ const _getFlattenedResultData = function (rk, p, np) {
                     var curveData = [];  // map of maps
                     for (var si = 0; si < data[0].siteName.length; si++) {
                         var curveDataElement = {};
-                        curveDataElement['Site Name'] = data[0].siteName[si];
-                        curveDataElement['Number of Times'] = data[0].stats[si].N_times;
-                        curveDataElement['Start Date'] = moment.utc((data[0].stats[si].min_time) * 1000).format('YYYY-MM-DD HH:mm');
-                        curveDataElement['End Date'] = moment.utc((data[0].stats[si].max_time) * 1000).format('YYYY-MM-DD HH:mm');
-                        curveDataElement['Stat'] = data[0].queryVal[si];
+                        curveDataElement['site name'] = data[0].siteName[si];
+                        curveDataElement['number of times'] = data[0].stats[si].N_times;
+                        if (isCTC) {
+                            curveDataElement['stat'] = data[0].queryVal[si];
+                            curveDataElement['hit'] = data[0].stats[si].hit;
+                            curveDataElement['fa'] = data[0].stats[si].fa;
+                            curveDataElement['miss'] = data[0].stats[si].miss;
+                            curveDataElement['cn'] = data[0].stats[si].cn;
+                        } else {
+                            curveDataElement['start date'] = moment.utc((data[0].stats[si].min_time) * 1000).format('YYYY-MM-DD HH:mm');
+                            curveDataElement['end date'] = moment.utc((data[0].stats[si].max_time) * 1000).format('YYYY-MM-DD HH:mm');
+                            curveDataElement['stat'] = data[0].queryVal[si];
+                        }
                         curveData.push(curveDataElement);
                     }
                     returnData.data[data[0].label] = curveData;
@@ -594,8 +609,8 @@ const _getFlattenedResultData = function (rk, p, np) {
                     var returnData = {};
                     returnData.stats = {};   // map of maps
                     returnData.data = {};  // map of arrays of maps
-
-                    for (var ci = 0; ci < data.length; ci++) { // for each curve
+                    for (var ci = 0; ci < data.length; ci++) {  // for each curve
+                        // if the curve label is a reserved word do not process the curve (its a zero or max curve)
                         var reservedWords = Object.values(matsTypes.ReservedWords);
                         if (reservedWords.indexOf(data[ci].label) >= 0) {
                             continue; // don't process the zero or max curves
@@ -609,8 +624,8 @@ const _getFlattenedResultData = function (rk, p, np) {
                         stats['maximum'] = data[ci].glob_stats.glob_max;
                         returnData.stats[data[ci].label] = stats;
 
-                        var curveData = [];  // map of maps
-                        for (var cdi = 0; cdi < data[ci].x.length; cdi++) {   // for each datapoint
+                        var curveData = [];  // array of maps
+                        for (var cdi = 0; cdi < data[ci].x.length; cdi++) {  // for each datapoint
                             var curveDataElement = {};
                             curveDataElement[data[ci].label + ' bin range'] = data[ci].bin_stats[cdi]['binLabel'];
                             curveDataElement['n'] = data[ci].bin_stats[cdi].bin_n;
@@ -628,8 +643,8 @@ const _getFlattenedResultData = function (rk, p, np) {
                     var returnData = {};
                     returnData.stats = {};   // map of maps
                     returnData.data = {};  // map of arrays of maps
-
-                    for (var ci = 0; ci < data.length; ci++) { // for each curve
+                    for (var ci = 0; ci < data.length; ci++) {  // for each curve
+                        // if the curve label is a reserved word do not process the curve (its a zero or max curve)
                         var reservedWords = Object.values(matsTypes.ReservedWords);
                         if (reservedWords.indexOf(data[ci].label) >= 0) {
                             continue; // don't process the zero or max curves
@@ -643,8 +658,8 @@ const _getFlattenedResultData = function (rk, p, np) {
                         stats['maximum'] = data[ci].glob_stats.maxVal;
                         returnData.stats[data[ci].label] = stats;
 
-                        var curveData = [];  // map of maps
-                        for (var cdi = 0; cdi < data[ci].x.length; cdi++) {   // for each datapoint
+                        var curveData = [];  // array of maps
+                        for (var cdi = 0; cdi < data[ci].x.length; cdi++) {  // for each datapoint
                             var curveDataElement = {};
                             curveDataElement[data[ci].label + ' bin'] = data[ci].x[cdi];
                             curveDataElement['n'] = data[ci].bin_stats[cdi].bin_n;
@@ -663,59 +678,33 @@ const _getFlattenedResultData = function (rk, p, np) {
                     stats['label'] = data[0].label;
                     stats['total number of points'] = data[0].glob_stats.n;
                     stats['mean stat'] = data[0].glob_stats.mean;
-                    stats['minimum time'] = data[0].glob_stats.minDate;
-                    stats['minimum time'] = moment.utc(stats['minimum time'] * 1000).format('YYYY-MM-DD HH:mm');
-                    stats['maximum time'] = data[0].glob_stats.maxDate;
-                    stats['maximum time'] = moment.utc(stats['maximum time'] * 1000).format('YYYY-MM-DD HH:mm');
+                    stats['minimum time'] = moment.utc(data[0].glob_stats.minDate * 1000).format('YYYY-MM-DD HH:mm');
+                    stats['maximum time'] = moment.utc(data[0].glob_stats.maxDate * 1000).format('YYYY-MM-DD HH:mm');
 
                     returnData.stats[data[0].label] = stats;
 
-                    var curveData = [];  // map of maps
+                    var curveData = [];  // array of maps
                     for (var si = 0; si < data[0].xTextOutput.length; si++) {
                         var curveDataElement = {};
                         curveDataElement['xVal'] = data[0].xTextOutput[si];
                         curveDataElement['yVal'] = data[0].yTextOutput[si];
                         curveDataElement['stat'] = data[0].zTextOutput[si];
                         curveDataElement['N'] = data[0].nTextOutput[si];
-                        curveDataElement['Start Date'] = moment.utc((data[0].minDateTextOutput[si]) * 1000).format('YYYY-MM-DD HH:mm');
-                        curveDataElement['End Date'] = moment.utc((data[0].maxDateTextOutput[si]) * 1000).format('YYYY-MM-DD HH:mm');
+                        if (isCTC) {
+                            curveDataElement['hit'] = data[0].hitTextOutput[si];
+                            curveDataElement['fa'] = data[0].faTextOutput[si];
+                            curveDataElement['miss'] = data[0].missTextOutput[si];
+                            curveDataElement['cn'] = data[0].cnTextOutput[si];
+                        } else {
+                            curveDataElement['Start Date'] = moment.utc((data[0].minDateTextOutput[si]) * 1000).format('YYYY-MM-DD HH:mm');
+                            curveDataElement['End Date'] = moment.utc((data[0].maxDateTextOutput[si]) * 1000).format('YYYY-MM-DD HH:mm');
+                        }
                         curveData.push(curveDataElement);
                     }
                     returnData.data[data[0].label] = curveData;
                     break;
                 case matsTypes.PlotTypes.scatter2d:
                     var returnData = {}; // returns a map of arrays of maps
-                    /*
-                    returnData = {
-                                    curve0: [
-                                                {
-                                                xval: number,
-                                                yval: number,
-                                                bestfit: number || none
-                                                },
-                                                {
-                                                xval: number,
-                                                yval: number,
-                                                bestfit: number || none
-                                                },
-                                               .....
-                                            ],
-                                     curve1: [
-                                                {
-                                                xval: number,
-                                                yval: number,
-                                                bestfit: number || none
-                                                },
-                                                {
-                                                xval: number,
-                                                yval: number,
-                                                bestfit: number || none
-                                                },
-                                               .....
-                                            ],
-                                            ....
-                                }
-                     */
                     var firstBestFitIndex = -1;
                     var bestFitIndexes = {};
                     for (var ci = 0; ci < data.length; ci++) {
@@ -869,13 +858,13 @@ const _refreshMetadataMWltData = function (params, req, res, next) {
     }
 };
 
-// private save the result from the query into mongo and downsample if that result's size is greater than 1Mb
+// private save the result from the query into mongo and downsample if that result's size is greater than 1.2Mb
 const _saveResultData = function (result) {
     if (Meteor.isServer) {
         var sizeof = require('object-sizeof');
         var hash = require('object-hash');
         var key = hash(result.basis.plotParams);
-        var threshold = 1000000;
+        var threshold = 1200000;
         var ret = {};
         try {
             var dSize = sizeof(result.data);

@@ -105,13 +105,18 @@ const objectContainsObject = function (superObject, subObject) {
     return false;
 };
 
+// utility for calculating the sum of an array
+const sum = function (data) {
+    if(data.length === 0) return null;
+    return data.reduce(function (sum, value) {
+        return value == null ? sum : sum + value;
+    }, 0);
+};
+
 // utility for calculating the average of an array
 const average = function (data) {
     if(data.length === 0) return null;
-    var sum = data.reduce(function (sum, value) {
-        return value == null ? sum : sum + value;
-    }, 0);
-    return sum / data.length;
+    return sum(data) / data.length;
 };
 
 // utility for calculating the median of an array
@@ -323,6 +328,76 @@ const doSettings = function (title, dbType, version, buildDate, appType, mapboxK
     settings['hostname'] = hostname;
     settings['deploymentRoles'] = JSON.stringify(deploymentRoles);
     matsCollections.Settings.update(settingsId, {$set: settings});
+};
+
+// calculates the statistic for ctc station plots
+const calculateStatCTC = function (hit, fa, miss, cn, statistic) {
+    if (isNaN(hit) || isNaN(fa) || isNaN(miss) || isNaN(cn)) return null;
+    var queryVal;
+    switch (statistic) {
+        case 'TSS (True Skill Score)':
+            queryVal = ((hit * cn - fa * miss) / ((hit + miss) * (fa + cn))) * 100;
+            break;
+        // some PODy measures look for a value over a threshold, some look for under
+        case 'PODy (POD of value < threshold)':
+        case 'PODy (POD of value > threshold)':
+            queryVal = hit / (hit + miss) * 100;
+            break;
+        // some PODn measures look for a value under a threshold, some look for over
+        case 'PODn (POD of value > threshold)':
+        case 'PODn (POD of value < threshold)':
+            queryVal = cn / (cn + fa) * 100;
+            break;
+        case 'FAR (False Alarm Ratio)':
+            queryVal = fa / (fa + hit) * 100;
+            break;
+        case 'Bias (forecast/actual)':
+            queryVal = (hit + fa) / (hit + miss);
+            break;
+        case 'CSI (Critical Success Index)':
+            queryVal = hit / (hit + miss + fa) * 100;
+            break;
+        case 'HSS (Heidke Skill Score)':
+            queryVal = 2 * (cn * hit - miss * fa) / ((cn + fa) * (fa + hit) + (cn + miss) * (miss + hit)) * 100;
+            break;
+        case 'ETS (Equitable Threat Score)':
+            queryVal = (hit - ((hit + fa) * (hit + miss) / (hit + fa + miss + cn))) / ((hit + fa + miss) - ((hit + fa) * (hit + miss) / (hit + fa + miss + cn))) * 100;
+            break;
+        case 'Nlow (obs < threshold, avg per hr)':
+        case 'Nlow (obs < threshold, avg per 15 min)':
+        case 'Nlow (obs < threshold, avg per hr in predefined regions)':
+        case 'Nlow (obs < threshold, avg per 15 min in predefined regions)':
+            queryVal = hit + miss;
+            break;
+        case 'Nhigh (obs > threshold, avg per hr)':
+        case 'Nhigh (obs > threshold, avg per 15 min)':
+        case 'Nhigh (obs > threshold, avg per hr in predefined regions)':
+        case 'Nhigh (obs > threshold, avg per 15 min in predefined regions)':
+            queryVal = cn + fa;
+            break;
+        case 'Ntot (total obs, avg per hr)':
+        case 'Ntot (total obs, avg per 15 min)':
+        case 'Ntot (total obs, avg per hr in predefined regions)':
+        case 'Ntot (total obs, avg per 15 min in predefined regions)':
+            queryVal = hit + fa + miss + cn;
+            break;
+        case 'Ratio (Nlow / Ntot)':
+            queryVal = (hit + miss) / (hit + fa + miss + cn);
+            break;
+        case 'Ratio (Nhigh / Ntot)':
+            queryVal = (cn + fa) / (hit + fa + miss + cn);
+            break;
+        case 'N per graph point':
+            queryVal = hit + fa + miss + cn;
+            break;
+        case 'All observed yes':
+            queryVal = hit + miss;
+            break;
+        case 'All observed no':
+            queryVal = fa + cn;
+            break;
+    }
+    return queryVal;
 };
 
 // calculates mean, stdev, and other statistics for curve data points in all apps and plot types
@@ -952,20 +1027,26 @@ const sortHistogramBins = function (curveSubStats, curveSubSecs, curveSubLevs, b
 
         /*
         var d = {// d will contain the curve data
-            x: [], // placeholder
-            y: [], // placeholder
-            error_x: [], // unused
-            error_y: [], // unused
+            x: [],
+            y: [],
+            error_x: [],
+            error_y: [],
+            subHit: [],
+            subFa: [],
+            subMiss: [],
+            subCn: [],
             subVals: [],
             subSecs: [],
             subLevs: [],
-            glob_stats: {}, // placeholder
-            bin_stats: [], // placeholder
-            text: [], // placeholder
-            xmax: Number.MIN_VALUE,
+            stats: [],
+            text: [],
+            glob_stats: {},
+            bin_stats: [],
             xmin: Number.MAX_VALUE,
+            xmax: Number.MIN_VALUE,
+            ymin: Number.MAX_VALUE,
             ymax: Number.MIN_VALUE,
-            ymin: Number.MAX_VALUE
+            sum: 0
         };
         */
 
@@ -1029,6 +1110,50 @@ const getDiffContourCurveParams = function (curves) {
     return [newCurve];
 };
 
+// utility to remove a point on a graph
+const removePoint = function (data, di, plotType, statVarName, isCTC, hasLevels) {
+    data.x.splice(di, 1);
+    data.y.splice(di, 1);
+    if (plotType === matsTypes.PlotTypes.performanceDiagram) {
+        data.oy_all.splice(di, 1);
+        data.on_all.splice(di, 1);
+    }
+    if (data[('error_' + statVarName)].array !== undefined) {
+        data[('error_' + statVarName)].array.splice(di, 1);
+    }
+    if (isCTC) {
+        data.subHit.splice(di, 1);
+        data.subFa.splice(di, 1);
+        data.subMiss.splice(di, 1);
+        data.subCn.splice(di, 1);
+    } else {
+        data.subVals.splice(di, 1);
+    }
+    data.subSecs.splice(di, 1);
+    if (hasLevels) {
+        data.subLevs.splice(di, 1);
+    }
+    data.stats.splice(di, 1);
+    data.text.splice(di, 1);
+};
+
+// utility to make null a point on a graph
+const nullPoint = function (data, di, statVarName, isCTC, hasLevels) {
+    data[statVarName][di] = null;
+    if (isCTC) {
+        data.subHit[di] = NaN;
+        data.subFa[di] = NaN;
+        data.subMiss[di] = NaN;
+        data.subCn[di] = NaN;
+    } else {
+        data.subVals[di] = NaN;
+    }
+    data.subSecs[di] = NaN;
+    if (hasLevels) {
+        data.subLevs[di] = NaN;
+    }
+};
+
 // used for sorting arrays
 const sortFunction = function (a, b) {
     if (a[0] === b[0]) {
@@ -1047,6 +1172,7 @@ export default matsDataUtils = {
     arrayUnique: arrayUnique,
     findArrayInSubArray: findArrayInSubArray,
     objectContainsObject: objectContainsObject,
+    sum: sum,
     average: average,
     median: median,
     stdev: stdev,
@@ -1058,6 +1184,7 @@ export default matsDataUtils = {
     doCredentials: doCredentials,
     doRoles: doRoles,
     doSettings: doSettings,
+    calculateStatCTC: calculateStatCTC,
     get_err: get_err,
     checkDiffContourSignificance: checkDiffContourSignificance,
     setHistogramParameters: setHistogramParameters,
@@ -1066,5 +1193,6 @@ export default matsDataUtils = {
     sortHistogramBins: sortHistogramBins,
     getDiffContourCurveParams: getDiffContourCurveParams,
     sortFunction: sortFunction,
-
+    removePoint: removePoint,
+    nullPoint: nullPoint
 }
