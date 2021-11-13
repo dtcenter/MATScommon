@@ -8,7 +8,16 @@ import json
 # class that
 class CTCErrorUtil:
     error = ""          # one of the two fields to return at the end -- records any error message
-    error_lenth = 0     # one of the two fields to return at the end -- the length of the error bars
+    error_length = 0     # one of the two fields to return at the end -- the length of the error bars
+    output_JSON = {}    # JSON structure to pass the two output fields back to the MATS JS
+
+    # function for constructing and jsonifying a dictionary of the output variables
+    def construct_output_json(self):
+        self.output_JSON = {
+            "error_length": self.error_length,
+            "error": self.error
+        }
+        self.output_JSON = json.dumps(self.output_JSON)
 
     # function to check if a certain value is a float or int
     def is_number(self, s):
@@ -268,7 +277,7 @@ class CTCErrorUtil:
             for i in range(max_length):
                 rand_idx = 0 if random.random() < 0.5 else 1
                 other_idx = 0 if rand_idx == 1 else 1
-                if len(all_data[rand_idx]["hit"]) > i:
+                if len(all_data[rand_idx]["hit"]) > i and str(all_data[rand_idx]["hit"][i]) is not "null":
                     perm_m_hit.append(all_data[rand_idx]["hit"][i])
                     perm_m_fa.append(all_data[rand_idx]["fa"][i])
                     perm_m_miss.append(all_data[rand_idx]["miss"][i])
@@ -278,7 +287,7 @@ class CTCErrorUtil:
                     perm_m_fa.append(0)
                     perm_m_miss.append(0)
                     perm_m_cn.append(0)
-                if len(all_data[other_idx]["hit"]) > i:
+                if len(all_data[other_idx]["hit"]) > i and str(all_data[other_idx]["hit"][i]) is not "null":
                     perm_s_hit.append(all_data[other_idx]["hit"][i])
                     perm_s_fa.append(all_data[other_idx]["fa"][i])
                     perm_s_miss.append(all_data[other_idx]["miss"][i])
@@ -349,4 +358,5 @@ if __name__ == '__main__':
     ctc_util = CTCErrorUtil()
     options = ctc_util.get_options(sys.argv)
     ctc_util.calc_error_stats(options)
-    print(ctc_util.error_length)
+    ctc_util.construct_output_json()
+    print(ctc_util.output_JSON)
