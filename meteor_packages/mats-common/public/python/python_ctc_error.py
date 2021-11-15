@@ -1,7 +1,6 @@
 import getopt
 import sys
 import numpy as np
-import random
 import json
 
 
@@ -260,46 +259,49 @@ class CTCErrorUtil:
         return stat
 
     def test_null_hypothesis(self, statistic, minuend_data, subtrahend_data):
+        # pre-calculate random indices
         max_tries = 1000
         max_length = len(minuend_data["hit"]) if len(minuend_data["hit"]) > len(subtrahend_data["hit"]) else len(subtrahend_data["hit"])
-        all_data = [minuend_data, subtrahend_data]
+        length_indices = range(max_length)
+        rand_indices = np.random.randint(2, size=(max_tries, max_length))
+        other_indices = 1-rand_indices
+
+        # make sure input data arrays are the same length
+        if len(minuend_data["hit"]) < max_length:
+            length_needed = max_length - len(minuend_data["hit"])
+            for k in range(0, length_needed):
+                minuend_data["hit"].append(0)
+                minuend_data["fa"].append(0)
+                minuend_data["miss"].append(0)
+                minuend_data["cn"].append(0)
+
+        if len(subtrahend_data["hit"]) < max_length:
+            length_needed = max_length - len(subtrahend_data["hit"])
+            for k in range(0, length_needed):
+                subtrahend_data["hit"].append(0)
+                subtrahend_data["fa"].append(0)
+                subtrahend_data["miss"].append(0)
+                subtrahend_data["cn"].append(0)
+
+        # store input data in easy-access numpy arrays to eliminate the need to loop over length
+        all_hits = np.transpose(np.asarray([minuend_data["hit"], subtrahend_data["hit"]]))
+        all_fas = np.transpose(np.asarray([minuend_data["fa"], subtrahend_data["fa"]]))
+        all_misses = np.transpose(np.asarray([minuend_data["miss"], subtrahend_data["miss"]]))
+        all_cns = np.transpose(np.asarray([minuend_data["cn"], subtrahend_data["cn"]]))
         all_diffs = []
 
         for j in range(0, max_tries):
-            perm_m_hit = []
-            perm_m_fa = []
-            perm_m_miss = []
-            perm_m_cn = []
-            perm_s_hit = []
-            perm_s_fa = []
-            perm_s_miss = []
-            perm_s_cn = []
-            for i in range(max_length):
-                rand_idx = 0 if random.random() < 0.5 else 1
-                other_idx = 0 if rand_idx == 1 else 1
-                if len(all_data[rand_idx]["hit"]) > i and str(all_data[rand_idx]["hit"][i]) is not "null":
-                    perm_m_hit.append(all_data[rand_idx]["hit"][i])
-                    perm_m_fa.append(all_data[rand_idx]["fa"][i])
-                    perm_m_miss.append(all_data[rand_idx]["miss"][i])
-                    perm_m_cn.append(all_data[rand_idx]["cn"][i])
-                else:
-                    perm_m_hit.append(0)
-                    perm_m_fa.append(0)
-                    perm_m_miss.append(0)
-                    perm_m_cn.append(0)
-                if len(all_data[other_idx]["hit"]) > i and str(all_data[other_idx]["hit"][i]) is not "null":
-                    perm_s_hit.append(all_data[other_idx]["hit"][i])
-                    perm_s_fa.append(all_data[other_idx]["fa"][i])
-                    perm_s_miss.append(all_data[other_idx]["miss"][i])
-                    perm_s_cn.append(all_data[other_idx]["cn"][i])
-                else:
-                    perm_s_hit.append(0)
-                    perm_s_fa.append(0)
-                    perm_s_miss.append(0)
-                    perm_s_cn.append(0)
+            perm_m_hit = all_hits[length_indices, rand_indices[j, :]]
+            perm_m_fa = all_fas[length_indices, rand_indices[j, :]]
+            perm_m_miss = all_misses[length_indices, rand_indices[j, :]]
+            perm_m_cn = all_cns[length_indices, rand_indices[j, :]]
+            perm_s_hit = all_hits[length_indices, other_indices[j, :]]
+            perm_s_fa = all_fas[length_indices, other_indices[j, :]]
+            perm_s_miss = all_misses[length_indices, other_indices[j, :]]
+            perm_s_cn = all_cns[length_indices, other_indices[j, :]]
 
-            perm_m_stat = self.calculate_ctc_stat(statistic, sum(perm_m_hit), sum(perm_m_fa), sum(perm_m_miss), sum(perm_m_cn))
-            perm_s_stat = self.calculate_ctc_stat(statistic, sum(perm_s_hit), sum(perm_s_fa), sum(perm_s_miss), sum(perm_s_cn))
+            perm_m_stat = self.calculate_ctc_stat(statistic, int(np.sum(perm_m_hit)), int(np.sum(perm_m_fa)), int(np.sum(perm_m_miss)), int(np.sum(perm_m_cn)))
+            perm_s_stat = self.calculate_ctc_stat(statistic, int(np.sum(perm_s_hit)), int(np.sum(perm_s_fa)), int(np.sum(perm_s_miss)), int(np.sum(perm_s_cn)))
             perm_diff = perm_m_stat - perm_s_stat
             all_diffs.append(perm_diff)
 
