@@ -367,12 +367,14 @@ const calculateStatCTC = function (hit, fa, miss, cn, statistic) {
         case 'Nlow (obs < threshold, avg per 15 min)':
         case 'Nlow (obs < threshold, avg per hr in predefined regions)':
         case 'Nlow (obs < threshold, avg per 15 min in predefined regions)':
+        case 'All observed yes':
             queryVal = hit + miss;
             break;
         case 'Nhigh (obs > threshold, avg per hr)':
         case 'Nhigh (obs > threshold, avg per 15 min)':
         case 'Nhigh (obs > threshold, avg per hr in predefined regions)':
         case 'Nhigh (obs > threshold, avg per 15 min in predefined regions)':
+        case 'All observed no':
             queryVal = cn + fa;
             break;
         case 'Ntot (total obs, avg per hr)':
@@ -389,12 +391,6 @@ const calculateStatCTC = function (hit, fa, miss, cn, statistic) {
             break;
         case 'N per graph point':
             queryVal = hit + fa + miss + cn;
-            break;
-        case 'All observed yes':
-            queryVal = hit + miss;
-            break;
-        case 'All observed no':
-            queryVal = fa + cn;
             break;
     }
     return queryVal;
@@ -1110,6 +1106,49 @@ const getDiffContourCurveParams = function (curves) {
     return [newCurve];
 };
 
+// utility for getting CTC error bar length via Python
+const ctcErrorPython = function (statistic, minuendData, subtrahendData) {
+    if (Meteor.isServer) {
+        // send the data to the python script
+        const pyOptions = {
+            mode: 'text',
+            pythonPath: Meteor.settings.private.PYTHON_PATH,
+            pythonOptions: ['-u'], // get print results in real-time
+            scriptPath: process.env.NODE_ENV === "development" ?
+                process.env.PWD + "/../../MATScommon/meteor_packages/mats-common/public/python/" :
+                process.env.PWD + "/programs/server/assets/packages/randyp_mats-common/public/python/",
+            args: [
+                "-S", statistic,
+                "-m", JSON.stringify(minuendData),
+                "-s", JSON.stringify(subtrahendData)
+            ]
+        };
+        const pyShell = require('python-shell');
+        const Future = require('fibers/future');
+
+        var future = new Future();
+        var errorLength = 0;
+        pyShell.PythonShell.run('python_ctc_error.py', pyOptions, function (err, results) {
+            // parse the results or set an error
+            if (err !== undefined && err !== null) {
+                error = err.message === undefined ? err : err.message;
+            } else if (results === undefined || results === "undefined") {
+                error = "Error thrown by python_ctc_error.py. Please write down exactly how you produced this error, and submit a ticket at mats.gsl@noaa.gov."
+            } else {
+                // get the data back from the query
+                const parsedData = JSON.parse(results);
+                errorLength = Number(parsedData.error_length);
+            }
+            // done waiting - have results
+            future['return']();
+        });
+
+        // wait for future to finish
+        future.wait();
+        return errorLength;
+    }
+};
+
 // utility to remove a point on a graph
 const removePoint = function (data, di, plotType, statVarName, isCTC, hasLevels) {
     data.x.splice(di, 1);
@@ -1186,6 +1225,7 @@ export default matsDataUtils = {
     doSettings: doSettings,
     calculateStatCTC: calculateStatCTC,
     get_err: get_err,
+    ctcErrorPython: ctcErrorPython,
     checkDiffContourSignificance: checkDiffContourSignificance,
     setHistogramParameters: setHistogramParameters,
     calculateHistogramBins: calculateHistogramBins,

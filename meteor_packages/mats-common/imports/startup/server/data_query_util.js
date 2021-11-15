@@ -220,7 +220,7 @@ const queryDBPython = function (pool, statement, statLineType, statistic, appPar
             if (err !== undefined && err !== null) {
                 error = err.message === undefined ? err : err.message;
             } else if (results === undefined || results === "undefined") {
-                error = "Error thrown by python_query_util.py. Please write down exactly how you produced this error, and submit a ticket at mats.gsd@noaa.gov."
+                error = "Error thrown by python_query_util.py. Please write down exactly how you produced this error, and submit a ticket at mats.gsl@noaa.gov."
             } else {
                 // get the data back from the query
                 const parsedData = JSON.parse(results);
