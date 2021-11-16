@@ -638,8 +638,17 @@ const getDataForDiffContour = function (dataset, appParams, showSignificance, si
                     diffMiss = matsDataUtils.sum(minuendData.subMiss[minuendYIndex][minuendXIndex]) - matsDataUtils.sum(subtrahendData.subMiss[subtrahendYIndex][subtrahendXIndex]);
                     diffCn = matsDataUtils.sum(minuendData.subCn[minuendYIndex][minuendXIndex]) - matsDataUtils.sum(subtrahendData.subCn[subtrahendYIndex][subtrahendXIndex]);
                 }
-                if (showSignificance && diffNumber > 1 && minuendData.stdev[minuendYIndex][minuendXIndex] !== null && subtrahendData.stdev[subtrahendYIndex][subtrahendXIndex] !== null) {
-                    isDiffSignificant = matsDataUtils.checkDiffContourSignificance(minuendData.z[minuendYIndex][minuendXIndex], subtrahendData.z[subtrahendYIndex][subtrahendXIndex], minuendData.stdev[minuendYIndex][minuendXIndex], subtrahendData.stdev[subtrahendYIndex][subtrahendXIndex], minuendData.n[minuendYIndex][minuendXIndex], subtrahendData.n[subtrahendYIndex][subtrahendXIndex], sigType) ? 1 : null;
+                if (showSignificance && (diffNumber > 1 && minuendData.stdev[minuendYIndex][minuendXIndex] !== null && subtrahendData.stdev[subtrahendYIndex][subtrahendXIndex] !== null) || (isCTC && diffValue !== null)) {
+                    switch (sigType) {
+                        case "significance at 95th percentile":
+                            isDiffSignificant = matsDataUtils.checkDiffContourSignificanceCTC(diffValue, minuendData.subHit[minuendYIndex][minuendXIndex], minuendData.subFa[minuendYIndex][minuendXIndex], minuendData.subMiss[minuendYIndex][minuendXIndex], minuendData.subCn[minuendYIndex][minuendXIndex], subtrahendData.subHit[minuendYIndex][minuendXIndex], subtrahendData.subFa[minuendYIndex][minuendXIndex], subtrahendData.subMiss[minuendYIndex][minuendXIndex], subtrahendData.subCn[minuendYIndex][minuendXIndex], sigType, statistic) ? 1 : null;
+                            break;
+                        case "standard":
+                        case "assume infinite degrees of freedom":
+                        default:
+                            isDiffSignificant = matsDataUtils.checkDiffContourSignificance(minuendData.z[minuendYIndex][minuendXIndex], subtrahendData.z[subtrahendYIndex][subtrahendXIndex], minuendData.stdev[minuendYIndex][minuendXIndex], subtrahendData.stdev[subtrahendYIndex][subtrahendXIndex], minuendData.n[minuendYIndex][minuendXIndex], subtrahendData.n[subtrahendYIndex][subtrahendXIndex], sigType) ? 1 : null;
+                            break;
+                    }
                 }
                 diffMinDate = minuendData.minDateTextOutput[minuendYIndex * minuendData.x.length + minuendXIndex] <= subtrahendData.minDateTextOutput[subtrahendYIndex * subtrahendData.x.length + subtrahendXIndex] ? minuendData.minDateTextOutput[minuendYIndex * minuendData.x.length + minuendXIndex] : subtrahendData.minDateTextOutput[subtrahendYIndex * subtrahendData.x.length + subtrahendXIndex];
                 diffMaxDate = minuendData.maxDateTextOutput[minuendYIndex * minuendData.x.length + minuendXIndex] >= subtrahendData.maxDateTextOutput[subtrahendYIndex * subtrahendData.x.length + subtrahendXIndex] ? minuendData.maxDateTextOutput[minuendYIndex * minuendData.x.length + minuendXIndex] : subtrahendData.maxDateTextOutput[subtrahendYIndex * subtrahendData.x.length + subtrahendXIndex];
