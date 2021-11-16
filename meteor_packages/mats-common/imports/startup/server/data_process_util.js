@@ -86,11 +86,34 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
             means.push(errorResult.d_mean);
 
             // store error bars if matching
-            const errorBar = errorResult.stde_betsy * 1.96;
-            if (!appParams.matching || curveInfoParams.statType === 'ctc') {
-                // this is where we'll employ code from Bill's new Poisson error bar distribution for ctc plots.
+            var errorLength = 0;
+            if (!appParams.matching) {
                 data.error_y.array[di] = null;
+            } else if (curveInfoParams.statType === 'ctc') {
+                // call the python ctc error bar code for diff curves
+                // if (curveIndex === 2) debugger;
+                if (diffFrom === undefined || diffFrom === null || !(Array.isArray(dataset[diffFrom[0]].subHit[di])
+                    || !isNaN(dataset[diffFrom[0]].subHit[di])) || !(Array.isArray(dataset[diffFrom[1]].subHit[di]) || !isNaN(dataset[diffFrom[1]].subHit[di]))) {
+                    data.error_y.array[di] = null;
+                } else {
+                    const minuendData = {
+                        "hit": dataset[diffFrom[0]].subHit[di],
+                        "fa": dataset[diffFrom[0]].subFa[di],
+                        "miss": dataset[diffFrom[0]].subMiss[di],
+                        "cn": dataset[diffFrom[0]].subCn[di],
+                    };
+                    const subtrahendData = {
+                        "hit": dataset[diffFrom[1]].subHit[di],
+                        "fa": dataset[diffFrom[1]].subFa[di],
+                        "miss": dataset[diffFrom[1]].subMiss[di],
+                        "cn": dataset[diffFrom[1]].subCn[di],
+                    };
+                    errorLength = matsDataUtils.ctcErrorPython(statisticSelect, minuendData, subtrahendData);
+                    errorMax = errorMax > errorLength ? errorMax : errorLength;
+                    data.error_y.array[di] = errorLength;
+                }
             } else {
+                const errorBar = errorResult.stde_betsy * 1.96;
                 errorMax = errorMax > errorBar ? errorMax : errorBar;
                 data.error_y.array[di] = errorBar;
             }
@@ -144,7 +167,8 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
                     "<br>Hits: " + (Array.isArray(data.subHit[di]) || !isNaN(data.subHit[di]) ? matsDataUtils.sum(data.subHit[di]) : null) +
                     "<br>False alarms: " + (Array.isArray(data.subFa[di]) || !isNaN(data.subFa[di]) ? matsDataUtils.sum(data.subFa[di]) : null) +
                     "<br>Misses: " + (Array.isArray(data.subMiss[di]) || !isNaN(data.subMiss[di]) ? matsDataUtils.sum(data.subMiss[di]) : null) +
-                    "<br>Correct Nulls: " + (Array.isArray(data.subCn[di]) || !isNaN(data.subCn[di]) ? matsDataUtils.sum(data.subCn[di]) : null);
+                    "<br>Correct Nulls: " + (Array.isArray(data.subCn[di]) || !isNaN(data.subCn[di]) ? matsDataUtils.sum(data.subCn[di]) : null) +
+                    "<br>Errorbars: " + Number((data.y[di]) - (errorLength)).toPrecision(4) + " to " + Number((data.y[di]) + (errorLength)).toPrecision(4);
             } else {
                 data.stats[di] = {
                     raw_stat: rawStat,
@@ -166,19 +190,11 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
             di++;
         }
 
-        // remove sub values and times to save space
-        data.subHit = [];
-        data.subFa = [];
-        data.subMiss = [];
-        data.subCn = [];
-        data.subVals = [];
-        data.subSecs = [];
-        data.subLevs = [];
-
-
-        // enable error bars if matching and they aren't null. Don't show them for contingency table plots, because they don't really correspond to what's being plotted.
-        if (appParams.matching && curveInfoParams.statType !== 'ctc' && data.error_y.array.filter(x => x).length > 0) {
-            data.error_y.visible = true;
+        // enable error bars if matching and they aren't null.
+        if (appParams.matching && data.error_y.array.filter(x => x).length > 0) {
+            if (curveInfoParams.statType !== 'ctc' || (diffFrom !== undefined && diffFrom !== null)) {
+                data.error_y.visible = true;
+            }
         }
 
         // get the overall stats for the text output.
@@ -237,6 +253,18 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
                 return moment.utc(val).format("YYYY-MM-DD HH:mm");
             });
         }
+    }
+
+    for (curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex++) {
+        // remove sub values and times to save space
+        data = dataset[curveIndex];
+        data.subHit = [];
+        data.subFa = [];
+        data.subMiss = [];
+        data.subCn = [];
+        data.subVals = [];
+        data.subSecs = [];
+        data.subLevs = [];
     }
 
     // add black 0 line curve
@@ -359,11 +387,34 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
             means.push(errorResult.d_mean);
 
             // store error bars if matching
-            const errorBar = errorResult.stde_betsy * 1.96;
-            if (!appParams.matching || curveInfoParams.statType === 'ctc') {
-                // this is where we'll employ code from Bill's new Poisson error bar distribution for ctc plots.
+            var errorLength = 0;
+            if (!appParams.matching) {
                 data.error_x.array[di] = null;
+            } else if (curveInfoParams.statType === 'ctc') {
+                // call the python ctc error bar code for diff curves
+                // if (curveIndex === 2) debugger;
+                if (diffFrom === undefined || diffFrom === null || !(Array.isArray(dataset[diffFrom[0]].subHit[di])
+                    || !isNaN(dataset[diffFrom[0]].subHit[di])) || !(Array.isArray(dataset[diffFrom[1]].subHit[di]) || !isNaN(dataset[diffFrom[1]].subHit[di]))) {
+                    data.error_x.array[di] = null;
+                } else {
+                    const minuendData = {
+                        "hit": dataset[diffFrom[0]].subHit[di],
+                        "fa": dataset[diffFrom[0]].subFa[di],
+                        "miss": dataset[diffFrom[0]].subMiss[di],
+                        "cn": dataset[diffFrom[0]].subCn[di],
+                    };
+                    const subtrahendData = {
+                        "hit": dataset[diffFrom[1]].subHit[di],
+                        "fa": dataset[diffFrom[1]].subFa[di],
+                        "miss": dataset[diffFrom[1]].subMiss[di],
+                        "cn": dataset[diffFrom[1]].subCn[di],
+                    };
+                    errorLength = matsDataUtils.ctcErrorPython(statisticSelect, minuendData, subtrahendData);
+                    errorMax = errorMax > errorLength ? errorMax : errorLength;
+                    data.error_x.array[di] = errorLength;
+                }
             } else {
+            const errorBar = errorResult.stde_betsy * 1.96;
                 errorMax = errorMax > errorBar ? errorMax : errorBar;
                 data.error_x.array[di] = errorBar;
             }
@@ -386,6 +437,7 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
                     "<br>False alarms: " + (Array.isArray(data.subFa[di]) || !isNaN(data.subFa[di]) ? matsDataUtils.sum(data.subFa[di]) : null) +
                     "<br>Misses: " + (Array.isArray(data.subMiss[di]) || !isNaN(data.subMiss[di]) ? matsDataUtils.sum(data.subMiss[di]) : null) +
                     "<br>Correct Nulls: " + (Array.isArray(data.subCn[di]) || !isNaN(data.subCn[di]) ? matsDataUtils.sum(data.subCn[di]) : null);
+                    "<br>Errorbars: " + Number((data.x[di]) - (errorLength)).toPrecision(4) + " to " + Number((data.x[di]) + (errorLength)).toPrecision(4);
             } else {
                 data.stats[di] = {
                     raw_stat: rawStat,
@@ -408,19 +460,11 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
             di++;
         }
 
-        // remove sub values and times to save space
-        data.subHit = [];
-        data.subFa = [];
-        data.subMiss = [];
-        data.subCn = [];
-        data.subVals = [];
-        data.subSecs = [];
-        data.subLevs = [];
-
-
-        // enable error bars if matching and they aren't null. Don't show them for contingency table plots, because they don't really correspond to what's being plotted.
-        if (appParams.matching && curveInfoParams.statType !== 'ctc' && data.error_x.array.filter(x => x).length > 0) {
-            data.error_x.visible = true;
+        // enable error bars if matching and they aren't null.
+        if (appParams.matching && data.error_x.array.filter(x => x).length > 0) {
+            if (curveInfoParams.statType !== 'ctc' || (diffFrom !== undefined && diffFrom !== null)) {
+                data.error_x.visible = true;
+            }
         }
 
         // get the overall stats for the text output.
@@ -472,6 +516,18 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
         } else {
             dataset[curveIndex]['annotation'] = label + " mean = NoData, median = NoData, stdev = NoData";
         }
+    }
+
+    for (curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex++) {
+        // remove sub values and times to save space
+        data = dataset[curveIndex];
+        data.subHit = [];
+        data.subFa = [];
+        data.subMiss = [];
+        data.subCn = [];
+        data.subVals = [];
+        data.subSecs = [];
+        data.subLevs = [];
     }
 
     // add black 0 line curve
