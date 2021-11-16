@@ -630,6 +630,26 @@ const get_err = function (sVals, sSecs, sLevs, appParams) {
     return stats;
 };
 
+// find the p-value or significance for this
+const checkDiffContourSignificanceCTC = function (diffValue, mH, mF, mM, mC, sH, sF, sM, sC, sigType, statistic) {
+    const minuendData = {
+        "hit": mH,
+        "fa": mF,
+        "miss": mM,
+        "cn": mC,
+    };
+    const subtrahendData = {
+        "hit": sH,
+        "fa": sF,
+        "miss": sM,
+        "cn": sC,
+    };
+    const errorLength = ctcErrorPython(statistic, minuendData, subtrahendData);
+    const upperBound = diffValue + errorLength;
+    const lowerBound = diffValue - errorLength;
+    return (upperBound > 0 && lowerBound > 0) || (upperBound < 0 && lowerBound < 0);
+};
+
 // use a student's t-test to see if a point on a contour diff is statistically significant
 const checkDiffContourSignificance = function (x1, x2, s1, s2, n1, n2, sigType) {
     const t = getTValue(x1, x2, s1, s2, n1, n2);
@@ -1227,6 +1247,7 @@ export default matsDataUtils = {
     get_err: get_err,
     ctcErrorPython: ctcErrorPython,
     checkDiffContourSignificance: checkDiffContourSignificance,
+    checkDiffContourSignificanceCTC: checkDiffContourSignificanceCTC,
     setHistogramParameters: setHistogramParameters,
     calculateHistogramBins: calculateHistogramBins,
     prescribeHistogramBins: prescribeHistogramBins,

@@ -310,7 +310,8 @@ class CTCErrorUtil:
         i_max = int(max_tries * 0.975)
         bot_95 = all_diffs[i_min]
         top_95 = all_diffs[i_max]
-        return (top_95-bot_95)/(1.96*2)
+        ci_length = (top_95-bot_95)/2  # length of 95th percentile confidence interval. Divide by 1.96 for standard error.
+        return ci_length
 
     # makes sure all expected options were indeed passed in
     def validate_options(self, options):
