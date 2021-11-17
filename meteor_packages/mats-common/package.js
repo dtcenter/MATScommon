@@ -275,7 +275,7 @@ Package.onTest(function (api) {
         "jquery-ui": "1.12.1",
         "csv-stringify": "4.3.1",
         "node-file-cache" : "1.0.2",
-        "python-shell": "1.0.8",
+        "python-shell": "3.0.1",
         "simpl-schema": "1.12.0"
     });
     api.use('natestrauser:select2', 'client');
