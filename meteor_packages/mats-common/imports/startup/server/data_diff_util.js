@@ -638,7 +638,7 @@ const getDataForDiffContour = function (dataset, appParams, showSignificance, si
                     diffMiss = matsDataUtils.sum(minuendData.subMiss[minuendYIndex][minuendXIndex]) - matsDataUtils.sum(subtrahendData.subMiss[subtrahendYIndex][subtrahendXIndex]);
                     diffCn = matsDataUtils.sum(minuendData.subCn[minuendYIndex][minuendXIndex]) - matsDataUtils.sum(subtrahendData.subCn[subtrahendYIndex][subtrahendXIndex]);
                 }
-                if (showSignificance && (diffNumber > 1 && minuendData.stdev[minuendYIndex][minuendXIndex] !== null && subtrahendData.stdev[subtrahendYIndex][subtrahendXIndex] !== null) || (isCTC && diffValue !== null)) {
+                if (showSignificance && ((diffNumber > 1 && minuendData.stdev[minuendYIndex][minuendXIndex] !== null && subtrahendData.stdev[subtrahendYIndex][subtrahendXIndex] !== null) || (isCTC && diffValue !== null))) {
                     switch (sigType) {
                         case "significance at 95th percentile":
                             isDiffSignificant = matsDataUtils.checkDiffContourSignificanceCTC(diffValue, minuendData.subHit[minuendYIndex][minuendXIndex], minuendData.subFa[minuendYIndex][minuendXIndex], minuendData.subMiss[minuendYIndex][minuendXIndex], minuendData.subCn[minuendYIndex][minuendXIndex], subtrahendData.subHit[minuendYIndex][minuendXIndex], subtrahendData.subFa[minuendYIndex][minuendXIndex], subtrahendData.subMiss[minuendYIndex][minuendXIndex], subtrahendData.subCn[minuendYIndex][minuendXIndex], sigType, statistic) ? 1 : null;
