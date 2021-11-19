@@ -1,0 +1,10 @@
+*.o
+*.x
+compile_commands.json
+.vscode
+*.tmp
+*.tar
+contingency-errors
+.idea
+cmake-*
+*-cmake
