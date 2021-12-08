@@ -1426,17 +1426,22 @@ const parseQueryDataPerformanceDiagram = function (rows, d, appParams) {
                 var curr_sub_data;
                 for (var sd_idx = 0; sd_idx < sub_data.length; sd_idx++) {
                     curr_sub_data = sub_data[sd_idx].split(';');
-                    sub_hit.push(Number(curr_sub_data[0]));
-                    sub_fa.push(Number(curr_sub_data[1]));
-                    sub_miss.push(Number(curr_sub_data[2]));
-                    sub_cn.push(Number(curr_sub_data[3]));
-                    sub_secs.push(Number(curr_sub_data[4]));
+                    sub_secs.push(Number(curr_sub_data[0]));
                     if (hasLevels) {
-                        if (!isNaN(Number(curr_sub_data[5]))) {
-                            sub_levs.push(Number(curr_sub_data[5]));
+                        if (!isNaN(Number(curr_sub_data[1]))) {
+                            sub_levs.push(Number(curr_sub_data[1]));
                         } else {
-                            sub_levs.push(curr_sub_data[5]);
+                            sub_levs.push(curr_sub_data[1]);
                         }
+                        sub_hit.push(Number(curr_sub_data[2]));
+                        sub_fa.push(Number(curr_sub_data[3]));
+                        sub_miss.push(Number(curr_sub_data[4]));
+                        sub_cn.push(Number(curr_sub_data[5]));
+                    } else {
+                        sub_hit.push(Number(curr_sub_data[1]));
+                        sub_fa.push(Number(curr_sub_data[2]));
+                        sub_miss.push(Number(curr_sub_data[3]));
+                        sub_cn.push(Number(curr_sub_data[4]));
                     }
                 }
             } catch (e) {
