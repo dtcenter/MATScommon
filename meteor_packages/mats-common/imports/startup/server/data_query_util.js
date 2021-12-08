@@ -246,7 +246,6 @@ const queryDBPython = function (pool, statement, statLineType, statistic, appPar
 
 // this method queries the database for timeseries plots
 const queryDBTimeSeries = function (pool, statement, dataSource, forecastOffset, startDate, endDate, averageStr, statisticStr, validTimes, appParams, forceRegularCadence) {
-
     if (Meteor.isServer) {
         // upper air is only verified at 00Z and 12Z, so you need to force irregular models to verify at that regular cadence
         var cycles = getModelCadence(pool, dataSource, startDate, endDate); // if irregular model cadence, get cycle times. If regular, get empty array.
@@ -355,9 +354,6 @@ const queryDBTimeSeries = function (pool, statement, dataSource, forecastOffset,
 // this method queries the database for specialty curves such as profiles, dieoffs, threshold plots, valid time plots, grid scale plots, and histograms
 const queryDBSpecialtyCurve = function (pool, statement, appParams, statisticStr) {
     if (Meteor.isServer) {
-        const Future = require('fibers/future');
-
-        var dFuture = new Future();
         var d = {   // d will contain the curve data
             x: [],
             y: [],
@@ -383,28 +379,55 @@ const queryDBSpecialtyCurve = function (pool, statement, appParams, statisticStr
         var error = "";
         var N0 = [];
         var N_times = [];
+        var parsedData;
+        const Future = require('fibers/future');
+        var dFuture = new Future();
 
-        pool.query(statement, function (err, rows) {
-            // query callback - build the curve data from the results - or set an error
-            if (err !== undefined && err !== null) {
-                error = err.message;
-            } else if (rows === undefined || rows === null || rows.length === 0) {
-                error = matsTypes.Messages.NO_DATA_FOUND;
-            } else {
-                var parsedData;
-                if (appParams.plotType !== matsTypes.PlotTypes.histogram) {
-                    parsedData = parseQueryDataSpecialtyCurve(rows, d, appParams, statisticStr);
+        if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
+            /*
+            we have to call the couchbase utilities as async functions but this
+            routine 'queryDBTimeSeries' cannot itself be async because the graph page needs to wait
+            for its result, so we use an anonymous async() function here to wrap the queryCB call
+            */
+            (async () => {
+                const rows = await pool.queryCB(statement);
+                if (rows === undefined || rows === null || rows.length === 0) {
+                    error = matsTypes.Messages.NO_DATA_FOUND;
                 } else {
-                    parsedData = parseQueryDataHistogram(rows, d, appParams, statisticStr);
+                    if (appParams.plotType !== matsTypes.PlotTypes.histogram) {
+                        parsedData = parseQueryDataSpecialtyCurve(rows, d, appParams, statisticStr);
+                    } else {
+                        parsedData = parseQueryDataHistogram(rows, d, appParams, statisticStr);
+                    }
+                    d = parsedData.d;
+                    N0 = parsedData.N0;
+                    N_times = parsedData.N_times;
                 }
-                d = parsedData.d;
-                N0 = parsedData.N0;
-                N_times = parsedData.N_times;
-            }
-            // done waiting - have results
-            dFuture['return']();
-        });
-        // wait for future to finish
+                dFuture.return();
+            })();
+        } else {
+            // if this app isn't couchbase, use mysql
+            pool.query(statement, function (err, rows) {
+                // query callback - build the curve data from the results - or set an error
+                if (err !== undefined && err !== null) {
+                    error = err.message;
+                } else if (rows === undefined || rows === null || rows.length === 0) {
+                    error = matsTypes.Messages.NO_DATA_FOUND;
+                } else {
+                    if (appParams.plotType !== matsTypes.PlotTypes.histogram) {
+                        parsedData = parseQueryDataSpecialtyCurve(rows, d, appParams, statisticStr);
+                    } else {
+                        parsedData = parseQueryDataHistogram(rows, d, appParams, statisticStr);
+                    }
+                    d = parsedData.d;
+                    N0 = parsedData.N0;
+                    N_times = parsedData.N_times;
+                }
+                // done waiting - have results
+                    dFuture.return();
+            });
+        }
+        // wait for the future to finish - sort of like 'back to the future' ;)
         dFuture.wait();
 
         return {
@@ -876,27 +899,34 @@ const parseQueryDataTimeSeries = function (rows, d, appParams, averageStr, stati
                 for (var sd_idx = 0; sd_idx < sub_data.length; sd_idx++) {
                     curr_sub_data = sub_data[sd_idx].split(';');
                     if (isCTC) {
-                        sub_hit.push(Number(curr_sub_data[0]));
-                        sub_fa.push(Number(curr_sub_data[1]));
-                        sub_miss.push(Number(curr_sub_data[2]));
-                        sub_cn.push(Number(curr_sub_data[3]));
-                        sub_secs.push(Number(curr_sub_data[4]));
+                        sub_secs.push(Number(curr_sub_data[0]));
                         if (hasLevels) {
-                            if (!isNaN(Number(curr_sub_data[5]))) {
-                                sub_levs.push(Number(curr_sub_data[5]));
+                            if (!isNaN(Number(curr_sub_data[1]))) {
+                                sub_levs.push(Number(curr_sub_data[1]));
                             } else {
-                                sub_levs.push(curr_sub_data[5]);
+                                sub_levs.push(curr_sub_data[1]);
                             }
+                            sub_hit.push(Number(curr_sub_data[2]));
+                            sub_fa.push(Number(curr_sub_data[3]));
+                            sub_miss.push(Number(curr_sub_data[4]));
+                            sub_cn.push(Number(curr_sub_data[5]));
+                        } else {
+                            sub_hit.push(Number(curr_sub_data[1]));
+                            sub_fa.push(Number(curr_sub_data[2]));
+                            sub_miss.push(Number(curr_sub_data[3]));
+                            sub_cn.push(Number(curr_sub_data[4]));
                         }
                     } else {
-                        sub_values.push(Number(curr_sub_data[0]));
-                        sub_secs.push(Number(curr_sub_data[1]));
+                        sub_secs.push(Number(curr_sub_data[0]));
                         if (hasLevels) {
-                            if (!isNaN(Number(curr_sub_data[2]))) {
-                                sub_levs.push(Number(curr_sub_data[2]));
+                            if (!isNaN(Number(curr_sub_data[1]))) {
+                                sub_levs.push(Number(curr_sub_data[1]));
                             } else {
-                                sub_levs.push(curr_sub_data[2]);
+                                sub_levs.push(curr_sub_data[1]);
                             }
+                            sub_values.push(Number(curr_sub_data[2]));
+                        } else {
+                            sub_values.push(Number(curr_sub_data[1]));
                         }
                     }
                 }
@@ -1126,27 +1156,34 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
                 for (var sd_idx = 0; sd_idx < sub_data.length; sd_idx++) {
                     curr_sub_data = sub_data[sd_idx].split(';');
                     if (isCTC) {
-                        sub_hit.push(Number(curr_sub_data[0]));
-                        sub_fa.push(Number(curr_sub_data[1]));
-                        sub_miss.push(Number(curr_sub_data[2]));
-                        sub_cn.push(Number(curr_sub_data[3]));
-                        sub_secs.push(Number(curr_sub_data[4]));
+                        sub_secs.push(Number(curr_sub_data[0]));
                         if (hasLevels) {
-                            if (!isNaN(Number(curr_sub_data[5]))) {
-                                sub_levs.push(Number(curr_sub_data[5]));
+                            if (!isNaN(Number(curr_sub_data[1]))) {
+                                sub_levs.push(Number(curr_sub_data[1]));
                             } else {
-                                sub_levs.push(curr_sub_data[5]);
+                                sub_levs.push(curr_sub_data[1]);
                             }
+                            sub_hit.push(Number(curr_sub_data[2]));
+                            sub_fa.push(Number(curr_sub_data[3]));
+                            sub_miss.push(Number(curr_sub_data[4]));
+                            sub_cn.push(Number(curr_sub_data[5]));
+                        } else {
+                            sub_hit.push(Number(curr_sub_data[1]));
+                            sub_fa.push(Number(curr_sub_data[2]));
+                            sub_miss.push(Number(curr_sub_data[3]));
+                            sub_cn.push(Number(curr_sub_data[4]));
                         }
                     } else {
-                        sub_values.push(Number(curr_sub_data[0]));
-                        sub_secs.push(Number(curr_sub_data[1]));
+                        sub_secs.push(Number(curr_sub_data[0]));
                         if (hasLevels) {
-                            if (!isNaN(Number(curr_sub_data[2]))) {
-                                sub_levs.push(Number(curr_sub_data[2]));
+                            if (!isNaN(Number(curr_sub_data[1]))) {
+                                sub_levs.push(Number(curr_sub_data[1]));
                             } else {
-                                sub_levs.push(curr_sub_data[2]);
+                                sub_levs.push(curr_sub_data[1]);
                             }
+                            sub_values.push(Number(curr_sub_data[2]));
+                        } else {
+                            sub_values.push(Number(curr_sub_data[1]));
                         }
                     }
                 }
@@ -1769,26 +1806,28 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
                 for (var sd_idx = 0; sd_idx < sub_data.length; sd_idx++) {
                     curr_sub_data = sub_data[sd_idx].split(';');
                     if (isCTC) {
-                        // histograms care about the distribution of stats from individual events, so go ahead and
-                        // calculate the stat, don't preserve the hits, misses, etc.
-                        sub_stats.push(matsDataUtils.calculateStatCTC(Number(curr_sub_data[0]), Number(curr_sub_data[1]), Number(curr_sub_data[2]), Number(curr_sub_data[3]), statisticStr));
-                        sub_secs.push(Number(curr_sub_data[4]));
+                        sub_secs.push(Number(curr_sub_data[0]));
                         if (hasLevels) {
-                            if (!isNaN(Number(curr_sub_data[5]))) {
-                                sub_levs.push(Number(curr_sub_data[5]));
+                            if (!isNaN(Number(curr_sub_data[1]))) {
+                                sub_levs.push(Number(curr_sub_data[1]));
                             } else {
-                                sub_levs.push(curr_sub_data[5]);
+                                sub_levs.push(curr_sub_data[1]);
                             }
+                            sub_stats.push(matsDataUtils.calculateStatCTC(Number(curr_sub_data[2]), Number(curr_sub_data[3]), Number(curr_sub_data[4]), Number(curr_sub_data[5]), statisticStr));
+                        } else {
+                            sub_stats.push(matsDataUtils.calculateStatCTC(Number(curr_sub_data[1]), Number(curr_sub_data[2]), Number(curr_sub_data[3]), Number(curr_sub_data[4]), statisticStr));
                         }
                     } else {
-                        sub_stats.push(Number(curr_sub_data[0]));
-                        sub_secs.push(Number(curr_sub_data[1]));
+                        sub_secs.push(Number(curr_sub_data[0]));
                         if (hasLevels) {
-                            if (!isNaN(Number(curr_sub_data[2]))) {
-                                sub_levs.push(Number(curr_sub_data[2]));
+                            if (!isNaN(Number(curr_sub_data[1]))) {
+                                sub_levs.push(Number(curr_sub_data[1]));
                             } else {
-                                sub_levs.push(curr_sub_data[2]);
+                                sub_levs.push(curr_sub_data[1]);
                             }
+                            sub_stats.push(Number(curr_sub_data[2]));
+                        } else {
+                            sub_stats.push(Number(curr_sub_data[1]));
                         }
                     }
                 }
@@ -1936,27 +1975,34 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
                 for (var sd_idx = 0; sd_idx < sub_data.length; sd_idx++) {
                     curr_sub_data = sub_data[sd_idx].split(';');
                     if (isCTC) {
-                        sub_hit.push(Number(curr_sub_data[0]));
-                        sub_fa.push(Number(curr_sub_data[1]));
-                        sub_miss.push(Number(curr_sub_data[2]));
-                        sub_cn.push(Number(curr_sub_data[3]));
-                        sub_secs.push(Number(curr_sub_data[4]));
+                        sub_secs.push(Number(curr_sub_data[0]));
                         if (hasLevels) {
-                            if (!isNaN(Number(curr_sub_data[5]))) {
-                                sub_levs.push(Number(curr_sub_data[5]));
+                            if (!isNaN(Number(curr_sub_data[1]))) {
+                                sub_levs.push(Number(curr_sub_data[1]));
                             } else {
-                                sub_levs.push(curr_sub_data[5]);
+                                sub_levs.push(curr_sub_data[1]);
                             }
+                            sub_hit.push(Number(curr_sub_data[2]));
+                            sub_fa.push(Number(curr_sub_data[3]));
+                            sub_miss.push(Number(curr_sub_data[4]));
+                            sub_cn.push(Number(curr_sub_data[5]));
+                        } else {
+                            sub_hit.push(Number(curr_sub_data[1]));
+                            sub_fa.push(Number(curr_sub_data[2]));
+                            sub_miss.push(Number(curr_sub_data[3]));
+                            sub_cn.push(Number(curr_sub_data[4]));
                         }
                     } else {
-                        sub_values.push(Number(curr_sub_data[0]));
-                        sub_secs.push(Number(curr_sub_data[1]));
+                        sub_secs.push(Number(curr_sub_data[0]));
                         if (hasLevels) {
-                            if (!isNaN(Number(curr_sub_data[2]))) {
-                                sub_levs.push(Number(curr_sub_data[2]));
+                            if (!isNaN(Number(curr_sub_data[1]))) {
+                                sub_levs.push(Number(curr_sub_data[1]));
                             } else {
-                                sub_levs.push(curr_sub_data[2]);
+                                sub_levs.push(curr_sub_data[1]);
                             }
+                            sub_values.push(Number(curr_sub_data[2]));
+                        } else {
+                            sub_values.push(Number(curr_sub_data[1]));
                         }
                     }
                 }
