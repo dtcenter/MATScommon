@@ -386,7 +386,7 @@ const queryDBSpecialtyCurve = function (pool, statement, appParams, statisticStr
         if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
             /*
             we have to call the couchbase utilities as async functions but this
-            routine 'queryDBTimeSeries' cannot itself be async because the graph page needs to wait
+            routine 'queryDBSpecialtyCurve' cannot itself be async because the graph page needs to wait
             for its result, so we use an anonymous async() function here to wrap the queryCB call
             */
             (async () => {
@@ -424,7 +424,7 @@ const queryDBSpecialtyCurve = function (pool, statement, appParams, statisticStr
                     N_times = parsedData.N_times;
                 }
                 // done waiting - have results
-                    dFuture.return();
+                dFuture.return();
             });
         }
         // wait for the future to finish - sort of like 'back to the future' ;)
@@ -442,9 +442,6 @@ const queryDBSpecialtyCurve = function (pool, statement, appParams, statisticStr
 // this method queries the database for performance diagrams
 const queryDBPerformanceDiagram = function (pool, statement, appParams) {
     if (Meteor.isServer) {
-        const Future = require('fibers/future');
-
-        var dFuture = new Future();
         var d = {   // d will contain the curve data
             x: [],
             y: [],
@@ -466,34 +463,57 @@ const queryDBPerformanceDiagram = function (pool, statement, appParams) {
             ymin: Number.MAX_VALUE,
             ymax: Number.MIN_VALUE
         };
-
         var error = "";
         var N0 = [];
         var N_times = [];
+        var parsedData;
+        const Future = require('fibers/future');
+        var dFuture = new Future();
 
-        pool.query(statement, function (err, rows) {
-            // query callback - build the curve data from the results - or set an error
-            if (err !== undefined && err !== null) {
-                error = err.message;
-            } else if (rows === undefined || rows === null || rows.length === 0) {
-                error = matsTypes.Messages.NO_DATA_FOUND;
-            } else {
-                var parsedData = parseQueryDataPerformanceDiagram(rows, d, appParams);
-                d = parsedData.d;
-                N0 = parsedData.N0;
-                N_times = parsedData.N_times;
-            }
-            // done waiting - have results
-            dFuture['return']();
-        });
-
-        // wait for future to finish
+        if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
+            /*
+            we have to call the couchbase utilities as async functions but this
+            routine 'queryDBSPerformanceDiagram' cannot itself be async because the graph page needs to wait
+            for its result, so we use an anonymous async() function here to wrap the queryCB call
+            */
+            (async () => {
+                const rows = await pool.queryCB(statement);
+                if (rows === undefined || rows === null || rows.length === 0) {
+                    error = matsTypes.Messages.NO_DATA_FOUND;
+                } else {
+                    parsedData = parseQueryDataPerformanceDiagram(rows, d, appParams);
+                    d = parsedData.d;
+                    N0 = parsedData.N0;
+                    N_times = parsedData.N_times;
+                }
+                dFuture.return();
+            })();
+        } else {
+            // if this app isn't couchbase, use mysql
+            pool.query(statement, function (err, rows) {
+                // query callback - build the curve data from the results - or set an error
+                if (err !== undefined && err !== null) {
+                    error = err.message;
+                } else if (rows === undefined || rows === null || rows.length === 0) {
+                    error = matsTypes.Messages.NO_DATA_FOUND;
+                } else {
+                    parsedData = parseQueryDataPerformanceDiagram(rows, d, appParams);
+                    d = parsedData.d;
+                    N0 = parsedData.N0;
+                    N_times = parsedData.N_times;
+                }
+                // done waiting - have results
+                dFuture.return();
+            });
+        }
+        // wait for the future to finish - sort of like 'back to the future' ;)
         dFuture.wait();
+
         return {
             data: d,
             error: error,
             N0: N0,
-            N_times: N_times,
+            N_times: N_times
         };
     }
 };
@@ -1210,7 +1230,7 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
         // deal with missing forecast cycles for dailyModelCycle plot type
         if (plotType === matsTypes.PlotTypes.dailyModelCycle && rowIndex > 0 && (Number(independentVar) - Number(rows[rowIndex - 1].avtime * 1000)) > 3600 * 24 * 1000) {
             const cycles_missing = Math.ceil((Number(independentVar) - Number(rows[rowIndex - 1].avtime * 1000)) / (3600 * 24 * 1000)) - 1;
-            const offsetFromMidnight = Math.floor(Number(independentVar)%(24*3600*1000)/(3600*1000));
+            const offsetFromMidnight = Math.floor(Number(independentVar) % (24 * 3600 * 1000) / (3600 * 1000));
             for (var missingIdx = cycles_missing; missingIdx > 0; missingIdx--) {
                 curveIndependentVars.push(independentVar - (3600 * 24 * 1000 * missingIdx) - (3600 * offsetFromMidnight * 1000));
                 curveStats.push(null);
