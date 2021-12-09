@@ -759,9 +759,6 @@ const queryDBMapCTC = function (pool, statement, dataSource, statistic, siteMap)
 // this method queries the database for contour plots
 const queryDBContour = function (pool, statement, appParams, statisticStr) {
     if (Meteor.isServer) {
-        const Future = require('fibers/future');
-
-        var dFuture = new Future();
         var d = {   // d will contain the curve data
             x: [],
             y: [],
@@ -796,22 +793,44 @@ const queryDBContour = function (pool, statement, appParams, statisticStr) {
             zmax: Number.MIN_VALUE,
             sum: 0
         };
-
         var error = "";
-        pool.query(statement, function (err, rows) {
-            // query callback - build the curve data from the results - or set an error
-            if (err !== undefined && err !== null) {
-                error = err.message;
-            } else if (rows === undefined || rows === null || rows.length === 0) {
-                error = matsTypes.Messages.NO_DATA_FOUND;
-            } else {
-                const parsedData = parseQueryDataContour(rows, d, appParams, statisticStr);
-                d = parsedData.d;
-            }
-            // done waiting - have results
-            dFuture['return']();
-        });
-        // wait for future to finish
+        var parsedData;
+        const Future = require('fibers/future');
+        var dFuture = new Future();
+
+        if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
+            /*
+            we have to call the couchbase utilities as async functions but this
+            routine 'queryDBSpecialtyCurve' cannot itself be async because the graph page needs to wait
+            for its result, so we use an anonymous async() function here to wrap the queryCB call
+            */
+            (async () => {
+                const rows = await pool.queryCB(statement);
+                if (rows === undefined || rows === null || rows.length === 0) {
+                    error = matsTypes.Messages.NO_DATA_FOUND;
+                } else {
+                    parsedData = parseQueryDataContour(rows, d, appParams, statisticStr);
+                    d = parsedData.d;
+                }
+                dFuture.return();
+            })();
+        } else {
+            // if this app isn't couchbase, use mysql
+            pool.query(statement, function (err, rows) {
+                // query callback - build the curve data from the results - or set an error
+                if (err !== undefined && err !== null) {
+                    error = err.message;
+                } else if (rows === undefined || rows === null || rows.length === 0) {
+                    error = matsTypes.Messages.NO_DATA_FOUND;
+                } else {
+                    parsedData = parseQueryDataContour(rows, d, appParams, statisticStr);
+                    d = parsedData.d;
+                }
+                // done waiting - have results
+                dFuture.return();
+            });
+        }
+        // wait for the future to finish - sort of like 'back to the future' ;)
         dFuture.wait();
 
         return {
