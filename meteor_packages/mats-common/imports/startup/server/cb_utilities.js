@@ -86,8 +86,7 @@ class CBUtilities {
             const result = await conn.cluster.query(statement);
             return result.rows;
         } catch (err) {
-            console.log("queryCB ERROR: ", err);
-            throw new Error("queryCB ERROR: " + err);
+            return "queryCB ERROR: " + err;
         }
     };
 

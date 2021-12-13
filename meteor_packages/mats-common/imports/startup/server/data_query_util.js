@@ -301,6 +301,8 @@ const queryDBTimeSeries = function (pool, statement, dataSource, forecastOffset,
                 const rows = await pool.queryCB(statement);
                 if (rows === undefined || rows === null || rows.length === 0) {
                     error = matsTypes.Messages.NO_DATA_FOUND;
+                } else if (rows.includes("queryCB ERROR: ")) {
+                    error = rows;
                 } else {
                     if (appParams.hideGaps) {
                         // if we don't care about gaps, use the general purpose curve parsing function.
@@ -393,6 +395,8 @@ const queryDBSpecialtyCurve = function (pool, statement, appParams, statisticStr
                 const rows = await pool.queryCB(statement);
                 if (rows === undefined || rows === null || rows.length === 0) {
                     error = matsTypes.Messages.NO_DATA_FOUND;
+                } else if (rows.includes("queryCB ERROR: ")) {
+                    error = rows;
                 } else {
                     if (appParams.plotType !== matsTypes.PlotTypes.histogram) {
                         parsedData = parseQueryDataSpecialtyCurve(rows, d, appParams, statisticStr);
@@ -480,6 +484,8 @@ const queryDBPerformanceDiagram = function (pool, statement, appParams) {
                 const rows = await pool.queryCB(statement);
                 if (rows === undefined || rows === null || rows.length === 0) {
                     error = matsTypes.Messages.NO_DATA_FOUND;
+                } else if (rows.includes("queryCB ERROR: ")) {
+                    error = rows;
                 } else {
                     parsedData = parseQueryDataPerformanceDiagram(rows, d, appParams);
                     d = parsedData.d;
@@ -808,6 +814,8 @@ const queryDBContour = function (pool, statement, appParams, statisticStr) {
                 const rows = await pool.queryCB(statement);
                 if (rows === undefined || rows === null || rows.length === 0) {
                     error = matsTypes.Messages.NO_DATA_FOUND;
+                } else if (rows.includes("queryCB ERROR: ")) {
+                    error = rows;
                 } else {
                     parsedData = parseQueryDataContour(rows, d, appParams, statisticStr);
                     d = parsedData.d;
