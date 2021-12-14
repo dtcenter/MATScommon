@@ -13,9 +13,11 @@ class CBUtilities {
         const couchbase = require("couchbase");
         try {
             if (this.conn == undefined || this.conn.cluster == undefined) {
+                // set query timeout to 10 minutes -- we have some long data ones
                 const cluster = await couchbase.connect("couchbase://" + this.host, {
                     username: this.user,
-                    password: this.pwd
+                    password: this.pwd,
+                    queryTimeout: 600000
                 });
                 const bucket = cluster.bucket(this.bucketName);
                 const collection = bucket.defaultCollection();
@@ -86,8 +88,7 @@ class CBUtilities {
             const result = await conn.cluster.query(statement);
             return result.rows;
         } catch (err) {
-            console.log("queryCB ERROR: ", err);
-            throw new Error("queryCB ERROR: " + err);
+            return "queryCB ERROR: " + err;
         }
     };
 
