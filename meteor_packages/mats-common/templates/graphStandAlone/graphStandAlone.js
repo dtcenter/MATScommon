@@ -178,7 +178,7 @@ Template.GraphStandAlone.helpers({
                 case matsTypes.PlotTypes.roc:
                     return "ROC Curve: " + p.dates + " : " + format;
                 case matsTypes.PlotTypes.performanceDiagram:
-                    return "Performance Diagram: " + p.dates + " : " + format;
+                    return "Performance Diagram: " + format;
                 case matsTypes.PlotTypes.map:
                     return "Map " + p.dates + " ";
                 case matsTypes.PlotTypes.histogram:

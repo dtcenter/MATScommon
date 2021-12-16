@@ -857,8 +857,8 @@ const showPerformanceDiagramFace = function () {
     const isMetexpress = matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
     const plotType = matsTypes.PlotTypes.performanceDiagram;
     var faceOptions = {
-        'curve-dates': 'none',
-        'dates': 'block',
+        'curve-dates': 'block',
+        'dates': 'none',
         'statistic': 'none',
         'threshold': 'block',
         'scale': 'block',
