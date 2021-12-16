@@ -333,12 +333,12 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                     const miss = matsDataUtils.sum(data.subMiss[di]);
                     const cn = matsDataUtils.sum(data.subCn[di]);
                     if (plotType === matsTypes.PlotTypes.performanceDiagram) {
-                        data['x'][di] = 1 - Number(matsDataUtils.calculateStatCTC(hit, fa, miss, cn, 'FAR (False Alarm Ratio)')) / 100;
-                        data['y'][di] = Number(matsDataUtils.calculateStatCTC(hit, fa, miss, cn, 'PODy (POD of value < threshold)')) / 100;
-                        data['oy_all'][di] = Number(matsDataUtils.calculateStatCTC(hit, fa, miss, cn, 'All observed yes'));
-                        data['on_all'][di] = Number(matsDataUtils.calculateStatCTC(hit, fa, miss, cn, 'All observed no'));
+                        data['x'][di] = 1 - Number(matsDataUtils.calculateStatCTC(hit, fa, miss, cn, data.subHit[di].length, 'FAR (False Alarm Ratio)')) / 100;
+                        data['y'][di] = Number(matsDataUtils.calculateStatCTC(hit, fa, miss, cn, data.subHit[di].length, 'PODy (POD of value < threshold)')) / 100;
+                        data['oy_all'][di] = Number(matsDataUtils.calculateStatCTC(hit, fa, miss, cn, data.subHit[di].length, 'All observed yes'));
+                        data['on_all'][di] = Number(matsDataUtils.calculateStatCTC(hit, fa, miss, cn, data.subHit[di].length, 'All observed no'));
                     } else {
-                        data[statVarName][di] = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, curveStats[curveIndex]);
+                        data[statVarName][di] = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, data.subHit[di].length, curveStats[curveIndex]);
                     }
                 }
             }

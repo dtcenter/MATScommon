@@ -605,13 +605,13 @@ const getDataForDiffContour = function (dataset, appParams, showSignificance, si
                         const mFa = matsDataUtils.sum(newMinuendSubFaArray);
                         const mMiss = matsDataUtils.sum(newMinuendSubMissArray);
                         const mCn = matsDataUtils.sum(newMinuendSubCnArray);
-                        minuendData.z[minuendYIndex][minuendXIndex] = matsDataUtils.calculateStatCTC(mHit, mFa, mMiss, mCn, statistic)
+                        minuendData.z[minuendYIndex][minuendXIndex] = matsDataUtils.calculateStatCTC(mHit, mFa, mMiss, mCn, newMinuendSubHitArray.length, statistic)
 
                         const sHit = matsDataUtils.sum(newSubtrahendSubHitArray);
                         const sFa = matsDataUtils.sum(newSubtrahendSubFaArray);
                         const sMiss = matsDataUtils.sum(newSubtrahendSubMissArray);
                         const sCn = matsDataUtils.sum(newSubtrahendSubCnArray);
-                        subtrahendData.z[subtrahendYIndex][subtrahendXIndex] = matsDataUtils.calculateStatCTC(sHit, sFa, sMiss, sCn, statistic)
+                        subtrahendData.z[subtrahendYIndex][subtrahendXIndex] = matsDataUtils.calculateStatCTC(sHit, sFa, sMiss, sCn, newSubtrahendSubHitArray.length, statistic)
                     } else {
                         minuendData.subVals[minuendYIndex][minuendXIndex] = newMinuendSubValsArray;
                         minuendData.z[minuendYIndex][minuendXIndex] = newMinuendSubValsArray.length > 0 ? matsDataUtils.average(newMinuendSubValsArray) : null;

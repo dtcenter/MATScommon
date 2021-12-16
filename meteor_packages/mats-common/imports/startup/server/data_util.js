@@ -331,7 +331,7 @@ const doSettings = function (title, dbType, version, buildDate, appType, mapboxK
 };
 
 // calculates the statistic for ctc station plots
-const calculateStatCTC = function (hit, fa, miss, cn, statistic) {
+const calculateStatCTC = function (hit, fa, miss, cn, n, statistic) {
     if (isNaN(hit) || isNaN(fa) || isNaN(miss) || isNaN(cn)) return null;
     var queryVal;
     switch (statistic) {
@@ -389,8 +389,8 @@ const calculateStatCTC = function (hit, fa, miss, cn, statistic) {
         case 'Ratio (Nhigh / Ntot)':
             queryVal = (cn + fa) / (hit + fa + miss + cn);
             break;
-        case 'N per graph point':
-            queryVal = hit + fa + miss + cn;
+        case 'N times*levels(*stations if station plot) per graph point':
+            queryVal = n;
             break;
     }
     return queryVal;

@@ -163,6 +163,18 @@ class CTCErrorUtil:
             ntot = np.NaN
         return ntot
 
+    # function for calculating total number
+    def calculate_n(self, n):
+        try:
+            n = n + 0
+        except TypeError as e:
+            self.error = "Error calculating statistic: " + str(e)
+            n = np.NaN
+        except ValueError as e:
+            self.error = "Error calculating statistic: " + str(e)
+            n = np.NaN
+        return n
+
     # function for calculating ratio of nlow to ntot
     def calculate_ratlow(self, hit, fa, miss, cn):
         try:
@@ -188,7 +200,7 @@ class CTCErrorUtil:
         return rathigh
 
     # function for determining and calling the appropriate contigency table count statistical calculation function
-    def calculate_ctc_stat(self, statistic, hit, fa, miss, cn):
+    def calculate_ctc_stat(self, statistic, hit, fa, miss, cn, n):
         stat_switch = {  # dispatcher of statistical calculation functions
             'TSS (True Skill Score)': self.calculate_tss,
             'PODy (POD of value < threshold)': self.calculate_pody,
@@ -214,7 +226,7 @@ class CTCErrorUtil:
             'Ntot (total obs, avg per 15 min in predefined regions)': self.calculate_ntot,
             'Ratio (Nlow / Ntot)': self.calculate_ratlow,
             'Ratio (Nhigh / Ntot)': self.calculate_rathigh,
-            'N per graph point': self.calculate_ntot,
+            'N times*levels(*stations if station plot) per graph point': self.calculate_n,
             'All observed yes': self.calculate_nlow,
             'All observed no': self.calculate_nhigh
         }
@@ -243,7 +255,7 @@ class CTCErrorUtil:
             'Ntot (total obs, avg per 15 min in predefined regions)': (hit, fa, miss, cn),
             'Ratio (Nlow / Ntot)': (hit, fa, miss, cn),
             'Ratio (Nhigh / Ntot)': (hit, fa, miss, cn),
-            'N per graph point': (hit, fa, miss, cn),
+            'N times*levels(*stations if station plot) per graph point': (n,),
             'All observed yes': (hit, miss),
             'All observed no': (fa, cn)
         }
@@ -300,8 +312,8 @@ class CTCErrorUtil:
             perm_s_miss = all_misses[length_indices, other_indices[j, :]]
             perm_s_cn = all_cns[length_indices, other_indices[j, :]]
 
-            perm_m_stat = self.calculate_ctc_stat(statistic, int(np.sum(perm_m_hit)), int(np.sum(perm_m_fa)), int(np.sum(perm_m_miss)), int(np.sum(perm_m_cn)))
-            perm_s_stat = self.calculate_ctc_stat(statistic, int(np.sum(perm_s_hit)), int(np.sum(perm_s_fa)), int(np.sum(perm_s_miss)), int(np.sum(perm_s_cn)))
+            perm_m_stat = self.calculate_ctc_stat(statistic, int(np.sum(perm_m_hit)), int(np.sum(perm_m_fa)), int(np.sum(perm_m_miss)), int(np.sum(perm_m_cn)), len(perm_m_hit))
+            perm_s_stat = self.calculate_ctc_stat(statistic, int(np.sum(perm_s_hit)), int(np.sum(perm_s_fa)), int(np.sum(perm_s_miss)), int(np.sum(perm_s_cn)), len(perm_s_hit))
             perm_diff = perm_m_stat - perm_s_stat
             all_diffs.append(perm_diff)
 

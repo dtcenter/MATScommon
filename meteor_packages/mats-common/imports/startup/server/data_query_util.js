@@ -909,8 +909,9 @@ const parseQueryDataTimeSeries = function (rows, d, appParams, averageStr, stati
             const fa = Number(rows[rowIndex].fa);
             const miss = Number(rows[rowIndex].miss);
             const cn = Number(rows[rowIndex].cn);
+            const n = rows[rowIndex].sub_data.toString().split(',').length;
             if (hit + fa + miss + cn > 0) {
-                stat = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, statisticStr);
+                stat = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, n, statisticStr);
                 stat = isNaN(Number(stat)) ? null : stat;
             } else {
                 stat = null;
@@ -1175,8 +1176,9 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
             const fa = Number(rows[rowIndex].fa);
             const miss = Number(rows[rowIndex].miss);
             const cn = Number(rows[rowIndex].cn);
+            const n = rows[rowIndex].sub_data.toString().split(',').length;
             if (hit + fa + miss + cn > 0) {
-                stat = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, statisticStr);
+                stat = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, n, statisticStr);
                 stat = isNaN(Number(stat)) ? null : stat;
             } else {
                 stat = null;
@@ -1625,8 +1627,9 @@ const parseQueryDataMapCTC = function (rows, d, dPurple, dPurpleBlue, dBlue, dBl
         const fa = Number(rows[rowIndex].fa);
         const miss = Number(rows[rowIndex].miss);
         const cn = Number(rows[rowIndex].cn);
+        const n = rows[rowIndex].N_times;
         if (hit + fa + miss + cn > 0) {
-            queryVal = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, statistic);
+            queryVal = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, n, statistic);
             switch (statistic) {
                 case 'TSS (True Skill Score)':
                     lowLimit = -100;
@@ -1837,8 +1840,9 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
             const fa = Number(rows[rowIndex].fa);
             const miss = Number(rows[rowIndex].miss);
             const cn = Number(rows[rowIndex].cn);
+            const n = rows[rowIndex].sub_data.toString().split(',').length;
             if (hit + fa + miss + cn > 0) {
-                stat = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, statisticStr);
+                stat = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, n, statisticStr);
                 stat = isNaN(Number(stat)) ? null : stat;
             } else {
                 stat = null;
@@ -1865,9 +1869,9 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
                             } else {
                                 sub_levs.push(curr_sub_data[1]);
                             }
-                            sub_stats.push(matsDataUtils.calculateStatCTC(Number(curr_sub_data[2]), Number(curr_sub_data[3]), Number(curr_sub_data[4]), Number(curr_sub_data[5]), statisticStr));
+                            sub_stats.push(matsDataUtils.calculateStatCTC(Number(curr_sub_data[2]), Number(curr_sub_data[3]), Number(curr_sub_data[4]), Number(curr_sub_data[5]), 1, statisticStr));
                         } else {
-                            sub_stats.push(matsDataUtils.calculateStatCTC(Number(curr_sub_data[1]), Number(curr_sub_data[2]), Number(curr_sub_data[3]), Number(curr_sub_data[4]), statisticStr));
+                            sub_stats.push(matsDataUtils.calculateStatCTC(Number(curr_sub_data[1]), Number(curr_sub_data[2]), Number(curr_sub_data[3]), Number(curr_sub_data[4]), 1, statisticStr));
                         }
                     } else {
                         sub_secs.push(Number(curr_sub_data[0]));
@@ -1976,6 +1980,7 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
         var fa;
         var miss;
         var cn;
+        var n = rows[rowIndex].sub_data !== undefined && rows[rowIndex].sub_data !== null ? rows[rowIndex].sub_data.toString().split(',').length : 0;
         if (rows[rowIndex].stat === undefined && rows[rowIndex].hit !== undefined) {
             // this is a contingency table plot
             isCTC = true;
@@ -1984,7 +1989,7 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
             miss = Number(rows[rowIndex].miss);
             cn = Number(rows[rowIndex].cn);
             if (hit + fa + miss + cn > 0) {
-                stat = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, statisticStr);
+                stat = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, n, statisticStr);
                 stat = isNaN(Number(stat)) ? null : stat;
             } else {
                 stat = null;
@@ -2002,7 +2007,6 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
             cn = null;
         }
         var stdev = rows[rowIndex].stdev !== undefined ? rows[rowIndex].stdev : null;
-        var n = rows[rowIndex].sub_data !== undefined && rows[rowIndex].sub_data !== null ? rows[rowIndex].sub_data.toString().split(',').length : 0;
         var minDate = rows[rowIndex].min_secs;
         var maxDate = rows[rowIndex].max_secs;
         if (stat === undefined || stat === null) {
