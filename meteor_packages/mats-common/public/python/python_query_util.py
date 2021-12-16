@@ -173,6 +173,18 @@ class QueryUtil:
             me = np.empty(len(fbar))
         return me
 
+    # function for calculating fractional error from MET partial sums
+    def calculate_fe(self, fbar, obar):
+        try:
+            fe = (fbar - obar) / fbar
+        except TypeError as e:
+            self.error = "Error calculating fractional error: " + str(e)
+            fe = np.empty(len(fbar))
+        except ValueError as e:
+            self.error = "Error calculating fractional error: " + str(e)
+            fe = np.empty(len(fbar))
+        return fe
+
     # function for calculating multiplicative bias from MET partial sums
     def calculate_mbias(self, fbar, obar):
         try:
@@ -612,6 +624,7 @@ class QueryUtil:
             'MSE': self.calculate_mse,
             'Bias-corrected MSE': self.calculate_bcmse,
             'ME (Additive bias)': self.calculate_me,
+            'Fractional Error': self.calculate_fe,
             'Multiplicative bias': self.calculate_mbias,
             'N': self.calculate_n,
             'Forecast mean': self.calculate_f_mean,
@@ -628,6 +641,7 @@ class QueryUtil:
             'MSE': (ffbar, oobar, fobar),
             'Bias-corrected MSE': (fbar, obar, ffbar, oobar, fobar),
             'ME (Additive bias)': (fbar, obar),
+            'Fractional Error': (fbar, obar),
             'Multiplicative bias': (fbar, obar),
             'N': (total,),
             'Forecast mean': (fbar,),
