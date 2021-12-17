@@ -363,30 +363,25 @@ const calculateStatCTC = function (hit, fa, miss, cn, n, statistic) {
         case 'ETS (Equitable Threat Score)':
             queryVal = (hit - ((hit + fa) * (hit + miss) / (hit + fa + miss + cn))) / ((hit + fa + miss) - ((hit + fa) * (hit + miss) / (hit + fa + miss + cn))) * 100;
             break;
-        case 'Nlow (obs < threshold, avg per hr)':
-        case 'Nlow (obs < threshold, avg per 15 min)':
-        case 'Nlow (obs < threshold, avg per hr in predefined regions)':
-        case 'Nlow (obs < threshold, avg per 15 min in predefined regions)':
+        case 'Nlow (Number of obs < threshold (hits + misses))':
+        case 'Nhigh (Number of obs > threshold (hits + misses))':
         case 'All observed yes':
             queryVal = hit + miss;
             break;
-        case 'Nhigh (obs > threshold, avg per hr)':
-        case 'Nhigh (obs > threshold, avg per 15 min)':
-        case 'Nhigh (obs > threshold, avg per hr in predefined regions)':
-        case 'Nhigh (obs > threshold, avg per 15 min in predefined regions)':
+        case 'Nlow (Number of obs < threshold (false alarms + correct nulls))':
+        case 'Nhigh (Number of obs > threshold (false alarms + correct nulls))':
         case 'All observed no':
             queryVal = cn + fa;
             break;
-        case 'Ntot (total obs, avg per hr)':
-        case 'Ntot (total obs, avg per 15 min)':
-        case 'Ntot (total obs, avg per hr in predefined regions)':
-        case 'Ntot (total obs, avg per 15 min in predefined regions)':
+        case 'Ntot (Total number of obs, (Nlow + Nhigh))':
             queryVal = hit + fa + miss + cn;
             break;
-        case 'Ratio (Nlow / Ntot)':
+        case 'Ratio Nlow / Ntot ((hit + miss)/(hit + miss + fa + cn))':
+        case 'Ratio Nhigh / Ntot ((hit + miss)/(hit + miss + fa + cn))':
             queryVal = (hit + miss) / (hit + fa + miss + cn);
             break;
-        case 'Ratio (Nhigh / Ntot)':
+        case 'Ratio Nlow / Ntot ((fa + cn)/(hit + miss + fa + cn))':
+        case 'Ratio Nhigh / Ntot ((fa + cn)/(hit + miss + fa + cn))':
             queryVal = (cn + fa) / (hit + fa + miss + cn);
             break;
         case 'N times*levels(*stations if station plot) per graph point':
