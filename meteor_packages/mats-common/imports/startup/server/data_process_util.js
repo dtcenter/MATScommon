@@ -64,7 +64,7 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
                 if ((diffFrom === null || diffFrom === undefined) || !appParams.matching) {
                     if (curveInfoParams.statType !== 'ctc') {
                         // assign recalculated statistic to data[di][1], which is the value to be plotted
-                        if (statisticSelect === 'N' || statisticSelect === 'N per graph point') {
+                        if (statisticSelect === 'N' || statisticSelect === 'N times*levels(*stations if station plot) per graph point') {
                             data.y[di] = errorResult.sum;
                         } else {
                             data.y[di] = errorResult.d_mean;
@@ -172,7 +172,7 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
             } else {
                 data.stats[di] = {
                     raw_stat: rawStat,
-                    d_mean: statisticSelect === 'N' || statisticSelect === 'N per graph point' ? errorResult.sum : errorResult.d_mean,
+                    d_mean: statisticSelect === 'N' || statisticSelect === 'N times*levels(*stations if station plot) per graph point' ? errorResult.sum : errorResult.d_mean,
                     sd: errorResult.sd,
                     n_good: errorResult.n_good,
                     lag1: errorResult.lag1,
@@ -366,7 +366,7 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
             if ((diffFrom === null || diffFrom === undefined) || !appParams.matching) {
                 if (curveInfoParams.statType !== 'ctc') {
                     // assign recalculated statistic to data[di][1], which is the value to be plotted
-                    if (statisticSelect === 'N' || statisticSelect === 'N per graph point') {
+                    if (statisticSelect === 'N' || statisticSelect === 'N times*levels(*stations if station plot) per graph point') {
                         data.x[di] = errorResult.sum;
                     } else {
                         data.x[di] = errorResult.d_mean;
@@ -441,7 +441,7 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
             } else {
                 data.stats[di] = {
                     raw_stat: rawStat,
-                    d_mean: statisticSelect === 'N' || statisticSelect === 'N per graph point' ? errorResult.sum : errorResult.d_mean,
+                    d_mean: statisticSelect === 'N' || statisticSelect === 'N times*levels(*stations if station plot) per graph point' ? errorResult.sum : errorResult.d_mean,
                     sd: errorResult.sd,
                     n_good: errorResult.n_good,
                     lag1: errorResult.lag1,
