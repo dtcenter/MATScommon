@@ -1632,22 +1632,16 @@ const parseQueryDataMapCTC = function (rows, d, dPurple, dPurpleBlue, dBlue, dBl
             queryVal = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, n, statistic);
             switch (statistic) {
                 case 'TSS (True Skill Score)':
+                case 'HSS (Heidke Skill Score)':
                     lowLimit = -100;
                     highLimit = 100;
                     break;
-                // some PODy measures look for a value over a threshold, some look for under
                 case 'PODy (POD of value < threshold)':
                 case 'PODy (POD of value > threshold)':
-                    lowLimit = 0;
-                    highLimit = 100;
-                    break;
-                // some PODn measures look for a value under a threshold, some look for over
                 case 'PODn (POD of value > threshold)':
                 case 'PODn (POD of value < threshold)':
-                    lowLimit = 0;
-                    highLimit = 100;
-                    break;
                 case 'FAR (False Alarm Ratio)':
+                case 'CSI (Critical Success Index)':
                     lowLimit = 0;
                     highLimit = 100;
                     break;
@@ -1655,23 +1649,14 @@ const parseQueryDataMapCTC = function (rows, d, dPurple, dPurpleBlue, dBlue, dBl
                     lowLimit = 0;
                     highLimit = 2;
                     break;
-                case 'CSI (Critical Success Index)':
-                    lowLimit = 0;
-                    highLimit = 100;
-                    break;
-                case 'HSS (Heidke Skill Score)':
-                    lowLimit = -100;
-                    highLimit = 100;
-                    break;
                 case 'ETS (Equitable Threat Score)':
                     lowLimit = -100 / 3;
                     highLimit = 100;
                     break;
-                case 'Ratio (Nlow / Ntot)':
-                    lowLimit = 0;
-                    highLimit = 1;
-                    break;
-                case 'Ratio (Nhigh / Ntot)':
+                case 'Ratio Nlow / Ntot ((hit + miss)/(hit + miss + fa + cn))':
+                case 'Ratio Nhigh / Ntot ((hit + miss)/(hit + miss + fa + cn))':
+                case 'Ratio Nlow / Ntot ((fa + cn)/(hit + miss + fa + cn))':
+                case 'Ratio Nhigh / Ntot ((fa + cn)/(hit + miss + fa + cn))':
                     lowLimit = 0;
                     highLimit = 1;
                     break;
