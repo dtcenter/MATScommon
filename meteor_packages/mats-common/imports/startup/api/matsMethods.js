@@ -913,7 +913,7 @@ const _saveResultData = function (result) {
                         // This is a little hacky but what is happening is we putting error_y.array on the arrayKeys list so that it gets its
                         // downsampled equivalent values.
                         for (ki = 0; ki < nonArrayKeys.length; ki++) {
-                            dsData[nonArrayKeys[ki]] = result.data[ci][nonArrayKeys[ki]];
+                            dsData[nonArrayKeys[ki]] = JSON.parse(JSON.stringify(result.data[ci][nonArrayKeys[ki]]));
                         }
                         // remove the original error_y array data.
                         dsData['error_y'].array = [];
