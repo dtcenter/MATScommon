@@ -91,7 +91,6 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
                 data.error_y.array[di] = null;
             } else if (curveInfoParams.statType === 'ctc') {
                 // call the python ctc error bar code for diff curves
-                // if (curveIndex === 2) debugger;
                 if (diffFrom === undefined || diffFrom === null || !(Array.isArray(dataset[diffFrom[0]].subHit[di])
                     || !isNaN(dataset[diffFrom[0]].subHit[di])) || !(Array.isArray(dataset[diffFrom[1]].subHit[di]) || !isNaN(dataset[diffFrom[1]].subHit[di]))) {
                     data.error_y.array[di] = null;
