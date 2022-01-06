@@ -337,6 +337,11 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                         data['y'][di] = Number(matsDataUtils.calculateStatCTC(hit, fa, miss, cn, data.subHit[di].length, 'PODy (POD of value < threshold)')) / 100;
                         data['oy_all'][di] = Number(matsDataUtils.calculateStatCTC(hit, fa, miss, cn, data.subHit[di].length, 'All observed yes'));
                         data['on_all'][di] = Number(matsDataUtils.calculateStatCTC(hit, fa, miss, cn, data.subHit[di].length, 'All observed no'));
+                    } else if (plotType === matsTypes.PlotTypes.roc) {
+                        data['x'][di] = 1 - Number(matsDataUtils.calculateStatCTC(hit, fa, miss, cn, data.subHit[di].length, 'POFD (Probability of False Detection)')) / 100;
+                        data['y'][di] = Number(matsDataUtils.calculateStatCTC(hit, fa, miss, cn, data.subHit[di].length, 'PODy (POD of value < threshold)')) / 100;
+                        data['oy_all'][di] = Number(matsDataUtils.calculateStatCTC(hit, fa, miss, cn, data.subHit[di].length, 'All observed yes'));
+                        data['on_all'][di] = Number(matsDataUtils.calculateStatCTC(hit, fa, miss, cn, data.subHit[di].length, 'All observed no'));
                     } else {
                         data[statVarName][di] = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, data.subHit[di].length, curveStats[curveIndex]);
                     }

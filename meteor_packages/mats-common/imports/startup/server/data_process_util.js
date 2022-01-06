@@ -649,6 +649,13 @@ const processDataReliability = function (dataset, appParams, curveInfoParams, pl
 const processDataROC = function (dataset, appParams, curveInfoParams, plotParams, bookkeepingParams) {
     var error = "";
 
+    curveInfoParams.statType = curveInfoParams.statType === undefined ? 'scalar' : curveInfoParams.statType;
+
+    // if matching, pare down dataset to only matching data.
+    if (curveInfoParams.curvesLength > 1 && appParams.matching) {
+        dataset = matsDataMatchUtils.getMatchedDataSet(dataset, curveInfoParams, appParams, {});
+    }
+
     // sort data statistics for each curve
     for (var curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex++) {
 
@@ -658,19 +665,23 @@ const processDataROC = function (dataset, appParams, curveInfoParams, plotParams
 
         var di = 0;
         while (di < data.x.length) {
+            var binValue = curveInfoParams.statType.includes("met-") ? data.threshold_all[di] : data.binVals[di];
+            binValue = data.binParam.indexOf("Date") > -1 ? moment.utc(binValue * 1000).format("YYYY-MM-DD HH:mm") : binValue;
             // store statistics for this di datapoint
             data.stats[di] = {
-                threshold: data.threshold_all[di],
+                bin_value: binValue,
                 pody: data.y[di],
                 pofd: data.x[di],
+                n: data.n[di],
                 obs_y: data.oy_all[di],
                 obs_n: data.on_all[di]
             };
             // the tooltip is stored in data.text
             data.text[di] = label;
-            data.text[di] = data.text[di] + "<br>threshold: " + data.threshold_all[di];
+            data.text[di] = data.text[di] + "<br>bin value: " + binValue;
             data.text[di] = data.text[di] + "<br>probability of detection: " + data.y[di];
             data.text[di] = data.text[di] + "<br>probability of false detection: " + data.x[di];
+            data.text[di] = data.text[di] + "<br>n: " + data.n[di];
 
             di++;
         }

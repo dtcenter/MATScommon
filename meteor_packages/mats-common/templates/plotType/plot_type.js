@@ -277,7 +277,7 @@ Template.plotType.events({
     'click .plot-type-ROC': function (event) {
         const plotType = matsTypes.PlotTypes.roc;
         const selectorsToInitialize = ['threshold', 'scale', 'level', 'forecast-length', 'valid-time', 'truth', 'year', 'storm', 'region-type', 'region'];
-        const dateSelector = 'dates';
+        const dateSelector = 'curve-dates';
         changePlotType(plotType, selectorsToInitialize, dateSelector);
     },
     'click .plot-type-PerformanceDiagram': function (event) {

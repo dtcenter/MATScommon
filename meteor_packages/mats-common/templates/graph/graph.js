@@ -459,7 +459,7 @@ Template.graph.helpers({
                         }
                         for (var j = 0; j < indValsArray.length; j++) {
                             indVals.push({
-                                val: (plotType === matsTypes.PlotTypes.performanceDiagram && dataset[i].binParam !== undefined && dataset[i].binParam.indexOf("Date") > -1) ?
+                                val: ((plotType === matsTypes.PlotTypes.performanceDiagram || plotType === matsTypes.PlotTypes.roc) && dataset[i].binParam !== undefined && dataset[i].binParam.indexOf("Date") > -1) ?
                                     moment.utc(indValsArray[j] * 1000).format("YYYY-MM-DD HH:mm") : indValsArray[j],
                                 label: curveLabel + "---" + indValsArray[j].toString()
                             });
@@ -557,7 +557,7 @@ Template.graph.helpers({
                 case matsTypes.PlotTypes.reliability:
                     return "Reliability: " + p.dates + " : " + format;
                 case matsTypes.PlotTypes.roc:
-                    return "ROC Curve: " + p.dates + " : " + format;
+                    return "ROC Curve: " + format;
                 case matsTypes.PlotTypes.performanceDiagram:
                     return "Performance Diagram: " + format;
                 case matsTypes.PlotTypes.map:

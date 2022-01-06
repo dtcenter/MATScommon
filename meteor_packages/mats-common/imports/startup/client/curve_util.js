@@ -792,7 +792,7 @@ const showReliabilityFace = function () {
         'truth': 'block',
         'year': 'block',
         'storm': 'block',
-        'region-type' : 'block',
+        'region-type' : 'none',
         'x-axis-parameter': 'none',
         'y-axis-parameter': 'none',
         'bin-parameter': 'none',
@@ -811,10 +811,11 @@ const showReliabilityFace = function () {
 
 // method to display the appropriate selectors for a ROC curve
 const showROCFace = function () {
+    const isMetexpress = matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
     const plotType = matsTypes.PlotTypes.roc;
     var faceOptions = {
-        'curve-dates': 'none',
-        'dates': 'block',
+        'curve-dates': 'block',
+        'dates': 'none',
         'statistic': 'none',
         'threshold': 'block',
         'scale': 'block',
@@ -835,10 +836,10 @@ const showROCFace = function () {
         'truth': 'block',
         'year': 'block',
         'storm': 'block',
-        'region-type' : 'block',
+        'region-type' : 'none',
         'x-axis-parameter': 'none',
         'y-axis-parameter': 'none',
-        'bin-parameter': 'none',
+        'bin-parameter': 'block',
         'significance': 'none',
         'plotFormat': 'none',
         'QCParamGroup': 'none'
@@ -848,6 +849,14 @@ const showROCFace = function () {
         'bin-parameter': 'Valid Date',
         'plotFormat': matsTypes.PlotFormats.none
     };
+    // in metexpress, users don't get to choose how to bin data
+    if (isMetexpress) {
+        faceOptions['bin-parameter'] = 'none';
+    }
+    // performance diagrams need to have the region be in predefined mode
+    if (matsParamUtils.getParameterForName('region-type') !== undefined) {
+        selectorsToReset['region-type'] = 'Predefined region';
+    }
     setSelectorVisibility(plotType, faceOptions, selectorsToReset);
     return selectorsToReset;
 };

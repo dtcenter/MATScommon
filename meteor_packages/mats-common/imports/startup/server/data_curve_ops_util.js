@@ -262,7 +262,6 @@ const generateSeriesCurveOptions = function (curve, curveIndex, axisMap, dataSer
         }
     };
 
-    // var lineMode = appParams.plotType === matsTypes.PlotTypes.performanceDiagram ? "markers" : "lines+markers";
     var curveOptions = {
         ...{
             label: label,
@@ -293,7 +292,7 @@ const generateSeriesCurveOptions = function (curve, curveIndex, axisMap, dataSer
     curveOptions['error_y'] = error_y_temp.error_y;
 
     // for performance diagram point filtering, need to know what we're plotting
-    if (appParams.plotType === matsTypes.PlotTypes.performanceDiagram) {
+    if (appParams.plotType === matsTypes.PlotTypes.performanceDiagram || appParams.plotType === matsTypes.PlotTypes.roc) {
         curveOptions['binParam'] = curve['binParam'];
     }
 

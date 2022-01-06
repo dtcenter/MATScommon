@@ -34,11 +34,11 @@ Template.curveList.helpers({
                 case matsTypes.PlotTypes.roc:
                 case matsTypes.PlotTypes.performanceDiagram:
                 case matsTypes.PlotTypes.contour:
-                    // allow matching for non-metexpress performance diagrams
+                    // allow matching for non-metexpress ROCs and performance diagrams
                     if ((matsCollections.Settings.findOne({}) !== undefined
                         && matsCollections.Settings.findOne({}).appType !== undefined
                         && matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress)
-                        || plotType !== matsTypes.PlotTypes.performanceDiagram) {
+                        || (plotType !== matsTypes.PlotTypes.performanceDiagram && plotType !== matsTypes.PlotTypes.roc)) {
                         return "none";
                     } else {
                         return "block";

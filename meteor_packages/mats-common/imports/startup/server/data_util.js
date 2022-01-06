@@ -348,6 +348,9 @@ const calculateStatCTC = function (hit, fa, miss, cn, n, statistic) {
         case 'PODn (POD of value < threshold)':
             queryVal = cn / (cn + fa) * 100;
             break;
+        case 'POFD (Probability of False Detection)':
+            queryVal = fa / (fa + cn) * 100;
+            break;
         case 'FAR (False Alarm Ratio)':
             queryVal = fa / (fa + hit) * 100;
             break;
@@ -1168,7 +1171,7 @@ const ctcErrorPython = function (statistic, minuendData, subtrahendData) {
 const removePoint = function (data, di, plotType, statVarName, isCTC, hasLevels) {
     data.x.splice(di, 1);
     data.y.splice(di, 1);
-    if (plotType === matsTypes.PlotTypes.performanceDiagram) {
+    if (plotType === matsTypes.PlotTypes.performanceDiagram || plotType === matsTypes.PlotTypes.roc) {
         data.oy_all.splice(di, 1);
         data.on_all.splice(di, 1);
     }

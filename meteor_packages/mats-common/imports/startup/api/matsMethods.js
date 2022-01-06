@@ -524,9 +524,10 @@ const _getFlattenedResultData = function (rk, p, np) {
                         var curveData = [];  // array of maps
                         for (var cdi = 0; cdi < data[ci].y.length; cdi++) {  // for each datapoint
                             var curveDataElement = {};
-                            curveDataElement[data[ci].label + ' threshold'] = data[ci].stats[cdi].threshold;
+                            curveDataElement[data[ci].label + ' bin value'] = data[ci].stats[cdi].bin_value;
                             curveDataElement['probability of detection'] = data[ci].stats[cdi].pody;
                             curveDataElement['probability of false detection'] = data[ci].stats[cdi].pofd;
+                            curveDataElement['n'] = data[ci].stats[cdi].n;
                             curveDataElement['oy'] = data[ci].stats[cdi].obs_y;
                             curveDataElement['on'] = data[ci].stats[cdi].obs_n;
                             curveData.push(curveDataElement);

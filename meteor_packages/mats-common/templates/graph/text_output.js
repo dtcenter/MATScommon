@@ -263,9 +263,10 @@ Template.textOutput.helpers({
                         <th>on</th>";
                 break;
             case matsTypes.PlotTypes.roc:
-                header += "<th>" + curve.label + " threshold</th>\
+                header += "<th>" + curve.label + " bin value</th>\
                         <th>probability of detection</th>\
                         <th>probability of false detection</th>\
+                        <th>n</th>\
                         ";
                 break;
             case matsTypes.PlotTypes.performanceDiagram:
@@ -519,9 +520,10 @@ Template.textOutput.helpers({
                     "<td>" + (element['on'] != undefined && element['on'] !== null ? element['on'] : fillStr) + "</td>";
                 break;
             case matsTypes.PlotTypes.roc:
-                line += "<td>" + element[labelKey += " threshold"] + "</td>" +
+                line += "<td>" + element[labelKey += " bin value"] + "</td>" +
                     "<td>" + (element['probability of detection'] != undefined && element['probability of detection'] !== null ? element['probability of detection'].toPrecision(4) : fillStr) + "</td>" +
-                    "<td>" + (element['probability of false detection'] != undefined && element['probability of false detection'] !== null ? element['probability of false detection'] : fillStr) + "</td>";
+                    "<td>" + (element['probability of false detection'] != undefined && element['probability of false detection'] !== null ? element['probability of false detection'] : fillStr) + "</td>"+
+                    "<td>" + (element['n'] != undefined && element['n'] !== null ? element['n'] : fillStr) + "</td>";
                 break;
             case matsTypes.PlotTypes.performanceDiagram:
                 line += "<td>" + element[labelKey += " bin value"] + "</td>" +
