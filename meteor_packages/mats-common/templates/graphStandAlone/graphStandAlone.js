@@ -214,7 +214,7 @@ Template.GraphStandAlone.events({
         $(".previewCurveButtons").each(function (i, obj) {
             obj.style.display = "none";
         });
-        html2canvas(document.querySelector('#graph-container'), {scale: 3.0}).then(canvas => {
+        html2canvas(document.querySelector('#graph-container'), {scale: 5.0}).then(canvas => {
             var h = 419.53;
             var w = 595.28;
             var filename = document.getElementById("exportFileName").value;
