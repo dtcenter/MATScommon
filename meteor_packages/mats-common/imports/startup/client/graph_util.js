@@ -108,7 +108,7 @@ const setNoDataLabelsMap = function (dataset) {
         } else {
             const appName = matsCollections !== undefined ? matsCollections.appName.findOne({}).app : undefined;
             var heatMapText;
-            if (appName !== undefined && (appName.includes("ceiling") || appName.includes("visibility"))) {
+            if (appName !== undefined && (appName.includes("ceil") || appName.includes("vis"))) {
                 heatMapText = 'hide heat map';
             } else {
                 heatMapText = 'show heat map';
