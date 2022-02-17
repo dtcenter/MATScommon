@@ -552,7 +552,6 @@ const showDieOffFace = function () {
 
 // method to display the appropriate selectors for a threshold curve
 const showThresholdFace = function () {
-    const appName = matsCollections.appName.findOne({}).app;
     const plotType = matsTypes.PlotTypes.threshold;
     var faceOptions = {
         'curve-dates': 'block',
@@ -971,7 +970,6 @@ const showMapFace = function () {
 
 // method to display the appropriate selectors for a histogram
 const showHistogramFace = function () {
-    const appName = matsCollections.appName.findOne({}).app;
     const plotType = matsTypes.PlotTypes.histogram;
     var faceOptions = {
         'curve-dates': 'block',
