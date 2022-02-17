@@ -4,6 +4,7 @@
 
 import {
     matsPlotUtils,
+    matsCollections,
     matsTypes
 } from 'meteor/randyp:mats-common';
 
@@ -296,6 +297,21 @@ const generateSeriesCurveOptions = function (curve, curveIndex, axisMap, dataSer
         curveOptions['binParam'] = curve['binParam'];
     }
 
+    // if threshold, determine x-axis units
+    if (appParams.plotType === matsTypes.PlotTypes.threshold) {
+        const database = curve['database'];
+        const thresholdUnits = matsCollections.Settings.findOne({}).thresholdUnits;
+        if (thresholdUnits === undefined || Object.keys(thresholdUnits).length === 0) {
+            curveOptions["thresholdAxisUnits"] = "";
+        } else {
+            if (database === undefined) {
+                curveOptions["thresholdAxisLabel"] = thresholdUnits[Object.keys(thresholdUnits)[0]];
+            } else {
+                curveOptions["thresholdAxisLabel"] = thresholdUnits[database];
+            }
+        }
+    }
+
     return curveOptions;
 };
 
@@ -440,6 +456,7 @@ const generateMapCurveOptions = function (curve, dataSeries, appParams, orderOfM
             label: label,
             curveId: label,
             name: longLabel,
+            datatype: 'scalar',
             type: 'scattermapbox',
             mode: 'markers',
             marker: {
@@ -470,6 +487,7 @@ const generateCTCMapCurveOptions = function (curve, dataSeries, appParams) {
             label: label,
             curveId: label,
             name: longLabel,
+            datatype: 'ctc',
             type: 'scattermapbox',
             mode: 'markers',
             marker: {

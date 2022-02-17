@@ -589,8 +589,8 @@ const showThresholdFace = function () {
         'dieoff-type': 'Dieoff',
         'bin-parameter': 'Valid Date'
     };
-    // ctc thresholds need to have the region be in predefined mode
-    if (appName !== undefined && (appName.includes("ceil") || appName.includes("vis")) && matsParamUtils.getParameterForName('region-type') !== undefined) {
+    // thresholds need to have the region be in predefined mode
+    if (matsParamUtils.getParameterForName('region-type') !== undefined) {
         faceOptions['region-type'] = 'none';
         selectorsToReset['region-type'] = 'Predefined region';
     }
@@ -1008,8 +1008,8 @@ const showHistogramFace = function () {
         'dieoff-type': 'Dieoff',
         'bin-parameter': 'Valid Date'
     };
-    // ctc histograms need to have the region be in predefined mode
-    if (appName !== undefined && (appName.includes("ceil") || appName.includes("vis")) && matsParamUtils.getParameterForName('region-type') !== undefined) {
+    // histograms need to have the region be in predefined mode
+    if (matsParamUtils.getParameterForName('region-type') !== undefined) {
         faceOptions['region-type'] = 'none';
         selectorsToReset['region-type'] = 'Predefined region';
     }
