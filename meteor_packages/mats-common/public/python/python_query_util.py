@@ -773,258 +773,162 @@ class QueryUtil:
         try:
             # get all of the sub-values for each time
             if stat_line_type == 'scalar':
-                if 'sub_data' in row:
-                    # everything except contour plots should be in this format
-                    sub_data = str(row['sub_data']).split(',')
-                    sub_fbar = []
-                    sub_obar = []
-                    sub_ffbar = []
-                    sub_oobar = []
-                    sub_fobar = []
-                    sub_total = []
-                    sub_secs = []
-                    sub_levs = []
-                    for sub_datum in sub_data:
-                        sub_datum = sub_datum.split(';')
-                        sub_fbar.append(float(sub_datum[0]) if float(sub_datum[0]) != -9999 else np.nan)
-                        sub_obar.append(float(sub_datum[1]) if float(sub_datum[1]) != -9999 else np.nan)
-                        sub_ffbar.append(float(sub_datum[2]) if float(sub_datum[2]) != -9999 else np.nan)
-                        sub_oobar.append(float(sub_datum[3]) if float(sub_datum[3]) != -9999 else np.nan)
-                        sub_fobar.append(float(sub_datum[4]) if float(sub_datum[4]) != -9999 else np.nan)
-                        sub_total.append(float(sub_datum[5]) if float(sub_datum[5]) != -9999 else np.nan)
-                        sub_secs.append(float(sub_datum[6]) if float(sub_datum[6]) != -9999 else np.nan)
-                        if len(sub_datum) > 7:
-                            if self.is_number(sub_datum[7]):
-                                sub_levs.append(int(sub_datum[7]) if float(sub_datum[7]) != -9999 else np.nan)
-                            else:
-                                sub_levs.append(sub_datum[7])
-                    sub_fbar = np.asarray(sub_fbar)
-                    sub_obar = np.asarray(sub_obar)
-                    sub_ffbar = np.asarray(sub_ffbar)
-                    sub_oobar = np.asarray(sub_oobar)
-                    sub_fobar = np.asarray(sub_fobar)
-                    sub_total = np.asarray(sub_total)
-                    sub_secs = np.asarray(sub_secs)
-                    if len(sub_levs) == 0:
-                        sub_levs = np.empty(len(sub_secs))
-                    else:
-                        sub_levs = np.asarray(sub_levs)
-                else:
-                    # contour plot data
-                    sub_fbar = np.array([float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_fbar']).split(','))])
-                    sub_obar = np.array([float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_obar']).split(','))])
-                    sub_ffbar = np.array([float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_ffbar']).split(','))])
-                    sub_oobar = np.array([float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_oobar']).split(','))])
-                    sub_fobar = np.array([float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_fobar']).split(','))])
-                    sub_total = np.array([float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_total']).split(','))])
-                    sub_secs = np.array([float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_secs']).split(','))])
-                    if has_levels:
-                        sub_levs_raw = str(row['sub_levs']).split(',')
-                        if self.is_number(sub_levs_raw[0]):
-                            sub_levs = np.array([int(i) if float(i) != -9999 else np.nan for i in sub_levs_raw])
+                sub_data = str(row['sub_data']).split(',')
+                sub_fbar = []
+                sub_obar = []
+                sub_ffbar = []
+                sub_oobar = []
+                sub_fobar = []
+                sub_total = []
+                sub_secs = []
+                sub_levs = []
+                for sub_datum in sub_data:
+                    sub_datum = sub_datum.split(';')
+                    sub_fbar.append(float(sub_datum[0]) if float(sub_datum[0]) != -9999 else np.nan)
+                    sub_obar.append(float(sub_datum[1]) if float(sub_datum[1]) != -9999 else np.nan)
+                    sub_ffbar.append(float(sub_datum[2]) if float(sub_datum[2]) != -9999 else np.nan)
+                    sub_oobar.append(float(sub_datum[3]) if float(sub_datum[3]) != -9999 else np.nan)
+                    sub_fobar.append(float(sub_datum[4]) if float(sub_datum[4]) != -9999 else np.nan)
+                    sub_total.append(float(sub_datum[5]) if float(sub_datum[5]) != -9999 else np.nan)
+                    sub_secs.append(float(sub_datum[6]) if float(sub_datum[6]) != -9999 else np.nan)
+                    if len(sub_datum) > 7:
+                        if self.is_number(sub_datum[7]):
+                            sub_levs.append(int(sub_datum[7]) if float(sub_datum[7]) != -9999 else np.nan)
                         else:
-                            sub_levs = np.array(sub_levs_raw)
-                    else:
-                        sub_levs = np.empty(len(sub_secs))
-
+                            sub_levs.append(sub_datum[7])
+                sub_fbar = np.asarray(sub_fbar)
+                sub_obar = np.asarray(sub_obar)
+                sub_ffbar = np.asarray(sub_ffbar)
+                sub_oobar = np.asarray(sub_oobar)
+                sub_fobar = np.asarray(sub_fobar)
+                sub_total = np.asarray(sub_total)
+                sub_secs = np.asarray(sub_secs)
+                if len(sub_levs) == 0:
+                    sub_levs = np.empty(len(sub_secs))
+                else:
+                    sub_levs = np.asarray(sub_levs)
                 # calculate the scalar statistic
                 sub_values, stat = self.calculate_scalar_stat(statistic, sub_fbar, sub_obar, sub_ffbar, sub_oobar,
                                                               sub_fobar, sub_total)
             elif stat_line_type == 'vector':
-                if 'sub_data' in row:
-                    # everything except contour plots should be in this format
-                    sub_data = str(row['sub_data']).split(',')
-                    sub_ufbar = []
-                    sub_vfbar = []
-                    sub_uobar = []
-                    sub_vobar = []
-                    sub_uvfobar = []
-                    sub_uvffbar = []
-                    sub_uvoobar = []
-                    sub_f_speed_bar = []
-                    sub_o_speed_bar = []
-                    sub_total = []
-                    sub_secs = []
-                    sub_levs = []
-                    for sub_datum in sub_data:
-                        sub_datum = sub_datum.split(';')
-                        sub_ufbar.append(float(sub_datum[0]) if float(sub_datum[0]) != -9999 else np.nan)
-                        sub_vfbar.append(float(sub_datum[1]) if float(sub_datum[1]) != -9999 else np.nan)
-                        sub_uobar.append(float(sub_datum[2]) if float(sub_datum[2]) != -9999 else np.nan)
-                        sub_vobar.append(float(sub_datum[3]) if float(sub_datum[3]) != -9999 else np.nan)
-                        sub_uvfobar.append(float(sub_datum[4]) if float(sub_datum[4]) != -9999 else np.nan)
-                        sub_uvffbar.append(float(sub_datum[5]) if float(sub_datum[5]) != -9999 else np.nan)
-                        sub_uvoobar.append(float(sub_datum[6]) if float(sub_datum[6]) != -9999 else np.nan)
-                        if "ACC" not in statistic:
-                            sub_f_speed_bar.append(float(sub_datum[7]) if float(sub_datum[7]) != -9999 else np.nan)
-                            sub_o_speed_bar.append(float(sub_datum[8]) if float(sub_datum[8]) != -9999 else np.nan)
-                            sub_total.append(float(sub_datum[9]) if float(sub_datum[9]) != -9999 else np.nan)
-                            sub_secs.append(float(sub_datum[10]) if float(sub_datum[10]) != -9999 else np.nan)
-                            if len(sub_datum) > 11:
-                                if self.is_number(sub_datum[11]):
-                                    sub_levs.append(int(sub_datum[11]) if float(sub_datum[11]) != -9999 else np.nan)
-                                else:
-                                    sub_levs.append(sub_datum[11])
-                        else:
-                            sub_total.append(float(sub_datum[7]) if float(sub_datum[7]) != -9999 else np.nan)
-                            sub_secs.append(float(sub_datum[8]) if float(sub_datum[8]) != -9999 else np.nan)
-                            if len(sub_datum) > 9:
-                                if self.is_number(sub_datum[9]):
-                                    sub_levs.append(int(sub_datum[9]) if float(sub_datum[9]) != -9999 else np.nan)
-                                else:
-                                    sub_levs.append(sub_datum[9])
-                    sub_ufbar = np.asarray(sub_ufbar)
-                    sub_vfbar = np.asarray(sub_vfbar)
-                    sub_uobar = np.asarray(sub_uobar)
-                    sub_vobar = np.asarray(sub_vobar)
-                    sub_uvfobar = np.asarray(sub_uvfobar)
-                    sub_uvffbar = np.asarray(sub_uvffbar)
-                    sub_uvoobar = np.asarray(sub_uvoobar)
-                    sub_f_speed_bar = np.asarray(sub_f_speed_bar)
-                    sub_o_speed_bar = np.asarray(sub_o_speed_bar)
-                    sub_total = np.asarray(sub_total)
-                    sub_secs = np.asarray(sub_secs)
-                    if len(sub_levs) == 0:
-                        sub_levs = np.empty(len(sub_secs))
-                    else:
-                        sub_levs = np.asarray(sub_levs)
-                else:
-                    # contour plot data
-                    sub_ufbar = np.array(
-                        [float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_ufbar']).split(','))])
-                    sub_vfbar = np.array(
-                        [float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_vfbar']).split(','))])
-                    sub_uobar = np.array(
-                        [float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_uobar']).split(','))])
-                    sub_vobar = np.array(
-                        [float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_vobar']).split(','))])
-                    sub_uvfobar = np.array(
-                        [float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_uvfobar']).split(','))])
-                    sub_uvffbar = np.array(
-                        [float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_uvffbar']).split(','))])
-                    sub_uvoobar = np.array(
-                        [float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_uvoobar']).split(','))])
+                sub_data = str(row['sub_data']).split(',')
+                sub_ufbar = []
+                sub_vfbar = []
+                sub_uobar = []
+                sub_vobar = []
+                sub_uvfobar = []
+                sub_uvffbar = []
+                sub_uvoobar = []
+                sub_f_speed_bar = []
+                sub_o_speed_bar = []
+                sub_total = []
+                sub_secs = []
+                sub_levs = []
+                for sub_datum in sub_data:
+                    sub_datum = sub_datum.split(';')
+                    sub_ufbar.append(float(sub_datum[0]) if float(sub_datum[0]) != -9999 else np.nan)
+                    sub_vfbar.append(float(sub_datum[1]) if float(sub_datum[1]) != -9999 else np.nan)
+                    sub_uobar.append(float(sub_datum[2]) if float(sub_datum[2]) != -9999 else np.nan)
+                    sub_vobar.append(float(sub_datum[3]) if float(sub_datum[3]) != -9999 else np.nan)
+                    sub_uvfobar.append(float(sub_datum[4]) if float(sub_datum[4]) != -9999 else np.nan)
+                    sub_uvffbar.append(float(sub_datum[5]) if float(sub_datum[5]) != -9999 else np.nan)
+                    sub_uvoobar.append(float(sub_datum[6]) if float(sub_datum[6]) != -9999 else np.nan)
                     if "ACC" not in statistic:
-                        sub_f_speed_bar = np.array(
-                            [float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_f_speed_bar']).split(','))])
-                        sub_o_speed_bar = np.array(
-                            [float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_o_speed_bar']).split(','))])
+                        sub_f_speed_bar.append(float(sub_datum[7]) if float(sub_datum[7]) != -9999 else np.nan)
+                        sub_o_speed_bar.append(float(sub_datum[8]) if float(sub_datum[8]) != -9999 else np.nan)
+                        sub_total.append(float(sub_datum[9]) if float(sub_datum[9]) != -9999 else np.nan)
+                        sub_secs.append(float(sub_datum[10]) if float(sub_datum[10]) != -9999 else np.nan)
+                        if len(sub_datum) > 11:
+                            if self.is_number(sub_datum[11]):
+                                sub_levs.append(int(sub_datum[11]) if float(sub_datum[11]) != -9999 else np.nan)
+                            else:
+                                sub_levs.append(sub_datum[11])
                     else:
-                        sub_f_speed_bar = np.array([])
-                        sub_o_speed_bar = np.array([])
-                    sub_total = np.array(
-                        [float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_total']).split(','))])
-                    sub_secs = np.array(
-                        [float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_secs']).split(','))])
-                    if has_levels:
-                        sub_levs_raw = str(row['sub_levs']).split(',')
-                        if self.is_number(sub_levs_raw[0]):
-                            sub_levs = np.array([int(i) if float(i) != -9999 else np.nan for i in sub_levs_raw])
-                        else:
-                            sub_levs = np.array(sub_levs_raw)
-                    else:
-                        sub_levs = np.empty(len(sub_secs))
-
+                        sub_total.append(float(sub_datum[7]) if float(sub_datum[7]) != -9999 else np.nan)
+                        sub_secs.append(float(sub_datum[8]) if float(sub_datum[8]) != -9999 else np.nan)
+                        if len(sub_datum) > 9:
+                            if self.is_number(sub_datum[9]):
+                                sub_levs.append(int(sub_datum[9]) if float(sub_datum[9]) != -9999 else np.nan)
+                            else:
+                                sub_levs.append(sub_datum[9])
+                sub_ufbar = np.asarray(sub_ufbar)
+                sub_vfbar = np.asarray(sub_vfbar)
+                sub_uobar = np.asarray(sub_uobar)
+                sub_vobar = np.asarray(sub_vobar)
+                sub_uvfobar = np.asarray(sub_uvfobar)
+                sub_uvffbar = np.asarray(sub_uvffbar)
+                sub_uvoobar = np.asarray(sub_uvoobar)
+                sub_f_speed_bar = np.asarray(sub_f_speed_bar)
+                sub_o_speed_bar = np.asarray(sub_o_speed_bar)
+                sub_total = np.asarray(sub_total)
+                sub_secs = np.asarray(sub_secs)
+                if len(sub_levs) == 0:
+                    sub_levs = np.empty(len(sub_secs))
+                else:
+                    sub_levs = np.asarray(sub_levs)
                 # calculate the scalar statistic
                 sub_values, stat = self.calculate_vector_stat(statistic, sub_ufbar, sub_vfbar, sub_uobar, sub_vobar,
                                                               sub_uvfobar, sub_uvffbar, sub_uvoobar, sub_f_speed_bar,
                                                               sub_o_speed_bar, sub_total)
             elif stat_line_type == 'ctc':
-                if 'sub_data' in row:
-                    # everything except contour plots should be in this format
-                    sub_data = str(row['sub_data']).split(',')
-                    sub_fy_oy = []
-                    sub_fy_on = []
-                    sub_fn_oy = []
-                    sub_fn_on = []
-                    sub_total = []
-                    sub_secs = []
-                    sub_levs = []
-                    for sub_datum in sub_data:
-                        sub_datum = sub_datum.split(';')
-                        sub_fy_oy.append(float(sub_datum[0]) if float(sub_datum[0]) != -9999 else np.nan)
-                        sub_fy_on.append(float(sub_datum[1]) if float(sub_datum[1]) != -9999 else np.nan)
-                        sub_fn_oy.append(float(sub_datum[2]) if float(sub_datum[2]) != -9999 else np.nan)
-                        sub_fn_on.append(float(sub_datum[3]) if float(sub_datum[3]) != -9999 else np.nan)
-                        sub_total.append(float(sub_datum[4]) if float(sub_datum[4]) != -9999 else np.nan)
-                        sub_secs.append(float(sub_datum[5]) if float(sub_datum[5]) != -9999 else np.nan)
-                        if len(sub_datum) > 6:
-                            if self.is_number(sub_datum[6]):
-                                sub_levs.append(int(sub_datum[6]) if float(sub_datum[6]) != -9999 else np.nan)
-                            else:
-                                sub_levs.append(sub_datum[6])
-                    sub_fy_oy = np.asarray(sub_fy_oy)
-                    sub_fy_on = np.asarray(sub_fy_on)
-                    sub_fn_oy = np.asarray(sub_fn_oy)
-                    sub_fn_on = np.asarray(sub_fn_on)
-                    sub_total = np.asarray(sub_total)
-                    sub_secs = np.asarray(sub_secs)
-                    if len(sub_levs) == 0:
-                        sub_levs = np.empty(len(sub_secs))
-                    else:
-                        sub_levs = np.asarray(sub_levs)
-                else:
-                    # contour plot data
-                    sub_fy_oy = np.array([float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_fy_oy']).split(','))])
-                    sub_fy_on = np.array([float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_fy_on']).split(','))])
-                    sub_fn_oy = np.array([float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_fn_oy']).split(','))])
-                    sub_fn_on = np.array([float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_fn_on']).split(','))])
-                    sub_total = np.array([float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_total']).split(','))])
-                    sub_secs = np.array([float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_secs']).split(','))])
-                    if has_levels:
-                        sub_levs_raw = str(row['sub_levs']).split(',')
-                        if self.is_number(sub_levs_raw[0]):
-                            sub_levs = np.array([int(i) if float(i) != -9999 else np.nan for i in sub_levs_raw])
+                sub_data = str(row['sub_data']).split(',')
+                sub_fy_oy = []
+                sub_fy_on = []
+                sub_fn_oy = []
+                sub_fn_on = []
+                sub_total = []
+                sub_secs = []
+                sub_levs = []
+                for sub_datum in sub_data:
+                    sub_datum = sub_datum.split(';')
+                    sub_fy_oy.append(float(sub_datum[0]) if float(sub_datum[0]) != -9999 else np.nan)
+                    sub_fy_on.append(float(sub_datum[1]) if float(sub_datum[1]) != -9999 else np.nan)
+                    sub_fn_oy.append(float(sub_datum[2]) if float(sub_datum[2]) != -9999 else np.nan)
+                    sub_fn_on.append(float(sub_datum[3]) if float(sub_datum[3]) != -9999 else np.nan)
+                    sub_total.append(float(sub_datum[4]) if float(sub_datum[4]) != -9999 else np.nan)
+                    sub_secs.append(float(sub_datum[5]) if float(sub_datum[5]) != -9999 else np.nan)
+                    if len(sub_datum) > 6:
+                        if self.is_number(sub_datum[6]):
+                            sub_levs.append(int(sub_datum[6]) if float(sub_datum[6]) != -9999 else np.nan)
                         else:
-                            sub_levs = np.array(sub_levs_raw)
-                    else:
-                        sub_levs = np.empty(len(sub_secs))
-
+                            sub_levs.append(sub_datum[6])
+                sub_fy_oy = np.asarray(sub_fy_oy)
+                sub_fy_on = np.asarray(sub_fy_on)
+                sub_fn_oy = np.asarray(sub_fn_oy)
+                sub_fn_on = np.asarray(sub_fn_on)
+                sub_total = np.asarray(sub_total)
+                sub_secs = np.asarray(sub_secs)
+                if len(sub_levs) == 0:
+                    sub_levs = np.empty(len(sub_secs))
+                else:
+                    sub_levs = np.asarray(sub_levs)
                 # calculate the ctc statistic
                 sub_values, stat = self.calculate_ctc_stat(statistic, sub_fy_oy, sub_fy_on, sub_fn_oy, sub_fn_on,
                                                            sub_total)
             elif stat_line_type == 'precalculated':
-                if 'sub_data' in row:
-                    # everything except contour plots should be in this format
-                    stat = float(row['stat']) if float(row['stat']) != -9999 else 'null'
-                    sub_data = str(row['sub_data']).split(',')
-                    sub_values = []
-                    sub_total = []
-                    sub_secs = []
-                    sub_levs = []
-                    for sub_datum in sub_data:
-                        sub_datum = sub_datum.split(';')
-                        sub_values.append(float(sub_datum[0]) if float(sub_datum[0]) != -9999 else np.nan)
-                        sub_total.append(float(sub_datum[1]) if float(sub_datum[1]) != -9999 else np.nan)
-                        sub_secs.append(float(sub_datum[2]) if float(sub_datum[2]) != -9999 else np.nan)
-                        if len(sub_datum) > 3:
-                            if self.is_number(sub_datum[3]):
-                                sub_levs.append(int(sub_datum[3]) if float(sub_datum[0]) != -9999 else np.nan)
-                            else:
-                                sub_levs.append(sub_datum[3])
-                    sub_values = np.asarray(sub_values)
-                    sub_total = np.asarray(sub_total)
-                    sub_secs = np.asarray(sub_secs)
-                    if len(sub_levs) == 0:
-                        sub_levs = np.empty(len(sub_secs))
-                    else:
-                        sub_levs = np.asarray(sub_levs)
-                else:
-                    # contour plot data
-                    sub_values = np.array([float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_precalc_stat']).split(','))])
-                    sub_total = np.array([float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_total']).split(','))])
-                    sub_secs = np.array([float(i) if float(i) != -9999 else np.nan for i in (str(row['sub_secs']).split(','))])
-                    if has_levels:
-                        sub_levs_raw = str(row['sub_levs']).split(',')
-                        if self.is_number(sub_levs_raw[0]):
-                            sub_levs = np.array([int(i) if float(i) != -9999 else np.nan for i in sub_levs_raw])
+                stat = float(row['stat']) if float(row['stat']) != -9999 else 'null'
+                sub_data = str(row['sub_data']).split(',')
+                sub_values = []
+                sub_total = []
+                sub_secs = []
+                sub_levs = []
+                for sub_datum in sub_data:
+                    sub_datum = sub_datum.split(';')
+                    sub_values.append(float(sub_datum[0]) if float(sub_datum[0]) != -9999 else np.nan)
+                    sub_total.append(float(sub_datum[1]) if float(sub_datum[1]) != -9999 else np.nan)
+                    sub_secs.append(float(sub_datum[2]) if float(sub_datum[2]) != -9999 else np.nan)
+                    if len(sub_datum) > 3:
+                        if self.is_number(sub_datum[3]):
+                            sub_levs.append(int(sub_datum[3]) if float(sub_datum[0]) != -9999 else np.nan)
                         else:
-                            sub_levs = np.array(sub_levs_raw)
-                    else:
-                        sub_levs = np.empty(len(sub_secs))
-                    value_mean = np.mean(sub_values)
-                    stat = value_mean if len(sub_values > 0) and self.is_number(value_mean) else 'null'
-
+                            sub_levs.append(sub_datum[3])
+                sub_values = np.asarray(sub_values)
+                sub_total = np.asarray(sub_total)
+                sub_secs = np.asarray(sub_secs)
+                if len(sub_levs) == 0:
+                    sub_levs = np.empty(len(sub_secs))
+                else:
+                    sub_levs = np.asarray(sub_levs)
             else:
                 stat = 'null'
                 sub_secs = np.empty(0)
@@ -1766,13 +1670,13 @@ class QueryUtil:
             stat_key = str(row_x_val) + '_' + str(row_y_val)
             data_exists = False
             if stat_line_type == 'scalar':
-                data_exists = row['sub_fbar'] != "null" and row['sub_fbar'] != "NULL" and row['sub_obar'] != "null" and row['sub_obar'] != "NULL"
+                data_exists = row['fbar'] != "null" and row['fbar'] != "NULL" and row['obar'] != "null" and row['obar'] != "NULL"
             elif stat_line_type == 'vector':
-                data_exists = row['sub_ufbar'] != "null" and row['sub_ufbar'] != "NULL" and row['sub_vfbar'] != "null" and row['sub_vfbar'] != "NULL" and row['sub_uobar'] != "null" and row['sub_uobar'] != "NULL" and row['sub_vobar'] != "null" and row['sub_vobar'] != "NULL"
+                data_exists = row['ufbar'] != "null" and row['ufbar'] != "NULL" and row['vfbar'] != "null" and row['vfbar'] != "NULL" and row['uobar'] != "null" and row['uobar'] != "NULL" and row['vobar'] != "null" and row['vobar'] != "NULL"
             elif stat_line_type == 'ctc':
-                data_exists = row['sub_fy_oy'] != "null" and row['sub_fy_oy'] != "NULL" and row['sub_fy_on'] != "null" and row['sub_fy_on'] != "NULL" and row['sub_fn_oy'] != "null" and row['sub_fn_oy'] != "NULL" and row['sub_fn_on'] != "null" and row['sub_fn_on'] != "NULL"
+                data_exists = row['fy_oy'] != "null" and row['fy_oy'] != "NULL" and row['fy_on'] != "null" and row['fy_on'] != "NULL" and row['fn_oy'] != "null" and row['fn_oy'] != "NULL" and row['fn_on'] != "null" and row['fn_on'] != "NULL"
             elif stat_line_type == 'precalculated':
-                data_exists = row['sub_precalc_stat'] != "null" and row['sub_precalc_stat'] != "NULL"
+                data_exists = row['stat'] != "null" and row['stat'] != "NULL"
 
             if data_exists:
                 stat, sub_levs, sub_secs, sub_values = self.get_stat(has_levels, row, statistic, stat_line_type)
