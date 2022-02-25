@@ -293,7 +293,7 @@ const doRoles = function () {
 };
 
 // for use in matsMethods.resetApp() to establish default settings
-const doSettings = function (title, dbType, version, buildDate, appType, mapboxKey, appDefaultGroup, appDefaultDB, appDefaultModel) {
+const doSettings = function (title, dbType, version, buildDate, appType, mapboxKey, appDefaultGroup, appDefaultDB, appDefaultModel, thresholdUnits) {
     if (matsCollections.Settings.findOne({}) === undefined || matsCollections.Settings.findOne({}).resetFromCode === undefined || matsCollections.Settings.findOne({}).resetFromCode == true) {
         matsCollections.Settings.remove({});
     }
@@ -310,8 +310,9 @@ const doSettings = function (title, dbType, version, buildDate, appType, mapboxK
             resetFromCode: false,
             mapboxKey: mapboxKey, 
             appDefaultGroup: appDefaultGroup, 
-            appDefaultDB: appDefaultDB, 
-            appDefaultModel: appDefaultModel
+            appDefaultDB: appDefaultDB,
+            appDefaultModel: appDefaultModel,
+            thresholdUnits: thresholdUnits
         });
     }
     // always update the version, roles, and the hostname, not just if it doesn't exist...
