@@ -106,9 +106,8 @@ const setNoDataLabelsMap = function (dataset) {
                 document.getElementById(dataset[c].curveId + '-curve-show-hide-heatmap').style["color"] = "white";
             }
         } else {
-            const appName = matsCollections !== undefined ? matsCollections.appName.findOne({}).app : undefined;
             var heatMapText;
-            if (appName !== undefined && (appName.includes("ceiling") || appName.includes("visibility"))) {
+            if (dataset[c].datatype === "ctc") {
                 heatMapText = 'hide heat map';
             } else {
                 heatMapText = 'show heat map';

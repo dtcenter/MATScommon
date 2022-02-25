@@ -1625,6 +1625,7 @@ const resetApp = async function (appRef) {
         const appName = Meteor.settings.public.app ? Meteor.settings.public.app : "unnamed";
         const appTitle = Meteor.settings.public.title ? Meteor.settings.public.title : "Unnamed App";
         const appGroup = Meteor.settings.public.group ? Meteor.settings.public.group : "Misc. Apps";
+        const thresholdUnits = Meteor.settings.public.threshold_units ? Meteor.settings.public.threshold_units : {};
         var appDefaultGroup = "";
         var appDefaultDB = "";
         var appDefaultModel = "";
@@ -1683,7 +1684,8 @@ const resetApp = async function (appRef) {
                     "group": appGroup,
                     "app_order": 1,
                     "title": appTitle,
-                    "color": appColor
+                    "color": appColor,
+                    "threshold_units": thresholdUnits
                 }
             };
             _write_settings(settings, appName);  // this is going to cause the app to restart in the meteor development environment!!!
@@ -1809,7 +1811,7 @@ const resetApp = async function (appRef) {
         matsCollections.ColorScheme.remove({});
         matsDataUtils.doColorScheme();
         matsCollections.Settings.remove({});
-        matsDataUtils.doSettings(appTitle, dbType, appVersion, buildDate, appType, mapboxKey, appDefaultGroup, appDefaultDB, appDefaultModel);
+        matsDataUtils.doSettings(appTitle, dbType, appVersion, buildDate, appType, mapboxKey, appDefaultGroup, appDefaultDB, appDefaultModel, thresholdUnits);
         matsCollections.PlotParams.remove({});
         matsCollections.CurveTextPatterns.remove({});
         // get the curve params for this app out of the settings file

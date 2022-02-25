@@ -552,7 +552,6 @@ const showDieOffFace = function () {
 
 // method to display the appropriate selectors for a threshold curve
 const showThresholdFace = function () {
-    const appName = matsCollections.appName.findOne({}).app;
     const plotType = matsTypes.PlotTypes.threshold;
     var faceOptions = {
         'curve-dates': 'block',
@@ -589,8 +588,8 @@ const showThresholdFace = function () {
         'dieoff-type': 'Dieoff',
         'bin-parameter': 'Valid Date'
     };
-    // ctc thresholds need to have the region be in predefined mode
-    if (appName !== undefined && (appName.includes("ceiling") || appName.includes("visibility")) && matsParamUtils.getParameterForName('region-type') !== undefined) {
+    // thresholds need to have the region be in predefined mode
+    if (matsParamUtils.getParameterForName('region-type') !== undefined) {
         faceOptions['region-type'] = 'none';
         selectorsToReset['region-type'] = 'Predefined region';
     }
@@ -971,7 +970,6 @@ const showMapFace = function () {
 
 // method to display the appropriate selectors for a histogram
 const showHistogramFace = function () {
-    const appName = matsCollections.appName.findOne({}).app;
     const plotType = matsTypes.PlotTypes.histogram;
     var faceOptions = {
         'curve-dates': 'block',
@@ -1008,8 +1006,8 @@ const showHistogramFace = function () {
         'dieoff-type': 'Dieoff',
         'bin-parameter': 'Valid Date'
     };
-    // ctc histograms need to have the region be in predefined mode
-    if (appName !== undefined && (appName.includes("ceiling") || appName.includes("visibility")) && matsParamUtils.getParameterForName('region-type') !== undefined) {
+    // histograms need to have the region be in predefined mode
+    if (matsParamUtils.getParameterForName('region-type') !== undefined) {
         faceOptions['region-type'] = 'none';
         selectorsToReset['region-type'] = 'Predefined region';
     }

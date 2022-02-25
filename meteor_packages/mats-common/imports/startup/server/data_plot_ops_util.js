@@ -399,27 +399,20 @@ const generateThresholdPlotOptions = function (dataset, axisMap, errorMax) {
     var xmin = axisMap[Object.keys(axisMap)[0]].xmin;
     var xmax = axisMap[Object.keys(axisMap)[0]].xmax;
     const yAxisNumber = Object.keys(axisMap).length;
-    const appName = matsCollections.appName.findOne({}).app;
-    var xLabel;
-    if (appName.includes("Precip") || appName.includes("precip")) {
-        xLabel = "Threshold (in)";
-    } else if (appName.includes("Reflectivity") || appName.includes("reflectivity")) {
-        xLabel = "Threshold (dBZ)";
-    } else if (appName === "echotop" || appName.includes("ceiling")) {
-        xLabel = "Threshold (kft)";
-    } else if (appName === "vil") {
-        xLabel = "Threshold (kg/m2)";
-    } else if (appName.includes("visibility")) {
-        xLabel = "Threshold (mi)";
-    } else {
-        xLabel = "Threshold";
-    }
 
-    // get actual thresholds from the query to place on the x-axis
+    // get actual thresholds from the query to place on the x-axis.
+    // also deal with x-axis labels
+    var xLabel = "";
+    var xUnits;
     var tickvals = [];
     for (var didx = 0; didx < dataset.length; didx++) {
+        xUnits = dataset[didx].thresholdAxisLabel;
+        if (!xLabel.includes(xUnits) && xUnits !== undefined) {
+            xLabel = xLabel.length === 0 ? xUnits : xLabel + "," + xUnits;
+        }
         tickvals = _.union(tickvals, dataset[didx].x);
     }
+    xLabel = xLabel.length === 0 ? "Threshold" : "Threshold (" + xLabel + ")";
     tickvals = tickvals.sort(function (a, b) {
         return a - b
     });
