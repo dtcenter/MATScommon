@@ -576,7 +576,7 @@ const showThresholdFace = function () {
         'truth': 'block',
         'year': 'block',
         'storm': 'block',
-        'region-type' : 'block',
+        'region-type' : 'none',
         'x-axis-parameter': 'none',
         'y-axis-parameter': 'none',
         'bin-parameter': 'none',
@@ -590,7 +590,6 @@ const showThresholdFace = function () {
     };
     // thresholds need to have the region be in predefined mode
     if (matsParamUtils.getParameterForName('region-type') !== undefined) {
-        faceOptions['region-type'] = 'none';
         selectorsToReset['region-type'] = 'Predefined region';
     }
     setSelectorVisibility(plotType, faceOptions, selectorsToReset);
@@ -852,10 +851,6 @@ const showROCFace = function () {
     if (isMetexpress) {
         faceOptions['bin-parameter'] = 'none';
     }
-    // performance diagrams need to have the region be in predefined mode
-    if (matsParamUtils.getParameterForName('region-type') !== undefined) {
-        selectorsToReset['region-type'] = 'Predefined region';
-    }
     setSelectorVisibility(plotType, faceOptions, selectorsToReset);
     return selectorsToReset;
 };
@@ -994,7 +989,7 @@ const showHistogramFace = function () {
         'truth': 'block',
         'year': 'block',
         'storm': 'block',
-        'region-type' : 'block',
+        'region-type' : 'none',
         'x-axis-parameter': 'none',
         'y-axis-parameter': 'none',
         'bin-parameter': 'none',
@@ -1008,7 +1003,6 @@ const showHistogramFace = function () {
     };
     // histograms need to have the region be in predefined mode
     if (matsParamUtils.getParameterForName('region-type') !== undefined) {
-        faceOptions['region-type'] = 'none';
         selectorsToReset['region-type'] = 'Predefined region';
     }
     setSelectorVisibility(plotType, faceOptions, selectorsToReset);
@@ -1041,7 +1035,7 @@ const showEnsembleHistogramFace = function () {
         'truth': 'block',
         'year': 'block',
         'storm': 'block',
-        'region-type' : 'block',
+        'region-type' : 'none',
         'x-axis-parameter': 'none',
         'y-axis-parameter': 'none',
         'bin-parameter': 'none',
