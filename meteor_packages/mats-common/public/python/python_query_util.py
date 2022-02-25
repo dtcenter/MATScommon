@@ -769,7 +769,7 @@ class QueryUtil:
         return sub_stats, stat
 
     # function for processing the sub-values from the query and calling a calculate_stat function
-    def get_stat(self, has_levels, row, statistic, stat_line_type):
+    def get_stat(self, has_levels, row, statistic, stat_line_type, object_row):
         try:
             # get all of the sub-values for each time
             if stat_line_type == 'scalar':
@@ -905,6 +905,125 @@ class QueryUtil:
                 # calculate the ctc statistic
                 sub_values, stat = self.calculate_ctc_stat(statistic, sub_fy_oy, sub_fy_on, sub_fn_oy, sub_fn_on,
                                                            sub_total)
+            elif stat_line_type == 'mode_pair':
+                sub_data = str(row['sub_data2']).split(',')
+                individual_obj_lookup = {}
+                for sub_datum2 in sub_data:
+                    sub_datum2 = sub_datum2.split(';')
+                    datestamp = sub_datum2[3]
+                    level = sub_datum2[4]
+                    obj_id = sub_datum2[0]
+                    mode_obj_id = sub_datum2[1]
+                    area = sub_datum2[2]
+                    if obj_id[0:1] == "C":
+                        continue
+                    if datestamp not in individual_obj_lookup.keys():
+                        individual_obj_lookup[datestamp] = {}
+                        individual_obj_lookup[datestamp][level] = {}
+                        individual_obj_lookup[datestamp][level][obj_id] = {}
+                        individual_obj_lookup[datestamp][level][obj_id][mode_obj_id] = {
+                            "area": area
+                        }
+                    elif level not in individual_obj_lookup[datestamp].keys():
+                        individual_obj_lookup[datestamp][level] = {}
+                        individual_obj_lookup[datestamp][level][obj_id] = {}
+                        individual_obj_lookup[datestamp][level][obj_id][mode_obj_id] = {
+                            "area": area
+                        }
+                    elif obj_id not in individual_obj_lookup[datestamp][level].keys():
+                        individual_obj_lookup[datestamp][level][obj_id] = {}
+                        individual_obj_lookup[datestamp][level][obj_id][mode_obj_id] = {
+                            "area": area
+                        }
+                    elif mode_obj_id not in individual_obj_lookup[datestamp][level][obj_id].keys():
+                        individual_obj_lookup[datestamp][level][obj_id][mode_obj_id] = {
+                            "area": area
+                        }
+
+                object_sub_data = str(object_row['sub_data']).split(',')
+                sub_interest = []
+                sub_pair_fid = []
+                sub_pair_oid = []
+                sub_mode_id = []
+                sub_secs = []
+                sub_levs = []
+                for sub_datum in object_sub_data:
+                    sub_datum = sub_datum.split(';')
+                    obj_id = sub_datum[1]
+                    if obj_id[0:1] == "F" and obj_id.find("_") >= 0:
+                        sub_interest.append(float(sub_datum[0]) if float(sub_datum[0]) != -9999 else np.nan)
+                        sub_pair_fid.append(obj_id.split("_")[0])
+                        sub_pair_oid.append(obj_id.split("_")[1])
+                        sub_mode_id.append(int(sub_datum[2]) if float(sub_datum[2]) != -9999 else np.nan)
+                        sub_secs.append(int(sub_datum[3]) if float(sub_datum[3]) != -9999 else np.nan)
+                        if self.is_number(sub_datum[3]):
+                            sub_levs.append(int(sub_datum[4]) if float(sub_datum[4]) != -9999 else np.nan)
+                        else:
+                            sub_levs.append(sub_datum[4])
+
+
+
+
+
+
+                sub_ufbar = []
+                sub_vfbar = []
+                sub_uobar = []
+                sub_vobar = []
+                sub_uvfobar = []
+                sub_uvffbar = []
+                sub_uvoobar = []
+                sub_f_speed_bar = []
+                sub_o_speed_bar = []
+                sub_total = []
+                sub_secs = []
+                sub_levs = []
+                for sub_datum in sub_data:
+                    sub_datum = sub_datum.split(';')
+                    sub_ufbar.append(float(sub_datum[0]) if float(sub_datum[0]) != -9999 else np.nan)
+                    sub_vfbar.append(float(sub_datum[1]) if float(sub_datum[1]) != -9999 else np.nan)
+                    sub_uobar.append(float(sub_datum[2]) if float(sub_datum[2]) != -9999 else np.nan)
+                    sub_vobar.append(float(sub_datum[3]) if float(sub_datum[3]) != -9999 else np.nan)
+                    sub_uvfobar.append(float(sub_datum[4]) if float(sub_datum[4]) != -9999 else np.nan)
+                    sub_uvffbar.append(float(sub_datum[5]) if float(sub_datum[5]) != -9999 else np.nan)
+                    sub_uvoobar.append(float(sub_datum[6]) if float(sub_datum[6]) != -9999 else np.nan)
+                    if "ACC" not in statistic:
+                        sub_f_speed_bar.append(float(sub_datum[7]) if float(sub_datum[7]) != -9999 else np.nan)
+                        sub_o_speed_bar.append(float(sub_datum[8]) if float(sub_datum[8]) != -9999 else np.nan)
+                        sub_total.append(float(sub_datum[9]) if float(sub_datum[9]) != -9999 else np.nan)
+                        sub_secs.append(float(sub_datum[10]) if float(sub_datum[10]) != -9999 else np.nan)
+                        if len(sub_datum) > 11:
+                            if self.is_number(sub_datum[11]):
+                                sub_levs.append(int(sub_datum[11]) if float(sub_datum[11]) != -9999 else np.nan)
+                            else:
+                                sub_levs.append(sub_datum[11])
+                    else:
+                        sub_total.append(float(sub_datum[7]) if float(sub_datum[7]) != -9999 else np.nan)
+                        sub_secs.append(float(sub_datum[8]) if float(sub_datum[8]) != -9999 else np.nan)
+                        if len(sub_datum) > 9:
+                            if self.is_number(sub_datum[9]):
+                                sub_levs.append(int(sub_datum[9]) if float(sub_datum[9]) != -9999 else np.nan)
+                            else:
+                                sub_levs.append(sub_datum[9])
+                sub_ufbar = np.asarray(sub_ufbar)
+                sub_vfbar = np.asarray(sub_vfbar)
+                sub_uobar = np.asarray(sub_uobar)
+                sub_vobar = np.asarray(sub_vobar)
+                sub_uvfobar = np.asarray(sub_uvfobar)
+                sub_uvffbar = np.asarray(sub_uvffbar)
+                sub_uvoobar = np.asarray(sub_uvoobar)
+                sub_f_speed_bar = np.asarray(sub_f_speed_bar)
+                sub_o_speed_bar = np.asarray(sub_o_speed_bar)
+                sub_total = np.asarray(sub_total)
+                sub_secs = np.asarray(sub_secs)
+                if len(sub_levs) == 0:
+                    sub_levs = np.empty(len(sub_secs))
+                else:
+                    sub_levs = np.asarray(sub_levs)
+                # calculate the scalar statistic
+                sub_values, stat = self.calculate_vector_stat(statistic, sub_ufbar, sub_vfbar, sub_uobar, sub_vobar,
+                                                              sub_uvfobar, sub_uvffbar, sub_uvoobar, sub_f_speed_bar,
+                                                              sub_o_speed_bar, sub_total)
             elif stat_line_type == 'precalculated':
                 stat = float(row['stat']) if float(row['stat']) != -9999 else 'null'
                 sub_data = str(row['sub_data']).split(',')
@@ -1110,7 +1229,7 @@ class QueryUtil:
         return ti
 
     # function for parsing the data returned by a timeseries query
-    def parse_query_data_timeseries(self, cursor, stat_line_type, statistic, has_levels, completeness_qc_param, vts):
+    def parse_query_data_timeseries(self, cursor, stat_line_type, statistic, has_levels, completeness_qc_param, vts, object_data):
         # initialize local variables
         xmax = float("-inf")
         xmin = float("inf")
@@ -1143,6 +1262,8 @@ class QueryUtil:
         for row in query_data:
             row_idx = query_data.index(row)
             av_seconds = int(row['avtime'])
+            if stat_line_type == 'mode_pair':
+                object_row = object_data[row_idx]
             av_time = av_seconds * 1000
             xmin = av_time if av_time < xmin else xmin
             xmax = av_time if av_time > xmax else xmax
@@ -1155,6 +1276,8 @@ class QueryUtil:
                 data_exists = row['fy_oy'] != "null" and row['fy_oy'] != "NULL" and row['fy_on'] != "null" and row['fy_on'] != "NULL" and row['fn_oy'] != "null" and row['fn_oy'] != "NULL" and row['fn_on'] != "null" and row['fn_on'] != "NULL"
             elif stat_line_type == 'precalculated':
                 data_exists = row['stat'] != "null" and row['stat'] != "NULL"
+            elif stat_line_type == 'mode_pair':
+                data_exists = row['area'] != "null" and row['area'] != "NULL"
             if hasattr(row, 'N0'):
                 self.n0.append(int(row['N0']))
             else:
@@ -1166,7 +1289,7 @@ class QueryUtil:
                 time_interval = time_diff if time_diff < time_interval else time_interval
 
             if data_exists:
-                stat, sub_levs, sub_secs, sub_values = self.get_stat(has_levels, row, statistic, stat_line_type)
+                stat, sub_levs, sub_secs, sub_values = self.get_stat(has_levels, row, statistic, stat_line_type, object_row)
                 if stat == 'null' or not self.is_number(stat):
                     # there's bad data at this time point
                     stat = 'null'
@@ -1264,7 +1387,7 @@ class QueryUtil:
         self.data['sum'] = loop_sum
 
     # function for parsing the data returned by a profile/dieoff/threshold/validtime/gridscale etc query
-    def parse_query_data_specialty_curve(self, cursor, stat_line_type, statistic, plot_type, has_levels, hide_gaps, completeness_qc_param):
+    def parse_query_data_specialty_curve(self, cursor, stat_line_type, statistic, plot_type, has_levels, hide_gaps, completeness_qc_param, object_data):
         # initialize local variables
         ind_var_min = sys.float_info.max
         ind_var_max = -1 * sys.float_info.max
@@ -1451,7 +1574,7 @@ class QueryUtil:
         self.data['sum'] = loop_sum
 
     # function for parsing the data returned by a histogram query
-    def parse_query_data_histogram(self, cursor, stat_line_type, statistic, has_levels):
+    def parse_query_data_histogram(self, cursor, stat_line_type, statistic, has_levels, object_data):
         # initialize local variables
         sub_vals_all = []
         sub_secs_all = []
@@ -1745,6 +1868,22 @@ class QueryUtil:
 
     # function for querying the database and sending the returned data to the parser
     def query_db(self, cursor, statement, stat_line_type, statistic, plot_type, has_levels, hide_gaps, completeness_qc_param, vts):
+        object_data = []
+        if stat_line_type == 'mode_pair':
+            # there are two queries in this statement
+            statements = statement.split(" ||| ")
+            try:
+                cursor.execute(statements[0])
+            except pymysql.Error as e:
+                self.error = "Error executing query: " + str(e)
+            else:
+                if cursor.rowcount == 0:
+                    self.error = "INFO:0 data records found"
+                else:
+                    # get object data
+                    object_data = cursor.fetchall()
+            statement = statements[1]
+
         try:
             cursor.execute(statement)
         except pymysql.Error as e:
@@ -1755,9 +1894,9 @@ class QueryUtil:
             else:
                 if plot_type == 'TimeSeries' and not hide_gaps:
                     self.parse_query_data_timeseries(cursor, stat_line_type, statistic, has_levels,
-                                                     completeness_qc_param, vts)
+                                                     completeness_qc_param, vts, object_data)
                 elif plot_type == 'Histogram':
-                    self.parse_query_data_histogram(cursor, stat_line_type, statistic, has_levels)
+                    self.parse_query_data_histogram(cursor, stat_line_type, statistic, has_levels, object_data)
                 elif plot_type == 'Contour':
                     self.parse_query_data_contour(cursor, stat_line_type, statistic, has_levels)
                 elif plot_type == 'Reliability' or plot_type == 'ROC' or plot_type == 'PerformanceDiagram':
@@ -1766,7 +1905,7 @@ class QueryUtil:
                     self.parse_query_data_ensemble_histogram(cursor, statistic, has_levels)
                 else:
                     self.parse_query_data_specialty_curve(cursor, stat_line_type, statistic, plot_type, has_levels,
-                                                          hide_gaps, completeness_qc_param)
+                                                          hide_gaps, completeness_qc_param, object_data)
 
     # makes sure all expected options were indeed passed in
     def validate_options(self, options):
