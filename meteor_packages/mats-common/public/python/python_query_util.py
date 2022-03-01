@@ -104,7 +104,7 @@ class QueryUtil:
     def calculate_vacc(self, ufbar, vfbar, uobar, vobar, uvfobar, uvffbar, uvoobar):
         try:
             acc = (uvfobar - ufbar * uobar - vfbar * vobar) / (np.sqrt(uvffbar - ufbar * ufbar - vfbar * vfbar)
-                            * np.sqrt(uvoobar - uobar * uobar - vobar * vobar))
+                                                               * np.sqrt(uvoobar - uobar * uobar - vobar * vobar))
         except TypeError as e:
             self.error = "Error calculating ACC: " + str(e)
             acc = np.empty(len(ufbar))
@@ -236,7 +236,9 @@ class QueryUtil:
     # function for calculating error stdev from MET partial sums
     def calculate_e_stdev(self, fbar, obar, ffbar, oobar, fobar, total):
         try:
-            estdev = np.sqrt((((ffbar + oobar - 2 * fobar) * total) - ((fbar - obar) * total) * ((fbar - obar) * total) / total) / (total - 1))
+            estdev = np.sqrt(
+                (((ffbar + oobar - 2 * fobar) * total) - ((fbar - obar) * total) * ((fbar - obar) * total) / total) / (
+                        total - 1))
         except TypeError as e:
             self.error = "Error calculating bias: " + str(e)
             estdev = np.empty(len(fbar))
@@ -248,7 +250,8 @@ class QueryUtil:
     # function for calculating pearson correlation from MET partial sums
     def calculate_pcc(self, fbar, obar, ffbar, oobar, fobar, total):
         try:
-            pcc = (total ** 2 * fobar - total ** 2 * fbar * obar) / np.sqrt((total ** 2 * ffbar - total ** 2 * fbar ** 2) * (total ** 2 * oobar - total ** 2 * obar ** 2))
+            pcc = (total ** 2 * fobar - total ** 2 * fbar * obar) / np.sqrt(
+                (total ** 2 * ffbar - total ** 2 * fbar ** 2) * (total ** 2 * oobar - total ** 2 * obar ** 2))
         except TypeError as e:
             self.error = "Error calculating bias: " + str(e)
             pcc = np.empty(len(fbar))
@@ -388,7 +391,7 @@ class QueryUtil:
     # function for calculating forecast stdev of wind vector length from MET partial sums
     def calculate_fstdev(self, uvffbar, f_speed_bar):
         try:
-            fstdev = np.sqrt(uvffbar - f_speed_bar**2)
+            fstdev = np.sqrt(uvffbar - f_speed_bar ** 2)
         except TypeError as e:
             self.error = "Error calculating forecast stdev of wind vector length: " + str(e)
             fstdev = np.empty(len(uvffbar))
@@ -400,7 +403,7 @@ class QueryUtil:
     # function for calculating observed stdev of wind vector length from MET partial sums
     def calculate_ostdev(self, uvoobar, o_speed_bar):
         try:
-            ostdev = np.sqrt(uvoobar - o_speed_bar**2)
+            ostdev = np.sqrt(uvoobar - o_speed_bar ** 2)
         except TypeError as e:
             self.error = "Error calculating observed stdev of wind vector length: " + str(e)
             ostdev = np.empty(len(uvoobar))
@@ -446,7 +449,7 @@ class QueryUtil:
     # function for calculating length of forecast - observed mean wind vector from MET partial sums
     def calculate_vdiff_speed(self, ufbar, vfbar, uobar, vobar):
         try:
-            vdiff_speed = self.calculate_wind_vector_speed(ufbar-uobar, vfbar-vobar)
+            vdiff_speed = self.calculate_wind_vector_speed(ufbar - uobar, vfbar - vobar)
         except TypeError as e:
             self.error = "Error calculating length of forecast - observed mean wind vector: " + str(e)
             vdiff_speed = np.empty(len(ufbar))
@@ -470,7 +473,7 @@ class QueryUtil:
     # function for calculating direction of forecast - observed mean wind vector from MET partial sums
     def calculate_vdiff_dir(self, ufbar, vfbar, uobar, vobar):
         try:
-            vdiff_dir = self.calculate_wind_vector_dir(-(ufbar-uobar), -(vfbar-vobar))
+            vdiff_dir = self.calculate_wind_vector_dir(-(ufbar - uobar), -(vfbar - vobar))
         except TypeError as e:
             self.error = "Error calculating direction of forecast - observed mean wind vector: " + str(e)
             vdiff_dir = np.empty(len(ufbar))
@@ -510,7 +513,7 @@ class QueryUtil:
     # function for calculating wind speed from two vector components
     def calculate_wind_vector_speed(self, ucomp, vcomp):
         try:
-            speeds = np.sqrt(ucomp**2 + vcomp**2)
+            speeds = np.sqrt(ucomp ** 2 + vcomp ** 2)
         except TypeError as e:
             self.error = "Error calculating wind vector speed: " + str(e)
             speeds = np.empty(len(ucomp))
@@ -558,7 +561,8 @@ class QueryUtil:
     # function for calculating Gilbert skill score from MET contingency table counts
     def calculate_gss(self, fy_oy, fy_on, fn_oy, total):
         try:
-            gss = (fy_oy - ((fy_oy + fy_on) / total) * (fy_oy + fn_oy)) / (fy_oy + fy_on + fn_oy - ((fy_oy + fy_on) / total) * (fy_oy + fn_oy))
+            gss = (fy_oy - ((fy_oy + fy_on) / total) * (fy_oy + fn_oy)) / (
+                    fy_oy + fy_on + fn_oy - ((fy_oy + fy_on) / total) * (fy_oy + fn_oy))
         except TypeError as e:
             self.error = "Error calculating bias: " + str(e)
             gss = np.empty(len(fy_oy))
@@ -570,7 +574,10 @@ class QueryUtil:
     # function for calculating Heidke skill score from MET contingency table counts
     def calculate_hss(self, fy_oy, fy_on, fn_oy, fn_on, total):
         try:
-            hss = (fy_oy + fn_on - ((fy_oy + fy_on) / total) * (fy_oy + fn_oy) + ((fn_oy + fn_on) / total) * (fy_on + fn_on)) / (total - ((fy_oy + fy_on) / total) * (fy_oy + fn_oy) + ((fn_oy + fn_on) / total) * (fy_on + fn_on))
+            hss = (fy_oy + fn_on - ((fy_oy + fy_on) / total) * (fy_oy + fn_oy) + ((fn_oy + fn_on) / total) * (
+                    fy_on + fn_on)) / (
+                          total - ((fy_oy + fy_on) / total) * (fy_oy + fn_oy) + ((fn_oy + fn_on) / total) * (
+                          fy_on + fn_on))
         except TypeError as e:
             self.error = "Error calculating bias: " + str(e)
             hss = np.empty(len(fy_oy))
@@ -678,10 +685,10 @@ class QueryUtil:
             'abs(Length of forecast - observed mean wind vector)': self.calculate_vdiff_speed_abs,
             'Forecast direction of mean wind vector': self.calculate_fdir,
             'Observed direction of mean wind vector': self.calculate_odir,
-            'Angle between mean forecast and mean observed wind vectors': self.calculate_dir_err,      #Fix this
-            'abs(Angle between mean forecast and mean observed wind vectors)': self.calculate_dir_err_abs,      #Fix this
-            'Direction of forecast - observed mean wind vector': self.calculate_vdiff_dir,      #Fix this
-            'abs(Direction of forecast - observed mean wind vector)': self.calculate_vdiff_dir_abs,      #Fix this
+            'Angle between mean forecast and mean observed wind vectors': self.calculate_dir_err,  # Fix this
+            'abs(Angle between mean forecast and mean observed wind vectors)': self.calculate_dir_err_abs,  # Fix this
+            'Direction of forecast - observed mean wind vector': self.calculate_vdiff_dir,  # Fix this
+            'abs(Direction of forecast - observed mean wind vector)': self.calculate_vdiff_dir_abs,  # Fix this
             'RMSE of forecast wind vector length': self.calculate_fs_rms,
             'RMSE of observed wind vector length': self.calculate_os_rms,
             'Vector wind speed MSVE': self.calculate_msve,
@@ -910,41 +917,28 @@ class QueryUtil:
                 individual_obj_lookup = {}
                 for sub_datum2 in sub_data:
                     sub_datum2 = sub_datum2.split(';')
-                    datestamp = sub_datum2[3]
-                    level = sub_datum2[4]
                     obj_id = sub_datum2[0]
-                    mode_obj_id = sub_datum2[1]
+                    mode_header_id = sub_datum2[1]
                     area = sub_datum2[2]
                     if obj_id[0:1] == "C":
                         continue
-                    if datestamp not in individual_obj_lookup.keys():
-                        individual_obj_lookup[datestamp] = {}
-                        individual_obj_lookup[datestamp][level] = {}
-                        individual_obj_lookup[datestamp][level][obj_id] = {}
-                        individual_obj_lookup[datestamp][level][obj_id][mode_obj_id] = {
-                            "area": area
+                    if mode_header_id not in individual_obj_lookup.keys():
+                        individual_obj_lookup[mode_header_id] = {}
+                        individual_obj_lookup[mode_header_id][obj_id] = {
+                            "area": float(area)
                         }
-                    elif level not in individual_obj_lookup[datestamp].keys():
-                        individual_obj_lookup[datestamp][level] = {}
-                        individual_obj_lookup[datestamp][level][obj_id] = {}
-                        individual_obj_lookup[datestamp][level][obj_id][mode_obj_id] = {
-                            "area": area
+                    elif obj_id not in individual_obj_lookup[mode_header_id].keys():
+                        individual_obj_lookup[mode_header_id][obj_id] = {
+                            "area": float(area)
                         }
-                    elif obj_id not in individual_obj_lookup[datestamp][level].keys():
-                        individual_obj_lookup[datestamp][level][obj_id] = {}
-                        individual_obj_lookup[datestamp][level][obj_id][mode_obj_id] = {
-                            "area": area
-                        }
-                    elif mode_obj_id not in individual_obj_lookup[datestamp][level][obj_id].keys():
-                        individual_obj_lookup[datestamp][level][obj_id][mode_obj_id] = {
-                            "area": area
-                        }
+                    else:
+                        print("Duplicate!!!")
 
                 object_sub_data = str(object_row['sub_data']).split(',')
                 sub_interest = []
                 sub_pair_fid = []
                 sub_pair_oid = []
-                sub_mode_id = []
+                sub_mode_header_id = []
                 sub_secs = []
                 sub_levs = []
                 for sub_datum in object_sub_data:
@@ -954,76 +948,48 @@ class QueryUtil:
                         sub_interest.append(float(sub_datum[0]) if float(sub_datum[0]) != -9999 else np.nan)
                         sub_pair_fid.append(obj_id.split("_")[0])
                         sub_pair_oid.append(obj_id.split("_")[1])
-                        sub_mode_id.append(int(sub_datum[2]) if float(sub_datum[2]) != -9999 else np.nan)
+                        sub_mode_header_id.append(int(sub_datum[2]) if float(sub_datum[2]) != -9999 else np.nan)
                         sub_secs.append(int(sub_datum[3]) if float(sub_datum[3]) != -9999 else np.nan)
                         if self.is_number(sub_datum[3]):
                             sub_levs.append(int(sub_datum[4]) if float(sub_datum[4]) != -9999 else np.nan)
                         else:
                             sub_levs.append(sub_datum[4])
 
+                ots_sum = 0.0
+                if len(sub_pair_fid) > 0 and len(sub_pair_oid) > 0:
+                    # Sort the pair_interest array but keep that sorted interest linked with the pair object IDs
+                    indices = np.argsort(sub_interest)
+                    # reverse the indices array so that it goes descending from maximum
+                    indices = indices[::-1]
+                    sorted_int = np.array(sub_interest)[indices]
+                    sorted_fid = np.array(sub_pair_fid)[indices]
+                    sorted_oid = np.array(sub_pair_oid)[indices]
+                    sorted_mode_header = np.array(sub_mode_header_id)[indices]
+
+                    matched_fid = {}
+                    matched_oid = {}
+                    all_f_areas = []
+                    all_o_areas = []
+                    for i in range(0, len(sub_interest)):
+                        this_mode_header_id = str(sorted_mode_header[i])
+                        this_fid = sorted_fid[i]
+                        this_oid = sorted_oid[i]
+                        f_area = individual_obj_lookup[this_mode_header_id][this_fid]["area"]
+                        o_area = individual_obj_lookup[this_mode_header_id][this_oid]["area"]
+                        if this_mode_header_id not in matched_fid.keys():
+                            matched_fid[this_mode_header_id] = []
+                            matched_oid[this_mode_header_id] = []
+                        if (this_fid not in matched_fid[this_mode_header_id]) and (this_oid not in matched_oid[this_mode_header_id]):
+                            ots_sum += sorted_int[i] * (f_area + o_area)
+                            matched_fid[this_mode_header_id].append(this_fid)
+                            matched_oid[this_mode_header_id].append(this_oid)
+                            all_f_areas.append(f_area)
+                            all_o_areas.append(o_area)
+                    case_OTS = ots_sum / (sum(all_f_areas) + sum(all_o_areas))
 
 
 
 
-
-                sub_ufbar = []
-                sub_vfbar = []
-                sub_uobar = []
-                sub_vobar = []
-                sub_uvfobar = []
-                sub_uvffbar = []
-                sub_uvoobar = []
-                sub_f_speed_bar = []
-                sub_o_speed_bar = []
-                sub_total = []
-                sub_secs = []
-                sub_levs = []
-                for sub_datum in sub_data:
-                    sub_datum = sub_datum.split(';')
-                    sub_ufbar.append(float(sub_datum[0]) if float(sub_datum[0]) != -9999 else np.nan)
-                    sub_vfbar.append(float(sub_datum[1]) if float(sub_datum[1]) != -9999 else np.nan)
-                    sub_uobar.append(float(sub_datum[2]) if float(sub_datum[2]) != -9999 else np.nan)
-                    sub_vobar.append(float(sub_datum[3]) if float(sub_datum[3]) != -9999 else np.nan)
-                    sub_uvfobar.append(float(sub_datum[4]) if float(sub_datum[4]) != -9999 else np.nan)
-                    sub_uvffbar.append(float(sub_datum[5]) if float(sub_datum[5]) != -9999 else np.nan)
-                    sub_uvoobar.append(float(sub_datum[6]) if float(sub_datum[6]) != -9999 else np.nan)
-                    if "ACC" not in statistic:
-                        sub_f_speed_bar.append(float(sub_datum[7]) if float(sub_datum[7]) != -9999 else np.nan)
-                        sub_o_speed_bar.append(float(sub_datum[8]) if float(sub_datum[8]) != -9999 else np.nan)
-                        sub_total.append(float(sub_datum[9]) if float(sub_datum[9]) != -9999 else np.nan)
-                        sub_secs.append(float(sub_datum[10]) if float(sub_datum[10]) != -9999 else np.nan)
-                        if len(sub_datum) > 11:
-                            if self.is_number(sub_datum[11]):
-                                sub_levs.append(int(sub_datum[11]) if float(sub_datum[11]) != -9999 else np.nan)
-                            else:
-                                sub_levs.append(sub_datum[11])
-                    else:
-                        sub_total.append(float(sub_datum[7]) if float(sub_datum[7]) != -9999 else np.nan)
-                        sub_secs.append(float(sub_datum[8]) if float(sub_datum[8]) != -9999 else np.nan)
-                        if len(sub_datum) > 9:
-                            if self.is_number(sub_datum[9]):
-                                sub_levs.append(int(sub_datum[9]) if float(sub_datum[9]) != -9999 else np.nan)
-                            else:
-                                sub_levs.append(sub_datum[9])
-                sub_ufbar = np.asarray(sub_ufbar)
-                sub_vfbar = np.asarray(sub_vfbar)
-                sub_uobar = np.asarray(sub_uobar)
-                sub_vobar = np.asarray(sub_vobar)
-                sub_uvfobar = np.asarray(sub_uvfobar)
-                sub_uvffbar = np.asarray(sub_uvffbar)
-                sub_uvoobar = np.asarray(sub_uvoobar)
-                sub_f_speed_bar = np.asarray(sub_f_speed_bar)
-                sub_o_speed_bar = np.asarray(sub_o_speed_bar)
-                sub_total = np.asarray(sub_total)
-                sub_secs = np.asarray(sub_secs)
-                if len(sub_levs) == 0:
-                    sub_levs = np.empty(len(sub_secs))
-                else:
-                    sub_levs = np.asarray(sub_levs)
-                # calculate the scalar statistic
-                sub_values, stat = self.calculate_vector_stat(statistic, sub_ufbar, sub_vfbar, sub_uobar, sub_vobar,
-                                                              sub_uvfobar, sub_uvffbar, sub_uvoobar, sub_f_speed_bar,
-                                                              sub_o_speed_bar, sub_total)
             elif stat_line_type == 'precalculated':
                 stat = float(row['stat']) if float(row['stat']) != -9999 else 'null'
                 sub_data = str(row['sub_data']).split(',')
@@ -1229,7 +1195,8 @@ class QueryUtil:
         return ti
 
     # function for parsing the data returned by a timeseries query
-    def parse_query_data_timeseries(self, cursor, stat_line_type, statistic, has_levels, completeness_qc_param, vts, object_data):
+    def parse_query_data_timeseries(self, cursor, stat_line_type, statistic, has_levels, completeness_qc_param, vts,
+                                    object_data):
         # initialize local variables
         xmax = float("-inf")
         xmin = float("inf")
@@ -1269,11 +1236,16 @@ class QueryUtil:
             xmax = av_time if av_time > xmax else xmax
             data_exists = False
             if stat_line_type == 'scalar':
-                data_exists = row['fbar'] != "null" and row['fbar'] != "NULL" and row['obar'] != "null" and row['obar'] != "NULL"
+                data_exists = row['fbar'] != "null" and row['fbar'] != "NULL" and row['obar'] != "null" and row[
+                    'obar'] != "NULL"
             elif stat_line_type == 'vector':
-                data_exists = row['ufbar'] != "null" and row['ufbar'] != "NULL" and row['vfbar'] != "null" and row['vfbar'] != "NULL" and row['uobar'] != "null" and row['uobar'] != "NULL" and row['vobar'] != "null" and row['vobar'] != "NULL"
+                data_exists = row['ufbar'] != "null" and row['ufbar'] != "NULL" and row['vfbar'] != "null" and row[
+                    'vfbar'] != "NULL" and row['uobar'] != "null" and row['uobar'] != "NULL" and row[
+                                  'vobar'] != "null" and row['vobar'] != "NULL"
             elif stat_line_type == 'ctc':
-                data_exists = row['fy_oy'] != "null" and row['fy_oy'] != "NULL" and row['fy_on'] != "null" and row['fy_on'] != "NULL" and row['fn_oy'] != "null" and row['fn_oy'] != "NULL" and row['fn_on'] != "null" and row['fn_on'] != "NULL"
+                data_exists = row['fy_oy'] != "null" and row['fy_oy'] != "NULL" and row['fy_on'] != "null" and row[
+                    'fy_on'] != "NULL" and row['fn_oy'] != "null" and row['fn_oy'] != "NULL" and row[
+                                  'fn_on'] != "null" and row['fn_on'] != "NULL"
             elif stat_line_type == 'precalculated':
                 data_exists = row['stat'] != "null" and row['stat'] != "NULL"
             elif stat_line_type == 'mode_pair':
@@ -1289,7 +1261,8 @@ class QueryUtil:
                 time_interval = time_diff if time_diff < time_interval else time_interval
 
             if data_exists:
-                stat, sub_levs, sub_secs, sub_values = self.get_stat(has_levels, row, statistic, stat_line_type, object_row)
+                stat, sub_levs, sub_secs, sub_values = self.get_stat(has_levels, row, statistic, stat_line_type,
+                                                                     object_row)
                 if stat == 'null' or not self.is_number(stat):
                     # there's bad data at this time point
                     stat = 'null'
@@ -1387,7 +1360,8 @@ class QueryUtil:
         self.data['sum'] = loop_sum
 
     # function for parsing the data returned by a profile/dieoff/threshold/validtime/gridscale etc query
-    def parse_query_data_specialty_curve(self, cursor, stat_line_type, statistic, plot_type, has_levels, hide_gaps, completeness_qc_param, object_data):
+    def parse_query_data_specialty_curve(self, cursor, stat_line_type, statistic, plot_type, has_levels, hide_gaps,
+                                         completeness_qc_param, object_data):
         # initialize local variables
         ind_var_min = sys.float_info.max
         ind_var_max = -1 * sys.float_info.max
@@ -1423,11 +1397,16 @@ class QueryUtil:
 
             data_exists = False
             if stat_line_type == 'scalar':
-                data_exists = row['fbar'] != "null" and row['fbar'] != "NULL" and row['obar'] != "null" and row['obar'] != "NULL"
+                data_exists = row['fbar'] != "null" and row['fbar'] != "NULL" and row['obar'] != "null" and row[
+                    'obar'] != "NULL"
             elif stat_line_type == 'vector':
-                data_exists = row['ufbar'] != "null" and row['ufbar'] != "NULL" and row['vfbar'] != "null" and row['vfbar'] != "NULL" and row['uobar'] != "null" and row['uobar'] != "NULL" and row['vobar'] != "null" and row['vobar'] != "NULL"
+                data_exists = row['ufbar'] != "null" and row['ufbar'] != "NULL" and row['vfbar'] != "null" and row[
+                    'vfbar'] != "NULL" and row['uobar'] != "null" and row['uobar'] != "NULL" and row[
+                                  'vobar'] != "null" and row['vobar'] != "NULL"
             elif stat_line_type == 'ctc':
-                data_exists = row['fy_oy'] != "null" and row['fy_oy'] != "NULL" and row['fy_on'] != "null" and row['fy_on'] != "NULL" and row['fn_oy'] != "null" and row['fn_oy'] != "NULL" and row['fn_on'] != "null" and row['fn_on'] != "NULL"
+                data_exists = row['fy_oy'] != "null" and row['fy_oy'] != "NULL" and row['fy_on'] != "null" and row[
+                    'fy_on'] != "NULL" and row['fn_oy'] != "null" and row['fn_oy'] != "NULL" and row[
+                                  'fn_on'] != "null" and row['fn_on'] != "NULL"
             elif stat_line_type == 'precalculated':
                 data_exists = row['stat'] != "null" and row['stat'] != "NULL"
             if hasattr(row, 'N0'):
@@ -1459,7 +1438,7 @@ class QueryUtil:
             if plot_type == 'DailyModelCycle' and row_idx > 0 and (
                     int(ind_var) - int(query_data[row_idx - 1]['avtime'] * 1000)) > 3600 * 24 * 1000:
                 cycles_missing = math.ceil(
-                    int(ind_var) - int(query_data[row_idx - 1]['avtime'] * 1000) / (3600 * 24 * 1000))-1
+                    int(ind_var) - int(query_data[row_idx - 1]['avtime'] * 1000) / (3600 * 24 * 1000)) - 1
                 for missing_cycle in reversed(range(1, cycles_missing + 1)):
                     curve_ind_vars.append(ind_var - 3600 * 24 * 1000 * missing_cycle)
                     curve_stats.append('null')
@@ -1587,11 +1566,16 @@ class QueryUtil:
         for row in query_data:
             data_exists = False
             if stat_line_type == 'scalar':
-                data_exists = row['fbar'] != "null" and row['fbar'] != "NULL" and row['obar'] != "null" and row['obar'] != "NULL"
+                data_exists = row['fbar'] != "null" and row['fbar'] != "NULL" and row['obar'] != "null" and row[
+                    'obar'] != "NULL"
             elif stat_line_type == 'vector':
-                data_exists = row['ufbar'] != "null" and row['ufbar'] != "NULL" and row['vfbar'] != "null" and row['vfbar'] != "NULL" and row['uobar'] != "null" and row['uobar'] != "NULL" and row['vobar'] != "null" and row['vobar'] != "NULL"
+                data_exists = row['ufbar'] != "null" and row['ufbar'] != "NULL" and row['vfbar'] != "null" and row[
+                    'vfbar'] != "NULL" and row['uobar'] != "null" and row['uobar'] != "NULL" and row[
+                                  'vobar'] != "null" and row['vobar'] != "NULL"
             elif stat_line_type == 'ctc':
-                data_exists = row['fy_oy'] != "null" and row['fy_oy'] != "NULL" and row['fy_on'] != "null" and row['fy_on'] != "NULL" and row['fn_oy'] != "null" and row['fn_oy'] != "NULL" and row['fn_on'] != "null" and row['fn_on'] != "NULL"
+                data_exists = row['fy_oy'] != "null" and row['fy_oy'] != "NULL" and row['fy_on'] != "null" and row[
+                    'fy_on'] != "NULL" and row['fn_oy'] != "null" and row['fn_oy'] != "NULL" and row[
+                                  'fn_on'] != "null" and row['fn_on'] != "NULL"
             elif stat_line_type == 'precalculated':
                 data_exists = row['stat'] != "null" and row['stat'] != "NULL"
             if hasattr(row, 'N0'):
@@ -1641,7 +1625,8 @@ class QueryUtil:
 
         # loop through the query results and store the returned values
         for row in query_data:
-            data_exists = row['bin'] != "null" and row['bin'] != "NULL" and row['bin_count'] != "null" and row['bin_count'] != "NULL"
+            data_exists = row['bin'] != "null" and row['bin'] != "NULL" and row['bin_count'] != "null" and row[
+                'bin_count'] != "NULL"
 
             if data_exists:
                 bin_number = int(row['bin'])
@@ -1717,7 +1702,8 @@ class QueryUtil:
 
         # loop through the query results and store the returned values
         for row in query_data:
-            data_exists = row['bin_number'] != "null" and row['bin_number'] != "NULL" and row['oy_i'] != "null" and row['oy_i'] != "NULL" and row['on_i'] != "null" and row['on_i'] != "NULL"
+            data_exists = row['bin_number'] != "null" and row['bin_number'] != "NULL" and row['oy_i'] != "null" and row[
+                'oy_i'] != "NULL" and row['on_i'] != "null" and row['on_i'] != "NULL"
 
             if data_exists:
                 bin_number = int(row['bin_number'])
@@ -1793,11 +1779,16 @@ class QueryUtil:
             stat_key = str(row_x_val) + '_' + str(row_y_val)
             data_exists = False
             if stat_line_type == 'scalar':
-                data_exists = row['fbar'] != "null" and row['fbar'] != "NULL" and row['obar'] != "null" and row['obar'] != "NULL"
+                data_exists = row['fbar'] != "null" and row['fbar'] != "NULL" and row['obar'] != "null" and row[
+                    'obar'] != "NULL"
             elif stat_line_type == 'vector':
-                data_exists = row['ufbar'] != "null" and row['ufbar'] != "NULL" and row['vfbar'] != "null" and row['vfbar'] != "NULL" and row['uobar'] != "null" and row['uobar'] != "NULL" and row['vobar'] != "null" and row['vobar'] != "NULL"
+                data_exists = row['ufbar'] != "null" and row['ufbar'] != "NULL" and row['vfbar'] != "null" and row[
+                    'vfbar'] != "NULL" and row['uobar'] != "null" and row['uobar'] != "NULL" and row[
+                                  'vobar'] != "null" and row['vobar'] != "NULL"
             elif stat_line_type == 'ctc':
-                data_exists = row['fy_oy'] != "null" and row['fy_oy'] != "NULL" and row['fy_on'] != "null" and row['fy_on'] != "NULL" and row['fn_oy'] != "null" and row['fn_oy'] != "NULL" and row['fn_on'] != "null" and row['fn_on'] != "NULL"
+                data_exists = row['fy_oy'] != "null" and row['fy_oy'] != "NULL" and row['fy_on'] != "null" and row[
+                    'fy_on'] != "NULL" and row['fn_oy'] != "null" and row['fn_oy'] != "NULL" and row[
+                                  'fn_on'] != "null" and row['fn_on'] != "NULL"
             elif stat_line_type == 'precalculated':
                 data_exists = row['stat'] != "null" and row['stat'] != "NULL"
 
@@ -1867,7 +1858,8 @@ class QueryUtil:
         self.data['glob_stats']['n'] = n_points
 
     # function for querying the database and sending the returned data to the parser
-    def query_db(self, cursor, statement, stat_line_type, statistic, plot_type, has_levels, hide_gaps, completeness_qc_param, vts):
+    def query_db(self, cursor, statement, stat_line_type, statistic, plot_type, has_levels, hide_gaps,
+                 completeness_qc_param, vts):
         object_data = []
         if stat_line_type == 'mode_pair':
             # there are two queries in this statement
