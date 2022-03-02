@@ -1663,10 +1663,13 @@ class QueryUtil:
                         sub_levs = np.delete(sub_levs, bad_value_indices)
 
                 # store parsed data for later
-                sub_vals_all.append(sub_values)
-                sub_secs_all.append(sub_secs)
+                list_vals = sub_values.tolist()
+                sub_vals_all.append(list_vals)
+                list_secs = sub_secs.tolist()
+                sub_secs_all.append(list_secs)
                 if has_levels:
-                    sub_levs_all.append(sub_levs)
+                    list_levs = sub_levs.tolist()
+                    sub_levs_all.append(list_levs)
 
         # we don't have bins yet, so we want all of the data in one array
         self.data['subVals'] = [item for sublist in sub_vals_all for item in sublist]
