@@ -1275,13 +1275,13 @@ class QueryUtil:
         for row in query_data:
             row_idx = query_data.index(row)
             av_seconds = int(row['avtime'])
+            av_time = av_seconds * 1000
             xmin = av_time if av_time < xmin else xmin
             xmax = av_time if av_time > xmax else xmax
             if stat_line_type == 'mode_pair':
                 object_row = object_data[row_idx]
             else:
                 object_row = []
-            av_time = av_seconds * 1000
             data_exists = False
             if stat_line_type == 'scalar':
                 data_exists = row['fbar'] != "null" and row['fbar'] != "NULL" and row['obar'] != "null" and row[
