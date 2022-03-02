@@ -622,6 +622,52 @@ class QueryUtil:
             pofd = np.empty(len(fy_on))
         return pofd
 
+    # function for calculating object threat score from MET MODE output
+    def calculate_ots(self, sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id, individual_obj_lookup):
+        try:
+            ots_sum = 0.0
+            if len(sub_pair_fid) > 0 and len(sub_pair_oid) > 0:
+                # Sort the pair_interest array but keep that sorted interest linked with the pair object IDs
+                indices = np.argsort(sub_interest)
+                # reverse the indices array so that it goes descending from maximum
+                indices = indices[::-1]
+                sorted_int = sub_interest[indices]
+                sorted_fid = sub_pair_fid[indices]
+                sorted_oid = sub_pair_oid[indices]
+                sorted_mode_header = sub_mode_header_id[indices]
+
+                matched_fid = {}
+                matched_oid = {}
+                all_f_areas = []
+                all_o_areas = []
+                for i in range(0, len(sub_interest)):
+                    this_mode_header_id = str(sorted_mode_header[i])
+                    this_fid = sorted_fid[i]
+                    this_oid = sorted_oid[i]
+                    f_area = individual_obj_lookup[this_mode_header_id][this_fid]["area"]
+                    o_area = individual_obj_lookup[this_mode_header_id][this_oid]["area"]
+                    if this_mode_header_id not in matched_fid.keys():
+                        matched_fid[this_mode_header_id] = []
+                        matched_oid[this_mode_header_id] = []
+                    if (this_fid not in matched_fid[this_mode_header_id]) and (
+                            this_oid not in matched_oid[this_mode_header_id]):
+                        ots_sum += sorted_int[i] * (f_area + o_area)
+                        matched_fid[this_mode_header_id].append(this_fid)
+                        matched_oid[this_mode_header_id].append(this_oid)
+                        all_f_areas.append(f_area)
+                        all_o_areas.append(o_area)
+                ots = ots_sum / (sum(all_f_areas) + sum(all_o_areas))
+                ots = np.asarray([ots, ])
+            else:
+                ots = np.empty(1)
+        except TypeError as e:
+            self.error = "Error calculating bias: " + str(e)
+            ots = np.empty(1)
+        except ValueError as e:
+            self.error = "Error calculating bias: " + str(e)
+            ots = np.empty(1)
+        return ots
+
     # function for determining and calling the appropriate scalar statistical calculation function
     def calculate_scalar_stat(self, statistic, fbar, obar, ffbar, oobar, fobar, total):
         stat_switch = {  # dispatcher of statistical calculation functions
@@ -775,6 +821,29 @@ class QueryUtil:
             stat = 'null'
         return sub_stats, stat
 
+    # function for determining and calling the appropriate contigency table count statistical calculation function
+    def calculate_mode_stat(self, statistic, sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id,
+                            individual_obj_lookup):
+        stat_switch = {  # dispatcher of statistical calculation functions
+            'OTS': self.calculate_ots
+        }
+        args_switch = {  # dispatcher of arguments for statistical calculation functions
+            'OTS': (sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id, individual_obj_lookup)
+        }
+        try:
+            stat_args = args_switch[statistic]  # get args
+            sub_stats = stat_switch[statistic](*stat_args)  # call stat function
+            stat = np.nanmean(sub_stats)  # calculate overall stat
+        except KeyError as e:
+            self.error = "Error choosing statistic: " + str(e)
+            sub_stats = np.empty(len(sub_interest))
+            stat = 'null'
+        except ValueError as e:
+            self.error = "Error calculating statistic: " + str(e)
+            sub_stats = np.empty(len(sub_interest))
+            stat = 'null'
+        return sub_stats, stat
+
     # function for processing the sub-values from the query and calling a calculate_stat function
     def get_stat(self, has_levels, row, statistic, stat_line_type, object_row):
         try:
@@ -924,15 +993,9 @@ class QueryUtil:
                         continue
                     if mode_header_id not in individual_obj_lookup.keys():
                         individual_obj_lookup[mode_header_id] = {}
-                        individual_obj_lookup[mode_header_id][obj_id] = {
-                            "area": float(area)
-                        }
-                    elif obj_id not in individual_obj_lookup[mode_header_id].keys():
-                        individual_obj_lookup[mode_header_id][obj_id] = {
-                            "area": float(area)
-                        }
-                    else:
-                        print("Duplicate!!!")
+                    individual_obj_lookup[mode_header_id][obj_id] = {
+                        "area": float(area)
+                    }
 
                 object_sub_data = str(object_row['sub_data']).split(',')
                 sub_interest = []
@@ -955,40 +1018,22 @@ class QueryUtil:
                         else:
                             sub_levs.append(sub_datum[4])
 
-                ots_sum = 0.0
-                if len(sub_pair_fid) > 0 and len(sub_pair_oid) > 0:
-                    # Sort the pair_interest array but keep that sorted interest linked with the pair object IDs
-                    indices = np.argsort(sub_interest)
-                    # reverse the indices array so that it goes descending from maximum
-                    indices = indices[::-1]
-                    sorted_int = np.array(sub_interest)[indices]
-                    sorted_fid = np.array(sub_pair_fid)[indices]
-                    sorted_oid = np.array(sub_pair_oid)[indices]
-                    sorted_mode_header = np.array(sub_mode_header_id)[indices]
+                sub_interest = np.asarray(sub_interest)
+                sub_pair_fid = np.asarray(sub_pair_fid)
+                sub_pair_oid = np.asarray(sub_pair_oid)
+                sub_mode_header_id = np.asarray(sub_mode_header_id)
+                sub_secs = np.asarray(sub_secs)
+                if len(sub_levs) == 0:
+                    sub_levs = np.empty(len(sub_secs))
+                else:
+                    sub_levs = np.asarray(sub_levs)
 
-                    matched_fid = {}
-                    matched_oid = {}
-                    all_f_areas = []
-                    all_o_areas = []
-                    for i in range(0, len(sub_interest)):
-                        this_mode_header_id = str(sorted_mode_header[i])
-                        this_fid = sorted_fid[i]
-                        this_oid = sorted_oid[i]
-                        f_area = individual_obj_lookup[this_mode_header_id][this_fid]["area"]
-                        o_area = individual_obj_lookup[this_mode_header_id][this_oid]["area"]
-                        if this_mode_header_id not in matched_fid.keys():
-                            matched_fid[this_mode_header_id] = []
-                            matched_oid[this_mode_header_id] = []
-                        if (this_fid not in matched_fid[this_mode_header_id]) and (this_oid not in matched_oid[this_mode_header_id]):
-                            ots_sum += sorted_int[i] * (f_area + o_area)
-                            matched_fid[this_mode_header_id].append(this_fid)
-                            matched_oid[this_mode_header_id].append(this_oid)
-                            all_f_areas.append(f_area)
-                            all_o_areas.append(o_area)
-                    case_OTS = ots_sum / (sum(all_f_areas) + sum(all_o_areas))
-
-
-
+                # calculate the mode statistic
+                sub_values, stat = self.calculate_mode_stat(statistic, sub_interest, sub_pair_fid, sub_pair_oid,
+                                                            sub_mode_header_id, individual_obj_lookup)
+                sub_secs = np.asarray([sub_secs[0], ])
+                if len(sub_levs) != 0:
+                    sub_levs = np.asarray([sub_levs[0], ])
 
             elif stat_line_type == 'precalculated':
                 stat = float(row['stat']) if float(row['stat']) != -9999 else 'null'
@@ -1014,6 +1059,7 @@ class QueryUtil:
                     sub_levs = np.empty(len(sub_secs))
                 else:
                     sub_levs = np.asarray(sub_levs)
+
             else:
                 stat = 'null'
                 sub_secs = np.empty(0)
@@ -1229,11 +1275,13 @@ class QueryUtil:
         for row in query_data:
             row_idx = query_data.index(row)
             av_seconds = int(row['avtime'])
-            if stat_line_type == 'mode_pair':
-                object_row = object_data[row_idx]
-            av_time = av_seconds * 1000
             xmin = av_time if av_time < xmin else xmin
             xmax = av_time if av_time > xmax else xmax
+            if stat_line_type == 'mode_pair':
+                object_row = object_data[row_idx]
+            else:
+                object_row = []
+            av_time = av_seconds * 1000
             data_exists = False
             if stat_line_type == 'scalar':
                 data_exists = row['fbar'] != "null" and row['fbar'] != "NULL" and row['obar'] != "null" and row[
@@ -1395,6 +1443,10 @@ class QueryUtil:
             else:
                 ind_var = int(row['avtime'])
 
+            if stat_line_type == 'mode_pair':
+                object_row = object_data[row_idx]
+            else:
+                object_row = []
             data_exists = False
             if stat_line_type == 'scalar':
                 data_exists = row['fbar'] != "null" and row['fbar'] != "NULL" and row['obar'] != "null" and row[
@@ -1409,6 +1461,8 @@ class QueryUtil:
                                   'fn_on'] != "null" and row['fn_on'] != "NULL"
             elif stat_line_type == 'precalculated':
                 data_exists = row['stat'] != "null" and row['stat'] != "NULL"
+            elif stat_line_type == 'mode_pair':
+                data_exists = row['area'] != "null" and row['area'] != "NULL"
             if hasattr(row, 'N0'):
                 self.n0.append(int(row['N0']))
             else:
@@ -1418,7 +1472,8 @@ class QueryUtil:
             if data_exists:
                 ind_var_min = ind_var if ind_var < ind_var_min else ind_var_min
                 ind_var_max = ind_var if ind_var > ind_var_max else ind_var_max
-                stat, sub_levs, sub_secs, sub_values = self.get_stat(has_levels, row, statistic, stat_line_type)
+                stat, sub_levs, sub_secs, sub_values = self.get_stat(has_levels, row, statistic, stat_line_type,
+                                                                     object_row)
                 if stat == 'null' or not self.is_number(stat):
                     # there's bad data at this point
                     stat = 'null'
@@ -1564,6 +1619,11 @@ class QueryUtil:
 
         # loop through the query results and store the returned values
         for row in query_data:
+            row_idx = query_data.index(row)
+            if stat_line_type == 'mode_pair':
+                object_row = object_data[row_idx]
+            else:
+                object_row = []
             data_exists = False
             if stat_line_type == 'scalar':
                 data_exists = row['fbar'] != "null" and row['fbar'] != "NULL" and row['obar'] != "null" and row[
@@ -1576,6 +1636,8 @@ class QueryUtil:
                 data_exists = row['fy_oy'] != "null" and row['fy_oy'] != "NULL" and row['fy_on'] != "null" and row[
                     'fy_on'] != "NULL" and row['fn_oy'] != "null" and row['fn_oy'] != "NULL" and row[
                                   'fn_on'] != "null" and row['fn_on'] != "NULL"
+            elif stat_line_type == 'mode_pair':
+                data_exists = row['area'] != "null" and row['area'] != "NULL"
             elif stat_line_type == 'precalculated':
                 data_exists = row['stat'] != "null" and row['stat'] != "NULL"
             if hasattr(row, 'N0'):
@@ -1585,7 +1647,8 @@ class QueryUtil:
             self.n_times.append(int(row['N_times']))
 
             if data_exists:
-                stat, sub_levs, sub_secs, sub_values = self.get_stat(has_levels, row, statistic, stat_line_type)
+                stat, sub_levs, sub_secs, sub_values = self.get_stat(has_levels, row, statistic, stat_line_type,
+                                                                     object_row)
                 if stat == 'null' or not self.is_number(stat):
                     # there's bad data at this point
                     continue
@@ -1793,7 +1856,7 @@ class QueryUtil:
                 data_exists = row['stat'] != "null" and row['stat'] != "NULL"
 
             if data_exists:
-                stat, sub_levs, sub_secs, sub_values = self.get_stat(has_levels, row, statistic, stat_line_type)
+                stat, sub_levs, sub_secs, sub_values = self.get_stat(has_levels, row, statistic, stat_line_type, [])
                 if stat == 'null' or not self.is_number(stat):
                     # there's bad data at this point
                     continue
