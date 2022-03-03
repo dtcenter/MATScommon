@@ -88,32 +88,38 @@ class QueryUtil:
 
     # helper function for MODE calculations
     def get_interest2d(self, sub_interest, sub_mode_header_id, sub_pair_fid, sub_pair_oid):
-        # set up 2-dimensional interest array
+        # set up 2-dimensional interest arrays
+        unique_mode_headers = list(set(sub_mode_header_id))
         mode_header_lookup = {}
-        lookup_f_index = 0
-        lookup_o_index = 0
+        mode_index_lookup = {}
+        for unique_header in unique_mode_headers:
+            mode_header_lookup[str(unique_header)] = {
+                "lookup_f_index": 0,
+                "lookup_o_index": 0
+            }
         for i in range(0, len(sub_interest)):
             # create indices for different mode_header_ids
             this_mode_header_id = str(sub_mode_header_id[i])
-            if this_mode_header_id not in mode_header_lookup.keys():
-                mode_header_lookup[this_mode_header_id] = {}
+            if this_mode_header_id not in mode_index_lookup.keys():
+                mode_index_lookup[this_mode_header_id] = {}
             this_fid = sub_pair_fid[i]
             this_oid = sub_pair_oid[i]
-            if this_fid not in mode_header_lookup[this_mode_header_id].keys():
-                mode_header_lookup[this_mode_header_id][this_fid] = lookup_f_index
-                lookup_f_index = lookup_f_index + 1
-            if this_oid not in mode_header_lookup[this_mode_header_id].keys():
-                mode_header_lookup[this_mode_header_id][this_oid] = lookup_o_index
-                lookup_o_index = lookup_o_index + 1
-        interest_2d = np.zeros((lookup_f_index, lookup_o_index), dtype=np.float)
+            if this_fid not in mode_index_lookup[this_mode_header_id].keys():
+                mode_index_lookup[this_mode_header_id][this_fid] = mode_header_lookup[this_mode_header_id]["lookup_f_index"]
+                mode_header_lookup[this_mode_header_id]["lookup_f_index"] = mode_header_lookup[this_mode_header_id]["lookup_f_index"] + 1
+            if this_oid not in mode_index_lookup[this_mode_header_id].keys():
+                mode_index_lookup[this_mode_header_id][this_oid] = mode_header_lookup[this_mode_header_id]["lookup_o_index"]
+                mode_header_lookup[this_mode_header_id]["lookup_o_index"] = mode_header_lookup[this_mode_header_id]["lookup_o_index"] + 1
+        interest_2d_arrays = {}
+        for unique_header in unique_mode_headers:
+            this_mode_header_id = str(unique_header)
+            interest_2d_arrays[this_mode_header_id] = np.zeros((mode_header_lookup[this_mode_header_id]["lookup_f_index"], mode_header_lookup[this_mode_header_id]["lookup_o_index"]), dtype=np.float)
         for i in range(0, len(sub_interest)):
             this_mode_header_id = str(sub_mode_header_id[i])
             this_fid = sub_pair_fid[i]
             this_oid = sub_pair_oid[i]
-            interest_2d[
-                mode_header_lookup[this_mode_header_id][this_fid], mode_header_lookup[this_mode_header_id][this_oid]] = \
-                sub_interest[i]
-        return interest_2d, lookup_f_index, lookup_o_index
+            interest_2d_arrays[this_mode_header_id][mode_index_lookup[this_mode_header_id][this_fid], mode_index_lookup[this_mode_header_id][this_oid]] = sub_interest[i]
+        return interest_2d_arrays, mode_header_lookup
 
     # function for calculating anomaly correlation from MET partial sums
     def calculate_acc(self, fbar, obar, ffbar, oobar, fobar, total):
@@ -701,12 +707,15 @@ class QueryUtil:
     def calculate_mmi(self, sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id):
         try:
             if len(sub_pair_fid) > 0 and len(sub_pair_oid) > 0:
-                interest_2d, max_f_index, max_o_index = self.get_interest2d(sub_interest, sub_mode_header_id,
-                                                                            sub_pair_fid, sub_pair_oid)
+                interest_2d_arrays, mode_header_lookup = self.get_interest2d(sub_interest, sub_mode_header_id, sub_pair_fid, sub_pair_oid)
                 # Compute standard MMI first
-                max_int = np.amax(interest_2d, axis=1)
-                max_interest = np.append(max_int, np.amax(interest_2d, axis=0))
-                mmi = np.median(max_interest)
+                max_int_array = np.empty(0, dtype=np.float)
+                for key in interest_2d_arrays:
+                    interest_2d = interest_2d_arrays[key]
+                    max_int = np.amax(interest_2d, axis=1)
+                    max_interest = np.append(max_int, np.amax(interest_2d, axis=0))
+                    max_int_array = np.append(max_int_array, max_interest)
+                mmi = np.median(max_int_array)
                 mmi = np.asarray([mmi, ])
             else:
                 mmi = np.empty(1)
@@ -722,34 +731,37 @@ class QueryUtil:
     def calculate_mode_ctc(self, statistic, sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id):
         try:
             if len(sub_pair_fid) > 0 and len(sub_pair_oid) > 0:
-                interest_2d, max_f_index, max_o_index = self.get_interest2d(sub_interest, sub_mode_header_id,
-                                                                            sub_pair_fid, sub_pair_oid)
+                interest_2d_arrays, mode_header_lookup = self.get_interest2d(sub_interest, sub_mode_header_id, sub_pair_fid, sub_pair_oid)
                 # Populate contingency table for matched objects
                 n_hit = 0
                 n_miss = 0
                 n_fa = 0
                 match_int = 0.70
-                for o in range(0, max_o_index):
-                    found_hit = False
-                    for f in range(0, max_f_index):
-                        # hit
-                        if interest_2d[f, o] >= match_int:
-                            n_hit += 1
-                            found_hit = True
-                            break  # stop looking for other forecast objects that match to this observation one
-                    if not found_hit:  # if we made it all the way through the f-loop without getting a hit, count a miss
-                        n_miss += 1
-                # Now search through the forecast objects to see if there were any false alarms
-                for f in range(0, max_f_index):
-                    found_hit = False
+                for key in interest_2d_arrays:
+                    interest_2d = interest_2d_arrays[key]
+                    max_f_index = mode_header_lookup[key]["lookup_f_index"]
+                    max_o_index = mode_header_lookup[key]["lookup_o_index"]
                     for o in range(0, max_o_index):
-                        if interest_2d[f, o] > match_int:
-                            found_hit = True
-                            break
-                    # If, after searching through all observation objects, we didn't get a match,
-                    # then the forecast object is a false alarm
-                    if not found_hit:
-                        n_fa += 1
+                        found_hit = False
+                        for f in range(0, max_f_index):
+                            # hit
+                            if interest_2d[f, o] >= match_int:
+                                n_hit += 1
+                                found_hit = True
+                                break  # stop looking for other forecast objects that match to this observation one
+                        if not found_hit:  # if we made it all the way through the f-loop without getting a hit, count a miss
+                            n_miss += 1
+                    # Now search through the forecast objects to see if there were any false alarms
+                    for f in range(0, max_f_index):
+                        found_hit = False
+                        for o in range(0, max_o_index):
+                            if interest_2d[f, o] > match_int:
+                                found_hit = True
+                                break
+                        # If, after searching through all observation objects, we didn't get a match,
+                        # then the forecast object is a false alarm
+                        if not found_hit:
+                            n_fa += 1
 
                 n_hit_arr = np.asarray([n_hit, ])
                 n_miss_arr = np.asarray([n_miss, ])
