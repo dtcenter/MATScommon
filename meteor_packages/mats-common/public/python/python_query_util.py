@@ -86,6 +86,35 @@ class QueryUtil:
         except ValueError:
             return False
 
+    # helper function for MODE calculations
+    def get_interest2d(self, sub_interest, sub_mode_header_id, sub_pair_fid, sub_pair_oid):
+        # set up 2-dimensional interest array
+        mode_header_lookup = {}
+        lookup_f_index = 0
+        lookup_o_index = 0
+        for i in range(0, len(sub_interest)):
+            # create indices for different mode_header_ids
+            this_mode_header_id = str(sub_mode_header_id[i])
+            if this_mode_header_id not in mode_header_lookup.keys():
+                mode_header_lookup[this_mode_header_id] = {}
+            this_fid = sub_pair_fid[i]
+            this_oid = sub_pair_oid[i]
+            if this_fid not in mode_header_lookup[this_mode_header_id].keys():
+                mode_header_lookup[this_mode_header_id][this_fid] = lookup_f_index
+                lookup_f_index = lookup_f_index + 1
+            if this_oid not in mode_header_lookup[this_mode_header_id].keys():
+                mode_header_lookup[this_mode_header_id][this_oid] = lookup_o_index
+                lookup_o_index = lookup_o_index + 1
+        interest_2d = np.zeros((lookup_f_index, lookup_o_index), dtype=np.float)
+        for i in range(0, len(sub_interest)):
+            this_mode_header_id = str(sub_mode_header_id[i])
+            this_fid = sub_pair_fid[i]
+            this_oid = sub_pair_oid[i]
+            interest_2d[
+                mode_header_lookup[this_mode_header_id][this_fid], mode_header_lookup[this_mode_header_id][this_oid]] = \
+                sub_interest[i]
+        return interest_2d, lookup_f_index, lookup_o_index
+
     # function for calculating anomaly correlation from MET partial sums
     def calculate_acc(self, fbar, obar, ffbar, oobar, fobar, total):
         try:
@@ -649,7 +678,8 @@ class QueryUtil:
                     if this_mode_header_id not in matched_fid.keys():
                         matched_fid[this_mode_header_id] = []
                         matched_oid[this_mode_header_id] = []
-                    if (this_fid not in matched_fid[this_mode_header_id]) and (this_oid not in matched_oid[this_mode_header_id]):
+                    if (this_fid not in matched_fid[this_mode_header_id]) and (
+                            this_oid not in matched_oid[this_mode_header_id]):
                         ots_sum += sorted_int[i] * (f_area + o_area)
                         matched_fid[this_mode_header_id].append(this_fid)
                         matched_oid[this_mode_header_id].append(this_oid)
@@ -667,33 +697,12 @@ class QueryUtil:
             ots = np.empty(1)
         return ots
 
-    # function for calculating mediam of maximum interest from MET MODE output
-    def calculate_mmi(self, sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id, individual_obj_lookup):
+    # function for calculating median of maximum interest from MET MODE output
+    def calculate_mmi(self, sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id):
         try:
             if len(sub_pair_fid) > 0 and len(sub_pair_oid) > 0:
-                # set up 2-dimensional interest array
-                mode_header_lookup = {}
-                lookup_f_index = 0
-                lookup_o_index = 0
-                for i in range(0, len(sub_interest)):
-                    # create indices for different mode_header_ids
-                    this_mode_header_id = str(sub_mode_header_id[i])
-                    if this_mode_header_id not in mode_header_lookup.keys():
-                        mode_header_lookup[this_mode_header_id] = {}
-                    this_fid = sub_pair_fid[i]
-                    this_oid = sub_pair_oid[i]
-                    if this_fid not in mode_header_lookup[this_mode_header_id].keys():
-                        mode_header_lookup[this_mode_header_id][this_fid] = lookup_f_index
-                        lookup_f_index = lookup_f_index + 1
-                    if this_oid not in mode_header_lookup[this_mode_header_id].keys():
-                        mode_header_lookup[this_mode_header_id][this_oid] = lookup_o_index
-                        lookup_o_index = lookup_o_index + 1
-                interest_2d = np.zeros((lookup_f_index, lookup_o_index), dtype=np.float)
-                for i in range(0, len(sub_interest)):
-                    this_mode_header_id = str(sub_mode_header_id[i])
-                    this_fid = sub_pair_fid[i]
-                    this_oid = sub_pair_oid[i]
-                    interest_2d[mode_header_lookup[this_mode_header_id][this_fid], mode_header_lookup[this_mode_header_id][this_oid]] = sub_interest[i]
+                interest_2d, max_f_index, max_o_index = self.get_interest2d(sub_interest, sub_mode_header_id,
+                                                                            sub_pair_fid, sub_pair_oid)
                 # Compute standard MMI first
                 max_int = np.amax(interest_2d, axis=1)
                 max_interest = np.append(max_int, np.amax(interest_2d, axis=0))
@@ -708,6 +717,70 @@ class QueryUtil:
             self.error = "Error calculating bias: " + str(e)
             mmi = np.empty(1)
         return mmi
+
+    # function for calculating median of maximum interest from MET MODE output
+    def calculate_mode_ctc(self, statistic, sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id):
+        try:
+            if len(sub_pair_fid) > 0 and len(sub_pair_oid) > 0:
+                interest_2d, max_f_index, max_o_index = self.get_interest2d(sub_interest, sub_mode_header_id,
+                                                                            sub_pair_fid, sub_pair_oid)
+                # Populate contingency table for matched objects
+                n_hit = 0
+                n_miss = 0
+                n_fa = 0
+                match_int = 0.70
+                for o in range(0, max_o_index):
+                    found_hit = False
+                    for f in range(0, max_f_index):
+                        # hit
+                        if interest_2d[f, o] >= match_int:
+                            n_hit += 1
+                            found_hit = True
+                            break  # stop looking for other forecast objects that match to this observation one
+                    if not found_hit:  # if we made it all the way through the f-loop without getting a hit, count a miss
+                        n_miss += 1
+                # Now search through the forecast objects to see if there were any false alarms
+                for f in range(0, max_f_index):
+                    found_hit = False
+                    for o in range(0, max_o_index):
+                        if interest_2d[f, o] > match_int:
+                            found_hit = True
+                            break
+                    # If, after searching through all observation objects, we didn't get a match,
+                    # then the forecast object is a false alarm
+                    if not found_hit:
+                        n_fa += 1
+
+                n_hit_arr = np.asarray([n_hit, ])
+                n_miss_arr = np.asarray([n_miss, ])
+                n_fa_arr = np.asarray([n_fa, ])
+
+                if statistic == "CSI (Critical Success Index)":
+                    if n_hit + n_miss + n_fa > 0:
+                        ctc = self.calculate_csi(n_hit_arr, n_fa_arr, n_miss_arr)
+                    else:
+                        ctc = np.empty(1)
+                elif statistic == "PODy (Probability of positive detection)":
+                    if n_hit + n_miss > 0:
+                        ctc = self.calculate_pody(n_hit_arr, n_miss_arr)
+                    else:
+                        ctc = np.empty(1)
+                elif statistic == "FAR (False Alarm Ratio)":
+                    if n_hit + n_miss > 0:
+                        ctc = self.calculate_far(n_hit_arr, n_fa_arr)
+                    else:
+                        ctc = np.empty(1)
+                else:
+                    ctc = np.empty(1)
+            else:
+                ctc = np.empty(1)
+        except TypeError as e:
+            self.error = "Error calculating bias: " + str(e)
+            ctc = np.empty(1)
+        except ValueError as e:
+            self.error = "Error calculating bias: " + str(e)
+            ctc = np.empty(1)
+        return ctc
 
     # function for determining and calling the appropriate scalar statistical calculation function
     def calculate_scalar_stat(self, statistic, fbar, obar, ffbar, oobar, fobar, total):
@@ -867,11 +940,17 @@ class QueryUtil:
                             individual_obj_lookup):
         stat_switch = {  # dispatcher of statistical calculation functions
             'OTS (Object Threat Score)': self.calculate_ots,
-            'MMI (Median of Maximum Interest)': self.calculate_mmi
+            'MMI (Median of Maximum Interest)': self.calculate_mmi,
+            'CSI (Critical Success Index)': self.calculate_mode_ctc,
+            'FAR (False Alarm Ratio)': self.calculate_mode_ctc,
+            'PODy (Probability of positive detection)': self.calculate_mode_ctc
         }
         args_switch = {  # dispatcher of arguments for statistical calculation functions
             'OTS (Object Threat Score)': (sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id, individual_obj_lookup),
-            'MMI (Median of Maximum Interest)': (sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id, individual_obj_lookup)
+            'MMI (Median of Maximum Interest)': (sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id),
+            'CSI (Critical Success Index)': (statistic, sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id),
+            'FAR (False Alarm Ratio)': (statistic, sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id),
+            'PODy (Probability of positive detection)': (statistic, sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id)
         }
         try:
             stat_args = args_switch[statistic]  # get args
