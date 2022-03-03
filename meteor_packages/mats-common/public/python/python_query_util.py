@@ -649,8 +649,7 @@ class QueryUtil:
                     if this_mode_header_id not in matched_fid.keys():
                         matched_fid[this_mode_header_id] = []
                         matched_oid[this_mode_header_id] = []
-                    if (this_fid not in matched_fid[this_mode_header_id]) and (
-                            this_oid not in matched_oid[this_mode_header_id]):
+                    if (this_fid not in matched_fid[this_mode_header_id]) and (this_oid not in matched_oid[this_mode_header_id]):
                         ots_sum += sorted_int[i] * (f_area + o_area)
                         matched_fid[this_mode_header_id].append(this_fid)
                         matched_oid[this_mode_header_id].append(this_oid)
@@ -667,6 +666,48 @@ class QueryUtil:
             self.error = "Error calculating bias: " + str(e)
             ots = np.empty(1)
         return ots
+
+    # function for calculating mediam of maximum interest from MET MODE output
+    def calculate_mmi(self, sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id, individual_obj_lookup):
+        try:
+            if len(sub_pair_fid) > 0 and len(sub_pair_oid) > 0:
+                # set up 2-dimensional interest array
+                mode_header_lookup = {}
+                lookup_f_index = 0
+                lookup_o_index = 0
+                for i in range(0, len(sub_interest)):
+                    # create indices for different mode_header_ids
+                    this_mode_header_id = str(sub_mode_header_id[i])
+                    if this_mode_header_id not in mode_header_lookup.keys():
+                        mode_header_lookup[this_mode_header_id] = {}
+                    this_fid = sub_pair_fid[i]
+                    this_oid = sub_pair_oid[i]
+                    if this_fid not in mode_header_lookup[this_mode_header_id].keys():
+                        mode_header_lookup[this_mode_header_id][this_fid] = lookup_f_index
+                        lookup_f_index = lookup_f_index + 1
+                    if this_oid not in mode_header_lookup[this_mode_header_id].keys():
+                        mode_header_lookup[this_mode_header_id][this_oid] = lookup_o_index
+                        lookup_o_index = lookup_o_index + 1
+                interest_2d = np.zeros((lookup_f_index, lookup_o_index), dtype=np.float)
+                for i in range(0, len(sub_interest)):
+                    this_mode_header_id = str(sub_mode_header_id[i])
+                    this_fid = sub_pair_fid[i]
+                    this_oid = sub_pair_oid[i]
+                    interest_2d[mode_header_lookup[this_mode_header_id][this_fid], mode_header_lookup[this_mode_header_id][this_oid]] = sub_interest[i]
+                # Compute standard MMI first
+                max_int = np.amax(interest_2d, axis=1)
+                max_interest = np.append(max_int, np.amax(interest_2d, axis=0))
+                mmi = np.median(max_interest)
+                mmi = np.asarray([mmi, ])
+            else:
+                mmi = np.empty(1)
+        except TypeError as e:
+            self.error = "Error calculating bias: " + str(e)
+            mmi = np.empty(1)
+        except ValueError as e:
+            self.error = "Error calculating bias: " + str(e)
+            mmi = np.empty(1)
+        return mmi
 
     # function for determining and calling the appropriate scalar statistical calculation function
     def calculate_scalar_stat(self, statistic, fbar, obar, ffbar, oobar, fobar, total):
@@ -788,24 +829,24 @@ class QueryUtil:
     # function for determining and calling the appropriate contigency table count statistical calculation function
     def calculate_ctc_stat(self, statistic, fy_oy, fy_on, fn_oy, fn_on, total):
         stat_switch = {  # dispatcher of statistical calculation functions
-            'CSI': self.calculate_csi,
-            'FAR': self.calculate_far,
-            'FBIAS': self.calculate_fbias,
-            'GSS': self.calculate_gss,
-            'HSS': self.calculate_hss,
-            'PODy': self.calculate_pody,
-            'PODn': self.calculate_podn,
-            'POFD': self.calculate_pofd
+            'CSI (Critical Success Index)': self.calculate_csi,
+            'FAR (False Alarm Ratio)': self.calculate_far,
+            'FBIAS (Frequency Bias)': self.calculate_fbias,
+            'GSS (Gilbert Skill Score)': self.calculate_gss,
+            'HSS (Heidke Skill Score)': self.calculate_hss,
+            'PODy (Probability of positive detection)': self.calculate_pody,
+            'PODn (Probability of negative detection)': self.calculate_podn,
+            'POFD (Probability of false detection)': self.calculate_pofd
         }
         args_switch = {  # dispatcher of arguments for statistical calculation functions
-            'CSI': (fy_oy, fy_on, fn_oy),
-            'FAR': (fy_oy, fy_on),
-            'FBIAS': (fy_oy, fy_on, fn_oy),
-            'GSS': (fy_oy, fy_on, fn_oy, total),
-            'HSS': (fy_oy, fy_on, fn_oy, fn_on, total),
-            'PODy': (fy_oy, fn_oy),
-            'PODn': (fy_on, fn_on),
-            'POFD': (fy_on, fn_on)
+            'CSI (Critical Success Index)': (fy_oy, fy_on, fn_oy),
+            'FAR (False Alarm Ratio)': (fy_oy, fy_on),
+            'FBIAS (Frequency Bias)': (fy_oy, fy_on, fn_oy),
+            'GSS (Gilbert Skill Score)': (fy_oy, fy_on, fn_oy, total),
+            'HSS (Heidke Skill Score)': (fy_oy, fy_on, fn_oy, fn_on, total),
+            'PODy (Probability of positive detection)': (fy_oy, fn_oy),
+            'PODn (Probability of negative detection)': (fy_on, fn_on),
+            'POFD (Probability of false detection)': (fy_on, fn_on)
         }
         try:
             stat_args = args_switch[statistic]  # get args
@@ -825,10 +866,12 @@ class QueryUtil:
     def calculate_mode_stat(self, statistic, sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id,
                             individual_obj_lookup):
         stat_switch = {  # dispatcher of statistical calculation functions
-            'OTS': self.calculate_ots
+            'OTS (Object Threat Score)': self.calculate_ots,
+            'MMI (Median of Maximum Interest)': self.calculate_mmi
         }
         args_switch = {  # dispatcher of arguments for statistical calculation functions
-            'OTS': (sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id, individual_obj_lookup)
+            'OTS (Object Threat Score)': (sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id, individual_obj_lookup),
+            'MMI (Median of Maximum Interest)': (sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id, individual_obj_lookup)
         }
         try:
             stat_args = args_switch[statistic]  # get args
