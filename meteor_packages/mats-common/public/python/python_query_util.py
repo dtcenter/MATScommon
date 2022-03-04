@@ -1116,29 +1116,30 @@ class QueryUtil:
                 sub_values, stat = self.calculate_ctc_stat(statistic, sub_fy_oy, sub_fy_on, sub_fn_oy, sub_fn_on,
                                                            sub_total)
             elif stat_line_type == 'mode_pair':
-                sub_data = str(row['sub_data2']).split(',')
                 individual_obj_lookup = {}
-                for sub_datum2 in sub_data:
-                    sub_datum2 = sub_datum2.split(';')
-                    obj_id = sub_datum2[0]
-                    mode_header_id = sub_datum2[1]
-                    area = sub_datum2[2]
-                    if obj_id[0:1] == "C":
-                        continue
-                    if mode_header_id not in individual_obj_lookup.keys():
-                        individual_obj_lookup[mode_header_id] = {}
-                    individual_obj_lookup[mode_header_id][obj_id] = {
-                        "area": float(area)
-                    }
+                if statistic == "OTS (Object Threat Score)":
+                    object_sub_data = str(object_row['sub_data2']).split(',')
+                    for sub_datum2 in object_sub_data:
+                        sub_datum2 = sub_datum2.split(';')
+                        obj_id = sub_datum2[0]
+                        mode_header_id = sub_datum2[1]
+                        area = sub_datum2[2]
+                        if obj_id[0:1] == "C":
+                            continue
+                        if mode_header_id not in individual_obj_lookup.keys():
+                            individual_obj_lookup[mode_header_id] = {}
+                        individual_obj_lookup[mode_header_id][obj_id] = {
+                            "area": float(area)
+                        }
 
-                object_sub_data = str(object_row['sub_data']).split(',')
+                sub_data = str(row['sub_data']).split(',')
                 sub_interest = []
                 sub_pair_fid = []
                 sub_pair_oid = []
                 sub_mode_header_id = []
                 sub_secs = []
                 sub_levs = []
-                for sub_datum in object_sub_data:
+                for sub_datum in sub_data:
                     sub_datum = sub_datum.split(';')
                     obj_id = sub_datum[1]
                     if obj_id[0:1] == "F" and obj_id.find("_") >= 0:
@@ -1412,7 +1413,7 @@ class QueryUtil:
             av_time = av_seconds * 1000
             xmin = av_time if av_time < xmin else xmin
             xmax = av_time if av_time > xmax else xmax
-            if stat_line_type == 'mode_pair':
+            if stat_line_type == 'mode_pair' and statistic == "OTS (Object Threat Score)":
                 object_row = object_data[row_idx]
             else:
                 object_row = []
@@ -1431,7 +1432,7 @@ class QueryUtil:
             elif stat_line_type == 'precalculated':
                 data_exists = row['stat'] != "null" and row['stat'] != "NULL"
             elif stat_line_type == 'mode_pair':
-                data_exists = row['area'] != "null" and row['area'] != "NULL"
+                data_exists = row['interest'] != "null" and row['interest'] != "NULL"
             if hasattr(row, 'N0'):
                 self.n0.append(int(row['N0']))
             else:
@@ -1577,7 +1578,7 @@ class QueryUtil:
             else:
                 ind_var = int(row['avtime'])
 
-            if stat_line_type == 'mode_pair':
+            if stat_line_type == 'mode_pair' and statistic == "OTS (Object Threat Score)":
                 object_row = object_data[row_idx]
             else:
                 object_row = []
@@ -1596,7 +1597,7 @@ class QueryUtil:
             elif stat_line_type == 'precalculated':
                 data_exists = row['stat'] != "null" and row['stat'] != "NULL"
             elif stat_line_type == 'mode_pair':
-                data_exists = row['area'] != "null" and row['area'] != "NULL"
+                data_exists = row['interest'] != "null" and row['interest'] != "NULL"
             if hasattr(row, 'N0'):
                 self.n0.append(int(row['N0']))
             else:
@@ -1754,7 +1755,7 @@ class QueryUtil:
         # loop through the query results and store the returned values
         for row in query_data:
             row_idx = query_data.index(row)
-            if stat_line_type == 'mode_pair':
+            if stat_line_type == 'mode_pair' and statistic == "OTS (Object Threat Score)":
                 object_row = object_data[row_idx]
             else:
                 object_row = []
@@ -1771,7 +1772,7 @@ class QueryUtil:
                     'fy_on'] != "NULL" and row['fn_oy'] != "null" and row['fn_oy'] != "NULL" and row[
                                   'fn_on'] != "null" and row['fn_on'] != "NULL"
             elif stat_line_type == 'mode_pair':
-                data_exists = row['area'] != "null" and row['area'] != "NULL"
+                data_exists = row['interest'] != "null" and row['interest'] != "NULL"
             elif stat_line_type == 'precalculated':
                 data_exists = row['stat'] != "null" and row['stat'] != "NULL"
             if hasattr(row, 'N0'):
@@ -2064,17 +2065,20 @@ class QueryUtil:
         if stat_line_type == 'mode_pair':
             # there are two queries in this statement
             statements = statement.split(" ||| ")
-            try:
-                cursor.execute(statements[0])
-            except pymysql.Error as e:
-                self.error = "Error executing query: " + str(e)
-            else:
-                if cursor.rowcount == 0:
-                    self.error = "INFO:0 data records found"
+            if statistic == "OTS (Object Threat Score)":
+                # only the mode statistic OTS needs the additional object information provided by the first query.
+                # we can ignore it for other stats
+                try:
+                    cursor.execute(statements[1])
+                except pymysql.Error as e:
+                    self.error = "Error executing query: " + str(e)
                 else:
-                    # get object data
-                    object_data = cursor.fetchall()
-            statement = statements[1]
+                    if cursor.rowcount == 0:
+                        self.error = "INFO:0 data records found"
+                    else:
+                        # get object data
+                        object_data = cursor.fetchall()
+            statement = statements[0]
 
         try:
             cursor.execute(statement)
