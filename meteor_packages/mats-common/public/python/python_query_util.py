@@ -29,6 +29,10 @@ class QueryUtil:
         "subVals": [],
         "subSecs": [],
         "subLevs": [],
+        "subInterest": [],
+        "subPairFid": [],
+        "subPairOid": [],
+        "subModeHeaderId": [],
         "stats": [],
         "text": [],
         "xTextOutput": [],
@@ -53,6 +57,7 @@ class QueryUtil:
             "n": 0
         },
         "bin_stats": [],
+        "individualObjLookup": {},
         "xmin": sys.float_info.max,
         "xmax": -1 * sys.float_info.max,
         "ymin": sys.float_info.max,
@@ -88,10 +93,12 @@ class QueryUtil:
 
     # helper function for MODE calculations
     def get_interest2d(self, sub_interest, sub_mode_header_id, sub_pair_fid, sub_pair_oid):
-        # set up 2-dimensional interest arrays
+        # set up 2-dimensional interest arrays for calculating MODE stats
+        # need a separate 2d array for each mode_header_id
         unique_mode_headers = list(set(sub_mode_header_id))
         mode_header_lookup = {}
         mode_index_lookup = {}
+        interest_2d_arrays = {}
         for unique_header in unique_mode_headers:
             mode_header_lookup[str(unique_header)] = {
                 "lookup_f_index": 0,
@@ -105,20 +112,26 @@ class QueryUtil:
             this_fid = sub_pair_fid[i]
             this_oid = sub_pair_oid[i]
             if this_fid not in mode_index_lookup[this_mode_header_id].keys():
-                mode_index_lookup[this_mode_header_id][this_fid] = mode_header_lookup[this_mode_header_id]["lookup_f_index"]
-                mode_header_lookup[this_mode_header_id]["lookup_f_index"] = mode_header_lookup[this_mode_header_id]["lookup_f_index"] + 1
+                mode_index_lookup[this_mode_header_id][this_fid] = \
+                        mode_header_lookup[this_mode_header_id]["lookup_f_index"]
+                mode_header_lookup[this_mode_header_id]["lookup_f_index"] = \
+                        mode_header_lookup[this_mode_header_id]["lookup_f_index"] + 1
             if this_oid not in mode_index_lookup[this_mode_header_id].keys():
-                mode_index_lookup[this_mode_header_id][this_oid] = mode_header_lookup[this_mode_header_id]["lookup_o_index"]
-                mode_header_lookup[this_mode_header_id]["lookup_o_index"] = mode_header_lookup[this_mode_header_id]["lookup_o_index"] + 1
-        interest_2d_arrays = {}
+                mode_index_lookup[this_mode_header_id][this_oid] = \
+     mode_header_lookup[this_mode_header_id]["lookup_o_index"]
+                mode_header_lookup[this_mode_header_id]["lookup_o_index"] = \
+                        mode_header_lookup[this_mode_header_id]["lookup_o_index"] + 1
         for unique_header in unique_mode_headers:
             this_mode_header_id = str(unique_header)
-            interest_2d_arrays[this_mode_header_id] = np.zeros((mode_header_lookup[this_mode_header_id]["lookup_f_index"], mode_header_lookup[this_mode_header_id]["lookup_o_index"]), dtype=np.float)
+            interest_2d_arrays[this_mode_header_id] = \
+                    np.zeros((mode_header_lookup[this_mode_header_id]["lookup_f_index"],
+                              mode_header_lookup[this_mode_header_id]["lookup_o_index"]), dtype=np.float)
         for i in range(0, len(sub_interest)):
             this_mode_header_id = str(sub_mode_header_id[i])
             this_fid = sub_pair_fid[i]
             this_oid = sub_pair_oid[i]
-            interest_2d_arrays[this_mode_header_id][mode_index_lookup[this_mode_header_id][this_fid], mode_index_lookup[this_mode_header_id][this_oid]] = sub_interest[i]
+            interest_2d_arrays[this_mode_header_id][mode_index_lookup[this_mode_header_id][this_fid],
+    mode_index_lookup[this_mode_header_id][this_oid]] = sub_interest[i]
         return interest_2d_arrays, mode_header_lookup
 
     # function for calculating anomaly correlation from MET partial sums
@@ -692,22 +705,22 @@ class QueryUtil:
                         all_f_areas.append(f_area)
                         all_o_areas.append(o_area)
                 ots = ots_sum / (sum(all_f_areas) + sum(all_o_areas))
-                ots = np.asarray([ots, ])
             else:
-                ots = np.empty(1)
+                ots = 'null'
         except TypeError as e:
             self.error = "Error calculating bias: " + str(e)
-            ots = np.empty(1)
+            ots = 'null'
         except ValueError as e:
             self.error = "Error calculating bias: " + str(e)
-            ots = np.empty(1)
+            ots = 'null'
         return ots
 
     # function for calculating median of maximum interest from MET MODE output
     def calculate_mmi(self, sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id):
         try:
             if len(sub_pair_fid) > 0 and len(sub_pair_oid) > 0:
-                interest_2d_arrays, mode_header_lookup = self.get_interest2d(sub_interest, sub_mode_header_id, sub_pair_fid, sub_pair_oid)
+                interest_2d_arrays, mode_header_lookup = self.get_interest2d(sub_interest, sub_mode_header_id,
+                                                                             sub_pair_fid, sub_pair_oid)
                 # Compute standard MMI first
                 max_int_array = np.empty(0, dtype=np.float)
                 for key in interest_2d_arrays:
@@ -716,22 +729,22 @@ class QueryUtil:
                     max_interest = np.append(max_int, np.amax(interest_2d, axis=0))
                     max_int_array = np.append(max_int_array, max_interest)
                 mmi = np.median(max_int_array)
-                mmi = np.asarray([mmi, ])
             else:
-                mmi = np.empty(1)
+                mmi = 'null'
         except TypeError as e:
             self.error = "Error calculating bias: " + str(e)
-            mmi = np.empty(1)
+            mmi = 'null'
         except ValueError as e:
             self.error = "Error calculating bias: " + str(e)
-            mmi = np.empty(1)
+            mmi = 'null'
         return mmi
 
     # function for calculating median of maximum interest from MET MODE output
     def calculate_mode_ctc(self, statistic, sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id):
         try:
             if len(sub_pair_fid) > 0 and len(sub_pair_oid) > 0:
-                interest_2d_arrays, mode_header_lookup = self.get_interest2d(sub_interest, sub_mode_header_id, sub_pair_fid, sub_pair_oid)
+                interest_2d_arrays, mode_header_lookup = self.get_interest2d(sub_interest, sub_mode_header_id,
+                                                                             sub_pair_fid, sub_pair_oid)
                 # Populate contingency table for matched objects
                 n_hit = 0
                 n_miss = 0
@@ -763,35 +776,36 @@ class QueryUtil:
                         if not found_hit:
                             n_fa += 1
 
+                # use the pre-existing ctc functions
                 n_hit_arr = np.asarray([n_hit, ])
                 n_miss_arr = np.asarray([n_miss, ])
                 n_fa_arr = np.asarray([n_fa, ])
 
                 if statistic == "CSI (Critical Success Index)":
                     if n_hit + n_miss + n_fa > 0:
-                        ctc = self.calculate_csi(n_hit_arr, n_fa_arr, n_miss_arr)
+                        ctc = self.calculate_csi(n_hit_arr, n_fa_arr, n_miss_arr)[0]
                     else:
-                        ctc = np.empty(1)
+                        ctc = 'null'
                 elif statistic == "PODy (Probability of positive detection)":
                     if n_hit + n_miss > 0:
-                        ctc = self.calculate_pody(n_hit_arr, n_miss_arr)
+                        ctc = self.calculate_pody(n_hit_arr, n_miss_arr)[0]
                     else:
-                        ctc = np.empty(1)
+                        ctc = 'null'
                 elif statistic == "FAR (False Alarm Ratio)":
                     if n_hit + n_miss > 0:
-                        ctc = self.calculate_far(n_hit_arr, n_fa_arr)
+                        ctc = self.calculate_far(n_hit_arr, n_fa_arr)[0]
                     else:
-                        ctc = np.empty(1)
+                        ctc = 'null'
                 else:
-                    ctc = np.empty(1)
+                    ctc = 'null'
             else:
-                ctc = np.empty(1)
+                ctc = 'null'
         except TypeError as e:
             self.error = "Error calculating bias: " + str(e)
-            ctc = np.empty(1)
+            ctc = 'null'
         except ValueError as e:
             self.error = "Error calculating bias: " + str(e)
-            ctc = np.empty(1)
+            ctc = 'null'
         return ctc
 
     # function for determining and calling the appropriate scalar statistical calculation function
@@ -958,40 +972,46 @@ class QueryUtil:
             'PODy (Probability of positive detection)': self.calculate_mode_ctc
         }
         args_switch = {  # dispatcher of arguments for statistical calculation functions
-            'OTS (Object Threat Score)': (sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id, individual_obj_lookup),
+            'OTS (Object Threat Score)': (
+                sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id, individual_obj_lookup),
             'MMI (Median of Maximum Interest)': (sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id),
             'CSI (Critical Success Index)': (statistic, sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id),
             'FAR (False Alarm Ratio)': (statistic, sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id),
-            'PODy (Probability of positive detection)': (statistic, sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id)
+            'PODy (Probability of positive detection)': (
+                statistic, sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id)
         }
         try:
             stat_args = args_switch[statistic]  # get args
-            sub_stats = stat_switch[statistic](*stat_args)  # call stat function
-            stat = np.nanmean(sub_stats)  # calculate overall stat
+            stat = stat_switch[statistic](*stat_args)  # call stat function
         except KeyError as e:
             self.error = "Error choosing statistic: " + str(e)
-            sub_stats = np.empty(len(sub_interest))
             stat = 'null'
         except ValueError as e:
             self.error = "Error calculating statistic: " + str(e)
-            sub_stats = np.empty(len(sub_interest))
             stat = 'null'
-        return sub_stats, stat
+        return stat
 
     # function for processing the sub-values from the query and calling a calculate_stat function
     def get_stat(self, has_levels, row, statistic, stat_line_type, object_row):
+        # these are the sub-fields that are returned in the end
+        sub_levs = []
+        sub_secs = []
+        sub_values = np.empty(0)
+        sub_interests = np.empty(0)
+        sub_pair_fids = np.empty(0)
+        sub_pair_oids = np.empty(0)
+        sub_mode_header_ids = np.empty(0)
         try:
             # get all of the sub-values for each time
             if stat_line_type == 'scalar':
                 sub_data = str(row['sub_data']).split(',')
+                # these are the sub-fields specific to scalar stats
                 sub_fbar = []
                 sub_obar = []
                 sub_ffbar = []
                 sub_oobar = []
                 sub_fobar = []
                 sub_total = []
-                sub_secs = []
-                sub_levs = []
                 for sub_datum in sub_data:
                     sub_datum = sub_datum.split(';')
                     sub_fbar.append(float(sub_datum[0]) if float(sub_datum[0]) != -9999 else np.nan)
@@ -1001,7 +1021,7 @@ class QueryUtil:
                     sub_fobar.append(float(sub_datum[4]) if float(sub_datum[4]) != -9999 else np.nan)
                     sub_total.append(float(sub_datum[5]) if float(sub_datum[5]) != -9999 else np.nan)
                     sub_secs.append(float(sub_datum[6]) if float(sub_datum[6]) != -9999 else np.nan)
-                    if len(sub_datum) > 7:
+                    if has_levels:
                         if self.is_number(sub_datum[7]):
                             sub_levs.append(int(sub_datum[7]) if float(sub_datum[7]) != -9999 else np.nan)
                         else:
@@ -1022,6 +1042,7 @@ class QueryUtil:
                                                               sub_fobar, sub_total)
             elif stat_line_type == 'vector':
                 sub_data = str(row['sub_data']).split(',')
+                # these are the sub-fields specific to vector stats
                 sub_ufbar = []
                 sub_vfbar = []
                 sub_uobar = []
@@ -1032,8 +1053,6 @@ class QueryUtil:
                 sub_f_speed_bar = []
                 sub_o_speed_bar = []
                 sub_total = []
-                sub_secs = []
-                sub_levs = []
                 for sub_datum in sub_data:
                     sub_datum = sub_datum.split(';')
                     sub_ufbar.append(float(sub_datum[0]) if float(sub_datum[0]) != -9999 else np.nan)
@@ -1048,7 +1067,7 @@ class QueryUtil:
                         sub_o_speed_bar.append(float(sub_datum[8]) if float(sub_datum[8]) != -9999 else np.nan)
                         sub_total.append(float(sub_datum[9]) if float(sub_datum[9]) != -9999 else np.nan)
                         sub_secs.append(float(sub_datum[10]) if float(sub_datum[10]) != -9999 else np.nan)
-                        if len(sub_datum) > 11:
+                        if has_levels:
                             if self.is_number(sub_datum[11]):
                                 sub_levs.append(int(sub_datum[11]) if float(sub_datum[11]) != -9999 else np.nan)
                             else:
@@ -1056,7 +1075,7 @@ class QueryUtil:
                     else:
                         sub_total.append(float(sub_datum[7]) if float(sub_datum[7]) != -9999 else np.nan)
                         sub_secs.append(float(sub_datum[8]) if float(sub_datum[8]) != -9999 else np.nan)
-                        if len(sub_datum) > 9:
+                        if has_levels:
                             if self.is_number(sub_datum[9]):
                                 sub_levs.append(int(sub_datum[9]) if float(sub_datum[9]) != -9999 else np.nan)
                             else:
@@ -1082,13 +1101,12 @@ class QueryUtil:
                                                               sub_o_speed_bar, sub_total)
             elif stat_line_type == 'ctc':
                 sub_data = str(row['sub_data']).split(',')
+                # these are the sub-fields specific to ctc stats
                 sub_fy_oy = []
                 sub_fy_on = []
                 sub_fn_oy = []
                 sub_fn_on = []
                 sub_total = []
-                sub_secs = []
-                sub_levs = []
                 for sub_datum in sub_data:
                     sub_datum = sub_datum.split(';')
                     sub_fy_oy.append(float(sub_datum[0]) if float(sub_datum[0]) != -9999 else np.nan)
@@ -1097,7 +1115,7 @@ class QueryUtil:
                     sub_fn_on.append(float(sub_datum[3]) if float(sub_datum[3]) != -9999 else np.nan)
                     sub_total.append(float(sub_datum[4]) if float(sub_datum[4]) != -9999 else np.nan)
                     sub_secs.append(float(sub_datum[5]) if float(sub_datum[5]) != -9999 else np.nan)
-                    if len(sub_datum) > 6:
+                    if has_levels:
                         if self.is_number(sub_datum[6]):
                             sub_levs.append(int(sub_datum[6]) if float(sub_datum[6]) != -9999 else np.nan)
                         else:
@@ -1115,7 +1133,7 @@ class QueryUtil:
                 # calculate the ctc statistic
                 sub_values, stat = self.calculate_ctc_stat(statistic, sub_fy_oy, sub_fy_on, sub_fn_oy, sub_fn_on,
                                                            sub_total)
-            elif stat_line_type == 'mode_pair':
+            elif 'mode_pair' in stat_line_type:  # histograms will pass in 'mode_pair_histogram', but we still want to use this code here.
                 individual_obj_lookup = {}
                 if statistic == "OTS (Object Threat Score)":
                     object_sub_data = str(object_row['sub_data2']).split(',')
@@ -1131,64 +1149,102 @@ class QueryUtil:
                         individual_obj_lookup[mode_header_id][obj_id] = {
                             "area": float(area)
                         }
-
+                self.data["individualObjLookup"] = individual_obj_lookup
                 sub_data = str(row['sub_data']).split(',')
-                sub_interest = []
-                sub_pair_fid = []
-                sub_pair_oid = []
-                sub_mode_header_id = []
+                # these are the sub-fields specific to mode stats
+                sub_interests = []
+                sub_pair_fids = []
+                sub_pair_oids = []
+                sub_mode_header_ids = []
                 sub_secs = []
                 sub_levs = []
                 for sub_datum in sub_data:
                     sub_datum = sub_datum.split(';')
                     obj_id = sub_datum[1]
                     if obj_id[0:1] == "F" and obj_id.find("_") >= 0:
-                        sub_interest.append(float(sub_datum[0]) if float(sub_datum[0]) != -9999 else np.nan)
-                        sub_pair_fid.append(obj_id.split("_")[0])
-                        sub_pair_oid.append(obj_id.split("_")[1])
-                        sub_mode_header_id.append(int(sub_datum[2]) if float(sub_datum[2]) != -9999 else np.nan)
+                        sub_interests.append(float(sub_datum[0]) if float(sub_datum[0]) != -9999 else np.nan)
+                        sub_pair_fids.append(obj_id.split("_")[0])
+                        sub_pair_oids.append(obj_id.split("_")[1])
+                        sub_mode_header_ids.append(int(sub_datum[2]) if float(sub_datum[2]) != -9999 else np.nan)
                         sub_secs.append(int(sub_datum[3]) if float(sub_datum[3]) != -9999 else np.nan)
                         if self.is_number(sub_datum[3]):
                             sub_levs.append(int(sub_datum[4]) if float(sub_datum[4]) != -9999 else np.nan)
                         else:
                             sub_levs.append(sub_datum[4])
 
-                sub_interest = np.asarray(sub_interest)
-                sub_pair_fid = np.asarray(sub_pair_fid)
-                sub_pair_oid = np.asarray(sub_pair_oid)
-                sub_mode_header_id = np.asarray(sub_mode_header_id)
-                sub_secs = np.asarray(sub_secs)
-                if len(sub_levs) == 0:
-                    sub_levs = np.empty(len(sub_secs))
-                else:
+                if 'histogram' in stat_line_type:
+                    # need to get an array of sub-values, one for each unique mode_header_id
+                    sub_interest_map = {}
+                    sub_pair_fid_map = {}
+                    sub_pair_oid_map = {}
+                    sub_mode_header_id_map = {}
+                    sub_secs_map = {}
+                    sub_levs_map = {}
+                    for i in range(0, len(sub_mode_header_ids)):
+                        this_mode_header_id = str(sub_mode_header_ids[i])
+                        if this_mode_header_id not in sub_interest_map.keys():
+                            sub_interest_map[this_mode_header_id] = []
+                            sub_pair_fid_map[this_mode_header_id] = []
+                            sub_pair_oid_map[this_mode_header_id] = []
+                            sub_mode_header_id_map[this_mode_header_id] = []
+                            sub_secs_map[this_mode_header_id] = []
+                            sub_levs_map[this_mode_header_id] = []
+                        sub_interest_map[this_mode_header_id].append(sub_interests[i])
+                        sub_pair_fid_map[this_mode_header_id].append(sub_pair_fids[i])
+                        sub_pair_oid_map[this_mode_header_id].append(sub_pair_oids[i])
+                        sub_mode_header_id_map[this_mode_header_id].append(sub_mode_header_ids[i])
+                        sub_secs_map[this_mode_header_id].append(sub_secs[i])
+                        sub_levs_map[this_mode_header_id].append(sub_levs[i])
+                    sub_values = []
+                    sub_secs = []
+                    sub_levs = []
+                    all_header_ids = sub_mode_header_id_map.keys()
+                    for header_id in all_header_ids:
+                        stat = self.calculate_mode_stat(statistic, np.asarray(sub_interest_map[header_id]),
+                                                        np.asarray(sub_pair_fid_map[header_id]),
+                                                        np.asarray(sub_pair_oid_map[header_id]),
+                                                        np.asarray(sub_mode_header_id_map[header_id]),
+                                                        individual_obj_lookup)
+                        if stat == 'null':
+                            sub_values.append(np.nan)
+                        else:
+                            sub_values.append(stat)
+                        # time and level are consistent for each header_id, so just take the first one
+                        sub_secs.append(sub_secs_map[header_id][0])
+                        sub_levs.append(sub_levs_map[header_id][0])
+                    sub_values = np.asarray(sub_values)
+                    sub_secs = np.asarray(sub_secs)
                     sub_levs = np.asarray(sub_levs)
+                else:
+                    sub_interests = np.asarray(sub_interests)
+                    sub_pair_fids = np.asarray(sub_pair_fids)
+                    sub_pair_oids = np.asarray(sub_pair_oids)
+                    sub_mode_header_ids = np.asarray(sub_mode_header_ids)
+                    sub_secs = np.asarray(sub_secs)
+                    if len(sub_levs) == 0:
+                        sub_levs = np.empty(len(sub_secs))
+                    else:
+                        sub_levs = np.asarray(sub_levs)
 
-                # calculate the mode statistic
-                sub_values, stat = self.calculate_mode_stat(statistic, sub_interest, sub_pair_fid, sub_pair_oid,
-                                                            sub_mode_header_id, individual_obj_lookup)
-                sub_secs = np.asarray([sub_secs[0], ])
-                if len(sub_levs) != 0:
-                    sub_levs = np.asarray([sub_levs[0], ])
+                    # calculate the mode statistic
+                    stat = self.calculate_mode_stat(statistic, sub_interests, sub_pair_fids, sub_pair_oids,
+                                                    sub_mode_header_ids, individual_obj_lookup)
 
             elif stat_line_type == 'precalculated':
                 stat = float(row['stat']) if float(row['stat']) != -9999 else 'null'
                 sub_data = str(row['sub_data']).split(',')
+                # these are the sub-fields specific to precalculated stats
                 sub_values = []
-                sub_total = []
-                sub_secs = []
-                sub_levs = []
                 for sub_datum in sub_data:
                     sub_datum = sub_datum.split(';')
                     sub_values.append(float(sub_datum[0]) if float(sub_datum[0]) != -9999 else np.nan)
-                    sub_total.append(float(sub_datum[1]) if float(sub_datum[1]) != -9999 else np.nan)
                     sub_secs.append(float(sub_datum[2]) if float(sub_datum[2]) != -9999 else np.nan)
-                    if len(sub_datum) > 3:
+                    if has_levels:
                         if self.is_number(sub_datum[3]):
                             sub_levs.append(int(sub_datum[3]) if float(sub_datum[0]) != -9999 else np.nan)
                         else:
                             sub_levs.append(sub_datum[3])
                 sub_values = np.asarray(sub_values)
-                sub_total = np.asarray(sub_total)
                 sub_secs = np.asarray(sub_secs)
                 if len(sub_levs) == 0:
                     sub_levs = np.empty(len(sub_secs))
@@ -1199,16 +1255,15 @@ class QueryUtil:
                 stat = 'null'
                 sub_secs = np.empty(0)
                 sub_levs = np.empty(0)
-                sub_values = np.empty(0)
 
         except KeyError as e:
             self.error = "Error parsing query data. The expected fields don't seem to be present " \
                          "in the results cache: " + str(e)
             # if we don't have the data we expect just stop now and return empty data objects
-            return np.nan, np.empty(0), np.empty(0), np.empty(0)
+            return np.nan, np.empty(0), np.empty(0), np.empty(0), np.empty(0), np.empty(0), np.empty(0), np.empty(0)
 
         # if we do have the data we expect, return the requested statistic
-        return stat, sub_levs, sub_secs, sub_values
+        return stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, sub_mode_header_ids
 
     def get_ens_hist_stat(self, row, has_levels):
         try:
@@ -1216,13 +1271,11 @@ class QueryUtil:
             stat = float(row['bin_count']) if float(row['bin_count']) > -1 else 'null'
             sub_data = str(row['sub_data']).split(',')
             sub_values = []
-            sub_total = []
             sub_secs = []
             sub_levs = []
             for sub_datum in sub_data:
                 sub_datum = sub_datum.split(';')
                 sub_values.append(float(sub_datum[0]) if float(sub_datum[0]) != -9999 else np.nan)
-                sub_total.append(float(sub_datum[1]) if float(sub_datum[1]) != -9999 else np.nan)
                 sub_secs.append(float(sub_datum[2]) if float(sub_datum[2]) != -9999 else np.nan)
                 if len(sub_datum) > 3:
                     if self.is_number(sub_datum[3]):
@@ -1230,7 +1283,6 @@ class QueryUtil:
                     else:
                         sub_levs.append(sub_datum[3])
             sub_values = np.asarray(sub_values)
-            sub_total = np.asarray(sub_total)
             sub_secs = np.asarray(sub_secs)
             if len(sub_levs) == 0:
                 sub_levs = np.empty(len(sub_secs))
@@ -1383,6 +1435,10 @@ class QueryUtil:
         xmin = float("inf")
         curve_times = []
         curve_stats = []
+        sub_interests_all = []
+        sub_pair_fids_all = []
+        sub_pair_oids_all = []
+        sub_mode_header_ids_all = []
         sub_vals_all = []
         sub_secs_all = []
         sub_levs_all = []
@@ -1429,10 +1485,10 @@ class QueryUtil:
                 data_exists = row['fy_oy'] != "null" and row['fy_oy'] != "NULL" and row['fy_on'] != "null" and row[
                     'fy_on'] != "NULL" and row['fn_oy'] != "null" and row['fn_oy'] != "NULL" and row[
                                   'fn_on'] != "null" and row['fn_on'] != "NULL"
-            elif stat_line_type == 'precalculated':
-                data_exists = row['stat'] != "null" and row['stat'] != "NULL"
             elif stat_line_type == 'mode_pair':
                 data_exists = row['interest'] != "null" and row['interest'] != "NULL"
+            elif stat_line_type == 'precalculated':
+                data_exists = row['stat'] != "null" and row['stat'] != "NULL"
             if hasattr(row, 'N0'):
                 self.n0.append(int(row['N0']))
             else:
@@ -1444,27 +1500,39 @@ class QueryUtil:
                 time_interval = time_diff if time_diff < time_interval else time_interval
 
             if data_exists:
-                stat, sub_levs, sub_secs, sub_values = self.get_stat(has_levels, row, statistic, stat_line_type,
-                                                                     object_row)
+                stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, sub_mode_header_ids \
+                        = self.get_stat(has_levels, row, statistic, stat_line_type, object_row)
                 if stat == 'null' or not self.is_number(stat):
                     # there's bad data at this time point
                     stat = 'null'
                     sub_values = 'NaN'  # These are string NaNs instead of numerical NaNs because the JSON encoder can't figure out what to do with np.nan or float('nan')
+                    sub_interests = 'NaN'
+                    sub_pair_fids = 'NaN'
+                    sub_pair_oids = 'NaN'
+                    sub_mode_header_ids = 'NaN'
                     sub_secs = 'NaN'
-                    if has_levels:
-                        sub_levs = 'NaN'
+                    sub_levs = 'NaN'
             else:
                 # there's no data at this time point
                 stat = 'null'
                 sub_values = 'NaN'  # These are string NaNs instead of numerical NaNs because the JSON encoder can't figure out what to do with np.nan or float('nan')
+                sub_interests = 'NaN'
+                sub_pair_fids = 'NaN'
+                sub_pair_oids = 'NaN'
+                sub_mode_header_ids = 'NaN'
                 sub_secs = 'NaN'
-                if has_levels:
-                    sub_levs = 'NaN'
+                sub_levs = 'NaN'
 
             # store parsed data for later
             curve_times.append(av_time)
             curve_stats.append(stat)
-            sub_vals_all.append(sub_values)
+            if stat_line_type == 'mode_pair':
+                sub_interests_all.append(sub_interests)
+                sub_pair_fids_all.append(sub_pair_fids)
+                sub_pair_oids_all.append(sub_pair_oids)
+                sub_mode_header_ids_all.append(sub_mode_header_ids)
+            else:
+                sub_vals_all.append(sub_values)
             sub_secs_all.append(sub_secs)
             if has_levels:
                 sub_levs_all.append(sub_levs)
@@ -1487,7 +1555,13 @@ class QueryUtil:
                 self.data['x'].append(loop_time)
                 self.data['y'].append('null')
                 self.data['error_y'].append('null')
-                self.data['subVals'].append('NaN')
+                if stat_line_type == 'mode_pair':
+                    self.data['subInterest'].append('NaN')
+                    self.data['subPairFid'].append('NaN')
+                    self.data['subPairOid'].append('NaN')
+                    self.data['subModeHeaderId'].append('NaN')
+                else:
+                    self.data['subVals'].append('NaN')
                 self.data['subSecs'].append('NaN')
                 if has_levels:
                     self.data['subLevs'].append('NaN')
@@ -1501,7 +1575,13 @@ class QueryUtil:
                     self.data['x'].append(loop_time)
                     self.data['y'].append('null')
                     self.data['error_y'].append('null')
-                    self.data['subVals'].append('NaN')
+                    if stat_line_type == 'mode_pair':
+                        self.data['subInterest'].append('NaN')
+                        self.data['subPairFid'].append('NaN')
+                        self.data['subPairOid'].append('NaN')
+                        self.data['subModeHeaderId'].append('NaN')
+                    else:
+                        self.data['subVals'].append('NaN')
                     self.data['subSecs'].append('NaN')
                     if has_levels:
                         self.data['subLevs'].append('NaN')
@@ -1509,22 +1589,43 @@ class QueryUtil:
                 else:
                     # put the data in our final data dictionary, converting the numpy arrays to lists so we can jsonify
                     loop_sum += curve_stats[d_idx]
-                    list_vals = sub_vals_all[d_idx].tolist()
+                    if stat_line_type == 'mode_pair':
+                        list_interests = sub_interests_all[d_idx].tolist()
+                        list_pair_fids = sub_pair_fids_all[d_idx].tolist()
+                        list_pair_oids = sub_pair_oids_all[d_idx].tolist()
+                        list_sub_mode_header_ids = sub_mode_header_ids_all[d_idx].tolist()
+                        list_vals = []
+                    else:
+                        list_interests = []
+                        list_pair_fids = []
+                        list_pair_oids = []
+                        list_sub_mode_header_ids = []
+                        list_vals = sub_vals_all[d_idx].tolist()
                     list_secs = sub_secs_all[d_idx].tolist()
                     if has_levels:
                         list_levs = sub_levs_all[d_idx].tolist()
+                    else:
+                        list_levs = []
                     # JSON can't deal with numpy nans in subarrays for some reason, so we remove them
-                    bad_value_indices = [index for index, value in enumerate(list_vals) if not self.is_number(value)]
-                    for bad_value_index in sorted(bad_value_indices, reverse=True):
-                        del list_vals[bad_value_index]
-                        del list_secs[bad_value_index]
-                        if has_levels:
-                            del list_levs[bad_value_index]
+                    if stat_line_type != 'mode_pair':
+                        bad_value_indices = [index for index, value in enumerate(list_vals) if
+                                             not self.is_number(value)]
+                        for bad_value_index in sorted(bad_value_indices, reverse=True):
+                            del list_vals[bad_value_index]
+                            del list_secs[bad_value_index]
+                            if has_levels:
+                                del list_levs[bad_value_index]
                     # store data
                     self.data['x'].append(loop_time)
                     self.data['y'].append(curve_stats[d_idx])
                     self.data['error_y'].append('null')
-                    self.data['subVals'].append(list_vals)
+                    if stat_line_type == 'mode_pair':
+                        self.data['subInterest'].append(list_interests)
+                        self.data['subPairFid'].append(list_pair_fids)
+                        self.data['subPairOid'].append(list_pair_oids)
+                        self.data['subModeHeaderId'].append(list_sub_mode_header_ids)
+                    else:
+                        self.data['subVals'].append(list_vals)
                     self.data['subSecs'].append(list_secs)
                     if has_levels:
                         self.data['subLevs'].append(list_levs)
@@ -1550,6 +1651,10 @@ class QueryUtil:
         ind_var_max = -1 * sys.float_info.max
         curve_ind_vars = []
         curve_stats = []
+        sub_interests_all = []
+        sub_pair_fids_all = []
+        sub_pair_oids_all = []
+        sub_mode_header_ids_all = []
         sub_vals_all = []
         sub_secs_all = []
         sub_levs_all = []
@@ -1594,10 +1699,10 @@ class QueryUtil:
                 data_exists = row['fy_oy'] != "null" and row['fy_oy'] != "NULL" and row['fy_on'] != "null" and row[
                     'fy_on'] != "NULL" and row['fn_oy'] != "null" and row['fn_oy'] != "NULL" and row[
                                   'fn_on'] != "null" and row['fn_on'] != "NULL"
-            elif stat_line_type == 'precalculated':
-                data_exists = row['stat'] != "null" and row['stat'] != "NULL"
             elif stat_line_type == 'mode_pair':
                 data_exists = row['interest'] != "null" and row['interest'] != "NULL"
+            elif stat_line_type == 'precalculated':
+                data_exists = row['stat'] != "null" and row['stat'] != "NULL"
             if hasattr(row, 'N0'):
                 self.n0.append(int(row['N0']))
             else:
@@ -1607,22 +1712,28 @@ class QueryUtil:
             if data_exists:
                 ind_var_min = ind_var if ind_var < ind_var_min else ind_var_min
                 ind_var_max = ind_var if ind_var > ind_var_max else ind_var_max
-                stat, sub_levs, sub_secs, sub_values = self.get_stat(has_levels, row, statistic, stat_line_type,
-                                                                     object_row)
+                stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, sub_mode_header_ids \
+                    = self.get_stat(has_levels, row, statistic, stat_line_type, object_row)
                 if stat == 'null' or not self.is_number(stat):
                     # there's bad data at this point
                     stat = 'null'
                     sub_values = 'NaN'  # These are string NaNs instead of numerical NaNs because the JSON encoder can't figure out what to do with np.nan or float('nan')
+                    sub_interests = 'NaN'
+                    sub_pair_fids = 'NaN'
+                    sub_pair_oids = 'NaN'
+                    sub_mode_header_ids = 'NaN'
                     sub_secs = 'NaN'
-                    if has_levels:
-                        sub_levs = 'NaN'
+                    sub_levs = 'NaN'
             else:
                 # there's no data at this point
                 stat = 'null'
                 sub_values = 'NaN'  # These are string NaNs instead of numerical NaNs because the JSON encoder can't figure out what to do with np.nan or float('nan')
+                sub_interests = 'NaN'
+                sub_pair_fids = 'NaN'
+                sub_pair_oids = 'NaN'
+                sub_mode_header_ids = 'NaN'
                 sub_secs = 'NaN'
-                if has_levels:
-                    sub_levs = 'NaN'
+                sub_levs = 'NaN'
 
             # deal with missing forecast cycles for dailyModelCycle plot type
             if plot_type == 'DailyModelCycle' and row_idx > 0 and (
@@ -1640,18 +1751,34 @@ class QueryUtil:
             # store parsed data for later
             curve_ind_vars.append(ind_var)
             curve_stats.append(stat)
-            sub_vals_all.append(sub_values)
+            if stat_line_type == 'mode_pair':
+                sub_interests_all.append(sub_interests)
+                sub_pair_fids_all.append(sub_pair_fids)
+                sub_pair_oids_all.append(sub_pair_oids)
+                sub_mode_header_ids_all.append(sub_mode_header_ids)
+            else:
+                sub_vals_all.append(sub_values)
             sub_secs_all.append(sub_secs)
             if has_levels:
                 sub_levs_all.append(sub_levs)
 
         # make sure lists are definitely sorted by the float ind_var values, instead of their former strings
-        if has_levels:
-            curve_ind_vars, curve_stats, sub_vals_all, sub_secs_all, sub_levs_all \
-                = zip(*sorted(zip(curve_ind_vars, curve_stats, sub_vals_all, sub_secs_all, sub_levs_all)))
+        if stat_line_type == 'mode_pair':
+            if has_levels:
+                curve_ind_vars, curve_stats, sub_interests_all, sub_pair_fids_all, sub_pair_oids_all, sub_mode_header_ids_all, sub_secs_all, sub_levs_all = zip(
+                    *sorted(zip(curve_ind_vars, curve_stats, sub_interests_all, sub_pair_fids_all, sub_pair_oids_all,
+                                sub_mode_header_ids_all, sub_secs_all, sub_levs_all)))
+            else:
+                curve_ind_vars, curve_stats, sub_interests_all, sub_pair_fids_all, sub_pair_oids_all, sub_mode_header_ids_all, sub_secs_all = zip(
+                    *sorted(zip(curve_ind_vars, curve_stats, sub_interests_all, sub_pair_fids_all, sub_pair_oids_all,
+                                sub_mode_header_ids_all, sub_secs_all)))
         else:
-            curve_ind_vars, curve_stats, sub_vals_all, sub_secs_all \
-                = zip(*sorted(zip(curve_ind_vars, curve_stats, sub_vals_all, sub_secs_all)))
+            if has_levels:
+                curve_ind_vars, curve_stats, sub_vals_all, sub_secs_all, sub_levs_all = zip(
+                    *sorted(zip(curve_ind_vars, curve_stats, sub_vals_all, sub_secs_all, sub_levs_all)))
+            else:
+                curve_ind_vars, curve_stats, sub_vals_all, sub_secs_all = zip(
+                    *sorted(zip(curve_ind_vars, curve_stats, sub_vals_all, sub_secs_all)))
 
         n0_max = max(self.n0)
         n_times_max = max(self.n_times)
@@ -1662,7 +1789,13 @@ class QueryUtil:
         # profiles have the levels sorted as strings, not numbers. Need to fix that
         if plot_type == 'Profile':
             curve_stats = [x for _, x in sorted(zip(curve_ind_vars, curve_stats))]
-            sub_vals_all = [x for _, x in sorted(zip(curve_ind_vars, sub_vals_all))]
+            if stat_line_type == 'mode_pair':
+                sub_interests_all = [x for _, x in sorted(zip(curve_ind_vars, sub_interests_all))]
+                sub_pair_fids_all = [x for _, x in sorted(zip(curve_ind_vars, sub_pair_fids_all))]
+                sub_pair_oids_all = [x for _, x in sorted(zip(curve_ind_vars, sub_pair_oids_all))]
+                sub_mode_header_ids_all = [x for _, x in sorted(zip(curve_ind_vars, sub_mode_header_ids_all))]
+            else:
+                sub_vals_all = [x for _, x in sorted(zip(curve_ind_vars, sub_vals_all))]
             sub_secs_all = [x for _, x in sorted(zip(curve_ind_vars, sub_secs_all))]
             sub_levs_all = [x for _, x in sorted(zip(curve_ind_vars, sub_levs_all))]
             curve_ind_vars = sorted(curve_ind_vars)
@@ -1682,15 +1815,28 @@ class QueryUtil:
                         self.data['x'].append('null')
                         self.data['y'].append(ind_var)
                         self.data['error_x'].append('null')
-                        self.data['subVals'].append('NaN')
+                        if stat_line_type == 'mode_pair':
+                            self.data['subInterest'].append('NaN')
+                            self.data['subPairFid'].append('NaN')
+                            self.data['subPairOid'].append('NaN')
+                            self.data['subModeHeaderId'].append('NaN')
+                        else:
+                            self.data['subVals'].append('NaN')
                         self.data['subSecs'].append('NaN')
-                        self.data['subLevs'].append('NaN')
+                        if has_levels:
+                            self.data['subLevs'].append('NaN')
                         # We use string NaNs instead of numerical NaNs because the JSON encoder can't figure out what to do with np.nan or float('nan')
                     else:
                         self.data['x'].append(ind_var)
                         self.data['y'].append('null')
                         self.data['error_y'].append('null')
-                        self.data['subVals'].append('NaN')
+                        if stat_line_type == 'mode_pair':
+                            self.data['subInterest'].append('NaN')
+                            self.data['subPairFid'].append('NaN')
+                            self.data['subPairOid'].append('NaN')
+                            self.data['subModeHeaderId'].append('NaN')
+                        else:
+                            self.data['subVals'].append('NaN')
                         self.data['subSecs'].append('NaN')
                         if has_levels:
                             self.data['subLevs'].append('NaN')
@@ -1698,17 +1844,31 @@ class QueryUtil:
             else:
                 # put the data in our final data dictionary, converting the numpy arrays to lists so we can jsonify
                 loop_sum += curve_stats[d_idx]
-                list_vals = sub_vals_all[d_idx].tolist()
+                if stat_line_type == 'mode_pair':
+                    list_interests = sub_interests_all[d_idx].tolist()
+                    list_pair_fids = sub_pair_fids_all[d_idx].tolist()
+                    list_pair_oids = sub_pair_oids_all[d_idx].tolist()
+                    list_sub_mode_header_ids = sub_mode_header_ids_all[d_idx].tolist()
+                    list_vals = []
+                else:
+                    list_interests = []
+                    list_pair_fids = []
+                    list_pair_oids = []
+                    list_sub_mode_header_ids = []
+                    list_vals = sub_vals_all[d_idx].tolist()
                 list_secs = sub_secs_all[d_idx].tolist()
                 if has_levels:
                     list_levs = sub_levs_all[d_idx].tolist()
+                else:
+                    list_levs = []
                 # JSON can't deal with numpy nans in subarrays for some reason, so we remove them
-                bad_value_indices = [index for index, value in enumerate(list_vals) if not self.is_number(value)]
-                for bad_value_index in sorted(bad_value_indices, reverse=True):
-                    del list_vals[bad_value_index]
-                    del list_secs[bad_value_index]
-                    if has_levels:
-                        del list_levs[bad_value_index]
+                if stat_line_type != 'mode_pair':
+                    bad_value_indices = [index for index, value in enumerate(list_vals) if not self.is_number(value)]
+                    for bad_value_index in sorted(bad_value_indices, reverse=True):
+                        del list_vals[bad_value_index]
+                        del list_secs[bad_value_index]
+                        if has_levels:
+                            del list_levs[bad_value_index]
                 # store data
                 if plot_type == 'Profile':
                     # profile has the stat first, and then the ind_var. The others have ind_var and then stat.
@@ -1716,14 +1876,26 @@ class QueryUtil:
                     self.data['x'].append(curve_stats[d_idx])
                     self.data['y'].append(ind_var)
                     self.data['error_x'].append('null')
-                    self.data['subVals'].append(list_vals)
+                    if stat_line_type == 'mode_pair':
+                        self.data['subInterest'].append(list_interests)
+                        self.data['subPairFid'].append(list_pair_fids)
+                        self.data['subPairOid'].append(list_pair_oids)
+                        self.data['subModeHeaderId'].append(list_sub_mode_header_ids)
+                    else:
+                        self.data['subVals'].append(list_vals)
                     self.data['subSecs'].append(list_secs)
                     self.data['subLevs'].append(list_levs)
                 else:
                     self.data['x'].append(ind_var)
                     self.data['y'].append(curve_stats[d_idx])
                     self.data['error_y'].append('null')
-                    self.data['subVals'].append(list_vals)
+                    if stat_line_type == 'mode_pair':
+                        self.data['subInterest'].append(list_interests)
+                        self.data['subPairFid'].append(list_pair_fids)
+                        self.data['subPairOid'].append(list_pair_oids)
+                        self.data['subModeHeaderId'].append(list_sub_mode_header_ids)
+                    else:
+                        self.data['subVals'].append(list_vals)
                     self.data['subSecs'].append(list_secs)
                     if has_levels:
                         self.data['subLevs'].append(list_levs)
@@ -1773,6 +1945,7 @@ class QueryUtil:
                                   'fn_on'] != "null" and row['fn_on'] != "NULL"
             elif stat_line_type == 'mode_pair':
                 data_exists = row['interest'] != "null" and row['interest'] != "NULL"
+                stat_line_type = 'mode_pair_histogram'  # let the get_stat function know that this is a histogram
             elif stat_line_type == 'precalculated':
                 data_exists = row['stat'] != "null" and row['stat'] != "NULL"
             if hasattr(row, 'N0'):
@@ -1782,8 +1955,8 @@ class QueryUtil:
             self.n_times.append(int(row['N_times']))
 
             if data_exists:
-                stat, sub_levs, sub_secs, sub_values = self.get_stat(has_levels, row, statistic, stat_line_type,
-                                                                     object_row)
+                stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, sub_mode_header_ids \
+                        = self.get_stat(has_levels, row, statistic, stat_line_type, object_row)
                 if stat == 'null' or not self.is_number(stat):
                     # there's bad data at this point
                     continue
@@ -1994,7 +2167,8 @@ class QueryUtil:
                 data_exists = row['stat'] != "null" and row['stat'] != "NULL"
 
             if data_exists:
-                stat, sub_levs, sub_secs, sub_values = self.get_stat(has_levels, row, statistic, stat_line_type, [])
+                stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, sub_mode_header_ids \
+                    = self.get_stat(has_levels, row, statistic, stat_line_type, [])
                 if stat == 'null' or not self.is_number(stat):
                     # there's bad data at this point
                     continue
