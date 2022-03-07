@@ -113,25 +113,25 @@ class QueryUtil:
             this_oid = sub_pair_oid[i]
             if this_fid not in mode_index_lookup[this_mode_header_id].keys():
                 mode_index_lookup[this_mode_header_id][this_fid] = \
-                        mode_header_lookup[this_mode_header_id]["lookup_f_index"]
+                    mode_header_lookup[this_mode_header_id]["lookup_f_index"]
                 mode_header_lookup[this_mode_header_id]["lookup_f_index"] = \
-                        mode_header_lookup[this_mode_header_id]["lookup_f_index"] + 1
+                    mode_header_lookup[this_mode_header_id]["lookup_f_index"] + 1
             if this_oid not in mode_index_lookup[this_mode_header_id].keys():
                 mode_index_lookup[this_mode_header_id][this_oid] = \
-     mode_header_lookup[this_mode_header_id]["lookup_o_index"]
+                    mode_header_lookup[this_mode_header_id]["lookup_o_index"]
                 mode_header_lookup[this_mode_header_id]["lookup_o_index"] = \
-                        mode_header_lookup[this_mode_header_id]["lookup_o_index"] + 1
+                    mode_header_lookup[this_mode_header_id]["lookup_o_index"] + 1
         for unique_header in unique_mode_headers:
             this_mode_header_id = str(unique_header)
             interest_2d_arrays[this_mode_header_id] = \
-                    np.zeros((mode_header_lookup[this_mode_header_id]["lookup_f_index"],
-                              mode_header_lookup[this_mode_header_id]["lookup_o_index"]), dtype=np.float)
+                np.zeros((mode_header_lookup[this_mode_header_id]["lookup_f_index"],
+                          mode_header_lookup[this_mode_header_id]["lookup_o_index"]), dtype=np.float)
         for i in range(0, len(sub_interest)):
             this_mode_header_id = str(sub_mode_header_id[i])
             this_fid = sub_pair_fid[i]
             this_oid = sub_pair_oid[i]
             interest_2d_arrays[this_mode_header_id][mode_index_lookup[this_mode_header_id][this_fid],
-    mode_index_lookup[this_mode_header_id][this_oid]] = sub_interest[i]
+                                                    mode_index_lookup[this_mode_header_id][this_oid]] = sub_interest[i]
         return interest_2d_arrays, mode_header_lookup
 
     # function for calculating anomaly correlation from MET partial sums
@@ -284,9 +284,8 @@ class QueryUtil:
     # function for calculating error stdev from MET partial sums
     def calculate_e_stdev(self, fbar, obar, ffbar, oobar, fobar, total):
         try:
-            estdev = np.sqrt(
-                (((ffbar + oobar - 2 * fobar) * total) - ((fbar - obar) * total) * ((fbar - obar) * total) / total) / (
-                        total - 1))
+            estdev = np.sqrt((((ffbar + oobar - 2 * fobar) * total) - ((fbar - obar) * total) *
+                              ((fbar - obar) * total) / total) / (total - 1))
         except TypeError as e:
             self.error = "Error calculating bias: " + str(e)
             estdev = np.empty(len(fbar))
@@ -622,10 +621,9 @@ class QueryUtil:
     # function for calculating Heidke skill score from MET contingency table counts
     def calculate_hss(self, fy_oy, fy_on, fn_oy, fn_on, total):
         try:
-            hss = (fy_oy + fn_on - ((fy_oy + fy_on) / total) * (fy_oy + fn_oy) + ((fn_oy + fn_on) / total) * (
-                    fy_on + fn_on)) / (
-                          total - ((fy_oy + fy_on) / total) * (fy_oy + fn_oy) + ((fn_oy + fn_on) / total) * (
-                          fy_on + fn_on))
+            hss = (fy_oy + fn_on - ((fy_oy + fy_on) / total) * (fy_oy + fn_oy) + ((fn_oy + fn_on) / total) *
+                   (fy_on + fn_on)) / (total - ((fy_oy + fy_on) / total) * (fy_oy + fn_oy) + ((fn_oy + fn_on) / total)
+                                       * (fy_on + fn_on))
         except TypeError as e:
             self.error = "Error calculating bias: " + str(e)
             hss = np.empty(len(fy_oy))
@@ -1501,7 +1499,7 @@ class QueryUtil:
 
             if data_exists:
                 stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, sub_mode_header_ids \
-                        = self.get_stat(has_levels, row, statistic, stat_line_type, object_row)
+                    = self.get_stat(has_levels, row, statistic, stat_line_type, object_row)
                 if stat == 'null' or not self.is_number(stat):
                     # there's bad data at this time point
                     stat = 'null'
@@ -1956,7 +1954,7 @@ class QueryUtil:
 
             if data_exists:
                 stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, sub_mode_header_ids \
-                        = self.get_stat(has_levels, row, statistic, stat_line_type, object_row)
+                    = self.get_stat(has_levels, row, statistic, stat_line_type, object_row)
                 if stat == 'null' or not self.is_number(stat):
                     # there's bad data at this point
                     continue
