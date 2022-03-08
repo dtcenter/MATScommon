@@ -328,111 +328,22 @@ const _getFlattenedResultData = function (rk, p, np) {
             var dsiTextDirection = result.dsiTextDirection;
             switch (plotType) {
                 case matsTypes.PlotTypes.timeSeries:
-                case matsTypes.PlotTypes.dailyModelCycle:
-                    var returnData = {};
-                    returnData.stats = {};   // map of maps
-                    returnData.data = {};  // map of arrays of maps
-                    for (var ci = 0; ci < data.length; ci++) {  // for each curve
-                        // if the curve label is a reserved word do not process the curve (its a zero or max curve)
-                        var reservedWords = Object.values(matsTypes.ReservedWords);
-                        if (reservedWords.indexOf(data[ci].label) >= 0) {
-                            continue; // don't process the zero or max curves
-                        }
-                        var stats = {};
-                        stats['label'] = data[ci].label;
-                        stats['mean'] = data[ci].glob_stats.d_mean;
-                        stats['standard deviation'] = data[ci].glob_stats.sd;
-                        stats['n'] = data[ci].glob_stats.n_good;
-                        stats['standard error'] = data[ci].glob_stats.stde_betsy;
-                        stats['lag1'] = data[ci].glob_stats.lag1;
-                        stats['minimum'] = data[ci].glob_stats.minVal;
-                        stats['maximum'] = data[ci].glob_stats.maxVal;
-                        returnData.stats[data[ci].label] = stats;
-
-                        var curveData = [];  // array of maps
-                        for (var cdi = 0; cdi < data[ci].x.length; cdi++) {  // for each datapoint
-                            var curveDataElement = {};
-                            curveDataElement[data[ci].label + ' time'] = data[ci].x[cdi];
-                            if (isCTC) {
-                                curveDataElement['stat'] = data[ci].stats[cdi].stat;
-                                curveDataElement['n'] = data[ci].stats[cdi].n;
-                                curveDataElement['hit'] = data[ci].stats[cdi].hit;
-                                curveDataElement['fa'] = data[ci].stats[cdi].fa;
-                                curveDataElement['miss'] = data[ci].stats[cdi].miss;
-                                curveDataElement['cn'] = data[ci].stats[cdi].cn;
-                            } else if (isModePairs) {
-                                curveDataElement['stat'] = data[ci].stats[cdi].stat;
-                                curveDataElement['n'] = data[ci].stats[cdi].n;
-                                curveDataElement['avgInterest'] = data[ci].stats[cdi].avgInterest;
-                            } else {
-                                curveDataElement['raw stat from query'] = data[ci].stats[cdi].raw_stat;
-                                curveDataElement['mean stat'] = data[ci].stats[cdi].d_mean;
-                                curveDataElement['std dev'] = data[ci].stats[cdi].sd;
-                                curveDataElement['std error'] = data[ci].stats[cdi].stde_betsy;
-                                curveDataElement['lag1'] = data[ci].stats[cdi].lag1;
-                                curveDataElement['n'] = data[ci].stats[cdi].n_good;
-                            }
-                            curveData.push(curveDataElement);
-                        }
-                        returnData.data[data[ci].label] = curveData;
-                    }
-                    break;
                 case matsTypes.PlotTypes.profile:
-                    var returnData = {};
-                    returnData.stats = {};   // map of maps
-                    returnData.data = {};  // map of arrays of maps
-                    for (var ci = 0; ci < data.length; ci++) {  // for each curve
-                        // if the curve label is a reserved word do not process the curve (its a zero or max curve)
-                        var reservedWords = Object.values(matsTypes.ReservedWords);
-                        if (reservedWords.indexOf(data[ci].label) >= 0) {
-                            continue; // don't process the zero or max curves
-                        }
-                        var stats = {};
-                        stats['label'] = data[ci].label;
-                        stats['mean'] = data[ci].glob_stats.d_mean;
-                        stats['standard deviation'] = data[ci].glob_stats.sd;
-                        stats['n'] = data[ci].glob_stats.n_good;
-                        stats['standard error'] = data[ci].glob_stats.stde_betsy;
-                        stats['lag1'] = data[ci].glob_stats.lag1;
-                        stats['minimum'] = data[ci].glob_stats.minVal;
-                        stats['maximum'] = data[ci].glob_stats.maxVal;
-                        returnData.stats[data[ci].label] = stats;
-
-                        var curveData = [];  // array of maps
-                        for (var cdi = 0; cdi < data[ci].x.length; cdi++) {  // for each datapoint
-                            var curveDataElement = {};
-                            curveDataElement[data[ci].label + ' level'] = data[ci].y[cdi];
-                            if (isCTC) {
-                                curveDataElement['stat'] = data[ci].stats[cdi].stat;
-                                curveDataElement['n'] = data[ci].stats[cdi].n;
-                                curveDataElement['hit'] = data[ci].stats[cdi].hit;
-                                curveDataElement['fa'] = data[ci].stats[cdi].fa;
-                                curveDataElement['miss'] = data[ci].stats[cdi].miss;
-                                curveDataElement['cn'] = data[ci].stats[cdi].cn;
-                            } else if (isModePairs) {
-                                curveDataElement['stat'] = data[ci].stats[cdi].stat;
-                                curveDataElement['n'] = data[ci].stats[cdi].n;
-                                curveDataElement['avgInterest'] = data[ci].stats[cdi].avgInterest;
-                            } else {
-                                curveDataElement['raw stat from query'] = data[ci].stats[cdi].raw_stat;
-                                curveDataElement['mean stat'] = data[ci].stats[cdi].d_mean;
-                                curveDataElement['std dev'] = data[ci].stats[cdi].sd;
-                                curveDataElement['std error'] = data[ci].stats[cdi].stde_betsy;
-                                curveDataElement['lag1'] = data[ci].stats[cdi].lag1;
-                                curveDataElement['n'] = data[ci].stats[cdi].n_good;
-                            }
-                            curveData.push(curveDataElement);
-                        }
-                        returnData.data[data[ci].label] = curveData;
-                    }
-                    break;
                 case matsTypes.PlotTypes.dieoff:
                 case matsTypes.PlotTypes.threshold:
                 case matsTypes.PlotTypes.validtime:
+                case matsTypes.PlotTypes.dailyModelCycle:
                 case matsTypes.PlotTypes.gridscale:
                 case matsTypes.PlotTypes.yearToYear:
                     var labelSuffix;
                     switch (plotType) {
+                        case matsTypes.PlotTypes.timeSeries:
+                        case matsTypes.PlotTypes.dailyModelCycle:
+                            labelSuffix = " time";
+                            break;
+                        case matsTypes.PlotTypes.profile:
+                            labelSuffix = " level";
+                            break;
                         case matsTypes.PlotTypes.dieoff:
                             labelSuffix = " forecast lead time";
                             break;
@@ -463,6 +374,10 @@ const _getFlattenedResultData = function (rk, p, np) {
                         stats['mean'] = data[ci].glob_stats.d_mean;
                         stats['standard deviation'] = data[ci].glob_stats.sd;
                         stats['n'] = data[ci].glob_stats.n_good;
+                        if (plotType === matsTypes.PlotTypes.timeSeries || plotType === matsTypes.PlotTypes.profile) {
+                            stats['standard error'] = data[ci].glob_stats.stde_betsy;
+                            stats['lag1'] = data[ci].glob_stats.lag1;
+                        }
                         stats['minimum'] = data[ci].glob_stats.minVal;
                         stats['maximum'] = data[ci].glob_stats.maxVal;
                         returnData.stats[data[ci].label] = stats;
@@ -470,7 +385,11 @@ const _getFlattenedResultData = function (rk, p, np) {
                         var curveData = [];  // array of maps
                         for (var cdi = 0; cdi < data[ci].x.length; cdi++) {  // for each datapoint
                             var curveDataElement = {};
-                            curveDataElement[data[ci].label + labelSuffix] = data[ci].x[cdi];
+                            if (plotType === matsTypes.PlotTypes.profile) {
+                                curveDataElement[data[ci].label + labelSuffix] = data[ci].y[cdi];
+                            } else {
+                                curveDataElement[data[ci].label + labelSuffix] = data[ci].x[cdi];
+                            }
                             if (isCTC) {
                                 curveDataElement['stat'] = data[ci].stats[cdi].stat;
                                 curveDataElement['n'] = data[ci].stats[cdi].n;
@@ -486,6 +405,10 @@ const _getFlattenedResultData = function (rk, p, np) {
                                 curveDataElement['raw stat from query'] = data[ci].stats[cdi].raw_stat;
                                 curveDataElement['mean stat'] = data[ci].stats[cdi].d_mean;
                                 curveDataElement['std dev'] = data[ci].stats[cdi].sd;
+                                if (plotType === matsTypes.PlotTypes.timeSeries || plotType === matsTypes.PlotTypes.profile) {
+                                    curveDataElement['std error'] = data[ci].stats[cdi].stde_betsy;
+                                    curveDataElement['lag1'] = data[ci].stats[cdi].lag1;
+                                }
                                 curveDataElement['n'] = data[ci].stats[cdi].n_good;
                             }
                             curveData.push(curveDataElement);
@@ -494,61 +417,7 @@ const _getFlattenedResultData = function (rk, p, np) {
                     }
                     break;
                 case matsTypes.PlotTypes.reliability:
-                    var returnData = {};
-                    returnData.stats = {};   // map of maps
-                    returnData.data = {};  // map of arrays of maps
-                    for (var ci = 0; ci < data.length; ci++) {  // for each curve
-                        // if the curve label is a reserved word do not process the curve (its a zero or max curve)
-                        var reservedWords = Object.values(matsTypes.ReservedWords);
-                        if (reservedWords.indexOf(data[ci].label) >= 0) {
-                            continue; // don't process the zero or max curves
-                        }
-                        var stats = {};
-                        stats['label'] = data[ci].label;
-                        stats['sample climo'] = data[ci].glob_stats.sample_climo;
-                        returnData.stats[data[ci].label] = stats;
-
-                        var curveData = [];  // array of maps
-                        for (var cdi = 0; cdi < data[ci].y.length; cdi++) {  // for each datapoint
-                            var curveDataElement = {};
-                            curveDataElement[data[ci].label + ' probability bin'] = data[ci].stats[cdi].prob_bin;
-                            curveDataElement['hit rate'] = data[ci].stats[cdi].hit_rate;
-                            curveDataElement['oy'] = data[ci].stats[cdi].obs_y;
-                            curveDataElement['on'] = data[ci].stats[cdi].obs_n;
-                            curveData.push(curveDataElement);
-                        }
-                        returnData.data[data[ci].label] = curveData;
-                    }
-                    break;
                 case matsTypes.PlotTypes.roc:
-                    var returnData = {};
-                    returnData.stats = {};   // map of maps
-                    returnData.data = {};  // map of arrays of maps
-                    for (var ci = 0; ci < data.length; ci++) {  // for each curve
-                        // if the curve label is a reserved word do not process the curve (its a zero or max curve)
-                        var reservedWords = Object.values(matsTypes.ReservedWords);
-                        if (reservedWords.indexOf(data[ci].label) >= 0) {
-                            continue; // don't process the zero or max curves
-                        }
-                        var stats = {};
-                        stats['label'] = data[ci].label;
-                        stats['auc'] = data[ci].glob_stats.auc;
-                        returnData.stats[data[ci].label] = stats;
-
-                        var curveData = [];  // array of maps
-                        for (var cdi = 0; cdi < data[ci].y.length; cdi++) {  // for each datapoint
-                            var curveDataElement = {};
-                            curveDataElement[data[ci].label + ' bin value'] = data[ci].stats[cdi].bin_value;
-                            curveDataElement['probability of detection'] = data[ci].stats[cdi].pody;
-                            curveDataElement['probability of false detection'] = data[ci].stats[cdi].pofd;
-                            curveDataElement['n'] = data[ci].stats[cdi].n;
-                            curveDataElement['oy'] = data[ci].stats[cdi].obs_y;
-                            curveDataElement['on'] = data[ci].stats[cdi].obs_n;
-                            curveData.push(curveDataElement);
-                        }
-                        returnData.data[data[ci].label] = curveData;
-                    }
-                    break;
                 case matsTypes.PlotTypes.performanceDiagram:
                     var returnData = {};
                     returnData.stats = {};   // map of maps
@@ -561,15 +430,29 @@ const _getFlattenedResultData = function (rk, p, np) {
                         }
                         var stats = {};
                         stats['label'] = data[ci].label;
+                        if (plotType === matsTypes.PlotTypes.reliability) {
+                            stats['sample climo'] = data[ci].glob_stats.sample_climo;
+                        } else if (plotType === matsTypes.PlotTypes.roc) {
+                            stats['auc'] = data[ci].glob_stats.auc;
+                        }
                         returnData.stats[data[ci].label] = stats;
 
                         var curveData = [];  // array of maps
                         for (var cdi = 0; cdi < data[ci].y.length; cdi++) {  // for each datapoint
                             var curveDataElement = {};
-                            curveDataElement[data[ci].label + ' bin value'] = data[ci].stats[cdi].bin_value;
-                            curveDataElement['probability of detection'] = data[ci].stats[cdi].pody;
-                            curveDataElement['success ratio'] = data[ci].stats[cdi].fa;
-                            curveDataElement['n'] = data[ci].stats[cdi].n;
+                            if (plotType === matsTypes.PlotTypes.reliability) {
+                                curveDataElement[data[ci].label + ' probability bin'] = data[ci].stats[cdi].prob_bin;
+                                curveDataElement['hit rate'] = data[ci].stats[cdi].hit_rate;
+                            } else {
+                                curveDataElement[data[ci].label + ' bin value'] = data[ci].stats[cdi].bin_value;
+                                curveDataElement['probability of detection'] = data[ci].stats[cdi].pody;
+                                if (plotType === matsTypes.PlotTypes.roc) {
+                                    curveDataElement['probability of false detection'] = data[ci].stats[cdi].pofd;
+                                } else {
+                                    curveDataElement['success ratio'] = data[ci].stats[cdi].fa;
+                                }
+                                curveDataElement['n'] = data[ci].stats[cdi].n;
+                            }
                             curveDataElement['oy'] = data[ci].stats[cdi].obs_y;
                             curveDataElement['on'] = data[ci].stats[cdi].obs_n;
                             curveData.push(curveDataElement);

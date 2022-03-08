@@ -59,7 +59,6 @@ Template.textOutput.helpers({
         var header = "";
         switch (Session.get('plotType')) {
             case matsTypes.PlotTypes.timeSeries:
-            case matsTypes.PlotTypes.dailyModelCycle:
             case matsTypes.PlotTypes.profile:
                 header += "<th>label</th>\
                     <th>mean</th>\
@@ -73,6 +72,7 @@ Template.textOutput.helpers({
             case matsTypes.PlotTypes.dieoff:
             case matsTypes.PlotTypes.threshold:
             case matsTypes.PlotTypes.validtime:
+            case matsTypes.PlotTypes.dailyModelCycle:
             case matsTypes.PlotTypes.gridscale:
             case matsTypes.PlotTypes.yearToYear:
                 header += "<th>label</th>\
@@ -132,35 +132,37 @@ Template.textOutput.helpers({
         var header = "";
         var isCTC = Session.get('isCTC') === undefined ? false : Session.get('isCTC');
         var isModePairs = Session.get('isModePairs') === undefined ? false : Session.get('isModePairs');
-        switch (Session.get('plotType')) {
+        var plotType = Session.get('plotType');
+        var labelSuffix;
+        switch (plotType) {
             case matsTypes.PlotTypes.timeSeries:
             case matsTypes.PlotTypes.dailyModelCycle:
-                if (isCTC) {
-                    header += "<th>" + curve.label + " time</th>\
-                        <th>stat</th>\
-                        <th>n</th>\
-                        <th>hits</th>\
-                        <th>false alarms</th>\
-                        <th>misses</th>\
-                        <th>correct nulls</th>";
-                } else if (isModePairs) {
-                    header += "<th>" + curve.label + " time</th>\
-                        <th>stat</th>\
-                        <th>n</th>\
-                        <th>average interest</th>";
-                } else {
-                    header += "<th>" + curve.label + " time</th>\
-                        <th>raw stat from query</th>\
-                        <th>mean stat</th>\
-                        <th>std dev</th>\
-                        <th>std error</th>\
-                        <th>lag1</th>\
-                        <th>n</th>";
-                }
+                labelSuffix = " time";
                 break;
             case matsTypes.PlotTypes.profile:
+                labelSuffix = " level";
+                break;
+            case matsTypes.PlotTypes.dieoff:
+                labelSuffix = " forecast lead time";
+                break;
+            case matsTypes.PlotTypes.validtime:
+                labelSuffix = " hour of day";
+                break;
+            case matsTypes.PlotTypes.threshold:
+                labelSuffix = " threshold";
+                break;
+            case matsTypes.PlotTypes.gridscale:
+                labelSuffix = " grid scale";
+                break;
+            case matsTypes.PlotTypes.yearToYear:
+                labelSuffix = " year";
+                break;
+        }
+        switch (plotType) {
+            case matsTypes.PlotTypes.timeSeries:
+            case matsTypes.PlotTypes.profile:
                 if (isCTC) {
-                    header += "<th>" + curve.label + " level</th>\
+                    header += "<th>" + curve.label + labelSuffix + "</th>\
                         <th>stat</th>\
                         <th>n</th>\
                         <th>hits</th>\
@@ -168,12 +170,12 @@ Template.textOutput.helpers({
                         <th>misses</th>\
                         <th>correct nulls</th>";
                 } else if (isModePairs) {
-                    header += "<th>" + curve.label + " level</th>\
+                    header += "<th>" + curve.label + labelSuffix + "</th>\
                         <th>stat</th>\
                         <th>n</th>\
                         <th>average interest</th>";
                 } else {
-                    header += "<th>" + curve.label + " level</th>\
+                    header += "<th>" + curve.label + labelSuffix + "</th>\
                         <th>raw stat from query</th>\
                         <th>mean stat</th>\
                         <th>std dev</th>\
@@ -183,96 +185,13 @@ Template.textOutput.helpers({
                 }
                 break;
             case matsTypes.PlotTypes.dieoff:
-                if (isCTC) {
-                    header += "<th>" + curve.label + " forecast lead time</th>\
-                        <th>stat</th>\
-                        <th>n</th>\
-                        <th>hits</th>\
-                        <th>false alarms</th>\
-                        <th>misses</th>\
-                        <th>correct nulls</th>";
-                } else if (isModePairs) {
-                    header += "<th>" + curve.label + " forecast lead time</th>\
-                        <th>stat</th>\
-                        <th>n</th>\
-                        <th>average interest</th>";
-                } else {
-                    header += "<th>" + curve.label + " forecast lead time</th>\
-                        <th>raw stat from query</th>\
-                        <th>mean stat</th>\
-                        <th>std dev</th>\
-                        <th>n</th>";
-                }
-                break;
             case matsTypes.PlotTypes.threshold:
-                if (isCTC) {
-                    header += "<th>" + curve.label + " threshold</th>\
-                        <th>stat</th>\
-                        <th>n</th>\
-                        <th>hits</th>\
-                        <th>false alarms</th>\
-                        <th>misses</th>\
-                        <th>correct nulls</th>";
-                } else if (isModePairs) {
-                    header += "<th>" + curve.label + " threshold</th>\
-                        <th>stat</th>\
-                        <th>n</th>\
-                        <th>average interest</th>";
-                } else {
-                    header += "<th>" + curve.label + " threshold</th>\
-                        <th>raw stat from query</th>\
-                        <th>mean stat</th>\
-                        <th>std dev</th>\
-                        <th>n</th>";
-                }
-                break;
             case matsTypes.PlotTypes.validtime:
-                if (isCTC) {
-                    header += "<th>" + curve.label + " hour of day</th>\
-                        <th>stat</th>\
-                        <th>n</th>\
-                        <th>hits</th>\
-                        <th>false alarms</th>\
-                        <th>misses</th>\
-                        <th>correct nulls</th>";
-                } else if (isModePairs) {
-                    header += "<th>" + curve.label + " hour of day</th>\
-                        <th>stat</th>\
-                        <th>n</th>\
-                        <th>average interest</th>";
-                } else {
-                    header += "<th>" + curve.label + " hour of day</th>\
-                        <th>raw stat from query</th>\
-                        <th>mean stat</th>\
-                        <th>std dev</th>\
-                        <th>n</th>";
-                }
-                break;
+            case matsTypes.PlotTypes.dailyModelCycle:
             case matsTypes.PlotTypes.gridscale:
-                if (isCTC) {
-                    header += "<th>" + curve.label + " grid scale</th>\
-                        <th>stat</th>\
-                        <th>n</th>\
-                        <th>hits</th>\
-                        <th>false alarms</th>\
-                        <th>misses</th>\
-                        <th>correct nulls</th>";
-                } else if (isModePairs) {
-                    header += "<th>" + curve.label + " grid scale</th>\
-                        <th>stat</th>\
-                        <th>n</th>\
-                        <th>average interest</th>";
-                } else {
-                    header += "<th>" + curve.label + " grid scale</th>\
-                        <th>raw stat from query</th>\
-                        <th>mean stat</th>\
-                        <th>std dev</th>\
-                        <th>n</th>";
-                }
-                break;
             case matsTypes.PlotTypes.yearToYear:
                 if (isCTC) {
-                    header += "<th>" + curve.label + " year</th>\
+                    header += "<th>" + curve.label + labelSuffix + "</th>\
                         <th>stat</th>\
                         <th>n</th>\
                         <th>hits</th>\
@@ -280,12 +199,12 @@ Template.textOutput.helpers({
                         <th>misses</th>\
                         <th>correct nulls</th>";
                 } else if (isModePairs) {
-                    header += "<th>" + curve.label + " year</th>\
+                    header += "<th>" + curve.label + labelSuffix + "</th>\
                         <th>stat</th>\
                         <th>n</th>\
                         <th>average interest</th>";
                 } else {
-                    header += "<th>" + curve.label + " year</th>\
+                    header += "<th>" + curve.label + labelSuffix + "</th>\
                         <th>raw stat from query</th>\
                         <th>mean stat</th>\
                         <th>std dev</th>\
@@ -409,34 +328,37 @@ Template.textOutput.helpers({
         var line = "";
         var isCTC = Session.get('isCTC') === undefined ? false : Session.get('isCTC');
         var isModePairs = Session.get('isModePairs') === undefined ? false : Session.get('isModePairs');
-        switch (Session.get('plotType')) {
+        var plotType = Session.get('plotType');
+        var labelSuffix;
+        switch (plotType) {
             case matsTypes.PlotTypes.timeSeries:
-                if (isCTC) {
-                    line += "<td>" + element[labelKey += " time"] + "</td>" +
-                        "<td>" + (element['stat'] != undefined && element['stat'] !== null ? element['stat'].toPrecision(4) : fillStr) + "</td>" +
-                        "<td>" + (element['n'] != undefined && element['n'] !== null ? element['n'].toString() : fillStr) + "</td>" +
-                        "<td>" + (element['hit'] != undefined && element['hit'] !== null ? element['hit'].toString() : fillStr) + "</td>" +
-                        "<td>" + (element['fa'] != undefined && element['fa'] !== null ? element['fa'].toString() : fillStr) + "</td>" +
-                        "<td>" + (element['miss'] != undefined && element['miss'] !== null ? element['miss'].toString() : fillStr) + "</td>" +
-                        "<td>" + (element['cn'] != undefined && element['cn'] !== null ? element['cn'].toString() : fillStr) + "</td>";
-                } else if (isModePairs) {
-                    line += "<td>" + element[labelKey += " time"] + "</td>" +
-                        "<td>" + (element['stat'] != undefined && element['stat'] !== null ? element['stat'].toPrecision(4) : fillStr) + "</td>" +
-                        "<td>" + (element['n'] != undefined && element['n'] !== null ? element['n'].toString() : fillStr) + "</td>" +
-                        "<td>" + (element['avgInterest'] != undefined && element['avgInterest'] !== null ? element['avgInterest'].toString() : fillStr) + "</td>";
-                } else {
-                    line += "<td>" + element[labelKey += " time"] + "</td>" +
-                        "<td>" + (element['raw stat from query'] != undefined && element['raw stat from query'] !== null ? element['raw stat from query'].toPrecision(4) : fillStr) + "</td>" +
-                        "<td>" + (element['mean stat'] != undefined && element['mean stat'] !== null ? element['mean stat'].toPrecision(4) : fillStr) + "</td>" +
-                        "<td>" + (element['std dev'] != undefined && element['std dev'] !== null ? element['std dev'].toPrecision(4) : fillStr) + "</td>" +
-                        "<td>" + (element['std error'] != undefined && element['std error'] !== null ? element['std error'].toPrecision(4) : fillStr) + "</td>" +
-                        "<td>" + (element['lag1'] != undefined && element['lag1'] !== null ? element['lag1'].toPrecision(4) : fillStr) + "</td>" +
-                        "<td>" + (('n' in element) && element['n'] ? element['n'] : fillStr) + "</td>";
-                }
+            case matsTypes.PlotTypes.dailyModelCycle:
+                labelSuffix = " time";
                 break;
             case matsTypes.PlotTypes.profile:
+                labelSuffix = " level";
+                break;
+            case matsTypes.PlotTypes.dieoff:
+                labelSuffix = " forecast lead time";
+                break;
+            case matsTypes.PlotTypes.validtime:
+                labelSuffix = " hour of day";
+                break;
+            case matsTypes.PlotTypes.threshold:
+                labelSuffix = " threshold";
+                break;
+            case matsTypes.PlotTypes.gridscale:
+                labelSuffix = " grid scale";
+                break;
+            case matsTypes.PlotTypes.yearToYear:
+                labelSuffix = " year";
+                break;
+        }
+        switch (plotType) {
+            case matsTypes.PlotTypes.timeSeries:
+            case matsTypes.PlotTypes.profile:
                 if (isCTC) {
-                    line += "<td>" + element[labelKey += " level"] + "</td>" +
+                    line += "<td>" + element[labelKey += labelSuffix] + "</td>" +
                         "<td>" + (element['stat'] != undefined && element['stat'] !== null ? element['stat'].toPrecision(4) : fillStr) + "</td>" +
                         "<td>" + (element['n'] != undefined && element['n'] !== null ? element['n'].toString() : fillStr) + "</td>" +
                         "<td>" + (element['hit'] != undefined && element['hit'] !== null ? element['hit'].toString() : fillStr) + "</td>" +
@@ -444,12 +366,12 @@ Template.textOutput.helpers({
                         "<td>" + (element['miss'] != undefined && element['miss'] !== null ? element['miss'].toString() : fillStr) + "</td>" +
                         "<td>" + (element['cn'] != undefined && element['cn'] !== null ? element['cn'].toString() : fillStr) + "</td>";
                 } else if (isModePairs) {
-                    line += "<td>" + element[labelKey += " level"] + "</td>" +
+                    line += "<td>" + element[labelKey += labelSuffix] + "</td>" +
                         "<td>" + (element['stat'] != undefined && element['stat'] !== null ? element['stat'].toPrecision(4) : fillStr) + "</td>" +
                         "<td>" + (element['n'] != undefined && element['n'] !== null ? element['n'].toString() : fillStr) + "</td>" +
                         "<td>" + (element['avgInterest'] != undefined && element['avgInterest'] !== null ? element['avgInterest'].toString() : fillStr) + "</td>";
                 } else {
-                    line += "<td>" + element[labelKey += " level"] + "</td>" +
+                    line += "<td>" + element[labelKey += labelSuffix] + "</td>" +
                         "<td>" + (element['raw stat from query'] != undefined && element['raw stat from query'] !== null ? element['raw stat from query'].toPrecision(4) : fillStr) + "</td>" +
                         "<td>" + (element['mean stat'] != undefined && element['mean stat'] !== null ? element['mean stat'].toPrecision(4) : fillStr) + "</td>" +
                         "<td>" + (element['std dev'] != undefined && element['std dev'] !== null ? element['std dev'].toPrecision(4) : fillStr) + "</td>" +
@@ -459,118 +381,13 @@ Template.textOutput.helpers({
                 }
                 break;
             case matsTypes.PlotTypes.dieoff:
-                if (isCTC) {
-                    line += "<td>" + element[labelKey += " forecast lead time"] + "</td>" +
-                        "<td>" + (element['stat'] != undefined && element['stat'] !== null ? element['stat'].toPrecision(4) : fillStr) + "</td>" +
-                        "<td>" + (element['n'] != undefined && element['n'] !== null ? element['n'].toString() : fillStr) + "</td>" +
-                        "<td>" + (element['hit'] != undefined && element['hit'] !== null ? element['hit'].toString() : fillStr) + "</td>" +
-                        "<td>" + (element['fa'] != undefined && element['fa'] !== null ? element['fa'].toString() : fillStr) + "</td>" +
-                        "<td>" + (element['miss'] != undefined && element['miss'] !== null ? element['miss'].toString() : fillStr) + "</td>" +
-                        "<td>" + (element['cn'] != undefined && element['cn'] !== null ? element['cn'].toString() : fillStr) + "</td>";
-                } else if (isModePairs) {
-                    line += "<td>" + element[labelKey += " forecast lead time"] + "</td>" +
-                        "<td>" + (element['stat'] != undefined && element['stat'] !== null ? element['stat'].toPrecision(4) : fillStr) + "</td>" +
-                        "<td>" + (element['n'] != undefined && element['n'] !== null ? element['n'].toString() : fillStr) + "</td>" +
-                        "<td>" + (element['avgInterest'] != undefined && element['avgInterest'] !== null ? element['avgInterest'].toString() : fillStr) + "</td>";
-                } else {
-                    line += "<td>" + element[labelKey += " forecast lead time"] + "</td>" +
-                        "<td>" + (element['raw stat from query'] != undefined && element['raw stat from query'] !== null ? element['raw stat from query'].toPrecision(4) : fillStr) + "</td>" +
-                        "<td>" + (element['mean stat'] != undefined && element['mean stat'] !== null ? element['mean stat'].toPrecision(4) : fillStr) + "</td>" +
-                        "<td>" + (element['std dev'] != undefined && element['std dev'] !== null ? element['std dev'].toPrecision(4) : fillStr) + "</td>" +
-                        "<td>" + (('n' in element) && element['n'] ? element['n'] : fillStr) + "</td>";
-                }
-                break;
             case matsTypes.PlotTypes.threshold:
-                if (isCTC) {
-                    line += "<td>" + element[labelKey += " threshold"] + "</td>" +
-                        "<td>" + (element['stat'] != undefined && element['stat'] !== null ? element['stat'].toPrecision(4) : fillStr) + "</td>" +
-                        "<td>" + (element['n'] != undefined && element['n'] !== null ? element['n'].toString() : fillStr) + "</td>" +
-                        "<td>" + (element['hit'] != undefined && element['hit'] !== null ? element['hit'].toString() : fillStr) + "</td>" +
-                        "<td>" + (element['fa'] != undefined && element['fa'] !== null ? element['fa'].toString() : fillStr) + "</td>" +
-                        "<td>" + (element['miss'] != undefined && element['miss'] !== null ? element['miss'].toString() : fillStr) + "</td>" +
-                        "<td>" + (element['cn'] != undefined && element['cn'] !== null ? element['cn'].toString() : fillStr) + "</td>";
-                } else if (isModePairs) {
-                    line += "<td>" + element[labelKey += " threshold"] + "</td>" +
-                        "<td>" + (element['stat'] != undefined && element['stat'] !== null ? element['stat'].toPrecision(4) : fillStr) + "</td>" +
-                        "<td>" + (element['n'] != undefined && element['n'] !== null ? element['n'].toString() : fillStr) + "</td>" +
-                        "<td>" + (element['avgInterest'] != undefined && element['avgInterest'] !== null ? element['avgInterest'].toString() : fillStr) + "</td>";
-                } else {
-                    line += "<td>" + element[labelKey += " threshold"] + "</td>" +
-                        "<td>" + (element['raw stat from query'] != undefined && element['raw stat from query'] !== null ? element['raw stat from query'].toPrecision(4) : fillStr) + "</td>" +
-                        "<td>" + (element['mean stat'] != undefined && element['mean stat'] !== null ? element['mean stat'].toPrecision(4) : fillStr) + "</td>" +
-                        "<td>" + (element['std dev'] != undefined && element['std dev'] !== null ? element['std dev'].toPrecision(4) : fillStr) + "</td>" +
-                        "<td>" + (('n' in element) && element['n'] ? element['n'] : fillStr) + "</td>";
-                }
-                break;
             case matsTypes.PlotTypes.validtime:
-                if (isCTC) {
-                    line += "<td>" + element[labelKey += " hour of day"] + "</td>" +
-                        "<td>" + (element['stat'] != undefined && element['stat'] !== null ? element['stat'].toPrecision(4) : fillStr) + "</td>" +
-                        "<td>" + (element['n'] != undefined && element['n'] !== null ? element['n'].toString() : fillStr) + "</td>" +
-                        "<td>" + (element['hit'] != undefined && element['hit'] !== null ? element['hit'].toString() : fillStr) + "</td>" +
-                        "<td>" + (element['fa'] != undefined && element['fa'] !== null ? element['fa'].toString() : fillStr) + "</td>" +
-                        "<td>" + (element['miss'] != undefined && element['miss'] !== null ? element['miss'].toString() : fillStr) + "</td>" +
-                        "<td>" + (element['cn'] != undefined && element['cn'] !== null ? element['cn'].toString() : fillStr) + "</td>";
-                } else if (isModePairs) {
-                    line += "<td>" + element[labelKey += " hour of day"] + "</td>" +
-                        "<td>" + (element['stat'] != undefined && element['stat'] !== null ? element['stat'].toPrecision(4) : fillStr) + "</td>" +
-                        "<td>" + (element['n'] != undefined && element['n'] !== null ? element['n'].toString() : fillStr) + "</td>" +
-                        "<td>" + (element['avgInterest'] != undefined && element['avgInterest'] !== null ? element['avgInterest'].toString() : fillStr) + "</td>";
-                } else {
-                    line += "<td>" + element[labelKey += " hour of day"] + "</td>" +
-                        "<td>" + (element['raw stat from query'] != undefined && element['raw stat from query'] !== null ? element['raw stat from query'].toPrecision(4) : fillStr) + "</td>" +
-                        "<td>" + (element['mean stat'] != undefined && element['mean stat'] !== null ? element['mean stat'].toPrecision(4) : fillStr) + "</td>" +
-                        "<td>" + (element['std dev'] != undefined && element['std dev'] !== null ? element['std dev'].toPrecision(4) : fillStr) + "</td>" +
-                        "<td>" + (('n' in element) && element['n'] ? element['n'] : fillStr) + "</td>";
-                }
-                break;
-            case matsTypes.PlotTypes.gridscale:
-                if (isCTC) {
-                    line += "<td>" + element[labelKey += " grid scale"] + "</td>" +
-                        "<td>" + (element['stat'] != undefined && element['stat'] !== null ? element['stat'].toPrecision(4) : fillStr) + "</td>" +
-                        "<td>" + (element['n'] != undefined && element['n'] !== null ? element['n'].toString() : fillStr) + "</td>" +
-                        "<td>" + (element['hit'] != undefined && element['hit'] !== null ? element['hit'].toString() : fillStr) + "</td>" +
-                        "<td>" + (element['fa'] != undefined && element['fa'] !== null ? element['fa'].toString() : fillStr) + "</td>" +
-                        "<td>" + (element['miss'] != undefined && element['miss'] !== null ? element['miss'].toString() : fillStr) + "</td>" +
-                        "<td>" + (element['cn'] != undefined && element['cn'] !== null ? element['cn'].toString() : fillStr) + "</td>";
-                } else if (isModePairs) {
-                    line += "<td>" + element[labelKey += " grid scale"] + "</td>" +
-                        "<td>" + (element['stat'] != undefined && element['stat'] !== null ? element['stat'].toPrecision(4) : fillStr) + "</td>" +
-                        "<td>" + (element['n'] != undefined && element['n'] !== null ? element['n'].toString() : fillStr) + "</td>" +
-                        "<td>" + (element['avgInterest'] != undefined && element['avgInterest'] !== null ? element['avgInterest'].toString() : fillStr) + "</td>";
-                } else {
-                    line += "<td>" + element[labelKey += " grid scale"] + "</td>" +
-                        "<td>" + (element['raw stat from query'] != undefined && element['raw stat from query'] !== null ? element['raw stat from query'].toPrecision(4) : fillStr) + "</td>" +
-                        "<td>" + (element['mean stat'] != undefined && element['mean stat'] !== null ? element['mean stat'].toPrecision(4) : fillStr) + "</td>" +
-                        "<td>" + (element['std dev'] != undefined && element['std dev'] !== null ? element['std dev'].toPrecision(4) : fillStr) + "</td>" +
-                        "<td>" + (('n' in element) && element['n'] ? element['n'] : fillStr) + "</td>";
-                }
-                break;
             case matsTypes.PlotTypes.dailyModelCycle:
-                if (isCTC) {
-                    line += "<td>" + element[labelKey += " time"] + "</td>" +
-                        "<td>" + (element['stat'] != undefined && element['stat'] !== null ? element['stat'].toPrecision(4) : fillStr) + "</td>" +
-                        "<td>" + (element['n'] != undefined && element['n'] !== null ? element['n'].toString() : fillStr) + "</td>" +
-                        "<td>" + (element['hit'] != undefined && element['hit'] !== null ? element['hit'].toString() : fillStr) + "</td>" +
-                        "<td>" + (element['fa'] != undefined && element['fa'] !== null ? element['fa'].toString() : fillStr) + "</td>" +
-                        "<td>" + (element['miss'] != undefined && element['miss'] !== null ? element['miss'].toString() : fillStr) + "</td>" +
-                        "<td>" + (element['cn'] != undefined && element['cn'] !== null ? element['cn'].toString() : fillStr) + "</td>";
-                } else if (isModePairs) {
-                    line += "<td>" + element[labelKey += " time"] + "</td>" +
-                        "<td>" + (element['stat'] != undefined && element['stat'] !== null ? element['stat'].toPrecision(4) : fillStr) + "</td>" +
-                        "<td>" + (element['n'] != undefined && element['n'] !== null ? element['n'].toString() : fillStr) + "</td>" +
-                        "<td>" + (element['avgInterest'] != undefined && element['avgInterest'] !== null ? element['avgInterest'].toString() : fillStr) + "</td>";
-                } else {
-                    line += "<td>" + element[labelKey += " time"] + "</td>" +
-                        "<td>" + (element['raw stat from query'] != undefined && element['raw stat from query'] !== null ? element['raw stat from query'].toPrecision(4) : fillStr) + "</td>" +
-                        "<td>" + (element['mean stat'] != undefined && element['mean stat'] !== null ? element['mean stat'].toPrecision(4) : fillStr) + "</td>" +
-                        "<td>" + (element['std dev'] != undefined && element['std dev'] !== null ? element['std dev'].toPrecision(4) : fillStr) + "</td>" +
-                        "<td>" + (('n' in element) && element['n'] ? element['n'] : fillStr) + "</td>";
-                }
-                break;
+            case matsTypes.PlotTypes.gridscale:
             case matsTypes.PlotTypes.yearToYear:
                 if (isCTC) {
-                    line += "<td>" + element[labelKey += " year"] + "</td>" +
+                    line += "<td>" + element[labelKey += labelSuffix] + "</td>" +
                         "<td>" + (element['stat'] != undefined && element['stat'] !== null ? element['stat'].toPrecision(4) : fillStr) + "</td>" +
                         "<td>" + (element['n'] != undefined && element['n'] !== null ? element['n'].toString() : fillStr) + "</td>" +
                         "<td>" + (element['hit'] != undefined && element['hit'] !== null ? element['hit'].toString() : fillStr) + "</td>" +
@@ -578,12 +395,12 @@ Template.textOutput.helpers({
                         "<td>" + (element['miss'] != undefined && element['miss'] !== null ? element['miss'].toString() : fillStr) + "</td>" +
                         "<td>" + (element['cn'] != undefined && element['cn'] !== null ? element['cn'].toString() : fillStr) + "</td>";
                 } else if (isModePairs) {
-                    line += "<td>" + element[labelKey += " year"] + "</td>" +
+                    line += "<td>" + element[labelKey += labelSuffix] + "</td>" +
                         "<td>" + (element['stat'] != undefined && element['stat'] !== null ? element['stat'].toPrecision(4) : fillStr) + "</td>" +
                         "<td>" + (element['n'] != undefined && element['n'] !== null ? element['n'].toString() : fillStr) + "</td>" +
                         "<td>" + (element['avgInterest'] != undefined && element['avgInterest'] !== null ? element['avgInterest'].toString() : fillStr) + "</td>";
                 } else {
-                    line += "<td>" + element[labelKey += " year"] + "</td>" +
+                    line += "<td>" + element[labelKey += labelSuffix] + "</td>" +
                         "<td>" + (element['raw stat from query'] != undefined && element['raw stat from query'] !== null ? element['raw stat from query'].toPrecision(4) : fillStr) + "</td>" +
                         "<td>" + (element['mean stat'] != undefined && element['mean stat'] !== null ? element['mean stat'].toPrecision(4) : fillStr) + "</td>" +
                         "<td>" + (element['std dev'] != undefined && element['std dev'] !== null ? element['std dev'].toPrecision(4) : fillStr) + "</td>" +
@@ -697,7 +514,6 @@ Template.textOutput.helpers({
         switch (Session.get('plotType')) {
             case matsTypes.PlotTypes.timeSeries:
             case matsTypes.PlotTypes.profile:
-            case matsTypes.PlotTypes.dailyModelCycle:
                 line += "<td>" + curve['label'] + "</td>" +
                     "<td>" + (stats['mean'] != undefined && stats['mean'] !== null ? stats['mean'].toPrecision(4) : "undefined").toString() + "</td>" +
                     "<td>" + (stats['standard deviation'] != undefined && stats['standard deviation'] !== null ? stats['standard deviation'].toPrecision(4) : "undefined").toString() + "</td>" +
@@ -710,6 +526,7 @@ Template.textOutput.helpers({
             case matsTypes.PlotTypes.dieoff:
             case matsTypes.PlotTypes.threshold:
             case matsTypes.PlotTypes.validtime:
+            case matsTypes.PlotTypes.dailyModelCycle:
             case matsTypes.PlotTypes.gridscale:
             case matsTypes.PlotTypes.yearToYear:
                 line += "<td>" + curve['label'] + "</td>" +
