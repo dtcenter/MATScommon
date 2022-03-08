@@ -235,6 +235,29 @@ const queryDBPython = function (pool, statement, statLineType, statistic, appPar
 
         // wait for future to finish
         future.wait();
+        // check for nulls in output, since JSON only passes strings
+        for (var didx = 0;  didx < d.y.length; didx++) {
+            if (d.y[didx] === 'null') {
+                d.y[didx] = null;
+                if (d.subHit.length > 0) {
+                    d.subHit[didx] = NaN;
+                    d.subFa[didx] = NaN;
+                    d.subMiss[didx] = NaN;
+                    d.subCn[didx] = NaN;
+                }
+                if (d.subVals.length > 0) {
+                    d.subVals[didx] = NaN;
+                }
+                if (d.subInterest.length > 0) {
+                    d.subInterest[didx] = NaN;
+                    d.subPairFid[didx] = NaN;
+                    d.subPairOid[didx] = NaN;
+                    d.subModeHeaderId[didx] = NaN;
+                }
+                d.subSecs[didx] = NaN;
+                d.subLevs[didx] = NaN;
+            }
+        }
         return {
             data: d,
             error: error,
