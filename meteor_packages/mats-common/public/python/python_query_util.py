@@ -1925,7 +1925,7 @@ class QueryUtil:
         # loop through the query results and store the returned values
         for row in query_data:
             row_idx = query_data.index(row)
-            if stat_line_type == 'mode_pair' and statistic == "OTS (Object Threat Score)":
+            if 'mode_pair' in stat_line_type and statistic == "OTS (Object Threat Score)":
                 object_row = object_data[row_idx]
             else:
                 object_row = []
@@ -1941,7 +1941,8 @@ class QueryUtil:
                 data_exists = row['fy_oy'] != "null" and row['fy_oy'] != "NULL" and row['fy_on'] != "null" and row[
                     'fy_on'] != "NULL" and row['fn_oy'] != "null" and row['fn_oy'] != "NULL" and row[
                                   'fn_on'] != "null" and row['fn_on'] != "NULL"
-            elif stat_line_type == 'mode_pair':
+            elif 'mode_pair' in stat_line_type:
+                # the word histogram might have already been appended, so look for the sub-string
                 data_exists = row['interest'] != "null" and row['interest'] != "NULL"
                 stat_line_type = 'mode_pair_histogram'  # let the get_stat function know that this is a histogram
             elif stat_line_type == 'precalculated':
