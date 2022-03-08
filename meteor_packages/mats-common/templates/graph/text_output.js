@@ -131,6 +131,7 @@ Template.textOutput.helpers({
     elementHeaders: function (curve) {
         var header = "";
         var isCTC = Session.get('isCTC') === undefined ? false : Session.get('isCTC');
+        var isModePairs = Session.get('isModePairs') === undefined ? false : Session.get('isModePairs');
         switch (Session.get('plotType')) {
             case matsTypes.PlotTypes.timeSeries:
             case matsTypes.PlotTypes.dailyModelCycle:
@@ -142,6 +143,11 @@ Template.textOutput.helpers({
                         <th>false alarms</th>\
                         <th>misses</th>\
                         <th>correct nulls</th>";
+                } else if (isModePairs) {
+                    header += "<th>" + curve.label + " time</th>\
+                        <th>stat</th>\
+                        <th>n</th>\
+                        <th>average interest</th>";
                 } else {
                     header += "<th>" + curve.label + " time</th>\
                         <th>raw stat from query</th>\
@@ -161,6 +167,11 @@ Template.textOutput.helpers({
                         <th>false alarms</th>\
                         <th>misses</th>\
                         <th>correct nulls</th>";
+                } else if (isModePairs) {
+                    header += "<th>" + curve.label + " level</th>\
+                        <th>stat</th>\
+                        <th>n</th>\
+                        <th>average interest</th>";
                 } else {
                     header += "<th>" + curve.label + " level</th>\
                         <th>raw stat from query</th>\
@@ -180,6 +191,11 @@ Template.textOutput.helpers({
                         <th>false alarms</th>\
                         <th>misses</th>\
                         <th>correct nulls</th>";
+                } else if (isModePairs) {
+                    header += "<th>" + curve.label + " forecast lead time</th>\
+                        <th>stat</th>\
+                        <th>n</th>\
+                        <th>average interest</th>";
                 } else {
                     header += "<th>" + curve.label + " forecast lead time</th>\
                         <th>raw stat from query</th>\
@@ -197,6 +213,11 @@ Template.textOutput.helpers({
                         <th>false alarms</th>\
                         <th>misses</th>\
                         <th>correct nulls</th>";
+                } else if (isModePairs) {
+                    header += "<th>" + curve.label + " threshold</th>\
+                        <th>stat</th>\
+                        <th>n</th>\
+                        <th>average interest</th>";
                 } else {
                     header += "<th>" + curve.label + " threshold</th>\
                         <th>raw stat from query</th>\
@@ -214,6 +235,11 @@ Template.textOutput.helpers({
                         <th>false alarms</th>\
                         <th>misses</th>\
                         <th>correct nulls</th>";
+                } else if (isModePairs) {
+                    header += "<th>" + curve.label + " hour of day</th>\
+                        <th>stat</th>\
+                        <th>n</th>\
+                        <th>average interest</th>";
                 } else {
                     header += "<th>" + curve.label + " hour of day</th>\
                         <th>raw stat from query</th>\
@@ -231,6 +257,11 @@ Template.textOutput.helpers({
                         <th>false alarms</th>\
                         <th>misses</th>\
                         <th>correct nulls</th>";
+                } else if (isModePairs) {
+                    header += "<th>" + curve.label + " grid scale</th>\
+                        <th>stat</th>\
+                        <th>n</th>\
+                        <th>average interest</th>";
                 } else {
                     header += "<th>" + curve.label + " grid scale</th>\
                         <th>raw stat from query</th>\
@@ -248,6 +279,11 @@ Template.textOutput.helpers({
                         <th>false alarms</th>\
                         <th>misses</th>\
                         <th>correct nulls</th>";
+                } else if (isModePairs) {
+                    header += "<th>" + curve.label + " year</th>\
+                        <th>stat</th>\
+                        <th>n</th>\
+                        <th>average interest</th>";
                 } else {
                     header += "<th>" + curve.label + " year</th>\
                         <th>raw stat from query</th>\
@@ -372,6 +408,7 @@ Template.textOutput.helpers({
         var elementLabel = "";
         var line = "";
         var isCTC = Session.get('isCTC') === undefined ? false : Session.get('isCTC');
+        var isModePairs = Session.get('isModePairs') === undefined ? false : Session.get('isModePairs');
         switch (Session.get('plotType')) {
             case matsTypes.PlotTypes.timeSeries:
                 if (isCTC) {
@@ -382,6 +419,11 @@ Template.textOutput.helpers({
                         "<td>" + (element['fa'] != undefined && element['fa'] !== null ? element['fa'].toString() : fillStr) + "</td>" +
                         "<td>" + (element['miss'] != undefined && element['miss'] !== null ? element['miss'].toString() : fillStr) + "</td>" +
                         "<td>" + (element['cn'] != undefined && element['cn'] !== null ? element['cn'].toString() : fillStr) + "</td>";
+                } else if (isModePairs) {
+                    line += "<td>" + element[labelKey += " time"] + "</td>" +
+                        "<td>" + (element['stat'] != undefined && element['stat'] !== null ? element['stat'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (element['n'] != undefined && element['n'] !== null ? element['n'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['avgInterest'] != undefined && element['avgInterest'] !== null ? element['avgInterest'].toString() : fillStr) + "</td>";
                 } else {
                     line += "<td>" + element[labelKey += " time"] + "</td>" +
                         "<td>" + (element['raw stat from query'] != undefined && element['raw stat from query'] !== null ? element['raw stat from query'].toPrecision(4) : fillStr) + "</td>" +
@@ -401,6 +443,11 @@ Template.textOutput.helpers({
                         "<td>" + (element['fa'] != undefined && element['fa'] !== null ? element['fa'].toString() : fillStr) + "</td>" +
                         "<td>" + (element['miss'] != undefined && element['miss'] !== null ? element['miss'].toString() : fillStr) + "</td>" +
                         "<td>" + (element['cn'] != undefined && element['cn'] !== null ? element['cn'].toString() : fillStr) + "</td>";
+                } else if (isModePairs) {
+                    line += "<td>" + element[labelKey += " level"] + "</td>" +
+                        "<td>" + (element['stat'] != undefined && element['stat'] !== null ? element['stat'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (element['n'] != undefined && element['n'] !== null ? element['n'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['avgInterest'] != undefined && element['avgInterest'] !== null ? element['avgInterest'].toString() : fillStr) + "</td>";
                 } else {
                     line += "<td>" + element[labelKey += " level"] + "</td>" +
                         "<td>" + (element['raw stat from query'] != undefined && element['raw stat from query'] !== null ? element['raw stat from query'].toPrecision(4) : fillStr) + "</td>" +
@@ -420,6 +467,11 @@ Template.textOutput.helpers({
                         "<td>" + (element['fa'] != undefined && element['fa'] !== null ? element['fa'].toString() : fillStr) + "</td>" +
                         "<td>" + (element['miss'] != undefined && element['miss'] !== null ? element['miss'].toString() : fillStr) + "</td>" +
                         "<td>" + (element['cn'] != undefined && element['cn'] !== null ? element['cn'].toString() : fillStr) + "</td>";
+                } else if (isModePairs) {
+                    line += "<td>" + element[labelKey += " forecast lead time"] + "</td>" +
+                        "<td>" + (element['stat'] != undefined && element['stat'] !== null ? element['stat'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (element['n'] != undefined && element['n'] !== null ? element['n'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['avgInterest'] != undefined && element['avgInterest'] !== null ? element['avgInterest'].toString() : fillStr) + "</td>";
                 } else {
                     line += "<td>" + element[labelKey += " forecast lead time"] + "</td>" +
                         "<td>" + (element['raw stat from query'] != undefined && element['raw stat from query'] !== null ? element['raw stat from query'].toPrecision(4) : fillStr) + "</td>" +
@@ -437,6 +489,11 @@ Template.textOutput.helpers({
                         "<td>" + (element['fa'] != undefined && element['fa'] !== null ? element['fa'].toString() : fillStr) + "</td>" +
                         "<td>" + (element['miss'] != undefined && element['miss'] !== null ? element['miss'].toString() : fillStr) + "</td>" +
                         "<td>" + (element['cn'] != undefined && element['cn'] !== null ? element['cn'].toString() : fillStr) + "</td>";
+                } else if (isModePairs) {
+                    line += "<td>" + element[labelKey += " threshold"] + "</td>" +
+                        "<td>" + (element['stat'] != undefined && element['stat'] !== null ? element['stat'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (element['n'] != undefined && element['n'] !== null ? element['n'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['avgInterest'] != undefined && element['avgInterest'] !== null ? element['avgInterest'].toString() : fillStr) + "</td>";
                 } else {
                     line += "<td>" + element[labelKey += " threshold"] + "</td>" +
                         "<td>" + (element['raw stat from query'] != undefined && element['raw stat from query'] !== null ? element['raw stat from query'].toPrecision(4) : fillStr) + "</td>" +
@@ -454,6 +511,11 @@ Template.textOutput.helpers({
                         "<td>" + (element['fa'] != undefined && element['fa'] !== null ? element['fa'].toString() : fillStr) + "</td>" +
                         "<td>" + (element['miss'] != undefined && element['miss'] !== null ? element['miss'].toString() : fillStr) + "</td>" +
                         "<td>" + (element['cn'] != undefined && element['cn'] !== null ? element['cn'].toString() : fillStr) + "</td>";
+                } else if (isModePairs) {
+                    line += "<td>" + element[labelKey += " hour of day"] + "</td>" +
+                        "<td>" + (element['stat'] != undefined && element['stat'] !== null ? element['stat'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (element['n'] != undefined && element['n'] !== null ? element['n'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['avgInterest'] != undefined && element['avgInterest'] !== null ? element['avgInterest'].toString() : fillStr) + "</td>";
                 } else {
                     line += "<td>" + element[labelKey += " hour of day"] + "</td>" +
                         "<td>" + (element['raw stat from query'] != undefined && element['raw stat from query'] !== null ? element['raw stat from query'].toPrecision(4) : fillStr) + "</td>" +
@@ -471,6 +533,11 @@ Template.textOutput.helpers({
                         "<td>" + (element['fa'] != undefined && element['fa'] !== null ? element['fa'].toString() : fillStr) + "</td>" +
                         "<td>" + (element['miss'] != undefined && element['miss'] !== null ? element['miss'].toString() : fillStr) + "</td>" +
                         "<td>" + (element['cn'] != undefined && element['cn'] !== null ? element['cn'].toString() : fillStr) + "</td>";
+                } else if (isModePairs) {
+                    line += "<td>" + element[labelKey += " grid scale"] + "</td>" +
+                        "<td>" + (element['stat'] != undefined && element['stat'] !== null ? element['stat'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (element['n'] != undefined && element['n'] !== null ? element['n'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['avgInterest'] != undefined && element['avgInterest'] !== null ? element['avgInterest'].toString() : fillStr) + "</td>";
                 } else {
                     line += "<td>" + element[labelKey += " grid scale"] + "</td>" +
                         "<td>" + (element['raw stat from query'] != undefined && element['raw stat from query'] !== null ? element['raw stat from query'].toPrecision(4) : fillStr) + "</td>" +
@@ -488,6 +555,11 @@ Template.textOutput.helpers({
                         "<td>" + (element['fa'] != undefined && element['fa'] !== null ? element['fa'].toString() : fillStr) + "</td>" +
                         "<td>" + (element['miss'] != undefined && element['miss'] !== null ? element['miss'].toString() : fillStr) + "</td>" +
                         "<td>" + (element['cn'] != undefined && element['cn'] !== null ? element['cn'].toString() : fillStr) + "</td>";
+                } else if (isModePairs) {
+                    line += "<td>" + element[labelKey += " time"] + "</td>" +
+                        "<td>" + (element['stat'] != undefined && element['stat'] !== null ? element['stat'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (element['n'] != undefined && element['n'] !== null ? element['n'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['avgInterest'] != undefined && element['avgInterest'] !== null ? element['avgInterest'].toString() : fillStr) + "</td>";
                 } else {
                     line += "<td>" + element[labelKey += " time"] + "</td>" +
                         "<td>" + (element['raw stat from query'] != undefined && element['raw stat from query'] !== null ? element['raw stat from query'].toPrecision(4) : fillStr) + "</td>" +
@@ -505,6 +577,11 @@ Template.textOutput.helpers({
                         "<td>" + (element['fa'] != undefined && element['fa'] !== null ? element['fa'].toString() : fillStr) + "</td>" +
                         "<td>" + (element['miss'] != undefined && element['miss'] !== null ? element['miss'].toString() : fillStr) + "</td>" +
                         "<td>" + (element['cn'] != undefined && element['cn'] !== null ? element['cn'].toString() : fillStr) + "</td>";
+                } else if (isModePairs) {
+                    line += "<td>" + element[labelKey += " year"] + "</td>" +
+                        "<td>" + (element['stat'] != undefined && element['stat'] !== null ? element['stat'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (element['n'] != undefined && element['n'] !== null ? element['n'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['avgInterest'] != undefined && element['avgInterest'] !== null ? element['avgInterest'].toString() : fillStr) + "</td>";
                 } else {
                     line += "<td>" + element[labelKey += " year"] + "</td>" +
                         "<td>" + (element['raw stat from query'] != undefined && element['raw stat from query'] !== null ? element['raw stat from query'].toPrecision(4) : fillStr) + "</td>" +

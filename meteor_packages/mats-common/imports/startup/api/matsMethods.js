@@ -321,7 +321,9 @@ const _getFlattenedResultData = function (rk, p, np) {
             var data = result.data;
             const isCTC = data[0] !== undefined &&
                 ((data[0].stats !== undefined && data[0].stats[0] !== undefined && data[0].stats[0].hit !== undefined)
-                || (data[0].hitTextOutput !== undefined && data[0].hitTextOutput.length > 0));
+                    || (data[0].hitTextOutput !== undefined && data[0].hitTextOutput.length > 0));
+            const isModePairs = data[0] !== undefined && ((data[0].stats !== undefined && data[0].stats[0] !== undefined
+                && data[0].stats[0].avgInterest !== undefined));
             var dsiRealPageIndex = result.dsiRealPageIndex;
             var dsiTextDirection = result.dsiTextDirection;
             switch (plotType) {
@@ -358,6 +360,10 @@ const _getFlattenedResultData = function (rk, p, np) {
                                 curveDataElement['fa'] = data[ci].stats[cdi].fa;
                                 curveDataElement['miss'] = data[ci].stats[cdi].miss;
                                 curveDataElement['cn'] = data[ci].stats[cdi].cn;
+                            } else if (isModePairs) {
+                                curveDataElement['stat'] = data[ci].stats[cdi].stat;
+                                curveDataElement['n'] = data[ci].stats[cdi].n;
+                                curveDataElement['avgInterest'] = data[ci].stats[cdi].avgInterest;
                             } else {
                                 curveDataElement['raw stat from query'] = data[ci].stats[cdi].raw_stat;
                                 curveDataElement['mean stat'] = data[ci].stats[cdi].d_mean;
@@ -403,6 +409,10 @@ const _getFlattenedResultData = function (rk, p, np) {
                                 curveDataElement['fa'] = data[ci].stats[cdi].fa;
                                 curveDataElement['miss'] = data[ci].stats[cdi].miss;
                                 curveDataElement['cn'] = data[ci].stats[cdi].cn;
+                            } else if (isModePairs) {
+                                curveDataElement['stat'] = data[ci].stats[cdi].stat;
+                                curveDataElement['n'] = data[ci].stats[cdi].n;
+                                curveDataElement['avgInterest'] = data[ci].stats[cdi].avgInterest;
                             } else {
                                 curveDataElement['raw stat from query'] = data[ci].stats[cdi].raw_stat;
                                 curveDataElement['mean stat'] = data[ci].stats[cdi].d_mean;
@@ -468,6 +478,10 @@ const _getFlattenedResultData = function (rk, p, np) {
                                 curveDataElement['fa'] = data[ci].stats[cdi].fa;
                                 curveDataElement['miss'] = data[ci].stats[cdi].miss;
                                 curveDataElement['cn'] = data[ci].stats[cdi].cn;
+                            } else if (isModePairs) {
+                                curveDataElement['stat'] = data[ci].stats[cdi].stat;
+                                curveDataElement['n'] = data[ci].stats[cdi].n;
+                                curveDataElement['avgInterest'] = data[ci].stats[cdi].avgInterest;
                             } else {
                                 curveDataElement['raw stat from query'] = data[ci].stats[cdi].raw_stat;
                                 curveDataElement['mean stat'] = data[ci].stats[cdi].d_mean;
