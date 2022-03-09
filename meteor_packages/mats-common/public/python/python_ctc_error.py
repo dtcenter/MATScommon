@@ -4,7 +4,7 @@ import numpy as np
 import json
 
 
-# class that
+# class that calculates error bar length for CTC plots
 class CTCErrorUtil:
     error = ""          # one of the two fields to return at the end -- records any error message
     error_length = 0     # one of the two fields to return at the end -- the length of the error bars
