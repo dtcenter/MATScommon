@@ -332,9 +332,10 @@ const doSettings = function (title, dbType, version, buildDate, appType, mapboxK
 };
 
 // utility for getting MODE stats via Python
-const calculateStatMODE = function (statistic, sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id, individual_obj_lookup) {
+const calculateStatMODE = function (statistic, sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id, sub_f_area, sub_o_area) {
     if ((!Array.isArray(sub_interest) && isNaN(sub_interest)) || (!Array.isArray(sub_pair_fid) && isNaN(sub_pair_fid))
-        || (!Array.isArray(sub_pair_oid) && isNaN(sub_pair_oid)) || (!Array.isArray(sub_mode_header_id) && isNaN(sub_mode_header_id))) return null;
+        || (!Array.isArray(sub_pair_oid) && isNaN(sub_pair_oid)) || (!Array.isArray(sub_mode_header_id) && isNaN(sub_mode_header_id))
+        || (!Array.isArray(sub_f_area) && isNaN(sub_f_area)) || (!Array.isArray(sub_o_area) && isNaN(sub_o_area))) return null;
 
     if (Meteor.isServer) {
         // send the data to the python script
@@ -351,7 +352,8 @@ const calculateStatMODE = function (statistic, sub_interest, sub_pair_fid, sub_p
                 "-f", JSON.stringify(sub_pair_fid),
                 "-o", JSON.stringify(sub_pair_oid),
                 "-m", JSON.stringify(sub_mode_header_id),
-                "-l", JSON.stringify(individual_obj_lookup)
+                "-a", JSON.stringify(sub_f_area),
+                "-b", JSON.stringify(sub_o_area)
             ]
         };
         const pyShell = require('python-shell');

@@ -21,6 +21,8 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
     var subPairFid = [];
     var subPairOid = [];
     var subModeHeaderId = [];
+    var subFArea = [];
+    var subOArea = [];
     var newSubSecs = [];
     var newSubLevs = [];
     var newSubHit = [];
@@ -31,6 +33,8 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
     var newSubPairFid = [];
     var newSubPairOid = [];
     var newSubModeHeaderId = [];
+    var newSubFArea = [];
+    var newSubOArea = [];
     var newSubValues = [];
     var newCurveData = {};
     var independentVarGroups = [];
@@ -255,6 +259,8 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                 subPairFid = data.subPairFid[di];
                 subPairOid = data.subPairOid[di];
                 subModeHeaderId = data.subModeHeaderId[di];
+                subFArea = data.subFArea[di];
+                subOArea = data.subOArea[di];
             } else {
                 subValues = data.subVals[di];
             }
@@ -272,6 +278,8 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                 newSubPairFid = [];
                 newSubPairOid = [];
                 newSubModeHeaderId = [];
+                newSubFArea = [];
+                newSubOArea = [];
                 newSubValues = [];
                 newSubSecs = [];
                 if (hasLevels) {
@@ -296,6 +304,8 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                             var newPairFid = subPairFid[si];
                             var newPairOid = subPairOid[si];
                             var newModeHeaderId = subModeHeaderId[si];
+                            var newFArea = subFArea[si];
+                            var newOArea = subOArea[si];
                         } else {
                             var newVal = subValues[si];
                         }
@@ -320,6 +330,8 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                                 newSubPairFid.push(newPairFid);
                                 newSubPairOid.push(newPairOid);
                                 newSubModeHeaderId.push(newModeHeaderId);
+                                newSubFArea.push(newFArea);
+                                newSubOArea.push(newOArea);
                                 newSubSecs.push(newSec);
                                 if (hasLevels) {
                                     newSubLevs.push(newLev);
@@ -349,6 +361,8 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                     data.subPairFid[di] = newSubPairFid;
                     data.subPairOid[di] = newSubPairOid;
                     data.subModeHeaderId[di] = newSubModeHeaderId;
+                    data.subFArea[di] = newSubFArea;
+                    data.subOArea[di] = newSubOArea;
                     data.subVals[di] = newSubValues;
                     data.subSecs[di] = newSubSecs;
                     if (hasLevels) {
@@ -390,7 +404,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
             dataLength = data[independentVarName].length;
             for (di = 0; di < dataLength; di++) {
                 if (data.subInterest[di] instanceof Array) {
-                    data[statVarName][di] = matsDataUtils.calculateStatMODE(curveStats[curveIndex], data.subInterest[di], data.subPairFid[di], data.subPairOid[di], data.subModeHeaderId[di], data.individualObjLookup[di]);
+                    data[statVarName][di] = matsDataUtils.calculateStatMODE(curveStats[curveIndex], data.subInterest[di], data.subPairFid[di], data.subPairOid[di], data.subModeHeaderId[di], data.subFArea[di], data.subOArea[di]);
                 }
             }
         } else if (plotType === matsTypes.PlotTypes.histogram) {
