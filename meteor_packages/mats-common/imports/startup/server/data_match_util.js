@@ -17,12 +17,20 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
     var subFa = [];
     var subMiss = [];
     var subCn = [];
+    var subInterest = [];
+    var subPairFid = [];
+    var subPairOid = [];
+    var subModeHeaderId = [];
     var newSubSecs = [];
     var newSubLevs = [];
     var newSubHit = [];
     var newSubFa = [];
     var newSubMiss = [];
     var newSubCn = [];
+    var newSubInterest = [];
+    var newSubPairFid = [];
+    var newSubPairOid = [];
+    var newSubModeHeaderId = [];
     var newSubValues = [];
     var newCurveData = {};
     var independentVarGroups = [];
@@ -42,6 +50,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
     const hasLevels = appParams.hasLevels;
     const curvesLength = curveInfoParams.curvesLength;
     const isCTC = curveInfoParams.statType === 'ctc' && plotType !== matsTypes.PlotTypes.histogram;
+    const isMODE = curveInfoParams.statType === 'met-mode_pair' && plotType !== matsTypes.PlotTypes.histogram;
     const curveStats = curveInfoParams.curves.map(a => a.statistic);
     const curveDiffs = curveInfoParams.curves.map(a => a.diffFrom);
     var removeNonMatchingIndVars;
@@ -226,10 +235,10 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                     // if this is not a common non-null independentVar value, we'll have to remove some data
                     if (matchingIndependentHasPoint.indexOf(data[independentVarName][di]) === -1) {
                         // if at least one curve doesn't even have a null here, much less a matching value (because of the cadence), just drop this independentVar
-                        matsDataUtils.removePoint(data, di, plotType, statVarName, isCTC, hasLevels);
+                        matsDataUtils.removePoint(data, di, plotType, statVarName, isCTC, isMODE, hasLevels);
                     } else {
                         // if all of the curves have either data or nulls at this independentVar, and there is at least one null, ensure all of the curves are null
-                        matsDataUtils.nullPoint(data, di, statVarName, isCTC, hasLevels);
+                        matsDataUtils.nullPoint(data, di, statVarName, isCTC, isMODE, hasLevels);
                     }
                     // then move on to the next independentVar. There's no need to mess with the subSecs or subLevs
                     continue;
@@ -241,6 +250,11 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                 subFa = data.subFa[di];
                 subMiss = data.subMiss[di];
                 subCn = data.subCn[di];
+            } else if (isMODE) {
+                subInterest = data.subInterest[di];
+                subPairFid = data.subPairFid[di];
+                subPairOid = data.subPairOid[di];
+                subModeHeaderId = data.subModeHeaderId[di];
             } else {
                 subValues = data.subVals[di];
             }
@@ -254,6 +268,10 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                 newSubFa = [];
                 newSubMiss = [];
                 newSubCn = [];
+                newSubInterest = [];
+                newSubPairFid = [];
+                newSubPairOid = [];
+                newSubModeHeaderId = [];
                 newSubValues = [];
                 newSubSecs = [];
                 if (hasLevels) {
@@ -273,6 +291,11 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                             var newFa = subFa[si];
                             var newMiss = subMiss[si];
                             var newCn = subCn[si];
+                        } else if (isMODE) {
+                            var newInterest = subInterest[si];
+                            var newPairFid = subPairFid[si];
+                            var newPairOid = subPairOid[si];
+                            var newModeHeaderId = subModeHeaderId[si];
                         } else {
                             var newVal = subValues[si];
                         }
@@ -291,6 +314,17 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                                     newSubLevs.push(newLev);
                                 }
                             }
+                        } else if (isMODE) {
+                            if (newInterest !== undefined) {
+                                newSubInterest.push(newInterest);
+                                newSubPairFid.push(newPairFid);
+                                newSubPairOid.push(newPairOid);
+                                newSubModeHeaderId.push(newModeHeaderId);
+                                newSubSecs.push(newSec);
+                                if (hasLevels) {
+                                    newSubLevs.push(newLev);
+                                }
+                            }
                         } else {
                             if (newVal !== undefined) {
                                 newSubValues.push(newVal);
@@ -304,13 +338,17 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                 }
                 if (newSubSecs.length === 0) {
                     // no matching sub-values, so null the point
-                    matsDataUtils.nullPoint(data, di, statVarName, isCTC, hasLevels);
+                    matsDataUtils.nullPoint(data, di, statVarName, isCTC, isMODE, hasLevels);
                 } else {
                     // store the filtered data
                     data.subHit[di] = newSubHit;
                     data.subFa[di] = newSubFa;
                     data.subMiss[di] = newSubMiss;
                     data.subCn[di] = newSubCn;
+                    data.subInterest[di] = newSubInterest;
+                    data.subPairFid[di] = newSubPairFid;
+                    data.subPairOid[di] = newSubPairOid;
+                    data.subModeHeaderId[di] = newSubModeHeaderId;
                     data.subVals[di] = newSubValues;
                     data.subSecs[di] = newSubSecs;
                     if (hasLevels) {
@@ -319,7 +357,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                 }
             } else {
                 // no sub-values to begin with, so null the point
-                matsDataUtils.nullPoint(data, di, statVarName, isCTC, hasLevels);
+                matsDataUtils.nullPoint(data, di, statVarName, isCTC, isMODE, hasLevels);
             }
         }
 
@@ -345,6 +383,14 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                     } else {
                         data[statVarName][di] = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, data.subHit[di].length, curveStats[curveIndex]);
                     }
+                }
+            }
+        } else if (isMODE && (curveDiffs[curveIndex] === undefined || curveDiffs[curveIndex] === null)) {
+            // need to recalculate the primary statistic with the newly matched interests, etc.
+            dataLength = data[independentVarName].length;
+            for (di = 0; di < dataLength; di++) {
+                if (data.subInterest[di] instanceof Array) {
+                    data[statVarName][di] = matsDataUtils.calculateStatMODE(curveStats[curveIndex], data.subInterest[di], data.subPairFid[di], data.subPairOid[di], data.subModeHeaderId[di], data.individualObjLookup[di]);
                 }
             }
         } else if (plotType === matsTypes.PlotTypes.histogram) {

@@ -107,7 +107,7 @@ const objectContainsObject = function (superObject, subObject) {
 
 // utility for calculating the sum of an array
 const sum = function (data) {
-    if(data.length === 0) return null;
+    if (data.length === 0) return null;
     return data.reduce(function (sum, value) {
         return value == null ? sum : sum + value;
     }, 0);
@@ -115,15 +115,15 @@ const sum = function (data) {
 
 // utility for calculating the average of an array
 const average = function (data) {
-    if(data.length === 0) return null;
+    if (data.length === 0) return null;
     return sum(data) / data.length;
 };
 
 // utility for calculating the median of an array
 const median = function (data) {
-    if(data.length === 0) return null;
-    data.sort(function(a,b){
-        return a-b;
+    if (data.length === 0) return null;
+    data.sort(function (a, b) {
+        return a - b;
     });
     var half = Math.floor(data.length / 2);
     if (data.length % 2)
@@ -133,7 +133,7 @@ const median = function (data) {
 
 // utility for calculating the stdev of an array
 const stdev = function (data) {
-    if(data.length === 0) return 0;
+    if (data.length === 0) return 0;
     var avg = average(data);
     var squareDiffs = data.map(function (value) {
         var diff = value - avg;
@@ -308,8 +308,8 @@ const doSettings = function (title, dbType, version, buildDate, appType, mapboxK
             LineWidth: 3.5,
             NullFillString: "---",
             resetFromCode: false,
-            mapboxKey: mapboxKey, 
-            appDefaultGroup: appDefaultGroup, 
+            mapboxKey: mapboxKey,
+            appDefaultGroup: appDefaultGroup,
             appDefaultDB: appDefaultDB,
             appDefaultModel: appDefaultModel,
             thresholdUnits: thresholdUnits
@@ -329,6 +329,60 @@ const doSettings = function (title, dbType, version, buildDate, appType, mapboxK
     settings['hostname'] = hostname;
     settings['deploymentRoles'] = JSON.stringify(deploymentRoles);
     matsCollections.Settings.update(settingsId, {$set: settings});
+};
+
+// utility for getting MODE stats via Python
+const calculateStatMODE = function (statistic, sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id, individual_obj_lookup) {
+    if ((!Array.isArray(sub_interest) && isNaN(sub_interest)) || (!Array.isArray(sub_pair_fid) && isNaN(sub_pair_fid))
+        || (!Array.isArray(sub_pair_oid) && isNaN(sub_pair_oid)) || (!Array.isArray(sub_mode_header_id) && isNaN(sub_mode_header_id))) return null;
+
+    if (Meteor.isServer) {
+        // send the data to the python script
+        const pyOptions = {
+            mode: 'text',
+            pythonPath: Meteor.settings.private.PYTHON_PATH,
+            pythonOptions: ['-u'], // get print results in real-time
+            scriptPath: process.env.NODE_ENV === "development" ?
+                process.env.PWD + "/../../MATScommon/meteor_packages/mats-common/public/python/" :
+                process.env.PWD + "/programs/server/assets/packages/randyp_mats-common/public/python/",
+            args: [
+                "-S", statistic,
+                "-i", JSON.stringify(sub_interest),
+                "-f", JSON.stringify(sub_pair_fid),
+                "-o", JSON.stringify(sub_pair_oid),
+                "-m", JSON.stringify(sub_mode_header_id),
+                "-l", JSON.stringify(individual_obj_lookup)
+            ]
+        };
+        const pyShell = require('python-shell');
+        const Future = require('fibers/future');
+
+        var future = new Future();
+        var modeStat = null;
+        pyShell.PythonShell.run('python_recalc_mode.py', pyOptions, function (err, results) {
+            // parse the results or set an error
+            if (err !== undefined && err !== null) {
+                error = err.message === undefined ? err : err.message;
+            } else if (results === undefined || results === "undefined") {
+                error = "Error thrown by python_ctc_error.py. Please write down exactly how you produced this error, and submit a ticket at mats.gsl@noaa.gov."
+            } else {
+                // get the data back from the query
+                const parsedData = JSON.parse(results);
+                modeStat = parsedData.stat;
+                if (modeStat === 'null') {
+                    modeStat = null;
+                } else {
+                    modeStat = Number(modeStat);
+                }
+            }
+            // done waiting - have results
+            future['return']();
+        });
+
+        // wait for future to finish
+        future.wait();
+        return modeStat;
+    }
 };
 
 // calculates the statistic for ctc station plots
@@ -1169,7 +1223,7 @@ const ctcErrorPython = function (statistic, minuendData, subtrahendData) {
 };
 
 // utility to remove a point on a graph
-const removePoint = function (data, di, plotType, statVarName, isCTC, hasLevels) {
+const removePoint = function (data, di, plotType, statVarName, isCTC, isMODE, hasLevels) {
     data.x.splice(di, 1);
     data.y.splice(di, 1);
     if (plotType === matsTypes.PlotTypes.performanceDiagram || plotType === matsTypes.PlotTypes.roc) {
@@ -1184,6 +1238,11 @@ const removePoint = function (data, di, plotType, statVarName, isCTC, hasLevels)
         data.subFa.splice(di, 1);
         data.subMiss.splice(di, 1);
         data.subCn.splice(di, 1);
+    } else if (isMODE) {
+        data.subInterest.splice(di, 1);
+        data.subPairFid.splice(di, 1);
+        data.subPairOid.splice(di, 1);
+        data.subModeHeaderId.splice(di, 1);
     } else {
         data.subVals.splice(di, 1);
     }
@@ -1196,13 +1255,18 @@ const removePoint = function (data, di, plotType, statVarName, isCTC, hasLevels)
 };
 
 // utility to make null a point on a graph
-const nullPoint = function (data, di, statVarName, isCTC, hasLevels) {
+const nullPoint = function (data, di, statVarName, isCTC, isMODE, hasLevels) {
     data[statVarName][di] = null;
     if (isCTC) {
         data.subHit[di] = NaN;
         data.subFa[di] = NaN;
         data.subMiss[di] = NaN;
         data.subCn[di] = NaN;
+    } else if (isMODE) {
+        data.subInterest[di] = NaN;
+        data.subPairFid[di] = NaN;
+        data.subPairOid[di] = NaN;
+        data.subModeHeaderId[di] = NaN;
     } else {
         data.subVals[di] = NaN;
     }
@@ -1243,6 +1307,7 @@ export default matsDataUtils = {
     doRoles: doRoles,
     doSettings: doSettings,
     calculateStatCTC: calculateStatCTC,
+    calculateStatMODE: calculateStatMODE,
     get_err: get_err,
     ctcErrorPython: ctcErrorPython,
     checkDiffContourSignificance: checkDiffContourSignificance,

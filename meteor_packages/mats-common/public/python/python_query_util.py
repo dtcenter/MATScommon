@@ -61,7 +61,7 @@ class QueryUtil:
             "n": 0
         },
         "bin_stats": [],
-        "individualObjLookup": {},
+        "individualObjLookup": [],
         "xmin": sys.float_info.max,
         "xmax": -1 * sys.float_info.max,
         "ymin": sys.float_info.max,
@@ -262,7 +262,7 @@ class QueryUtil:
                         individual_obj_lookup[mode_header_id][obj_id] = {
                             "area": float(area)
                         }
-                self.data["individualObjLookup"] = individual_obj_lookup
+                self.data["individualObjLookup"].append(individual_obj_lookup)
                 sub_data = str(row['sub_data']).split(',')
                 # these are the sub-fields specific to mode stats
                 sub_interests = []
