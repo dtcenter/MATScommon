@@ -43,6 +43,7 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC) {
             subFa: [],
             subMiss: [],
             subCn: [],
+            subInterest: [],
             subVals: [],
             subSecs: [],
             subLevs: [],
@@ -90,6 +91,7 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC) {
         subFa: [],
         subMiss: [],
         subCn: [],
+        subInterest: [],
         subVals: [],
         subSecs: [],
         subLevs: [],
@@ -179,79 +181,81 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC) {
                     tempSubLevsArray = [];
                 }
 
-                // calculate the differences in sub values
-                if (plotType !== matsTypes.PlotTypes.histogram) {
-                    if (isCTC) {
-                        var minuendDataSubHit = minuendData.subHit[minuendIndex];
-                        var minuendDataSubFa = minuendData.subFa[minuendIndex];
-                        var minuendDataSubMiss = minuendData.subMiss[minuendIndex];
-                        var minuendDataSubCn = minuendData.subCn[minuendIndex];
-                        var subtrahendDataSubHit = subtrahendData.subHit[subtrahendIndex];
-                        var subtrahendDataSubFa = subtrahendData.subFa[subtrahendIndex];
-                        var subtrahendDataSubMiss = subtrahendData.subMiss[subtrahendIndex];
-                        var subtrahendDataSubCn = subtrahendData.subCn[subtrahendIndex];
-                    } else {
-                        var minuendDataSubValues = minuendData.subVals[minuendIndex];
-                        var subtrahendDataSubValues = subtrahendData.subVals[subtrahendIndex];
-                    }
-                    var minuendDataSubSeconds = minuendData.subSecs[minuendIndex];
-                    var subtrahendDataSubSeconds = subtrahendData.subSecs[subtrahendIndex];
-                    if (hasLevels) {
-                        var minuendDataSubLevels = minuendData.subLevs[minuendIndex];
-                        var subtrahendDataSubLevels = subtrahendData.subLevs[subtrahendIndex];
-                    }
+                // calculate the differences in sub values. If it's a MODE curve we don't care.
+                if (minuendData.subInterest.length === 0 && minuendData.subInterest.length === 0) {
+                    if (plotType !== matsTypes.PlotTypes.histogram) {
+                        if (isCTC) {
+                            var minuendDataSubHit = minuendData.subHit[minuendIndex];
+                            var minuendDataSubFa = minuendData.subFa[minuendIndex];
+                            var minuendDataSubMiss = minuendData.subMiss[minuendIndex];
+                            var minuendDataSubCn = minuendData.subCn[minuendIndex];
+                            var subtrahendDataSubHit = subtrahendData.subHit[subtrahendIndex];
+                            var subtrahendDataSubFa = subtrahendData.subFa[subtrahendIndex];
+                            var subtrahendDataSubMiss = subtrahendData.subMiss[subtrahendIndex];
+                            var subtrahendDataSubCn = subtrahendData.subCn[subtrahendIndex];
+                        } else {
+                            var minuendDataSubValues = minuendData.subVals[minuendIndex];
+                            var subtrahendDataSubValues = subtrahendData.subVals[subtrahendIndex];
+                        }
+                        var minuendDataSubSeconds = minuendData.subSecs[minuendIndex];
+                        var subtrahendDataSubSeconds = subtrahendData.subSecs[subtrahendIndex];
+                        if (hasLevels) {
+                            var minuendDataSubLevels = minuendData.subLevs[minuendIndex];
+                            var subtrahendDataSubLevels = subtrahendData.subLevs[subtrahendIndex];
+                        }
 
-                    // find matching sub values and diff those
-                    for (var mvalIdx = 0; mvalIdx < minuendDataSubSeconds.length; mvalIdx++) {
-                        for (var svalIdx = 0; svalIdx < subtrahendDataSubSeconds.length; svalIdx++) {
-                            if (hasLevels && minuendDataSubSeconds[mvalIdx] === subtrahendDataSubSeconds[svalIdx] && minuendDataSubLevels[mvalIdx] === subtrahendDataSubLevels[svalIdx]) {
-                                if (isCTC) {
-                                    tempSubHitArray.push(minuendDataSubHit[mvalIdx] - subtrahendDataSubHit[svalIdx]);
-                                    tempSubFaArray.push(minuendDataSubFa[mvalIdx] - subtrahendDataSubFa[svalIdx]);
-                                    tempSubMissArray.push(minuendDataSubMiss[mvalIdx] - subtrahendDataSubMiss[svalIdx]);
-                                    tempSubCnArray.push(minuendDataSubCn[mvalIdx] - subtrahendDataSubCn[svalIdx]);
-                                } else {
-                                    tempSubValsArray.push(minuendDataSubValues[mvalIdx] - subtrahendDataSubValues[svalIdx]);
+                        // find matching sub values and diff those
+                        for (var mvalIdx = 0; mvalIdx < minuendDataSubSeconds.length; mvalIdx++) {
+                            for (var svalIdx = 0; svalIdx < subtrahendDataSubSeconds.length; svalIdx++) {
+                                if (hasLevels && minuendDataSubSeconds[mvalIdx] === subtrahendDataSubSeconds[svalIdx] && minuendDataSubLevels[mvalIdx] === subtrahendDataSubLevels[svalIdx]) {
+                                    if (isCTC) {
+                                        tempSubHitArray.push(minuendDataSubHit[mvalIdx] - subtrahendDataSubHit[svalIdx]);
+                                        tempSubFaArray.push(minuendDataSubFa[mvalIdx] - subtrahendDataSubFa[svalIdx]);
+                                        tempSubMissArray.push(minuendDataSubMiss[mvalIdx] - subtrahendDataSubMiss[svalIdx]);
+                                        tempSubCnArray.push(minuendDataSubCn[mvalIdx] - subtrahendDataSubCn[svalIdx]);
+                                    } else {
+                                        tempSubValsArray.push(minuendDataSubValues[mvalIdx] - subtrahendDataSubValues[svalIdx]);
+                                    }
+                                    tempSubSecsArray.push(minuendDataSubSeconds[mvalIdx]);
+                                    tempSubLevsArray.push(minuendDataSubLevels[mvalIdx]);
+                                    d["glob_stats"]["glob_n"]++;
+                                } else if (!hasLevels && minuendDataSubSeconds[mvalIdx] === subtrahendDataSubSeconds[svalIdx]) {
+                                    if (isCTC) {
+                                        tempSubHitArray.push(minuendDataSubHit[mvalIdx] - subtrahendDataSubHit[svalIdx]);
+                                        tempSubFaArray.push(minuendDataSubFa[mvalIdx] - subtrahendDataSubFa[svalIdx]);
+                                        tempSubMissArray.push(minuendDataSubMiss[mvalIdx] - subtrahendDataSubMiss[svalIdx]);
+                                        tempSubCnArray.push(minuendDataSubCn[mvalIdx] - subtrahendDataSubCn[svalIdx]);
+                                    } else {
+                                        tempSubValsArray.push(minuendDataSubValues[mvalIdx] - subtrahendDataSubValues[svalIdx]);
+                                    }
+                                    tempSubSecsArray.push(minuendDataSubSeconds[mvalIdx]);
+                                    d["glob_stats"]["glob_n"]++;
                                 }
-                                tempSubSecsArray.push(minuendDataSubSeconds[mvalIdx]);
-                                tempSubLevsArray.push(minuendDataSubLevels[mvalIdx]);
-                                d["glob_stats"]["glob_n"]++;
-                            } else if (!hasLevels && minuendDataSubSeconds[mvalIdx] === subtrahendDataSubSeconds[svalIdx]) {
-                                if (isCTC) {
-                                    tempSubHitArray.push(minuendDataSubHit[mvalIdx] - subtrahendDataSubHit[svalIdx]);
-                                    tempSubFaArray.push(minuendDataSubFa[mvalIdx] - subtrahendDataSubFa[svalIdx]);
-                                    tempSubMissArray.push(minuendDataSubMiss[mvalIdx] - subtrahendDataSubMiss[svalIdx]);
-                                    tempSubCnArray.push(minuendDataSubCn[mvalIdx] - subtrahendDataSubCn[svalIdx]);
-                                } else {
-                                    tempSubValsArray.push(minuendDataSubValues[mvalIdx] - subtrahendDataSubValues[svalIdx]);
-                                }
-                                tempSubSecsArray.push(minuendDataSubSeconds[mvalIdx]);
-                                d["glob_stats"]["glob_n"]++;
                             }
                         }
-                    }
 
-                    d.subHit.push(tempSubHitArray);
-                    d.subFa.push(tempSubFaArray);
-                    d.subMiss.push(tempSubMissArray);
-                    d.subCn.push(tempSubCnArray);
-                    d.subVals.push(tempSubValsArray);
-                    d.subSecs.push(tempSubSecsArray);
-                    if (hasLevels) {
-                        d.subLevs.push(tempSubLevsArray);
-                    }
-                    d.sum = d.sum + d[independentVarName][largeIntervalCurveIndex];
+                        d.subHit.push(tempSubHitArray);
+                        d.subFa.push(tempSubFaArray);
+                        d.subMiss.push(tempSubMissArray);
+                        d.subCn.push(tempSubCnArray);
+                        d.subVals.push(tempSubValsArray);
+                        d.subSecs.push(tempSubSecsArray);
+                        if (hasLevels) {
+                            d.subLevs.push(tempSubLevsArray);
+                        }
+                        d.sum = d.sum + d[independentVarName][largeIntervalCurveIndex];
 
-                } else {
-                    d.bin_stats.push({
-                        'bin_mean': null,
-                        'bin_sd': null,
-                        'bin_n': diffValue,
-                        'bin_rf': minuendData.bin_stats[minuendIndex].bin_rf - subtrahendData.bin_stats[subtrahendIndex].bin_rf,
-                        'binLowBound': minuendData.bin_stats[minuendIndex].binLowBound,
-                        'binUpBound': minuendData.bin_stats[minuendIndex].binUpBound,
-                        'binLabel': minuendData.bin_stats[minuendIndex].binLabel
-                    });
+                    } else {
+                        d.bin_stats.push({
+                            'bin_mean': null,
+                            'bin_sd': null,
+                            'bin_n': diffValue,
+                            'bin_rf': minuendData.bin_stats[minuendIndex].bin_rf - subtrahendData.bin_stats[subtrahendIndex].bin_rf,
+                            'binLowBound': minuendData.bin_stats[minuendIndex].binLowBound,
+                            'binUpBound': minuendData.bin_stats[minuendIndex].binUpBound,
+                            'binLabel': minuendData.bin_stats[minuendIndex].binLabel
+                        });
+                    }
                 }
 
             } else {

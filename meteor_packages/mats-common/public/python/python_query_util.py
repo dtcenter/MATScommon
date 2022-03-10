@@ -19,62 +19,72 @@ class QueryUtil:
     error = ""  # one of the four fields to return at the end -- records any error message
     n0 = []  # one of the four fields to return at the end -- number of sub_values for each independent variable
     n_times = []  # one of the four fields to return at the end -- number of sub_secs for each independent variable
-    data = {  # one of the four fields to return at the end -- the parsed data structure
-        "x": [],
-        "y": [],
-        "z": [],
-        "n": [],
-        "error_x": [],
-        "error_y": [],
-        "subHit": [],
-        "subFa": [],
-        "subMiss": [],
-        "subCn": [],
-        "subVals": [],
-        "subSecs": [],
-        "subLevs": [],
-        "subInterest": [],
-        "subPairFid": [],
-        "subPairOid": [],
-        "subModeHeaderId": [],
-        "subFArea": [],
-        "subOArea": [],
-        "stats": [],
-        "text": [],
-        "xTextOutput": [],
-        "yTextOutput": [],
-        "zTextOutput": [],
-        "nTextOutput": [],
-        "hitTextOutput": [],
-        "faTextOutput": [],
-        "missTextOutput": [],
-        "cnTextOutput": [],
-        "minDateTextOutput": [],
-        "maxDateTextOutput": [],
-        "threshold_all": [],
-        "oy_all": [],
-        "on_all": [],
-        "sample_climo": 0,
-        "auc": 0,
-        "glob_stats": {
-            "mean": 0,
-            "minDate": 0,
-            "maxDate": 0,
-            "n": 0
-        },
-        "bin_stats": [],
-        "xmin": sys.float_info.max,
-        "xmax": -1 * sys.float_info.max,
-        "ymin": sys.float_info.max,
-        "ymax": -1 * sys.float_info.max,
-        "zmin": sys.float_info.max,
-        "zmax": -1 * sys.float_info.max,
-        "sum": 0
-    }
+    data = []  # one of the four fields to return at the end -- the parsed data structure
     output_JSON = {}  # JSON structure to pass the five output fields back to the MATS JS
+
+    def set_up_output_fields(self, number_of_curves):
+        for i in range(0, number_of_curves):
+            self.data.append({
+                "x": [],
+                "y": [],
+                "z": [],
+                "n": [],
+                "error_x": [],
+                "error_y": [],
+                "subHit": [],
+                "subFa": [],
+                "subMiss": [],
+                "subCn": [],
+                "subVals": [],
+                "subSecs": [],
+                "subLevs": [],
+                "subInterest": [],
+                "subPairFid": [],
+                "subPairOid": [],
+                "subModeHeaderId": [],
+                "stats": [],
+                "text": [],
+                "xTextOutput": [],
+                "yTextOutput": [],
+                "zTextOutput": [],
+                "nTextOutput": [],
+                "hitTextOutput": [],
+                "faTextOutput": [],
+                "missTextOutput": [],
+                "cnTextOutput": [],
+                "minDateTextOutput": [],
+                "maxDateTextOutput": [],
+                "threshold_all": [],
+                "oy_all": [],
+                "on_all": [],
+                "sample_climo": 0,
+                "auc": 0,
+                "glob_stats": {
+                    "mean": 0,
+                    "minDate": 0,
+                    "maxDate": 0,
+                    "n": 0
+                },
+                "bin_stats": [],
+                "individualObjLookup": [],
+                "xmin": sys.float_info.max,
+                "xmax": -1 * sys.float_info.max,
+                "ymin": sys.float_info.max,
+                "ymax": -1 * sys.float_info.max,
+                "zmin": sys.float_info.max,
+                "zmax": -1 * sys.float_info.max,
+                "sum": 0
+            })
+            self.n0.append([])
+            self.n_times.append([])
 
     # function for constructing and jsonifying a dictionary of the output variables
     def construct_output_json(self):
+        for i in range(0, len(self.data)):
+            self.data[i]["individualObjLookup"] = []
+            self.data[i]["subPairFid"] = []
+            self.data[i]["subPairOid"] = []
+            self.data[i]["subModeHeaderId"] = []
         self.output_JSON = {
             "data": self.data,
             "N0": self.n0,
@@ -97,7 +107,7 @@ class QueryUtil:
             return False
 
     # function for processing the sub-values from the query and calling a calculate_stat function
-    def get_stat(self, has_levels, row, statistic, stat_line_type, object_row):
+    def get_stat(self, idx, has_levels, row, statistic, stat_line_type, object_row):
         # these are the sub-fields that are returned in the end
         sub_levs = []
         sub_secs = []
@@ -106,8 +116,6 @@ class QueryUtil:
         sub_pair_fids = np.empty(0)
         sub_pair_oids = np.empty(0)
         sub_mode_header_ids = np.empty(0)
-        sub_f_areas = np.empty(0)
-        sub_o_areas = np.empty(0)
         try:
             # get all of the sub-values for each time
             if stat_line_type == 'scalar':
@@ -265,14 +273,13 @@ class QueryUtil:
                         individual_obj_lookup[mode_header_id][obj_id] = {
                             "area": float(area)
                         }
+                self.data[idx]["individualObjLookup"].append(individual_obj_lookup)
                 sub_data = str(row['sub_data']).split(',')
                 # these are the sub-fields specific to mode stats
                 sub_interests = []
                 sub_pair_fids = []
                 sub_pair_oids = []
                 sub_mode_header_ids = []
-                sub_f_areas = []
-                sub_o_areas = []
                 sub_secs = []
                 sub_levs = []
                 for sub_datum in sub_data:
@@ -288,12 +295,6 @@ class QueryUtil:
                             sub_levs.append(int(sub_datum[4]) if float(sub_datum[4]) != -9999 else np.nan)
                         else:
                             sub_levs.append(sub_datum[4])
-                        if float(sub_datum[2]) != -9999:
-                            sub_f_areas.append(individual_obj_lookup[str(sub_datum[2])][obj_id.split("_")[0]]["area"])
-                            sub_o_areas.append(individual_obj_lookup[str(sub_datum[2])][obj_id.split("_")[1]]["area"])
-                        else:
-                            sub_f_areas.append(np.nan)
-                            sub_o_areas.append(np.nan)
 
                 if 'histogram' in stat_line_type:
                     # need to get an array of sub-values, one for each unique mode_header_id
@@ -301,8 +302,6 @@ class QueryUtil:
                     sub_pair_fid_map = {}
                     sub_pair_oid_map = {}
                     sub_mode_header_id_map = {}
-                    sub_f_area_map = {}
-                    sub_o_area_map = {}
                     sub_secs_map = {}
                     sub_levs_map = {}
                     for i in range(0, len(sub_mode_header_ids)):
@@ -312,16 +311,12 @@ class QueryUtil:
                             sub_pair_fid_map[this_mode_header_id] = []
                             sub_pair_oid_map[this_mode_header_id] = []
                             sub_mode_header_id_map[this_mode_header_id] = []
-                            sub_f_area_map[this_mode_header_id] = []
-                            sub_o_area_map[this_mode_header_id] = []
                             sub_secs_map[this_mode_header_id] = []
                             sub_levs_map[this_mode_header_id] = []
                         sub_interest_map[this_mode_header_id].append(sub_interests[i])
                         sub_pair_fid_map[this_mode_header_id].append(sub_pair_fids[i])
                         sub_pair_oid_map[this_mode_header_id].append(sub_pair_oids[i])
                         sub_mode_header_id_map[this_mode_header_id].append(sub_mode_header_ids[i])
-                        sub_f_area_map[this_mode_header_id].append(sub_f_areas[i])
-                        sub_o_area_map[this_mode_header_id].append(sub_o_areas[i])
                         sub_secs_map[this_mode_header_id].append(sub_secs[i])
                         sub_levs_map[this_mode_header_id].append(sub_levs[i])
                     sub_values = []
@@ -333,8 +328,7 @@ class QueryUtil:
                                                                np.asarray(sub_pair_fid_map[header_id]),
                                                                np.asarray(sub_pair_oid_map[header_id]),
                                                                np.asarray(sub_mode_header_id_map[header_id]),
-                                                               np.asarray(sub_f_area_map[header_id]),
-                                                               np.asarray(sub_o_area_map[header_id]))
+                                                               individual_obj_lookup)
                         if stat_error != '':
                             self.error = stat_error
                         if stat == 'null':
@@ -352,8 +346,6 @@ class QueryUtil:
                     sub_pair_fids = np.asarray(sub_pair_fids)
                     sub_pair_oids = np.asarray(sub_pair_oids)
                     sub_mode_header_ids = np.asarray(sub_mode_header_ids)
-                    sub_f_areas = np.asarray(sub_f_areas)
-                    sub_o_areas = np.asarray(sub_o_areas)
                     sub_secs = np.asarray(sub_secs)
                     if len(sub_levs) == 0:
                         sub_levs = np.empty(len(sub_secs))
@@ -362,7 +354,7 @@ class QueryUtil:
 
                     # calculate the mode statistic
                     stat, stat_error = calculate_mode_stat(statistic, sub_interests, sub_pair_fids, sub_pair_oids,
-                                                           sub_mode_header_ids, sub_f_areas, sub_o_areas)
+                                                           sub_mode_header_ids, individual_obj_lookup)
                     if stat_error != '':
                         self.error = stat_error
 
@@ -396,12 +388,10 @@ class QueryUtil:
             self.error = "Error parsing query data. The expected fields don't seem to be present " \
                          "in the results cache: " + str(e)
             # if we don't have the data we expect just stop now and return empty data objects
-            return np.nan, np.empty(0), np.empty(0), np.empty(0), np.empty(0), np.empty(0), \
-                   np.empty(0), np.empty(0), np.empty(0), np.empty(0)
+            return np.nan, np.empty(0), np.empty(0), np.empty(0), np.empty(0), np.empty(0), np.empty(0), np.empty(0)
 
         # if we do have the data we expect, return the requested statistic
-        return stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, sub_mode_header_ids, \
-               sub_f_areas, sub_o_areas
+        return stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, sub_mode_header_ids
 
     def get_ens_hist_stat(self, row, has_levels):
         try:
@@ -566,8 +556,7 @@ class QueryUtil:
         return ti
 
     # function for parsing the data returned by a timeseries query
-    def parse_query_data_timeseries(self, cursor, stat_line_type, statistic, has_levels, completeness_qc_param, vts,
-                                    object_data):
+    def parse_query_data_timeseries(self, idx, cursor, stat_line_type, statistic, has_levels, completeness_qc_param, vts, object_data):
         # initialize local variables
         xmax = float("-inf")
         xmin = float("inf")
@@ -577,8 +566,6 @@ class QueryUtil:
         sub_pair_fids_all = []
         sub_pair_oids_all = []
         sub_mode_header_ids_all = []
-        sub_f_areas_all = []
-        sub_o_areas_all = []
         sub_vals_all = []
         sub_secs_all = []
         sub_levs_all = []
@@ -630,18 +617,18 @@ class QueryUtil:
             elif stat_line_type == 'precalculated':
                 data_exists = row['stat'] != "null" and row['stat'] != "NULL"
             if hasattr(row, 'N0'):
-                self.n0.append(int(row['N0']))
+                self.n0[idx].append(int(row['N0']))
             else:
-                self.n0.append(int(row['N_times']))
-            self.n_times.append(int(row['N_times']))
+                self.n0[idx].append(int(row['N_times']))
+            self.n_times[idx].append(int(row['N_times']))
 
             if row_idx < len(query_data) - 1:  # make sure we have the smallest time interval for the while loop later
                 time_diff = int(query_data[row_idx + 1]['avtime']) - int(row['avtime'])
                 time_interval = time_diff if time_diff < time_interval else time_interval
 
             if data_exists:
-                stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, sub_mode_header_ids, \
-                sub_f_areas, sub_o_areas = self.get_stat(has_levels, row, statistic, stat_line_type, object_row)
+                stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, sub_mode_header_ids \
+                    = self.get_stat(idx, has_levels, row, statistic, stat_line_type, object_row)
                 if stat == 'null' or not self.is_number(stat):
                     # there's bad data at this time point
                     stat = 'null'
@@ -650,8 +637,6 @@ class QueryUtil:
                     sub_pair_fids = 'NaN'
                     sub_pair_oids = 'NaN'
                     sub_mode_header_ids = 'NaN'
-                    sub_f_areas = 'NaN'
-                    sub_o_areas = 'NaN'
                     sub_secs = 'NaN'
                     sub_levs = 'NaN'
             else:
@@ -662,8 +647,6 @@ class QueryUtil:
                 sub_pair_fids = 'NaN'
                 sub_pair_oids = 'NaN'
                 sub_mode_header_ids = 'NaN'
-                sub_f_areas = 'NaN'
-                sub_o_areas = 'NaN'
                 sub_secs = 'NaN'
                 sub_levs = 'NaN'
 
@@ -675,16 +658,14 @@ class QueryUtil:
                 sub_pair_fids_all.append(sub_pair_fids)
                 sub_pair_oids_all.append(sub_pair_oids)
                 sub_mode_header_ids_all.append(sub_mode_header_ids)
-                sub_f_areas_all.append(sub_f_areas)
-                sub_o_areas_all.append(sub_o_areas)
             else:
                 sub_vals_all.append(sub_values)
             sub_secs_all.append(sub_secs)
             if has_levels:
                 sub_levs_all.append(sub_levs)
 
-        n0_max = max(self.n0)
-        n_times_max = max(self.n_times)
+        n0_max = max(self.n0[idx])
+        n_times_max = max(self.n_times[idx])
 
         xmin = query_data[0]['avtime'] * 1000 if xmin < query_data[0]['avtime'] * 1000 else xmin
 
@@ -698,43 +679,39 @@ class QueryUtil:
             # the reason we need to loop through everything again is to add in nulls for any missing points along the
             # timeseries. The query only returns the data that it actually has.
             if loop_time not in curve_times:
-                self.data['x'].append(loop_time)
-                self.data['y'].append('null')
-                self.data['error_y'].append('null')
+                self.data[idx]['x'].append(loop_time)
+                self.data[idx]['y'].append('null')
+                self.data[idx]['error_y'].append('null')
                 if stat_line_type == 'mode_pair':
-                    self.data['subInterest'].append('NaN')
-                    self.data['subPairFid'].append('NaN')
-                    self.data['subPairOid'].append('NaN')
-                    self.data['subModeHeaderId'].append('NaN')
-                    self.data['subFArea'].append('NaN')
-                    self.data['subOArea'].append('NaN')
+                    self.data[idx]['subInterest'].append('NaN')
+                    self.data[idx]['subPairFid'].append('NaN')
+                    self.data[idx]['subPairOid'].append('NaN')
+                    self.data[idx]['subModeHeaderId'].append('NaN')
                 else:
-                    self.data['subVals'].append('NaN')
-                self.data['subSecs'].append('NaN')
+                    self.data[idx]['subVals'].append('NaN')
+                self.data[idx]['subSecs'].append('NaN')
                 if has_levels:
-                    self.data['subLevs'].append('NaN')
+                    self.data[idx]['subLevs'].append('NaN')
                 # We use string NaNs instead of numerical NaNs because the JSON encoder can't figure out what to do with np.nan or float('nan')
             else:
                 d_idx = curve_times.index(loop_time)
-                this_n0 = self.n0[d_idx]
-                this_n_times = self.n_times[d_idx]
+                this_n0 = self.n0[idx][d_idx]
+                this_n_times = self.n_times[idx][d_idx]
                 # add a null if there were too many missing sub-values
                 if curve_stats[d_idx] == 'null' or this_n_times < completeness_qc_param * n_times_max:
-                    self.data['x'].append(loop_time)
-                    self.data['y'].append('null')
-                    self.data['error_y'].append('null')
+                    self.data[idx]['x'].append(loop_time)
+                    self.data[idx]['y'].append('null')
+                    self.data[idx]['error_y'].append('null')
                     if stat_line_type == 'mode_pair':
-                        self.data['subInterest'].append('NaN')
-                        self.data['subPairFid'].append('NaN')
-                        self.data['subPairOid'].append('NaN')
-                        self.data['subModeHeaderId'].append('NaN')
-                        self.data['subFArea'].append('NaN')
-                        self.data['subOArea'].append('NaN')
+                        self.data[idx]['subInterest'].append('NaN')
+                        self.data[idx]['subPairFid'].append('NaN')
+                        self.data[idx]['subPairOid'].append('NaN')
+                        self.data[idx]['subModeHeaderId'].append('NaN')
                     else:
-                        self.data['subVals'].append('NaN')
-                    self.data['subSecs'].append('NaN')
+                        self.data[idx]['subVals'].append('NaN')
+                    self.data[idx]['subSecs'].append('NaN')
                     if has_levels:
-                        self.data['subLevs'].append('NaN')
+                        self.data[idx]['subLevs'].append('NaN')
                 # We use string NaNs instead of numerical NaNs because the JSON encoder can't figure out what to do with np.nan or float('nan')
                 else:
                     # put the data in our final data dictionary, converting the numpy arrays to lists so we can jsonify
@@ -744,16 +721,12 @@ class QueryUtil:
                         list_pair_fids = sub_pair_fids_all[d_idx].tolist()
                         list_pair_oids = sub_pair_oids_all[d_idx].tolist()
                         list_sub_mode_header_ids = sub_mode_header_ids_all[d_idx].tolist()
-                        list_sub_f_areas = sub_f_areas_all[d_idx].tolist()
-                        list_sub_o_areas = sub_o_areas_all[d_idx].tolist()
                         list_vals = []
                     else:
                         list_interests = []
                         list_pair_fids = []
                         list_pair_oids = []
                         list_sub_mode_header_ids = []
-                        list_sub_f_areas = []
-                        list_sub_o_areas = []
                         list_vals = sub_vals_all[d_idx].tolist()
                     list_secs = sub_secs_all[d_idx].tolist()
                     if has_levels:
@@ -770,21 +743,19 @@ class QueryUtil:
                             if has_levels:
                                 del list_levs[bad_value_index]
                     # store data
-                    self.data['x'].append(loop_time)
-                    self.data['y'].append(curve_stats[d_idx])
-                    self.data['error_y'].append('null')
+                    self.data[idx]['x'].append(loop_time)
+                    self.data[idx]['y'].append(curve_stats[d_idx])
+                    self.data[idx]['error_y'].append('null')
                     if stat_line_type == 'mode_pair':
-                        self.data['subInterest'].append(list_interests)
-                        self.data['subPairFid'].append(list_pair_fids)
-                        self.data['subPairOid'].append(list_pair_oids)
-                        self.data['subModeHeaderId'].append(list_sub_mode_header_ids)
-                        self.data['subFArea'].append(list_sub_f_areas)
-                        self.data['subOArea'].append(list_sub_o_areas)
+                        self.data[idx]['subInterest'].append(list_interests)
+                        self.data[idx]['subPairFid'].append(list_pair_fids)
+                        self.data[idx]['subPairOid'].append(list_pair_oids)
+                        self.data[idx]['subModeHeaderId'].append(list_sub_mode_header_ids)
                     else:
-                        self.data['subVals'].append(list_vals)
-                    self.data['subSecs'].append(list_secs)
+                        self.data[idx]['subVals'].append(list_vals)
+                    self.data[idx]['subSecs'].append(list_secs)
                     if has_levels:
-                        self.data['subLevs'].append(list_levs)
+                        self.data[idx]['subLevs'].append(list_levs)
                     ymin = curve_stats[d_idx] if curve_stats[d_idx] < ymin else ymin
                     ymax = curve_stats[d_idx] if curve_stats[d_idx] > ymax else ymax
 
@@ -793,14 +764,14 @@ class QueryUtil:
                 time_interval = self.get_time_interval(loop_time, time_interval, vts)
             loop_time = loop_time + time_interval
 
-        self.data['xmin'] = xmin
-        self.data['xmax'] = xmax
-        self.data['ymin'] = ymin
-        self.data['ymax'] = ymax
-        self.data['sum'] = loop_sum
+        self.data[idx]['xmin'] = xmin
+        self.data[idx]['xmax'] = xmax
+        self.data[idx]['ymin'] = ymin
+        self.data[idx]['ymax'] = ymax
+        self.data[idx]['sum'] = loop_sum
 
     # function for parsing the data returned by a profile/dieoff/threshold/validtime/gridscale etc query
-    def parse_query_data_specialty_curve(self, cursor, stat_line_type, statistic, plot_type, has_levels, hide_gaps,
+    def parse_query_data_specialty_curve(self, idx, cursor, stat_line_type, statistic, plot_type, has_levels, hide_gaps,
                                          completeness_qc_param, object_data):
         # initialize local variables
         ind_var_min = sys.float_info.max
@@ -811,8 +782,6 @@ class QueryUtil:
         sub_pair_fids_all = []
         sub_pair_oids_all = []
         sub_mode_header_ids_all = []
-        sub_f_areas_all = []
-        sub_o_areas_all = []
         sub_vals_all = []
         sub_secs_all = []
         sub_levs_all = []
@@ -862,16 +831,16 @@ class QueryUtil:
             elif stat_line_type == 'precalculated':
                 data_exists = row['stat'] != "null" and row['stat'] != "NULL"
             if hasattr(row, 'N0'):
-                self.n0.append(int(row['N0']))
+                self.n0[idx].append(int(row['N0']))
             else:
-                self.n0.append(int(row['N_times']))
-            self.n_times.append(int(row['N_times']))
+                self.n0[idx].append(int(row['N_times']))
+            self.n_times[idx].append(int(row['N_times']))
 
             if data_exists:
                 ind_var_min = ind_var if ind_var < ind_var_min else ind_var_min
                 ind_var_max = ind_var if ind_var > ind_var_max else ind_var_max
-                stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, sub_mode_header_ids, \
-                sub_f_areas, sub_o_areas = self.get_stat(has_levels, row, statistic, stat_line_type, object_row)
+                stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, sub_mode_header_ids \
+                    = self.get_stat(idx, has_levels, row, statistic, stat_line_type, object_row)
                 if stat == 'null' or not self.is_number(stat):
                     # there's bad data at this point
                     stat = 'null'
@@ -880,8 +849,6 @@ class QueryUtil:
                     sub_pair_fids = 'NaN'
                     sub_pair_oids = 'NaN'
                     sub_mode_header_ids = 'NaN'
-                    sub_f_areas = 'NaN'
-                    sub_o_areas = 'NaN'
                     sub_secs = 'NaN'
                     sub_levs = 'NaN'
             else:
@@ -892,8 +859,6 @@ class QueryUtil:
                 sub_pair_fids = 'NaN'
                 sub_pair_oids = 'NaN'
                 sub_mode_header_ids = 'NaN'
-                sub_f_areas = 'NaN'
-                sub_o_areas = 'NaN'
                 sub_secs = 'NaN'
                 sub_levs = 'NaN'
 
@@ -910,8 +875,6 @@ class QueryUtil:
                         sub_pair_fids_all.append('NaN')
                         sub_pair_oids_all.append('NaN')
                         sub_mode_header_ids_all.append('NaN')
-                        sub_f_areas_all.append('NaN')
-                        sub_o_areas_all.append('NaN')
                     else:
                         sub_vals_all.append(sub_values)
                     sub_secs_all.append('NaN')
@@ -926,8 +889,6 @@ class QueryUtil:
                 sub_pair_fids_all.append(sub_pair_fids)
                 sub_pair_oids_all.append(sub_pair_oids)
                 sub_mode_header_ids_all.append(sub_mode_header_ids)
-                sub_f_areas_all.append(sub_f_areas)
-                sub_o_areas_all.append(sub_o_areas)
             else:
                 sub_vals_all.append(sub_values)
             sub_secs_all.append(sub_secs)
@@ -937,15 +898,13 @@ class QueryUtil:
         # make sure lists are definitely sorted by the float ind_var values, instead of their former strings
         if stat_line_type == 'mode_pair':
             if has_levels:
-                curve_ind_vars, curve_stats, sub_interests_all, sub_pair_fids_all, sub_pair_oids_all, \
-                sub_mode_header_ids_all, sub_f_areas_all, sub_o_areas_all, sub_secs_all, sub_levs_all = zip(
+                curve_ind_vars, curve_stats, sub_interests_all, sub_pair_fids_all, sub_pair_oids_all, sub_mode_header_ids_all, sub_secs_all, sub_levs_all = zip(
                     *sorted(zip(curve_ind_vars, curve_stats, sub_interests_all, sub_pair_fids_all, sub_pair_oids_all,
-                                sub_mode_header_ids_all, sub_f_areas_all, sub_o_areas_all, sub_secs_all, sub_levs_all)))
+                                sub_mode_header_ids_all, sub_secs_all, sub_levs_all)))
             else:
-                curve_ind_vars, curve_stats, sub_interests_all, sub_pair_fids_all, sub_pair_oids_all, \
-                sub_mode_header_ids_all, sub_f_areas_all, sub_o_areas_all, sub_secs_all = zip(*sorted(zip(
-                    curve_ind_vars, curve_stats, sub_interests_all, sub_pair_fids_all, sub_pair_oids_all,
-                    sub_mode_header_ids_all, sub_f_areas_all, sub_o_areas_all, sub_secs_all)))
+                curve_ind_vars, curve_stats, sub_interests_all, sub_pair_fids_all, sub_pair_oids_all, sub_mode_header_ids_all, sub_secs_all = zip(
+                    *sorted(zip(curve_ind_vars, curve_stats, sub_interests_all, sub_pair_fids_all, sub_pair_oids_all,
+                                sub_mode_header_ids_all, sub_secs_all)))
         else:
             if has_levels:
                 curve_ind_vars, curve_stats, sub_vals_all, sub_secs_all, sub_levs_all = zip(
@@ -954,8 +913,8 @@ class QueryUtil:
                 curve_ind_vars, curve_stats, sub_vals_all, sub_secs_all = zip(
                     *sorted(zip(curve_ind_vars, curve_stats, sub_vals_all, sub_secs_all)))
 
-        n0_max = max(self.n0)
-        n_times_max = max(self.n_times)
+        n0_max = max(self.n0[idx])
+        n_times_max = max(self.n_times[idx])
         loop_sum = 0
         dep_var_min = sys.float_info.max
         dep_var_max = -1 * sys.float_info.max
@@ -968,8 +927,6 @@ class QueryUtil:
                 sub_pair_fids_all = [x for _, x in sorted(zip(curve_ind_vars, sub_pair_fids_all))]
                 sub_pair_oids_all = [x for _, x in sorted(zip(curve_ind_vars, sub_pair_oids_all))]
                 sub_mode_header_ids_all = [x for _, x in sorted(zip(curve_ind_vars, sub_mode_header_ids_all))]
-                sub_f_areas_all = [x for _, x in sorted(zip(curve_ind_vars, sub_f_areas_all))]
-                sub_o_areas_all = [x for _, x in sorted(zip(curve_ind_vars, sub_o_areas_all))]
             else:
                 sub_vals_all = [x for _, x in sorted(zip(curve_ind_vars, sub_vals_all))]
             sub_secs_all = [x for _, x in sorted(zip(curve_ind_vars, sub_secs_all))]
@@ -980,33 +937,31 @@ class QueryUtil:
             # the reason we need to loop through everything again is to add in nulls
             # for any bad data points along the curve.
             d_idx = curve_ind_vars.index(ind_var)
-            this_n0 = self.n0[d_idx]
-            this_n_times = self.n_times[d_idx]
+            this_n0 = self.n0[idx][d_idx]
+            this_n_times = self.n_times[idx][d_idx]
             # add a null if there were too many missing sub-values
             if curve_stats[d_idx] == 'null' or this_n_times < completeness_qc_param * n_times_max:
                 if not hide_gaps:
                     if plot_type == 'Profile':
                         # profile has the stat first, and then the ind_var. The others have ind_var and then stat.
                         # this is in the pattern of x-plotted-variable, y-plotted-variable.
-                        self.data['x'].append('null')
-                        self.data['y'].append(ind_var)
-                        self.data['error_x'].append('null')
+                        self.data[idx]['x'].append('null')
+                        self.data[idx]['y'].append(ind_var)
+                        self.data[idx]['error_x'].append('null')
                     else:
-                        self.data['x'].append(ind_var)
-                        self.data['y'].append('null')
-                        self.data['error_y'].append('null')
+                        self.data[idx]['x'].append(ind_var)
+                        self.data[idx]['y'].append('null')
+                        self.data[idx]['error_y'].append('null')
                     if stat_line_type == 'mode_pair':
-                        self.data['subInterest'].append('NaN')
-                        self.data['subPairFid'].append('NaN')
-                        self.data['subPairOid'].append('NaN')
-                        self.data['subModeHeaderId'].append('NaN')
-                        self.data['subFArea'].append('NaN')
-                        self.data['subOArea'].append('NaN')
+                        self.data[idx]['subInterest'].append('NaN')
+                        self.data[idx]['subPairFid'].append('NaN')
+                        self.data[idx]['subPairOid'].append('NaN')
+                        self.data[idx]['subModeHeaderId'].append('NaN')
                     else:
-                        self.data['subVals'].append('NaN')
-                    self.data['subSecs'].append('NaN')
+                        self.data[idx]['subVals'].append('NaN')
+                    self.data[idx]['subSecs'].append('NaN')
                     if has_levels:
-                        self.data['subLevs'].append('NaN')
+                        self.data[idx]['subLevs'].append('NaN')
                         # We use string NaNs instead of numerical NaNs because the JSON encoder
                         # can't figure out what to do with np.nan or float('nan')
             else:
@@ -1017,16 +972,12 @@ class QueryUtil:
                     list_pair_fids = sub_pair_fids_all[d_idx].tolist()
                     list_pair_oids = sub_pair_oids_all[d_idx].tolist()
                     list_sub_mode_header_ids = sub_mode_header_ids_all[d_idx].tolist()
-                    list_sub_f_areas = sub_f_areas_all[d_idx].tolist()
-                    list_sub_o_areas = sub_o_areas_all[d_idx].tolist()
                     list_vals = []
                 else:
                     list_interests = []
                     list_pair_fids = []
                     list_pair_oids = []
                     list_sub_mode_header_ids = []
-                    list_sub_f_areas = []
-                    list_sub_o_areas = []
                     list_vals = sub_vals_all[d_idx].tolist()
                 list_secs = sub_secs_all[d_idx].tolist()
                 if has_levels:
@@ -1045,42 +996,40 @@ class QueryUtil:
                 if plot_type == 'Profile':
                     # profile has the stat first, and then the ind_var. The others have ind_var and then stat.
                     # this is in the pattern of x-plotted-variable, y-plotted-variable.
-                    self.data['x'].append(curve_stats[d_idx])
-                    self.data['y'].append(ind_var)
-                    self.data['error_x'].append('null')
+                    self.data[idx]['x'].append(curve_stats[d_idx])
+                    self.data[idx]['y'].append(ind_var)
+                    self.data[idx]['error_x'].append('null')
                 else:
-                    self.data['x'].append(ind_var)
-                    self.data['y'].append(curve_stats[d_idx])
-                    self.data['error_y'].append('null')
+                    self.data[idx]['x'].append(ind_var)
+                    self.data[idx]['y'].append(curve_stats[d_idx])
+                    self.data[idx]['error_y'].append('null')
                 if stat_line_type == 'mode_pair':
-                    self.data['subInterest'].append(list_interests)
-                    self.data['subPairFid'].append(list_pair_fids)
-                    self.data['subPairOid'].append(list_pair_oids)
-                    self.data['subModeHeaderId'].append(list_sub_mode_header_ids)
-                    self.data['subFArea'].append(list_sub_f_areas)
-                    self.data['subOArea'].append(list_sub_o_areas)
+                    self.data[idx]['subInterest'].append(list_interests)
+                    self.data[idx]['subPairFid'].append(list_pair_fids)
+                    self.data[idx]['subPairOid'].append(list_pair_oids)
+                    self.data[idx]['subModeHeaderId'].append(list_sub_mode_header_ids)
                 else:
-                    self.data['subVals'].append(list_vals)
-                self.data['subSecs'].append(list_secs)
+                    self.data[idx]['subVals'].append(list_vals)
+                self.data[idx]['subSecs'].append(list_secs)
                 if has_levels:
-                    self.data['subLevs'].append(list_levs)
+                    self.data[idx]['subLevs'].append(list_levs)
                 dep_var_min = curve_stats[d_idx] if curve_stats[d_idx] < dep_var_min else dep_var_min
                 dep_var_max = curve_stats[d_idx] if curve_stats[d_idx] > dep_var_max else dep_var_max
 
         if plot_type == 'Profile':
-            self.data['xmin'] = dep_var_min
-            self.data['xmax'] = dep_var_max
-            self.data['ymin'] = ind_var_min
-            self.data['ymax'] = ind_var_max
+            self.data[idx]['xmin'] = dep_var_min
+            self.data[idx]['xmax'] = dep_var_max
+            self.data[idx]['ymin'] = ind_var_min
+            self.data[idx]['ymax'] = ind_var_max
         else:
-            self.data['xmin'] = ind_var_min
-            self.data['xmax'] = ind_var_max
-            self.data['ymin'] = dep_var_min
-            self.data['ymax'] = dep_var_max
-        self.data['sum'] = loop_sum
+            self.data[idx]['xmin'] = ind_var_min
+            self.data[idx]['xmax'] = ind_var_max
+            self.data[idx]['ymin'] = dep_var_min
+            self.data[idx]['ymax'] = dep_var_max
+        self.data[idx]['sum'] = loop_sum
 
     # function for parsing the data returned by a histogram query
-    def parse_query_data_histogram(self, cursor, stat_line_type, statistic, has_levels, object_data):
+    def parse_query_data_histogram(self, idx, cursor, stat_line_type, statistic, has_levels, object_data):
         # initialize local variables
         sub_vals_all = []
         sub_secs_all = []
@@ -1115,14 +1064,14 @@ class QueryUtil:
             elif stat_line_type == 'precalculated':
                 data_exists = row['stat'] != "null" and row['stat'] != "NULL"
             if hasattr(row, 'N0'):
-                self.n0.append(int(row['N0']))
+                self.n0[idx].append(int(row['N0']))
             else:
-                self.n0.append(int(row['N_times']))
-            self.n_times.append(int(row['N_times']))
+                self.n0[idx].append(int(row['N_times']))
+            self.n_times[idx].append(int(row['N_times']))
 
             if data_exists:
-                stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, sub_mode_header_ids, \
-                sub_f_areas, sub_o_areas = self.get_stat(has_levels, row, statistic, stat_line_type, object_row)
+                stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, sub_mode_header_ids \
+                    = self.get_stat(idx, has_levels, row, statistic, stat_line_type, object_row)
                 if stat == 'null' or not self.is_number(stat):
                     # there's bad data at this point
                     continue
@@ -1146,13 +1095,13 @@ class QueryUtil:
                     sub_levs_all.append(list_levs)
 
         # we don't have bins yet, so we want all of the data in one array
-        self.data['subVals'] = [item for sublist in sub_vals_all for item in sublist]
-        self.data['subSecs'] = [item for sublist in sub_secs_all for item in sublist]
+        self.data[idx]['subVals'] = [item for sublist in sub_vals_all for item in sublist]
+        self.data[idx]['subSecs'] = [item for sublist in sub_secs_all for item in sublist]
         if has_levels:
-            self.data['subLevs'] = [item for sublist in sub_levs_all for item in sublist]
+            self.data[idx]['subLevs'] = [item for sublist in sub_levs_all for item in sublist]
 
     # function for parsing the data returned by an ensemble histogram query
-    def parse_query_data_ensemble_histogram(self, cursor, statistic, has_levels):
+    def parse_query_data_ensemble_histogram(self, idx, cursor, statistic, has_levels):
         # initialize local variables
         bins = []
         bin_counts = []
@@ -1172,10 +1121,10 @@ class QueryUtil:
                 bin_number = int(row['bin'])
                 bin_count = int(row['bin_count'])
                 if hasattr(row, 'N0'):
-                    self.n0.append(int(row['N0']))
+                    self.n0[idx].append(int(row['N0']))
                 else:
-                    self.n0.append(int(row['N_times']))
-                self.n_times.append(int(row['N_times']))
+                    self.n0[idx].append(int(row['N_times']))
+                self.n_times[idx].append(int(row['N_times']))
 
                 # this function deals with rhist/phist/relp and rhist_rank/phist_bin/relp_ens tables
                 stat, sub_levs, sub_secs, sub_values = self.get_ens_hist_stat(row, has_levels)
@@ -1216,18 +1165,18 @@ class QueryUtil:
 
         # Finalize data structure
         if len(bins) > 0:
-            self.data['x'] = bins
-            self.data['y'] = bin_counts
-            self.data['subVals'] = sub_vals_all
-            self.data['subSecs'] = sub_secs_all
-            self.data['subLevs'] = sub_levs_all
-            self.data['xmax'] = max(bins)
-            self.data['xmin'] = min(bins)
-            self.data['ymax'] = max(bin_counts)
-            self.data['ymin'] = 0
+            self.data[idx]['x'] = bins
+            self.data[idx]['y'] = bin_counts
+            self.data[idx]['subVals'] = sub_vals_all
+            self.data[idx]['subSecs'] = sub_secs_all
+            self.data[idx]['subLevs'] = sub_levs_all
+            self.data[idx]['xmax'] = max(bins)
+            self.data[idx]['xmin'] = min(bins)
+            self.data[idx]['ymax'] = max(bin_counts)
+            self.data[idx]['ymin'] = 0
 
     # function for parsing the data returned by an ensemble query
-    def parse_query_data_ensemble(self, cursor, plot_type):
+    def parse_query_data_ensemble(self, idx, cursor, plot_type):
         # initialize local variables
         threshold_all = []
         oy_all = []
@@ -1286,23 +1235,23 @@ class QueryUtil:
                                       total_times, total_values)
 
         # Since everything is combined already, put it into the data structure
-        self.n0 = total_values
-        self.n_times = total_times
-        self.data['x'] = ens_stats[ens_stats["x_var"]]
-        self.data['y'] = ens_stats[ens_stats["y_var"]]
-        self.data['sample_climo'] = ens_stats["sample_climo"]
-        self.data['threshold_all'] = ens_stats["threshold_all"]
-        self.data['oy_all'] = ens_stats["oy_all"]
-        self.data['on_all'] = ens_stats["on_all"]
-        self.data['n'] = total_values
-        self.data['auc'] = ens_stats["auc"]
-        self.data['xmax'] = 1.0
-        self.data['xmin'] = 0.0
-        self.data['ymax'] = 1.0
-        self.data['ymin'] = 0.0
+        self.n0[idx] = total_values
+        self.n_times[idx] = total_times
+        self.data[idx]['x'] = ens_stats[ens_stats["x_var"]]
+        self.data[idx]['y'] = ens_stats[ens_stats["y_var"]]
+        self.data[idx]['sample_climo'] = ens_stats["sample_climo"]
+        self.data[idx]['threshold_all'] = ens_stats["threshold_all"]
+        self.data[idx]['oy_all'] = ens_stats["oy_all"]
+        self.data[idx]['on_all'] = ens_stats["on_all"]
+        self.data[idx]['n'] = total_values
+        self.data[idx]['auc'] = ens_stats["auc"]
+        self.data[idx]['xmax'] = 1.0
+        self.data[idx]['xmin'] = 0.0
+        self.data[idx]['ymax'] = 1.0
+        self.data[idx]['ymin'] = 0.0
 
     # function for parsing the data returned by a contour query
-    def parse_query_data_contour(self, cursor, stat_line_type, statistic, has_levels):
+    def parse_query_data_contour(self, idx, cursor, stat_line_type, statistic, has_levels):
         # initialize local variables
         curve_stat_lookup = {}
         curve_n_lookup = {}
@@ -1333,8 +1282,8 @@ class QueryUtil:
                 data_exists = row['stat'] != "null" and row['stat'] != "NULL"
 
             if data_exists:
-                stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, sub_mode_header_ids, \
-                sub_f_areas, sub_o_areas = self.get_stat(has_levels, row, statistic, stat_line_type, [])
+                stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, sub_mode_header_ids \
+                    = self.get_stat(idx, has_levels, row, statistic, stat_line_type, [])
                 if stat == 'null' or not self.is_number(stat):
                     # there's bad data at this point
                     continue
@@ -1348,27 +1297,27 @@ class QueryUtil:
                 min_date = 'null'
                 max_date = 'null'
             # store flat arrays of all the parsed data, used by the text output and for some calculations later
-            self.data['xTextOutput'].append(row_x_val)
-            self.data['yTextOutput'].append(row_y_val)
-            self.data['zTextOutput'].append(stat)
-            self.data['nTextOutput'].append(n)
-            self.data['minDateTextOutput'].append(min_date)
-            self.data['maxDateTextOutput'].append(max_date)
+            self.data[idx]['xTextOutput'].append(row_x_val)
+            self.data[idx]['yTextOutput'].append(row_y_val)
+            self.data[idx]['zTextOutput'].append(stat)
+            self.data[idx]['nTextOutput'].append(n)
+            self.data[idx]['minDateTextOutput'].append(min_date)
+            self.data[idx]['maxDateTextOutput'].append(max_date)
             curve_stat_lookup[stat_key] = stat
             curve_n_lookup[stat_key] = n
 
         # get the unique x and y values and sort the stats into the 2D z array accordingly
-        self.data['x'] = sorted(list(set(self.data['xTextOutput'])))
-        self.data['y'] = sorted(list(set(self.data['yTextOutput'])))
+        self.data[idx]['x'] = sorted(list(set(self.data[idx]['xTextOutput'])))
+        self.data[idx]['y'] = sorted(list(set(self.data[idx]['yTextOutput'])))
 
         loop_sum = 0
         n_points = 0
         zmin = sys.float_info.max
         zmax = -1 * sys.float_info.max
-        for curr_y in self.data['y']:
+        for curr_y in self.data[idx]['y']:
             curr_y_stat_array = []
             curr_y_n_array = []
-            for curr_x in self.data['x']:
+            for curr_x in self.data[idx]['x']:
                 curr_stat_key = str(curr_x) + '_' + str(curr_y)
                 if curr_stat_key in curve_stat_lookup:
                     curr_stat = curve_stat_lookup[curr_stat_key]
@@ -1382,97 +1331,86 @@ class QueryUtil:
                 else:
                     curr_y_stat_array.append('null')
                     curr_y_n_array.append(0)
-            self.data['z'].append(curr_y_stat_array)
-            self.data['n'].append(curr_y_n_array)
+            self.data[idx]['z'].append(curr_y_stat_array)
+            self.data[idx]['n'].append(curr_y_n_array)
 
         # calculate statistics
-        self.data['xmin'] = self.data['x'][0]
-        self.data['xmax'] = self.data['x'][len(self.data['x']) - 1]
-        self.data['ymin'] = self.data['y'][0]
-        self.data['ymax'] = self.data['y'][len(self.data['y']) - 1]
-        self.data['zmin'] = zmin
-        self.data['zmax'] = zmax
-        self.data['sum'] = loop_sum
-        self.data['glob_stats']['mean'] = loop_sum / n_points
-        self.data['glob_stats']['minDate'] = min(m for m in self.data['minDateTextOutput'] if m != 'null')
-        self.data['glob_stats']['maxDate'] = max(m for m in self.data['maxDateTextOutput'] if m != 'null')
-        self.data['glob_stats']['n'] = n_points
+        self.data[idx]['xmin'] = self.data[idx]['x'][0]
+        self.data[idx]['xmax'] = self.data[idx]['x'][len(self.data[idx]['x']) - 1]
+        self.data[idx]['ymin'] = self.data[idx]['y'][0]
+        self.data[idx]['ymax'] = self.data[idx]['y'][len(self.data[idx]['y']) - 1]
+        self.data[idx]['zmin'] = zmin
+        self.data[idx]['zmax'] = zmax
+        self.data[idx]['sum'] = loop_sum
+        self.data[idx]['glob_stats']['mean'] = loop_sum / n_points
+        self.data[idx]['glob_stats']['minDate'] = min(m for m in self.data[idx]['minDateTextOutput'] if m != 'null')
+        self.data[idx]['glob_stats']['maxDate'] = max(m for m in self.data[idx]['maxDateTextOutput'] if m != 'null')
+        self.data[idx]['glob_stats']['n'] = n_points
 
     # function for querying the database and sending the returned data to the parser
-    def query_db(self, cursor, statement, stat_line_type, statistic, plot_type, has_levels, hide_gaps,
-                 completeness_qc_param, vts):
-        object_data = []
-        if stat_line_type == 'mode_pair':
-            # there are two queries in this statement
-            statements = statement.split(" ||| ")
-            if statistic == "OTS (Object Threat Score)":
-                # only the mode statistic OTS needs the additional object information provided by the first query.
-                # we can ignore it for other stats
-                try:
-                    cursor.execute(statements[1])
-                except pymysql.Error as e:
-                    self.error = "Error executing query: " + str(e)
-                else:
-                    if cursor.rowcount == 0:
-                        self.error = "INFO:0 data records found"
+    def query_db(self, cursor, query_array):
+        for query in query_array:
+            idx = query_array.index(query)
+            object_data = []
+            if query["statLineType"] == 'mode_pair':
+                # there are two queries in this statement
+                statements = query["statement"].split(" ||| ")
+                if query["statistic"] == "OTS (Object Threat Score)":
+                    # only the mode statistic OTS needs the additional object information provided by the first query.
+                    # we can ignore it for other stats
+                    try:
+                        cursor.execute(statements[1])
+                    except pymysql.Error as e:
+                        self.error = "Error executing query: " + str(e)
                     else:
-                        # get object data
-                        object_data = cursor.fetchall()
-            statement = statements[0]
-
-        try:
-            cursor.execute(statement)
-        except pymysql.Error as e:
-            self.error = "Error executing query: " + str(e)
-        else:
-            if cursor.rowcount == 0:
-                self.error = "INFO:0 data records found"
+                        if cursor.rowcount == 0:
+                            self.error = "INFO:0 data records found"
+                        else:
+                            # get object data
+                            object_data = cursor.fetchall()
+                statement = statements[0]
             else:
-                if plot_type == 'TimeSeries' and not hide_gaps:
-                    self.parse_query_data_timeseries(cursor, stat_line_type, statistic, has_levels,
-                                                     completeness_qc_param, vts, object_data)
-                elif plot_type == 'Histogram':
-                    self.parse_query_data_histogram(cursor, stat_line_type, statistic, has_levels, object_data)
-                elif plot_type == 'Contour':
-                    self.parse_query_data_contour(cursor, stat_line_type, statistic, has_levels)
-                elif plot_type == 'Reliability' or plot_type == 'ROC' or plot_type == 'PerformanceDiagram':
-                    self.parse_query_data_ensemble(cursor, plot_type)
-                elif plot_type == 'EnsembleHistogram':
-                    self.parse_query_data_ensemble_histogram(cursor, statistic, has_levels)
+                statement = query["statement"]
+
+            try:
+                cursor.execute(statement)
+            except pymysql.Error as e:
+                self.error = "Error executing query: " + str(e)
+            else:
+                if cursor.rowcount == 0:
+                    self.error = "INFO:0 data records found"
                 else:
-                    self.parse_query_data_specialty_curve(cursor, stat_line_type, statistic, plot_type, has_levels,
-                                                          hide_gaps, completeness_qc_param, object_data)
+                    if query["appParams"]["plotType"] == 'TimeSeries' and not query["appParams"]["hideGaps"]:
+                        self.parse_query_data_timeseries(idx, cursor, query["statLineType"], query["statistic"], query["appParams"]["hasLevels"], float(query["appParams"]["completeness"]) / 100, query["vts"], object_data)
+                    elif query["appParams"]["plotType"] == 'Histogram':
+                        self.parse_query_data_histogram(idx, cursor, query["statLineType"], query["statistic"], query["appParams"]["hasLevels"], object_data)
+                    elif query["appParams"]["plotType"] == 'Contour':
+                        self.parse_query_data_contour(idx, cursor, query["statLineType"], query["statistic"], query["appParams"]["hasLevels"])
+                    elif query["appParams"]["plotType"] == 'Reliability' or query["appParams"]["plotType"] == 'ROC' or query["appParams"]["plotType"] == 'PerformanceDiagram':
+                        self.parse_query_data_ensemble(idx, cursor, query["appParams"]["plotType"])
+                    elif query["appParams"]["plotType"] == 'EnsembleHistogram':
+                        self.parse_query_data_ensemble_histogram(idx, cursor, query["statistic"], query["appParams"]["hasLevels"])
+                    else:
+                        self.parse_query_data_specialty_curve(idx, cursor, query["statLineType"], query["statistic"], query["appParams"]["plotType"], query["appParams"]["hasLevels"], query["appParams"]["hideGaps"], float(query["appParams"]["completeness"]) / 100, object_data)
 
     # makes sure all expected options were indeed passed in
     def validate_options(self, options):
         assert True, options.host is not None and options.port is not None and options.user is not None \
                      and options.password is not None and options.database is not None \
-                     and options.statement is not None and options.stat_line_type is not None \
-                     and options.statistic is not None and options.plot_type is not None \
-                     and options.has_levels is not None and options.hide_gaps is not None \
-                     and options.completeness_qc_param is not None and options.vts is not None
+                     and options.query_array is not None
 
     # process 'c' style options - using getopt - usage describes options
     def get_options(self, args):
-        usage = ["(h)ost=", "(P)ort=", "(u)ser=", "(p)assword=", "(d)atabase=", "(q)uery=",
-                 "stat_(L)ine_type=", "(s)tatistic=", "plot_(t)ype=", "has_(l)evels=", "hide_(g)aps=",
-                 "(c)ompleteness_qc_param=", "(v)ts="]
+        usage = ["(h)ost=", "(P)ort=", "(u)ser=", "(p)assword=", "(d)atabase=", "(q)uery_array="]
         host = None
         port = None
         user = None
         password = None
         database = None
-        statement = None
-        stat_line_type = None
-        statistic = None
-        plot_type = None
-        has_levels = None
-        hide_gaps = None
-        completeness_qc_param = None
-        vts = None
+        query_array = None
 
         try:
-            opts, args = getopt.getopt(args[1:], "h:p:u:P:d:q:L:s:t:l:g:c:v:", usage)
+            opts, args = getopt.getopt(args[1:], "h:p:u:P:d:q:", usage)
         except getopt.GetoptError as err:
             # print help information and exit:
             print(str(err))  # will print something like "option -a not recognized"
@@ -1493,42 +1431,19 @@ class QueryUtil:
             elif o == "-d":
                 database = a
             elif o == "-q":
-                statement = a
-            elif o == "-L":
-                stat_line_type = a
-            elif o == "-s":
-                statistic = a
-            elif o == "-t":
-                plot_type = a
-            elif o == "-l":
-                has_levels = a
-            elif o == "-g":
-                hide_gaps = a
-            elif o == "-c":
-                completeness_qc_param = a
-            elif o == "-v":
-                vts = a
+                query_array = json.loads(a)
             else:
                 assert False, "unhandled option"
         # make sure none were left out...
         assert True, host is not None and port is not None and user is not None and password is not None \
-                     and database is not None and statement is not None and stat_line_type is not None \
-                     and statistic is not None and plot_type is not None and has_levels is not None \
-                     and hide_gaps is not None and completeness_qc_param is not None and vts is not None
+                     and database is not None and query_array is not None
         options = {
             "host": host,
             "port": port,
             "user": user,
             "password": password,
             "database": database,
-            "statement": statement,
-            "stat_line_type": stat_line_type,
-            "statistic": statistic,
-            "plot_type": plot_type,
-            "has_levels": True if has_levels == 'true' else False,
-            "hide_gaps": True if hide_gaps == 'true' else False,
-            "completeness_qc_param": float(completeness_qc_param),
-            "vts": vts
+            "query_array": query_array
         }
         return options
 
@@ -1540,15 +1455,14 @@ class QueryUtil:
                               cursorclass=pymysql.cursors.DictCursor)
         with closing(cnx.cursor()) as cursor:
             cursor.execute('set group_concat_max_len = 4294967295')
-            self.query_db(cursor, options["statement"], options["stat_line_type"], options["statistic"],
-                          options["plot_type"], options["has_levels"], options["hide_gaps"],
-                          options["completeness_qc_param"], options["vts"])
+            self.query_db(cursor, options["query_array"])
         cnx.close()
 
 
 if __name__ == '__main__':
     qutil = QueryUtil()
     options = qutil.get_options(sys.argv)
+    qutil.set_up_output_fields(len(options["query_array"]))
     qutil.do_query(options)
     qutil.construct_output_json()
     print(qutil.output_JSON)

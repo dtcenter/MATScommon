@@ -48,7 +48,7 @@ def get_interest2d(sub_interest, sub_mode_header_id, sub_pair_fid, sub_pair_oid)
 
 
 # function for calculating object threat score from MET MODE output
-def calculate_ots(sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id, sub_f_areas, sub_o_areas):
+def calculate_ots(sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id, individual_obj_lookup):
     global error
     try:
         ots_sum = 0.0
@@ -61,8 +61,6 @@ def calculate_ots(sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id, 
             sorted_fid = sub_pair_fid[indices]
             sorted_oid = sub_pair_oid[indices]
             sorted_mode_header = sub_mode_header_id[indices]
-            sorted_f_areas = sub_f_areas[indices]
-            sorted_o_areas = sub_o_areas[indices]
 
             matched_fid = {}
             matched_oid = {}
@@ -72,8 +70,8 @@ def calculate_ots(sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id, 
                 this_mode_header_id = str(sorted_mode_header[i])
                 this_fid = sorted_fid[i]
                 this_oid = sorted_oid[i]
-                f_area = sorted_f_areas[i]
-                o_area = sorted_o_areas[i]
+                f_area = individual_obj_lookup[this_mode_header_id][this_fid]["area"]
+                o_area = individual_obj_lookup[this_mode_header_id][this_oid]["area"]
                 if this_mode_header_id not in matched_fid.keys():
                     matched_fid[this_mode_header_id] = []
                     matched_oid[this_mode_header_id] = []
@@ -190,7 +188,7 @@ def calculate_mode_ctc(statistic, sub_interest, sub_pair_fid, sub_pair_oid, sub_
 
 # function for determining and calling the appropriate contigency table count statistical calculation function
 def calculate_mode_stat(statistic, sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id,
-                        sub_f_areas, sub_o_areas):
+                        individual_obj_lookup):
     global error
     stat_switch = {  # dispatcher of statistical calculation functions
         'OTS (Object Threat Score)': calculate_ots,
@@ -201,7 +199,7 @@ def calculate_mode_stat(statistic, sub_interest, sub_pair_fid, sub_pair_oid, sub
     }
     args_switch = {  # dispatcher of arguments for statistical calculation functions
         'OTS (Object Threat Score)': (
-            sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id, sub_f_areas, sub_o_areas),
+            sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id, individual_obj_lookup),
         'MMI (Median of Maximum Interest)': (sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id),
         'CSI (Critical Success Index)': (statistic, sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id),
         'FAR (False Alarm Ratio)': (statistic, sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id),

@@ -18,9 +18,10 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
 
     const appName = matsCollections.appName.findOne({}).app;
     curveInfoParams.statType = curveInfoParams.statType === undefined ? 'scalar' : curveInfoParams.statType;
+    const isMetexpress = matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
 
-    // if matching, pare down dataset to only matching data.
-    if (curveInfoParams.curvesLength > 1 && appParams.matching) {
+    // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
+    if (curveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
         dataset = matsDataMatchUtils.getMatchedDataSet(dataset, curveInfoParams, appParams, {});
     }
 
@@ -262,11 +263,6 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
         data.subMiss = [];
         data.subCn = [];
         data.subInterest = [];
-        data.subPairFid = [];
-        data.subPairOid = [];
-        data.subModeHeaderId = [];
-        data.subFArea = [];
-        data.subOArea = [];
         data.subVals = [];
         data.subSecs = [];
         data.subLevs = [];
@@ -338,9 +334,10 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
 
     const appName = matsCollections.appName.findOne({}).app;
     curveInfoParams.statType = curveInfoParams.statType === undefined ? 'scalar' : curveInfoParams.statType;
+    const isMetexpress = matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
 
-    // if matching, pare down dataset to only matching data.
-    if (curveInfoParams.curvesLength > 1 && appParams.matching) {
+    // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
+    if (curveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
         dataset = matsDataMatchUtils.getMatchedDataSet(dataset, curveInfoParams, appParams, {});
     }
 
@@ -530,11 +527,6 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
         data.subMiss = [];
         data.subCn = [];
         data.subInterest = [];
-        data.subPairFid = [];
-        data.subPairOid = [];
-        data.subModeHeaderId = [];
-        data.subFArea = [];
-        data.subOArea = [];
         data.subVals = [];
         data.subSecs = [];
         data.subLevs = [];
@@ -660,9 +652,10 @@ const processDataROC = function (dataset, appParams, curveInfoParams, plotParams
     var error = "";
 
     curveInfoParams.statType = curveInfoParams.statType === undefined ? 'scalar' : curveInfoParams.statType;
+    const isMetexpress = matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
 
-    // if matching, pare down dataset to only matching data.
-    if (curveInfoParams.curvesLength > 1 && appParams.matching) {
+    // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
+    if (curveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
         dataset = matsDataMatchUtils.getMatchedDataSet(dataset, curveInfoParams, appParams, {});
     }
 
@@ -737,9 +730,10 @@ const processDataPerformanceDiagram = function (dataset, appParams, curveInfoPar
     var error = "";
 
     curveInfoParams.statType = curveInfoParams.statType === undefined ? 'scalar' : curveInfoParams.statType;
+    const isMetexpress = matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
 
-    // if matching, pare down dataset to only matching data.
-    if (curveInfoParams.curvesLength > 1 && appParams.matching) {
+    // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
+    if (curveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
         dataset = matsDataMatchUtils.getMatchedDataSet(dataset, curveInfoParams, appParams, {});
     }
 
@@ -834,9 +828,10 @@ const processDataPerformanceDiagram = function (dataset, appParams, curveInfoPar
 
 const processDataEnsembleHistogram = function (dataset, appParams, curveInfoParams, plotParams, bookkeepingParams) {
     var error = "";
+    const isMetexpress = matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
 
-    // if matching, pare down dataset to only matching data
-    if (curveInfoParams.curvesLength > 1 && appParams.matching) {
+    // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
+    if (curveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
         dataset = matsDataMatchUtils.getMatchedDataSet(dataset, curveInfoParams, appParams, {});
     }
 
@@ -1044,7 +1039,6 @@ const processDataHistogram = function (allReturnedSubStats, allReturnedSubSecs, 
         };
 
         if (diffFrom == null) {
-            var postQueryStartMoment = moment();
             if (curveInfoParams.dataFoundForCurve[curveIndex]) {
                 // sort queried data into the full set of histogram bins
                 sortedData = matsDataUtils.sortHistogramBins(allReturnedSubStats[curveIndex], allReturnedSubSecs[curveIndex], allReturnedSubLevs[curveIndex], binParams.binNum, binStats, appParams, d);
@@ -1085,12 +1079,6 @@ const processDataHistogram = function (allReturnedSubStats, allReturnedSubSecs, 
         const cOptions = matsDataCurveOpsUtils.generateBarChartCurveOptions(curve, curveIndex, curveInfoParams.axisMap, d, appParams);  // generate plot with data, curve annotation, axis labels, etc.
         dataset.push(cOptions);
         curvesLengthSoFar++;
-        var postQueryFinishMoment = moment();
-        bookkeepingParams.dataRequests["post data retrieval (query) process time - " + curve.label] = {
-            begin: postQueryStartMoment.format(),
-            finish: postQueryFinishMoment.format(),
-            duration: moment.duration(postQueryFinishMoment.diff(postQueryStartMoment)).asSeconds() + ' seconds'
-        }
     }  // end for curves
 
     // if matching, pare down dataset to only matching data. Only do this if we didn't already do it while calculating diffs.
