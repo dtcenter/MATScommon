@@ -116,6 +116,7 @@ class QueryUtil:
         sub_pair_fids = np.empty(0)
         sub_pair_oids = np.empty(0)
         sub_mode_header_ids = np.empty(0)
+        individual_obj_lookup = {}
         try:
             # get all of the sub-values for each time
             if stat_line_type == 'scalar':
@@ -258,7 +259,6 @@ class QueryUtil:
                     self.error = stat_error
 
             elif 'mode_pair' in stat_line_type:  # histograms will pass in 'mode_pair_histogram', but we still want to use this code here.
-                individual_obj_lookup = {}
                 if statistic == "OTS (Object Threat Score)":
                     object_sub_data = str(object_row['sub_data2']).split(',')
                     for sub_datum2 in object_sub_data:
@@ -273,7 +273,6 @@ class QueryUtil:
                         individual_obj_lookup[mode_header_id][obj_id] = {
                             "area": float(area)
                         }
-                self.data[idx]["individualObjLookup"].append(individual_obj_lookup)
                 sub_data = str(row['sub_data']).split(',')
                 # these are the sub-fields specific to mode stats
                 sub_interests = []
@@ -391,7 +390,8 @@ class QueryUtil:
             return np.nan, np.empty(0), np.empty(0), np.empty(0), np.empty(0), np.empty(0), np.empty(0), np.empty(0)
 
         # if we do have the data we expect, return the requested statistic
-        return stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, sub_mode_header_ids
+        return stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, sub_mode_header_ids, \
+               individual_obj_lookup
 
     def get_ens_hist_stat(self, row, has_levels):
         try:
@@ -556,7 +556,8 @@ class QueryUtil:
         return ti
 
     # function for parsing the data returned by a timeseries query
-    def parse_query_data_timeseries(self, idx, cursor, stat_line_type, statistic, has_levels, completeness_qc_param, vts, object_data):
+    def parse_query_data_timeseries(self, idx, cursor, stat_line_type, statistic, has_levels, completeness_qc_param,
+                                    vts, object_data):
         # initialize local variables
         xmax = float("-inf")
         xmin = float("inf")
@@ -566,6 +567,7 @@ class QueryUtil:
         sub_pair_fids_all = []
         sub_pair_oids_all = []
         sub_mode_header_ids_all = []
+        individual_obj_lookups_all = []
         sub_vals_all = []
         sub_secs_all = []
         sub_levs_all = []
@@ -627,7 +629,8 @@ class QueryUtil:
                 time_interval = time_diff if time_diff < time_interval else time_interval
 
             if data_exists:
-                stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, sub_mode_header_ids \
+                stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, \
+                    sub_mode_header_ids, individual_obj_lookup \
                     = self.get_stat(idx, has_levels, row, statistic, stat_line_type, object_row)
                 if stat == 'null' or not self.is_number(stat):
                     # there's bad data at this time point
@@ -637,6 +640,7 @@ class QueryUtil:
                     sub_pair_fids = 'NaN'
                     sub_pair_oids = 'NaN'
                     sub_mode_header_ids = 'NaN'
+                    individual_obj_lookup = 'NaN'
                     sub_secs = 'NaN'
                     sub_levs = 'NaN'
             else:
@@ -647,6 +651,7 @@ class QueryUtil:
                 sub_pair_fids = 'NaN'
                 sub_pair_oids = 'NaN'
                 sub_mode_header_ids = 'NaN'
+                individual_obj_lookup = 'NaN'
                 sub_secs = 'NaN'
                 sub_levs = 'NaN'
 
@@ -658,6 +663,7 @@ class QueryUtil:
                 sub_pair_fids_all.append(sub_pair_fids)
                 sub_pair_oids_all.append(sub_pair_oids)
                 sub_mode_header_ids_all.append(sub_mode_header_ids)
+                individual_obj_lookups_all.append(individual_obj_lookup)
             else:
                 sub_vals_all.append(sub_values)
             sub_secs_all.append(sub_secs)
@@ -687,6 +693,7 @@ class QueryUtil:
                     self.data[idx]['subPairFid'].append('NaN')
                     self.data[idx]['subPairOid'].append('NaN')
                     self.data[idx]['subModeHeaderId'].append('NaN')
+                    self.data[idx]["individualObjLookup"].append('NaN')
                 else:
                     self.data[idx]['subVals'].append('NaN')
                 self.data[idx]['subSecs'].append('NaN')
@@ -707,6 +714,7 @@ class QueryUtil:
                         self.data[idx]['subPairFid'].append('NaN')
                         self.data[idx]['subPairOid'].append('NaN')
                         self.data[idx]['subModeHeaderId'].append('NaN')
+                        self.data[idx]['individualObjLookup'].append('NaN')
                     else:
                         self.data[idx]['subVals'].append('NaN')
                     self.data[idx]['subSecs'].append('NaN')
@@ -751,6 +759,7 @@ class QueryUtil:
                         self.data[idx]['subPairFid'].append(list_pair_fids)
                         self.data[idx]['subPairOid'].append(list_pair_oids)
                         self.data[idx]['subModeHeaderId'].append(list_sub_mode_header_ids)
+                        self.data[idx]['individualObjLookup'].append(individual_obj_lookups_all[d_idx])
                     else:
                         self.data[idx]['subVals'].append(list_vals)
                     self.data[idx]['subSecs'].append(list_secs)
@@ -782,6 +791,7 @@ class QueryUtil:
         sub_pair_fids_all = []
         sub_pair_oids_all = []
         sub_mode_header_ids_all = []
+        individual_obj_lookups_all = []
         sub_vals_all = []
         sub_secs_all = []
         sub_levs_all = []
@@ -839,7 +849,8 @@ class QueryUtil:
             if data_exists:
                 ind_var_min = ind_var if ind_var < ind_var_min else ind_var_min
                 ind_var_max = ind_var if ind_var > ind_var_max else ind_var_max
-                stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, sub_mode_header_ids \
+                stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, \
+                    sub_mode_header_ids, individual_obj_lookup \
                     = self.get_stat(idx, has_levels, row, statistic, stat_line_type, object_row)
                 if stat == 'null' or not self.is_number(stat):
                     # there's bad data at this point
@@ -849,6 +860,7 @@ class QueryUtil:
                     sub_pair_fids = 'NaN'
                     sub_pair_oids = 'NaN'
                     sub_mode_header_ids = 'NaN'
+                    individual_obj_lookup = 'NaN'
                     sub_secs = 'NaN'
                     sub_levs = 'NaN'
             else:
@@ -859,6 +871,7 @@ class QueryUtil:
                 sub_pair_fids = 'NaN'
                 sub_pair_oids = 'NaN'
                 sub_mode_header_ids = 'NaN'
+                individual_obj_lookup = 'NaN'
                 sub_secs = 'NaN'
                 sub_levs = 'NaN'
 
@@ -875,6 +888,7 @@ class QueryUtil:
                         sub_pair_fids_all.append('NaN')
                         sub_pair_oids_all.append('NaN')
                         sub_mode_header_ids_all.append('NaN')
+                        individual_obj_lookups_all.append('NaN')
                     else:
                         sub_vals_all.append(sub_values)
                     sub_secs_all.append('NaN')
@@ -889,6 +903,7 @@ class QueryUtil:
                 sub_pair_fids_all.append(sub_pair_fids)
                 sub_pair_oids_all.append(sub_pair_oids)
                 sub_mode_header_ids_all.append(sub_mode_header_ids)
+                individual_obj_lookups_all.append(individual_obj_lookup)
             else:
                 sub_vals_all.append(sub_values)
             sub_secs_all.append(sub_secs)
@@ -900,11 +915,11 @@ class QueryUtil:
             if has_levels:
                 curve_ind_vars, curve_stats, sub_interests_all, sub_pair_fids_all, sub_pair_oids_all, sub_mode_header_ids_all, sub_secs_all, sub_levs_all = zip(
                     *sorted(zip(curve_ind_vars, curve_stats, sub_interests_all, sub_pair_fids_all, sub_pair_oids_all,
-                                sub_mode_header_ids_all, sub_secs_all, sub_levs_all)))
+                                sub_mode_header_ids_all, individual_obj_lookups_all, sub_secs_all, sub_levs_all)))
             else:
                 curve_ind_vars, curve_stats, sub_interests_all, sub_pair_fids_all, sub_pair_oids_all, sub_mode_header_ids_all, sub_secs_all = zip(
                     *sorted(zip(curve_ind_vars, curve_stats, sub_interests_all, sub_pair_fids_all, sub_pair_oids_all,
-                                sub_mode_header_ids_all, sub_secs_all)))
+                                sub_mode_header_ids_all, individual_obj_lookups_all, sub_secs_all)))
         else:
             if has_levels:
                 curve_ind_vars, curve_stats, sub_vals_all, sub_secs_all, sub_levs_all = zip(
@@ -927,6 +942,7 @@ class QueryUtil:
                 sub_pair_fids_all = [x for _, x in sorted(zip(curve_ind_vars, sub_pair_fids_all))]
                 sub_pair_oids_all = [x for _, x in sorted(zip(curve_ind_vars, sub_pair_oids_all))]
                 sub_mode_header_ids_all = [x for _, x in sorted(zip(curve_ind_vars, sub_mode_header_ids_all))]
+                individual_obj_lookups_all = [x for _, x in sorted(zip(curve_ind_vars, individual_obj_lookups_all))]
             else:
                 sub_vals_all = [x for _, x in sorted(zip(curve_ind_vars, sub_vals_all))]
             sub_secs_all = [x for _, x in sorted(zip(curve_ind_vars, sub_secs_all))]
@@ -957,6 +973,7 @@ class QueryUtil:
                         self.data[idx]['subPairFid'].append('NaN')
                         self.data[idx]['subPairOid'].append('NaN')
                         self.data[idx]['subModeHeaderId'].append('NaN')
+                        self.data[idx]['individualObjLookup'].append('NaN')
                     else:
                         self.data[idx]['subVals'].append('NaN')
                     self.data[idx]['subSecs'].append('NaN')
@@ -1008,6 +1025,7 @@ class QueryUtil:
                     self.data[idx]['subPairFid'].append(list_pair_fids)
                     self.data[idx]['subPairOid'].append(list_pair_oids)
                     self.data[idx]['subModeHeaderId'].append(list_sub_mode_header_ids)
+                    self.data[idx]['individualObjLookup'].append(individual_obj_lookups_all[d_idx])
                 else:
                     self.data[idx]['subVals'].append(list_vals)
                 self.data[idx]['subSecs'].append(list_secs)
@@ -1070,7 +1088,8 @@ class QueryUtil:
             self.n_times[idx].append(int(row['N_times']))
 
             if data_exists:
-                stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, sub_mode_header_ids \
+                stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, \
+                    sub_mode_header_ids, individual_obj_lookup \
                     = self.get_stat(idx, has_levels, row, statistic, stat_line_type, object_row)
                 if stat == 'null' or not self.is_number(stat):
                     # there's bad data at this point
@@ -1282,7 +1301,8 @@ class QueryUtil:
                 data_exists = row['stat'] != "null" and row['stat'] != "NULL"
 
             if data_exists:
-                stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, sub_mode_header_ids \
+                stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, \
+                    sub_mode_header_ids, individual_obj_lookup \
                     = self.get_stat(idx, has_levels, row, statistic, stat_line_type, [])
                 if stat == 'null' or not self.is_number(stat):
                     # there's bad data at this point
@@ -1347,6 +1367,302 @@ class QueryUtil:
         self.data[idx]['glob_stats']['maxDate'] = max(m for m in self.data[idx]['maxDateTextOutput'] if m != 'null')
         self.data[idx]['glob_stats']['n'] = n_points
 
+    # utility to remove a point on a graph
+    def removePoint(self, data, di, plot_type, stat_var_name, has_levels):
+        del (data["x"][di])
+        del (data["y"][di])
+        if plot_type is "PerformanceDiagram" or plot_type is "ROC":
+            del (data["oy_all"][di])
+            del (data["on_all"][di])
+        if len(data['error_' + stat_var_name]) > 0:
+            del (data['error_' + stat_var_name][di])
+        if 0 <= di < len(data["subInterest"]):
+            del (data["subInterest"][di])
+            del (data["subPairFid"][di])
+            del (data["subPairOid"][di])
+            del (data["subModeHeaderId"][di])
+            del (data["individualObjLookup"][di])
+        else:
+            del (data["subVals"][di])
+        del (data["subSecs"][di])
+        if has_levels:
+            del (data["subLevs"][di])
+
+    # utility to make null a point on a graph
+    def nullPoint(self, data, di, stat_var_name, has_levels):
+        data[stat_var_name][di] = 'null'
+        if 0 <= di < len(data["subInterest"]):
+            data["subInterest"][di] = 'NaN'
+            data["subPairFid"][di] = 'NaN'
+            data["subPairOid"][di] = 'NaN'
+            data["subModeHeaderId"][di] = 'NaN'
+            data["individualObjLookup"][di] = 'NaN'
+        else:
+            data["subVals"][di] = 'NaN'
+        data["subSecs"][di] = 'NaN'
+        if has_levels:
+            data["subLevs"][di] = 'NaN'
+
+    # function for matching data in the output object
+    def do_matching(self, options):
+        sub_secs_raw = []
+        sub_levs_raw = []
+        sub_interest = []
+        sub_pair_fid = []
+        sub_pair_oid = []
+        sub_mode_header_id = []
+        sub_values = []
+        sub_secs = []
+        sub_levs = []
+        independent_var_groups = []
+        independent_var_has_point = []
+        sub_intersections_object = {}
+        sub_intersections_array = []
+        sub_sec_intersection_object = {}
+        sub_sec_intersection_array = []
+
+        plot_type = options["query_array"][0]["appParams"]["plotType"]
+        has_levels = options["query_array"][0]["appParams"]["hasLevels"]
+        curves_length = len(self.data)
+
+        if plot_type in ["EnsembleHistogram"]:
+            remove_non_matching_ind_vars = False
+        elif plot_type in ["TimeSeries", "Profile", "DieOff", "Threshold", "ValidTime", "GridScale", "DailyModelCycle",
+                           "YearToYear", "Scatter2d", "Contour", "ContourDiff"]:
+            remove_non_matching_ind_vars = True
+        else:
+            # Either matching is not supported for this pot type, or it's a histogram and we do the matching later
+            # ["Reliability", "ROC", "PerformanceDiagram", "Histogram", "Map"]
+            return
+
+        # matching in this function is based on a curve's independent variable. For a timeseries, the independentVar
+        # is epoch, for a profile, it's level, for a dieoff, it's forecast hour, for a threshold plot, it's threshold,
+        # and for a valid time plot, it's hour of day. This function identifies the the independentVar values common
+        # across all of the curves, and then the common sub times / levels / values for those independentVar values.
+
+        # determine whether data.x or data.y is the independent variable, and which is the stat value
+        if plot_type != "Profile":
+            independent_var_name = 'x'
+            stat_var_name = 'y'
+        else:
+            independent_var_name = 'y'
+            stat_var_name = 'x'
+
+        # find the matching independentVars shared across all curves
+        for curve_index in range(0, curves_length):
+            independent_var_groups.append([])  # array for the independentVars for each curve that are not null
+            independent_var_has_point.append([])  # array for the * all * of the independentVars for each curve
+            sub_secs.append(
+                {})  # map of the individual record times (subSecs) going into each independentVar for each curve
+            if has_levels:
+                sub_levs.append(
+                    {})  # map of the individual record levels (subLevs) going into each independentVar for each curve
+            data = self.data[curve_index]
+
+            # loop over every independentVar value in this curve
+            for di in range(len(data[independent_var_name])):
+                curr_independent_var = data[independent_var_name][di]
+                if data[stat_var_name][di] != 'null':
+                    # store raw secs for this independentVar value, since it's not a null point
+                    sub_secs[curve_index][curr_independent_var] = data["subSecs"][di]
+                    if has_levels:
+                        # store raw levs for this independentVar value, since it's not a null point
+                        sub_levs[curve_index][curr_independent_var] = data["subLevs"][di]
+                    # store this independentVar value, since it's not a null point
+                    independent_var_groups[curve_index].append(curr_independent_var)
+                # store all the independentVar values, regardless of whether they're null
+                independent_var_has_point[curve_index].append(curr_independent_var)
+
+        matching_independent_vars = list(set.intersection(*map(set,
+                                                               independent_var_groups)))  # all of the non-null independentVar values common across all the curves
+        matching_independent_has_point = list(set.intersection(*map(set,
+                                                                    independent_var_has_point)))  # all of the independentVar values common across all the curves, regardless of whether or not they're null
+
+        if remove_non_matching_ind_vars:
+            if has_levels:
+                # loop over each common non-null independentVar value
+                for fi in range(0, len(matching_independent_vars)):
+                    curr_independent_var = matching_independent_vars[fi]
+                    sub_intersections_object[curr_independent_var] = []
+                    curr_sub_intersections = []
+                    for si in range(0, len(sub_secs[0][curr_independent_var])):
+                        # fill current intersection array with sec-lev pairs from the first curve
+                        curr_sub_intersections.append(
+                            [sub_secs[0][curr_independent_var][si], sub_levs[0][curr_independent_var][si]])
+                    # loop over every curve after the first
+                    for curve_index in range(1, curves_length):
+                        temp_sub_intersections = []
+                        for si in range(0, len(sub_secs[curve_index][curr_independent_var])):
+                            # create an individual sec-lev pair for each index in the subSecs and subLevs arrays
+                            temp_pair = [sub_secs[curve_index][curr_independent_var][si],
+                                         sub_levs[curve_index][curr_independent_var][si]]
+                            # see if the individual sec-lev pair matches a pair from the current intersection array
+                            if temp_pair in curr_sub_intersections:
+                                # store matching pairs
+                                temp_sub_intersections.append(temp_pair)
+                        # replace current intersection array with array of only pairs that matched from this loop through.
+                        curr_sub_intersections = temp_sub_intersections
+                    # store the final intersecting subSecs array for this common non-null independentVar value
+                    sub_intersections_object[curr_independent_var] = curr_sub_intersections
+            else:
+                # loop over each common non - null independentVar value
+                for fi in range(0, len(matching_independent_vars)):
+                    curr_independent_var = matching_independent_vars[fi]
+                    # fill current subSecs intersection array with subSecs from the first curve
+                    curr_sub_sec_intersection = sub_secs[0][curr_independent_var]
+                    # loop over every curve after the first
+                    for curve_index in range(1, curves_length):
+                        # keep taking the intersection of the current subSecs intersection array with each curve's subSecs array for this independentVar value
+                        curr_sub_sec_intersection = list(
+                            set.intersection(set(curr_sub_sec_intersection),
+                                             set(sub_secs[curve_index][curr_independent_var])))
+                    # store the final intersecting subSecs array for this common non-null independentVar value
+                    sub_sec_intersection_object[curr_independent_var] = curr_sub_sec_intersection
+        else:
+            # pull all subSecs and subLevs out of their bins, and back into one main array
+            for curve_index in range(0, curves_length):
+                data = self.data[curve_index]
+                sub_secs_raw[curve_index] = []
+                sub_secs[curve_index] = []
+                if has_levels:
+                    sub_levs_raw[curve_index] = []
+                    sub_levs[curve_index] = []
+                for di in range(0, len(data["x"])):
+                    sub_secs_raw[curve_index].append(data["subSecs"][di])
+                    if has_levels:
+                        sub_levs_raw[curve_index].append(data["subLevs"][di])
+                sub_secs[curve_index] = [item for sublist in sub_secs_raw[curve_index] for item in sublist]
+                if has_levels:
+                    sub_levs[curve_index] = [item for sublist in sub_levs_raw[curve_index] for item in sublist]
+
+            if has_levels:
+                # determine which seconds and levels are present in all curves
+                for si in range(0, len(sub_secs[0])):
+                    # fill current intersection array with sec-lev pairs from the first curve
+                    sub_intersections_array.append([sub_secs[0][si], sub_levs[0][si]])
+                # loop over every curve after the first
+                for curve_index in range(1, curves_length):
+                    temp_sub_intersections = []
+                    for si in range(0, len(sub_secs[curve_index])):
+                        # create an individual sec-lev pair for each index in the subSecs and subLevs arrays
+                        temp_pair = [sub_secs[curve_index][si], sub_levs[curve_index][si]]
+                        # see if the individual sec-lev pair matches a pair from the current intersection array
+                        if temp_pair in sub_intersections_array:
+                            # store matching pairs
+                            temp_sub_intersections.append(temp_pair)
+                    # replace current intersection array with array of only pairs that matched from this loop through
+                    sub_intersections_array = temp_sub_intersections
+            else:
+                # determine which seconds are present in all curves
+                # fill current subSecs intersection array with subSecs from the first curve
+                sub_sec_intersection_array = sub_secs[0]
+                # loop over every curve after the first
+                for curve_index in range(1, curves_length):
+                    # keep taking the intersection of the current subSecs intersection array with each curve's subSecs array
+                    sub_sec_intersection_array = list(
+                        set.intersection(set(sub_sec_intersection_array), set(sub_secs[curve_index])))
+
+        # remove non-matching independentVars and subSecs
+        for curve_index in range(0, curves_length):
+            data = self.data[curve_index]
+            # need to loop backwards through the data array so that we can splice non-matching indices
+            # while still having the remaining indices in the correct order
+            data_length = len(data[independent_var_name])
+            for di in range(data_length - 1, -1, -1):
+                if remove_non_matching_ind_vars:
+                    if data[independent_var_name][di] not in matching_independent_vars:
+                        # if this is not a common non-null independentVar value, we'll have to remove some data
+                        if data[independent_var_name][di] not in matching_independent_has_point:
+                            # if at least one curve doesn't even have a null here, much less a matching value (because of the cadence), just drop this independentVar
+                            self.removePoint(data, di, plot_type, stat_var_name, has_levels)
+                        else:
+                            # if all of the curves have either data or nulls at this independentVar, and there is at least one null, ensure all of the curves are null
+                            self.nullPoint(data, di, stat_var_name, has_levels)
+                        # then move on to the next independentVar. There's no need to mess with the subSecs or subLevs
+                        continue
+                if 0 <= di < len(data["subInterest"]):
+                    sub_interest = data["subInterest"][di]
+                    sub_pair_fid = data["subPairFid"][di]
+                    sub_pair_oid = data["subPairOid"][di]
+                    sub_mode_header_id = data["subModeHeaderId"][di]
+                else:
+                    sub_values = data["subVals"][di]
+                sub_secs = data["subSecs"][di]
+                if has_levels:
+                    sub_levs = data["subLevs"][di]
+
+                if (not has_levels and len(sub_secs) > 0) or (has_levels and len(sub_secs) > 0 and len(sub_levs) > 0):
+                    curr_independent_var = data[independent_var_name][di]
+                    new_sub_interest = []
+                    new_sub_pair_fid = []
+                    new_sub_pair_oid = []
+                    new_sub_mode_header_id = []
+                    new_sub_values = []
+                    new_sub_secs = []
+                    if has_levels:
+                        new_sub_levs = []
+
+                    # loop over all subSecs for this independentVar
+                    for si in range(0, len(sub_secs)):
+                        if has_levels:
+                            # create sec-lev pair for each sub value
+                            temp_pair = [sub_secs[si], sub_levs[si]]
+                        # keep the subValue only if its associated subSec / subLev is common to all curves for this independentVar
+                        if (not remove_non_matching_ind_vars and
+                            ((not has_levels and sub_secs[si] in sub_sec_intersection_array)
+                             or (has_levels and temp_pair in sub_intersections_array))) or \
+                                (remove_non_matching_ind_vars and
+                                 ((not has_levels and sub_secs[si] in sub_sec_intersection_object[curr_independent_var])
+                                  or (has_levels and temp_pair in sub_intersections_object[curr_independent_var]))):
+                            if 0 <= di < len(data["subInterest"]):
+                                new_sub_interest.append(sub_interest[si])
+                                new_sub_pair_fid.append(sub_pair_fid[si])
+                                new_sub_pair_oid.append(sub_pair_oid[si])
+                                new_sub_mode_header_id.append(sub_mode_header_id[si])
+                            else:
+                                new_sub_values.append(sub_values[si])
+                            new_sub_secs.append(sub_secs[si])
+                            if has_levels:
+                                new_sub_levs.append(sub_levs[si])
+
+                    if len(new_sub_secs) == 0:
+                        # no matching sub-values, so null the point
+                        self.nullPoint(data, di, stat_var_name, has_levels)
+                    else:
+                        # store the filtered data
+                        if 0 <= di < len(data["subInterest"]):
+                            data["subInterest"][di] = new_sub_interest
+                            data["subPairFid"][di] = new_sub_pair_fid
+                            data["subPairOid"][di] = new_sub_pair_oid
+                            data["subModeHeaderId"][di] = new_sub_mode_header_id
+                        else:
+                            data["subVals"][di] = new_sub_values
+                        data["subSecs"][di] = new_sub_secs
+                        if has_levels:
+                            data["subLevs"][di] = new_sub_levs
+                else:
+                    # no sub-values to begin with, so null the point
+                    self.nullPoint(data, di, stat_var_name, has_levels)
+
+            data_length = len(data[independent_var_name])
+            for di in range(0, data_length):
+                if data[stat_var_name][di] != 'null':
+                    if len(data["subInterest"]) > 0:
+                        # Need to recalculate the MODE stat
+                        new_stat, new_error = calculate_mode_stat(options["query_array"][curve_index]["statistic"],
+                                                                  np.asarray(data["subInterest"][di]),
+                                                                  np.asarray(data["subPairFid"][di]),
+                                                                  np.asarray(data["subPairOid"][di]),
+                                                                  np.asarray(data["subModeHeaderId"][di]),
+                                                                  data["individualObjLookup"][di])
+                        data[stat_var_name][di] = new_stat
+                        if len(new_error) > 0:
+                            self.error = new_error
+                    else:
+                        data[stat_var_name][di] = sum(data["subVals"][di]) / len(data["subVals"][di])
+
+            self.data[curve_index] = data
+
     # function for querying the database and sending the returned data to the parser
     def query_db(self, cursor, query_array):
         for query in query_array:
@@ -1381,17 +1697,29 @@ class QueryUtil:
                     self.error = "INFO:0 data records found"
                 else:
                     if query["appParams"]["plotType"] == 'TimeSeries' and not query["appParams"]["hideGaps"]:
-                        self.parse_query_data_timeseries(idx, cursor, query["statLineType"], query["statistic"], query["appParams"]["hasLevels"], float(query["appParams"]["completeness"]) / 100, query["vts"], object_data)
+                        self.parse_query_data_timeseries(idx, cursor, query["statLineType"], query["statistic"],
+                                                         query["appParams"]["hasLevels"],
+                                                         float(query["appParams"]["completeness"]) / 100, query["vts"],
+                                                         object_data)
                     elif query["appParams"]["plotType"] == 'Histogram':
-                        self.parse_query_data_histogram(idx, cursor, query["statLineType"], query["statistic"], query["appParams"]["hasLevels"], object_data)
+                        self.parse_query_data_histogram(idx, cursor, query["statLineType"], query["statistic"],
+                                                        query["appParams"]["hasLevels"], object_data)
                     elif query["appParams"]["plotType"] == 'Contour':
-                        self.parse_query_data_contour(idx, cursor, query["statLineType"], query["statistic"], query["appParams"]["hasLevels"])
-                    elif query["appParams"]["plotType"] == 'Reliability' or query["appParams"]["plotType"] == 'ROC' or query["appParams"]["plotType"] == 'PerformanceDiagram':
+                        self.parse_query_data_contour(idx, cursor, query["statLineType"], query["statistic"],
+                                                      query["appParams"]["hasLevels"])
+                    elif query["appParams"]["plotType"] == 'Reliability' or query["appParams"]["plotType"] == 'ROC' or \
+                            query["appParams"]["plotType"] == 'PerformanceDiagram':
                         self.parse_query_data_ensemble(idx, cursor, query["appParams"]["plotType"])
                     elif query["appParams"]["plotType"] == 'EnsembleHistogram':
-                        self.parse_query_data_ensemble_histogram(idx, cursor, query["statistic"], query["appParams"]["hasLevels"])
+                        self.parse_query_data_ensemble_histogram(idx, cursor, query["statistic"],
+                                                                 query["appParams"]["hasLevels"])
                     else:
-                        self.parse_query_data_specialty_curve(idx, cursor, query["statLineType"], query["statistic"], query["appParams"]["plotType"], query["appParams"]["hasLevels"], query["appParams"]["hideGaps"], float(query["appParams"]["completeness"]) / 100, object_data)
+                        self.parse_query_data_specialty_curve(idx, cursor, query["statLineType"], query["statistic"],
+                                                              query["appParams"]["plotType"],
+                                                              query["appParams"]["hasLevels"],
+                                                              query["appParams"]["hideGaps"],
+                                                              float(query["appParams"]["completeness"]) / 100,
+                                                              object_data)
 
     # makes sure all expected options were indeed passed in
     def validate_options(self, options):
@@ -1464,5 +1792,7 @@ if __name__ == '__main__':
     options = qutil.get_options(sys.argv)
     qutil.set_up_output_fields(len(options["query_array"]))
     qutil.do_query(options)
+    if options["query_array"][0]["appParams"]["matching"]:
+        qutil.do_matching(options)
     qutil.construct_output_json()
     print(qutil.output_JSON)
