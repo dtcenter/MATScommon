@@ -1661,6 +1661,15 @@ class QueryUtil:
                     else:
                         data[stat_var_name][di] = sum(data["subVals"][di]) / len(data["subVals"][di])
 
+                    if self.is_number(data["x"][di]) and data["x"][di] < data["xmin"]:
+                        data["xmin"] = data["x"][di]
+                    if self.is_number(data["x"][di]) and data["x"][di] > data["xmax"]:
+                        data["xmax"] = data["x"][di]
+                    if self.is_number(data["y"][di]) and data["y"][di] < data["ymin"]:
+                        data["ymin"] = data["y"][di]
+                    if self.is_number(data["y"][di]) and data["y"][di] > data["ymax"]:
+                        data["ymax"] = data["y"][di]
+
             self.data[curve_index] = data
 
     # function for querying the database and sending the returned data to the parser
