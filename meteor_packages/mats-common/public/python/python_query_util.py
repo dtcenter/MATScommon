@@ -913,11 +913,13 @@ class QueryUtil:
         # make sure lists are definitely sorted by the float ind_var values, instead of their former strings
         if stat_line_type == 'mode_pair':
             if has_levels:
-                curve_ind_vars, curve_stats, sub_interests_all, sub_pair_fids_all, sub_pair_oids_all, sub_mode_header_ids_all, sub_secs_all, sub_levs_all = zip(
+                curve_ind_vars, curve_stats, sub_interests_all, sub_pair_fids_all, sub_pair_oids_all, \
+                    sub_mode_header_ids_all, individual_obj_lookups_all, sub_secs_all, sub_levs_all = zip(
                     *sorted(zip(curve_ind_vars, curve_stats, sub_interests_all, sub_pair_fids_all, sub_pair_oids_all,
                                 sub_mode_header_ids_all, individual_obj_lookups_all, sub_secs_all, sub_levs_all)))
             else:
-                curve_ind_vars, curve_stats, sub_interests_all, sub_pair_fids_all, sub_pair_oids_all, sub_mode_header_ids_all, sub_secs_all = zip(
+                curve_ind_vars, curve_stats, sub_interests_all, sub_pair_fids_all, sub_pair_oids_all, \
+                    sub_mode_header_ids_all, individual_obj_lookups_all, sub_secs_all = zip(
                     *sorted(zip(curve_ind_vars, curve_stats, sub_interests_all, sub_pair_fids_all, sub_pair_oids_all,
                                 sub_mode_header_ids_all, individual_obj_lookups_all, sub_secs_all)))
         else:
@@ -1381,7 +1383,9 @@ class QueryUtil:
             del (data["subPairFid"][di])
             del (data["subPairOid"][di])
             del (data["subModeHeaderId"][di])
-            del (data["individualObjLookup"][di])
+            if 0 <= di < len(data["individualObjLookup"]):
+                # only OTS actually has anything in this array
+                del (data["individualObjLookup"][di])
         else:
             del (data["subVals"][di])
         del (data["subSecs"][di])
@@ -1396,7 +1400,9 @@ class QueryUtil:
             data["subPairFid"][di] = 'NaN'
             data["subPairOid"][di] = 'NaN'
             data["subModeHeaderId"][di] = 'NaN'
-            data["individualObjLookup"][di] = 'NaN'
+            if 0 <= di < len(data["individualObjLookup"]):
+                # only OTS actually has anything in this array
+                data["individualObjLookup"][di] = 'NaN'
         else:
             data["subVals"][di] = 'NaN'
         data["subSecs"][di] = 'NaN'
