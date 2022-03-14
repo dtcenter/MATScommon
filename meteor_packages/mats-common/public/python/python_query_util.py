@@ -1411,8 +1411,8 @@ class QueryUtil:
 
     # function for matching data in the output object
     def do_matching(self, options):
-        sub_secs_raw = []
-        sub_levs_raw = []
+        sub_secs_raw = {}
+        sub_levs_raw = {}
         sub_interest = []
         sub_pair_fid = []
         sub_pair_oid = []
