@@ -259,19 +259,25 @@ class QueryUtil:
                     self.error = stat_error
 
             elif 'mode_pair' in stat_line_type:  # histograms will pass in 'mode_pair_histogram', but we still want to use this code here.
-                if statistic == "OTS (Object Threat Score)":
+                if statistic == "OTS (Object Threat Score)" or statistic == "Model-obs centroid distance (unique pairs)":
                     object_sub_data = str(object_row['sub_data2']).split(',')
                     for sub_datum2 in object_sub_data:
                         sub_datum2 = sub_datum2.split(';')
                         obj_id = sub_datum2[0]
                         mode_header_id = sub_datum2[1]
                         area = sub_datum2[2]
+                        intensity_nn = sub_datum2[3]
+                        centroid_lat = sub_datum2[4]
+                        centroid_lon = sub_datum2[5]
                         if obj_id[0:1] == "C":
                             continue
                         if mode_header_id not in individual_obj_lookup.keys():
                             individual_obj_lookup[mode_header_id] = {}
                         individual_obj_lookup[mode_header_id][obj_id] = {
-                            "area": float(area)
+                            "area": float(area),
+                            "intensity_nn": float(intensity_nn),
+                            "centroid_lat": float(centroid_lat),
+                            "centroid_lon": float(centroid_lon)
                         }
                 sub_data = str(row['sub_data']).split(',')
                 # these are the sub-fields specific to mode stats
@@ -598,7 +604,7 @@ class QueryUtil:
             av_time = av_seconds * 1000
             xmin = av_time if av_time < xmin else xmin
             xmax = av_time if av_time > xmax else xmax
-            if stat_line_type == 'mode_pair' and statistic == "OTS (Object Threat Score)":
+            if stat_line_type == 'mode_pair' and (statistic == "OTS (Object Threat Score)" or statistic == "Model-obs centroid distance (unique pairs)"):
                 object_row = object_data[row_idx]
             else:
                 object_row = []
@@ -820,7 +826,7 @@ class QueryUtil:
             else:
                 ind_var = int(row['avtime'])
 
-            if stat_line_type == 'mode_pair' and statistic == "OTS (Object Threat Score)":
+            if stat_line_type == 'mode_pair' and (statistic == "OTS (Object Threat Score)" or statistic == "Model-obs centroid distance (unique pairs)"):
                 object_row = object_data[row_idx]
             else:
                 object_row = []
@@ -1061,7 +1067,7 @@ class QueryUtil:
         # loop through the query results and store the returned values
         for row in query_data:
             row_idx = query_data.index(row)
-            if 'mode_pair' in stat_line_type and statistic == "OTS (Object Threat Score)":
+            if 'mode_pair' in stat_line_type and (statistic == "OTS (Object Threat Score)" or statistic == "Model-obs centroid distance (unique pairs)"):
                 object_row = object_data[row_idx]
             else:
                 object_row = []
@@ -1686,7 +1692,7 @@ class QueryUtil:
             if query["statLineType"] == 'mode_pair':
                 # there are two queries in this statement
                 statements = query["statement"].split(" ||| ")
-                if query["statistic"] == "OTS (Object Threat Score)":
+                if query["statistic"] == "OTS (Object Threat Score)" or query["statistic"] == "Model-obs centroid distance (unique pairs)":
                     # only the mode statistic OTS needs the additional object information provided by the first query.
                     # we can ignore it for other stats
                     try:
