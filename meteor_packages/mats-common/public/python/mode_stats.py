@@ -86,10 +86,10 @@ def calculate_ots(sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id, 
         else:
             ots = 'null'
     except TypeError as e:
-        error = "Error calculating bias: " + str(e)
+        error = "Error calculating ots: " + str(e)
         ots = 'null'
     except ValueError as e:
-        error = "Error calculating bias: " + str(e)
+        error = "Error calculating ots: " + str(e)
         ots = 'null'
     return ots
 
@@ -112,12 +112,37 @@ def calculate_mmi(sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id):
         else:
             mmi = 'null'
     except TypeError as e:
-        error = "Error calculating bias: " + str(e)
+        error = "Error calculating mmi: " + str(e)
         mmi = 'null'
     except ValueError as e:
-        error = "Error calculating bias: " + str(e)
+        error = "Error calculating mmi: " + str(e)
         mmi = 'null'
     return mmi
+
+
+# function for calculating median of maximum interest from MET MODE output
+def calculate_ofb(sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id):
+    global error
+    try:
+        if len(sub_pair_fid) > 0 and len(sub_pair_oid) > 0:
+            interest_2d_arrays, mode_header_lookup = get_interest2d(sub_interest, sub_mode_header_id,
+                                                                    sub_pair_fid, sub_pair_oid)
+            # Sum the numbers of forecast and observed objects
+            n_f = 0
+            n_o = 0
+            for key in mode_header_lookup:
+                n_f = n_f + mode_header_lookup[key]["lookup_f_index"]
+                n_o = n_o + mode_header_lookup[key]["lookup_o_index"]
+            ofb = n_f / n_o
+        else:
+            ofb = 'null'
+    except TypeError as e:
+        error = "Error calculating ofb: " + str(e)
+        ofb = 'null'
+    except ValueError as e:
+        error = "Error calculating ofb: " + str(e)
+        ofb = 'null'
+    return ofb
 
 
 # function for calculating median of maximum interest from MET MODE output
@@ -193,6 +218,7 @@ def calculate_mode_stat(statistic, sub_interest, sub_pair_fid, sub_pair_oid, sub
     stat_switch = {  # dispatcher of statistical calculation functions
         'OTS (Object Threat Score)': calculate_ots,
         'MMI (Median of Maximum Interest)': calculate_mmi,
+        'Object frequency bias': calculate_ofb,
         'CSI (Critical Success Index)': calculate_mode_ctc,
         'FAR (False Alarm Ratio)': calculate_mode_ctc,
         'PODy (Probability of positive detection)': calculate_mode_ctc
@@ -201,6 +227,7 @@ def calculate_mode_stat(statistic, sub_interest, sub_pair_fid, sub_pair_oid, sub
         'OTS (Object Threat Score)': (
             sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id, individual_obj_lookup),
         'MMI (Median of Maximum Interest)': (sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id),
+        'Object frequency bias': (sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id),
         'CSI (Critical Success Index)': (statistic, sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id),
         'FAR (False Alarm Ratio)': (statistic, sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id),
         'PODy (Probability of positive detection)': (
