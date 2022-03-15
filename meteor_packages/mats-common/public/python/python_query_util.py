@@ -42,6 +42,7 @@ class QueryUtil:
                 "subPairFid": [],
                 "subPairOid": [],
                 "subModeHeaderId": [],
+                "subCentDist": [],
                 "stats": [],
                 "text": [],
                 "xTextOutput": [],
@@ -85,6 +86,7 @@ class QueryUtil:
             self.data[i]["subPairFid"] = []
             self.data[i]["subPairOid"] = []
             self.data[i]["subModeHeaderId"] = []
+            self.data[i]["subCentDist"] = []
         self.output_JSON = {
             "data": self.data,
             "N0": self.n0,
@@ -116,6 +118,7 @@ class QueryUtil:
         sub_pair_fids = np.empty(0)
         sub_pair_oids = np.empty(0)
         sub_mode_header_ids = np.empty(0)
+        sub_cent_dists = np.empty(0)
         individual_obj_lookup = {}
         try:
             # get all of the sub-values for each time
@@ -285,6 +288,7 @@ class QueryUtil:
                 sub_pair_fids = []
                 sub_pair_oids = []
                 sub_mode_header_ids = []
+                sub_cent_dists = []
                 sub_secs = []
                 sub_levs = []
                 for sub_datum in sub_data:
@@ -295,11 +299,12 @@ class QueryUtil:
                         sub_pair_fids.append(obj_id.split("_")[0])
                         sub_pair_oids.append(obj_id.split("_")[1])
                         sub_mode_header_ids.append(int(sub_datum[2]) if float(sub_datum[2]) != -9999 else np.nan)
-                        sub_secs.append(int(sub_datum[3]) if float(sub_datum[3]) != -9999 else np.nan)
-                        if self.is_number(sub_datum[3]):
-                            sub_levs.append(int(sub_datum[4]) if float(sub_datum[4]) != -9999 else np.nan)
+                        sub_cent_dists.append(float(sub_datum[3]) if float(sub_datum[3]) != -9999 else np.nan)
+                        sub_secs.append(int(sub_datum[4]) if float(sub_datum[4]) != -9999 else np.nan)
+                        if self.is_number(sub_datum[5]):
+                            sub_levs.append(int(sub_datum[5]) if float(sub_datum[5]) != -9999 else np.nan)
                         else:
-                            sub_levs.append(sub_datum[4])
+                            sub_levs.append(sub_datum[5])
 
                 if 'histogram' in stat_line_type:
                     # need to get an array of sub-values, one for each unique mode_header_id
@@ -307,6 +312,7 @@ class QueryUtil:
                     sub_pair_fid_map = {}
                     sub_pair_oid_map = {}
                     sub_mode_header_id_map = {}
+                    sub_cent_dist_map = {}
                     sub_secs_map = {}
                     sub_levs_map = {}
                     for i in range(0, len(sub_mode_header_ids)):
@@ -316,12 +322,14 @@ class QueryUtil:
                             sub_pair_fid_map[this_mode_header_id] = []
                             sub_pair_oid_map[this_mode_header_id] = []
                             sub_mode_header_id_map[this_mode_header_id] = []
+                            sub_cent_dist_map[this_mode_header_id] = []
                             sub_secs_map[this_mode_header_id] = []
                             sub_levs_map[this_mode_header_id] = []
                         sub_interest_map[this_mode_header_id].append(sub_interests[i])
                         sub_pair_fid_map[this_mode_header_id].append(sub_pair_fids[i])
                         sub_pair_oid_map[this_mode_header_id].append(sub_pair_oids[i])
                         sub_mode_header_id_map[this_mode_header_id].append(sub_mode_header_ids[i])
+                        sub_cent_dist_map[this_mode_header_id].append(sub_cent_dists[i])
                         sub_secs_map[this_mode_header_id].append(sub_secs[i])
                         sub_levs_map[this_mode_header_id].append(sub_levs[i])
                     sub_values = []
@@ -333,6 +341,7 @@ class QueryUtil:
                                                                np.asarray(sub_pair_fid_map[header_id]),
                                                                np.asarray(sub_pair_oid_map[header_id]),
                                                                np.asarray(sub_mode_header_id_map[header_id]),
+                                                               np.asarray(sub_cent_dist_map[header_id]),
                                                                individual_obj_lookup)
                         if stat_error != '':
                             self.error = stat_error
@@ -351,6 +360,7 @@ class QueryUtil:
                     sub_pair_fids = np.asarray(sub_pair_fids)
                     sub_pair_oids = np.asarray(sub_pair_oids)
                     sub_mode_header_ids = np.asarray(sub_mode_header_ids)
+                    sub_cent_dists = np.asarray(sub_cent_dists)
                     sub_secs = np.asarray(sub_secs)
                     if len(sub_levs) == 0:
                         sub_levs = np.empty(len(sub_secs))
@@ -359,7 +369,7 @@ class QueryUtil:
 
                     # calculate the mode statistic
                     stat, stat_error = calculate_mode_stat(statistic, sub_interests, sub_pair_fids, sub_pair_oids,
-                                                           sub_mode_header_ids, individual_obj_lookup)
+                                                           sub_mode_header_ids, sub_cent_dists, individual_obj_lookup)
                     if stat_error != '':
                         self.error = stat_error
 
@@ -397,7 +407,7 @@ class QueryUtil:
 
         # if we do have the data we expect, return the requested statistic
         return stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, sub_mode_header_ids, \
-               individual_obj_lookup
+               sub_cent_dists, individual_obj_lookup
 
     def get_ens_hist_stat(self, row, has_levels):
         try:
@@ -573,6 +583,7 @@ class QueryUtil:
         sub_pair_fids_all = []
         sub_pair_oids_all = []
         sub_mode_header_ids_all = []
+        sub_cent_dists_all = []
         individual_obj_lookups_all = []
         sub_vals_all = []
         sub_secs_all = []
@@ -636,7 +647,7 @@ class QueryUtil:
 
             if data_exists:
                 stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, \
-                    sub_mode_header_ids, individual_obj_lookup \
+                    sub_mode_header_ids, sub_cent_dists, individual_obj_lookup \
                     = self.get_stat(idx, has_levels, row, statistic, stat_line_type, object_row)
                 if stat == 'null' or not self.is_number(stat):
                     # there's bad data at this time point
@@ -646,6 +657,7 @@ class QueryUtil:
                     sub_pair_fids = 'NaN'
                     sub_pair_oids = 'NaN'
                     sub_mode_header_ids = 'NaN'
+                    sub_cent_dists = 'NaN'
                     individual_obj_lookup = 'NaN'
                     sub_secs = 'NaN'
                     sub_levs = 'NaN'
@@ -657,6 +669,7 @@ class QueryUtil:
                 sub_pair_fids = 'NaN'
                 sub_pair_oids = 'NaN'
                 sub_mode_header_ids = 'NaN'
+                sub_cent_dists = 'NaN'
                 individual_obj_lookup = 'NaN'
                 sub_secs = 'NaN'
                 sub_levs = 'NaN'
@@ -669,6 +682,7 @@ class QueryUtil:
                 sub_pair_fids_all.append(sub_pair_fids)
                 sub_pair_oids_all.append(sub_pair_oids)
                 sub_mode_header_ids_all.append(sub_mode_header_ids)
+                sub_cent_dists_all.append(sub_cent_dists)
                 individual_obj_lookups_all.append(individual_obj_lookup)
             else:
                 sub_vals_all.append(sub_values)
@@ -699,6 +713,7 @@ class QueryUtil:
                     self.data[idx]['subPairFid'].append('NaN')
                     self.data[idx]['subPairOid'].append('NaN')
                     self.data[idx]['subModeHeaderId'].append('NaN')
+                    self.data[idx]['subCentDist'].append('NaN')
                     self.data[idx]["individualObjLookup"].append('NaN')
                 else:
                     self.data[idx]['subVals'].append('NaN')
@@ -720,6 +735,7 @@ class QueryUtil:
                         self.data[idx]['subPairFid'].append('NaN')
                         self.data[idx]['subPairOid'].append('NaN')
                         self.data[idx]['subModeHeaderId'].append('NaN')
+                        self.data[idx]['subCentDist'].append('NaN')
                         self.data[idx]['individualObjLookup'].append('NaN')
                     else:
                         self.data[idx]['subVals'].append('NaN')
@@ -735,12 +751,14 @@ class QueryUtil:
                         list_pair_fids = sub_pair_fids_all[d_idx].tolist()
                         list_pair_oids = sub_pair_oids_all[d_idx].tolist()
                         list_sub_mode_header_ids = sub_mode_header_ids_all[d_idx].tolist()
+                        list_sub_cent_dists = sub_cent_dists_all[d_idx].tolist()
                         list_vals = []
                     else:
                         list_interests = []
                         list_pair_fids = []
                         list_pair_oids = []
                         list_sub_mode_header_ids = []
+                        list_sub_cent_dists = []
                         list_vals = sub_vals_all[d_idx].tolist()
                     list_secs = sub_secs_all[d_idx].tolist()
                     if has_levels:
@@ -765,6 +783,7 @@ class QueryUtil:
                         self.data[idx]['subPairFid'].append(list_pair_fids)
                         self.data[idx]['subPairOid'].append(list_pair_oids)
                         self.data[idx]['subModeHeaderId'].append(list_sub_mode_header_ids)
+                        self.data[idx]['subCentDist'].append(list_sub_cent_dists)
                         self.data[idx]['individualObjLookup'].append(individual_obj_lookups_all[d_idx])
                     else:
                         self.data[idx]['subVals'].append(list_vals)
@@ -797,6 +816,7 @@ class QueryUtil:
         sub_pair_fids_all = []
         sub_pair_oids_all = []
         sub_mode_header_ids_all = []
+        sub_cent_dists_all = []
         individual_obj_lookups_all = []
         sub_vals_all = []
         sub_secs_all = []
@@ -856,7 +876,7 @@ class QueryUtil:
                 ind_var_min = ind_var if ind_var < ind_var_min else ind_var_min
                 ind_var_max = ind_var if ind_var > ind_var_max else ind_var_max
                 stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, \
-                    sub_mode_header_ids, individual_obj_lookup \
+                    sub_mode_header_ids, sub_cent_dists, individual_obj_lookup \
                     = self.get_stat(idx, has_levels, row, statistic, stat_line_type, object_row)
                 if stat == 'null' or not self.is_number(stat):
                     # there's bad data at this point
@@ -866,6 +886,7 @@ class QueryUtil:
                     sub_pair_fids = 'NaN'
                     sub_pair_oids = 'NaN'
                     sub_mode_header_ids = 'NaN'
+                    sub_cent_dists = 'NaN'
                     individual_obj_lookup = 'NaN'
                     sub_secs = 'NaN'
                     sub_levs = 'NaN'
@@ -877,6 +898,7 @@ class QueryUtil:
                 sub_pair_fids = 'NaN'
                 sub_pair_oids = 'NaN'
                 sub_mode_header_ids = 'NaN'
+                sub_cent_dists = 'NaN'
                 individual_obj_lookup = 'NaN'
                 sub_secs = 'NaN'
                 sub_levs = 'NaN'
@@ -894,6 +916,7 @@ class QueryUtil:
                         sub_pair_fids_all.append('NaN')
                         sub_pair_oids_all.append('NaN')
                         sub_mode_header_ids_all.append('NaN')
+                        sub_cent_dists_all.append('NaN')
                         individual_obj_lookups_all.append('NaN')
                     else:
                         sub_vals_all.append(sub_values)
@@ -909,6 +932,7 @@ class QueryUtil:
                 sub_pair_fids_all.append(sub_pair_fids)
                 sub_pair_oids_all.append(sub_pair_oids)
                 sub_mode_header_ids_all.append(sub_mode_header_ids)
+                sub_cent_dists_all.append(sub_cent_dists)
                 individual_obj_lookups_all.append(individual_obj_lookup)
             else:
                 sub_vals_all.append(sub_values)
@@ -920,14 +944,14 @@ class QueryUtil:
         if stat_line_type == 'mode_pair':
             if has_levels:
                 curve_ind_vars, curve_stats, sub_interests_all, sub_pair_fids_all, sub_pair_oids_all, \
-                    sub_mode_header_ids_all, individual_obj_lookups_all, sub_secs_all, sub_levs_all = zip(
+                    sub_mode_header_ids_all, sub_cent_dists_all, individual_obj_lookups_all, sub_secs_all, sub_levs_all = zip(
                     *sorted(zip(curve_ind_vars, curve_stats, sub_interests_all, sub_pair_fids_all, sub_pair_oids_all,
-                                sub_mode_header_ids_all, individual_obj_lookups_all, sub_secs_all, sub_levs_all)))
+                                sub_mode_header_ids_all, sub_cent_dists_all, individual_obj_lookups_all, sub_secs_all, sub_levs_all)))
             else:
                 curve_ind_vars, curve_stats, sub_interests_all, sub_pair_fids_all, sub_pair_oids_all, \
-                    sub_mode_header_ids_all, individual_obj_lookups_all, sub_secs_all = zip(
+                    sub_mode_header_ids_all, sub_cent_dists_all, individual_obj_lookups_all, sub_secs_all = zip(
                     *sorted(zip(curve_ind_vars, curve_stats, sub_interests_all, sub_pair_fids_all, sub_pair_oids_all,
-                                sub_mode_header_ids_all, individual_obj_lookups_all, sub_secs_all)))
+                                sub_mode_header_ids_all, sub_cent_dists_all, individual_obj_lookups_all, sub_secs_all)))
         else:
             if has_levels:
                 curve_ind_vars, curve_stats, sub_vals_all, sub_secs_all, sub_levs_all = zip(
@@ -950,6 +974,7 @@ class QueryUtil:
                 sub_pair_fids_all = [x for _, x in sorted(zip(curve_ind_vars, sub_pair_fids_all))]
                 sub_pair_oids_all = [x for _, x in sorted(zip(curve_ind_vars, sub_pair_oids_all))]
                 sub_mode_header_ids_all = [x for _, x in sorted(zip(curve_ind_vars, sub_mode_header_ids_all))]
+                sub_cent_dists_all = [x for _, x in sorted(zip(curve_ind_vars, sub_cent_dists_all))]
                 individual_obj_lookups_all = [x for _, x in sorted(zip(curve_ind_vars, individual_obj_lookups_all))]
             else:
                 sub_vals_all = [x for _, x in sorted(zip(curve_ind_vars, sub_vals_all))]
@@ -981,6 +1006,7 @@ class QueryUtil:
                         self.data[idx]['subPairFid'].append('NaN')
                         self.data[idx]['subPairOid'].append('NaN')
                         self.data[idx]['subModeHeaderId'].append('NaN')
+                        self.data[idx]['subCentDist'].append('NaN')
                         self.data[idx]['individualObjLookup'].append('NaN')
                     else:
                         self.data[idx]['subVals'].append('NaN')
@@ -997,12 +1023,14 @@ class QueryUtil:
                     list_pair_fids = sub_pair_fids_all[d_idx].tolist()
                     list_pair_oids = sub_pair_oids_all[d_idx].tolist()
                     list_sub_mode_header_ids = sub_mode_header_ids_all[d_idx].tolist()
+                    list_sub_cent_dists_all = sub_cent_dists_all[d_idx].tolist()
                     list_vals = []
                 else:
                     list_interests = []
                     list_pair_fids = []
                     list_pair_oids = []
                     list_sub_mode_header_ids = []
+                    list_sub_cent_dists_all = []
                     list_vals = sub_vals_all[d_idx].tolist()
                 list_secs = sub_secs_all[d_idx].tolist()
                 if has_levels:
@@ -1033,6 +1061,7 @@ class QueryUtil:
                     self.data[idx]['subPairFid'].append(list_pair_fids)
                     self.data[idx]['subPairOid'].append(list_pair_oids)
                     self.data[idx]['subModeHeaderId'].append(list_sub_mode_header_ids)
+                    self.data[idx]['subCentDist'].append(list_sub_cent_dists_all)
                     self.data[idx]['individualObjLookup'].append(individual_obj_lookups_all[d_idx])
                 else:
                     self.data[idx]['subVals'].append(list_vals)
@@ -1097,7 +1126,7 @@ class QueryUtil:
 
             if data_exists:
                 stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, \
-                    sub_mode_header_ids, individual_obj_lookup \
+                    sub_mode_header_ids, sub_cent_dists, individual_obj_lookup \
                     = self.get_stat(idx, has_levels, row, statistic, stat_line_type, object_row)
                 if stat == 'null' or not self.is_number(stat):
                     # there's bad data at this point
@@ -1310,7 +1339,7 @@ class QueryUtil:
 
             if data_exists:
                 stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, \
-                    sub_mode_header_ids, individual_obj_lookup \
+                    sub_mode_header_ids, sub_cent_dists, individual_obj_lookup \
                     = self.get_stat(idx, has_levels, row, statistic, stat_line_type, [])
                 if stat == 'null' or not self.is_number(stat):
                     # there's bad data at this point
@@ -1389,6 +1418,7 @@ class QueryUtil:
             del (data["subPairFid"][di])
             del (data["subPairOid"][di])
             del (data["subModeHeaderId"][di])
+            del (data["subCentDist"][di])
             if 0 <= di < len(data["individualObjLookup"]):
                 # only OTS actually has anything in this array
                 del (data["individualObjLookup"][di])
@@ -1406,6 +1436,7 @@ class QueryUtil:
             data["subPairFid"][di] = 'NaN'
             data["subPairOid"][di] = 'NaN'
             data["subModeHeaderId"][di] = 'NaN'
+            data["subCentDist"][di] = 'NaN'
             if 0 <= di < len(data["individualObjLookup"]):
                 # only OTS actually has anything in this array
                 data["individualObjLookup"][di] = 'NaN'
@@ -1423,6 +1454,7 @@ class QueryUtil:
         sub_pair_fid = []
         sub_pair_oid = []
         sub_mode_header_id = []
+        sub_cent_dist = []
         sub_values = []
         sub_secs = []
         sub_levs = []
@@ -1597,6 +1629,7 @@ class QueryUtil:
                     sub_pair_fid = data["subPairFid"][di]
                     sub_pair_oid = data["subPairOid"][di]
                     sub_mode_header_id = data["subModeHeaderId"][di]
+                    sub_cent_dist = data["subCentDist"][di]
                 else:
                     sub_values = data["subVals"][di]
                 sub_secs = data["subSecs"][di]
@@ -1609,6 +1642,7 @@ class QueryUtil:
                     new_sub_pair_fid = []
                     new_sub_pair_oid = []
                     new_sub_mode_header_id = []
+                    new_sub_cent_dist = []
                     new_sub_values = []
                     new_sub_secs = []
                     if has_levels:
@@ -1631,6 +1665,7 @@ class QueryUtil:
                                 new_sub_pair_fid.append(sub_pair_fid[si])
                                 new_sub_pair_oid.append(sub_pair_oid[si])
                                 new_sub_mode_header_id.append(sub_mode_header_id[si])
+                                new_sub_cent_dist.append(sub_cent_dist[si])
                             else:
                                 new_sub_values.append(sub_values[si])
                             new_sub_secs.append(sub_secs[si])
@@ -1647,6 +1682,7 @@ class QueryUtil:
                             data["subPairFid"][di] = new_sub_pair_fid
                             data["subPairOid"][di] = new_sub_pair_oid
                             data["subModeHeaderId"][di] = new_sub_mode_header_id
+                            data["subCentDist"][di] = new_sub_cent_dist
                         else:
                             data["subVals"][di] = new_sub_values
                         data["subSecs"][di] = new_sub_secs
@@ -1666,6 +1702,7 @@ class QueryUtil:
                                                                   np.asarray(data["subPairFid"][di]),
                                                                   np.asarray(data["subPairOid"][di]),
                                                                   np.asarray(data["subModeHeaderId"][di]),
+                                                                  np.asarray(data["subCentDist"][di]),
                                                                   data["individualObjLookup"][di])
                         data[stat_var_name][di] = new_stat
                         if len(new_error) > 0:

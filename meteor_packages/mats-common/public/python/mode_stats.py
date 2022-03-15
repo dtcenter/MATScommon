@@ -159,28 +159,11 @@ def calculate_ofb(sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id):
 
 
 # function for calculating mean centroid distance from MET MODE output
-def calculate_mcd(sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id, individual_obj_lookup):
+def calculate_mcd(sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id, sub_cent_dist):
     global error
-    match_int = 0.70  # threshold interest value to declare a match
-    n_matches = 0
     total_error_array = []
     try:
         if len(sub_pair_fid) > 0 and len(sub_pair_oid) > 0:
-            # # Mean distance between matched objects that resemble
-            # # individual convective storms (i.e., omitting MCCs, MCSs, squall lines etc.)
-            # for p in range(0, len(sub_interest)):
-            #     this_mode_header_id = str(sub_mode_header_id[p])
-            #     this_fid = sub_pair_fid[p]
-            #     this_oid = sub_pair_oid[p]
-            #     f_area = individual_obj_lookup[this_mode_header_id][this_fid]["area"]
-            #     o_area = individual_obj_lookup[this_mode_header_id][this_oid]["area"]
-            #     f_pxx = individual_obj_lookup[this_mode_header_id][this_fid]["intensity_nn"]
-            #     o_pxx = individual_obj_lookup[this_mode_header_id][this_oid]["intensity_nn"]
-            #
-            #     if sub_interest[p] >= match_int:
-            #         if (f_area < 200. and o_area < 200.) and (f_pxx > 50. and o_pxx > 50.):
-            #             n_matches += 1
-
             # Mean distance calculated in a general sense using the same method as for OTS
             # this method does not require object "matches"
             # Sort the pair_interest array but keep that sorted interest linked with the pair object IDs
@@ -190,6 +173,7 @@ def calculate_mcd(sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id, 
             sorted_fid = sub_pair_fid[indices]
             sorted_oid = sub_pair_oid[indices]
             sorted_mode_header = sub_mode_header_id[indices]
+            sorted_cent_dist = sub_cent_dist[indices]
 
             matched_fid = {}
             matched_oid = {}
@@ -197,23 +181,24 @@ def calculate_mcd(sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id, 
                 this_mode_header_id = str(sorted_mode_header[i])
                 this_fid = sorted_fid[i]
                 this_oid = sorted_oid[i]
-                f_lat = individual_obj_lookup[this_mode_header_id][this_fid]["centroid_lat"]
-                o_lat = individual_obj_lookup[this_mode_header_id][this_oid]["centroid_lat"]
-                f_lon = individual_obj_lookup[this_mode_header_id][this_fid]["centroid_lon"]
-                o_lon = individual_obj_lookup[this_mode_header_id][this_oid]["centroid_lon"]
+                this_cent_dist = sorted_cent_dist[i]
+                # f_lat = individual_obj_lookup[this_mode_header_id][this_fid]["centroid_lat"]
+                # o_lat = individual_obj_lookup[this_mode_header_id][this_oid]["centroid_lat"]
+                # f_lon = individual_obj_lookup[this_mode_header_id][this_fid]["centroid_lon"]
+                # o_lon = individual_obj_lookup[this_mode_header_id][this_oid]["centroid_lon"]
                 if this_mode_header_id not in matched_fid.keys():
                     matched_fid[this_mode_header_id] = []
                     matched_oid[this_mode_header_id] = []
                 if (this_fid not in matched_fid[this_mode_header_id]) and (this_oid not in matched_oid[this_mode_header_id]):
                     matched_fid[this_mode_header_id].append(this_fid)
                     matched_oid[this_mode_header_id].append(this_oid)
-                    # Compute E-W and N-S error components for generalized matches
-                    x_error = np.sign(f_lon - o_lon) * gc_dist(f_lon, o_lat, o_lon, o_lat)
-                    y_error = np.sign(f_lat - o_lat) * gc_dist(o_lon, f_lat, o_lon, o_lat)
-                    total_error = (x_error ** 2 + y_error ** 2) ** 0.5
-                    total_error_array.append(total_error)
+                    # # Compute E-W and N-S error components for generalized matches
+                    # x_error = np.sign(f_lon - o_lon) * gc_dist(f_lon, o_lat, o_lon, o_lat)
+                    # y_error = np.sign(f_lat - o_lat) * gc_dist(o_lon, f_lat, o_lon, o_lat)
+                    # total_error = (x_error ** 2 + y_error ** 2) ** 0.5
+                    # total_error_array.append(total_error)
+                    total_error_array.append(float(this_cent_dist))
             mcd = sum(total_error_array) / len(total_error_array)
-            mcd = mcd / 1000    # kilometers
         else:
             mcd = 'null'
     except TypeError as e:
@@ -292,7 +277,7 @@ def calculate_mode_ctc(statistic, sub_interest, sub_pair_fid, sub_pair_oid, sub_
 
 
 # function for determining and calling the appropriate contigency table count statistical calculation function
-def calculate_mode_stat(statistic, sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id,
+def calculate_mode_stat(statistic, sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id, sub_cent_dist,
                         individual_obj_lookup):
     global error
     stat_switch = {  # dispatcher of statistical calculation functions
@@ -310,7 +295,7 @@ def calculate_mode_stat(statistic, sub_interest, sub_pair_fid, sub_pair_oid, sub
         'MMI (Median of Maximum Interest)': (sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id),
         'Object frequency bias': (sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id),
         'Model-obs centroid distance (unique pairs)': (
-            sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id, individual_obj_lookup),
+            sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id, sub_cent_dist),
         'CSI (Critical Success Index)': (statistic, sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id),
         'FAR (False Alarm Ratio)': (statistic, sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id),
         'PODy (Probability of positive detection)': (
