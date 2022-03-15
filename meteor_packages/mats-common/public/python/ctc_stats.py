@@ -1,11 +1,9 @@
 import numpy as np
 
-error = ""
 
-
-# function for calculating critical skill index from MET contingency table counts
 def calculate_csi(fy_oy, fy_on, fn_oy):
-    global error
+    """function for calculating critical skill index from MET contingency table counts"""
+    error = ""
     try:
         csi = fy_oy / (fy_oy + fy_on + fn_oy)
     except TypeError as e:
@@ -14,12 +12,12 @@ def calculate_csi(fy_oy, fy_on, fn_oy):
     except ValueError as e:
         error = "Error calculating bias: " + str(e)
         csi = np.empty(len(fy_oy))
-    return csi
+    return csi, error
 
 
-# function for calculating false alarm rate from MET contingency table counts
 def calculate_far(fy_oy, fy_on):
-    global error
+    """function for calculating false alarm rate from MET contingency table counts"""
+    error = ""
     try:
         far = fy_on / (fy_oy + fy_on)
     except TypeError as e:
@@ -28,12 +26,12 @@ def calculate_far(fy_oy, fy_on):
     except ValueError as e:
         error = "Error calculating bias: " + str(e)
         far = np.empty(len(fy_oy))
-    return far
+    return far, error
 
 
-# function for calculating frequency bias from MET contingency table counts
 def calculate_fbias(fy_oy, fy_on, fn_oy):
-    global error
+    """function for calculating frequency bias from MET contingency table counts"""
+    error = ""
     try:
         fbias = (fy_oy + fy_on) / (fy_oy + fn_oy)
     except TypeError as e:
@@ -42,12 +40,12 @@ def calculate_fbias(fy_oy, fy_on, fn_oy):
     except ValueError as e:
         error = "Error calculating bias: " + str(e)
         fbias = np.empty(len(fy_oy))
-    return fbias
+    return fbias, error
 
 
-# function for calculating Gilbert skill score from MET contingency table counts
 def calculate_gss(fy_oy, fy_on, fn_oy, total):
-    global error
+    """function for calculating Gilbert skill score from MET contingency table counts"""
+    error = ""
     try:
         gss = (fy_oy - ((fy_oy + fy_on) / total) * (fy_oy + fn_oy)) / (
                 fy_oy + fy_on + fn_oy - ((fy_oy + fy_on) / total) * (fy_oy + fn_oy))
@@ -57,12 +55,12 @@ def calculate_gss(fy_oy, fy_on, fn_oy, total):
     except ValueError as e:
         error = "Error calculating bias: " + str(e)
         gss = np.empty(len(fy_oy))
-    return gss
+    return gss, error
 
 
-# function for calculating Heidke skill score from MET contingency table counts
 def calculate_hss(fy_oy, fy_on, fn_oy, fn_on, total):
-    global error
+    """function for calculating Heidke skill score from MET contingency table counts"""
+    error = ""
     try:
         hss = (fy_oy + fn_on - ((fy_oy + fy_on) / total) * (fy_oy + fn_oy) + ((fn_oy + fn_on) / total) *
                (fy_on + fn_on)) / (total - ((fy_oy + fy_on) / total) * (fy_oy + fn_oy) + ((fn_oy + fn_on) / total)
@@ -73,12 +71,12 @@ def calculate_hss(fy_oy, fy_on, fn_oy, fn_on, total):
     except ValueError as e:
         error = "Error calculating bias: " + str(e)
         hss = np.empty(len(fy_oy))
-    return hss
+    return hss, error
 
 
-# function for calculating probability of detection (yes) from MET contingency table counts
 def calculate_pody(fy_oy, fn_oy):
-    global error
+    """function for calculating probability of detection (yes) from MET contingency table counts"""
+    error = ""
     try:
         pody = fy_oy / (fy_oy + fn_oy)
     except TypeError as e:
@@ -87,12 +85,12 @@ def calculate_pody(fy_oy, fn_oy):
     except ValueError as e:
         error = "Error calculating bias: " + str(e)
         pody = np.empty(len(fy_oy))
-    return pody
+    return pody, error
 
 
-# function for calculating probability of detection (no) from MET contingency table counts
 def calculate_podn(fy_on, fn_on):
-    global error
+    """function for calculating probability of detection (no) from MET contingency table counts"""
+    error = ""
     try:
         podn = fn_on / (fy_on + fn_on)
     except TypeError as e:
@@ -101,12 +99,12 @@ def calculate_podn(fy_on, fn_on):
     except ValueError as e:
         error = "Error calculating bias: " + str(e)
         podn = np.empty(len(fy_on))
-    return podn
+    return podn, error
 
 
-# function for calculating probability of false detection from MET contingency table counts
 def calculate_pofd(fy_on, fn_on):
-    global error
+    """function for calculating probability of false detection from MET contingency table counts"""
+    error = ""
     try:
         pofd = fy_on / (fy_on + fn_on)
     except TypeError as e:
@@ -115,12 +113,11 @@ def calculate_pofd(fy_on, fn_on):
     except ValueError as e:
         error = "Error calculating bias: " + str(e)
         pofd = np.empty(len(fy_on))
-    return pofd
+    return pofd, error
 
 
-# function for determining and calling the appropriate contigency table count statistical calculation function
 def calculate_ctc_stat(statistic, fy_oy, fy_on, fn_oy, fn_on, total):
-    global error
+    """function for determining and calling the appropriate contingency table count statistical calculation function"""
     stat_switch = {  # dispatcher of statistical calculation functions
         'CSI (Critical Success Index)': calculate_csi,
         'FAR (False Alarm Ratio)': calculate_far,
@@ -143,7 +140,7 @@ def calculate_ctc_stat(statistic, fy_oy, fy_on, fn_oy, fn_on, total):
     }
     try:
         stat_args = args_switch[statistic]  # get args
-        sub_stats = stat_switch[statistic](*stat_args)  # call stat function
+        sub_stats, error = stat_switch[statistic](*stat_args)  # call stat function
         stat = np.nanmean(sub_stats)  # calculate overall stat
     except KeyError as e:
         error = "Error choosing statistic: " + str(e)

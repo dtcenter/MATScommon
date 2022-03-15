@@ -13,8 +13,8 @@ from ctc_stats import calculate_ctc_stat
 from mode_stats import calculate_mode_stat
 
 
-# class that contains all of the tools necessary for querying the db and calculating statistics from the
-# returned data. In the future, we plan to split this into two classes, one for querying and one for statistics.
+"""class that contains all of the tools necessary for querying the db and calculating statistics from the 
+returned data. In the future, we plan to split this into two classes, one for querying and one for statistics."""
 class QueryUtil:
     error = ""  # one of the four fields to return at the end -- records any error message
     n0 = []  # one of the four fields to return at the end -- number of sub_values for each independent variable
@@ -23,6 +23,7 @@ class QueryUtil:
     output_JSON = {}  # JSON structure to pass the five output fields back to the MATS JS
 
     def set_up_output_fields(self, number_of_curves):
+        """function for creating an output object for each curve"""
         for i in range(0, number_of_curves):
             self.data.append({
                 "x": [],
@@ -79,8 +80,8 @@ class QueryUtil:
             self.n0.append([])
             self.n_times.append([])
 
-    # function for constructing and jsonifying a dictionary of the output variables
     def construct_output_json(self):
+        """function for constructing and jsonifying a dictionary of the output variables"""
         for i in range(0, len(self.data)):
             self.data[i]["individualObjLookup"] = []
             self.data[i]["subPairFid"] = []
@@ -95,8 +96,8 @@ class QueryUtil:
         }
         self.output_JSON = json.dumps(self.output_JSON)
 
-    # function to check if a certain value is a float or int
     def is_number(self, s):
+        """function to check if a certain value is a float or int"""
         try:
             if np.isnan(s) or np.isinf(s):
                 return False
@@ -108,8 +109,8 @@ class QueryUtil:
         except ValueError:
             return False
 
-    # function for processing the sub-values from the query and calling a calculate_stat function
     def get_stat(self, idx, has_levels, row, statistic, stat_line_type, object_row):
+        """function for processing the sub-values from the query and calling a calculate_stat function"""
         # these are the sub-fields that are returned in the end
         sub_levs = []
         sub_secs = []
@@ -410,6 +411,7 @@ class QueryUtil:
                sub_cent_dists, individual_obj_lookup
 
     def get_ens_hist_stat(self, row, has_levels):
+        """function for processing the sub-values from the query and getting the overall ensemble histogram statistics"""
         try:
             # get all of the sub-values for each time
             stat = float(row['bin_count']) if float(row['bin_count']) > -1 else 'null'
@@ -444,6 +446,7 @@ class QueryUtil:
 
     def get_ens_stat(self, plot_type, forecast_total, observed_total, on_all, oy_all, threshold_all, total_times,
                      total_values):
+        """function for processing the sub-values from the query and getting the overall ensemble statistics"""
         # initialize return variables
         hit_rate = []
         pody = []
@@ -548,8 +551,8 @@ class QueryUtil:
             "y_var": y_var
         }
 
-    #  function for calculating the interval between the current time and the next time for models with irregular vts
     def get_time_interval(self, curr_time, time_interval, vts):
+        """function for calculating the interval between the current time and the next time for models with irregular vts"""
         full_day = 24 * 3600 * 1000
         first_vt = min(vts)
         this_vt = curr_time % full_day  # current time we're on
@@ -571,9 +574,9 @@ class QueryUtil:
 
         return ti
 
-    # function for parsing the data returned by a timeseries query
     def parse_query_data_timeseries(self, idx, cursor, stat_line_type, statistic, has_levels, completeness_qc_param,
                                     vts, object_data):
+        """function for parsing the data returned by a timeseries query"""
         # initialize local variables
         xmax = float("-inf")
         xmin = float("inf")
@@ -804,9 +807,9 @@ class QueryUtil:
         self.data[idx]['ymax'] = ymax
         self.data[idx]['sum'] = loop_sum
 
-    # function for parsing the data returned by a profile/dieoff/threshold/validtime/gridscale etc query
     def parse_query_data_specialty_curve(self, idx, cursor, stat_line_type, statistic, plot_type, has_levels, hide_gaps,
                                          completeness_qc_param, object_data):
+        """function for parsing the data returned by a profile/dieoff/threshold/validtime/gridscale etc query"""
         # initialize local variables
         ind_var_min = sys.float_info.max
         ind_var_max = -1 * sys.float_info.max
@@ -1083,8 +1086,8 @@ class QueryUtil:
             self.data[idx]['ymax'] = dep_var_max
         self.data[idx]['sum'] = loop_sum
 
-    # function for parsing the data returned by a histogram query
     def parse_query_data_histogram(self, idx, cursor, stat_line_type, statistic, has_levels, object_data):
+        """function for parsing the data returned by a histogram query"""
         # initialize local variables
         sub_vals_all = []
         sub_secs_all = []
@@ -1156,8 +1159,8 @@ class QueryUtil:
         if has_levels:
             self.data[idx]['subLevs'] = [item for sublist in sub_levs_all for item in sublist]
 
-    # function for parsing the data returned by an ensemble histogram query
     def parse_query_data_ensemble_histogram(self, idx, cursor, statistic, has_levels):
+        """function for parsing the data returned by an ensemble histogram query"""
         # initialize local variables
         bins = []
         bin_counts = []
@@ -1231,8 +1234,8 @@ class QueryUtil:
             self.data[idx]['ymax'] = max(bin_counts)
             self.data[idx]['ymin'] = 0
 
-    # function for parsing the data returned by an ensemble query
     def parse_query_data_ensemble(self, idx, cursor, plot_type):
+        """function for parsing the data returned by an ensemble query"""
         # initialize local variables
         threshold_all = []
         oy_all = []
@@ -1306,8 +1309,8 @@ class QueryUtil:
         self.data[idx]['ymax'] = 1.0
         self.data[idx]['ymin'] = 0.0
 
-    # function for parsing the data returned by a contour query
     def parse_query_data_contour(self, idx, cursor, stat_line_type, statistic, has_levels):
+        """function for parsing the data returned by a contour query"""
         # initialize local variables
         curve_stat_lookup = {}
         curve_n_lookup = {}
@@ -1404,8 +1407,8 @@ class QueryUtil:
         self.data[idx]['glob_stats']['maxDate'] = max(m for m in self.data[idx]['maxDateTextOutput'] if m != 'null')
         self.data[idx]['glob_stats']['n'] = n_points
 
-    # utility to remove a point on a graph
     def removePoint(self, data, di, plot_type, stat_var_name, has_levels):
+        """utility to remove a point on a graph"""
         del (data["x"][di])
         del (data["y"][di])
         if plot_type is "PerformanceDiagram" or plot_type is "ROC":
@@ -1428,8 +1431,8 @@ class QueryUtil:
         if has_levels:
             del (data["subLevs"][di])
 
-    # utility to make null a point on a graph
     def nullPoint(self, data, di, stat_var_name, has_levels):
+        """utility to make null a point on a graph"""
         data[stat_var_name][di] = 'null'
         if 0 <= di < len(data["subInterest"]):
             data["subInterest"][di] = 'NaN'
@@ -1446,8 +1449,8 @@ class QueryUtil:
         if has_levels:
             data["subLevs"][di] = 'NaN'
 
-    # function for matching data in the output object
     def do_matching(self, options):
+        """function for matching data in the output object"""
         sub_secs_raw = {}
         sub_levs_raw = {}
         sub_interest = []
@@ -1721,8 +1724,8 @@ class QueryUtil:
 
             self.data[curve_index] = data
 
-    # function for querying the database and sending the returned data to the parser
     def query_db(self, cursor, query_array):
+        """function for querying the database and sending the returned data to the parser"""
         for query in query_array:
             idx = query_array.index(query)
             object_data = []
@@ -1779,14 +1782,14 @@ class QueryUtil:
                                                               float(query["appParams"]["completeness"]) / 100,
                                                               object_data)
 
-    # makes sure all expected options were indeed passed in
     def validate_options(self, options):
+        """makes sure all expected options were indeed passed in"""
         assert True, options.host is not None and options.port is not None and options.user is not None \
                      and options.password is not None and options.database is not None \
                      and options.query_array is not None
 
-    # process 'c' style options - using getopt - usage describes options
     def get_options(self, args):
+        """process 'c' style options - using getopt - usage describes options"""
         usage = ["(h)ost=", "(P)ort=", "(u)ser=", "(p)assword=", "(d)atabase=", "(q)uery_array="]
         host = None
         port = None
@@ -1834,6 +1837,7 @@ class QueryUtil:
         return options
 
     def do_query(self, options):
+        """function for validating options and passing them to the query function"""
         self.validate_options(options)
         cnx = pymysql.Connect(host=options["host"], port=options["port"], user=options["user"],
                               passwd=options["password"],

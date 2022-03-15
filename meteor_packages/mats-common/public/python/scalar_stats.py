@@ -1,11 +1,9 @@
 import numpy as np
 
-error = ""
 
-
-# function for calculating anomaly correlation from MET partial sums
 def calculate_acc(fbar, obar, ffbar, oobar, fobar, total):
-    global error
+    """function for calculating anomaly correlation from MET partial sums"""
+    error = ""
     try:
         denom = (np.power(total, 2) * ffbar - np.power(total, 2) * np.power(fbar, 2)) \
                 * (np.power(total, 2) * oobar - np.power(total, 2) * np.power(obar, 2))
@@ -16,12 +14,12 @@ def calculate_acc(fbar, obar, ffbar, oobar, fobar, total):
     except ValueError as e:
         error = "Error calculating ACC: " + str(e)
         acc = np.empty(len(ffbar))
-    return acc
+    return acc, error
 
 
-# function for calculating RMSE from MET partial sums
 def calculate_rmse(ffbar, oobar, fobar):
-    global error
+    """function for calculating RMSE from MET partial sums"""
+    error = ""
     try:
         rmse = np.sqrt(ffbar + oobar - 2 * fobar)
     except TypeError as e:
@@ -30,12 +28,12 @@ def calculate_rmse(ffbar, oobar, fobar):
     except ValueError as e:
         error = "Error calculating RMS: " + str(e)
         rmse = np.empty(len(ffbar))
-    return rmse
+    return rmse, error
 
 
-# function for calculating bias-corrected RMSE from MET partial sums
 def calculate_bcrmse(fbar, obar, ffbar, oobar, fobar):
-    global error
+    """function for calculating bias-corrected RMSE from MET partial sums"""
+    error = ""
     try:
         bcrmse = np.sqrt((ffbar + oobar - 2 * fobar) - (fbar - obar) ** 2)
     except TypeError as e:
@@ -44,12 +42,12 @@ def calculate_bcrmse(fbar, obar, ffbar, oobar, fobar):
     except ValueError as e:
         error = "Error calculating RMS: " + str(e)
         bcrmse = np.empty(len(ffbar))
-    return bcrmse
+    return bcrmse, error
 
 
-# function for calculating MSE from MET partial sums
 def calculate_mse(ffbar, oobar, fobar):
-    global error
+    """function for calculating MSE from MET partial sums"""
+    error = ""
     try:
         mse = ffbar + oobar - 2 * fobar
     except TypeError as e:
@@ -58,12 +56,12 @@ def calculate_mse(ffbar, oobar, fobar):
     except ValueError as e:
         error = "Error calculating RMS: " + str(e)
         mse = np.empty(len(ffbar))
-    return mse
+    return mse, error
 
 
-# function for calculating bias-corrected MSE from MET partial sums
 def calculate_bcmse(fbar, obar, ffbar, oobar, fobar):
-    global error
+    """function for calculating bias-corrected MSE from MET partial sums"""
+    error = ""
     try:
         bcmse = (ffbar + oobar - 2 * fobar) - (fbar - obar) ** 2
     except TypeError as e:
@@ -72,12 +70,12 @@ def calculate_bcmse(fbar, obar, ffbar, oobar, fobar):
     except ValueError as e:
         error = "Error calculating RMS: " + str(e)
         bcmse = np.empty(len(ffbar))
-    return bcmse
+    return bcmse, error
 
 
-# function for calculating additive bias from MET partial sums
 def calculate_me(fbar, obar):
-    global error
+    """function for calculating additive bias from MET partial sums"""
+    error = ""
     try:
         me = fbar - obar
     except TypeError as e:
@@ -86,12 +84,12 @@ def calculate_me(fbar, obar):
     except ValueError as e:
         error = "Error calculating bias: " + str(e)
         me = np.empty(len(fbar))
-    return me
+    return me, error
 
 
-# function for calculating fractional error from MET partial sums
 def calculate_fe(fbar, obar):
-    global error
+    """function for calculating fractional error from MET partial sums"""
+    error = ""
     try:
         fe = (fbar - obar) / fbar
     except TypeError as e:
@@ -100,12 +98,12 @@ def calculate_fe(fbar, obar):
     except ValueError as e:
         error = "Error calculating fractional error: " + str(e)
         fe = np.empty(len(fbar))
-    return fe
+    return fe, error
 
 
-# function for calculating multiplicative bias from MET partial sums
 def calculate_mbias(fbar, obar):
-    global error
+    """function for calculating multiplicative bias from MET partial sums"""
+    error = ""
     try:
         mbias = fbar / obar
     except TypeError as e:
@@ -114,27 +112,27 @@ def calculate_mbias(fbar, obar):
     except ValueError as e:
         error = "Error calculating bias: " + str(e)
         mbias = np.empty(len(fbar))
-    return mbias
+    return mbias, error
 
 
-# function for calculating N from MET partial sums
 def calculate_n(total):
-    return total
+    """function for calculating N from MET partial sums"""
+    return total, ""
 
 
-# function for calculating forecast mean from MET partial sums
 def calculate_f_mean(fbar):
-    return fbar
+    """function for calculating forecast mean from MET partial sums"""
+    return fbar, ""
 
 
-# function for calculating observed mean from MET partial sums
 def calculate_o_mean(obar):
-    return obar
+    """function for calculating observed mean from MET partial sums"""
+    return obar, ""
 
 
-# function for calculating forecast stdev from MET partial sums
 def calculate_f_stdev(fbar, ffbar, total):
-    global error
+    """function for calculating forecast stdev from MET partial sums"""
+    error = ""
     try:
         fstdev = np.sqrt(((ffbar * total) - (fbar * total) * (fbar * total) / total) / (total - 1))
     except TypeError as e:
@@ -143,12 +141,12 @@ def calculate_f_stdev(fbar, ffbar, total):
     except ValueError as e:
         error = "Error calculating bias: " + str(e)
         fstdev = np.empty(len(fbar))
-    return fstdev
+    return fstdev, error
 
 
-# function for calculating observed stdev from MET partial sums
 def calculate_o_stdev(obar, oobar, total):
-    global error
+    """function for calculating observed stdev from MET partial sums"""
+    error = ""
     try:
         ostdev = np.sqrt(((oobar * total) - (obar * total) * (obar * total) / total) / (total - 1))
     except TypeError as e:
@@ -157,12 +155,12 @@ def calculate_o_stdev(obar, oobar, total):
     except ValueError as e:
         error = "Error calculating bias: " + str(e)
         ostdev = np.empty(len(obar))
-    return ostdev
+    return ostdev, error
 
 
-# function for calculating error stdev from MET partial sums
 def calculate_e_stdev(fbar, obar, ffbar, oobar, fobar, total):
-    global error
+    """function for calculating error stdev from MET partial sums"""
+    error = ""
     try:
         estdev = np.sqrt((((ffbar + oobar - 2 * fobar) * total) - ((fbar - obar) * total) *
                           ((fbar - obar) * total) / total) / (total - 1))
@@ -172,12 +170,12 @@ def calculate_e_stdev(fbar, obar, ffbar, oobar, fobar, total):
     except ValueError as e:
         error = "Error calculating bias: " + str(e)
         estdev = np.empty(len(fbar))
-    return estdev
+    return estdev, error
 
 
-# function for calculating pearson correlation from MET partial sums
 def calculate_pcc(fbar, obar, ffbar, oobar, fobar, total):
-    global error
+    """function for calculating pearson correlation from MET partial sums"""
+    error = ""
     try:
         pcc = (total ** 2 * fobar - total ** 2 * fbar * obar) / np.sqrt(
             (total ** 2 * ffbar - total ** 2 * fbar ** 2) * (total ** 2 * oobar - total ** 2 * obar ** 2))
@@ -187,12 +185,11 @@ def calculate_pcc(fbar, obar, ffbar, oobar, fobar, total):
     except ValueError as e:
         error = "Error calculating bias: " + str(e)
         pcc = np.empty(len(fbar))
-    return pcc
+    return pcc, error
 
 
-# function for determining and calling the appropriate scalar statistical calculation function
 def calculate_scalar_stat(statistic, fbar, obar, ffbar, oobar, fobar, total):
-    global error
+    """function for determining and calling the appropriate scalar statistical calculation function"""
     stat_switch = {  # dispatcher of statistical calculation functions
         'ACC': calculate_acc,
         'RMSE': calculate_rmse,
@@ -229,7 +226,7 @@ def calculate_scalar_stat(statistic, fbar, obar, ffbar, oobar, fobar, total):
     }
     try:
         stat_args = args_switch[statistic]  # get args
-        sub_stats = stat_switch[statistic](*stat_args)  # call stat function
+        sub_stats, error = stat_switch[statistic](*stat_args)  # call stat function
         stat = np.nanmean(sub_stats)  # calculate overall stat
     except KeyError as e:
         error = "Error choosing statistic: " + str(e)

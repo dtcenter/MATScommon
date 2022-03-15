@@ -1,11 +1,9 @@
 import numpy as np
 
-error = ""
 
-
-# function for calculating vector anomaly correlation from MET partial sums
 def calculate_vacc(ufbar, vfbar, uobar, vobar, uvfobar, uvffbar, uvoobar):
-    global error
+    """function for calculating vector anomaly correlation from MET partial sums"""
+    error = ""
     try:
         acc = (uvfobar - ufbar * uobar - vfbar * vobar) / (np.sqrt(uvffbar - ufbar * ufbar - vfbar * vfbar)
                                                            * np.sqrt(uvoobar - uobar * uobar - vobar * vobar))
@@ -15,22 +13,22 @@ def calculate_vacc(ufbar, vfbar, uobar, vobar, uvfobar, uvffbar, uvoobar):
     except ValueError as e:
         error = "Error calculating ACC: " + str(e)
         acc = np.empty(len(ufbar))
-    return acc
+    return acc, error
 
 
-# function for calculating forecast mean of wind vector length from MET partial sums
 def calculate_fbar(f_speed_bar):
-    return f_speed_bar
+    """function for calculating forecast mean of wind vector length from MET partial sums"""
+    return f_speed_bar, ""
 
 
-# function for calculating observed mean of wind vector length from MET partial sums
 def calculate_obar(o_speed_bar):
-    return o_speed_bar
+    """function for calculating observed mean of wind vector length from MET partial sums"""
+    return o_speed_bar, ""
 
 
-# function for calculating forecast - observed mean of wind vector length from MET partial sums
 def calculate_fbar_m_obar(f_speed_bar, o_speed_bar):
-    global error
+    """function for calculating forecast - observed mean of wind vector length from MET partial sums"""
+    error = ""
     try:
         fbar_m_obar = f_speed_bar - o_speed_bar
     except TypeError as e:
@@ -39,53 +37,52 @@ def calculate_fbar_m_obar(f_speed_bar, o_speed_bar):
     except ValueError as e:
         error = "Error calculating forecast - observed mean of wind vector length: " + str(e)
         fbar_m_obar = np.empty(len(f_speed_bar))
-    return fbar_m_obar
+    return fbar_m_obar, error
 
 
-# function for calculating abs(forecast - observed mean of wind vector length) from MET partial sums
 def calculate_fbar_m_obar_abs(f_speed_bar, o_speed_bar):
-    global error
+    """function for calculating abs(forecast - observed mean of wind vector length) from MET partial sums"""
     try:
-        fbar_m_obar_abs = np.absolute(calculate_fbar_m_obar(f_speed_bar, o_speed_bar))
+        stat, error = calculate_fbar_m_obar(f_speed_bar, o_speed_bar)
+        fbar_m_obar_abs = np.absolute(stat)
     except TypeError as e:
         error = "Error calculating forecast - observed mean of wind vector length: " + str(e)
         fbar_m_obar_abs = np.empty(len(f_speed_bar))
     except ValueError as e:
         error = "Error calculating forecast - observed mean of wind vector length: " + str(e)
         fbar_m_obar_abs = np.empty(len(f_speed_bar))
-    return fbar_m_obar_abs
+    return fbar_m_obar_abs, error
 
 
-# function for calculating forecast mean of wind vector direction from MET partial sums
 def calculate_fdir(ufbar, vfbar):
-    fdir = calculate_wind_vector_dir(ufbar, vfbar)
-    return fdir
+    """function for calculating forecast mean of wind vector direction from MET partial sums"""
+    fdir, error = calculate_wind_vector_dir(ufbar, vfbar)
+    return fdir, error
 
 
-# function for calculating observed mean of wind vector direction from MET partial sums
 def calculate_odir(uobar, vobar):
-    odir = calculate_wind_vector_dir(uobar, vobar)
-    return odir
+    """function for calculating observed mean of wind vector direction from MET partial sums"""
+    odir, error = calculate_wind_vector_dir(uobar, vobar)
+    return odir, error
 
 
-# function for calculating forecast - observed mean of wind vector direction from MET partial sums
 def calculate_dir_err(ufbar, vfbar, uobar, vobar):
-    global error
+    """function for calculating forecast - observed mean of wind vector direction from MET partial sums"""
     try:
         dir_err = np.empty(len(ufbar))
         dir_err[:] = np.nan
 
-        f_len = calculate_fbar_speed(ufbar, vfbar)
+        f_len, error = calculate_fbar_speed(ufbar, vfbar)
         uf = ufbar / f_len
         vf = vfbar / f_len
 
-        o_len = calculate_obar_speed(uobar, vobar)
+        o_len, error = calculate_obar_speed(uobar, vobar)
         uo = uobar / o_len
         vo = vobar / o_len
 
         a = vf * uo - uf * vo
         b = uf * uo + vf * vo
-        dir_err = calculate_wind_vector_dir(a, b)
+        dir_err, error = calculate_wind_vector_dir(a, b)
 
     except TypeError as e:
         error = "Error calculating forecast - observed mean of wind vector direction: " + str(e)
@@ -93,26 +90,26 @@ def calculate_dir_err(ufbar, vfbar, uobar, vobar):
     except ValueError as e:
         error = "Error calculating forecast - observed mean of wind vector direction: " + str(e)
         dir_err = np.empty(len(ufbar))
-    return dir_err
+    return dir_err, error
 
 
-# function for calculating abs(forecast - observed mean of wind vector direction) from MET partial sums
 def calculate_dir_err_abs(ufbar, vfbar, uobar, vobar):
-    global error
+    """function for calculating abs(forecast - observed mean of wind vector direction) from MET partial sums"""
     try:
-        dir_err_abs = np.absolute(calculate_dir_err(ufbar, vfbar, uobar, vobar))
+        dir_err, error = calculate_dir_err(ufbar, vfbar, uobar, vobar)
+        dir_err_abs = np.absolute(dir_err)
     except TypeError as e:
         error = "Error calculating abs(forecast - observed mean of wind vector direction): " + str(e)
         dir_err_abs = np.empty(len(ufbar))
     except ValueError as e:
         error = "Error calculating abd(forecast - observed mean of wind vector direction): " + str(e)
         dir_err_abs = np.empty(len(ufbar))
-    return dir_err_abs
+    return dir_err_abs, error
 
 
-# function for calculating RMSE of forecast wind vector length from MET partial sums
 def calculate_fs_rms(uvffbar):
-    global error
+    """function for calculating RMSE of forecast wind vector length from MET partial sums"""
+    error = ""
     try:
         fs_rms = np.sqrt(uvffbar)
     except TypeError as e:
@@ -121,12 +118,12 @@ def calculate_fs_rms(uvffbar):
     except ValueError as e:
         error = "Error calculating RMSE of forecast wind vector length: " + str(e)
         fs_rms = np.empty(len(uvffbar))
-    return fs_rms
+    return fs_rms, error
 
 
-# function for calculating RMSE of observed wind vector length from MET partial sums
 def calculate_os_rms(uvoobar):
-    global error
+    """function for calculating RMSE of observed wind vector length from MET partial sums"""
+    error = ""
     try:
         os_rms = np.sqrt(uvoobar)
     except TypeError as e:
@@ -135,12 +132,12 @@ def calculate_os_rms(uvoobar):
     except ValueError as e:
         error = "Error calculating RMSE of observed wind vector length: " + str(e)
         os_rms = np.empty(len(uvoobar))
-    return os_rms
+    return os_rms, error
 
 
-# function for calculating vector wind speed MSVE from MET partial sums
 def calculate_msve(uvffbar, uvfobar, uvoobar):
-    global error
+    """function for calculating vector wind speed MSVE from MET partial sums"""
+    error = ""
     try:
         msve = uvffbar - 2.0 * uvfobar + uvoobar
     except TypeError as e:
@@ -149,12 +146,12 @@ def calculate_msve(uvffbar, uvfobar, uvoobar):
     except ValueError as e:
         error = "Error calculating vector wind speed MSVE: " + str(e)
         msve = np.empty(len(uvffbar))
-    return msve
+    return msve, error
 
 
-# function for calculating vector wind speed RMSVE from MET partial sums
 def calculate_rmsve(uvffbar, uvfobar, uvoobar):
-    global error
+    """function for calculating vector wind speed RMSVE from MET partial sums"""
+    error = ""
     try:
         rmsve = np.sqrt(uvffbar - 2.0 * uvfobar + uvoobar)
     except TypeError as e:
@@ -163,12 +160,12 @@ def calculate_rmsve(uvffbar, uvfobar, uvoobar):
     except ValueError as e:
         error = "Error calculating vector wind speed RMSVE: " + str(e)
         rmsve = np.empty(len(uvffbar))
-    return rmsve
+    return rmsve, error
 
 
-# function for calculating forecast stdev of wind vector length from MET partial sums
 def calculate_fstdev(uvffbar, f_speed_bar):
-    global error
+    """function for calculating forecast stdev of wind vector length from MET partial sums"""
+    error = ""
     try:
         fstdev = np.sqrt(uvffbar - f_speed_bar ** 2)
     except TypeError as e:
@@ -177,12 +174,12 @@ def calculate_fstdev(uvffbar, f_speed_bar):
     except ValueError as e:
         error = "Error calculating forecast stdev of wind vector length: " + str(e)
         fstdev = np.empty(len(uvffbar))
-    return fstdev
+    return fstdev, error
 
 
-# function for calculating observed stdev of wind vector length from MET partial sums
 def calculate_ostdev(uvoobar, o_speed_bar):
-    global error
+    """function for calculating observed stdev of wind vector length from MET partial sums"""
+    error = ""
     try:
         ostdev = np.sqrt(uvoobar - o_speed_bar ** 2)
     except TypeError as e:
@@ -191,108 +188,107 @@ def calculate_ostdev(uvoobar, o_speed_bar):
     except ValueError as e:
         error = "Error calculating observed stdev of wind vector length: " + str(e)
         ostdev = np.empty(len(uvoobar))
-    return ostdev
+    return ostdev, error
 
 
-# function for calculating forecast length of mean wind vector from MET partial sums
 def calculate_fbar_speed(ufbar, vfbar):
-    fspeed = calculate_wind_vector_speed(ufbar, vfbar)
-    return fspeed
+    """function for calculating forecast length of mean wind vector from MET partial sums"""
+    fspeed, error = calculate_wind_vector_speed(ufbar, vfbar)
+    return fspeed, error
 
 
-# function for calculating observed length of mean wind vector from MET partial sums
 def calculate_obar_speed(uobar, vobar):
-    ospeed = calculate_wind_vector_speed(uobar, vobar)
-    return ospeed
+    """function for calculating observed length of mean wind vector from MET partial sums"""
+    ospeed, error = calculate_wind_vector_speed(uobar, vobar)
+    return ospeed, error
 
 
-# function for calculating forecast - observed length of mean wind vector from MET partial sums
 def calculate_speed_err(ufbar, vfbar, uobar, vobar):
-    global error
+    """function for calculating forecast - observed length of mean wind vector from MET partial sums"""
     try:
-        speed_err = calculate_fbar_speed(ufbar, vfbar) - calculate_obar_speed(uobar, vobar)
+        speed1, error = calculate_fbar_speed(ufbar, vfbar)
+        speed2, error = calculate_obar_speed(uobar, vobar)
+        speed_err = speed1-speed2
     except TypeError as e:
         error = "Error calculating forecast - observed length of mean wind vector: " + str(e)
         speed_err = np.empty(len(ufbar))
     except ValueError as e:
         error = "Error calculating forecast - observed length of mean wind vector: " + str(e)
         speed_err = np.empty(len(ufbar))
-    return speed_err
+    return speed_err, error
 
 
-# function for calculating abs(forecast - observed length of mean wind vector) from MET partial sums
 def calculate_speed_err_abs(ufbar, vfbar, uobar, vobar):
-    global error
+    """function for calculating abs(forecast - observed length of mean wind vector) from MET partial sums"""
     try:
-        speed_err_abs = np.absolute(calculate_speed_err(ufbar, vfbar, uobar, vobar))
+        speed_err, error = calculate_speed_err(ufbar, vfbar, uobar, vobar)
+        speed_err_abs = np.absolute(speed_err)
     except TypeError as e:
         error = "Error calculating abs(forecast - observed length of mean wind vector): " + str(e)
         speed_err_abs = np.empty(len(ufbar))
     except ValueError as e:
         error = "Error calculating abs(forecast - observed length of mean wind vector): " + str(e)
         speed_err_abs = np.empty(len(ufbar))
-    return speed_err_abs
+    return speed_err_abs, error
 
 
-# function for calculating length of forecast - observed mean wind vector from MET partial sums
 def calculate_vdiff_speed(ufbar, vfbar, uobar, vobar):
-    global error
+    """function for calculating length of forecast - observed mean wind vector from MET partial sums"""
     try:
-        vdiff_speed = calculate_wind_vector_speed(ufbar - uobar, vfbar - vobar)
+        vdiff_speed, error = calculate_wind_vector_speed(ufbar - uobar, vfbar - vobar)
     except TypeError as e:
         error = "Error calculating length of forecast - observed mean wind vector: " + str(e)
         vdiff_speed = np.empty(len(ufbar))
     except ValueError as e:
         error = "Error calculating length of forecast - observed mean wind vector: " + str(e)
         vdiff_speed = np.empty(len(ufbar))
-    return vdiff_speed
+    return vdiff_speed, error
 
 
-# function for calculating abs(length of forecast - observed mean wind vector) from MET partial sums
 def calculate_vdiff_speed_abs(ufbar, vfbar, uobar, vobar):
-    global error
+    """function for calculating abs(length of forecast - observed mean wind vector) from MET partial sums"""
     try:
-        speed_err_abs = np.absolute(calculate_vdiff_speed(ufbar, vfbar, uobar, vobar))
+        speed_err, error = calculate_vdiff_speed(ufbar, vfbar, uobar, vobar)
+        speed_err_abs = np.absolute(speed_err)
     except TypeError as e:
         error = "Error calculating abs(length of forecast - observed mean wind vector): " + str(e)
         speed_err_abs = np.empty(len(ufbar))
     except ValueError as e:
         error = "Error calculating abs(length of forecast - observed mean wind vector): " + str(e)
         speed_err_abs = np.empty(len(ufbar))
-    return speed_err_abs
+    return speed_err_abs, error
 
 
-# function for calculating direction of forecast - observed mean wind vector from MET partial sums
 def calculate_vdiff_dir(ufbar, vfbar, uobar, vobar):
-    global error
+    """function for calculating direction of forecast - observed mean wind vector from MET partial sums"""
     try:
-        vdiff_dir = calculate_wind_vector_dir(-(ufbar - uobar), -(vfbar - vobar))
+        vdiff_dir, error = calculate_wind_vector_dir(-(ufbar - uobar), -(vfbar - vobar))
     except TypeError as e:
         error = "Error calculating direction of forecast - observed mean wind vector: " + str(e)
         vdiff_dir = np.empty(len(ufbar))
     except ValueError as e:
         error = "Error calculating direction of forecast - observed mean wind vector: " + str(e)
         vdiff_dir = np.empty(len(ufbar))
-    return vdiff_dir
+    return vdiff_dir, error
 
 
-# function for calculating abs(direction of forecast - observed mean wind vector) from MET partial sums
 def calculate_vdiff_dir_abs(ufbar, vfbar, uobar, vobar):
-    global error
+    """function for calculating abs(direction of forecast - observed mean wind vector) from MET partial sums"""
     try:
-        vdiff_dir_abs = np.absolute(calculate_vdiff_dir(ufbar, vfbar, uobar, vobar))
+        vdiff_dir, error = calculate_vdiff_dir(ufbar, vfbar, uobar, vobar)
+        vdiff_dir_abs = np.absolute(vdiff_dir)
     except TypeError as e:
         error = "Error calculating abs(direction of forecast - observed mean wind vector): " + str(e)
         vdiff_dir_abs = np.empty(len(ufbar))
     except ValueError as e:
         error = "Error calculating abs(direction of forecast - observed mean wind vector): " + str(e)
         vdiff_dir_abs = np.empty(len(ufbar))
-    return vdiff_dir_abs
+    return vdiff_dir_abs, error
 
 
-# function for calculating wind direction from two vector components
 def calculate_wind_vector_dir(ucomp, vcomp):
-    global error
+    """function for calculating wind direction from two vector components"""
+    error = ""
     dirs = np.empty(len(ucomp))
     dirs[:] = np.nan
     try:
@@ -305,12 +301,12 @@ def calculate_wind_vector_dir(ucomp, vcomp):
     except ValueError as e:
         error = "Error calculating wind vector direction: " + str(e)
         dirs = np.empty(len(ucomp))
-    return dirs
+    return dirs, error
 
 
-# function for calculating wind speed from two vector components
 def calculate_wind_vector_speed(ucomp, vcomp):
-    global error
+    """function for calculating wind speed from two vector components"""
+    error = ""
     try:
         speeds = np.sqrt(ucomp ** 2 + vcomp ** 2)
     except TypeError as e:
@@ -319,13 +315,12 @@ def calculate_wind_vector_speed(ucomp, vcomp):
     except ValueError as e:
         error = "Error calculating wind vector speed: " + str(e)
         speeds = np.empty(len(ucomp))
-    return speeds
+    return speeds, error
 
 
-# function for determining and calling the appropriate vector statistical calculation function
 def calculate_vector_stat(statistic, ufbar, vfbar, uobar, vobar, uvfobar, uvffbar, uvoobar, f_speed_bar,
                           o_speed_bar, total):
-    global error
+    """function for determining and calling the appropriate vector statistical calculation function"""
     stat_switch = {  # dispatcher of statistical calculation functions
         'Vector ACC': calculate_vacc,
         'Forecast length of mean wind vector': calculate_fbar_speed,
@@ -378,7 +373,7 @@ def calculate_vector_stat(statistic, ufbar, vfbar, uobar, vobar, uvfobar, uvffba
     }
     try:
         stat_args = args_switch[statistic]  # get args
-        sub_stats = stat_switch[statistic](*stat_args)  # call stat function
+        sub_stats, error = stat_switch[statistic](*stat_args)  # call stat function
         stat = np.nanmean(sub_stats)  # calculate overall stat
     except KeyError as e:
         error = "Error choosing statistic: " + str(e)

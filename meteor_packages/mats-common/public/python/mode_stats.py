@@ -1,10 +1,8 @@
 import numpy as np
 
-error = ""
 
-
-# helper function for MODE calculations
 def get_interest2d(sub_interest, sub_mode_header_id, sub_pair_fid, sub_pair_oid):
+    """helper function for MODE calculations"""
     # set up 2-dimensional interest arrays for calculating MODE stats
     # need a separate 2d array for each mode_header_id
     unique_mode_headers = list(set(sub_mode_header_id))
@@ -47,8 +45,8 @@ def get_interest2d(sub_interest, sub_mode_header_id, sub_pair_fid, sub_pair_oid)
     return interest_2d_arrays, mode_header_lookup
 
 
-# helper function for MODE calculations
 def gc_dist(lon1, lat1, lon2, lat2):
+    """helper function for MODE calculations"""
     r_e = 6.371e6  # [m]
     # Convert to radians
     lon1 = np.deg2rad(lon1)
@@ -60,9 +58,9 @@ def gc_dist(lon1, lat1, lon2, lat2):
     return distance
 
 
-# function for calculating object threat score from MET MODE output
 def calculate_ots(sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id, individual_obj_lookup):
-    global error
+    """function for calculating object threat score from MET MODE output"""
+    error = ""
     try:
         ots_sum = 0.0
         if len(sub_pair_fid) > 0 and len(sub_pair_oid) > 0:
@@ -104,17 +102,16 @@ def calculate_ots(sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id, 
     except ValueError as e:
         error = "Error calculating ots: " + str(e)
         ots = 'null'
-    return ots
+    return ots, error
 
 
-# function for calculating median of maximum interest from MET MODE output
 def calculate_mmi(sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id):
-    global error
+    """function for calculating median of maximum interest from MET MODE output"""
+    error = ""
     try:
         if len(sub_pair_fid) > 0 and len(sub_pair_oid) > 0:
             interest_2d_arrays, mode_header_lookup = get_interest2d(sub_interest, sub_mode_header_id,
                                                                     sub_pair_fid, sub_pair_oid)
-            # Compute standard MMI first
             max_int_array = np.empty(0, dtype=np.float)
             for key in interest_2d_arrays:
                 interest_2d = interest_2d_arrays[key]
@@ -130,12 +127,12 @@ def calculate_mmi(sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id):
     except ValueError as e:
         error = "Error calculating mmi: " + str(e)
         mmi = 'null'
-    return mmi
+    return mmi, error
 
 
-# function for calculating object frequency bias from MET MODE output
 def calculate_ofb(sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id):
-    global error
+    """function for calculating object frequency bias from MET MODE output"""
+    error = ""
     try:
         if len(sub_pair_fid) > 0 and len(sub_pair_oid) > 0:
             interest_2d_arrays, mode_header_lookup = get_interest2d(sub_interest, sub_mode_header_id,
@@ -155,12 +152,12 @@ def calculate_ofb(sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id):
     except ValueError as e:
         error = "Error calculating ofb: " + str(e)
         ofb = 'null'
-    return ofb
+    return ofb, error
 
 
-# function for calculating mean centroid distance from MET MODE output
 def calculate_mcd(sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id, sub_cent_dist):
-    global error
+    """function for calculating mean centroid distance from MET MODE output"""
+    error = ""
     total_error_array = []
     try:
         if len(sub_pair_fid) > 0 and len(sub_pair_oid) > 0:
@@ -207,12 +204,12 @@ def calculate_mcd(sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id, 
     except ValueError as e:
         error = "Error calculating ofb: " + str(e)
         mcd = 'null'
-    return mcd
+    return mcd, error
 
 
-# function for calculating median of maximum interest from MET MODE output
 def calculate_mode_ctc(statistic, sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id):
-    global error
+    """function for calculating contingency table stats from MET MODE output"""
+    error = ""
     try:
         if len(sub_pair_fid) > 0 and len(sub_pair_oid) > 0:
             interest_2d_arrays, mode_header_lookup = get_interest2d(sub_interest, sub_mode_header_id,
@@ -221,7 +218,7 @@ def calculate_mode_ctc(statistic, sub_interest, sub_pair_fid, sub_pair_oid, sub_
             n_hit = 0
             n_miss = 0
             n_fa = 0
-            match_int = 0.70
+            match_int = 0.70  # default interest threshold in METplus MODE
             for key in interest_2d_arrays:
                 interest_2d = interest_2d_arrays[key]
                 max_f_index = mode_header_lookup[key]["lookup_f_index"]
@@ -273,13 +270,12 @@ def calculate_mode_ctc(statistic, sub_interest, sub_pair_fid, sub_pair_oid, sub_
     except ValueError as e:
         error = "Error calculating bias: " + str(e)
         ctc = 'null'
-    return ctc
+    return ctc, error
 
 
-# function for determining and calling the appropriate contigency table count statistical calculation function
 def calculate_mode_stat(statistic, sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id, sub_cent_dist,
                         individual_obj_lookup):
-    global error
+    """function for determining and calling the appropriate mode statistical calculation function"""
     stat_switch = {  # dispatcher of statistical calculation functions
         'OTS (Object Threat Score)': calculate_ots,
         'MMI (Median of Maximum Interest)': calculate_mmi,
@@ -303,7 +299,7 @@ def calculate_mode_stat(statistic, sub_interest, sub_pair_fid, sub_pair_oid, sub
     }
     try:
         stat_args = args_switch[statistic]  # get args
-        stat = stat_switch[statistic](*stat_args)  # call stat function
+        stat, error = stat_switch[statistic](*stat_args)  # call stat function
     except KeyError as e:
         error = "Error choosing statistic: " + str(e)
         stat = 'null'
