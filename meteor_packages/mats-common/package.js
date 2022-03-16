@@ -258,6 +258,10 @@ Package.onUse(function (api) {
     api.addAssets('public/MATSReleaseNotes.html', "server");
     api.addAssets('public/python/python_query_util.py', "server");
     api.addAssets('public/python/python_ctc_error.py', "server");
+    api.addAssets('public/python/scalar_stats.py', "server");
+    api.addAssets('public/python/vector_stats.py', "server");
+    api.addAssets('public/python/ctc_stats.py', "server");
+    api.addAssets('public/python/mode_stats.py', "server");
 });
 
 Package.onTest(function (api) {

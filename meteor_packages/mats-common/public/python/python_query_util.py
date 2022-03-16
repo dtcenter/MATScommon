@@ -1411,7 +1411,7 @@ class QueryUtil:
         """utility to remove a point on a graph"""
         del (data["x"][di])
         del (data["y"][di])
-        if plot_type is "PerformanceDiagram" or plot_type is "ROC":
+        if plot_type == "PerformanceDiagram" or plot_type == "ROC":
             del (data["oy_all"][di])
             del (data["on_all"][di])
         if len(data['error_' + stat_var_name]) > 0:
