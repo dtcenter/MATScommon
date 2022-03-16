@@ -140,7 +140,7 @@ const _checkMetaDataRefresh = async function () {
      */
     var refresh = false;
     const tableUpdates = metaDataTableUpdates.find({}).fetch();
-    const dbType = matsCollections.Settings.findOne().dbType;
+    const dbType = matsCollections.Settings.findOne() !== undefined ? matsCollections.Settings.findOne().dbType : matsTypes.DbTypes.mysql;
     for (var tui = 0; tui < tableUpdates.length; tui++) {
         var id = tableUpdates[tui]._id;
         var poolName = tableUpdates[tui].pool;
