@@ -160,6 +160,8 @@ def calculate_mcd(sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id, 
     error = ""
     total_error_array = []
     try:
+        # The commented sections here are not currently used, but may be in the future.
+        # They will be removed if they are not made active within two METexpress versions.
         if len(sub_pair_fid) > 0 and len(sub_pair_oid) > 0:
             # Mean distance calculated in a general sense using the same method as for OTS
             # this method does not require object "matches"
