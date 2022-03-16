@@ -182,7 +182,7 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC) {
                 }
 
                 // calculate the differences in sub values. If it's a MODE curve we don't care.
-                if (minuendData.subInterest.length === 0 && minuendData.subInterest.length === 0) {
+                if ((minuendData.subInterest === undefined || minuendData.subInterest.length === 0) && (subtrahendData.subInterest === undefined || subtrahendData.subInterest.length === 0)) {
                     if (plotType !== matsTypes.PlotTypes.histogram) {
                         if (isCTC) {
                             var minuendDataSubHit = minuendData.subHit[minuendIndex];
