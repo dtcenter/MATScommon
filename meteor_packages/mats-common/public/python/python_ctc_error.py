@@ -4,22 +4,22 @@ import numpy as np
 import json
 
 
-# class that
 class CTCErrorUtil:
+    """class that calculates error bar length for CTC plots"""
     error = ""          # one of the two fields to return at the end -- records any error message
     error_length = 0     # one of the two fields to return at the end -- the length of the error bars
     output_JSON = {}    # JSON structure to pass the two output fields back to the MATS JS
 
-    # function for constructing and jsonifying a dictionary of the output variables
     def construct_output_json(self):
+        """function for constructing and jsonifying a dictionary of the output variables"""
         self.output_JSON = {
             "error_length": self.error_length,
             "error": self.error
         }
         self.output_JSON = json.dumps(self.output_JSON)
 
-    # function to check if a certain value is a float or int
     def is_number(self, s):
+        """function to check if a certain value is a float or int"""
         try:
             if np.isnan(s) or np.isinf(s):
                 return False
@@ -31,8 +31,8 @@ class CTCErrorUtil:
         except ValueError:
             return False
 
-    # function for calculating true skill score
     def calculate_tss(self, hit, fa, miss, cn):
+        """function for calculating true skill score"""
         try:
             tss = ((hit * cn - fa * miss) / ((hit + miss) * (fa + cn))) * 100
         except TypeError as e:
@@ -43,8 +43,8 @@ class CTCErrorUtil:
             tss = np.NaN
         return tss
 
-    # function for calculating probability of positive detection
     def calculate_pody(self, hit, miss):
+        """function for calculating probability of positive detection"""
         try:
             pody = hit / (hit + miss) * 100
         except TypeError as e:
@@ -55,8 +55,8 @@ class CTCErrorUtil:
             pody = np.NaN
         return pody
 
-    # function for calculating probability of negative detection
     def calculate_podn(self, fa, cn):
+        """function for calculating probability of negative detection"""
         try:
             podn = cn / (cn + fa) * 100
         except TypeError as e:
@@ -67,8 +67,8 @@ class CTCErrorUtil:
             podn = np.NaN
         return podn
 
-    # function for calculating false alarm ratio
     def calculate_far(self, hit, fa):
+        """function for calculating false alarm ratio"""
         try:
             far = fa / (fa + hit) * 100
         except TypeError as e:
@@ -79,8 +79,8 @@ class CTCErrorUtil:
             far = np.NaN
         return far
 
-    # function for calculating multiplicative bias
     def calculate_bias(self, hit, fa, miss):
+        """function for calculating multiplicative bias"""
         try:
             bias = (hit + fa) / (hit + miss)
         except TypeError as e:
@@ -91,8 +91,8 @@ class CTCErrorUtil:
             bias = np.NaN
         return bias
 
-    # function for calculating critical skill index
     def calculate_csi(self, hit, fa, miss):
+        """function for calculating critical skill index"""
         try:
             csi = hit / (hit + miss + fa) * 100
         except TypeError as e:
@@ -103,8 +103,8 @@ class CTCErrorUtil:
             csi = np.NaN
         return csi
 
-    # function for calculating Heidke skill score
     def calculate_hss(self, hit, fa, miss, cn):
+        """function for calculating Heidke skill score"""
         try:
             hss = 2 * (cn * hit - miss * fa) / ((cn + fa) * (fa + hit) + (cn + miss) * (miss + hit)) * 100
         except TypeError as e:
@@ -115,8 +115,8 @@ class CTCErrorUtil:
             hss = np.NaN
         return hss
 
-    # function for calculating equitable threat score
     def calculate_ets(self, hit, fa, miss, cn):
+        """function for calculating equitable threat score"""
         try:
             ets = (hit - ((hit + fa) * (hit + miss) / (hit + fa + miss + cn))) / ((hit + fa + miss) - ((hit + fa) * (hit + miss) / (hit + fa + miss + cn))) * 100
         except TypeError as e:
@@ -127,8 +127,8 @@ class CTCErrorUtil:
             ets = np.NaN
         return ets
 
-    # function for calculating number below threshold
     def calculate_nlow(self, hit, miss):
+        """function for calculating number below threshold"""
         try:
             nlow = hit + miss
         except TypeError as e:
@@ -139,8 +139,8 @@ class CTCErrorUtil:
             nlow = np.NaN
         return nlow
 
-    # function for calculating number above threshold
     def calculate_nhigh(self, fa, cn):
+        """function for calculating number above threshold"""
         try:
             nhigh = cn + fa
         except TypeError as e:
@@ -151,8 +151,8 @@ class CTCErrorUtil:
             nhigh = np.NaN
         return nhigh
 
-    # function for calculating total number
     def calculate_ntot(self, hit, fa, miss, cn):
+        """function for calculating total number"""
         try:
             ntot = hit + fa + miss + cn
         except TypeError as e:
@@ -163,8 +163,8 @@ class CTCErrorUtil:
             ntot = np.NaN
         return ntot
 
-    # function for calculating total number
     def calculate_n(self, n):
+        """function for calculating total number"""
         try:
             n = n + 0
         except TypeError as e:
@@ -175,8 +175,8 @@ class CTCErrorUtil:
             n = np.NaN
         return n
 
-    # function for calculating ratio of nlow to ntot
     def calculate_ratlow(self, hit, fa, miss, cn):
+        """function for calculating ratio of nlow to ntot"""
         try:
             ratlow = self.calculate_nlow(hit, miss) / self.calculate_ntot(hit, fa, miss, cn)
         except TypeError as e:
@@ -187,8 +187,8 @@ class CTCErrorUtil:
             ratlow = np.NaN
         return ratlow
 
-    # function for calculating ratio of nhigh to ntot
     def calculate_rathigh(self, hit, fa, miss, cn):
+        """function for calculating ratio of nhigh to ntot"""
         try:
             rathigh = self.calculate_nhigh(fa, cn) / self.calculate_ntot(hit, fa, miss, cn)
         except TypeError as e:
@@ -199,8 +199,8 @@ class CTCErrorUtil:
             rathigh = np.NaN
         return rathigh
 
-    # function for determining and calling the appropriate contigency table count statistical calculation function
     def calculate_ctc_stat(self, statistic, hit, fa, miss, cn, n):
+        """function for determining and calling the appropriate contingency table count statistical calculation function"""
         stat_switch = {  # dispatcher of statistical calculation functions
             'TSS (True Skill Score)': self.calculate_tss,
             'PODy (POD of value < threshold)': self.calculate_pody,
@@ -261,6 +261,7 @@ class CTCErrorUtil:
         return stat
 
     def test_null_hypothesis(self, statistic, minuend_data, subtrahend_data):
+        """function for determining the length of error bars on ctc difference curves"""
         # pre-calculate random indices
         max_tries = 1000
         max_length = len(minuend_data["hit"]) if len(minuend_data["hit"]) > len(subtrahend_data["hit"]) else len(subtrahend_data["hit"])
@@ -315,12 +316,12 @@ class CTCErrorUtil:
         ci_length = (top_95-bot_95)/2  # length of 95th percentile confidence interval. Divide by 1.96 for standard error.
         return ci_length
 
-    # makes sure all expected options were indeed passed in
     def validate_options(self, options):
+        """makes sure all expected options were indeed passed in"""
         assert True, options.statistic is not None and options.minuend_data is not None and options.subtrahend_data is not None
 
-    # process 'c' style options - using getopt - usage describes options
     def get_options(self, args):
+        """process 'c' style options - using getopt - usage describes options"""
         usage = ["(S)tatistic=", "(m)inuend_data", "(s)ubtrahend_data"]
         statistic = None
         minuend_data = None
@@ -355,6 +356,7 @@ class CTCErrorUtil:
         return options
 
     def calc_error_stats(self, options):
+        """function for validating options and passing them to the null hypothesis tester"""
         self.validate_options(options)
         self.error_length = self.test_null_hypothesis(options["statistic"], options["minuend_data"], options["subtrahend_data"])
 

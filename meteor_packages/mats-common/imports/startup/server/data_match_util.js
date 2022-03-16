@@ -307,11 +307,14 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                     matsDataUtils.nullPoint(data, di, statVarName, isCTC, hasLevels);
                 } else {
                     // store the filtered data
-                    data.subHit[di] = newSubHit;
-                    data.subFa[di] = newSubFa;
-                    data.subMiss[di] = newSubMiss;
-                    data.subCn[di] = newSubCn;
-                    data.subVals[di] = newSubValues;
+                    if (isCTC) {
+                        data.subHit[di] = newSubHit;
+                        data.subFa[di] = newSubFa;
+                        data.subMiss[di] = newSubMiss;
+                        data.subCn[di] = newSubCn;
+                    } else {
+                        data.subVals[di] = newSubValues;
+                    }
                     data.subSecs[di] = newSubSecs;
                     if (hasLevels) {
                         data.subLevs[di] = newSubLevs;

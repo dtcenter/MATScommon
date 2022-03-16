@@ -107,7 +107,7 @@ const objectContainsObject = function (superObject, subObject) {
 
 // utility for calculating the sum of an array
 const sum = function (data) {
-    if(data.length === 0) return null;
+    if (data.length === 0) return null;
     return data.reduce(function (sum, value) {
         return value == null ? sum : sum + value;
     }, 0);
@@ -115,15 +115,15 @@ const sum = function (data) {
 
 // utility for calculating the average of an array
 const average = function (data) {
-    if(data.length === 0) return null;
+    if (data.length === 0) return null;
     return sum(data) / data.length;
 };
 
 // utility for calculating the median of an array
 const median = function (data) {
-    if(data.length === 0) return null;
-    data.sort(function(a,b){
-        return a-b;
+    if (data.length === 0) return null;
+    data.sort(function (a, b) {
+        return a - b;
     });
     var half = Math.floor(data.length / 2);
     if (data.length % 2)
@@ -133,7 +133,7 @@ const median = function (data) {
 
 // utility for calculating the stdev of an array
 const stdev = function (data) {
-    if(data.length === 0) return 0;
+    if (data.length === 0) return 0;
     var avg = average(data);
     var squareDiffs = data.map(function (value) {
         var diff = value - avg;
@@ -308,8 +308,8 @@ const doSettings = function (title, dbType, version, buildDate, appType, mapboxK
             LineWidth: 3.5,
             NullFillString: "---",
             resetFromCode: false,
-            mapboxKey: mapboxKey, 
-            appDefaultGroup: appDefaultGroup, 
+            mapboxKey: mapboxKey,
+            appDefaultGroup: appDefaultGroup,
             appDefaultDB: appDefaultDB,
             appDefaultModel: appDefaultModel,
             thresholdUnits: thresholdUnits

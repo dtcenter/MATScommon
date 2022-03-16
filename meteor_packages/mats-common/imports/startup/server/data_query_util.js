@@ -149,7 +149,7 @@ const simplePoolQueryWrapSynchronous = function (pool, statement) {
 };
 
 // utility for querying the DB via Python
-const queryDBPython = function (pool, statement, statLineType, statistic, appParams, vts) {
+const queryDBPython = function (pool, queryArray) {
     if (Meteor.isServer) {
         // send the query statement to the python query function
         const pyOptions = {
@@ -165,52 +165,14 @@ const queryDBPython = function (pool, statement, statLineType, statistic, appPar
                 "-u", pool.config.connectionConfig.user,
                 "-p", pool.config.connectionConfig.password,
                 "-d", pool.config.connectionConfig.database,
-                "-q", statement,
-                "-L", statLineType,
-                "-s", statistic,
-                "-t", appParams.plotType,
-                "-l", appParams.hasLevels,
-                "-g", appParams.hideGaps,
-                "-c", appParams.completeness / 100,
-                "-v", vts
+                "-q", JSON.stringify(queryArray)
             ]
         };
         const pyShell = require('python-shell');
         const Future = require('fibers/future');
 
         var future = new Future();
-        var d = {// d will contain the curve data
-            x: [],
-            y: [],
-            z: [],
-            n: [],
-            error_x: [],
-            error_y: [],
-            subVals: [],
-            subSecs: [],
-            subLevs: [],
-            stats: [],
-            text: [],
-            xTextOutput: [],
-            yTextOutput: [],
-            zTextOutput: [],
-            nTextOutput: [],
-            minDateTextOutput: [],
-            maxDateTextOutput: [],
-            glob_stats: {
-                mean: 0,
-                minDate: 0,
-                maxDate: 0,
-                n: 0
-            },
-            xmin: Number.MAX_VALUE,
-            xmax: -1 * Number.MAX_VALUE,
-            ymin: Number.MAX_VALUE,
-            ymax: -1 * Number.MAX_VALUE,
-            zmin: Number.MAX_VALUE,
-            zmax: -1 * Number.MAX_VALUE,
-            sum: 0
-        };
+        var d = {};
         var error = "";
         var N0 = [];
         var N_times = [];
@@ -235,6 +197,31 @@ const queryDBPython = function (pool, statement, statLineType, statistic, appPar
 
         // wait for future to finish
         future.wait();
+        // check for nulls in output, since JSON only passes strings
+        for (var idx = 0;  idx < d.length; idx++) {
+            for (var didx = 0;  didx < d[idx].y.length; didx++) {
+                if (d[idx].y[didx] === 'null') {
+                    d[idx].y[didx] = null;
+                    if (d[idx].subHit.length > 0) {
+                        d[idx].subHit[didx] = NaN;
+                        d[idx].subFa[didx] = NaN;
+                        d[idx].subMiss[didx] = NaN;
+                        d[idx].subCn[didx] = NaN;
+                    }
+                    if (d[idx].subVals.length > 0) {
+                        d[idx].subVals[didx] = NaN;
+                    }
+                    if (d[idx].subInterest.length > 0) {
+                        d[idx].subInterest[didx] = NaN;
+                        d[idx].subPairFid[didx] = NaN;
+                        d[idx].subPairOid[didx] = NaN;
+                        d[idx].subModeHeaderId[didx] = NaN;
+                    }
+                    d[idx].subSecs[didx] = NaN;
+                    d[idx].subLevs[didx] = NaN;
+                }
+            }
+        }
         return {
             data: d,
             error: error,

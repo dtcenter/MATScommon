@@ -49,7 +49,8 @@ Template.graph.helpers({
             Session.set('options', options);
             Session.set('isCTC', dataset[0] !== undefined &&
                 ((dataset[0].stats !== undefined && dataset[0].stats[0] !== undefined && dataset[0].stats[0].hit !== undefined)
-                || (dataset[0].hitTextOutput !== undefined && dataset[0].hitTextOutput.length > 0)))
+                    || (dataset[0].hitTextOutput !== undefined && dataset[0].hitTextOutput.length > 0)))
+            Session.set('isModePairs', dataset[0] !== undefined && dataset[0].stats !== undefined && dataset[0].stats[0] !== undefined && dataset[0].stats[0].avgInterest !== undefined)
 
             // need to save some curve options so that the reset button can undo Plotly.restyle
             switch (plotType) {
@@ -496,32 +497,36 @@ Template.graph.helpers({
         }
     },
     confidenceDisplay: function () {
-        if (Session.get('plotParameter') === "matched") {
-            var plotType = Session.get('plotType');
-            switch (plotType) {
-                case matsTypes.PlotTypes.timeSeries:
-                case matsTypes.PlotTypes.profile:
-                case matsTypes.PlotTypes.dieoff:
-                case matsTypes.PlotTypes.threshold:
-                case matsTypes.PlotTypes.validtime:
-                case matsTypes.PlotTypes.gridscale:
-                case matsTypes.PlotTypes.dailyModelCycle:
-                case matsTypes.PlotTypes.yearToYear:
-                    return "block";
-                case matsTypes.PlotTypes.reliability:
-                case matsTypes.PlotTypes.roc:
-                case matsTypes.PlotTypes.performanceDiagram:
-                case matsTypes.PlotTypes.map:
-                case matsTypes.PlotTypes.histogram:
-                case matsTypes.PlotTypes.ensembleHistogram:
-                case matsTypes.PlotTypes.scatter2d:
-                case matsTypes.PlotTypes.contour:
-                case matsTypes.PlotTypes.contourDiff:
-                default:
-                    return "none";
-            }
-        } else {
+        if (Session.get("isModePairs")) {
             return "none";
+        } else {
+            if (Session.get('plotParameter') === "matched") {
+                var plotType = Session.get('plotType');
+                switch (plotType) {
+                    case matsTypes.PlotTypes.timeSeries:
+                    case matsTypes.PlotTypes.profile:
+                    case matsTypes.PlotTypes.dieoff:
+                    case matsTypes.PlotTypes.threshold:
+                    case matsTypes.PlotTypes.validtime:
+                    case matsTypes.PlotTypes.gridscale:
+                    case matsTypes.PlotTypes.dailyModelCycle:
+                    case matsTypes.PlotTypes.yearToYear:
+                        return "block";
+                    case matsTypes.PlotTypes.reliability:
+                    case matsTypes.PlotTypes.roc:
+                    case matsTypes.PlotTypes.performanceDiagram:
+                    case matsTypes.PlotTypes.map:
+                    case matsTypes.PlotTypes.histogram:
+                    case matsTypes.PlotTypes.ensembleHistogram:
+                    case matsTypes.PlotTypes.scatter2d:
+                    case matsTypes.PlotTypes.contour:
+                    case matsTypes.PlotTypes.contourDiff:
+                    default:
+                        return "none";
+                }
+            } else {
+                return "none";
+            }
         }
     },
     plotText: function () {
