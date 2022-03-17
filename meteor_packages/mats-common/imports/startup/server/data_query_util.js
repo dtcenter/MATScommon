@@ -213,9 +213,6 @@ const queryDBPython = function (pool, queryArray) {
                     }
                     if (d[idx].subInterest.length > 0) {
                         d[idx].subInterest[didx] = NaN;
-                        d[idx].subPairFid[didx] = NaN;
-                        d[idx].subPairOid[didx] = NaN;
-                        d[idx].subModeHeaderId[didx] = NaN;
                     }
                     d[idx].subSecs[didx] = NaN;
                     d[idx].subLevs[didx] = NaN;

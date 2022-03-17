@@ -41,7 +41,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
     const plotType = appParams.plotType;
     const hasLevels = appParams.hasLevels;
     const curvesLength = curveInfoParams.curvesLength;
-    const isCTC = curveInfoParams.statType === 'ctc' && plotType !== matsTypes.PlotTypes.histogram;
+    const isCTC = !Array.isArray(curveInfoParams.statType) && curveInfoParams.statType === 'ctc' && plotType !== matsTypes.PlotTypes.histogram;
     const curveStats = curveInfoParams.curves.map(a => a.statistic);
     const curveDiffs = curveInfoParams.curves.map(a => a.diffFrom);
     var removeNonMatchingIndVars;

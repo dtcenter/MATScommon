@@ -17,7 +17,6 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
     var error = "";
 
     const appName = matsCollections.appName.findOne({}).app;
-    curveInfoParams.statType = curveInfoParams.statType === undefined ? 'scalar' : curveInfoParams.statType;
     const isMetexpress = matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
 
     // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
@@ -34,6 +33,14 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
         var diffFrom = curveInfoParams.curves[curveIndex].diffFrom;
         var statisticSelect = appName.indexOf("anomalycor") !== -1 ? "ACC" : curveInfoParams.curves[curveIndex]['statistic'];
         var data = dataset[curveIndex];
+        var statType;
+        if (curveInfoParams.statType === undefined) {
+            statType = 'scalar';
+        } else if (Array.isArray(curveInfoParams.statType)) {
+            statType = curveInfoParams.statType[curveIndex];
+        } else {
+            statType = curveInfoParams.statType;
+        }
         const label = dataset[curveIndex].label;
 
         var di = 0;
@@ -46,7 +53,7 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
             // errorResult holds all the calculated curve stats like mean, sd, etc.
             // These don't make sense for aggregated MODE stats, so skip for them.
             var errorResult;
-            if (curveInfoParams.statType !== 'met-mode_pair') {
+            if (statType !== 'met-mode_pair') {
                 if (appParams.hasLevels) {
                     errorResult = matsDataUtils.get_err(data.subVals[di], data.subSecs[di], data.subLevs[di], appParams);
                 } else {
@@ -65,7 +72,7 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
                     (statisticSelect === 'Std deviation (do not plot matched)' || statisticSelect === 'RMS (do not plot matched)') &&
                     !appParams.matching)) {
                 if ((diffFrom === null || diffFrom === undefined) || !appParams.matching) {
-                    if (curveInfoParams.statType !== 'ctc' && curveInfoParams.statType !== 'met-mode_pair') {
+                    if (statType !== 'ctc' && statType !== 'met-mode_pair') {
                         // assign recalculated statistic to data[di][1], which is the value to be plotted
                         if (statisticSelect === 'N' || statisticSelect === 'N times*levels(*stations if station plot) per graph point') {
                             data.y[di] = errorResult.sum;
@@ -89,9 +96,9 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
 
             // store error bars if matching and not an aggregated MODE stat
             var errorLength = 0;
-            if (!appParams.matching || curveInfoParams.statType === 'met-mode_pair') {
+            if (!appParams.matching || statType === 'met-mode_pair') {
                 data.error_y.array[di] = null;
-            } else if (curveInfoParams.statType === 'ctc') {
+            } else if (statType === 'ctc') {
                 // call the python ctc error bar code for diff curves
                 if (diffFrom === undefined || diffFrom === null || !(Array.isArray(dataset[diffFrom[0]].subHit[di])
                     || !isNaN(dataset[diffFrom[0]].subHit[di])) || !(Array.isArray(dataset[diffFrom[1]].subHit[di]) || !isNaN(dataset[diffFrom[1]].subHit[di]))) {
@@ -153,7 +160,7 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
             }
 
             // store statistics for this di datapoint
-            if (curveInfoParams.statType === 'ctc') {
+            if (statType === 'ctc') {
                 data.stats[di] = {
                     stat: data.y[di],
                     n: Array.isArray(data.subHit[di]) || !isNaN(data.subHit[di]) ? data.subHit[di].length : 0,
@@ -170,10 +177,12 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
                     "<br>Misses: " + (Array.isArray(data.subMiss[di]) || !isNaN(data.subMiss[di]) ? matsDataUtils.sum(data.subMiss[di]) : null) +
                     "<br>Correct Nulls: " + (Array.isArray(data.subCn[di]) || !isNaN(data.subCn[di]) ? matsDataUtils.sum(data.subCn[di]) : null) +
                     "<br>Errorbars: " + Number((data.y[di]) - (errorLength)).toPrecision(4) + " to " + Number((data.y[di]) + (errorLength)).toPrecision(4);
-            } else if (curveInfoParams.statType === 'met-mode_pair') {
+            } else if (statType === 'met-mode_pair') {
                 data.stats[di] = {
                     stat: data.y[di],
                     n: Array.isArray(data.subInterest[di]) || !isNaN(data.subInterest[di]) ? data.subInterest[di].length : 0,
+                    raw_stat: data.y[di],
+                    n_good: Array.isArray(data.subInterest[di]) || !isNaN(data.subInterest[di]) ? data.subInterest[di].length : 0,
                     avgInterest: Array.isArray(data.subInterest[di]) || !isNaN(data.subInterest[di]) ? matsDataUtils.average(data.subInterest[di]) : null,
                 };
                 data.text[di] = data.text[di] +
@@ -182,6 +191,8 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
                     "<br>Average Interest: " + (Array.isArray(data.subInterest[di]) || !isNaN(data.subInterest[di]) ? matsDataUtils.average(data.subInterest[di]).toPrecision(4) : null);
             } else {
                 data.stats[di] = {
+                    stat: data.y[di],
+                    n: errorResult.n_good,
                     raw_stat: rawStat,
                     d_mean: statisticSelect === 'N' || statisticSelect === 'N times*levels(*stations if station plot) per graph point' ? errorResult.sum : errorResult.d_mean,
                     sd: errorResult.sd,
@@ -203,7 +214,7 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
 
         // enable error bars if matching and they aren't null.
         if (appParams.matching && data.error_y.array.filter(x => x).length > 0) {
-            if (curveInfoParams.statType !== 'ctc' || (diffFrom !== undefined && diffFrom !== null)) {
+            if (statType !== 'ctc' || (diffFrom !== undefined && diffFrom !== null)) {
                 data.error_y.visible = true;
             }
         }
@@ -333,7 +344,6 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
     var error = "";
 
     const appName = matsCollections.appName.findOne({}).app;
-    curveInfoParams.statType = curveInfoParams.statType === undefined ? 'scalar' : curveInfoParams.statType;
     const isMetexpress = matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
 
     // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
@@ -350,6 +360,14 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
         var diffFrom = curveInfoParams.curves[curveIndex].diffFrom;
         var statisticSelect = appName.indexOf("anomalycor") !== -1 ? "ACC" : curveInfoParams.curves[curveIndex]['statistic'];
         var data = dataset[curveIndex];
+        var statType;
+        if (curveInfoParams.statType === undefined) {
+            statType = 'scalar';
+        } else if (Array.isArray(curveInfoParams.statType)) {
+            statType = curveInfoParams.statType[curveIndex];
+        } else {
+            statType = curveInfoParams.statType;
+        }
         const label = dataset[curveIndex].label;
 
         var di = 0;
@@ -361,14 +379,14 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
 
             // errorResult holds all the calculated curve stats like mean, sd, etc.
             // These don't make sense for aggregated MODE stats, so skip for them.
-            if (curveInfoParams.statType !== 'met-mode_pair') {
+            if (statType !== 'met-mode_pair') {
                 var errorResult = matsDataUtils.get_err(data.subVals[di], data.subSecs[di], data.subLevs[di], appParams);
             }
 
             // store raw statistic from query before recalculating that statistic to account for data removed due to matching, QC, etc. Don't replace the stat for contingency table apps.
             rawStat = data.x[di];
             if ((diffFrom === null || diffFrom === undefined) || !appParams.matching) {
-                if (curveInfoParams.statType !== 'ctc' && curveInfoParams.statType !== 'met-mode_pair') {
+                if (statType !== 'ctc' && statType !== 'met-mode_pair') {
                     // assign recalculated statistic to data[di][1], which is the value to be plotted
                     if (statisticSelect === 'N' || statisticSelect === 'N times*levels(*stations if station plot) per graph point') {
                         data.x[di] = errorResult.sum;
@@ -391,9 +409,9 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
 
             // store error bars if matching and not an aggregated MODE stat
             var errorLength = 0;
-            if (!appParams.matching || curveInfoParams.statType === 'met-mode_pair') {
+            if (!appParams.matching || statType === 'met-mode_pair') {
                 data.error_x.array[di] = null;
-            } else if (curveInfoParams.statType === 'ctc') {
+            } else if (statType === 'ctc') {
                 // call the python ctc error bar code for diff curves
                 if (diffFrom === undefined || diffFrom === null || !(Array.isArray(dataset[diffFrom[0]].subHit[di])
                     || !isNaN(dataset[diffFrom[0]].subHit[di])) || !(Array.isArray(dataset[diffFrom[1]].subHit[di]) || !isNaN(dataset[diffFrom[1]].subHit[di]))) {
@@ -422,9 +440,9 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
             }
 
             // store statistics for this di datapoint
-            if (curveInfoParams.statType === 'ctc') {
+            if (statType === 'ctc') {
                 data.stats[di] = {
-                    stat: data.y[di],
+                    stat: data.x[di],
                     n: Array.isArray(data.subHit[di]) || !isNaN(data.subHit[di]) ? data.subHit[di].length : 0,
                     hit: Array.isArray(data.subHit[di]) || !isNaN(data.subHit[di]) ? matsDataUtils.sum(data.subHit[di]) : null,
                     fa: Array.isArray(data.subFa[di]) || !isNaN(data.subFa[di]) ? matsDataUtils.sum(data.subFa[di]) : null,
@@ -438,12 +456,14 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
                     "<br>Hits: " + (Array.isArray(data.subHit[di]) || !isNaN(data.subHit[di]) ? matsDataUtils.sum(data.subHit[di]) : null) +
                     "<br>False alarms: " + (Array.isArray(data.subFa[di]) || !isNaN(data.subFa[di]) ? matsDataUtils.sum(data.subFa[di]) : null) +
                     "<br>Misses: " + (Array.isArray(data.subMiss[di]) || !isNaN(data.subMiss[di]) ? matsDataUtils.sum(data.subMiss[di]) : null) +
-                    "<br>Correct Nulls: " + (Array.isArray(data.subCn[di]) || !isNaN(data.subCn[di]) ? matsDataUtils.sum(data.subCn[di]) : null);
+                    "<br>Correct Nulls: " + (Array.isArray(data.subCn[di]) || !isNaN(data.subCn[di]) ? matsDataUtils.sum(data.subCn[di]) : null) +
                     "<br>Errorbars: " + Number((data.x[di]) - (errorLength)).toPrecision(4) + " to " + Number((data.x[di]) + (errorLength)).toPrecision(4);
-            } else if (curveInfoParams.statType === 'met-mode_pair') {
+            } else if (statType === 'met-mode_pair') {
                 data.stats[di] = {
                     stat: data.x[di],
                     n: Array.isArray(data.subInterest[di]) || !isNaN(data.subInterest[di]) ? data.subInterest[di].length : 0,
+                    raw_stat: data.x[di],
+                    n_good: Array.isArray(data.subInterest[di]) || !isNaN(data.subInterest[di]) ? data.subInterest[di].length : 0,
                     avgInterest: Array.isArray(data.subInterest[di]) || !isNaN(data.subInterest[di]) ? matsDataUtils.average(data.subInterest[di]) : null,
                 };
                 data.text[di] = data.text[di] +
@@ -452,6 +472,8 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
                     "<br>Average Interest: " + (Array.isArray(data.subInterest[di]) || !isNaN(data.subInterest[di]) ? matsDataUtils.average(data.subInterest[di]).toPrecision(4) : null);
             } else {
                 data.stats[di] = {
+                    stat: data.x[di],
+                    n: errorResult.n_good,
                     raw_stat: rawStat,
                     d_mean: statisticSelect === 'N' || statisticSelect === 'N times*levels(*stations if station plot) per graph point' ? errorResult.sum : errorResult.d_mean,
                     sd: errorResult.sd,
@@ -474,7 +496,7 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
 
         // enable error bars if matching and they aren't null.
         if (appParams.matching && data.error_x.array.filter(x => x).length > 0) {
-            if (curveInfoParams.statType !== 'ctc' || (diffFrom !== undefined && diffFrom !== null)) {
+            if (statType !== 'ctc' || (diffFrom !== undefined && diffFrom !== null)) {
                 data.error_x.visible = true;
             }
         }
@@ -651,7 +673,6 @@ const processDataReliability = function (dataset, appParams, curveInfoParams, pl
 const processDataROC = function (dataset, appParams, curveInfoParams, plotParams, bookkeepingParams) {
     var error = "";
 
-    curveInfoParams.statType = curveInfoParams.statType === undefined ? 'scalar' : curveInfoParams.statType;
     const isMetexpress = matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
 
     // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
@@ -661,14 +682,21 @@ const processDataROC = function (dataset, appParams, curveInfoParams, plotParams
 
     // sort data statistics for each curve
     for (var curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex++) {
-
         var data = dataset[curveIndex];
+        var statType;
+        if (curveInfoParams.statType === undefined) {
+            statType = 'scalar';
+        } else if (Array.isArray(curveInfoParams.statType)) {
+            statType = curveInfoParams.statType[curveIndex];
+        } else {
+            statType = curveInfoParams.statType;
+        }
         const label = dataset[curveIndex].label;
         var auc = data.auc;
 
         var di = 0;
         while (di < data.x.length) {
-            var binValue = curveInfoParams.statType.includes("met-") ? data.threshold_all[di] : data.binVals[di];
+            var binValue = statType.includes("met-") ? data.threshold_all[di] : data.binVals[di];
             binValue = data.binParam.indexOf("Date") > -1 ? moment.utc(binValue * 1000).format("YYYY-MM-DD HH:mm") : binValue;
             // store statistics for this di datapoint
             data.stats[di] = {
@@ -729,7 +757,6 @@ const processDataROC = function (dataset, appParams, curveInfoParams, plotParams
 const processDataPerformanceDiagram = function (dataset, appParams, curveInfoParams, plotParams, bookkeepingParams) {
     var error = "";
 
-    curveInfoParams.statType = curveInfoParams.statType === undefined ? 'scalar' : curveInfoParams.statType;
     const isMetexpress = matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
 
     // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
@@ -739,13 +766,20 @@ const processDataPerformanceDiagram = function (dataset, appParams, curveInfoPar
 
     // sort data statistics for each curve
     for (var curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex++) {
-
         var data = dataset[curveIndex];
+        var statType;
+        if (curveInfoParams.statType === undefined) {
+            statType = 'scalar';
+        } else if (Array.isArray(curveInfoParams.statType)) {
+            statType = curveInfoParams.statType[curveIndex];
+        } else {
+            statType = curveInfoParams.statType;
+        }
         const label = dataset[curveIndex].label;
 
         var di = 0;
         while (di < data.x.length) {
-            var binValue = curveInfoParams.statType.includes("met-") ? data.threshold_all[di] : data.binVals[di];
+            var binValue = statType.includes("met-") ? data.threshold_all[di] : data.binVals[di];
             binValue = data.binParam.indexOf("Date") > -1 ? moment.utc(binValue * 1000).format("YYYY-MM-DD HH:mm") : binValue;
             // store statistics for this di datapoint
             data.stats[di] = {

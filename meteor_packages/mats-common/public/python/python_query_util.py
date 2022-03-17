@@ -273,8 +273,6 @@ class QueryUtil:
                         intensity_nn = sub_datum2[3]
                         centroid_lat = sub_datum2[4]
                         centroid_lon = sub_datum2[5]
-                        if obj_id[0:1] == "C":
-                            continue
                         if mode_header_id not in individual_obj_lookup.keys():
                             individual_obj_lookup[mode_header_id] = {}
                         individual_obj_lookup[mode_header_id][obj_id] = {
@@ -295,7 +293,7 @@ class QueryUtil:
                 for sub_datum in sub_data:
                     sub_datum = sub_datum.split(';')
                     obj_id = sub_datum[1]
-                    if obj_id[0:1] == "F" and obj_id.find("_") >= 0:
+                    if obj_id.find("_") >= 0:
                         sub_interests.append(float(sub_datum[0]) if float(sub_datum[0]) != -9999 else np.nan)
                         sub_pair_fids.append(obj_id.split("_")[0])
                         sub_pair_oids.append(obj_id.split("_")[1])
