@@ -165,6 +165,7 @@ const queryDBPython = function (pool, queryArray) {
                 "-u", pool.config.connectionConfig.user,
                 "-p", pool.config.connectionConfig.password,
                 "-d", pool.config.connectionConfig.database,
+                "-t", Meteor.settings.public.mysql_wait_timeout ? Meteor.settings.public.mysql_wait_timeout : 300,
                 "-q", JSON.stringify(queryArray)
             ]
         };

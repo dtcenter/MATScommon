@@ -142,10 +142,7 @@ class QueryUtil:
                     sub_total.append(float(sub_datum[5]) if float(sub_datum[5]) != -9999 else np.nan)
                     sub_secs.append(float(sub_datum[6]) if float(sub_datum[6]) != -9999 else np.nan)
                     if has_levels:
-                        if self.is_number(sub_datum[7]):
-                            sub_levs.append(int(sub_datum[7]) if float(sub_datum[7]) != -9999 else np.nan)
-                        else:
-                            sub_levs.append(sub_datum[7])
+                        sub_levs.append(sub_datum[7])
                 sub_fbar = np.asarray(sub_fbar)
                 sub_obar = np.asarray(sub_obar)
                 sub_ffbar = np.asarray(sub_ffbar)
@@ -191,18 +188,12 @@ class QueryUtil:
                         sub_total.append(float(sub_datum[9]) if float(sub_datum[9]) != -9999 else np.nan)
                         sub_secs.append(float(sub_datum[10]) if float(sub_datum[10]) != -9999 else np.nan)
                         if has_levels:
-                            if self.is_number(sub_datum[11]):
-                                sub_levs.append(int(sub_datum[11]) if float(sub_datum[11]) != -9999 else np.nan)
-                            else:
-                                sub_levs.append(sub_datum[11])
+                            sub_levs.append(sub_datum[11])
                     else:
                         sub_total.append(float(sub_datum[7]) if float(sub_datum[7]) != -9999 else np.nan)
                         sub_secs.append(float(sub_datum[8]) if float(sub_datum[8]) != -9999 else np.nan)
                         if has_levels:
-                            if self.is_number(sub_datum[9]):
-                                sub_levs.append(int(sub_datum[9]) if float(sub_datum[9]) != -9999 else np.nan)
-                            else:
-                                sub_levs.append(sub_datum[9])
+                            sub_levs.append(sub_datum[9])
                 sub_ufbar = np.asarray(sub_ufbar)
                 sub_vfbar = np.asarray(sub_vfbar)
                 sub_uobar = np.asarray(sub_uobar)
@@ -242,10 +233,7 @@ class QueryUtil:
                     sub_total.append(float(sub_datum[4]) if float(sub_datum[4]) != -9999 else np.nan)
                     sub_secs.append(float(sub_datum[5]) if float(sub_datum[5]) != -9999 else np.nan)
                     if has_levels:
-                        if self.is_number(sub_datum[6]):
-                            sub_levs.append(int(sub_datum[6]) if float(sub_datum[6]) != -9999 else np.nan)
-                        else:
-                            sub_levs.append(sub_datum[6])
+                        sub_levs.append(sub_datum[6])
                 sub_fy_oy = np.asarray(sub_fy_oy)
                 sub_fy_on = np.asarray(sub_fy_on)
                 sub_fn_oy = np.asarray(sub_fn_oy)
@@ -300,10 +288,7 @@ class QueryUtil:
                         sub_mode_header_ids.append(int(sub_datum[2]) if float(sub_datum[2]) != -9999 else np.nan)
                         sub_cent_dists.append(float(sub_datum[3]) if float(sub_datum[3]) != -9999 else np.nan)
                         sub_secs.append(int(sub_datum[4]) if float(sub_datum[4]) != -9999 else np.nan)
-                        if self.is_number(sub_datum[5]):
-                            sub_levs.append(int(sub_datum[5]) if float(sub_datum[5]) != -9999 else np.nan)
-                        else:
-                            sub_levs.append(sub_datum[5])
+                        sub_levs.append(sub_datum[5])
 
                 if 'histogram' in stat_line_type:
                     # need to get an array of sub-values, one for each unique mode_header_id
@@ -382,10 +367,7 @@ class QueryUtil:
                     sub_values.append(float(sub_datum[0]) if float(sub_datum[0]) != -9999 else np.nan)
                     sub_secs.append(float(sub_datum[2]) if float(sub_datum[2]) != -9999 else np.nan)
                     if has_levels:
-                        if self.is_number(sub_datum[3]):
-                            sub_levs.append(int(sub_datum[3]) if float(sub_datum[0]) != -9999 else np.nan)
-                        else:
-                            sub_levs.append(sub_datum[3])
+                        sub_levs.append(sub_datum[3])
                 sub_values = np.asarray(sub_values)
                 sub_secs = np.asarray(sub_secs)
                 if len(sub_levs) == 0:
@@ -422,10 +404,7 @@ class QueryUtil:
                 sub_values.append(float(sub_datum[0]) if float(sub_datum[0]) != -9999 else np.nan)
                 sub_secs.append(float(sub_datum[2]) if float(sub_datum[2]) != -9999 else np.nan)
                 if len(sub_datum) > 3:
-                    if self.is_number(sub_datum[3]):
-                        sub_levs.append(int(sub_datum[3]) if float(sub_datum[0]) != -9999 else np.nan)
-                    else:
-                        sub_levs.append(sub_datum[3])
+                    sub_levs.append(sub_datum[3])
             sub_values = np.asarray(sub_values)
             sub_secs = np.asarray(sub_secs)
             if len(sub_levs) == 0:
@@ -1788,16 +1767,17 @@ class QueryUtil:
 
     def get_options(self, args):
         """process 'c' style options - using getopt - usage describes options"""
-        usage = ["(h)ost=", "(P)ort=", "(u)ser=", "(p)assword=", "(d)atabase=", "(q)uery_array="]
+        usage = ["(h)ost=", "(P)ort=", "(u)ser=", "(p)assword=", "(d)atabase=", "(t)imeout=", "(q)uery_array="]
         host = None
         port = None
         user = None
         password = None
         database = None
+        timeout = 300
         query_array = None
 
         try:
-            opts, args = getopt.getopt(args[1:], "h:p:u:P:d:q:", usage)
+            opts, args = getopt.getopt(args[1:], "h:p:u:P:d:t:q:", usage)
         except getopt.GetoptError as err:
             # print help information and exit:
             print(str(err))  # will print something like "option -a not recognized"
@@ -1817,6 +1797,8 @@ class QueryUtil:
                 password = a
             elif o == "-d":
                 database = a
+            elif o == "-t":
+                timeout = int(a)
             elif o == "-q":
                 query_array = json.loads(a)
             else:
@@ -1830,6 +1812,7 @@ class QueryUtil:
             "user": user,
             "password": password,
             "database": database,
+            "timeout": timeout,
             "query_array": query_array
         }
         return options
@@ -1843,6 +1826,7 @@ class QueryUtil:
                               cursorclass=pymysql.cursors.DictCursor)
         with closing(cnx.cursor()) as cursor:
             cursor.execute('set group_concat_max_len = 4294967295')
+            cursor.execute('set session wait_timeout = ' + str(options["timeout"]))
             self.query_db(cursor, options["query_array"])
         cnx.close()
 
