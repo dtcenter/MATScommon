@@ -3,6 +3,9 @@
         <div class="row text-center">
             <span style="align-content:center;font-size:xx-large; font-weight: bold;">{{title}}</span>
         </div>
+        <div id="alertMessage" class="row text-center" style="display:{{alertMessageHidden}}">
+            <span style="color: red; font-size: large;">{{alertMessage}}<br/><br/></span>
+        </div>
         <div class="row well well-sm pull-left">
             {{#each plotTypes}}
                 <span style="display: inline-block"><input class="plot-type-{{plotType}}" type=radio name="plot-type" id="plot-type-{{plotType}}" {{display}} value="{{plotType}}" checked={{checked}} /> <label style="font-size: large;">{{plotType}}&nbsp;&nbsp;</label></span>

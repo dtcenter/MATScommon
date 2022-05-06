@@ -81,6 +81,8 @@ def calculate_ots(sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id, 
                 this_mode_header_id = str(sorted_mode_header[i])
                 this_fid = sorted_fid[i]
                 this_oid = sorted_oid[i]
+                if this_mode_header_id not in individual_obj_lookup:
+                    continue
                 f_area = individual_obj_lookup[this_mode_header_id][this_fid]["area"]
                 o_area = individual_obj_lookup[this_mode_header_id][this_oid]["area"]
                 if this_mode_header_id not in matched_fid.keys():
@@ -181,6 +183,8 @@ def calculate_mcd(sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id, 
                 this_fid = sorted_fid[i]
                 this_oid = sorted_oid[i]
                 this_cent_dist = sorted_cent_dist[i]
+                # if this_mode_header_id not in individual_obj_lookup:
+                #     continue
                 # f_lat = individual_obj_lookup[this_mode_header_id][this_fid]["centroid_lat"]
                 # o_lat = individual_obj_lookup[this_mode_header_id][this_oid]["centroid_lat"]
                 # f_lon = individual_obj_lookup[this_mode_header_id][this_fid]["centroid_lon"]

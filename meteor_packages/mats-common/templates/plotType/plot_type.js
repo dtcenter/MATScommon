@@ -25,6 +25,22 @@ Template.plotType.helpers({
         } else {
             return "";
         }
+    },
+    alertMessageHidden: function () {
+        const alertMessage = matsCollections.Settings.findOne({}).appMessage;
+        if (alertMessage === undefined || alertMessage === "") {
+            return "none";
+        } else {
+            return "block";
+        }
+    },
+    alertMessage: function () {
+        const alertMessage = matsCollections.Settings.findOne({}).appMessage;
+        if (alertMessage === undefined || alertMessage === "") {
+            return "";
+        } else {
+            return alertMessage;
+        }
     }
 });
 

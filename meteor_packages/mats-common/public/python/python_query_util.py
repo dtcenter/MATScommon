@@ -528,6 +528,32 @@ class QueryUtil:
             "y_var": y_var
         }
 
+    def get_object_row(self, ind_var, object_data, object_row_idx, plot_type):
+        object_row = object_data[object_row_idx]
+        if plot_type == 'ValidTime':
+            object_ind_var = float(object_row['hr_of_day'])
+        elif plot_type == 'GridScale':
+            object_ind_var = float(object_row['gridscale'])
+        elif plot_type == 'Profile':
+            object_ind_var = float(str(object_row['avVal']).replace('P', ''))
+        elif plot_type == 'DailyModelCycle' or plot_type == 'TimeSeries':
+            object_ind_var = int(object_row['avtime']) * 1000
+        elif plot_type == 'DieOff':
+            object_ind_var = int(object_row['fcst_lead'])
+            object_ind_var = object_ind_var if object_ind_var % 10000 != 0 else object_ind_var / 10000
+        elif plot_type == 'Threshold':
+            object_ind_var = float(object_row['thresh'].replace('=', '').replace('<', '').replace('>', ''))
+        elif plot_type == 'YearToYear':
+            object_ind_var = float(object_row['year'])
+        else:
+            object_ind_var = int(object_row['avtime'])
+        if ind_var > object_ind_var and object_row_idx < len(object_data) - 1:
+            # the time from the object row is too small, meaning it has no data row.
+            # move on with the magic of recursion.
+            object_row_idx = object_row_idx + 1
+            object_ind_var, object_row, object_row_idx = self.get_object_row(ind_var, object_data, object_row_idx, plot_type)
+        return object_ind_var, object_row, object_row_idx
+
     def get_time_interval(self, curr_time, time_interval, vts):
         """function for calculating the interval between the current time and the next time for models with irregular vts"""
         full_day = 24 * 3600 * 1000
@@ -589,14 +615,21 @@ class QueryUtil:
             regular = True
 
         # loop through the query results and store the returned values
+        row_idx = 0
+        object_row_idx = 0
         for row in query_data:
-            row_idx = query_data.index(row)
             av_seconds = int(row['avtime'])
             av_time = av_seconds * 1000
             xmin = av_time if av_time < xmin else xmin
             xmax = av_time if av_time > xmax else xmax
             if stat_line_type == 'mode_pair' and (statistic == "OTS (Object Threat Score)" or statistic == "Model-obs centroid distance (unique pairs)"):
-                object_row = object_data[row_idx]
+                object_av_seconds, object_row, object_row_idx = \
+                    self.get_object_row(av_seconds, object_data, object_row_idx, "Default")
+                if av_seconds < object_av_seconds and row_idx < len(query_data) - 1:
+                    # the time from the object row is too large, meaning we are missing the correct object row
+                    # for this data row. Skip this cycle.
+                    row_idx = row_idx + 1
+                    continue
             else:
                 object_row = []
             data_exists = False
@@ -669,6 +702,10 @@ class QueryUtil:
             sub_secs_all.append(sub_secs)
             if has_levels:
                 sub_levs_all.append(sub_levs)
+
+            # we successfully processed a cycle, so increment both indices
+            row_idx = row_idx + 1
+            object_row_idx = object_row_idx + 1
 
         n0_max = max(self.n0[idx])
         n_times_max = max(self.n_times[idx])
@@ -806,8 +843,9 @@ class QueryUtil:
         query_data = cursor.fetchall()
 
         # loop through the query results and store the returned values
+        row_idx = 0
+        object_row_idx = 0
         for row in query_data:
-            row_idx = query_data.index(row)
             if plot_type == 'ValidTime':
                 ind_var = float(row['hr_of_day'])
             elif plot_type == 'GridScale':
@@ -827,7 +865,13 @@ class QueryUtil:
                 ind_var = int(row['avtime'])
 
             if stat_line_type == 'mode_pair' and (statistic == "OTS (Object Threat Score)" or statistic == "Model-obs centroid distance (unique pairs)"):
-                object_row = object_data[row_idx]
+                object_ind_var, object_row, object_row_idx = \
+                    self.get_object_row(ind_var, object_data, object_row_idx, plot_type)
+                if ind_var < object_ind_var and row_idx < len(query_data) - 1:
+                    # the time from the object row is too large, meaning we are missing the correct object row
+                    # for this data row. Skip this cycle.
+                    row_idx = row_idx + 1
+                    continue
             else:
                 object_row = []
             data_exists = False
@@ -919,6 +963,10 @@ class QueryUtil:
             sub_secs_all.append(sub_secs)
             if has_levels:
                 sub_levs_all.append(sub_levs)
+
+            # we successfully processed a cycle, so increment both indices
+            row_idx = row_idx + 1
+            object_row_idx = object_row_idx + 1
 
         # make sure lists are definitely sorted by the float ind_var values, instead of their former strings
         if stat_line_type == 'mode_pair':
@@ -1074,10 +1122,18 @@ class QueryUtil:
         query_data = cursor.fetchall()
 
         # loop through the query results and store the returned values
+        row_idx = 0
+        object_row_idx = 0
         for row in query_data:
-            row_idx = query_data.index(row)
+            av_seconds = int(row['avtime'])
             if 'mode_pair' in stat_line_type and (statistic == "OTS (Object Threat Score)" or statistic == "Model-obs centroid distance (unique pairs)"):
-                object_row = object_data[row_idx]
+                object_av_seconds, object_row, object_row_idx = \
+                    self.get_object_row(av_seconds, object_data, object_row_idx, "Default")
+                if av_seconds < object_av_seconds and row_idx < len(query_data) - 1:
+                    # the time from the object row is too large, meaning we are missing the correct object row
+                    # for this data row. Skip this cycle.
+                    row_idx = row_idx + 1
+                    continue
             else:
                 object_row = []
             data_exists = False
@@ -1129,6 +1185,10 @@ class QueryUtil:
                 if has_levels:
                     list_levs = sub_levs.tolist()
                     sub_levs_all.append(list_levs)
+
+            # we successfully processed a cycle, so increment both indices
+            row_idx = row_idx + 1
+            object_row_idx = object_row_idx + 1
 
         # we don't have bins yet, so we want all of the data in one array
         self.data[idx]['subVals'] = [item for sublist in sub_vals_all for item in sublist]
