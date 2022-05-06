@@ -1547,6 +1547,9 @@ const resetApp = async function (appRef) {
         var curve_params = Meteor.settings.public.curve_params ? Meteor.settings.public.curve_params : [];
         var mapboxKey = "undefined";
 
+        // see if there's any messages to display to the users
+        const appMessage = Meteor.settings.public.alert_message ? Meteor.settings.public.alert_message : undefined;
+
         // if there isn't an app listing in matsCollections create one here so that the configuration-> applySettingsData won't fail
         if (matsCollections.appName.findOne({}) == undefined) {
             matsCollections.appName.upsert({app: appName}, {$set: {app: appName}});
@@ -1605,8 +1608,6 @@ const resetApp = async function (appRef) {
         if (Meteor.settings.private && Meteor.settings.private.MAPBOX_KEY) {
             mapboxKey = Meteor.settings.private.MAPBOX_KEY;
         }
-        // timeout in seconds
-        var connectionTimeout = Meteor.settings.public.mysql_wait_timeout != undefined ? Meteor.settings.public.mysql_wait_timeout : 300;
         delete Meteor.settings.public.undefinedRoles;
         for (var pi = 0; pi < appPools.length; pi++) {
             const record = appPools[pi];
@@ -1634,7 +1635,7 @@ const resetApp = async function (appRef) {
                     // default to mysql so that old apps won't break
                     global[poolName].on('connection', function (connection) {
                         connection.query('set group_concat_max_len = 4294967295');
-                        connection.query('set session wait_timeout = ' + connectionTimeout);
+                        connection.query('set session wait_timeout = ' + appTimeOut);
                         //("opening new " + poolName + " connection");
                     });
                 }
@@ -1708,7 +1709,7 @@ const resetApp = async function (appRef) {
         matsCollections.ColorScheme.remove({});
         matsDataUtils.doColorScheme();
         matsCollections.Settings.remove({});
-        matsDataUtils.doSettings(appTitle, dbType, appVersion, buildDate, appType, mapboxKey, appDefaultGroup, appDefaultDB, appDefaultModel, thresholdUnits);
+        matsDataUtils.doSettings(appTitle, dbType, appVersion, buildDate, appType, mapboxKey, appDefaultGroup, appDefaultDB, appDefaultModel, thresholdUnits, appMessage);
         matsCollections.PlotParams.remove({});
         matsCollections.CurveTextPatterns.remove({});
         // get the curve params for this app out of the settings file
