@@ -16,7 +16,7 @@ from mode_stats import calculate_mode_stat
 """class that contains all of the tools necessary for querying the db and calculating statistics from the 
 returned data. In the future, we plan to split this into two classes, one for querying and one for statistics."""
 class QueryUtil:
-    error = ""  # one of the four fields to return at the end -- records any error message
+    error = []  # one of the four fields to return at the end -- records any error message
     n0 = []  # one of the four fields to return at the end -- number of sub_values for each independent variable
     n_times = []  # one of the four fields to return at the end -- number of sub_secs for each independent variable
     data = []  # one of the four fields to return at the end -- the parsed data structure
@@ -79,6 +79,7 @@ class QueryUtil:
             })
             self.n0.append([])
             self.n_times.append([])
+            self.error.append("")
 
     def construct_output_json(self):
         """function for constructing and jsonifying a dictionary of the output variables"""
@@ -158,7 +159,7 @@ class QueryUtil:
                 sub_values, stat, stat_error = calculate_scalar_stat(statistic, sub_fbar, sub_obar, sub_ffbar,
                                                                      sub_oobar, sub_fobar, sub_total)
                 if stat_error != '':
-                    self.error = stat_error
+                    self.error[idx] = stat_error
 
             elif stat_line_type == 'vector':
                 sub_data = str(row['sub_data']).split(',')
@@ -214,7 +215,7 @@ class QueryUtil:
                                                                      sub_vobar, sub_uvfobar, sub_uvffbar, sub_uvoobar,
                                                                      sub_f_speed_bar, sub_o_speed_bar, sub_total)
                 if stat_error != '':
-                    self.error = stat_error
+                    self.error[idx] = stat_error
 
             elif stat_line_type == 'ctc':
                 sub_data = str(row['sub_data']).split(',')
@@ -248,7 +249,7 @@ class QueryUtil:
                 sub_values, stat, stat_error = calculate_ctc_stat(statistic, sub_fy_oy, sub_fy_on, sub_fn_oy, sub_fn_on,
                                                                   sub_total)
                 if stat_error != '':
-                    self.error = stat_error
+                    self.error[idx] = stat_error
 
             elif 'mode_pair' in stat_line_type:  # histograms will pass in 'mode_pair_histogram', but we still want to use this code here.
                 if statistic == "OTS (Object Threat Score)" or statistic == "Model-obs centroid distance (unique pairs)":
@@ -328,7 +329,7 @@ class QueryUtil:
                                                                np.asarray(sub_cent_dist_map[header_id]),
                                                                individual_obj_lookup)
                         if stat_error != '':
-                            self.error = stat_error
+                            self.error[idx] = stat_error
                         if stat == 'null':
                             sub_values.append(np.nan)
                         else:
@@ -355,7 +356,7 @@ class QueryUtil:
                     stat, stat_error = calculate_mode_stat(statistic, sub_interests, sub_pair_fids, sub_pair_oids,
                                                            sub_mode_header_ids, sub_cent_dists, individual_obj_lookup)
                     if stat_error != '':
-                        self.error = stat_error
+                        self.error[idx] = stat_error
 
             elif stat_line_type == 'precalculated':
                 stat = float(row['stat']) if float(row['stat']) != -9999 else 'null'
@@ -381,7 +382,7 @@ class QueryUtil:
                 sub_levs = np.empty(0)
 
         except KeyError as e:
-            self.error = "Error parsing query data. The expected fields don't seem to be present " \
+            self.error[idx] = "Error parsing query data. The expected fields don't seem to be present " \
                          "in the results cache: " + str(e)
             # if we don't have the data we expect just stop now and return empty data objects
             return np.nan, np.empty(0), np.empty(0), np.empty(0), np.empty(0), np.empty(0), np.empty(0), np.empty(0)
@@ -390,7 +391,7 @@ class QueryUtil:
         return stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, sub_mode_header_ids, \
                sub_cent_dists, individual_obj_lookup
 
-    def get_ens_hist_stat(self, row, has_levels):
+    def get_ens_hist_stat(self, idx, row, has_levels):
         """function for processing the sub-values from the query and getting the overall ensemble histogram statistics"""
         try:
             # get all of the sub-values for each time
@@ -413,7 +414,7 @@ class QueryUtil:
                 sub_levs = np.asarray(sub_levs)
 
         except KeyError as e:
-            self.error = "Error parsing query data. The expected fields don't seem to be present " \
+            self.error[idx] = "Error parsing query data. The expected fields don't seem to be present " \
                          "in the results cache: " + str(e)
             # if we don't have the data we expect just stop now and return empty data objects
             return np.nan, np.empty(0), np.empty(0), np.empty(0)
@@ -1223,7 +1224,7 @@ class QueryUtil:
                 self.n_times[idx].append(int(row['N_times']))
 
                 # this function deals with rhist/phist/relp and rhist_rank/phist_bin/relp_ens tables
-                stat, sub_levs, sub_secs, sub_values = self.get_ens_hist_stat(row, has_levels)
+                stat, sub_levs, sub_secs, sub_values = self.get_ens_hist_stat(idx, row, has_levels)
                 if stat == 'null' or not self.is_number(stat):
                     # there's bad data at this point
                     bins.append(bin_number)
@@ -1746,7 +1747,7 @@ class QueryUtil:
                                                                   data["individualObjLookup"][di])
                         data[stat_var_name][di] = new_stat
                         if len(new_error) > 0:
-                            self.error = new_error
+                            self.error[curve_index] = new_error
                     else:
                         data[stat_var_name][di] = sum(data["subVals"][di]) / len(data["subVals"][di])
 
@@ -1775,10 +1776,10 @@ class QueryUtil:
                     try:
                         cursor.execute(statements[1])
                     except pymysql.Error as e:
-                        self.error = "Error executing query: " + str(e)
+                        self.error[idx] = "Error executing query: " + str(e)
                     else:
                         if cursor.rowcount == 0:
-                            self.error = "INFO:0 data records found"
+                            self.error[idx] = "INFO:0 data records found"
                         else:
                             # get object data
                             object_data = cursor.fetchall()
@@ -1789,10 +1790,10 @@ class QueryUtil:
             try:
                 cursor.execute(statement)
             except pymysql.Error as e:
-                self.error = "Error executing query: " + str(e)
+                self.error[idx] = "Error executing query: " + str(e)
             else:
                 if cursor.rowcount == 0:
-                    self.error = "INFO:0 data records found"
+                    self.error[idx] = "INFO:0 data records found"
                 else:
                     if query["appParams"]["plotType"] == 'TimeSeries' and not query["appParams"]["hideGaps"]:
                         self.parse_query_data_timeseries(idx, cursor, query["statLineType"], query["statistic"],
