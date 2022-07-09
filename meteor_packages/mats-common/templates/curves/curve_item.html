@@ -23,15 +23,17 @@
                         {{#if DBcurve }}
                             {{#if editingThis}}
                                 <div id="editMode" class="btn-toolbar-sm btn-group" role="group">
-                                    <button name="save" id="curve-list-save" class="save-changes btn-success btn fa fa-line-chart">&nbsp;&nbsp;Save {{editCurve}} Changes</button>
-                                    <button name="cancel" id="curve-list-cancel" class="cancel btn-info btn fa icon-remove-sign">&nbsp;&nbsp;Cancel</button>
+                                    <button name="save" id="curve-list-save" class="save-changes btn-success btn"><i class="fa fa-line-chart"></i>&nbsp;&nbsp;Save {{editCurve}} Changes</button>
+                                    <button name="cancel" id="curve-list-cancel" class="cancel btn-info btn"><i class="fa icon-remove-sign"></i>&nbsp;&nbsp;Cancel</button>
                                 </div>
                             {{else}}
                                 <div id="nonEditMode" class="btn-toolbar-sm btn-group" role="group">
-                                    <button id="curve-list-remove" class="remove-curve btn-danger btn fa fa-times "> &nbsp;Remove  {{label}} </button>
-                                    <button id="curve-list-edit" class="edit-curve edit-curve-{{label}} btn-info btn fa fa-pencil-square-o" style="display:{{displayEdit}}">&nbsp;&nbsp;Edit  {{label}}</button>
-                                    <button id="curve-list-edit-xaxis" class="edit-curve-xaxis edit-curve-xaxis-{{label}} btn-info btn fa fa-pencil-square-o" style="display:{{displayEditXaxis}}">&nbsp;&nbsp;Edit {{label}}  X Axis</button>
-                                    <button id="curve-list-edit-yaxis" class="edit-curve-yaxis edit-curve-yaxis-{{label}}  btn btn-info fa fa-pencil-square-o" style="display:{{displayEditYaxis}}">&nbsp;&nbsp;Edit {{label}}  Y Axis</button>
+                                    <button id="curve-list-remove" class="remove-curve btn-danger btn"><i class="fa fa-times "></i> &nbsp;Remove  {{label}} </button>
+                                    <button id="curve-list-edit" class="edit-curve edit-curve-{{label}} btn-info btn" style="display:{{displayEdit}}"><i class="fa fa-pencil-square-o"></i>&nbsp;&nbsp;Edit  {{label}}</button>
+                                </div>
+                                <div id="nonEditMode-scatter" class="btn-toolbar-sm btn-group" role="group">
+                                    <button id="curve-list-edit-xaxis" class="edit-curve-xaxis edit-curve-xaxis-{{label}} btn-info btn" style="display:{{displayEditXaxis}}"><i class="fa fa-pencil-square-o"></i>&nbsp;&nbsp;Edit {{label}}  X Axis</button>
+                                    <button id="curve-list-edit-yaxis" class="edit-curve-yaxis edit-curve-yaxis-{{label}}  btn btn-info" style="display:{{displayEditYaxis}}"><i class="fa fa-pencil-square-o"></i>&nbsp;&nbsp;Edit {{label}}  Y Axis</button>
                                 </div>
                             {{/if}}
                         {{/if}}

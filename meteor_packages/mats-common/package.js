@@ -262,6 +262,24 @@ Package.onUse(function (api) {
     api.addAssets('public/python/vector_stats.py', "server");
     api.addAssets('public/python/ctc_stats.py', "server");
     api.addAssets('public/python/mode_stats.py', "server");
+    api.addAssets('public/fonts/PublicSans-Black.ttf', "client");
+    api.addAssets('public/fonts/PublicSans-BlackItalic.ttf', "client");
+    api.addAssets('public/fonts/PublicSans-Bold.ttf', "client");
+    api.addAssets('public/fonts/PublicSans-BoldItalic.ttf', "client");
+    api.addAssets('public/fonts/PublicSans-ExtraBold.ttf', "client");
+    api.addAssets('public/fonts/PublicSans-ExtraBoldItalic.ttf', "client");
+    api.addAssets('public/fonts/PublicSans-ExtraLight.ttf', "client");
+    api.addAssets('public/fonts/PublicSans-ExtraLightItalic.ttf', "client");
+    api.addAssets('public/fonts/PublicSans-Italic.ttf', "client");
+    api.addAssets('public/fonts/PublicSans-Light.ttf', "client");
+    api.addAssets('public/fonts/PublicSans-LightItalic.ttf', "client");
+    api.addAssets('public/fonts/PublicSans-Medium.ttf', "client");
+    api.addAssets('public/fonts/PublicSans-MediumItalic.ttf', "client");
+    api.addAssets('public/fonts/PublicSans-Regular.ttf', "client");
+    api.addAssets('public/fonts/PublicSans-SemiBold.ttf', "client");
+    api.addAssets('public/fonts/PublicSans-SemiBoldItalic.ttf', "client");
+    api.addAssets('public/fonts/PublicSans-Thin.ttf', "client");
+    api.addAssets('public/fonts/PublicSans-ThinItalic.ttf', "client");
 });
 
 Package.onTest(function (api) {
