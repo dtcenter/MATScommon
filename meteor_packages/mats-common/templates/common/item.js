@@ -9,10 +9,18 @@ import {matsCollections } from 'meteor/randyp:mats-common';
 
 Template.item.helpers({
     cbname: function() {
+        // Make everything title case
+        var cbname = "";
         if (this.controlButtonText !== undefined) {
-            return this.controlButtonText.toUpperCase();
+            cbname = this.controlButtonText
+        } else {
+            cbname = this.name;
         }
-        return this.name.toUpperCase();
+        cbname = cbname.split(" ");
+        for (var i = 0; i < cbname.length; i++) {
+            cbname[i] = cbname[i].charAt(0).toUpperCase() + cbname[i].slice(1);
+        }
+        return cbname.join(" ");
     },
     textValue: function() {
         Session.get('lastUpdate');

@@ -23,15 +23,15 @@
                 {{/if}}
                 <div>
                     <div class="btn-toolbar btn-group btn-xs" role="toolbar">
-                        <button type="submit" name="apply-params-to-X-axis" id="apply-params-to-xaxis" class="btn btn-success apply-params-to-xaxis fa fa-line-chart" ><span style="font-size: large">Apply params to X axis</span></button>
+                        <button type="submit" name="apply-params-to-X-axis" id="apply-params-to-xaxis" class="btn btn-success apply-params-to-xaxis" ><i class="fa fa-line-chart"></i><span style="font-size: large">Apply params to X axis</span></button>
                     </div>
                     <div class="btn-toolbar btn-group btn-xs" role="toolbar">
-                        <button type="submit" name="apply-params-to-Y-axis" id="apply-params-to-yaxis" class="btn btn-success apply-params-to-yaxis fa fa-line-chart" {{yApplyEnabled}}><span style="font-size: large">Apply params to Y axis</span></button>
+                        <button type="submit" name="apply-params-to-Y-axis" id="apply-params-to-yaxis" class="btn btn-success apply-params-to-yaxis" {{yApplyEnabled}}><i class="fa fa-line-chart"></i><span style="font-size: large">Apply params to Y axis</span></button>
                     </div>
                     <div>
-                        <span id="xaxis-curve" style="color:{{xaxisCurveColor}}" class="fa {{curveIcon}}">{{xaxisCurveText}}</span>
+                        <span id="xaxis-curve" style="color:{{xaxisCurveColor}}"><i class="fa {{curveIcon}}"></i>{{xaxisCurveText}}</span>
                         <span>&nbsp;</span>
-                        <span id="yaxis-curve" style="color:{{yaxisCurveColor}}" class="fa {{curveIcon}}">{{yaxisCurveText}}</span>
+                        <span id="yaxis-curve" style="color:{{yaxisCurveColor}}"><i class="fa {{curveIcon}}"></i>{{yaxisCurveText}}</span>
                     </div>
                 </div>
             </div>

@@ -1,6 +1,6 @@
 <template name="item">
     <div id="{{name}}-item" class="item btn-group"  role="group" style="display:{{display}}">
-        <button type="button" class="control-button btn btn-primary fa fa-hand-o-up" id="{{controlButton}}" style="display:{{controlButtonCovered}}">{{cbname}}</button>
+        <button type="button" class="control-button btn btn-primary mediumPublicSans" id="{{controlButton}}" style="display:{{controlButtonCovered}}; margin-left: 0">{{cbname}}</button>
         <span style="display:inline-block;">&nbsp;</span>
         <div id="{{element}}" style="display:{{elementHidden}};position:absolute;z-index: {{zIndexVal}};float:right;background-color: white;" >
             {{#if isSelect}}
@@ -29,10 +29,11 @@
                 {{> map this}}
             {{/if}} {{/if}} {{/if}} {{/if}} {{/if}} {{/if}} {{/if}}
         </div>
-        <button type="button" class="control-button btn btn-info fa fa-label" name="{{controlButton}}-value" id="{{controlButton}}-value" style="display:{{controlButtonCovered}}"> {{textValue}}</button>
         {{#if hasHelp}}
-            <button style="background-color:#bbffbb" type="button"  class="btn btn-default  btn-xs  help fa fa-question"></button>
+            <button type="button" class="control-button btn btn-info mediumPublicSans" name="{{controlButton}}-value" id="{{controlButton}}-value" style="display:{{controlButtonCovered}}"> {{textValue}}</button>
+            <button style="background-color:#bbffbb; color: #000000; margin-left: 0; margin-right: 1em" type="button" class="btn btn-info boldedPublicSans help">?</button>
+        {{else}}
+            <button type="button" class="control-button btn btn-info mediumPublicSans" name="{{controlButton}}-value" id="{{controlButton}}-value" style="display:{{controlButtonCovered}}; margin-right: 1em"> {{textValue}}</button>
         {{/if}}
-        <button type="button" class="btn spacebutton"></button>
     </div>
 </template>

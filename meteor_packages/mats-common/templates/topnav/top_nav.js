@@ -20,7 +20,7 @@ const getRunEnvironment = function () {
 
 Template.topNav.helpers({
     transparentGif: function() {
-        return  document.location.href + "/img/noaa_transparent.gif";
+        return  document.location.href + "/packages/randyp_mats-common/public/img/noaa_transparent.gif";
     },
     emailText: function () {
         switch (getRunEnvironment()) {

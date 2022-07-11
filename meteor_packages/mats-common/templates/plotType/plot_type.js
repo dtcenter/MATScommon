@@ -27,6 +27,7 @@ Template.plotType.helpers({
         }
     },
     alertMessageHidden: function () {
+        if (matsCollections.Settings === undefined || matsCollections.Settings.findOne({}) === undefined) return "none";
         const alertMessage = matsCollections.Settings.findOne({}).appMessage;
         if (alertMessage === undefined || alertMessage === "") {
             return "none";
@@ -35,6 +36,7 @@ Template.plotType.helpers({
         }
     },
     alertMessage: function () {
+        if (matsCollections.Settings === undefined || matsCollections.Settings.findOne({}) === undefined) return "none";
         const alertMessage = matsCollections.Settings.findOne({}).appMessage;
         if (alertMessage === undefined || alertMessage === "") {
             return "";

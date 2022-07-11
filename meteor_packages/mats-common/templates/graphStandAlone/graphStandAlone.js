@@ -205,7 +205,7 @@ Template.GraphStandAlone.helpers({
         return "newplot-" + moment(new Date()).format("DD-MM-YYYY-hh:mm:ss")
     },
     spinnerUrl: function() {
-        return document.location.href.split('preview')[0] + "img/spinner.gif"
+        return document.location.href.split('preview')[0] + "/packages/randyp_mats-common/public/img/spinner.gif"
     }
 });
 

@@ -117,32 +117,37 @@ Template.curveParamItemGroup.helpers({
       return paramGroup;
     },
     label: function(elem) {
+        var pLabel = "";
         if (matsPlotUtils.getPlotType() === matsTypes.PlotTypes.scatter2d) {
             const pNameArr = elem.name.match(/([xy]axis-)(.*)/);
             if (pNameArr === null) {
-                return elem.name.toUpperCase();
+                pLabel = elem.name;
             }
             const prefix = pNameArr[1];
             const pName = pNameArr[2];
             if (matsCollections[pName] !== undefined) {
                 const p = matsCollections[pName].findOne({name: pName});
                 if (p.controlButtonText) {
-                    return (prefix + p.controlButtonText).toUpperCase();
+                    pLabel = (prefix + p.controlButtonText);
                 } else {
-                    return elem.name.toUpperCase();
+                    pLabel =  elem.name;
                 }
             }
         } else {
             if (matsCollections[elem.name] !== undefined) {
                 const p = matsCollections[elem.name].findOne({name: elem.name});
                 if (p.controlButtonText) {
-                    return p.controlButtonText.toUpperCase();
+                    pLabel = p.controlButtonText;
                 } else {
-                    return elem.name.toUpperCase();
+                    pLabel = elem.name;
                 }
             }
         }
-        return elem.name.toUpperCase();
+        pLabel = pLabel.split(" ");
+        for (var i = 0; i < pLabel.length; i++) {
+            pLabel[i] = pLabel[i].charAt(0).toUpperCase() + pLabel[i].slice(1);
+        }
+        return pLabel.join(" ");
     },
     name: function(elem){
         return elem.name;
