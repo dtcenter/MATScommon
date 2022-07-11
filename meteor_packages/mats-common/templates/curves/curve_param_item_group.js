@@ -143,11 +143,17 @@ Template.curveParamItemGroup.helpers({
                 }
             }
         }
+        // Make everything title case
         pLabel = pLabel.split(" ");
         for (var i = 0; i < pLabel.length; i++) {
             pLabel[i] = pLabel[i].charAt(0).toUpperCase() + pLabel[i].slice(1);
+            pLabel[i] = pLabel[i] === "Utc" ? "UTC" : pLabel[i];
         }
-        return pLabel.join(" ");
+        pLabel = pLabel.join(" ").split("-");
+        for (var i = 0; i < pLabel.length; i++) {
+            pLabel[i] = pLabel[i].charAt(0).toUpperCase() + pLabel[i].slice(1);
+        }
+        return pLabel.join("-");
     },
     name: function(elem){
         return elem.name;

@@ -19,8 +19,13 @@ Template.item.helpers({
         cbname = cbname.split(" ");
         for (var i = 0; i < cbname.length; i++) {
             cbname[i] = cbname[i].charAt(0).toUpperCase() + cbname[i].slice(1);
+            cbname[i] = cbname[i] === "Utc" ? "UTC" : cbname[i];
         }
-        return cbname.join(" ");
+        cbname = cbname.join(" ").split("-");
+        for (var i = 0; i < cbname.length; i++) {
+            cbname[i] = cbname[i].charAt(0).toUpperCase() + cbname[i].slice(1);
+        }
+        return cbname.join("-");
     },
     textValue: function() {
         Session.get('lastUpdate');
