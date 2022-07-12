@@ -394,7 +394,7 @@ const checkDiffs = function () {
 };
 
 const setSelectorVisibility = function(plotType, faceOptions, selectorsToReset) {
-    if (document.getElementById('plot-type-' + plotType).checked === true) {
+    if (document.getElementById('plotTypes-selector').value === plotType) {
         // reset selectors that may have been set to something invalid for the new plot type
         const resetSelectors = Object.keys(selectorsToReset);
         for (var ridx = 0; ridx < resetSelectors.length; ridx++) {
@@ -1053,7 +1053,7 @@ const showEnsembleHistogramFace = function () {
 
 // method to display the appropriate selectors for a contour plot
 const showContourFace = function () {
-    const plotType = (document.getElementById('plot-type-' + matsTypes.PlotTypes.contour) !== null && document.getElementById('plot-type-' + matsTypes.PlotTypes.contour).checked) ? matsTypes.PlotTypes.contour : matsTypes.PlotTypes.contourDiff;
+    const plotType = document.getElementById('plotTypes-selector').value === matsTypes.PlotTypes.contour ? matsTypes.PlotTypes.contour : matsTypes.PlotTypes.contourDiff;
     var faceOptions = {
         'curve-dates': 'none',
         'dates': 'block',

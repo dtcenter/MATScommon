@@ -100,11 +100,11 @@ Template.plotList.events({
         var action = event.currentTarget.name;
         var p = {};
         // get the plot-type elements checked state
-        const plotTypeElems = $('input[name=plot-type]');
+        const plotTypeElems = document.getElementById("plotTypes-selector");
         p.plotTypes = {};
         for (ptei = 0; ptei < plotTypeElems.length; ptei++){
             const ptElem = plotTypeElems[ptei];
-            p.plotTypes[ptElem.value] = ptElem.checked;
+            p.plotTypes[ptElem.value] = ptElem.value === plotTypeElems.value;
         }
         var curves = Session.get('Curves');
         if (curves == 0 && action !== "restore") {
@@ -213,7 +213,7 @@ Template.plotList.events({
                 // reset the plotType - have to do this first because the event will remove all the possibly existing curves
                 // get the plot-type elements checked state
                 var plotTypeSaved = false;
-                const plotTypeElems = $('input[name=plot-type]');
+                const plotTypeElems = document.getElementById("plotTypes-selector");
                 for (var ptei = 0; ptei < plotTypeElems.length; ptei++){
                     var ptElem = plotTypeElems[ptei];
                     if (p.data.plotTypes && p.data.plotTypes[ptElem.value] === true) {
@@ -278,7 +278,7 @@ Template.plotList.events({
                 }
                 if (plotTypeSaved !== true) {
                     // set the default - in the case none was set in an old saved settings
-                    document.getElementById("plot-type-" + matsCollections.PlotGraphFunctions.findOne({checked:true}).plotType).checked = true;
+                    document.getElementById("plotTypes-selector").value = matsCollections.PlotGraphFunctions.findOne({checked:true}).plotType;
                 }
 
                 // now set the PlotParams
