@@ -67,12 +67,12 @@ Template.paramList.events({
         matsParamUtils.collapseParams();
     },
     'click .reset': function (event, template) {
-        const plotType = $('input[name=plot-type]:checked').val();
+        const plotType = document.getElementById("plotTypes-selector").value;
         event.preventDefault();
         Session.set("paramWellColor", "rgb(245,245,245)");
         var paramView = document.getElementById('paramList');
         var plotView = document.getElementById('plotList');
-        document.getElementById('plot-type-' + plotType).checked = true;
+        document.getElementById("plotTypes-selector").value = plotType;
         matsMethods.refreshMetaData.call({}, function (error, result) {
             if (error !== undefined) {
                 setError(new Error(error.message));

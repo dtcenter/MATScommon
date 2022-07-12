@@ -75,13 +75,7 @@ const getCurveTextWrapping = function (plotType, curve) {
 
 // determine which plotType radio button is checked
 const getPlotType = function () {
-    var buttons = document.getElementsByName('plot-type');
-    for (var i = 0, len = buttons.length; i < len; i++) {
-        if (buttons[i].checked) {
-            return buttons[i].value;
-        }
-    }
-    return "";    // error condition actually - shouldn't ever happen
+    return document.getElementById("plotTypes-selector") ? document.getElementById("plotTypes-selector").value : undefined;
 };
 
 // determine which plotFormat radio button is checked
