@@ -176,8 +176,8 @@ Template.textOutput.helpers({
                         <th>average interest</th>";
                 } else {
                     header += "<th>" + curve.label + labelSuffix + "</th>\
-                        <th>raw stat from query</th>\
-                        <th>mean stat</th>\
+                        <th>stat</th>\
+                        <th>mean</th>\
                         <th>std dev</th>\
                         <th>std error</th>\
                         <th>lag1</th>\
@@ -205,8 +205,8 @@ Template.textOutput.helpers({
                         <th>average interest</th>";
                 } else {
                     header += "<th>" + curve.label + labelSuffix + "</th>\
-                        <th>raw stat from query</th>\
-                        <th>mean stat</th>\
+                        <th>stat</th>\
+                        <th>mean</th>\
                         <th>std dev</th>\
                         <th>n</th>";
                 }
@@ -372,8 +372,8 @@ Template.textOutput.helpers({
                         "<td>" + (element['avgInterest'] != undefined && element['avgInterest'] !== null ? element['avgInterest'].toString() : fillStr) + "</td>";
                 } else {
                     line += "<td>" + element[labelKey += labelSuffix] + "</td>" +
-                        "<td>" + (element['raw stat from query'] != undefined && element['raw stat from query'] !== null ? element['raw stat from query'].toPrecision(4) : fillStr) + "</td>" +
-                        "<td>" + (element['mean stat'] != undefined && element['mean stat'] !== null ? element['mean stat'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (element['stat'] != undefined && element['stat'] !== null ? element['stat'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (element['mean'] != undefined && element['mean'] !== null ? element['mean'].toPrecision(4) : fillStr) + "</td>" +
                         "<td>" + (element['std dev'] != undefined && element['std dev'] !== null ? element['std dev'].toPrecision(4) : fillStr) + "</td>" +
                         "<td>" + (element['std error'] != undefined && element['std error'] !== null ? element['std error'].toPrecision(4) : fillStr) + "</td>" +
                         "<td>" + (element['lag1'] != undefined && element['lag1'] !== null ? element['lag1'].toPrecision(4) : fillStr) + "</td>" +
@@ -401,8 +401,8 @@ Template.textOutput.helpers({
                         "<td>" + (element['avgInterest'] != undefined && element['avgInterest'] !== null ? element['avgInterest'].toString() : fillStr) + "</td>";
                 } else {
                     line += "<td>" + element[labelKey += labelSuffix] + "</td>" +
-                        "<td>" + (element['raw stat from query'] != undefined && element['raw stat from query'] !== null ? element['raw stat from query'].toPrecision(4) : fillStr) + "</td>" +
-                        "<td>" + (element['mean stat'] != undefined && element['mean stat'] !== null ? element['mean stat'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (element['stat'] != undefined && element['stat'] !== null ? element['stat'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (element['mean'] != undefined && element['mean'] !== null ? element['mean'].toPrecision(4) : fillStr) + "</td>" +
                         "<td>" + (element['std dev'] != undefined && element['std dev'] !== null ? element['std dev'].toPrecision(4) : fillStr) + "</td>" +
                         "<td>" + (('n' in element) && element['n'] ? element['n'] : fillStr) + "</td>";
                 }

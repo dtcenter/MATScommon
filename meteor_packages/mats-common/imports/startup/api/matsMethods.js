@@ -402,8 +402,8 @@ const _getFlattenedResultData = function (rk, p, np) {
                                 curveDataElement['n'] = data[ci].stats[cdi].n;
                                 curveDataElement['avgInterest'] = data[ci].stats[cdi].avgInterest;
                             } else {
-                                curveDataElement['raw stat from query'] = data[ci].stats[cdi].raw_stat;
-                                curveDataElement['mean stat'] = data[ci].stats[cdi].d_mean;
+                                curveDataElement['stat'] = data[ci].stats[cdi].stat;
+                                curveDataElement['mean'] = data[ci].stats[cdi].mean;
                                 curveDataElement['std dev'] = data[ci].stats[cdi].sd;
                                 if (plotType === matsTypes.PlotTypes.timeSeries || plotType === matsTypes.PlotTypes.profile) {
                                     curveDataElement['std error'] = data[ci].stats[cdi].stde_betsy;

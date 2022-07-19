@@ -35,7 +35,7 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
         var data = dataset[curveIndex];
         var statType;
         if (curveInfoParams.statType === undefined) {
-            statType = 'scalar';
+            statType = 'default';
         } else if (Array.isArray(curveInfoParams.statType)) {
             statType = curveInfoParams.statType[curveIndex];
         } else {
@@ -46,7 +46,6 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
         var di = 0;
         var values = [];
         var indVars = [];
-        var rawStat;
 
         while (di < data.x.length) {
 
@@ -54,6 +53,13 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
             // These don't make sense for aggregated MODE stats, so skip for them.
             var errorResult;
             if (statType !== 'met-mode_pair') {
+                if (statType === 'scalar') {
+                    // need to populate subVals so get_err can work
+                    for (var svIdx = 0; svIdx < data.subSquareDiffSum[di].length; svIdx++) {
+                        data.subVals[di][svIdx] = matsDataUtils.calculateStatScalar(data.subSquareDiffSum[di][svIdx], data.subNSum[di][svIdx], data.subObsModelDiffSum[di][svIdx], data.subModelSum[di][svIdx], data.subObsSum[di][svIdx], data.subAbsSum[di][svIdx], statisticSelect + "_" + curveInfoParams.curves[curveIndex]['variable']);
+                    }
+                }
+
                 if (appParams.hasLevels) {
                     errorResult = matsDataUtils.get_err(data.subVals[di], data.subSecs[di], data.subLevs[di], appParams);
                 } else {
@@ -61,36 +67,27 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
                 }
             }
 
-            // store raw statistic from query before recalculating that statistic to account for data removed due to matching, QC, etc.
-            rawStat = data.y[di];
-
-            // this ungainly if statement is because the surfrad3 database doesn't support recalculating some stats.
-            // we can eventually do the same for its stats that we did for ctc stats and get around that.
-            // because this section of code is just awful.
-            if (appName !== "surfrad" ||
-                !(appName === "surfrad" &&
-                    (statisticSelect === 'Std deviation (do not plot matched)' || statisticSelect === 'RMS (do not plot matched)') &&
-                    !appParams.matching)) {
-                if ((diffFrom === null || diffFrom === undefined) || !appParams.matching) {
-                    if (statType !== 'ctc' && statType !== 'met-mode_pair') {
-                        // assign recalculated statistic to data[di][1], which is the value to be plotted
-                        if (statisticSelect === 'N' || statisticSelect === 'N times*levels(*stations if station plot) per graph point') {
-                            data.y[di] = errorResult.sum;
-                        } else {
-                            data.y[di] = errorResult.d_mean;
-                        }
-                    }
-                } else {
-                    if (dataset[diffFrom[0]].y[di] !== null && dataset[diffFrom[1]].y[di] !== null) {
-                        // make sure that the diff curve actually shows the difference when matching.
-                        // otherwise outlier filtering etc. can make it slightly off.
-                        data.y[di] = dataset[diffFrom[0]].y[di] - dataset[diffFrom[1]].y[di];
+            if ((diffFrom === null || diffFrom === undefined) || !appParams.matching) {
+                if (statType !== 'ctc' && statType !== 'scalar' && statType !== 'met-mode_pair') {
+                    // assign recalculated statistic to data[di][1], which is the value to be plotted
+                    // we have already recalculated the statistic for ctc and scalar stats if there was matching, etc, so keep that value
+                    if (statisticSelect === 'N' || statisticSelect === 'N times*levels(*stations if station plot) per graph point') {
+                        data.y[di] = errorResult.sum;
                     } else {
-                        // keep the null for no data at this point
-                        data.y[di] = null;
+                        data.y[di] = errorResult.d_mean;
                     }
                 }
+            } else {
+                if (dataset[diffFrom[0]].y[di] !== null && dataset[diffFrom[1]].y[di] !== null) {
+                    // make sure that the diff curve actually shows the difference when matching.
+                    // otherwise outlier filtering etc. can make it slightly off.
+                    data.y[di] = dataset[diffFrom[0]].y[di] - dataset[diffFrom[1]].y[di];
+                } else {
+                    // keep the null for no data at this point
+                    data.y[di] = null;
+                }
             }
+
             values.push(data.y[di]);
             indVars.push(data.x[di]);
 
@@ -193,8 +190,7 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
                 data.stats[di] = {
                     stat: data.y[di],
                     n: errorResult.n_good,
-                    raw_stat: rawStat,
-                    d_mean: statisticSelect === 'N' || statisticSelect === 'N times*levels(*stations if station plot) per graph point' ? errorResult.sum : errorResult.d_mean,
+                    mean: statisticSelect === 'N' || statisticSelect === 'N times*levels(*stations if station plot) per graph point' ? errorResult.sum : errorResult.d_mean,
                     sd: errorResult.sd,
                     n_good: errorResult.n_good,
                     lag1: errorResult.lag1,
@@ -273,6 +269,12 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
         data.subFa = [];
         data.subMiss = [];
         data.subCn = [];
+        data.subSquareDiffSum = [];
+        data.subNSum = [];
+        data.subObsModelDiffSum = [];
+        data.subModelSum = [];
+        data.subObsSum = [];
+        data.subAbsSum = [];
         data.subInterest = [];
         data.subVals = [];
         data.subSecs = [];

@@ -332,7 +332,7 @@ const doSettings = function (title, dbType, version, buildDate, appType, mapboxK
     matsCollections.Settings.update(settingsId, {$set: settings});
 };
 
-// calculates the statistic for ctc station plots
+// calculates the statistic for ctc plots
 const calculateStatCTC = function (hit, fa, miss, cn, n, statistic) {
     if (isNaN(hit) || isNaN(fa) || isNaN(miss) || isNaN(cn)) return null;
     var queryVal;
@@ -392,6 +392,47 @@ const calculateStatCTC = function (hit, fa, miss, cn, n, statistic) {
         case 'N times*levels(*stations if station plot) per graph point':
             queryVal = n;
             break;
+    }
+    return queryVal;
+};
+
+// calculates the statistic for scalar partial sums plots
+const calculateStatScalar = function (squareDiffSum, NSum, obsModelDiffSum, modelSum, obsSum, absSum, statistic) {
+    if (isNaN(squareDiffSum) || isNaN(NSum) || isNaN(obsModelDiffSum) || isNaN(modelSum) || isNaN(obsSum)  || isNaN(absSum)) return null;
+    var queryVal;
+    var variable = statistic.split("_")[1];
+    statistic = statistic.split("_")[0];
+    switch (statistic) {
+        case 'RMSE':
+            queryVal = Math.sqrt(squareDiffSum / NSum);
+            break;
+        case 'Bias (Model - Obs)':
+            queryVal = (modelSum - obsSum) / NSum;
+            break;
+        case 'N':
+            queryVal = NSum;
+            break;
+        case 'Model average':
+            queryVal = modelSum / NSum;
+            break;
+        case 'Obs average':
+            queryVal = obsSum / NSum;
+            break;
+        case 'Std deviation':
+            queryVal = Math.sqrt(squareDiffSum / NSum - Math.pow((obsModelDiffSum / NSum), 2));
+            break;
+        case 'MAE (temp and dewpoint only)':
+            queryVal = absSum / NSum;
+            break;
+    }
+    // need to convert to correct units
+    if (variable.includes("temperature") || variable.includes("dewpoint")) {
+        if (statistic.includes("average")) {
+            queryVal = queryVal - 32;
+        }
+        queryVal = queryVal / 1.8;
+    } else if (variable.includes("wind")) {
+        queryVal = queryVal / 2.23693629;
     }
     return queryVal;
 };
@@ -1170,7 +1211,7 @@ const ctcErrorPython = function (statistic, minuendData, subtrahendData) {
 };
 
 // utility to remove a point on a graph
-const removePoint = function (data, di, plotType, statVarName, isCTC, hasLevels) {
+const removePoint = function (data, di, plotType, statVarName, isCTC, isScalar, hasLevels) {
     data.x.splice(di, 1);
     data.y.splice(di, 1);
     if (plotType === matsTypes.PlotTypes.performanceDiagram || plotType === matsTypes.PlotTypes.roc) {
@@ -1185,6 +1226,13 @@ const removePoint = function (data, di, plotType, statVarName, isCTC, hasLevels)
         data.subFa.splice(di, 1);
         data.subMiss.splice(di, 1);
         data.subCn.splice(di, 1);
+    } else if (isScalar) {
+        data.subSquareDiffSum.splice(di, 1);
+        data.subNSum.splice(di, 1);
+        data.subObsModelDiffSum.splice(di, 1);
+        data.subModelSum.splice(di, 1);
+        data.subObsSum.splice(di, 1);
+        data.subAbsSum.splice(di, 1);
     } else {
         data.subVals.splice(di, 1);
     }
@@ -1197,13 +1245,20 @@ const removePoint = function (data, di, plotType, statVarName, isCTC, hasLevels)
 };
 
 // utility to make null a point on a graph
-const nullPoint = function (data, di, statVarName, isCTC, hasLevels) {
+const nullPoint = function (data, di, statVarName, isCTC, isScalar, hasLevels) {
     data[statVarName][di] = null;
     if (isCTC) {
         data.subHit[di] = NaN;
         data.subFa[di] = NaN;
         data.subMiss[di] = NaN;
         data.subCn[di] = NaN;
+    } else if (isScalar) {
+        data.subSquareDiffSum[di] = NaN;
+        data.subNSum[di] = NaN;
+        data.subObsModelDiffSum[di] = NaN;
+        data.subModelSum[di] = NaN;
+        data.subObsSum[di] = NaN;
+        data.subAbsSum[di] = NaN;
     } else {
         data.subVals[di] = NaN;
     }
@@ -1244,6 +1299,7 @@ export default matsDataUtils = {
     doRoles: doRoles,
     doSettings: doSettings,
     calculateStatCTC: calculateStatCTC,
+    calculateStatScalar: calculateStatScalar,
     get_err: get_err,
     ctcErrorPython: ctcErrorPython,
     checkDiffContourSignificance: checkDiffContourSignificance,

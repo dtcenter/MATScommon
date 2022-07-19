@@ -17,12 +17,24 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
     var subFa = [];
     var subMiss = [];
     var subCn = [];
+    var subSquareDiffSum = [];
+    var subNSum = [];
+    var subObsModelDiffSum = [];
+    var subModelSum = [];
+    var subObsSum = [];
+    var subAbsSum = [];
     var newSubSecs = [];
     var newSubLevs = [];
     var newSubHit = [];
     var newSubFa = [];
     var newSubMiss = [];
     var newSubCn = [];
+    var newSubSquareDiffSum = [];
+    var newSubNSum = [];
+    var newSubObsModelDiffSum = [];
+    var newSubModelSum = [];
+    var newSubObsSum = [];
+    var newSubAbsSum = [];
     var newSubValues = [];
     var newCurveData = {};
     var independentVarGroups = [];
@@ -42,7 +54,9 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
     const hasLevels = appParams.hasLevels;
     const curvesLength = curveInfoParams.curvesLength;
     const isCTC = !Array.isArray(curveInfoParams.statType) && curveInfoParams.statType === 'ctc' && plotType !== matsTypes.PlotTypes.histogram;
+    const isScalar = !Array.isArray(curveInfoParams.statType) && curveInfoParams.statType === 'scalar' && plotType !== matsTypes.PlotTypes.histogram;
     const curveStats = curveInfoParams.curves.map(a => a.statistic);
+    const curveVars = isScalar ? curveInfoParams.curves.map(a => a.variable) : [];
     const curveDiffs = curveInfoParams.curves.map(a => a.diffFrom);
     var removeNonMatchingIndVars;
     switch (plotType) {
@@ -226,10 +240,10 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                     // if this is not a common non-null independentVar value, we'll have to remove some data
                     if (matchingIndependentHasPoint.indexOf(data[independentVarName][di]) === -1) {
                         // if at least one curve doesn't even have a null here, much less a matching value (because of the cadence), just drop this independentVar
-                        matsDataUtils.removePoint(data, di, plotType, statVarName, isCTC, hasLevels);
+                        matsDataUtils.removePoint(data, di, plotType, statVarName, isCTC, isScalar, hasLevels);
                     } else {
                         // if all of the curves have either data or nulls at this independentVar, and there is at least one null, ensure all of the curves are null
-                        matsDataUtils.nullPoint(data, di, statVarName, isCTC, hasLevels);
+                        matsDataUtils.nullPoint(data, di, statVarName, isCTC, isScalar, hasLevels);
                     }
                     // then move on to the next independentVar. There's no need to mess with the subSecs or subLevs
                     continue;
@@ -241,6 +255,13 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                 subFa = data.subFa[di];
                 subMiss = data.subMiss[di];
                 subCn = data.subCn[di];
+            } else if (isScalar) {
+                subSquareDiffSum = data.subSquareDiffSum[di];
+                subNSum = data.subNSum[di];
+                subObsModelDiffSum = data.subObsModelDiffSum[di];
+                subModelSum = data.subModelSum[di];
+                subObsSum = data.subObsSum[di];
+                subAbsSum = data.subAbsSum[di];
             } else {
                 subValues = data.subVals[di];
             }
@@ -254,6 +275,12 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                 newSubFa = [];
                 newSubMiss = [];
                 newSubCn = [];
+                newSubSquareDiffSum = [];
+                newSubNSum = [];
+                newSubObsModelDiffSum = [];
+                newSubModelSum = [];
+                newSubObsSum = [];
+                newSubAbsSum = [];
                 newSubValues = [];
                 newSubSecs = [];
                 if (hasLevels) {
@@ -273,6 +300,13 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                             var newFa = subFa[si];
                             var newMiss = subMiss[si];
                             var newCn = subCn[si];
+                        } else if (isScalar) {
+                            var newSquareDiffSum = subSquareDiffSum[si];
+                            var newNSum = subNSum[si];
+                            var newObsModelDiffSum = subObsModelDiffSum[si];
+                            var newModelSum = subModelSum[si];
+                            var newObsSum = subObsSum[si];
+                            var newAbsSum = subAbsSum[si];
                         } else {
                             var newVal = subValues[si];
                         }
@@ -291,6 +325,19 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                                     newSubLevs.push(newLev);
                                 }
                             }
+                        } else if (isScalar) {
+                            if (newSquareDiffSum !== undefined) {
+                                newSubSquareDiffSum.push(newSquareDiffSum);
+                                newSubNSum.push(newNSum);
+                                newSubObsModelDiffSum.push(newObsModelDiffSum);
+                                newSubModelSum.push(newModelSum);
+                                newSubObsSum.push(newObsSum);
+                                newSubAbsSum.push(newAbsSum);
+                                newSubSecs.push(newSec);
+                                if (hasLevels) {
+                                    newSubLevs.push(newLev);
+                                }
+                            }
                         } else {
                             if (newVal !== undefined) {
                                 newSubValues.push(newVal);
@@ -304,7 +351,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                 }
                 if (newSubSecs.length === 0) {
                     // no matching sub-values, so null the point
-                    matsDataUtils.nullPoint(data, di, statVarName, isCTC, hasLevels);
+                    matsDataUtils.nullPoint(data, di, statVarName, isCTC, isScalar, hasLevels);
                 } else {
                     // store the filtered data
                     if (isCTC) {
@@ -312,6 +359,13 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                         data.subFa[di] = newSubFa;
                         data.subMiss[di] = newSubMiss;
                         data.subCn[di] = newSubCn;
+                    } else if (isScalar) {
+                        data.subSquareDiffSum[di] = newSubSquareDiffSum;
+                        data.subNSum[di] = newSubNSum;
+                        data.subObsModelDiffSum[di] = newSubObsModelDiffSum;
+                        data.subModelSum[di] = newSubModelSum;
+                        data.subObsSum[di] = newSubObsSum;
+                        data.subAbsSum[di] = newSubAbsSum;
                     } else {
                         data.subVals[di] = newSubValues;
                     }
@@ -322,7 +376,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                 }
             } else {
                 // no sub-values to begin with, so null the point
-                matsDataUtils.nullPoint(data, di, statVarName, isCTC, hasLevels);
+                matsDataUtils.nullPoint(data, di, statVarName, isCTC, isScalar, hasLevels);
             }
         }
 
@@ -348,6 +402,20 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                     } else {
                         data[statVarName][di] = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, data.subHit[di].length, curveStats[curveIndex]);
                     }
+                }
+            }
+        } else if (isScalar && (curveDiffs[curveIndex] === undefined || curveDiffs[curveIndex] === null)) {
+            // need to recalculate the primary statistic with the newly matched hits, false alarms, etc.
+            dataLength = data[independentVarName].length;
+            for (di = 0; di < dataLength; di++) {
+                if (data.subSquareDiffSum[di] instanceof Array) {
+                    const squareDiffSum = matsDataUtils.sum(data.subSquareDiffSum[di]);
+                    const NSum = matsDataUtils.sum(data.subNSum[di]);
+                    const obsModelDiffSum = matsDataUtils.sum(data.subObsModelDiffSum[di]);
+                    const modelSum = matsDataUtils.sum(data.subModelSum[di]);
+                    const obsSum = matsDataUtils.sum(data.subObsSum[di]);
+                    const absSum = matsDataUtils.sum(data.subAbsSum[di]);
+                    data[statVarName][di] = matsDataUtils.calculateStatScalar(squareDiffSum, NSum, obsModelDiffSum, modelSum, obsSum, absSum, curveStats[curveIndex] + "_" + curveVars[curveIndex]);
                 }
             }
         } else if (plotType === matsTypes.PlotTypes.histogram) {

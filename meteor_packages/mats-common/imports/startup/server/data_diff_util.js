@@ -30,7 +30,7 @@ const getLargeIntervalCurveData = function (dataset, diffFrom, independentVarNam
 };
 
 // generates diff curves for all plot types that have diff curves.
-const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC) {
+const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC, isScalar) {
     /*
      DATASET ELEMENTS:
         series: [data,data,data ...... ]   each data is itself an object
@@ -43,6 +43,12 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC) {
             subFa: [],
             subMiss: [],
             subCn: [],
+            subSquareDiffSum: [],
+            subNSum: [],
+            subObsModelDiffSum: [],
+            subModelSum: [],
+            subObsSum: [],
+            subAbsSum: [],
             subInterest: [],
             subVals: [],
             subSecs: [],
@@ -91,6 +97,12 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC) {
         subFa: [],
         subMiss: [],
         subCn: [],
+        subSquareDiffSum: [],
+        subNSum: [],
+        subObsModelDiffSum: [],
+        subModelSum: [],
+        subObsSum: [],
+        subAbsSum: [],
         subInterest: [],
         subVals: [],
         subSecs: [],
@@ -157,6 +169,12 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC) {
         var tempSubFaArray;
         var tempSubMissArray;
         var tempSubCnArray;
+        var tempSubSquareDiffSumArray;
+        var tempSubNSumArray;
+        var tempSubObsModelDiffSumArray;
+        var tempSubModelSumArray;
+        var tempSubObsSumArray;
+        var tempSubAbsSumArray;
         var tempSubValsArray;
         var tempSubSecsArray;
         var tempSubLevsArray;
@@ -175,6 +193,12 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC) {
                 tempSubFaArray = [];
                 tempSubMissArray = [];
                 tempSubCnArray = [];
+                tempSubSquareDiffSumArray = [];
+                tempSubNSumArray = [];
+                tempSubObsModelDiffSumArray = [];
+                tempSubModelSumArray = [];
+                tempSubObsSumArray = [];
+                tempSubAbsSumArray = [];
                 tempSubValsArray = [];
                 tempSubSecsArray = [];
                 if (hasLevels) {
@@ -193,6 +217,19 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC) {
                             var subtrahendDataSubFa = subtrahendData.subFa[subtrahendIndex];
                             var subtrahendDataSubMiss = subtrahendData.subMiss[subtrahendIndex];
                             var subtrahendDataSubCn = subtrahendData.subCn[subtrahendIndex];
+                        } else if (isScalar) {
+                            var minuendDataSubSquareDiffSum = minuendData.subSquareDiffSum[minuendIndex];
+                            var minuendDataSubNSum = minuendData.subNSum[minuendIndex];
+                            var minuendDataSubObsModelDiffSum = minuendData.subObsModelDiffSum[minuendIndex];
+                            var minuendDataSubModelSum = minuendData.subModelSum[minuendIndex];
+                            var minuendDataSubObsSum = minuendData.subObsSum[minuendIndex];
+                            var minuendDataSubAbsSum = minuendData.subAbsSum[minuendIndex];
+                            var subtrahendDataSubSquareDiffSum = subtrahendData.subSquareDiffSum[minuendIndex];
+                            var subtrahendDataSubNSum = subtrahendData.subNSum[minuendIndex];
+                            var subtrahendDataSubObsModelDiffSum = subtrahendData.subObsModelDiffSum[minuendIndex];
+                            var subtrahendDataSubModelSum = subtrahendData.subModelSum[minuendIndex];
+                            var subtrahendDataSubObsSum = subtrahendData.subObsSum[minuendIndex];
+                            var subtrahendDataSubAbsSum = subtrahendData.subAbsSum[minuendIndex];
                         } else {
                             var minuendDataSubValues = minuendData.subVals[minuendIndex];
                             var subtrahendDataSubValues = subtrahendData.subVals[subtrahendIndex];
@@ -207,28 +244,27 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC) {
                         // find matching sub values and diff those
                         for (var mvalIdx = 0; mvalIdx < minuendDataSubSeconds.length; mvalIdx++) {
                             for (var svalIdx = 0; svalIdx < subtrahendDataSubSeconds.length; svalIdx++) {
-                                if (hasLevels && minuendDataSubSeconds[mvalIdx] === subtrahendDataSubSeconds[svalIdx] && minuendDataSubLevels[mvalIdx] === subtrahendDataSubLevels[svalIdx]) {
+                                if ((hasLevels && minuendDataSubSeconds[mvalIdx] === subtrahendDataSubSeconds[svalIdx] && minuendDataSubLevels[mvalIdx] === subtrahendDataSubLevels[svalIdx]) ||
+                                    (!hasLevels && minuendDataSubSeconds[mvalIdx] === subtrahendDataSubSeconds[svalIdx])) {
                                     if (isCTC) {
                                         tempSubHitArray.push(minuendDataSubHit[mvalIdx] - subtrahendDataSubHit[svalIdx]);
                                         tempSubFaArray.push(minuendDataSubFa[mvalIdx] - subtrahendDataSubFa[svalIdx]);
                                         tempSubMissArray.push(minuendDataSubMiss[mvalIdx] - subtrahendDataSubMiss[svalIdx]);
                                         tempSubCnArray.push(minuendDataSubCn[mvalIdx] - subtrahendDataSubCn[svalIdx]);
+                                    } else if (isScalar) {
+                                        tempSubSquareDiffSumArray.push(minuendDataSubSquareDiffSum[mvalIdx] - subtrahendDataSubSquareDiffSum[svalIdx]);
+                                        tempSubNSumArray.push(minuendDataSubNSum[mvalIdx] - subtrahendDataSubNSum[svalIdx]);
+                                        tempSubObsModelDiffSumArray.push(minuendDataSubObsModelDiffSum[mvalIdx] - subtrahendDataSubObsModelDiffSum[svalIdx]);
+                                        tempSubModelSumArray.push(minuendDataSubModelSum[mvalIdx] - subtrahendDataSubModelSum[svalIdx]);
+                                        tempSubObsSumArray.push(minuendDataSubObsSum[mvalIdx] - subtrahendDataSubObsSum[svalIdx]);
+                                        tempSubAbsSumArray.push(minuendDataSubAbsSum[mvalIdx] - subtrahendDataSubAbsSum[svalIdx]);
                                     } else {
                                         tempSubValsArray.push(minuendDataSubValues[mvalIdx] - subtrahendDataSubValues[svalIdx]);
                                     }
                                     tempSubSecsArray.push(minuendDataSubSeconds[mvalIdx]);
-                                    tempSubLevsArray.push(minuendDataSubLevels[mvalIdx]);
-                                    d["glob_stats"]["glob_n"]++;
-                                } else if (!hasLevels && minuendDataSubSeconds[mvalIdx] === subtrahendDataSubSeconds[svalIdx]) {
-                                    if (isCTC) {
-                                        tempSubHitArray.push(minuendDataSubHit[mvalIdx] - subtrahendDataSubHit[svalIdx]);
-                                        tempSubFaArray.push(minuendDataSubFa[mvalIdx] - subtrahendDataSubFa[svalIdx]);
-                                        tempSubMissArray.push(minuendDataSubMiss[mvalIdx] - subtrahendDataSubMiss[svalIdx]);
-                                        tempSubCnArray.push(minuendDataSubCn[mvalIdx] - subtrahendDataSubCn[svalIdx]);
-                                    } else {
-                                        tempSubValsArray.push(minuendDataSubValues[mvalIdx] - subtrahendDataSubValues[svalIdx]);
+                                    if (hasLevels) {
+                                        tempSubLevsArray.push(minuendDataSubLevels[mvalIdx]);
                                     }
-                                    tempSubSecsArray.push(minuendDataSubSeconds[mvalIdx]);
                                     d["glob_stats"]["glob_n"]++;
                                 }
                             }
@@ -238,6 +274,12 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC) {
                         d.subFa.push(tempSubFaArray);
                         d.subMiss.push(tempSubMissArray);
                         d.subCn.push(tempSubCnArray);
+                        d.subSquareDiffSum.push(tempSubSquareDiffSumArray);
+                        d.subNSum.push(tempSubNSumArray);
+                        d.subObsModelDiffSum.push(tempSubObsModelDiffSumArray);
+                        d.subModelSum.push(tempSubModelSumArray);
+                        d.subObsSum.push(tempSubObsSumArray);
+                        d.subAbsSum.push(tempSubAbsSumArray);
                         d.subVals.push(tempSubValsArray);
                         d.subSecs.push(tempSubSecsArray);
                         if (hasLevels) {
@@ -268,6 +310,12 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC) {
                 d.subFa.push([]);
                 d.subMiss.push([]);
                 d.subCn.push([]);
+                d.subSquareDiffSum.push([]);
+                d.subNSum.push([]);
+                d.subObsModelDiffSum.push([]);
+                d.subModelSum.push([]);
+                d.subObsSum.push([]);
+                d.subAbsSum.push([]);
                 d.subVals.push([]);
                 d.subSecs.push([]);
                 if (hasLevels) {
