@@ -356,6 +356,12 @@ const queryDBSpecialtyCurve = function (pool, statement, appParams, statisticStr
             subFa: [],
             subMiss: [],
             subCn: [],
+            subSquareDiffSum: [],
+            subNSum: [],
+            subObsModelDiffSum: [],
+            subModelSum: [],
+            subObsSum: [],
+            subAbsSum: [],
             subVals: [],
             subSecs: [],
             subLevs: [],
@@ -1190,6 +1196,12 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
             subFa: [],
             subMiss: [],
             subCn: [],
+            subSquareDiffSum: [],
+            subNSum: [],
+            subObsModelDiffSum: [],
+            subModelSum: [],
+            subObsSum: [],
+            subAbsSum: [],
             subVals: [],
             subSecs: [],
             subLevs: [],
@@ -1207,6 +1219,7 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
     const hasLevels = appParams.hasLevels;
     const completenessQCParam = Number(appParams.completeness) / 100;
     var isCTC = false;
+    var isScalar = false;
     const hideGaps = appParams.hideGaps;
 
     // initialize local variables
@@ -1218,6 +1231,12 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
     var subFa = [];
     var subMiss = [];
     var subCn = [];
+    var subSquareDiffSum = [];
+    var subNSum = [];
+    var subObsModelDiffSum = [];
+    var subModelSum = [];
+    var subObsSum = [];
+    var subAbsSum = [];
     var subVals = [];
     var subSecs = [];
     var subLevs = [];
@@ -1261,8 +1280,23 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
             } else {
                 stat = null;
             }
+        } else if (rows[rowIndex].stat === undefined && rows[rowIndex].square_diff_sum !== undefined) {
+            // this is a scalar partial sums plot
+            isScalar = true;
+            const squareDiffSum = Number(rows[rowIndex].square_diff_sum);
+            const NSum = Number(rows[rowIndex].N_sum);
+            const obsModelDiffSum = Number(rows[rowIndex].obs_model_diff_sum);
+            const modelSum = Number(rows[rowIndex].model_sum);
+            const obsSum = Number(rows[rowIndex].obs_sum);
+            const absSum = Number(rows[rowIndex].abs_sum);
+            if (NSum > 0) {
+                stat = matsDataUtils.calculateStatScalar(squareDiffSum, NSum, obsModelDiffSum, modelSum, obsSum, absSum, statisticStr);
+                stat = isNaN(Number(stat)) ? null : stat;
+            } else {
+                stat = null;
+            }
         } else {
-            // not a contingency table plot
+            // not a contingency table plot or a scalar partial sums plot
             stat = rows[rowIndex].stat === "NULL" ? null : rows[rowIndex].stat;
         }
         N0.push(rows[rowIndex].N0);             // number of values that go into a point on the graph
@@ -1272,6 +1306,12 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
         var sub_fa = [];
         var sub_miss = [];
         var sub_cn = [];
+        var sub_square_diff_sum = [];
+        var sub_N_sum = [];
+        var sub_obs_model_diff_sum = [];
+        var sub_model_sum = [];
+        var sub_obs_sum = [];
+        var sub_abs_sum = [];
         var sub_values = [];
         var sub_secs = [];
         var sub_levs = [];
@@ -1300,6 +1340,28 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
                             sub_miss.push(Number(curr_sub_data[3]));
                             sub_cn.push(Number(curr_sub_data[4]));
                         }
+                    } else if (isScalar) {
+                        sub_secs.push(Number(curr_sub_data[0]));
+                        if (hasLevels) {
+                            if (!isNaN(Number(curr_sub_data[1]))) {
+                                sub_levs.push(Number(curr_sub_data[1]));
+                            } else {
+                                sub_levs.push(curr_sub_data[1]);
+                            }
+                            sub_square_diff_sum.push(Number(curr_sub_data[2]));
+                            sub_N_sum.push(Number(curr_sub_data[3]));
+                            sub_obs_model_diff_sum.push(Number(curr_sub_data[4]));
+                            sub_model_sum.push(Number(curr_sub_data[5]));
+                            sub_obs_sum.push(Number(curr_sub_data[6]));
+                            sub_abs_sum.push(Number(curr_sub_data[7]));
+                        } else {
+                            sub_square_diff_sum.push(Number(curr_sub_data[1]));
+                            sub_N_sum.push(Number(curr_sub_data[2]));
+                            sub_obs_model_diff_sum.push(Number(curr_sub_data[3]));
+                            sub_model_sum.push(Number(curr_sub_data[4]));
+                            sub_obs_sum.push(Number(curr_sub_data[5]));
+                            sub_abs_sum.push(Number(curr_sub_data[6]));
+                        }
                     } else {
                         sub_secs.push(Number(curr_sub_data[0]));
                         if (hasLevels) {
@@ -1325,6 +1387,13 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
                 sub_fa = NaN;
                 sub_miss = NaN;
                 sub_cn = NaN;
+            } else if (isScalar) {
+                sub_square_diff_sum = NaN;
+                sub_N_sum = NaN;
+                sub_obs_model_diff_sum = NaN;
+                sub_model_sum = NaN;
+                sub_obs_sum = NaN;
+                sub_abs_sum = NaN;
             } else {
                 sub_values = NaN;
             }
@@ -1347,6 +1416,14 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
                     subMiss.push(NaN);
                     subCn.push(NaN);
                     subVals.push([]);
+                } else if (isScalar) {
+                    subSquareDiffSum.push(NaN);
+                    subNSum.push(NaN);
+                    subObsModelDiffSum.push(NaN);
+                    subModelSum.push(NaN);
+                    subObsSum.push(NaN);
+                    subAbsSum.push(NaN);
+                    subVals.push([]);
                 } else {
                     subHit.push([]);
                     subFa.push([]);
@@ -1366,6 +1443,12 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
         subFa.push(sub_fa);
         subMiss.push(sub_miss);
         subCn.push(sub_cn);
+        subSquareDiffSum.push(sub_square_diff_sum);
+        subNSum.push(sub_N_sum);
+        subObsModelDiffSum.push(sub_obs_model_diff_sum);
+        subModelSum.push(sub_model_sum);
+        subObsSum.push(sub_obs_sum);
+        subAbsSum.push(sub_abs_sum);
         subVals.push(sub_values);
         subSecs.push(sub_secs);
         if (hasLevels) {
@@ -1393,26 +1476,25 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
                     d.x.push(null);
                     d.y.push(curveIndependentVars[d_idx]);
                     d.error_x.push(null);   // placeholder
-                    d.subHit.push(NaN);
-                    d.subFa.push(NaN);
-                    d.subMiss.push(NaN);
-                    d.subCn.push(NaN);
-                    d.subVals.push(NaN);
-                    d.subSecs.push(NaN);
-                    d.subLevs.push(NaN);
                 } else {
                     d.x.push(curveIndependentVars[d_idx]);
                     d.y.push(null);
                     d.error_y.push(null); // placeholder
-                    d.subHit.push(NaN);
-                    d.subFa.push(NaN);
-                    d.subMiss.push(NaN);
-                    d.subCn.push(NaN);
-                    d.subVals.push(NaN);
-                    d.subSecs.push(NaN);
-                    if (hasLevels) {
-                        d.subLevs.push(NaN);
-                    }
+                }
+                d.subHit.push(NaN);
+                d.subFa.push(NaN);
+                d.subMiss.push(NaN);
+                d.subCn.push(NaN);
+                d.subSquareDiffSum.push(NaN);
+                d.subNSum.push(NaN);
+                d.subObsModelDiffSum.push(NaN);
+                d.subModelSum.push(NaN);
+                d.subObsSum.push(NaN);
+                d.subAbsSum.push(NaN);
+                d.subVals.push(NaN);
+                d.subSecs.push(NaN);
+                if (hasLevels) {
+                    d.subLevs.push(NaN);
                 }
             }
         } else {
@@ -1424,26 +1506,25 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
                 d.x.push(curveStats[d_idx]);
                 d.y.push(curveIndependentVars[d_idx]);
                 d.error_x.push(null); // placeholder
-                d.subHit.push(subHit[d_idx]);
-                d.subFa.push(subFa[d_idx]);
-                d.subMiss.push(subMiss[d_idx]);
-                d.subCn.push(subCn[d_idx]);
-                d.subVals.push(subVals[d_idx]);
-                d.subSecs.push(subSecs[d_idx]);
-                d.subLevs.push(subLevs[d_idx]);
             } else {
                 d.x.push(curveIndependentVars[d_idx]);
                 d.y.push(curveStats[d_idx]);
                 d.error_y.push(null);  // placeholder
-                d.subHit.push(subHit[d_idx]);
-                d.subFa.push(subFa[d_idx]);
-                d.subMiss.push(subMiss[d_idx]);
-                d.subCn.push(subCn[d_idx]);
-                d.subVals.push(subVals[d_idx]);
-                d.subSecs.push(subSecs[d_idx]);
-                if (hasLevels) {
-                    d.subLevs.push(subLevs[d_idx]);
-                }
+            }
+            d.subHit.push(subHit[d_idx]);
+            d.subFa.push(subFa[d_idx]);
+            d.subMiss.push(subMiss[d_idx]);
+            d.subCn.push(subCn[d_idx]);
+            d.subSquareDiffSum.push(subSquareDiffSum[d_idx]);
+            d.subNSum.push(subNSum[d_idx]);
+            d.subObsModelDiffSum.push(subObsModelDiffSum[d_idx]);
+            d.subModelSum.push(subModelSum[d_idx]);
+            d.subObsSum.push(subObsSum[d_idx]);
+            d.subAbsSum.push(subAbsSum[d_idx]);
+            d.subVals.push(subVals[d_idx]);
+            d.subSecs.push(subSecs[d_idx]);
+            if (hasLevels) {
+                d.subLevs.push(subLevs[d_idx]);
             }
             indVarMin = curveIndependentVars[d_idx] < indVarMin ? curveIndependentVars[d_idx] : indVarMin;
             indVarMax = curveIndependentVars[d_idx] > indVarMax ? curveIndependentVars[d_idx] : indVarMax;
