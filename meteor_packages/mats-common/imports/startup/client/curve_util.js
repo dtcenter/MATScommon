@@ -949,11 +949,7 @@ const showMapFace = function () {
     };
     // maps need to have the region be station-select mode
     if (matsParamUtils.getParameterForName('region-type') !== undefined) {
-        if (matsParamUtils.getOptionsForParam('region-type').indexOf('Select stations (bias only)') !== -1) {
-            selectorsToReset['region-type'] = 'Select stations (bias only)';
-        } else {
-            selectorsToReset['region-type'] = 'Select stations';
-        }
+        selectorsToReset['region-type'] = 'Select stations';
     }
     // visibility15 can handle truth selection on maps
     if (appName !== undefined && appName === "visibility15") {
