@@ -771,6 +771,12 @@ const queryDBContour = function (pool, statement, appParams, statisticStr) {
             subFa: [],
             subMiss: [],
             subCn: [],
+            subSquareDiffSum: [],
+            subNSum: [],
+            subObsModelDiffSum: [],
+            subModelSum: [],
+            subObsSum: [],
+            subAbsSum: [],
             subVals: [],
             subSecs: [],
             subLevs: [],
@@ -783,6 +789,12 @@ const queryDBContour = function (pool, statement, appParams, statisticStr) {
             faTextOutput: [],
             missTextOutput: [],
             cnTextOutput: [],
+            squareDiffSumTextOutput: [],
+            NSumTextOutput: [],
+            obsModelDiffSumTextOutput: [],
+            modelSumTextOutput: [],
+            obsSumTextOutput: [],
+            absSumTextOutput: [],
             minDateTextOutput: [],
             maxDateTextOutput: [],
             stdev: [],
@@ -804,7 +816,7 @@ const queryDBContour = function (pool, statement, appParams, statisticStr) {
         if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
             /*
             we have to call the couchbase utilities as async functions but this
-            routine 'queryDBSpecialtyCurve' cannot itself be async because the graph page needs to wait
+            routine 'queryDBContour' cannot itself be async because the graph page needs to wait
             for its result, so we use an anonymous async() function here to wrap the queryCB call
             */
             (async () => {
@@ -2107,6 +2119,12 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
             subFa: [],
             subMiss: [],
             subCn: [],
+            subSquareDiffSum: [],
+            subNSum: [],
+            subObsModelDiffSum: [],
+            subModelSum: [],
+            subObsSum: [],
+            subAbsSum: [],
             subVals: [],
             subSecs: [],
             subLevs: [],
@@ -2119,6 +2137,12 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
             faTextOutput: [],
             missTextOutput: [],
             cnTextOutput: [],
+            squareDiffSumTextOutput: [],
+            NSumTextOutput: [],
+            obsModelDiffSumTextOutput: [],
+            modelSumTextOutput: [],
+            obsSumTextOutput: [],
+            absSumTextOutput: [],
             minDateTextOutput: [],
             maxDateTextOutput: [],
             stdev: [],
@@ -2135,6 +2159,7 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
     */
     const hasLevels = appParams.hasLevels;
     var isCTC = false;
+    var isScalar = false;
 
     // initialize local variables
     var curveStatLookup = {};
@@ -2144,6 +2169,12 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
     var curveSubFaLookup = {};
     var curveSubMissLookup = {};
     var curveSubCnLookup = {};
+    var curveSubSquareDiffSumLookup = {};
+    var curveSubNSumLookup = {};
+    var curveSubObsModelDiffSumLookup = {};
+    var curveSubModelSumLookup = {};
+    var curveSubObsSumLookup = {};
+    var curveSubAbsSumLookup = {};
     var curveSubValLookup = {};
     var curveSubSecLookup = {};
     var curveSubLevLookup = {};
@@ -2153,12 +2184,19 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
         var rowXVal = rows[rowIndex].xVal;
         var rowYVal = rows[rowIndex].yVal;
         var statKey = rowXVal.toString() + '_' + rowYVal.toString();
-        var stat;
-        var hit;
-        var fa;
-        var miss;
-        var cn;
+        var stat = null;
+        var hit = null;
+        var fa = null;
+        var miss = null;
+        var cn = null;
         var n = rows[rowIndex].sub_data !== undefined && rows[rowIndex].sub_data !== null ? rows[rowIndex].sub_data.toString().split(',').length : 0;
+        var squareDiffSum = null;
+        var NSum = null;
+        var obsModelDiffSum = null;
+        var modelSum = null;
+        var obsSum = null;
+        var absSum = null;
+        var stdev = null;
         if (rows[rowIndex].stat === undefined && rows[rowIndex].hit !== undefined) {
             // this is a contingency table plot
             isCTC = true;
@@ -2169,22 +2207,27 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
             if (hit + fa + miss + cn > 0) {
                 stat = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, n, statisticStr);
                 stat = isNaN(Number(stat)) ? null : stat;
-            } else {
-                stat = null;
-                hit = null;
-                fa = null;
-                miss = null;
-                cn = null;
+            }
+        } else if (rows[rowIndex].stat === undefined && rows[rowIndex].square_diff_sum !== undefined) {
+            // this is a scalar partial sums plot
+            isScalar = true;
+            squareDiffSum = Number(rows[rowIndex].square_diff_sum);
+            NSum = Number(rows[rowIndex].N_sum);
+            obsModelDiffSum = Number(rows[rowIndex].obs_model_diff_sum);
+            modelSum = Number(rows[rowIndex].model_sum);
+            obsSum = Number(rows[rowIndex].obs_sum);
+            absSum = Number(rows[rowIndex].abs_sum);
+            if (NSum > 0) {
+                stat = matsDataUtils.calculateStatScalar(squareDiffSum, NSum, obsModelDiffSum, modelSum, obsSum, absSum, statisticStr);
+                stat = isNaN(Number(stat)) ? null : stat;
+                const variable = statisticStr.split("_")[1];
+                stdev = matsDataUtils.calculateStatScalar(squareDiffSum, NSum, obsModelDiffSum, modelSum, obsSum, absSum, "Std deviation_" + variable);
             }
         } else {
             // not a contingency table plot
             stat = rows[rowIndex].stat === "NULL" ? null : rows[rowIndex].stat;
-            hit = null;
-            fa = null;
-            miss = null;
-            cn = null;
+            stdev = rows[rowIndex].stdev !== undefined ? rows[rowIndex].stdev : null;
         }
-        var stdev = rows[rowIndex].stdev !== undefined ? rows[rowIndex].stdev : null;
         var minDate = rows[rowIndex].min_secs;
         var maxDate = rows[rowIndex].max_secs;
         if (stat === undefined || stat === null) {
@@ -2198,6 +2241,12 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
         var sub_fa = [];
         var sub_miss = [];
         var sub_cn = [];
+        var sub_square_diff_sum = [];
+        var sub_N_sum = [];
+        var sub_obs_model_diff_sum = [];
+        var sub_model_sum = [];
+        var sub_obs_sum = [];
+        var sub_abs_sum = [];
         var sub_values = [];
         var sub_secs = [];
         var sub_levs = [];
@@ -2226,6 +2275,28 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
                             sub_miss.push(Number(curr_sub_data[3]));
                             sub_cn.push(Number(curr_sub_data[4]));
                         }
+                    } else if (isScalar) {
+                        sub_secs.push(Number(curr_sub_data[0]));
+                        if (hasLevels) {
+                            if (!isNaN(Number(curr_sub_data[1]))) {
+                                sub_levs.push(Number(curr_sub_data[1]));
+                            } else {
+                                sub_levs.push(curr_sub_data[1]);
+                            }
+                            sub_square_diff_sum.push(Number(curr_sub_data[2]));
+                            sub_N_sum.push(Number(curr_sub_data[3]));
+                            sub_obs_model_diff_sum.push(Number(curr_sub_data[4]));
+                            sub_model_sum.push(Number(curr_sub_data[5]));
+                            sub_obs_sum.push(Number(curr_sub_data[6]));
+                            sub_abs_sum.push(Number(curr_sub_data[7]));
+                        } else {
+                            sub_square_diff_sum.push(Number(curr_sub_data[1]));
+                            sub_N_sum.push(Number(curr_sub_data[2]));
+                            sub_obs_model_diff_sum.push(Number(curr_sub_data[3]));
+                            sub_model_sum.push(Number(curr_sub_data[4]));
+                            sub_obs_sum.push(Number(curr_sub_data[5]));
+                            sub_abs_sum.push(Number(curr_sub_data[6]));
+                        }
                     } else {
                         sub_secs.push(Number(curr_sub_data[0]));
                         if (hasLevels) {
@@ -2251,6 +2322,13 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
                 sub_fa = NaN;
                 sub_miss = NaN;
                 sub_cn = NaN;
+            } else if (isScalar) {
+                sub_square_diff_sum = NaN;
+                sub_N_sum = NaN;
+                sub_obs_model_diff_sum = NaN;
+                sub_model_sum = NaN;
+                sub_obs_sum = NaN;
+                sub_abs_sum = NaN;
             } else {
                 sub_values = NaN;
             }
@@ -2268,6 +2346,12 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
         d.faTextOutput.push(fa);
         d.missTextOutput.push(miss);
         d.cnTextOutput.push(cn);
+        d.squareDiffSumTextOutput.push(squareDiffSum);
+        d.NSumTextOutput.push(NSum);
+        d.obsModelDiffSumTextOutput.push(obsModelDiffSum);
+        d.modelSumTextOutput.push(modelSum);
+        d.obsSumTextOutput.push(obsSum);
+        d.absSumTextOutput.push(absSum);
         d.minDateTextOutput.push(minDate);
         d.maxDateTextOutput.push(maxDate);
         curveStatLookup[statKey] = stat;
@@ -2278,6 +2362,13 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
             curveSubFaLookup[statKey] = sub_fa;
             curveSubMissLookup[statKey] = sub_miss;
             curveSubCnLookup[statKey] = sub_cn;
+        } else if (isScalar) {
+            curveSubSquareDiffSumLookup[statKey] = sub_square_diff_sum;
+            curveSubNSumLookup[statKey] = sub_N_sum;
+            curveSubObsModelDiffSumLookup[statKey] = sub_obs_model_diff_sum;
+            curveSubModelSumLookup[statKey] = sub_model_sum;
+            curveSubObsSumLookup[statKey] = sub_obs_sum;
+            curveSubAbsSumLookup[statKey] = sub_abs_sum;
         } else {
             curveSubValLookup[statKey] = sub_values;
         }
@@ -2305,6 +2396,12 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
     var currSubFa;
     var currSubMiss;
     var currSubCn;
+    var currSubSquareDiffSum;
+    var currSubNSum;
+    var currSubObsModelDiffSum;
+    var currSubModelSum;
+    var currSubObsSum;
+    var currSubAbsSum;
     var currSubVal;
     var currSubSec;
     var currSubLev;
@@ -2316,6 +2413,12 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
     var currYSubFaArray;
     var currYSubMissArray;
     var currYSubCnArray;
+    var currYSubSquareDiffSumArray;
+    var currYSubNSumArray;
+    var currYSubObsModelDiffSumArray;
+    var currYSubModelSumArray;
+    var currYSubObsSumArray;
+    var currYSubAbsSumArray;
     var currYSubValArray;
     var currYSubSecArray;
     var currYSubLevArray;
@@ -2334,6 +2437,13 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
             currYSubFaArray = [];
             currYSubMissArray = [];
             currYSubCnArray = [];
+        } else if (isScalar) {
+            currYSubSquareDiffSumArray = [];
+            currYSubNSumArray = [];
+            currYSubObsModelDiffSumArray = [];
+            currYSubModelSumArray = [];
+            currYSubObsSumArray = [];
+            currYSubAbsSumArray = [];
         } else {
             currYSubValArray = [];
         }
@@ -2352,6 +2462,13 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
                 currSubFa = curveSubFaLookup[currStatKey];
                 currSubMiss = curveSubMissLookup[currStatKey];
                 currSubCn = curveSubCnLookup[currStatKey];
+            } else if (isScalar) {
+                currSubSquareDiffSum = curveSubSquareDiffSumLookup[currStatKey];
+                currSubNSum = curveSubNSumLookup[currStatKey];
+                currSubObsModelDiffSum = curveSubObsModelDiffSumLookup[currStatKey];
+                currSubModelSum = curveSubModelSumLookup[currStatKey];
+                currSubObsSum = curveSubObsSumLookup[currStatKey];
+                currSubAbsSum = curveSubAbsSumLookup[currStatKey];
             } else {
                 currSubVal = curveSubValLookup[currStatKey];
             }
@@ -2368,6 +2485,13 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
                     currYSubFaArray.push(null);
                     currYSubMissArray.push(null);
                     currYSubCnArray.push(null);
+                } else if (isScalar) {
+                    currYSubSquareDiffSumArray.push(null);
+                    currYSubNSumArray.push(null);
+                    currYSubObsModelDiffSumArray.push(null);
+                    currYSubModelSumArray.push(null);
+                    currYSubObsSumArray.push(null);
+                    currYSubAbsSumArray.push(null);
                 } else {
                     currYSubValArray.push(null);
                 }
@@ -2386,6 +2510,13 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
                     currYSubFaArray.push(currSubFa);
                     currYSubMissArray.push(currSubMiss);
                     currYSubCnArray.push(currSubCn);
+                } else if (isScalar) {
+                    currYSubSquareDiffSumArray.push(currSubSquareDiffSum);
+                    currYSubNSumArray.push(currSubNSum);
+                    currYSubObsModelDiffSumArray.push(currSubObsModelDiffSum);
+                    currYSubModelSumArray.push(currSubModelSum);
+                    currYSubObsSumArray.push(currSubObsSum);
+                    currYSubAbsSumArray.push(currSubAbsSum);
                 } else {
                     currYSubValArray.push(currSubVal);
                 }
@@ -2405,6 +2536,13 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
             d.subFa.push(currYSubFaArray);
             d.subMiss.push(currYSubMissArray);
             d.subCn.push(currYSubCnArray);
+        } else if (isScalar) {
+            d.subSquareDiffSum.push(currYSubSquareDiffSumArray);
+            d.subNSum.push(currYSubNSumArray);
+            d.subObsModelDiffSum.push(currYSubObsModelDiffSumArray);
+            d.subModelSum.push(currYSubModelSumArray);
+            d.subObsSum.push(currYSubObsSumArray);
+            d.subAbsSum.push(currYSubAbsSumArray);
         } else {
             d.subVals.push(currYSubValArray);
         }
