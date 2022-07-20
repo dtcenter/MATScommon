@@ -1952,6 +1952,12 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
             subFa: [],
             subMiss: [],
             subCn: [],
+            subSquareDiffSum: [],
+            subNSum: [],
+            subObsModelDiffSum: [],
+            subModelSum: [],
+            subObsSum: [],
+            subAbsSum: [],
             subVals: [],
             subSecs: [],
             subLevs: [],
@@ -1968,6 +1974,7 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
     */
     const hasLevels = appParams.hasLevels;
     var isCTC = false;
+    var isScalar = false;
 
     // these arrays hold all the sub values and seconds (and levels) until they are sorted into bins
     var curveSubStatsRaw = [];
@@ -1991,8 +1998,23 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
             } else {
                 stat = null;
             }
+        } else if (rows[rowIndex].stat === undefined && rows[rowIndex].square_diff_sum !== undefined) {
+            // this is a scalar partial sums plot
+            isScalar = true;
+            const squareDiffSum = Number(rows[rowIndex].square_diff_sum);
+            const NSum = Number(rows[rowIndex].N_sum);
+            const obsModelDiffSum = Number(rows[rowIndex].obs_model_diff_sum);
+            const modelSum = Number(rows[rowIndex].model_sum);
+            const obsSum = Number(rows[rowIndex].obs_sum);
+            const absSum = Number(rows[rowIndex].abs_sum);
+            if (NSum > 0) {
+                stat = matsDataUtils.calculateStatScalar(squareDiffSum, NSum, obsModelDiffSum, modelSum, obsSum, absSum, statisticStr);
+                stat = isNaN(Number(stat)) ? null : stat;
+            } else {
+                stat = null;
+            }
         } else {
-            // not a contingency table plot
+            // not a contingency table plot or a scalar partial sums plot
             stat = rows[rowIndex].stat === "NULL" ? null : rows[rowIndex].stat;
         }
         var sub_stats = [];
@@ -2016,6 +2038,18 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
                             sub_stats.push(matsDataUtils.calculateStatCTC(Number(curr_sub_data[2]), Number(curr_sub_data[3]), Number(curr_sub_data[4]), Number(curr_sub_data[5]), 1, statisticStr));
                         } else {
                             sub_stats.push(matsDataUtils.calculateStatCTC(Number(curr_sub_data[1]), Number(curr_sub_data[2]), Number(curr_sub_data[3]), Number(curr_sub_data[4]), 1, statisticStr));
+                        }
+                    } else if (isScalar) {
+                        sub_secs.push(Number(curr_sub_data[0]));
+                        if (hasLevels) {
+                            if (!isNaN(Number(curr_sub_data[1]))) {
+                                sub_levs.push(Number(curr_sub_data[1]));
+                            } else {
+                                sub_levs.push(curr_sub_data[1]);
+                            }
+                            sub_stats.push(matsDataUtils.calculateStatScalar(Number(curr_sub_data[2]), Number(curr_sub_data[3]), Number(curr_sub_data[4]), Number(curr_sub_data[5]), Number(curr_sub_data[6]), Number(curr_sub_data[7]), statisticStr));
+                        } else {
+                            sub_stats.push(matsDataUtils.calculateStatScalar(Number(curr_sub_data[1]), Number(curr_sub_data[2]), Number(curr_sub_data[3]), Number(curr_sub_data[4]), Number(curr_sub_data[5]), Number(curr_sub_data[6]), statisticStr));
                         }
                     } else {
                         sub_secs.push(Number(curr_sub_data[0]));

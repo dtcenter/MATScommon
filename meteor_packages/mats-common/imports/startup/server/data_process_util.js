@@ -364,7 +364,7 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
         var data = dataset[curveIndex];
         var statType;
         if (curveInfoParams.statType === undefined) {
-            statType = 'scalar';
+            statType = 'default';
         } else if (Array.isArray(curveInfoParams.statType)) {
             statType = curveInfoParams.statType[curveIndex];
         } else {
@@ -375,21 +375,25 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
         var di = 0;
         var values = [];
         var levels = [];
-        var rawStat;
 
         while (di < data.y.length) {
 
             // errorResult holds all the calculated curve stats like mean, sd, etc.
             // These don't make sense for aggregated MODE stats, so skip for them.
             if (statType !== 'met-mode_pair') {
+               if (statType === 'scalar') {
+                    // need to populate subVals so get_err can work
+                    for (var svIdx = 0; svIdx < data.subSquareDiffSum[di].length; svIdx++) {
+                        data.subVals[di][svIdx] = matsDataUtils.calculateStatScalar(data.subSquareDiffSum[di][svIdx], data.subNSum[di][svIdx], data.subObsModelDiffSum[di][svIdx], data.subModelSum[di][svIdx], data.subObsSum[di][svIdx], data.subAbsSum[di][svIdx], statisticSelect + "_" + curveInfoParams.curves[curveIndex]['variable']);
+                    }
+                }
                 var errorResult = matsDataUtils.get_err(data.subVals[di], data.subSecs[di], data.subLevs[di], appParams);
             }
 
-            // store raw statistic from query before recalculating that statistic to account for data removed due to matching, QC, etc. Don't replace the stat for contingency table apps.
-            rawStat = data.x[di];
             if ((diffFrom === null || diffFrom === undefined) || !appParams.matching) {
-                if (statType !== 'ctc' && statType !== 'met-mode_pair') {
+                if (statType !== 'ctc' && statType !== 'scalar' && statType !== 'met-mode_pair') {
                     // assign recalculated statistic to data[di][1], which is the value to be plotted
+                    // we have already recalculated the statistic for ctc and scalar stats if there was matching, etc, so keep that value
                     if (statisticSelect === 'N' || statisticSelect === 'N times*levels(*stations if station plot) per graph point') {
                         data.x[di] = errorResult.sum;
                     } else {
@@ -406,6 +410,7 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
                     data.x[di] = null;
                 }
             }
+
             values.push(data.x[di]);
             levels.push(data.y[di]);
 
@@ -476,8 +481,7 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
                 data.stats[di] = {
                     stat: data.x[di],
                     n: errorResult.n_good,
-                    raw_stat: rawStat,
-                    d_mean: statisticSelect === 'N' || statisticSelect === 'N times*levels(*stations if station plot) per graph point' ? errorResult.sum : errorResult.d_mean,
+                    mean: statisticSelect === 'N' || statisticSelect === 'N times*levels(*stations if station plot) per graph point' ? errorResult.sum : errorResult.d_mean,
                     sd: errorResult.sd,
                     n_good: errorResult.n_good,
                     lag1: errorResult.lag1,
@@ -550,6 +554,12 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
         data.subFa = [];
         data.subMiss = [];
         data.subCn = [];
+        data.subSquareDiffSum = [];
+        data.subNSum = [];
+        data.subObsModelDiffSum = [];
+        data.subModelSum = [];
+        data.subObsSum = [];
+        data.subAbsSum = [];
         data.subInterest = [];
         data.subVals = [];
         data.subSecs = [];
@@ -1060,6 +1070,12 @@ const processDataHistogram = function (allReturnedSubStats, allReturnedSubSecs, 
             subFa: [],
             subMiss: [],
             subCn: [],
+            subSquareDiffSum: [],
+            subNSum: [],
+            subObsModelDiffSum: [],
+            subModelSum: [],
+            subObsSum: [],
+            subAbsSum: [],
             subVals: [],
             subSecs: [],
             subLevs: [],
@@ -1092,7 +1108,7 @@ const processDataHistogram = function (allReturnedSubStats, allReturnedSubSecs, 
             }
 
             // then take diffs
-            const diffResult = matsDataDiffUtils.getDataForDiffCurve(dataset, diffFrom, appParams, false);
+            const diffResult = matsDataDiffUtils.getDataForDiffCurve(dataset, diffFrom, appParams, false, false);
 
             // adjust axis stats based on new data from diff curve
             d = diffResult.dataset;
