@@ -262,9 +262,8 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                 subModelSum = data.subModelSum[di];
                 subObsSum = data.subObsSum[di];
                 subAbsSum = data.subAbsSum[di];
-            } else {
-                subValues = data.subVals[di];
             }
+            subValues = data.subVals[di];
             if (hasLevels) {
                 subLevs = data.subLevs[di];
             }
@@ -307,9 +306,8 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                             var newModelSum = subModelSum[si];
                             var newObsSum = subObsSum[si];
                             var newAbsSum = subAbsSum[si];
-                        } else {
-                            var newVal = subValues[si];
                         }
+                        var newVal = subValues[si];
                         var newSec = subSecs[si];
                         if (hasLevels) {
                             var newLev = subLevs[si];
@@ -320,6 +318,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                                 newSubFa.push(newFa);
                                 newSubMiss.push(newMiss);
                                 newSubCn.push(newCn);
+                                newSubValues.push(newVal);
                                 newSubSecs.push(newSec);
                                 if (hasLevels) {
                                     newSubLevs.push(newLev);
@@ -333,6 +332,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                                 newSubModelSum.push(newModelSum);
                                 newSubObsSum.push(newObsSum);
                                 newSubAbsSum.push(newAbsSum);
+                                newSubValues.push(newVal);
                                 newSubSecs.push(newSec);
                                 if (hasLevels) {
                                     newSubLevs.push(newLev);
@@ -366,9 +366,8 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                         data.subModelSum[di] = newSubModelSum;
                         data.subObsSum[di] = newSubObsSum;
                         data.subAbsSum[di] = newSubAbsSum;
-                    } else {
-                        data.subVals[di] = newSubValues;
                     }
+                    data.subVals[di] = newSubValues;
                     data.subSecs[di] = newSubSecs;
                     if (hasLevels) {
                         data.subLevs[di] = newSubLevs;

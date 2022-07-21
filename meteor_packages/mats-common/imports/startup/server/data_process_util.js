@@ -53,13 +53,6 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
             // These don't make sense for aggregated MODE stats, so skip for them.
             var errorResult;
             if (statType !== 'met-mode_pair') {
-                if (statType === 'scalar') {
-                    // need to populate subVals so get_err can work
-                    for (var svIdx = 0; svIdx < data.subSquareDiffSum[di].length; svIdx++) {
-                        data.subVals[di][svIdx] = matsDataUtils.calculateStatScalar(data.subSquareDiffSum[di][svIdx], data.subNSum[di][svIdx], data.subObsModelDiffSum[di][svIdx], data.subModelSum[di][svIdx], data.subObsSum[di][svIdx], data.subAbsSum[di][svIdx], statisticSelect + "_" + curveInfoParams.curves[curveIndex]['variable']);
-                    }
-                }
-
                 if (appParams.hasLevels) {
                     errorResult = matsDataUtils.get_err(data.subVals[di], data.subSecs[di], data.subLevs[di], appParams);
                 } else {
@@ -381,12 +374,6 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
             // errorResult holds all the calculated curve stats like mean, sd, etc.
             // These don't make sense for aggregated MODE stats, so skip for them.
             if (statType !== 'met-mode_pair') {
-               if (statType === 'scalar') {
-                    // need to populate subVals so get_err can work
-                    for (var svIdx = 0; svIdx < data.subSquareDiffSum[di].length; svIdx++) {
-                        data.subVals[di][svIdx] = matsDataUtils.calculateStatScalar(data.subSquareDiffSum[di][svIdx], data.subNSum[di][svIdx], data.subObsModelDiffSum[di][svIdx], data.subModelSum[di][svIdx], data.subObsSum[di][svIdx], data.subAbsSum[di][svIdx], statisticSelect + "_" + curveInfoParams.curves[curveIndex]['variable']);
-                    }
-                }
                 var errorResult = matsDataUtils.get_err(data.subVals[di], data.subSecs[di], data.subLevs[di], appParams);
             }
 

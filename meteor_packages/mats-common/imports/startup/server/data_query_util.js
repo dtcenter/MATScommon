@@ -890,6 +890,12 @@ const parseQueryDataTimeSeries = function (rows, d, appParams, averageStr, stati
     */
     const hasLevels = appParams.hasLevels;
     const completenessQCParam = Number(appParams.completeness) / 100;
+    var outlierQCParam;
+    if (appParams.outliers !== "all") {
+        outlierQCParam = Number(appParams.outliers);
+    } else {
+        outlierQCParam = 100;
+    }
     var isCTC = false;
     var isScalar = false;
 
@@ -982,6 +988,9 @@ const parseQueryDataTimeSeries = function (rows, d, appParams, averageStr, stati
         var sub_values = [];
         var sub_secs = [];
         var sub_levs = [];
+        var sub_stdev = 0;
+        var sub_mean = 0;
+        var sd_limit = 0;
         if (stat !== null && rows[rowIndex].sub_data !== undefined) {
             // parse the sub-data
             try {
@@ -1001,11 +1010,13 @@ const parseQueryDataTimeSeries = function (rows, d, appParams, averageStr, stati
                             sub_fa.push(Number(curr_sub_data[3]));
                             sub_miss.push(Number(curr_sub_data[4]));
                             sub_cn.push(Number(curr_sub_data[5]));
+                            sub_values.push(matsDataUtils.calculateStatCTC(Number(curr_sub_data[2]), Number(curr_sub_data[3]), Number(curr_sub_data[4]), Number(curr_sub_data[5]), curr_sub_data.length, statisticStr));
                         } else {
                             sub_hit.push(Number(curr_sub_data[1]));
                             sub_fa.push(Number(curr_sub_data[2]));
                             sub_miss.push(Number(curr_sub_data[3]));
                             sub_cn.push(Number(curr_sub_data[4]));
+                            sub_values.push(matsDataUtils.calculateStatCTC(Number(curr_sub_data[1]), Number(curr_sub_data[2]), Number(curr_sub_data[3]), Number(curr_sub_data[4]), curr_sub_data.length, statisticStr));
                         }
                     } else if (isScalar) {
                         sub_secs.push(Number(curr_sub_data[0]));
@@ -1021,6 +1032,7 @@ const parseQueryDataTimeSeries = function (rows, d, appParams, averageStr, stati
                             sub_model_sum.push(Number(curr_sub_data[5]));
                             sub_obs_sum.push(Number(curr_sub_data[6]));
                             sub_abs_sum.push(Number(curr_sub_data[7]));
+                            sub_values.push(matsDataUtils.calculateStatScalar(Number(curr_sub_data[2]), Number(curr_sub_data[3]), Number(curr_sub_data[4]), Number(curr_sub_data[5]), Number(curr_sub_data[6]), Number(curr_sub_data[7]), statisticStr));
                         } else {
                             sub_square_diff_sum.push(Number(curr_sub_data[1]));
                             sub_N_sum.push(Number(curr_sub_data[2]));
@@ -1028,6 +1040,7 @@ const parseQueryDataTimeSeries = function (rows, d, appParams, averageStr, stati
                             sub_model_sum.push(Number(curr_sub_data[4]));
                             sub_obs_sum.push(Number(curr_sub_data[5]));
                             sub_abs_sum.push(Number(curr_sub_data[6]));
+                            sub_values.push(matsDataUtils.calculateStatScalar(Number(curr_sub_data[1]), Number(curr_sub_data[2]), Number(curr_sub_data[3]), Number(curr_sub_data[4]), Number(curr_sub_data[5]), Number(curr_sub_data[6]), statisticStr));
                         }
                     } else {
                         sub_secs.push(Number(curr_sub_data[0]));
@@ -1042,6 +1055,49 @@ const parseQueryDataTimeSeries = function (rows, d, appParams, averageStr, stati
                             sub_values.push(Number(curr_sub_data[1]));
                         }
                     }
+                }
+                // Now that we have all the sub-values, we can get the standard deviation and remove the ones that exceed it
+                sub_stdev = matsDataUtils.stdev(sub_values);
+                sub_mean = matsDataUtils.average(sub_values);
+                sd_limit = outlierQCParam * sub_stdev;
+                for (var svIdx = sub_values.length-1; svIdx >= 0; svIdx--) {
+                    if (Math.abs(sub_values[svIdx] - sub_mean) > sd_limit) {
+                        if (isCTC) {
+                            sub_hit.splice(svIdx, 1);
+                            sub_fa.splice(svIdx, 1);
+                            sub_miss.splice(svIdx, 1);
+                            sub_cn.splice(svIdx, 1);
+                        } else if (isScalar) {
+                            sub_square_diff_sum.splice(svIdx, 1);
+                            sub_N_sum.splice(svIdx, 1);
+                            sub_obs_model_diff_sum.splice(svIdx, 1);
+                            sub_model_sum.splice(svIdx, 1);
+                            sub_obs_sum.splice(svIdx, 1);
+                            sub_abs_sum.splice(svIdx, 1);
+                        }
+                        sub_values.splice(svIdx, 1);
+                        sub_secs.splice(svIdx, 1);
+                        if (hasLevels) {
+                            sub_levs.splice(svIdx, 1);
+                        }
+                    }
+                }
+                if (isCTC) {
+                    const hit = matsDataUtils.sum(sub_hit);
+                    const fa = matsDataUtils.sum(sub_fa);
+                    const miss = matsDataUtils.sum(sub_miss);
+                    const cn = matsDataUtils.sum(sub_cn);
+                    stat = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, sub_hit.length, statisticStr);
+                } else if (isScalar) {
+                    const squareDiffSum = matsDataUtils.sum(sub_square_diff_sum);
+                    const NSum = matsDataUtils.sum(sub_N_sum);
+                    const obsModelDiffSum = matsDataUtils.sum(sub_obs_model_diff_sum);
+                    const modelSum = matsDataUtils.sum(sub_model_sum);
+                    const obsSum = matsDataUtils.sum(sub_obs_sum);
+                    const absSum = matsDataUtils.sum(sub_abs_sum);
+                    stat = matsDataUtils.calculateStatScalar(squareDiffSum, NSum, obsModelDiffSum, modelSum, obsSum, absSum, statisticStr);
+                } else {
+                    stat = matsDataUtils.average(sub_values);
                 }
             } catch (e) {
                 // this is an error produced by a bug in the query function, not an error returned by the mysql database
@@ -1061,9 +1117,9 @@ const parseQueryDataTimeSeries = function (rows, d, appParams, averageStr, stati
                 sub_model_sum = NaN;
                 sub_obs_sum = NaN;
                 sub_abs_sum = NaN;
-            } else {
                 sub_values = NaN;
             }
+            sub_values = NaN;
             sub_secs = NaN;
             if (hasLevels) {
                 sub_levs = NaN;
@@ -1230,6 +1286,12 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
     const plotType = appParams.plotType;
     const hasLevels = appParams.hasLevels;
     const completenessQCParam = Number(appParams.completeness) / 100;
+    var outlierQCParam;
+    if (appParams.outliers !== "all") {
+        outlierQCParam = Number(appParams.outliers);
+    } else {
+        outlierQCParam = 100;
+    }
     var isCTC = false;
     var isScalar = false;
     const hideGaps = appParams.hideGaps;
@@ -1327,6 +1389,9 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
         var sub_values = [];
         var sub_secs = [];
         var sub_levs = [];
+        var sub_stdev = 0;
+        var sub_mean = 0;
+        var sd_limit = 0;
         if (stat !== null && rows[rowIndex].sub_data !== undefined) {
             // parse the sub-data
             try {
@@ -1346,11 +1411,13 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
                             sub_fa.push(Number(curr_sub_data[3]));
                             sub_miss.push(Number(curr_sub_data[4]));
                             sub_cn.push(Number(curr_sub_data[5]));
+                            sub_values.push(matsDataUtils.calculateStatCTC(Number(curr_sub_data[2]), Number(curr_sub_data[3]), Number(curr_sub_data[4]), Number(curr_sub_data[5]), curr_sub_data.length, statisticStr));
                         } else {
                             sub_hit.push(Number(curr_sub_data[1]));
                             sub_fa.push(Number(curr_sub_data[2]));
                             sub_miss.push(Number(curr_sub_data[3]));
                             sub_cn.push(Number(curr_sub_data[4]));
+                            sub_values.push(matsDataUtils.calculateStatCTC(Number(curr_sub_data[1]), Number(curr_sub_data[2]), Number(curr_sub_data[3]), Number(curr_sub_data[4]), curr_sub_data.length, statisticStr));
                         }
                     } else if (isScalar) {
                         sub_secs.push(Number(curr_sub_data[0]));
@@ -1366,6 +1433,7 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
                             sub_model_sum.push(Number(curr_sub_data[5]));
                             sub_obs_sum.push(Number(curr_sub_data[6]));
                             sub_abs_sum.push(Number(curr_sub_data[7]));
+                            sub_values.push(matsDataUtils.calculateStatScalar(Number(curr_sub_data[2]), Number(curr_sub_data[3]), Number(curr_sub_data[4]), Number(curr_sub_data[5]), Number(curr_sub_data[6]), Number(curr_sub_data[7]), statisticStr));
                         } else {
                             sub_square_diff_sum.push(Number(curr_sub_data[1]));
                             sub_N_sum.push(Number(curr_sub_data[2]));
@@ -1373,6 +1441,7 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
                             sub_model_sum.push(Number(curr_sub_data[4]));
                             sub_obs_sum.push(Number(curr_sub_data[5]));
                             sub_abs_sum.push(Number(curr_sub_data[6]));
+                            sub_values.push(matsDataUtils.calculateStatScalar(Number(curr_sub_data[1]), Number(curr_sub_data[2]), Number(curr_sub_data[3]), Number(curr_sub_data[4]), Number(curr_sub_data[5]), Number(curr_sub_data[6]), statisticStr));
                         }
                     } else {
                         sub_secs.push(Number(curr_sub_data[0]));
@@ -1387,6 +1456,49 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
                             sub_values.push(Number(curr_sub_data[1]));
                         }
                     }
+                }
+                // Now that we have all the sub-values, we can get the standard deviation and remove the ones that exceed it
+                sub_stdev = matsDataUtils.stdev(sub_values);
+                sub_mean = matsDataUtils.average(sub_values);
+                sd_limit = outlierQCParam * sub_stdev;
+                for (var svIdx = sub_values.length-1; svIdx >= 0; svIdx--) {
+                    if (Math.abs(sub_values[svIdx] - sub_mean) > sd_limit) {
+                        if (isCTC) {
+                            sub_hit.splice(svIdx, 1);
+                            sub_fa.splice(svIdx, 1);
+                            sub_miss.splice(svIdx, 1);
+                            sub_cn.splice(svIdx, 1);
+                        } else if (isScalar) {
+                            sub_square_diff_sum.splice(svIdx, 1);
+                            sub_N_sum.splice(svIdx, 1);
+                            sub_obs_model_diff_sum.splice(svIdx, 1);
+                            sub_model_sum.splice(svIdx, 1);
+                            sub_obs_sum.splice(svIdx, 1);
+                            sub_abs_sum.splice(svIdx, 1);
+                        }
+                        sub_values.splice(svIdx, 1);
+                        sub_secs.splice(svIdx, 1);
+                        if (hasLevels) {
+                            sub_levs.splice(svIdx, 1);
+                        }
+                    }
+                }
+                if (isCTC) {
+                    const hit = matsDataUtils.sum(sub_hit);
+                    const fa = matsDataUtils.sum(sub_fa);
+                    const miss = matsDataUtils.sum(sub_miss);
+                    const cn = matsDataUtils.sum(sub_cn);
+                    stat = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, sub_hit.length, statisticStr);
+                } else if (isScalar) {
+                    const squareDiffSum = matsDataUtils.sum(sub_square_diff_sum);
+                    const NSum = matsDataUtils.sum(sub_N_sum);
+                    const obsModelDiffSum = matsDataUtils.sum(sub_obs_model_diff_sum);
+                    const modelSum = matsDataUtils.sum(sub_model_sum);
+                    const obsSum = matsDataUtils.sum(sub_obs_sum);
+                    const absSum = matsDataUtils.sum(sub_abs_sum);
+                    stat = matsDataUtils.calculateStatScalar(squareDiffSum, NSum, obsModelDiffSum, modelSum, obsSum, absSum, statisticStr);
+                } else {
+                    stat = matsDataUtils.average(sub_values);
                 }
             } catch (e) {
                 // this is an error produced by a bug in the query function, not an error returned by the mysql database
@@ -1406,9 +1518,9 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
                 sub_model_sum = NaN;
                 sub_obs_sum = NaN;
                 sub_abs_sum = NaN;
-            } else {
                 sub_values = NaN;
             }
+            sub_values = NaN;
             sub_secs = NaN;
             if (hasLevels) {
                 sub_levs = NaN;
@@ -1427,22 +1539,36 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
                     subFa.push(NaN);
                     subMiss.push(NaN);
                     subCn.push(NaN);
-                    subVals.push([]);
+                    subSquareDiffSum.push([]);
+                    subNSum.push([]);
+                    subObsModelDiffSum.push([]);
+                    subModelSum.push([]);
+                    subObsSum.push([]);
+                    subAbsSum.push([]);
                 } else if (isScalar) {
+                    subHit.push([]);
+                    subFa.push([]);
+                    subMiss.push([]);
+                    subCn.push([]);
                     subSquareDiffSum.push(NaN);
                     subNSum.push(NaN);
                     subObsModelDiffSum.push(NaN);
                     subModelSum.push(NaN);
                     subObsSum.push(NaN);
                     subAbsSum.push(NaN);
-                    subVals.push([]);
                 } else {
                     subHit.push([]);
                     subFa.push([]);
                     subMiss.push([]);
                     subCn.push([]);
-                    subVals.push(NaN);
+                    subSquareDiffSum.push([]);
+                    subNSum.push([]);
+                    subObsModelDiffSum.push([]);
+                    subModelSum.push([]);
+                    subObsSum.push([]);
+                    subAbsSum.push([]);
                 }
+                subVals.push(NaN);
                 subSecs.push(NaN);
                 if (hasLevels) {
                     subLevs.push(NaN);

@@ -107,6 +107,7 @@ const objectContainsObject = function (superObject, subObject) {
 
 // utility for calculating the sum of an array
 const sum = function (data) {
+    if (!isNaN(data)) return data;
     if (data.length === 0) return null;
     return data.reduce(function (sum, value) {
         return value == null ? sum : sum + value;
@@ -115,12 +116,14 @@ const sum = function (data) {
 
 // utility for calculating the average of an array
 const average = function (data) {
+    if (!isNaN(data)) return data;
     if (data.length === 0) return null;
     return sum(data) / data.length;
 };
 
 // utility for calculating the median of an array
 const median = function (data) {
+    if (!isNaN(data)) return data;
     if (data.length === 0) return null;
     data.sort(function (a, b) {
         return a - b;
@@ -445,40 +448,21 @@ const get_err = function (sVals, sSecs, sLevs, appParams) {
      */
     const autocorr_limit = 0.95;
     const hasLevels = appParams.hasLevels;
-    var outlierQCParam;
-    if (appParams.outliers !== "all") {
-        outlierQCParam = Number(appParams.outliers);
-    } else {
-        outlierQCParam = 100;
-    }
 
-    var subVals = [];
-    var subSecs = [];
-    var subLevs = [];
     var n = sVals.length;
-    var n_good = 0;
-    var sum_d = 0;
-    var sum2_d = 0;
-    var error = "";
+    var data_wg = [];
+    var n_gaps = 0;
+    var sum = 0;
+    var sum2 = 0;
+    var d_mean = 0;
+    var sd2 = 0;
+    var sd = 0;
+    var error;
     var i;
-    for (i = 0; i < n; i++) {
-        if (sVals[i] !== null && !isNaN(sVals[i])) {
-            sVals[i] = Number(sVals[i]);
-            n_good = n_good + 1;
-            sum_d = sum_d + sVals[i];
-            sum2_d = sum2_d + sVals[i] * sVals[i];
-            subVals.push(sVals[i]);
-            subSecs.push(sSecs[i]);
-            if (hasLevels) {
-                subLevs.push(sLevs[i]);
-            }
-        }
+
+    if (n < 1) {
+        return {d_mean: null, stde_betsy: null, sd: null, n_good: n, lag1: null, min: null, max: null, sum: null};
     }
-    var d_mean = sum_d / n_good;
-    var sd2 = sum2_d / n_good - d_mean * d_mean;
-    var sd = sd2 > 0 ? Math.sqrt(sd2) : sd2;
-    var sd_limit = outlierQCParam * sd;
-    // console.log("see error_library.pl l208 These are processed in reverse order to the perl code -  \nmean is " + d_mean + " sd_limit is +/- " + sd_limit + " n_good is " + n_good + " sum_d is" + sum_d + " sum2_d is " + sum2_d);
 
     // find minimum delta_time, if any value missing, set null
     var last_secs = 0;
@@ -489,8 +473,8 @@ const get_err = function (sVals, sSecs, sLevs, appParams) {
     var maxVal = -1 * Number.MAX_VALUE;
     var secs;
     var delta;
-    for (i = 0; i < subSecs.length; i++) {
-        secs = (subSecs[i]);
+    for (i = 0; i < sSecs.length; i++) {
+        secs = (sSecs[i]);
         delta = Math.abs(secs - last_secs);
         if (delta > 0 && delta < minDelta) {
             minDelta = delta;
@@ -504,49 +488,29 @@ const get_err = function (sVals, sSecs, sLevs, appParams) {
         last_secs = secs;
     }
 
-    var data_wg = [];
-    var n_gaps = 0;
-    n_good = 0;
-    var sum = 0;
-    var sum2 = 0;
     if (minDelta < 0) {
         error = ("Invalid time interval - minDelta: " + minDelta);
         console.log("matsDataUtil.getErr: Invalid time interval - minDelta: " + minDelta)
     }
-    // remove data more than $sd_limit from mean
-    var qaCorrected = [];
-    for (i = 0; i < subVals.length; i++) {
-        if (Math.abs(subVals[i] - d_mean) > sd_limit) {
-            qaCorrected.push("removing datum " + i + " with value " + subVals[i] + " because it exceeds " + outlierQCParam + " standard deviations from the mean - mean: " + d_mean + " " + outlierQCParam + " * sd: " + sd_limit + " delta: " + (subVals[i] - d_mean));
-            // console.log(qaCorrected.join('\n'));
-            subVals[i] = null;
-        } else {
-            minVal = minVal < subVals[i] ? minVal : subVals[i];
-            maxVal = maxVal > subVals[i] ? maxVal : subVals[i];
-            sum += subVals[i];
-            sum2 += subVals[i] * subVals[i];
-            n_good++;
-        }
-    }
-    if (n_good < 1) {
-        return {d_mean: null, stde_betsy: null, sd: null, n_good: n_good, lag1: null, min: null, max: null, sum: null};
+    for (i = 0; i < sVals.length; i++) {
+        minVal = minVal < sVals[i] ? minVal : sVals[i];
+        maxVal = maxVal > sVals[i] ? maxVal : sVals[i];
+        sum += sVals[i];
+        sum2 += sVals[i] * sVals[i];
     }
 
-    // recalculate if we threw anything away.
-    d_mean = sum / n_good;
-    sd2 = sum2 / n_good - d_mean * d_mean;
-    sd = 0;
+    d_mean = sum / n;
+    sd2 = sum2 / n - d_mean * d_mean;
     if (sd2 > 0) {
         sd = Math.sqrt(sd2);
     }
-    // console.log("new mean after throwing away outliers is " + sd + " n_good is " + n_good + " sum is " + sum  + " sum2 is " + sum2 + " d_mean is " + d_mean);
 
     // look for gaps
     var lastSecond = -1 * Number.MAX_VALUE;
     var lastPressure = -1 * Number.MAX_VALUE;
     var n_pressures;
     if (hasLevels) {
-        n_pressures = arrayUnique(subLevs).length;
+        n_pressures = arrayUnique(sLevs).length;
     } else {
         n_pressures = 1;
     }
@@ -559,11 +523,11 @@ const get_err = function (sVals, sSecs, sLevs, appParams) {
     var j = 0;              // i is loop index without gaps; j is loop index with gaps
     var n_deltas = 0;
 
-    for (i = 0; i < subSecs.length; i++) {
-        var sec = subSecs[i];
+    for (i = 0; i < sSecs.length; i++) {
+        var sec = sSecs[i];
         var lev;
         if (hasLevels) {
-            lev = subLevs[i];
+            lev = sLevs[i];
             // find first time the pressure changes
             if (lag1_p === 0 && lastPressure > 0) {
                 if (lev !== lastPressure) {
@@ -596,7 +560,7 @@ const get_err = function (sVals, sSecs, sLevs, appParams) {
         if (hasLevels) {
             lastPressure = lev;
         }
-        data_wg.push(subVals[i]);
+        data_wg.push(sVals[i]);
         j++;
     }
 
@@ -645,7 +609,7 @@ const get_err = function (sVals, sSecs, sLevs, appParams) {
         r1_t = autocorr_limit;
     }
 
-    const betsy = Math.sqrt((n_good - 1) * (1. - r1_p) * (1. - r1_t));
+    const betsy = Math.sqrt((n - 1) * (1. - r1_p) * (1. - r1_t));
     var stde_betsy;
     if (betsy !== 0) {
         stde_betsy = sd / betsy;
@@ -656,14 +620,13 @@ const get_err = function (sVals, sSecs, sLevs, appParams) {
         d_mean: d_mean,
         stde_betsy: stde_betsy,
         sd: sd,
-        n_good: n_good,
+        n_good: n,
         lag1: r[1],
         min: minSecs,
         max: max_secs,
         minVal: minVal,
         maxVal: maxVal,
-        sum: sum_d,
-        qaCorrected: qaCorrected
+        sum: sum
     };
     // console.log("stats are " + JSON.stringify(stats));
     // stde_betsy is standard error with auto correlation
@@ -1233,9 +1196,8 @@ const removePoint = function (data, di, plotType, statVarName, isCTC, isScalar, 
         data.subModelSum.splice(di, 1);
         data.subObsSum.splice(di, 1);
         data.subAbsSum.splice(di, 1);
-    } else {
-        data.subVals.splice(di, 1);
     }
+    data.subVals.splice(di, 1);
     data.subSecs.splice(di, 1);
     if (hasLevels) {
         data.subLevs.splice(di, 1);
@@ -1259,9 +1221,8 @@ const nullPoint = function (data, di, statVarName, isCTC, isScalar, hasLevels) {
         data.subModelSum[di] = NaN;
         data.subObsSum[di] = NaN;
         data.subAbsSum[di] = NaN;
-    } else {
-        data.subVals[di] = NaN;
     }
+    data.subVals[di] = NaN;
     data.subSecs[di] = NaN;
     if (hasLevels) {
         data.subLevs[di] = NaN;

@@ -230,10 +230,9 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC, isSca
                             var subtrahendDataSubModelSum = subtrahendData.subModelSum[minuendIndex];
                             var subtrahendDataSubObsSum = subtrahendData.subObsSum[minuendIndex];
                             var subtrahendDataSubAbsSum = subtrahendData.subAbsSum[minuendIndex];
-                        } else {
-                            var minuendDataSubValues = minuendData.subVals[minuendIndex];
-                            var subtrahendDataSubValues = subtrahendData.subVals[subtrahendIndex];
                         }
+                        var minuendDataSubValues = minuendData.subVals[minuendIndex];
+                        var subtrahendDataSubValues = subtrahendData.subVals[subtrahendIndex];
                         var minuendDataSubSeconds = minuendData.subSecs[minuendIndex];
                         var subtrahendDataSubSeconds = subtrahendData.subSecs[subtrahendIndex];
                         if (hasLevels) {
@@ -258,9 +257,8 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC, isSca
                                         tempSubModelSumArray.push(minuendDataSubModelSum[mvalIdx] - subtrahendDataSubModelSum[svalIdx]);
                                         tempSubObsSumArray.push(minuendDataSubObsSum[mvalIdx] - subtrahendDataSubObsSum[svalIdx]);
                                         tempSubAbsSumArray.push(minuendDataSubAbsSum[mvalIdx] - subtrahendDataSubAbsSum[svalIdx]);
-                                    } else {
-                                        tempSubValsArray.push(minuendDataSubValues[mvalIdx] - subtrahendDataSubValues[svalIdx]);
                                     }
+                                    tempSubValsArray.push(minuendDataSubValues[mvalIdx] - subtrahendDataSubValues[svalIdx]);
                                     tempSubSecsArray.push(minuendDataSubSeconds[mvalIdx]);
                                     if (hasLevels) {
                                         tempSubLevsArray.push(minuendDataSubLevels[mvalIdx]);
