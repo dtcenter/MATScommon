@@ -456,7 +456,8 @@ const showTimeseriesFace = function () {
         'bin-parameter': 'none',
         'significance': 'none',
         'plotFormat': 'block',
-        'QCParamGroup': 'block'
+        'QCParamGroup': 'block',
+        'QCParamGroup-lite': 'none'
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
@@ -498,7 +499,8 @@ const showProfileFace = function () {
         'bin-parameter': 'none',
         'significance': 'none',
         'plotFormat': 'block',
-        'QCParamGroup': 'block'
+        'QCParamGroup': 'block',
+        'QCParamGroup-lite': 'none'
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
@@ -540,7 +542,8 @@ const showDieOffFace = function () {
         'bin-parameter': 'none',
         'significance': 'none',
         'plotFormat': 'block',
-        'QCParamGroup': 'block'
+        'QCParamGroup': 'block',
+        'QCParamGroup-lite': 'none'
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
@@ -582,7 +585,8 @@ const showThresholdFace = function () {
         'bin-parameter': 'none',
         'significance': 'none',
         'plotFormat': 'block',
-        'QCParamGroup': 'block'
+        'QCParamGroup': 'block',
+        'QCParamGroup-lite': 'none'
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
@@ -628,7 +632,8 @@ const showValidTimeFace = function () {
         'bin-parameter': 'none',
         'significance': 'none',
         'plotFormat': 'block',
-        'QCParamGroup': 'block'
+        'QCParamGroup': 'block',
+        'QCParamGroup-lite': 'none'
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
@@ -670,7 +675,8 @@ const showGridScaleFace = function () {
         'bin-parameter': 'none',
         'significance': 'none',
         'plotFormat': 'block',
-        'QCParamGroup': 'block'
+        'QCParamGroup': 'block',
+        'QCParamGroup-lite': 'none'
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
@@ -712,7 +718,8 @@ const showDailyModelCycleFace = function () {
         'bin-parameter': 'none',
         'significance': 'none',
         'plotFormat': 'block',
-        'QCParamGroup': 'block'
+        'QCParamGroup': 'block',
+        'QCParamGroup-lite': 'none'
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff for a specified UTC cycle init hour',
@@ -754,7 +761,8 @@ const showYearToYearFace = function () {
         'bin-parameter': 'none',
         'significance': 'none',
         'plotFormat': 'block',
-        'QCParamGroup': 'block'
+        'QCParamGroup': 'block',
+        'QCParamGroup-lite': 'none'
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
@@ -796,7 +804,8 @@ const showReliabilityFace = function () {
         'bin-parameter': 'none',
         'significance': 'none',
         'plotFormat': 'none',
-        'QCParamGroup': 'none'
+        'QCParamGroup': 'none',
+        'QCParamGroup-lite': 'none'
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
@@ -840,7 +849,8 @@ const showROCFace = function () {
         'bin-parameter': 'block',
         'significance': 'none',
         'plotFormat': 'none',
-        'QCParamGroup': 'none'
+        'QCParamGroup': 'none',
+        'QCParamGroup-lite': 'none'
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
@@ -888,7 +898,8 @@ const showPerformanceDiagramFace = function () {
         'bin-parameter': 'block',
         'significance': 'none',
         'plotFormat': 'none',
-        'QCParamGroup': 'none'
+        'QCParamGroup': 'none',
+        'QCParamGroup-lite': 'none'
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
@@ -940,7 +951,8 @@ const showMapFace = function () {
         'bin-parameter': 'none',
         'significance': 'none',
         'plotFormat': 'none',
-        'QCParamGroup': 'none'
+        'QCParamGroup': 'none',
+        'QCParamGroup-lite': 'block'
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
@@ -991,7 +1003,8 @@ const showHistogramFace = function () {
         'bin-parameter': 'none',
         'significance': 'none',
         'plotFormat': 'block',
-        'QCParamGroup': 'none'
+        'QCParamGroup': 'none',
+        'QCParamGroup-lite': 'none'
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
@@ -1033,7 +1046,8 @@ const showEnsembleHistogramFace = function () {
         'bin-parameter': 'none',
         'significance': 'none',
         'plotFormat': 'block',
-        'QCParamGroup': 'none'
+        'QCParamGroup': 'none',
+        'QCParamGroup-lite': 'none'
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
@@ -1075,7 +1089,8 @@ const showContourFace = function () {
         'bin-parameter': 'none',
         'significance': plotType === matsTypes.PlotTypes.contourDiff ? 'block' : 'none',
         'plotFormat': 'none',
-        'QCParamGroup': 'none'
+        'QCParamGroup': 'none',
+        'QCParamGroup-lite': 'none'
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
@@ -1122,7 +1137,8 @@ const showScatterFace = function () {
         'bin-parameter': 'none',
         'significance': 'none',
         'plotFormat': 'none',
-        'QCParamGroup': 'none'
+        'QCParamGroup': 'none',
+        'QCParamGroup-lite': 'none'
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',

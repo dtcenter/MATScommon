@@ -522,7 +522,7 @@ const queryDBPerformanceDiagram = function (pool, statement, appParams) {
 };
 
 // this method queries the database for map plots
-const queryDBMap = function (pool, statement, dataSource, variable, varUnits, siteMap, orderOfMagnitude) {
+const queryDBMapScalar = function (pool, statement, dataSource, statistic, variable, varUnits, siteMap, orderOfMagnitude, appParams) {
     if (Meteor.isServer) {
         // d will contain the curve data
         var d = {
@@ -534,8 +534,7 @@ const queryDBMap = function (pool, statement, dataSource, variable, varUnits, si
             stats: [],
             text: []
         };
-        // for biases <= -OOM
-        var dBlue = {
+        var dPurple = {
             siteName: [],
             queryVal: [],
             lat: [],
@@ -544,7 +543,15 @@ const queryDBMap = function (pool, statement, dataSource, variable, varUnits, si
             text: [],
             color: "rgb(0,0,255)"
         };
-        // for biases > -OOM and < OOM
+        var dBlue = {
+            siteName: [],
+            queryVal: [],
+            lat: [],
+            lon: [],
+            stats: [],
+            text: [],
+            color: "rgb(0,125,255)"
+        };
         var dBlack = {
             siteName: [],
             queryVal: [],
@@ -552,9 +559,17 @@ const queryDBMap = function (pool, statement, dataSource, variable, varUnits, si
             lon: [],
             stats: [],
             text: [],
-            color: "rgb(0,0,0)"
+            color: "rgb(125,125,125)"
         };
-        // for biases >= OOM
+        var dOrange = {
+            siteName: [],
+            queryVal: [],
+            lat: [],
+            lon: [],
+            stats: [],
+            text: [],
+            color: "rgb(255,125,0)"
+        };
         var dRed = {
             siteName: [],
             queryVal: [],
@@ -576,10 +591,12 @@ const queryDBMap = function (pool, statement, dataSource, variable, varUnits, si
                 error = matsTypes.Messages.NO_DATA_FOUND;
             } else {
                 var parsedData;
-                parsedData = parseQueryDataMap(rows, d, dBlue, dRed, dBlack, dataSource, siteMap, variable, varUnits, orderOfMagnitude);
+                parsedData = parseQueryDataMapScalar(rows, d, dPurple, dBlue, dBlack, dOrange, dRed, dataSource, siteMap, statistic, variable, varUnits, orderOfMagnitude, appParams);
                 d = parsedData.d;
+                dPurple = parsedData.dPurple;
                 dBlue = parsedData.dBlue;
                 dBlack = parsedData.dBlack;
+                dOrange = parsedData.dOrange;
                 dRed = parsedData.dRed;
             }
             // done waiting - have results
@@ -590,8 +607,10 @@ const queryDBMap = function (pool, statement, dataSource, variable, varUnits, si
         pFuture.wait();
         return {
             data: d,
+            dataPurple: dPurple,
             dataBlue: dBlue,
             dataBlack: dBlack,
+            dataOrange: dOrange,
             dataRed: dRed,
             error: error
         };
@@ -1853,11 +1872,122 @@ const parseQueryDataPerformanceDiagram = function (rows, d, appParams) {
 };
 
 // this method parses the returned query data for maps
-const parseQueryDataMap = function (rows, d, dBlue, dRed, dBlack, dataSource, siteMap, variable, varUnits, orderOfMagnitude) {
+const parseQueryDataMapScalar = function (rows, d, dPurple, dBlue, dBlack, dOrange, dRed, dataSource, siteMap, statistic, variable, varUnits, orderOfMagnitude, appParams) {
+    const hasLevels = appParams.hasLevels;
+    const completenessQCParam = Number(appParams.completeness) / 100;
+    var outlierQCParam;
+    if (appParams.outliers !== "all") {
+        outlierQCParam = Number(appParams.outliers);
+    } else {
+        outlierQCParam = 100;
+    }
+    var N_times_max = 0;
+
     var queryVal;
     for (var rowIndex = 0; rowIndex < rows.length; rowIndex++) {
         const site = rows[rowIndex].sta_id;
-        queryVal = rows[rowIndex].stat;
+        const squareDiffSum = Number(rows[rowIndex].square_diff_sum);
+        const NSum = Number(rows[rowIndex].N_sum);
+        const obsModelDiffSum = Number(rows[rowIndex].obs_model_diff_sum);
+        const modelSum = Number(rows[rowIndex].model_sum);
+        const obsSum = Number(rows[rowIndex].obs_sum);
+        const absSum = Number(rows[rowIndex].abs_sum);
+        if (NSum > 0) {
+            queryVal = matsDataUtils.calculateStatScalar(squareDiffSum, NSum, obsModelDiffSum, modelSum, obsSum, absSum, statistic + "_" + variable);
+            queryVal = isNaN(Number(queryVal)) ? null : queryVal;
+        } else {
+            queryVal = null;
+        }
+        // store sub values to test them for stdev.
+        var sub_square_diff_sum = [];
+        var sub_N_sum = [];
+        var sub_obs_model_diff_sum = [];
+        var sub_model_sum = [];
+        var sub_obs_sum = [];
+        var sub_abs_sum = [];
+        var sub_values = [];
+        var sub_secs = [];
+        var sub_levs = [];
+        var sub_stdev = 0;
+        var sub_mean = 0;
+        var sd_limit = 0;
+        if (queryVal !== null && rows[rowIndex].sub_data !== undefined) {
+            // parse the sub-data
+            try {
+                var sub_data = rows[rowIndex].sub_data.toString().split(',');
+                N_times_max = N_times_max < sub_data.length ? sub_data.length : N_times_max;
+                var curr_sub_data;
+                for (var sd_idx = 0; sd_idx < sub_data.length; sd_idx++) {
+                    curr_sub_data = sub_data[sd_idx].split(';');
+                    sub_secs.push(Number(curr_sub_data[0]));
+                    if (hasLevels) {
+                        if (!isNaN(Number(curr_sub_data[1]))) {
+                            sub_levs.push(Number(curr_sub_data[1]));
+                        } else {
+                            sub_levs.push(curr_sub_data[1]);
+                        }
+                        sub_square_diff_sum.push(Number(curr_sub_data[2]));
+                        sub_N_sum.push(Number(curr_sub_data[3]));
+                        sub_obs_model_diff_sum.push(Number(curr_sub_data[4]));
+                        sub_model_sum.push(Number(curr_sub_data[5]));
+                        sub_obs_sum.push(Number(curr_sub_data[6]));
+                        sub_abs_sum.push(Number(curr_sub_data[7]));
+                        sub_values.push(matsDataUtils.calculateStatScalar(Number(curr_sub_data[2]), Number(curr_sub_data[3]), Number(curr_sub_data[4]), Number(curr_sub_data[5]), Number(curr_sub_data[6]), Number(curr_sub_data[7]), statistic + "_" + variable));
+                    } else {
+                        sub_square_diff_sum.push(Number(curr_sub_data[1]));
+                        sub_N_sum.push(Number(curr_sub_data[2]));
+                        sub_obs_model_diff_sum.push(Number(curr_sub_data[3]));
+                        sub_model_sum.push(Number(curr_sub_data[4]));
+                        sub_obs_sum.push(Number(curr_sub_data[5]));
+                        sub_abs_sum.push(Number(curr_sub_data[6]));
+                        sub_values.push(matsDataUtils.calculateStatScalar(Number(curr_sub_data[1]), Number(curr_sub_data[2]), Number(curr_sub_data[3]), Number(curr_sub_data[4]), Number(curr_sub_data[5]), Number(curr_sub_data[6]), statistic + "_" + variable));
+                    }
+                }
+                // Now that we have all the sub-values, we can get the standard deviation and remove the ones that exceed it
+                sub_stdev = matsDataUtils.stdev(sub_values);
+                sub_mean = matsDataUtils.average(sub_values);
+                sd_limit = outlierQCParam * sub_stdev;
+                for (var svIdx = sub_values.length-1; svIdx >= 0; svIdx--) {
+                    if (Math.abs(sub_values[svIdx] - sub_mean) > sd_limit) {
+                        sub_square_diff_sum.splice(svIdx, 1);
+                        sub_N_sum.splice(svIdx, 1);
+                        sub_obs_model_diff_sum.splice(svIdx, 1);
+                        sub_model_sum.splice(svIdx, 1);
+                        sub_obs_sum.splice(svIdx, 1);
+                        sub_abs_sum.splice(svIdx, 1);
+                        sub_values.splice(svIdx, 1);
+                        sub_secs.splice(svIdx, 1);
+                        if (hasLevels) {
+                            sub_levs.splice(svIdx, 1);
+                        }
+                    }
+                }
+                const squareDiffSum = matsDataUtils.sum(sub_square_diff_sum);
+                const NSum = matsDataUtils.sum(sub_N_sum);
+                const obsModelDiffSum = matsDataUtils.sum(sub_obs_model_diff_sum);
+                const modelSum = matsDataUtils.sum(sub_model_sum);
+                const obsSum = matsDataUtils.sum(sub_obs_sum);
+                const absSum = matsDataUtils.sum(sub_abs_sum);
+                queryVal = matsDataUtils.calculateStatScalar(squareDiffSum, NSum, obsModelDiffSum, modelSum, obsSum, absSum, statistic + "_" + variable);
+            } catch (e) {
+                // this is an error produced by a bug in the query function, not an error returned by the mysql database
+                e.message = "Error in parseQueryDataTimeSeries. The expected fields don't seem to be present in the results cache: " + e.message;
+                throw new Error(e.message);
+            }
+        } else {
+            sub_square_diff_sum = NaN;
+            sub_N_sum = NaN;
+            sub_obs_model_diff_sum = NaN;
+            sub_model_sum = NaN;
+            sub_obs_sum = NaN;
+            sub_abs_sum = NaN;
+            sub_values = NaN;
+            sub_values = NaN;
+            sub_secs = NaN;
+            if (hasLevels) {
+                sub_levs = NaN;
+            }
+        }
         d.queryVal.push(queryVal);
         d.stats.push({
             N_times: rows[rowIndex].N_times,
@@ -1882,32 +2012,48 @@ const parseQueryDataMap = function (rows, d, dBlue, dRed, dBlack, dataSource, si
         var displayLength = orderOfMagnitude >= 0 ? 0 : Math.abs(orderOfMagnitude);
         var textMarker = queryVal === null ? "" : queryVal.toFixed(displayLength);
         // sort data into color bins
-        if (queryVal <= -1 * Math.pow(10, orderOfMagnitude)) {
+        if (queryVal <= -1.5 * Math.pow(10, orderOfMagnitude)) {
             d.color.push("rgb(0,0,255)");
+            dPurple.siteName.push(thisSite.origName);
+            dPurple.queryVal.push(queryVal);
+            dPurple.text.push(textMarker);
+            dPurple.lat.push(thisSite.point[0]);
+            dPurple.lon.push(thisSite.point[1]);
+        } else if (queryVal <= -0.75 * Math.pow(10, orderOfMagnitude)) {
+            d.color.push("rgb(0,125,255)");
             dBlue.siteName.push(thisSite.origName);
             dBlue.queryVal.push(queryVal);
             dBlue.text.push(textMarker);
             dBlue.lat.push(thisSite.point[0]);
             dBlue.lon.push(thisSite.point[1]);
-        } else if (queryVal >= Math.pow(10, orderOfMagnitude)) {
+        } else if (queryVal >= 1.5 * Math.pow(10, orderOfMagnitude)) {
             d.color.push("rgb(255,0,0)");
             dRed.siteName.push(thisSite.origName);
             dRed.queryVal.push(queryVal);
             dRed.text.push(textMarker);
             dRed.lat.push(thisSite.point[0]);
             dRed.lon.push(thisSite.point[1]);
+        } else if (queryVal >= 0.75 * Math.pow(10, orderOfMagnitude)) {
+            d.color.push("rgb(255,125,0)");
+            dOrange.siteName.push(thisSite.origName);
+            dOrange.queryVal.push(queryVal);
+            dOrange.text.push(textMarker);
+            dOrange.lat.push(thisSite.point[0]);
+            dOrange.lon.push(thisSite.point[1]);
         } else {
-            d.color.push("rgb(0,0,0)");
+            d.color.push("rgb(125,125,125)");
             dBlack.siteName.push(thisSite.origName);
             dBlack.queryVal.push(queryVal);
             dBlack.text.push(textMarker);
             dBlack.lat.push(thisSite.point[0]);
             dBlack.lon.push(thisSite.point[1]);
-        }
+            }
     }// end of loop row
     return {
         d: d,
+        dPurple: dPurple,
         dBlue: dBlue,
+        dOrange: dOrange,
         dRed: dRed,
         dBlack: dBlack
     };
@@ -2706,7 +2852,7 @@ export default matsDataQueryUtils = {
     queryDBTimeSeries: queryDBTimeSeries,
     queryDBSpecialtyCurve: queryDBSpecialtyCurve,
     queryDBPerformanceDiagram: queryDBPerformanceDiagram,
-    queryDBMap: queryDBMap,
+    queryDBMapScalar: queryDBMapScalar,
     queryDBMapCTC: queryDBMapCTC,
     queryDBContour: queryDBContour
 

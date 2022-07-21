@@ -303,8 +303,6 @@ Template.graph.helpers({
                         localAnnotation = "<div id='" + dataset[i].curveId + "-annotation' style='color:" + dataset[i].annotateColor + "'>" + dataset[i].annotation + " </div>";
                         break;
                     case matsTypes.PlotTypes.map:
-                        localAnnotation = "<div id='" + dataset[i].curveId + "-annotation' style='color:" + dataset[i].annotateColor + "'>" + dataset[i].name + " </div><div></br></div>";
-                        break;
                     case matsTypes.PlotTypes.reliability:
                     case matsTypes.PlotTypes.roc:
                     case matsTypes.PlotTypes.performanceDiagram:
@@ -317,7 +315,7 @@ Template.graph.helpers({
                         break;
                 }
 
-                if (plotType !== matsTypes.PlotTypes.contourDiff) {
+                if (plotType !== matsTypes.PlotTypes.contourDiff && plotType !== matsTypes.PlotTypes.map) {
                     // contourDiffs don't have the right legend container for the combined curve1-curve0,
                     // but that doesn't matter because we don't display a legend for contourDiffs.
                     $("#legendContainer" + dataset[i].curveId).empty().append(localAnnotation);
@@ -849,11 +847,11 @@ Template.graph.helpers({
             case matsTypes.PlotTypes.dailyModelCycle:
             case matsTypes.PlotTypes.yearToYear:
             case matsTypes.PlotTypes.scatter2d:
-            case matsTypes.PlotTypes.map:
                 return 'block';
             case matsTypes.PlotTypes.reliability:
             case matsTypes.PlotTypes.roc:
             case matsTypes.PlotTypes.performanceDiagram:
+            case matsTypes.PlotTypes.map:
             case matsTypes.PlotTypes.histogram:
             case matsTypes.PlotTypes.ensembleHistogram:
             case matsTypes.PlotTypes.contour:
@@ -1893,7 +1891,6 @@ Template.graph.events({
                                 case matsTypes.PlotTypes.dailyModelCycle:
                                 case matsTypes.PlotTypes.yearToYear:
                                 case matsTypes.PlotTypes.scatter2d:
-                                case matsTypes.PlotTypes.map:
                                     const thisAnnotation = $("#legendContainer" + dataset[lidx].label);
                                     const annotationCurrentlyHidden = thisAnnotation[0].hidden;
                                     const localAnnotation = "<div id='" + dataset[lidx].label + "-annotation' style='color:" + lineTypeResetOpts[lidx]["line.color"] + "'>" + dataset[lidx].annotation + " </div>";
@@ -1905,6 +1902,7 @@ Template.graph.events({
                                 case matsTypes.PlotTypes.reliability:
                                 case matsTypes.PlotTypes.roc:
                                 case matsTypes.PlotTypes.performanceDiagram:
+                                case matsTypes.PlotTypes.map:
                                 case matsTypes.PlotTypes.histogram:
                                 case matsTypes.PlotTypes.ensembleHistogram:
                                 case matsTypes.PlotTypes.contour:
