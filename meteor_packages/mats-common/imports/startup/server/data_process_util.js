@@ -1162,7 +1162,7 @@ const processDataHistogram = function (allReturnedSubStats, allReturnedSubSecs, 
     curveInfoParams.axisMap[curveInfoParams.curves[0].axisKey]['ymin'] = ymin;
     curveInfoParams.axisMap[curveInfoParams.curves[0].axisKey]['ymax'] = ymax;
 
-    const resultOptions = matsDataPlotOpsUtils.generateHistogramPlotOptions(curveInfoParams.curves, curveInfoParams.axisMap, plotBins);
+    const resultOptions = matsDataPlotOpsUtils.generateHistogramPlotOptions(curveInfoParams.curves, curveInfoParams.axisMap, curveInfoParams.varUnits, plotBins);
     var totalProcessingFinish = moment();
     bookkeepingParams.dataRequests["total retrieval and processing time for curve set"] = {
         begin: bookkeepingParams.totalProcessingStart.format(),

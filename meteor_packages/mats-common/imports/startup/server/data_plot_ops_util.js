@@ -1205,7 +1205,7 @@ const generateMapPlotOptions = function (extraLegendSpace) {
 };
 
 // sets plot options for histograms
-const generateHistogramPlotOptions = function (curves, axisMap, plotBins) {
+const generateHistogramPlotOptions = function (curves, axisMap, varUnits, plotBins) {
     const axisKey = curves[0].axisKey;
     const axisLabel = axisMap[axisKey].axisLabel;
     var xmin = axisMap[axisKey].xmin;
@@ -1247,7 +1247,7 @@ const generateHistogramPlotOptions = function (curves, axisMap, plotBins) {
 
     // x-axis options
     layout['xaxis'] = {
-        title: 'Bin',
+        title: 'Bin (' + varUnits + ')',
         titlefont: {
             size: 24,
             color: '#000000'

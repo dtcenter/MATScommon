@@ -985,7 +985,7 @@ const showHistogramFace = function () {
         'truth': 'block',
         'year': 'block',
         'storm': 'block',
-        'region-type' : 'none',
+        'region-type' : 'block',
         'x-axis-parameter': 'none',
         'y-axis-parameter': 'none',
         'bin-parameter': 'none',
@@ -997,10 +997,6 @@ const showHistogramFace = function () {
         'dieoff-type': 'Dieoff',
         'bin-parameter': 'Valid Date'
     };
-    // histograms need to have the region be in predefined mode
-    if (matsParamUtils.getParameterForName('region-type') !== undefined) {
-        selectorsToReset['region-type'] = 'Predefined region';
-    }
     setSelectorVisibility(plotType, faceOptions, selectorsToReset);
     return selectorsToReset;
 };
