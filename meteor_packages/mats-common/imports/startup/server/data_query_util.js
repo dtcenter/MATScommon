@@ -96,36 +96,6 @@ const getModelCadence = async function (pool, dataSource, startDate, endDate) {
     return cycles;
 };
 
-// this function calculates the interval between the current time and the next time for irregular cadence models.
-const getTimeInterval = function (avTime, time_interval, foreCastOffset, cycles) {
-    // have to calculate the time_interval
-    var ti;
-    var dayInMilliSeconds = 24 * 3600 * 1000;
-    var minCycleTime = Math.min(...cycles);
-
-    var thisCadence = (avTime % dayInMilliSeconds); // current hour of day (valid time)
-    if (Number(thisCadence) - (Number(foreCastOffset) * 3600 * 1000) < 0) { // check to see if cycle time was on a previous day -- if so, need to wrap around 00Z to get current hour of day (cycle time)
-        var numberOfDaysBack = Math.ceil(-1 * (Number(thisCadence) - (Number(foreCastOffset) * 3600 * 1000)) / dayInMilliSeconds);
-        thisCadence = (Number(thisCadence) - (Number(foreCastOffset) * 3600 * 1000) + numberOfDaysBack * dayInMilliSeconds); // current hour of day (cycle time)
-    } else {
-        thisCadence = (Number(thisCadence) - (Number(foreCastOffset) * 3600 * 1000)); // current hour of day (cycle time)
-    }
-
-    var thisCadenceIdx = cycles.indexOf(thisCadence); // find out where the current hour of day is in the cycles array
-    if (thisCadenceIdx !== -1) {
-        var nextCadenceIdx = thisCadenceIdx + 1; // choose the next hour of the day
-        if (nextCadenceIdx >= cycles.length) {
-            ti = (dayInMilliSeconds - thisCadence) + minCycleTime; // if we were at the last cycle cadence, wrap back around to the first cycle cadence
-        } else {
-            ti = cycles[nextCadenceIdx] - cycles[thisCadenceIdx]; // otherwise take the difference between the current and next hours of the day.
-        }
-    } else {
-        ti = time_interval; // if for some reason the current hour of the day isn't in the cycles array, default to the regular cadence interval
-    }
-
-    return ti;
-};
-
 // utility for querying the DB
 const simplePoolQueryWrapSynchronous = function (pool, statement) {
     /*
@@ -295,13 +265,7 @@ const queryDBTimeSeries = function (pool, statement, dataSource, forecastOffset,
                 } else if (rows.includes("queryCB ERROR: ")) {
                     error = rows;
                 } else {
-                    if (appParams.hideGaps) {
-                        // if we don't care about gaps, use the general purpose curve parsing function.
-                        // the only reason to use the timeseries one is to correctly insert gaps for missing forecast cycles
-                        parsedData = parseQueryDataSpecialtyCurve(rows, d, appParams, statisticStr);
-                    } else {
-                        parsedData = parseQueryDataTimeSeries(rows, d, appParams, averageStr, statisticStr, forecastOffset, cycles, regular);
-                    }
+                    parsedData = parseQueryDataXYCurve(rows, d, appParams, statisticStr, forecastOffset, cycles, regular);
                     d = parsedData.d;
                     N0 = parsedData.N0;
                     N_times = parsedData.N_times;
@@ -317,13 +281,7 @@ const queryDBTimeSeries = function (pool, statement, dataSource, forecastOffset,
                 } else if (rows === undefined || rows === null || rows.length === 0) {
                     error = matsTypes.Messages.NO_DATA_FOUND;
                 } else {
-                    if (appParams.hideGaps) {
-                        // if we don't care about gaps, use the general purpose curve parsing function.
-                        // the only reason to use the timeseries one is to correctly insert gaps for missing forecast cycles
-                        parsedData = parseQueryDataSpecialtyCurve(rows, d, appParams, statisticStr);
-                    } else {
-                        parsedData = parseQueryDataTimeSeries(rows, d, appParams, averageStr, statisticStr, forecastOffset, cycles, regular);
-                    }
+                    parsedData = parseQueryDataXYCurve(rows, d, appParams, statisticStr, forecastOffset, cycles, regular);
                     d = parsedData.d;
                     N0 = parsedData.N0;
                     N_times = parsedData.N_times;
@@ -396,7 +354,7 @@ const queryDBSpecialtyCurve = function (pool, statement, appParams, statisticStr
                     error = rows;
                 } else {
                     if (appParams.plotType !== matsTypes.PlotTypes.histogram) {
-                        parsedData = parseQueryDataSpecialtyCurve(rows, d, appParams, statisticStr);
+                        parsedData = parseQueryDataXYCurve(rows, d, appParams, statisticStr, null, null, null);
                     } else {
                         parsedData = parseQueryDataHistogram(rows, d, appParams, statisticStr);
                     }
@@ -416,7 +374,7 @@ const queryDBSpecialtyCurve = function (pool, statement, appParams, statisticStr
                     error = matsTypes.Messages.NO_DATA_FOUND;
                 } else {
                     if (appParams.plotType !== matsTypes.PlotTypes.histogram) {
-                        parsedData = parseQueryDataSpecialtyCurve(rows, d, appParams, statisticStr);
+                        parsedData = parseQueryDataXYCurve(rows, d, appParams, statisticStr, null, null, null);
                     } else {
                         parsedData = parseQueryDataHistogram(rows, d, appParams, statisticStr);
                     }
@@ -876,8 +834,8 @@ const queryDBContour = function (pool, statement, appParams, statisticStr) {
     }
 };
 
-// this method parses the returned query data for timeseries plots
-const parseQueryDataTimeSeries = function (rows, d, appParams, averageStr, statisticStr, foreCastOffset, cycles, regular) {
+// this method parses the returned query data for xy curves
+const parseQueryDataXYCurve = function (rows, d, appParams, statisticStr, foreCastOffset, cycles, regular) {
     /*
         var d = {   // d will contain the curve data
             x: [],
@@ -907,6 +865,7 @@ const parseQueryDataTimeSeries = function (rows, d, appParams, averageStr, stati
             sum: 0
         };
     */
+    const plotType = appParams.plotType;
     const hasLevels = appParams.hasLevels;
     const completenessQCParam = Number(appParams.completeness) / 100;
     var outlierQCParam;
@@ -917,14 +876,12 @@ const parseQueryDataTimeSeries = function (rows, d, appParams, averageStr, stati
     }
     var isCTC = false;
     var isScalar = false;
+    const hideGaps = appParams.hideGaps;
 
     // initialize local variables
-    d.error_x = null;  // time series doesn't use x errorbars
     var N0 = [];
     var N_times = [];
-    var xmin = Number.MAX_VALUE;
-    var xmax = -1 * Number.MAX_VALUE;
-    var curveTime = [];
+    var curveIndependentVars = [];
     var curveStats = [];
     var subHit = [];
     var subFa = [];
@@ -939,15 +896,37 @@ const parseQueryDataTimeSeries = function (rows, d, appParams, averageStr, stati
     var subVals = [];
     var subSecs = [];
     var subLevs = [];
-
-    // default the time interval to an hour. It won't matter since it won't be used unless there's more than one data point.
-    var time_interval = rows.length > 1 ? Number(rows[1].avtime) - Number(rows[0].avtime) : 3600;
+    var time_interval;
 
     for (var rowIndex = 0; rowIndex < rows.length; rowIndex++) {
-        var avSeconds = Number(rows[rowIndex].avtime);
-        var avTime = avSeconds * 1000;
-        xmin = avTime < xmin ? avTime : xmin;
-        xmax = avTime > xmax ? avTime : xmax;
+        var independentVar;
+        switch (plotType) {
+            case matsTypes.PlotTypes.validtime:
+                independentVar = Number(rows[rowIndex].hr_of_day);
+                break;
+            case matsTypes.PlotTypes.gridscale:
+                independentVar = Number(rows[rowIndex].gridscale);
+                break;
+            case matsTypes.PlotTypes.profile:
+                independentVar = Number((rows[rowIndex].avVal).toString().replace('P', ''));
+                break;
+            case matsTypes.PlotTypes.timeSeries:
+                // default the time interval to an hour. It won't matter since it won't be used unless there's more than one data point.
+                time_interval = rows.length > 1 ? Number(rows[1].avtime) - Number(rows[0].avtime) : 3600;
+                independentVar = Number(rows[rowIndex].avtime) * 1000;
+                break;
+            case matsTypes.PlotTypes.dailyModelCycle:
+                independentVar = Number(rows[rowIndex].avtime) * 1000;
+                break;
+            case matsTypes.PlotTypes.dieoff:
+                independentVar = Number(rows[rowIndex].fcst_lead);
+                break;
+            case matsTypes.PlotTypes.threshold:
+                independentVar = Number(rows[rowIndex].thresh);
+                break;
+            default:
+                independentVar = Number(rows[rowIndex].avtime);
+        }
         var stat;
         if (rows[rowIndex].stat === undefined && rows[rowIndex].hit !== undefined) {
             // this is a contingency table plot
@@ -982,14 +961,16 @@ const parseQueryDataTimeSeries = function (rows, d, appParams, averageStr, stati
             // not a contingency table plot or a scalar partial sums plot
             stat = rows[rowIndex].stat === "NULL" ? null : rows[rowIndex].stat;
         }
-        N0.push(rows[rowIndex].N0);             // number of values that go into a time series point
-        N_times.push(rows[rowIndex].N_times);   // number of times that go into a time series point
+        N0.push(rows[rowIndex].N0);             // number of values that go into a point on the graph
+        N_times.push(rows[rowIndex].N_times);   // number of times that go into a point on the graph
 
-        // Find the minimum time_interval to be sure we don't accidentally go past the next data point.
-        if (rowIndex < rows.length - 1) {
-            var time_diff = Number(rows[rowIndex + 1].avtime) - Number(rows[rowIndex].avtime);
-            if (time_diff < time_interval) {
-                time_interval = time_diff;
+        if (plotType === matsTypes.PlotTypes.timeSeries) {
+            // Find the minimum time_interval to be sure we don't accidentally go past the next data point.
+            if (rowIndex < rows.length - 1) {
+                var time_diff = Number(rows[rowIndex + 1].avtime) - Number(rows[rowIndex].avtime);
+                if (time_diff < time_interval) {
+                    time_interval = time_diff;
+                }
             }
         }
 
@@ -1120,408 +1101,7 @@ const parseQueryDataTimeSeries = function (rows, d, appParams, averageStr, stati
                 }
             } catch (e) {
                 // this is an error produced by a bug in the query function, not an error returned by the mysql database
-                e.message = "Error in parseQueryDataTimeSeries. The expected fields don't seem to be present in the results cache: " + e.message;
-                throw new Error(e.message);
-            }
-        } else {
-            if (isCTC) {
-                sub_hit = NaN;
-                sub_fa = NaN;
-                sub_miss = NaN;
-                sub_cn = NaN;
-            } else if (isScalar) {
-                sub_square_diff_sum = NaN;
-                sub_N_sum = NaN;
-                sub_obs_model_diff_sum = NaN;
-                sub_model_sum = NaN;
-                sub_obs_sum = NaN;
-                sub_abs_sum = NaN;
-                sub_values = NaN;
-            }
-            sub_values = NaN;
-            sub_secs = NaN;
-            if (hasLevels) {
-                sub_levs = NaN;
-            }
-        }
-        curveTime.push(avTime);
-        curveStats.push(stat);
-        subHit.push(sub_hit);
-        subFa.push(sub_fa);
-        subMiss.push(sub_miss);
-        subCn.push(sub_cn);
-        subSquareDiffSum.push(sub_square_diff_sum);
-        subNSum.push(sub_N_sum);
-        subObsModelDiffSum.push(sub_obs_model_diff_sum);
-        subModelSum.push(sub_model_sum);
-        subObsSum.push(sub_obs_sum);
-        subAbsSum.push(sub_abs_sum);
-        subVals.push(sub_values);
-        subSecs.push(sub_secs);
-        if (hasLevels) {
-            subLevs.push(sub_levs);
-        }
-    }
-
-    var N0_max = Math.max(...N0);
-    var N_times_max = Math.max(...N_times);
-
-    xmin = xmin < Number(rows[0].avtime) * 1000 || averageStr !== "None" ? Number(rows[0].avtime) * 1000 : xmin;
-
-    time_interval = time_interval * 1000;
-    var loopTime = xmin;
-    var sum = 0;
-    var ymin = Number.MAX_VALUE;
-    var ymax = -1 * Number.MAX_VALUE;
-
-    while (loopTime <= xmax) {
-        // the reason we need to loop through everything again is to add in nulls for any missing points along the
-        // timeseries. The query only returns the data that it actually has.
-        var d_idx = curveTime.indexOf(loopTime);
-        if (d_idx < 0) {
-            d.x.push(loopTime);
-            d.y.push(null);
-            d.error_y.push(null);   // placeholder
-            d.subHit.push(NaN);
-            d.subFa.push(NaN);
-            d.subMiss.push(NaN);
-            d.subCn.push(NaN);
-            d.subSquareDiffSum.push(NaN);
-            d.subNSum.push(NaN);
-            d.subObsModelDiffSum.push(NaN);
-            d.subModelSum.push(NaN);
-            d.subObsSum.push(NaN);
-            d.subAbsSum.push(NaN);
-            d.subVals.push(NaN);
-            d.subSecs.push(NaN);
-            if (hasLevels) {
-                d.subLevs.push(NaN);
-            }
-        } else {
-            var this_N0 = N0[d_idx];
-            var this_N_times = N_times[d_idx];
-            // Make sure that we don't have any points with a smaller completeness value than specified by the user.
-            if (curveStats[d_idx] === null || this_N_times < completenessQCParam * N_times_max) {
-                d.x.push(loopTime);
-                d.y.push(null);
-                d.error_y.push(null); // placeholder
-                d.subHit.push(NaN);
-                d.subFa.push(NaN);
-                d.subMiss.push(NaN);
-                d.subCn.push(NaN);
-                d.subSquareDiffSum.push(NaN);
-                d.subNSum.push(NaN);
-                d.subObsModelDiffSum.push(NaN);
-                d.subModelSum.push(NaN);
-                d.subObsSum.push(NaN);
-                d.subAbsSum.push(NaN);
-                d.subVals.push(NaN);
-                d.subSecs.push(NaN);
-                if (hasLevels) {
-                    d.subLevs.push(NaN);
-                }
-            } else {
-                // there's valid data at this point, so store it
-                sum += curveStats[d_idx];
-                d.x.push(loopTime);
-                d.y.push(curveStats[d_idx]);
-                d.error_y.push(null);
-                d.subHit.push(subHit[d_idx]);
-                d.subFa.push(subFa[d_idx]);
-                d.subMiss.push(subMiss[d_idx]);
-                d.subCn.push(subCn[d_idx]);
-                d.subSquareDiffSum.push(subSquareDiffSum[d_idx]);
-                d.subNSum.push(subNSum[d_idx]);
-                d.subObsModelDiffSum.push(subObsModelDiffSum[d_idx]);
-                d.subModelSum.push(subModelSum[d_idx]);
-                d.subObsSum.push(subObsSum[d_idx]);
-                d.subAbsSum.push(subAbsSum[d_idx]);
-                d.subVals.push(subVals[d_idx]);
-                d.subSecs.push(subSecs[d_idx]);
-                if (hasLevels) {
-                    d.subLevs.push(subLevs[d_idx]);
-                }
-                ymin = curveStats[d_idx] < ymin ? curveStats[d_idx] : ymin;
-                ymax = curveStats[d_idx] > ymax ? curveStats[d_idx] : ymax;
-            }
-        }
-        if (!regular) {
-            // it is a model that has an irregular set of intervals, i.e. an irregular cadence
-            // the time interval most likely will not be the one calculated above
-            time_interval = getTimeInterval(loopTime, time_interval, foreCastOffset, cycles);
-        }
-        loopTime = loopTime + time_interval;    // advance to the next time.
-    }
-
-    if (regular) {
-        cycles = [time_interval];   // regular models will return one cycle cadence
-    }
-
-    d.xmin = xmin;
-    d.xmax = xmax;
-    d.ymin = ymin;
-    d.ymax = ymax;
-    d.sum = sum;
-
-    return {
-        d: d,
-        N0: N0,
-        N_times: N_times,
-        cycles: cycles
-    };
-};
-
-// this method parses the returned query data for specialty curves such as profiles, dieoffs, threshold plots, valid time plots, grid scale plots, and histograms
-const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr) {
-    /*
-        var d = {   // d will contain the curve data
-            x: [],
-            y: [],
-            error_x: [],
-            error_y: [],
-            subHit: [],
-            subFa: [],
-            subMiss: [],
-            subCn: [],
-            subSquareDiffSum: [],
-            subNSum: [],
-            subObsModelDiffSum: [],
-            subModelSum: [],
-            subObsSum: [],
-            subAbsSum: [],
-            subVals: [],
-            subSecs: [],
-            subLevs: [],
-            stats: [],
-            text: [],
-            glob_stats: {},
-            xmin: Number.MAX_VALUE,
-            xmax: Number.MIN_VALUE,
-            ymin: Number.MAX_VALUE,
-            ymax: Number.MIN_VALUE,
-            sum: 0
-        };
-    */
-    const plotType = appParams.plotType;
-    const hasLevels = appParams.hasLevels;
-    const completenessQCParam = Number(appParams.completeness) / 100;
-    var outlierQCParam;
-    if (appParams.outliers !== "all") {
-        outlierQCParam = Number(appParams.outliers);
-    } else {
-        outlierQCParam = 100;
-    }
-    var isCTC = false;
-    var isScalar = false;
-    const hideGaps = appParams.hideGaps;
-
-    // initialize local variables
-    var N0 = [];
-    var N_times = [];
-    var curveIndependentVars = [];
-    var curveStats = [];
-    var subHit = [];
-    var subFa = [];
-    var subMiss = [];
-    var subCn = [];
-    var subSquareDiffSum = [];
-    var subNSum = [];
-    var subObsModelDiffSum = [];
-    var subModelSum = [];
-    var subObsSum = [];
-    var subAbsSum = [];
-    var subVals = [];
-    var subSecs = [];
-    var subLevs = [];
-    for (var rowIndex = 0; rowIndex < rows.length; rowIndex++) {
-        var independentVar;
-        switch (plotType) {
-            case matsTypes.PlotTypes.validtime:
-                independentVar = Number(rows[rowIndex].hr_of_day);
-                break;
-            case matsTypes.PlotTypes.gridscale:
-                independentVar = Number(rows[rowIndex].gridscale);
-                break;
-            case matsTypes.PlotTypes.profile:
-                independentVar = Number((rows[rowIndex].avVal).toString().replace('P', ''));
-                break;
-            case matsTypes.PlotTypes.timeSeries:
-            case matsTypes.PlotTypes.dailyModelCycle:
-                independentVar = Number(rows[rowIndex].avtime) * 1000;
-                break;
-            case matsTypes.PlotTypes.dieoff:
-                independentVar = Number(rows[rowIndex].fcst_lead);
-                break;
-            case matsTypes.PlotTypes.threshold:
-                independentVar = Number(rows[rowIndex].thresh);
-                break;
-            default:
-                independentVar = Number(rows[rowIndex].avtime);
-        }
-        var stat;
-        if (rows[rowIndex].stat === undefined && rows[rowIndex].hit !== undefined) {
-            // this is a contingency table plot
-            isCTC = true;
-            const hit = Number(rows[rowIndex].hit);
-            const fa = Number(rows[rowIndex].fa);
-            const miss = Number(rows[rowIndex].miss);
-            const cn = Number(rows[rowIndex].cn);
-            const n = rows[rowIndex].sub_data.toString().split(',').length;
-            if (hit + fa + miss + cn > 0) {
-                stat = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, n, statisticStr);
-                stat = isNaN(Number(stat)) ? null : stat;
-            } else {
-                stat = null;
-            }
-        } else if (rows[rowIndex].stat === undefined && rows[rowIndex].square_diff_sum !== undefined) {
-            // this is a scalar partial sums plot
-            isScalar = true;
-            const squareDiffSum = Number(rows[rowIndex].square_diff_sum);
-            const NSum = Number(rows[rowIndex].N_sum);
-            const obsModelDiffSum = Number(rows[rowIndex].obs_model_diff_sum);
-            const modelSum = Number(rows[rowIndex].model_sum);
-            const obsSum = Number(rows[rowIndex].obs_sum);
-            const absSum = Number(rows[rowIndex].abs_sum);
-            if (NSum > 0) {
-                stat = matsDataUtils.calculateStatScalar(squareDiffSum, NSum, obsModelDiffSum, modelSum, obsSum, absSum, statisticStr);
-                stat = isNaN(Number(stat)) ? null : stat;
-            } else {
-                stat = null;
-            }
-        } else {
-            // not a contingency table plot or a scalar partial sums plot
-            stat = rows[rowIndex].stat === "NULL" ? null : rows[rowIndex].stat;
-        }
-        N0.push(rows[rowIndex].N0);             // number of values that go into a point on the graph
-        N_times.push(rows[rowIndex].N_times);   // number of times that go into a point on the graph
-
-        var sub_hit = [];
-        var sub_fa = [];
-        var sub_miss = [];
-        var sub_cn = [];
-        var sub_square_diff_sum = [];
-        var sub_N_sum = [];
-        var sub_obs_model_diff_sum = [];
-        var sub_model_sum = [];
-        var sub_obs_sum = [];
-        var sub_abs_sum = [];
-        var sub_values = [];
-        var sub_secs = [];
-        var sub_levs = [];
-        var sub_stdev = 0;
-        var sub_mean = 0;
-        var sd_limit = 0;
-        if (stat !== null && rows[rowIndex].sub_data !== undefined && rows[rowIndex].sub_data !== null) {
-            // parse the sub-data
-            try {
-                var sub_data = rows[rowIndex].sub_data.toString().split(',');
-                var curr_sub_data;
-                for (var sd_idx = 0; sd_idx < sub_data.length; sd_idx++) {
-                    curr_sub_data = sub_data[sd_idx].split(';');
-                    if (isCTC) {
-                        sub_secs.push(Number(curr_sub_data[0]));
-                        if (hasLevels) {
-                            if (!isNaN(Number(curr_sub_data[1]))) {
-                                sub_levs.push(Number(curr_sub_data[1]));
-                            } else {
-                                sub_levs.push(curr_sub_data[1]);
-                            }
-                            sub_hit.push(Number(curr_sub_data[2]));
-                            sub_fa.push(Number(curr_sub_data[3]));
-                            sub_miss.push(Number(curr_sub_data[4]));
-                            sub_cn.push(Number(curr_sub_data[5]));
-                            sub_values.push(matsDataUtils.calculateStatCTC(Number(curr_sub_data[2]), Number(curr_sub_data[3]), Number(curr_sub_data[4]), Number(curr_sub_data[5]), curr_sub_data.length, statisticStr));
-                        } else {
-                            sub_hit.push(Number(curr_sub_data[1]));
-                            sub_fa.push(Number(curr_sub_data[2]));
-                            sub_miss.push(Number(curr_sub_data[3]));
-                            sub_cn.push(Number(curr_sub_data[4]));
-                            sub_values.push(matsDataUtils.calculateStatCTC(Number(curr_sub_data[1]), Number(curr_sub_data[2]), Number(curr_sub_data[3]), Number(curr_sub_data[4]), curr_sub_data.length, statisticStr));
-                        }
-                    } else if (isScalar) {
-                        sub_secs.push(Number(curr_sub_data[0]));
-                        if (hasLevels) {
-                            if (!isNaN(Number(curr_sub_data[1]))) {
-                                sub_levs.push(Number(curr_sub_data[1]));
-                            } else {
-                                sub_levs.push(curr_sub_data[1]);
-                            }
-                            sub_square_diff_sum.push(Number(curr_sub_data[2]));
-                            sub_N_sum.push(Number(curr_sub_data[3]));
-                            sub_obs_model_diff_sum.push(Number(curr_sub_data[4]));
-                            sub_model_sum.push(Number(curr_sub_data[5]));
-                            sub_obs_sum.push(Number(curr_sub_data[6]));
-                            sub_abs_sum.push(Number(curr_sub_data[7]));
-                            sub_values.push(matsDataUtils.calculateStatScalar(Number(curr_sub_data[2]), Number(curr_sub_data[3]), Number(curr_sub_data[4]), Number(curr_sub_data[5]), Number(curr_sub_data[6]), Number(curr_sub_data[7]), statisticStr));
-                        } else {
-                            sub_square_diff_sum.push(Number(curr_sub_data[1]));
-                            sub_N_sum.push(Number(curr_sub_data[2]));
-                            sub_obs_model_diff_sum.push(Number(curr_sub_data[3]));
-                            sub_model_sum.push(Number(curr_sub_data[4]));
-                            sub_obs_sum.push(Number(curr_sub_data[5]));
-                            sub_abs_sum.push(Number(curr_sub_data[6]));
-                            sub_values.push(matsDataUtils.calculateStatScalar(Number(curr_sub_data[1]), Number(curr_sub_data[2]), Number(curr_sub_data[3]), Number(curr_sub_data[4]), Number(curr_sub_data[5]), Number(curr_sub_data[6]), statisticStr));
-                        }
-                    } else {
-                        sub_secs.push(Number(curr_sub_data[0]));
-                        if (hasLevels) {
-                            if (!isNaN(Number(curr_sub_data[1]))) {
-                                sub_levs.push(Number(curr_sub_data[1]));
-                            } else {
-                                sub_levs.push(curr_sub_data[1]);
-                            }
-                            sub_values.push(Number(curr_sub_data[2]));
-                        } else {
-                            sub_values.push(Number(curr_sub_data[1]));
-                        }
-                    }
-                }
-                // Now that we have all the sub-values, we can get the standard deviation and remove the ones that exceed it
-                sub_stdev = matsDataUtils.stdev(sub_values);
-                sub_mean = matsDataUtils.average(sub_values);
-                sd_limit = outlierQCParam * sub_stdev;
-                for (var svIdx = sub_values.length - 1; svIdx >= 0; svIdx--) {
-                    if (Math.abs(sub_values[svIdx] - sub_mean) > sd_limit) {
-                        if (isCTC) {
-                            sub_hit.splice(svIdx, 1);
-                            sub_fa.splice(svIdx, 1);
-                            sub_miss.splice(svIdx, 1);
-                            sub_cn.splice(svIdx, 1);
-                        } else if (isScalar) {
-                            sub_square_diff_sum.splice(svIdx, 1);
-                            sub_N_sum.splice(svIdx, 1);
-                            sub_obs_model_diff_sum.splice(svIdx, 1);
-                            sub_model_sum.splice(svIdx, 1);
-                            sub_obs_sum.splice(svIdx, 1);
-                            sub_abs_sum.splice(svIdx, 1);
-                        }
-                        sub_values.splice(svIdx, 1);
-                        sub_secs.splice(svIdx, 1);
-                        if (hasLevels) {
-                            sub_levs.splice(svIdx, 1);
-                        }
-                    }
-                }
-                if (isCTC) {
-                    const hit = matsDataUtils.sum(sub_hit);
-                    const fa = matsDataUtils.sum(sub_fa);
-                    const miss = matsDataUtils.sum(sub_miss);
-                    const cn = matsDataUtils.sum(sub_cn);
-                    stat = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, sub_hit.length, statisticStr);
-                } else if (isScalar) {
-                    const squareDiffSum = matsDataUtils.sum(sub_square_diff_sum);
-                    const NSum = matsDataUtils.sum(sub_N_sum);
-                    const obsModelDiffSum = matsDataUtils.sum(sub_obs_model_diff_sum);
-                    const modelSum = matsDataUtils.sum(sub_model_sum);
-                    const obsSum = matsDataUtils.sum(sub_obs_sum);
-                    const absSum = matsDataUtils.sum(sub_abs_sum);
-                    stat = matsDataUtils.calculateStatScalar(squareDiffSum, NSum, obsModelDiffSum, modelSum, obsSum, absSum, statisticStr);
-                } else {
-                    stat = matsDataUtils.average(sub_values);
-                }
-            } catch (e) {
-                // this is an error produced by a bug in the query function, not an error returned by the mysql database
-                e.message = "Error in parseQueryDataSpecialtyCurve. The expected fields don't seem to be present in the results cache: " + e.message;
+                e.message = "Error in parseQueryDataXYCurve. The expected fields don't seem to be present in the results cache: " + e.message;
                 throw new Error(e.message);
             }
         } else {
@@ -1547,7 +1127,7 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
         }
 
         // deal with missing forecast cycles for dailyModelCycle plot type
-        if (plotType === matsTypes.PlotTypes.dailyModelCycle && rowIndex > 0 && (Number(independentVar) - Number(rows[rowIndex - 1].avtime * 1000)) > 3600 * 24 * 1000) {
+        if ((plotType === matsTypes.PlotTypes.dailyModelCycle && rowIndex > 0 && (Number(independentVar) - Number(rows[rowIndex - 1].avtime * 1000)) > 3600 * 24 * 1000) && !hideGaps) {
             const cycles_missing = Math.ceil((Number(independentVar) - Number(rows[rowIndex - 1].avtime * 1000)) / (3600 * 24 * 1000)) - 1;
             const offsetFromMidnight = Math.floor(Number(independentVar) % (24 * 3600 * 1000) / (3600 * 1000));
             for (var missingIdx = cycles_missing; missingIdx > 0; missingIdx--) {
@@ -1620,8 +1200,9 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
     var indVarMax = -1 * Number.MAX_VALUE;
     var depVarMin = Number.MAX_VALUE;
     var depVarMax = -1 * Number.MAX_VALUE;
+    var d_idx;
 
-    for (var d_idx = 0; d_idx < curveIndependentVars.length; d_idx++) {
+    for (d_idx = 0; d_idx < curveIndependentVars.length; d_idx++) {
         var this_N0 = N0[d_idx];
         var this_N_times = N_times[d_idx];
         // Make sure that we don't have any points with a smaller completeness value than specified by the user.
@@ -1687,6 +1268,41 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
             indVarMax = curveIndependentVars[d_idx] > indVarMax ? curveIndependentVars[d_idx] : indVarMax;
             depVarMin = curveStats[d_idx] < depVarMin ? curveStats[d_idx] : depVarMin;
             depVarMax = curveStats[d_idx] > depVarMax ? curveStats[d_idx] : depVarMax;
+        }
+    }
+
+    // add in any missing times in the time series
+    if (plotType === matsTypes.PlotTypes.timeSeries && !hideGaps) {
+        time_interval = time_interval * 1000;
+        var dayInMilliSeconds = 24 * 3600 * 1000;
+        var lowerIndependentVar;
+        var upperIndependentVar;
+        var newTime;
+        var thisCadence;
+        var numberOfDaysBack;
+        for (d_idx = curveIndependentVars.length-2; d_idx >= 0; d_idx--) {
+            lowerIndependentVar = curveIndependentVars[d_idx];
+            upperIndependentVar = curveIndependentVars[d_idx + 1];
+            const cycles_missing = Math.ceil((Number(upperIndependentVar) - Number(lowerIndependentVar)) / (time_interval)) - 1;
+            for (missingIdx = cycles_missing; missingIdx > 0; missingIdx--) {
+                newTime = lowerIndependentVar + (missingIdx * time_interval);
+                if (!regular) {
+                    // if it's not a regular model, we only want to add a null point if this is an init time that should have had a forecast.
+                    thisCadence = (newTime % dayInMilliSeconds); // current hour of day (valid time)
+                    if (Number(thisCadence) - (Number(foreCastOffset) * 3600 * 1000) < 0) { // check to see if cycle time was on a previous day -- if so, need to wrap around 00Z to get current hour of day (cycle time)
+                        numberOfDaysBack = Math.ceil(-1 * (Number(thisCadence) - (Number(foreCastOffset) * 3600 * 1000)) / dayInMilliSeconds);
+                        thisCadence = (Number(thisCadence) - (Number(foreCastOffset) * 3600 * 1000) + numberOfDaysBack * dayInMilliSeconds); // current hour of day (cycle time)
+                    } else {
+                        thisCadence = (Number(thisCadence) - (Number(foreCastOffset) * 3600 * 1000)); // current hour of day (cycle time)
+                    }
+                    if (cycles.indexOf(thisCadence) !== -1) {
+                        matsDataUtils.addNullPoint(d, d_idx + 1, matsTypes.PlotTypes.timeSeries, 'x', newTime, 'y', isCTC, isScalar, hasLevels);
+                    }
+                } else {
+                    matsDataUtils.addNullPoint(d, d_idx + 1, matsTypes.PlotTypes.timeSeries, 'x', newTime, 'y', isCTC, isScalar, hasLevels);
+                }
+
+            }
         }
     }
 

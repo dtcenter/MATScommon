@@ -1206,26 +1206,57 @@ const removePoint = function (data, di, plotType, statVarName, isCTC, isScalar, 
     data.text.splice(di, 1);
 };
 
+// utility to add an additional null point on a graph
+const addNullPoint = function (data, di, plotType, indVarName, newIndVar, statVarName, isCTC, isScalar, hasLevels) {
+    data[indVarName].splice(di, 0, newIndVar);
+    data[statVarName].splice(di, 0, null);
+    if (plotType === matsTypes.PlotTypes.performanceDiagram || plotType === matsTypes.PlotTypes.roc) {
+        data.oy_all.splice(di, 0, null);
+        data.on_all.splice(di, 0, null);
+    }
+    data[('error_' + statVarName)].splice(di, 0, null);
+    if (isCTC) {
+        data.subHit.splice(di, 0, []);
+        data.subFa.splice(di, 0, []);
+        data.subMiss.splice(di, 0, []);
+        data.subCn.splice(di, 0, []);
+    } else if (isScalar) {
+        data.subSquareDiffSum.splice(di, 0, []);
+        data.subNSum.splice(di, 0, []);
+        data.subObsModelDiffSum.splice(di, 0, []);
+        data.subModelSum.splice(di, 0, []);
+        data.subObsSum.splice(di, 0, []);
+        data.subAbsSum.splice(di, 0, []);
+    }
+    data.subVals.splice(di, 0, []);
+    data.subSecs.splice(di, 0, []);
+    if (hasLevels) {
+        data.subLevs.splice(di, 0, []);
+    }
+    data.stats.splice(di, 0, []);
+    data.text.splice(di, 0, []);
+};
+
 // utility to make null a point on a graph
 const nullPoint = function (data, di, statVarName, isCTC, isScalar, hasLevels) {
     data[statVarName][di] = null;
     if (isCTC) {
-        data.subHit[di] = NaN;
-        data.subFa[di] = NaN;
-        data.subMiss[di] = NaN;
-        data.subCn[di] = NaN;
+        data.subHit[di] = [];
+        data.subFa[di] = [];
+        data.subMiss[di] = [];
+        data.subCn[di] = [];
     } else if (isScalar) {
-        data.subSquareDiffSum[di] = NaN;
-        data.subNSum[di] = NaN;
-        data.subObsModelDiffSum[di] = NaN;
-        data.subModelSum[di] = NaN;
-        data.subObsSum[di] = NaN;
-        data.subAbsSum[di] = NaN;
+        data.subSquareDiffSum[di] = [];
+        data.subNSum[di] = [];
+        data.subObsModelDiffSum[di] = [];
+        data.subModelSum[di] = [];
+        data.subObsSum[di] = [];
+        data.subAbsSum[di] = [];
     }
-    data.subVals[di] = NaN;
-    data.subSecs[di] = NaN;
+    data.subVals[di] = [];
+    data.subSecs[di] = [];
     if (hasLevels) {
-        data.subLevs[di] = NaN;
+        data.subLevs[di] = [];
     }
 };
 
@@ -1272,5 +1303,6 @@ export default matsDataUtils = {
     getDiffContourCurveParams: getDiffContourCurveParams,
     sortFunction: sortFunction,
     removePoint: removePoint,
-    nullPoint: nullPoint
+    nullPoint: nullPoint,
+    addNullPoint: addNullPoint
 }
