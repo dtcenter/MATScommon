@@ -444,7 +444,8 @@ const generateMapCurveOptions = function (curve, dataSeries, appParams, orderOfM
 
     const markerSizes = dataSeries.queryVal.map(function (val) {
         var size = Math.ceil(Math.abs(val * 4 / Math.pow(2, orderOfMagnitude))) + 2;
-        size = size > 50 ? 50 : size; // prevent really massive bad data from obscuring map
+        size = size > 40 ? 40 : size; // prevent really massive bad data from obscuring map
+        if (curve["statistic"] === "N" || curve["statistic"].includes("average")) size = 10;
         return size;
     });
 

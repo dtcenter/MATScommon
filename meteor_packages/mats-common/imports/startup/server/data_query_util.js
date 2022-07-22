@@ -199,8 +199,8 @@ const queryDBPython = function (pool, queryArray) {
         // wait for future to finish
         future.wait();
         // check for nulls in output, since JSON only passes strings
-        for (var idx = 0;  idx < d.length; idx++) {
-            for (var didx = 0;  didx < d[idx].y.length; didx++) {
+        for (var idx = 0; idx < d.length; idx++) {
+            for (var didx = 0; didx < d[idx].y.length; didx++) {
                 if (d[idx].y[didx] === 'null') {
                     d[idx].y[didx] = null;
                     if (d[idx].subHit.length > 0) {
@@ -522,7 +522,7 @@ const queryDBPerformanceDiagram = function (pool, statement, appParams) {
 };
 
 // this method queries the database for map plots
-const queryDBMapScalar = function (pool, statement, dataSource, statistic, variable, varUnits, siteMap, orderOfMagnitude, appParams) {
+const queryDBMapScalar = function (pool, statement, dataSource, statistic, variable, varUnits, siteMap, appParams) {
     if (Meteor.isServer) {
         // d will contain the curve data
         var d = {
@@ -591,7 +591,7 @@ const queryDBMapScalar = function (pool, statement, dataSource, statistic, varia
                 error = matsTypes.Messages.NO_DATA_FOUND;
             } else {
                 var parsedData;
-                parsedData = parseQueryDataMapScalar(rows, d, dPurple, dBlue, dBlack, dOrange, dRed, dataSource, siteMap, statistic, variable, varUnits, orderOfMagnitude, appParams);
+                parsedData = parseQueryDataMapScalar(rows, d, dPurple, dBlue, dBlack, dOrange, dRed, dataSource, siteMap, statistic, variable, varUnits, appParams);
                 d = parsedData.d;
                 dPurple = parsedData.dPurple;
                 dBlue = parsedData.dBlue;
@@ -1079,7 +1079,7 @@ const parseQueryDataTimeSeries = function (rows, d, appParams, averageStr, stati
                 sub_stdev = matsDataUtils.stdev(sub_values);
                 sub_mean = matsDataUtils.average(sub_values);
                 sd_limit = outlierQCParam * sub_stdev;
-                for (var svIdx = sub_values.length-1; svIdx >= 0; svIdx--) {
+                for (var svIdx = sub_values.length - 1; svIdx >= 0; svIdx--) {
                     if (Math.abs(sub_values[svIdx] - sub_mean) > sd_limit) {
                         if (isCTC) {
                             sub_hit.splice(svIdx, 1);
@@ -1480,7 +1480,7 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
                 sub_stdev = matsDataUtils.stdev(sub_values);
                 sub_mean = matsDataUtils.average(sub_values);
                 sd_limit = outlierQCParam * sub_stdev;
-                for (var svIdx = sub_values.length-1; svIdx >= 0; svIdx--) {
+                for (var svIdx = sub_values.length - 1; svIdx >= 0; svIdx--) {
                     if (Math.abs(sub_values[svIdx] - sub_mean) > sd_limit) {
                         if (isCTC) {
                             sub_hit.splice(svIdx, 1);
@@ -1872,9 +1872,10 @@ const parseQueryDataPerformanceDiagram = function (rows, d, appParams) {
 };
 
 // this method parses the returned query data for maps
-const parseQueryDataMapScalar = function (rows, d, dPurple, dBlue, dBlack, dOrange, dRed, dataSource, siteMap, statistic, variable, varUnits, orderOfMagnitude, appParams) {
+const parseQueryDataMapScalar = function (rows, d, dPurple, dBlue, dBlack, dOrange, dRed, dataSource, siteMap, statistic, variable, varUnits, appParams) {
     const hasLevels = appParams.hasLevels;
-    const completenessQCParam = Number(appParams.completeness) / 100;
+    var highLimit = 10;
+    var lowLimit = -10
     var outlierQCParam;
     if (appParams.outliers !== "all") {
         outlierQCParam = Number(appParams.outliers);
@@ -1947,7 +1948,7 @@ const parseQueryDataMapScalar = function (rows, d, dPurple, dBlue, dBlack, dOran
                 sub_stdev = matsDataUtils.stdev(sub_values);
                 sub_mean = matsDataUtils.average(sub_values);
                 sd_limit = outlierQCParam * sub_stdev;
-                for (var svIdx = sub_values.length-1; svIdx >= 0; svIdx--) {
+                for (var svIdx = sub_values.length - 1; svIdx >= 0; svIdx--) {
                     if (Math.abs(sub_values[svIdx] - sub_mean) > sd_limit) {
                         sub_square_diff_sum.splice(svIdx, 1);
                         sub_N_sum.splice(svIdx, 1);
@@ -1988,6 +1989,46 @@ const parseQueryDataMapScalar = function (rows, d, dPurple, dBlue, dBlack, dOran
                 sub_levs = NaN;
             }
         }
+        switch (statistic) {
+            case 'RMSE':
+                highLimit = 5;
+                lowLimit = 0;
+                break;
+            case 'Bias (Model - Obs)':
+                highLimit = 5;
+                lowLimit = -5;
+                break;
+            case 'N':
+                highLimit = 24 * 7 // one week of hourly;
+                lowLimit = 0;
+                break;
+            case 'Model average':
+                if (variable.includes("RH")) {
+                    highLimit = 100;
+                    lowLimit = 0;
+                } else {
+                    highLimit = 50;
+                    lowLimit = 0;
+                }
+                break;
+            case 'Obs average':
+                if (variable.includes("RH")) {
+                    highLimit = 100;
+                    lowLimit = 0;
+                } else {
+                    highLimit = 50;
+                    lowLimit = 0;
+                }
+                break;
+            case 'Std deviation':
+                highLimit = 5;
+                lowLimit = 0;
+                break;
+            case 'MAE (temp and dewpoint only)':
+                highLimit = 5;
+                lowLimit = 0;
+                break;
+        }
         d.queryVal.push(queryVal);
         d.stats.push({
             N_times: rows[rowIndex].N_times,
@@ -2000,7 +2041,7 @@ const parseQueryDataMapScalar = function (rows, d, dPurple, dBlue, dBlack, dOran
         });
 
         var tooltips = thisSite.origName +
-            "<br>" + "variable: " + variable +
+            "<br>" + variable + " " + statistic +
             "<br>" + "model: " + dataSource +
             "<br>" + "model-obs: " + queryVal + " " + varUnits +
             "<br>" + "n: " + rows[rowIndex].N_times;
@@ -2009,31 +2050,30 @@ const parseQueryDataMapScalar = function (rows, d, dPurple, dBlue, dBlack, dOran
         d.lat.push(thisSite.point[0]);
         d.lon.push(thisSite.point[1]);
 
-        var displayLength = orderOfMagnitude >= 0 ? 0 : Math.abs(orderOfMagnitude);
-        var textMarker = queryVal === null ? "" : queryVal.toFixed(displayLength);
+        var textMarker = queryVal === null ? "" : queryVal.toFixed(0);
         // sort data into color bins
-        if (queryVal <= -1.5 * Math.pow(10, orderOfMagnitude)) {
+        if (queryVal <= lowLimit + (highLimit - lowLimit) * .2) {
             d.color.push("rgb(0,0,255)");
             dPurple.siteName.push(thisSite.origName);
             dPurple.queryVal.push(queryVal);
             dPurple.text.push(textMarker);
             dPurple.lat.push(thisSite.point[0]);
             dPurple.lon.push(thisSite.point[1]);
-        } else if (queryVal <= -0.75 * Math.pow(10, orderOfMagnitude)) {
+        } else if (queryVal <= lowLimit + (highLimit - lowLimit) * .4) {
             d.color.push("rgb(0,125,255)");
             dBlue.siteName.push(thisSite.origName);
             dBlue.queryVal.push(queryVal);
             dBlue.text.push(textMarker);
             dBlue.lat.push(thisSite.point[0]);
             dBlue.lon.push(thisSite.point[1]);
-        } else if (queryVal >= 1.5 * Math.pow(10, orderOfMagnitude)) {
-            d.color.push("rgb(255,0,0)");
-            dRed.siteName.push(thisSite.origName);
-            dRed.queryVal.push(queryVal);
-            dRed.text.push(textMarker);
-            dRed.lat.push(thisSite.point[0]);
-            dRed.lon.push(thisSite.point[1]);
-        } else if (queryVal >= 0.75 * Math.pow(10, orderOfMagnitude)) {
+        } else if (queryVal <= lowLimit + (highLimit - lowLimit) * .6) {
+            d.color.push("rgb(125,125,125)");
+            dBlack.siteName.push(thisSite.origName);
+            dBlack.queryVal.push(queryVal);
+            dBlack.text.push(textMarker);
+            dBlack.lat.push(thisSite.point[0]);
+            dBlack.lon.push(thisSite.point[1]);
+        } else if (queryVal <= lowLimit + (highLimit - lowLimit) * .8) {
             d.color.push("rgb(255,125,0)");
             dOrange.siteName.push(thisSite.origName);
             dOrange.queryVal.push(queryVal);
@@ -2041,13 +2081,13 @@ const parseQueryDataMapScalar = function (rows, d, dPurple, dBlue, dBlack, dOran
             dOrange.lat.push(thisSite.point[0]);
             dOrange.lon.push(thisSite.point[1]);
         } else {
-            d.color.push("rgb(125,125,125)");
-            dBlack.siteName.push(thisSite.origName);
-            dBlack.queryVal.push(queryVal);
-            dBlack.text.push(textMarker);
-            dBlack.lat.push(thisSite.point[0]);
-            dBlack.lon.push(thisSite.point[1]);
-            }
+            d.color.push("rgb(255,0,0)");
+            dRed.siteName.push(thisSite.origName);
+            dRed.queryVal.push(queryVal);
+            dRed.text.push(textMarker);
+            dRed.lat.push(thisSite.point[0]);
+            dRed.lon.push(thisSite.point[1]);
+        }
     }// end of loop row
     return {
         d: d,
