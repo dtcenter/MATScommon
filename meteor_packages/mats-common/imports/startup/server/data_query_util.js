@@ -1010,7 +1010,7 @@ const parseQueryDataTimeSeries = function (rows, d, appParams, averageStr, stati
         var sub_stdev = 0;
         var sub_mean = 0;
         var sd_limit = 0;
-        if (stat !== null && rows[rowIndex].sub_data !== undefined) {
+        if (stat !== null && rows[rowIndex].sub_data !== undefined && rows[rowIndex].sub_data !== null) {
             // parse the sub-data
             try {
                 var sub_data = rows[rowIndex].sub_data.toString().split(',');
@@ -1411,7 +1411,7 @@ const parseQueryDataSpecialtyCurve = function (rows, d, appParams, statisticStr)
         var sub_stdev = 0;
         var sub_mean = 0;
         var sd_limit = 0;
-        if (stat !== null && rows[rowIndex].sub_data !== undefined) {
+        if (stat !== null && rows[rowIndex].sub_data !== undefined && rows[rowIndex].sub_data !== null) {
             // parse the sub-data
             try {
                 var sub_data = rows[rowIndex].sub_data.toString().split(',');
@@ -1784,7 +1784,7 @@ const parseQueryDataPerformanceDiagram = function (rows, d, appParams) {
         var sub_cn = [];
         var sub_secs = [];
         var sub_levs = [];
-        if (pod !== null && rows[rowIndex].sub_data !== undefined) {
+        if (pod !== null && rows[rowIndex].sub_data !== undefined && rows[rowIndex].sub_data !== null) {
             // parse the sub-data
             try {
                 var sub_data = rows[rowIndex].sub_data.toString().split(',');
@@ -1912,7 +1912,7 @@ const parseQueryDataMapScalar = function (rows, d, dPurple, dBlue, dBlack, dOran
         var sub_stdev = 0;
         var sub_mean = 0;
         var sd_limit = 0;
-        if (queryVal !== null && rows[rowIndex].sub_data !== undefined) {
+        if (queryVal !== null && rows[rowIndex].sub_data !== undefined && rows[rowIndex].sub_data !== null) {
             // parse the sub-data
             try {
                 var sub_data = rows[rowIndex].sub_data.toString().split(',');
@@ -2344,7 +2344,7 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
         var sub_stats = [];
         var sub_secs = [];
         var sub_levs = [];
-        if (stat !== null && rows[rowIndex].sub_data !== undefined) {
+        if (stat !== null && rows[rowIndex].sub_data !== undefined && rows[rowIndex].sub_data !== null) {
             // parse the sub-data
             try {
                 var sub_data = rows[rowIndex].sub_data.toString().split(',');
@@ -2562,7 +2562,7 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
         var sub_values = [];
         var sub_secs = [];
         var sub_levs = [];
-        if (stat !== null && rows[rowIndex].sub_data !== undefined) {
+        if (stat !== null && rows[rowIndex].sub_data !== undefined && rows[rowIndex].sub_data !== null) {
             // parse the sub-data
             try {
                 var sub_data = rows[rowIndex].sub_data.toString().split(',');
