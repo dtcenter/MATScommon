@@ -49,7 +49,7 @@ Template.graph.helpers({
             Session.set('options', options);
             Session.set('isCTC', dataset !== undefined && dataset[0] !== undefined &&
                 ((dataset[0].stats !== undefined && dataset[0].stats[0] !== undefined && dataset[0].stats[0].hit !== undefined)
-                    || (dataset[0].hitTextOutput !== undefined && dataset[0].hitTextOutput.length > 0)))
+                    || (dataset[0].hitTextOutput !== undefined && dataset[0].hitTextOutput.length > 0 && !dataset[0].hitTextOutput.every(element => element === null))))
             Session.set('isModePairs', dataset !== undefined && dataset[0] !== undefined && dataset[0].stats !== undefined && dataset[0].stats[0] !== undefined && dataset[0].stats[0].avgInterest !== undefined)
 
             // need to save some curve options so that the reset button can undo Plotly.restyle
