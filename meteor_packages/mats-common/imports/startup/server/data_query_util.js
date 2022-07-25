@@ -1667,6 +1667,7 @@ const parseQueryDataMapScalar = function (rows, d, dPurple, dBlue, dBlack, dOran
         d.lon.push(thisSite.point[1]);
 
         var textMarker = queryVal === null ? "" : queryVal.toFixed(0);
+        if (!variable.includes('2m') || !variable.includes('10m')) textMarker = queryVal.toFixed(1);
         // sort data into color bins
         if (queryVal <= lowLimit + (highLimit - lowLimit) * .2) {
             d.color.push("rgb(0,0,255)");
