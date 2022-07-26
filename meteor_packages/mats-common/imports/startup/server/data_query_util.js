@@ -1591,59 +1591,6 @@ const parseQueryDataMapScalar = function (rows, d, dPurple, dBlue, dBlack, dOran
                 e.message = "Error in parseQueryDataTimeSeries. The expected fields don't seem to be present in the results cache: " + e.message;
                 throw new Error(e.message);
             }
-        } else {
-            sub_square_diff_sum = NaN;
-            sub_N_sum = NaN;
-            sub_obs_model_diff_sum = NaN;
-            sub_model_sum = NaN;
-            sub_obs_sum = NaN;
-            sub_abs_sum = NaN;
-            sub_values = NaN;
-            sub_values = NaN;
-            sub_secs = NaN;
-            if (hasLevels) {
-                sub_levs = NaN;
-            }
-        }
-        switch (statistic) {
-            case 'RMSE':
-                highLimit = 5;
-                lowLimit = 0;
-                break;
-            case 'Bias (Model - Obs)':
-                highLimit = 5;
-                lowLimit = -5;
-                break;
-            case 'N':
-                highLimit = 24 * 7 // one week of hourly;
-                lowLimit = 0;
-                break;
-            case 'Model average':
-                if (variable.includes("RH")) {
-                    highLimit = 100;
-                    lowLimit = 0;
-                } else {
-                    highLimit = 50;
-                    lowLimit = 0;
-                }
-                break;
-            case 'Obs average':
-                if (variable.includes("RH")) {
-                    highLimit = 100;
-                    lowLimit = 0;
-                } else {
-                    highLimit = 50;
-                    lowLimit = 0;
-                }
-                break;
-            case 'Std deviation':
-                highLimit = 5;
-                lowLimit = 0;
-                break;
-            case 'MAE (temp and dewpoint only)':
-                highLimit = 5;
-                lowLimit = 0;
-                break;
         }
         d.queryVal.push(queryVal);
         d.stats.push({
@@ -1660,52 +1607,72 @@ const parseQueryDataMapScalar = function (rows, d, dPurple, dBlue, dBlack, dOran
             "<br>" + variable + " " + statistic +
             "<br>" + "model: " + dataSource +
             "<br>" + "model-obs: " + queryVal + " " + varUnits +
-            "<br>" + "n: " + rows[rowIndex].N_times;
+            "<br>" + "n: " + rows[rowIndex].N0;
         d.text.push(tooltips);
         d.siteName.push(thisSite.origName);
         d.lat.push(thisSite.point[0]);
         d.lon.push(thisSite.point[1]);
+    }
 
-        var textMarker = queryVal === null ? "" : queryVal.toFixed(0);
-        if (!variable.includes('2m') || !variable.includes('10m')) {
+    // get range of values for colorscale, eliminating the highest and lowest as outliers
+    var filteredValues = d.queryVal.filter(x => x);
+    filteredValues = filteredValues.sort(function (a, b) {
+        return Number(a) - Number(b);
+    })
+    highLimit = filteredValues[(Math.floor(filteredValues.length * .98))];
+    lowLimit = filteredValues[(Math.floor(filteredValues.length * .02))];
+
+    if (statistic === "Bias (Model - Obs)") {
+        // bias colorscale needs to be symmetrical around 0
+        const maxValue = Math.abs(highLimit) > Math.abs(lowLimit) ? Math.abs(highLimit) : Math.abs(lowLimit);
+        highLimit = maxValue;
+        lowLimit = -1 * maxValue;
+    }
+
+    for (var didx = 0; didx < d.queryVal.length; didx++) {
+        queryVal = d.queryVal[didx];
+        var textMarker;
+        if (variable.includes('2m') || variable.includes('10m')) {
+            textMarker = queryVal === null ? "" : queryVal.toFixed(0);
+        } else {
             textMarker = queryVal === null ? "" : queryVal.toFixed(1)
         }
         // sort data into color bins
         if (queryVal <= lowLimit + (highLimit - lowLimit) * .2) {
             d.color.push("rgb(0,0,255)");
-            dPurple.siteName.push(thisSite.origName);
+            dPurple.siteName.push(d.siteName[didx]);
             dPurple.queryVal.push(queryVal);
             dPurple.text.push(textMarker);
-            dPurple.lat.push(thisSite.point[0]);
-            dPurple.lon.push(thisSite.point[1]);
+            dPurple.lat.push(d.lat[didx]);
+            dPurple.lon.push(d.lon[didx]);
         } else if (queryVal <= lowLimit + (highLimit - lowLimit) * .4) {
             d.color.push("rgb(0,125,255)");
-            dBlue.siteName.push(thisSite.origName);
+            dBlue.siteName.push(d.siteName[didx]);
             dBlue.queryVal.push(queryVal);
             dBlue.text.push(textMarker);
-            dBlue.lat.push(thisSite.point[0]);
-            dBlue.lon.push(thisSite.point[1]);
+            dBlue.lat.push(d.lat[didx]);
+            dBlue.lon.push(d.lon[didx]);
         } else if (queryVal <= lowLimit + (highLimit - lowLimit) * .6) {
             d.color.push("rgb(125,125,125)");
-            dBlack.siteName.push(thisSite.origName);
+            dBlack.siteName.push(d.siteName[didx]);
             dBlack.queryVal.push(queryVal);
             dBlack.text.push(textMarker);
-            dBlack.lat.push(thisSite.point[0]);
-            dBlack.lon.push(thisSite.point[1]);
+            dBlack.lat.push(d.lat[didx]);
+            dBlack.lon.push(d.lon[didx]);
         } else if (queryVal <= lowLimit + (highLimit - lowLimit) * .8) {
             d.color.push("rgb(255,125,0)");
-            dOrange.siteName.push(thisSite.origName);
+            dOrange.siteName.push(d.siteName[didx]);
             dOrange.queryVal.push(queryVal);
             dOrange.text.push(textMarker);
-            dOrange.lat.push(thisSite.point[0]);
-            dOrange.lon.push(thisSite.point[1]);
+            dOrange.lat.push(d.lat[didx]);
+            dOrange.lon.push(d.lon[didx]);
         } else {
             d.color.push("rgb(255,0,0)");
-            dRed.siteName.push(thisSite.origName);
+            dRed.siteName.push(d.siteName[didx]);
             dRed.queryVal.push(queryVal);
             dRed.text.push(textMarker);
-            dRed.lat.push(thisSite.point[0]);
-            dRed.lon.push(thisSite.point[1]);
+            dRed.lat.push(d.lat[didx]);
+            dRed.lon.push(d.lon[didx]);
         }
     }// end of loop row
     return {
