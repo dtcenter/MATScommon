@@ -1220,7 +1220,7 @@ const generateHistogramPlotOptions = function (curves, axisMap, varUnits, plotBi
         margin: {
             l: 80,
             r: 80,
-            b: 80,
+            b: 100,
             t: 20,
             pad: 4
         },
@@ -1247,7 +1247,7 @@ const generateHistogramPlotOptions = function (curves, axisMap, varUnits, plotBi
 
     // x-axis options
     layout['xaxis'] = {
-        title: 'Bin (' + varUnits + ')',
+        title: varUnits !== undefined && varUnits.length > 0 ? 'Bin (' + varUnits + ')' : 'Bin',
         titlefont: {
             size: 24,
             color: '#000000'
