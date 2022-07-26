@@ -444,6 +444,7 @@ const generateMapCurveOptions = function (curve, dataSeries, appParams, orderOfM
 
     const markerSizes = dataSeries.queryVal.map(function (val) {
         var size = Math.ceil(Math.abs(val * 4 / Math.pow(2, orderOfMagnitude))) + 2;
+        size = appParams.hasLevels ? size * 2 : size; // upper air needs bigger dots
         size = size > 30 ? 30 : size; // prevent really massive bad data from obscuring map
         if (curve["statistic"] === "N" || curve["statistic"].includes("average")) size = 10;
         return size;
