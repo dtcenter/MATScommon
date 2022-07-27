@@ -426,6 +426,7 @@ const calculateStatScalar = function (squareDiffSum, NSum, obsModelDiffSum, mode
             break;
         case 'MAE (temp and dewpoint only)':
         case 'MAE (station plots only)':
+        case 'MAE':
             queryVal = absSum / NSum;
             break;
     }
