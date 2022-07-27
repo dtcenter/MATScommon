@@ -576,7 +576,7 @@ const queryDBMapScalar = function (pool, statement, dataSource, statistic, varia
 };
 
 // this method queries the database for map plots in CTC apps
-const queryDBMapCTC = function (pool, statement, dataSource, statistic, siteMap) {
+const queryDBMapCTC = function (pool, statement, dataSource, statistic, siteMap, appParams) {
     if (Meteor.isServer) {
         // d will contain the curve data
         var d = {
@@ -700,7 +700,7 @@ const queryDBMapCTC = function (pool, statement, dataSource, statistic, siteMap)
                 error = matsTypes.Messages.NO_DATA_FOUND;
             } else {
                 var parsedData;
-                parsedData = parseQueryDataMapCTC(rows, d, dPurple, dPurpleBlue, dBlue, dBlueGreen, dGreen, dGreenYellow, dYellow, dOrange, dOrangeRed, dRed, dataSource, siteMap, statistic);
+                parsedData = parseQueryDataMapCTC(rows, d, dPurple, dPurpleBlue, dBlue, dBlueGreen, dGreen, dGreenYellow, dYellow, dOrange, dOrangeRed, dRed, dataSource, siteMap, statistic, appParams);
                 d = parsedData.d;
                 dPurple = parsedData.dPurple;
                 dPurpleBlue = parsedData.dPurpleBlue;
@@ -1280,7 +1280,7 @@ const parseQueryDataXYCurve = function (rows, d, appParams, statisticStr, foreCa
         var newTime;
         var thisCadence;
         var numberOfDaysBack;
-        for (d_idx = curveIndependentVars.length-2; d_idx >= 0; d_idx--) {
+        for (d_idx = curveIndependentVars.length - 2; d_idx >= 0; d_idx--) {
             lowerIndependentVar = curveIndependentVars[d_idx];
             upperIndependentVar = curveIndependentVars[d_idx + 1];
             const cycles_missing = Math.ceil((Number(upperIndependentVar) - Number(lowerIndependentVar)) / (time_interval)) - 1;
@@ -1498,7 +1498,6 @@ const parseQueryDataMapScalar = function (rows, d, dPurple, dBlue, dBlack, dOran
     } else {
         outlierQCParam = 100;
     }
-    var N_times_max = 0;
 
     var queryVal;
     for (var rowIndex = 0; rowIndex < rows.length; rowIndex++) {
@@ -1532,7 +1531,6 @@ const parseQueryDataMapScalar = function (rows, d, dPurple, dBlue, dBlack, dOran
             // parse the sub-data
             try {
                 var sub_data = rows[rowIndex].sub_data.toString().split(',');
-                N_times_max = N_times_max < sub_data.length ? sub_data.length : N_times_max;
                 var curr_sub_data;
                 for (var sd_idx = 0; sd_idx < sub_data.length; sd_idx++) {
                     curr_sub_data = sub_data[sd_idx].split(';');
@@ -1588,7 +1586,7 @@ const parseQueryDataMapScalar = function (rows, d, dPurple, dBlue, dBlack, dOran
                 queryVal = matsDataUtils.calculateStatScalar(squareDiffSum, NSum, obsModelDiffSum, modelSum, obsSum, absSum, statistic + "_" + variable);
             } catch (e) {
                 // this is an error produced by a bug in the query function, not an error returned by the mysql database
-                e.message = "Error in parseQueryDataTimeSeries. The expected fields don't seem to be present in the results cache: " + e.message;
+                e.message = "Error in parseQueryDataMapScalar. The expected fields don't seem to be present in the results cache: " + e.message;
                 throw new Error(e.message);
             }
         }
@@ -1629,8 +1627,23 @@ const parseQueryDataMapScalar = function (rows, d, dPurple, dBlue, dBlack, dOran
         lowLimit = -1 * maxValue;
     }
 
-    for (var didx = 0; didx < d.queryVal.length; didx++) {
+    // get stdev threshold at which to exclude entire points
+    const all_mean = matsDataUtils.average(filteredValues);
+    const all_stdev = matsDataUtils.stdev(filteredValues);
+    const all_sd_limit = outlierQCParam * all_stdev;
+
+    for (var didx = d.queryVal.length - 1; didx >= 0; didx--) {
         queryVal = d.queryVal[didx];
+        if (Math.abs(queryVal - all_mean) > all_sd_limit) {
+            // this point is too far from the mean. Exclude it.
+            d.queryVal.splice(didx, 1);
+            d.stats.splice(didx, 1);
+            d.text.splice(didx, 1);
+            d.siteName.splice(didx, 1);
+            d.lat.splice(didx, 1);
+            d.lon.splice(didx, 1);
+            continue;
+        }
         var textMarker;
         if (variable.includes('2m') || variable.includes('10m')) {
             textMarker = queryVal === null ? "" : queryVal.toFixed(0);
@@ -1686,10 +1699,18 @@ const parseQueryDataMapScalar = function (rows, d, dPurple, dBlue, dBlack, dOran
 };
 
 // this method parses the returned query data for maps in CTC apps
-const parseQueryDataMapCTC = function (rows, d, dPurple, dPurpleBlue, dBlue, dBlueGreen, dGreen, dGreenYellow, dYellow, dOrange, dOrangeRed, dRed, dataSource, siteMap, statistic) {
+const parseQueryDataMapCTC = function (rows, d, dPurple, dPurpleBlue, dBlue, dBlueGreen, dGreen, dGreenYellow, dYellow, dOrange, dOrangeRed, dRed, dataSource, siteMap, statistic, appParams) {
+    const hasLevels = appParams.hasLevels;
+    var highLimit = 100;
+    var lowLimit = -100
+    var outlierQCParam;
+    if (appParams.outliers !== "all") {
+        outlierQCParam = Number(appParams.outliers);
+    } else {
+        outlierQCParam = 100;
+    }
+
     var queryVal;
-    var lowLimit = Number(rows[0].N0);
-    var highLimit = Number(rows[rows.length - 1].N0);
     for (var rowIndex = 0; rowIndex < rows.length; rowIndex++) {
         const site = rows[rowIndex].sta_id;
         const hit = Number(rows[rowIndex].hit);
@@ -1699,6 +1720,7 @@ const parseQueryDataMapCTC = function (rows, d, dPurple, dPurpleBlue, dBlue, dBl
         const n = rows[rowIndex].N_times;
         if (hit + fa + miss + cn > 0) {
             queryVal = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, n, statistic);
+            queryVal = isNaN(Number(queryVal)) ? null : queryVal;
             switch (statistic) {
                 case 'TSS (True Skill Score)':
                 case 'HSS (Heidke Skill Score)':
@@ -1730,111 +1752,179 @@ const parseQueryDataMapCTC = function (rows, d, dPurple, dPurpleBlue, dBlue, dBl
                     highLimit = 1;
                     break;
             }
-            if (!isNaN(Number(queryVal))) {
-                d.queryVal.push(queryVal);
-                d.stats.push({
-                    N_times: rows[rowIndex].N_times,
-                    min_time: rows[rowIndex].min_secs,
-                    max_time: rows[rowIndex].max_secs,
-                    hit: rows[rowIndex].hit,
-                    fa: rows[rowIndex].fa,
-                    miss: rows[rowIndex].miss,
-                    cn: rows[rowIndex].cn
-                });
+        } else {
+            queryVal = null;
+        }
 
-                var thisSite = siteMap.find(obj => {
-                    return obj.options.id === site;
-                });
-
-                var tooltips = thisSite.origName +
-                    "<br>" + "model: " + dataSource +
-                    "<br>" + statistic + ": " + queryVal +
-                    "<br>" + "n: " + rows[rowIndex].N_times +
-                    "<br>" + "hits: " + rows[rowIndex].hit +
-                    "<br>" + "false alarms: " + rows[rowIndex].fa +
-                    "<br>" + "misses: " + rows[rowIndex].miss +
-                    "<br>" + "correct nulls: " + rows[rowIndex].cn;
-                d.text.push(tooltips);
-                d.siteName.push(thisSite.origName);
-                d.lat.push(thisSite.point[0]);
-                d.lon.push(thisSite.point[1]);
-
-                var textMarker = queryVal === null ? "" : queryVal.toFixed(0);
-                // sort data into color bins
-                if (queryVal <= lowLimit + (highLimit - lowLimit) * .1) {
-                    d.color.push("rgb(128,0,255)");
-                    dPurple.siteName.push(thisSite.origName);
-                    dPurple.queryVal.push(queryVal);
-                    dPurple.text.push(textMarker);
-                    dPurple.lat.push(thisSite.point[0]);
-                    dPurple.lon.push(thisSite.point[1]);
-                } else if (queryVal <= lowLimit + (highLimit - lowLimit) * .2) {
-                    d.color.push("rgb(64,0,255)");
-                    dPurpleBlue.siteName.push(thisSite.origName);
-                    dPurpleBlue.queryVal.push(queryVal);
-                    dPurpleBlue.text.push(textMarker);
-                    dPurpleBlue.lat.push(thisSite.point[0]);
-                    dPurpleBlue.lon.push(thisSite.point[1]);
-                } else if (queryVal <= lowLimit + (highLimit - lowLimit) * .3) {
-                    d.color.push("rgb(0,0,255)");
-                    dBlue.siteName.push(thisSite.origName);
-                    dBlue.queryVal.push(queryVal);
-                    dBlue.text.push(textMarker);
-                    dBlue.lat.push(thisSite.point[0]);
-                    dBlue.lon.push(thisSite.point[1]);
-                } else if (queryVal <= lowLimit + (highLimit - lowLimit) * .4) {
-                    d.color.push("rgb(64,128,128)");
-                    dBlueGreen.siteName.push(thisSite.origName);
-                    dBlueGreen.queryVal.push(queryVal);
-                    dBlueGreen.text.push(textMarker);
-                    dBlueGreen.lat.push(thisSite.point[0]);
-                    dBlueGreen.lon.push(thisSite.point[1]);
-                } else if (queryVal <= lowLimit + (highLimit - lowLimit) * .5) {
-                    d.color.push("rgb(128,255,0)");
-                    dGreen.siteName.push(thisSite.origName);
-                    dGreen.queryVal.push(queryVal);
-                    dGreen.text.push(textMarker);
-                    dGreen.lat.push(thisSite.point[0]);
-                    dGreen.lon.push(thisSite.point[1]);
-                } else if (queryVal <= lowLimit + (highLimit - lowLimit) * .6) {
-                    d.color.push("rgb(160,224,0)");
-                    dGreenYellow.siteName.push(thisSite.origName);
-                    dGreenYellow.queryVal.push(queryVal);
-                    dGreenYellow.text.push(textMarker);
-                    dGreenYellow.lat.push(thisSite.point[0]);
-                    dGreenYellow.lon.push(thisSite.point[1]);
-                } else if (queryVal <= lowLimit + (highLimit - lowLimit) * .7) {
-                    d.color.push("rgb(192,192,0)");
-                    dYellow.siteName.push(thisSite.origName);
-                    dYellow.queryVal.push(queryVal);
-                    dYellow.text.push(textMarker);
-                    dYellow.lat.push(thisSite.point[0]);
-                    dYellow.lon.push(thisSite.point[1]);
-                } else if (queryVal <= lowLimit + (highLimit - lowLimit) * .8) {
-                    d.color.push("rgb(255,128,0)");
-                    dOrange.siteName.push(thisSite.origName);
-                    dOrange.queryVal.push(queryVal);
-                    dOrange.text.push(textMarker);
-                    dOrange.lat.push(thisSite.point[0]);
-                    dOrange.lon.push(thisSite.point[1]);
-                } else if (queryVal <= lowLimit + (highLimit - lowLimit) * .9) {
-                    d.color.push("rgb(255,64,0)");
-                    dOrangeRed.siteName.push(thisSite.origName);
-                    dOrangeRed.queryVal.push(queryVal);
-                    dOrangeRed.text.push(textMarker);
-                    dOrangeRed.lat.push(thisSite.point[0]);
-                    dOrangeRed.lon.push(thisSite.point[1]);
-                } else {
-                    d.color.push("rgb(255,0,0)");
-                    dRed.siteName.push(thisSite.origName);
-                    dRed.queryVal.push(queryVal);
-                    dRed.text.push(textMarker);
-                    dRed.lat.push(thisSite.point[0]);
-                    dRed.lon.push(thisSite.point[1]);
+        // store sub values to test them for stdev.
+        var sub_hit = [];
+        var sub_fa = [];
+        var sub_miss = [];
+        var sub_cn = [];
+        var sub_values = [];
+        var sub_secs = [];
+        var sub_levs = [];
+        var sub_stdev = 0;
+        var sub_mean = 0;
+        var sd_limit = 0;
+        if (queryVal !== null && rows[rowIndex].sub_data !== undefined && rows[rowIndex].sub_data !== null) {
+            // parse the sub-data
+            try {
+                var sub_data = rows[rowIndex].sub_data.toString().split(',');
+                var curr_sub_data;
+                for (var sd_idx = 0; sd_idx < sub_data.length; sd_idx++) {
+                    curr_sub_data = sub_data[sd_idx].split(';');
+                    sub_secs.push(Number(curr_sub_data[0]));
+                    if (hasLevels) {
+                        if (!isNaN(Number(curr_sub_data[1]))) {
+                            sub_levs.push(Number(curr_sub_data[1]));
+                        } else {
+                            sub_levs.push(curr_sub_data[1]);
+                        }
+                        sub_hit.push(Number(curr_sub_data[2]));
+                        sub_fa.push(Number(curr_sub_data[3]));
+                        sub_miss.push(Number(curr_sub_data[4]));
+                        sub_cn.push(Number(curr_sub_data[5]));
+                        sub_values.push(matsDataUtils.calculateStatCTC(Number(curr_sub_data[2]), Number(curr_sub_data[3]), Number(curr_sub_data[4]), Number(curr_sub_data[5]), curr_sub_data.length, statistic));
+                    } else {
+                        sub_hit.push(Number(curr_sub_data[1]));
+                        sub_fa.push(Number(curr_sub_data[2]));
+                        sub_miss.push(Number(curr_sub_data[3]));
+                        sub_cn.push(Number(curr_sub_data[4]));
+                        sub_values.push(matsDataUtils.calculateStatCTC(Number(curr_sub_data[1]), Number(curr_sub_data[2]), Number(curr_sub_data[3]), Number(curr_sub_data[4]), curr_sub_data.length, statistic));
+                    }
                 }
+                // Now that we have all the sub-values, we can get the standard deviation and remove the ones that exceed it
+                sub_stdev = matsDataUtils.stdev(sub_values);
+                sub_mean = matsDataUtils.average(sub_values);
+                sd_limit = outlierQCParam * sub_stdev;
+                for (var svIdx = sub_values.length - 1; svIdx >= 0; svIdx--) {
+                    if (Math.abs(sub_values[svIdx] - sub_mean) > sd_limit) {
+                        sub_hit.splice(svIdx, 1);
+                        sub_fa.splice(svIdx, 1);
+                        sub_miss.splice(svIdx, 1);
+                        sub_cn.splice(svIdx, 1);
+                        sub_values.splice(svIdx, 1);
+                        sub_secs.splice(svIdx, 1);
+                        if (hasLevels) {
+                            sub_levs.splice(svIdx, 1);
+                        }
+                    }
+                }
+                const hit = matsDataUtils.sum(sub_hit);
+                const fa = matsDataUtils.sum(sub_fa);
+                const miss = matsDataUtils.sum(sub_miss);
+                const cn = matsDataUtils.sum(sub_cn);
+                queryVal = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, sub_hit.length, statistic);
+            } catch (e) {
+                // this is an error produced by a bug in the query function, not an error returned by the mysql database
+                e.message = "Error in parseQueryDataMapCTC. The expected fields don't seem to be present in the results cache: " + e.message;
+                throw new Error(e.message);
             }
         }
+        d.queryVal.push(queryVal);
+        d.stats.push({
+            N_times: rows[rowIndex].N_times,
+            min_time: rows[rowIndex].min_secs,
+            max_time: rows[rowIndex].max_secs,
+            hit: rows[rowIndex].hit,
+            fa: rows[rowIndex].fa,
+            miss: rows[rowIndex].miss,
+            cn: rows[rowIndex].cn
+        });
+
+        var thisSite = siteMap.find(obj => {
+            return obj.options.id === site;
+        });
+
+        var tooltips = thisSite.origName +
+            "<br>" + "model: " + dataSource +
+            "<br>" + statistic + ": " + queryVal +
+            "<br>" + "n: " + rows[rowIndex].N_times +
+            "<br>" + "hits: " + rows[rowIndex].hit +
+            "<br>" + "false alarms: " + rows[rowIndex].fa +
+            "<br>" + "misses: " + rows[rowIndex].miss +
+            "<br>" + "correct nulls: " + rows[rowIndex].cn;
+        d.text.push(tooltips);
+        d.siteName.push(thisSite.origName);
+        d.lat.push(thisSite.point[0]);
+        d.lon.push(thisSite.point[1]);
+
+        var textMarker = queryVal === null ? "" : queryVal.toFixed(0);
+        // sort data into color bins
+        if (queryVal <= lowLimit + (highLimit - lowLimit) * .1) {
+            d.color.push("rgb(128,0,255)");
+            dPurple.siteName.push(thisSite.origName);
+            dPurple.queryVal.push(queryVal);
+            dPurple.text.push(textMarker);
+            dPurple.lat.push(thisSite.point[0]);
+            dPurple.lon.push(thisSite.point[1]);
+        } else if (queryVal <= lowLimit + (highLimit - lowLimit) * .2) {
+            d.color.push("rgb(64,0,255)");
+            dPurpleBlue.siteName.push(thisSite.origName);
+            dPurpleBlue.queryVal.push(queryVal);
+            dPurpleBlue.text.push(textMarker);
+            dPurpleBlue.lat.push(thisSite.point[0]);
+            dPurpleBlue.lon.push(thisSite.point[1]);
+        } else if (queryVal <= lowLimit + (highLimit - lowLimit) * .3) {
+            d.color.push("rgb(0,0,255)");
+            dBlue.siteName.push(thisSite.origName);
+            dBlue.queryVal.push(queryVal);
+            dBlue.text.push(textMarker);
+            dBlue.lat.push(thisSite.point[0]);
+            dBlue.lon.push(thisSite.point[1]);
+        } else if (queryVal <= lowLimit + (highLimit - lowLimit) * .4) {
+            d.color.push("rgb(64,128,128)");
+            dBlueGreen.siteName.push(thisSite.origName);
+            dBlueGreen.queryVal.push(queryVal);
+            dBlueGreen.text.push(textMarker);
+            dBlueGreen.lat.push(thisSite.point[0]);
+            dBlueGreen.lon.push(thisSite.point[1]);
+        } else if (queryVal <= lowLimit + (highLimit - lowLimit) * .5) {
+            d.color.push("rgb(128,255,0)");
+            dGreen.siteName.push(thisSite.origName);
+            dGreen.queryVal.push(queryVal);
+            dGreen.text.push(textMarker);
+            dGreen.lat.push(thisSite.point[0]);
+            dGreen.lon.push(thisSite.point[1]);
+        } else if (queryVal <= lowLimit + (highLimit - lowLimit) * .6) {
+            d.color.push("rgb(160,224,0)");
+            dGreenYellow.siteName.push(thisSite.origName);
+            dGreenYellow.queryVal.push(queryVal);
+            dGreenYellow.text.push(textMarker);
+            dGreenYellow.lat.push(thisSite.point[0]);
+            dGreenYellow.lon.push(thisSite.point[1]);
+        } else if (queryVal <= lowLimit + (highLimit - lowLimit) * .7) {
+            d.color.push("rgb(192,192,0)");
+            dYellow.siteName.push(thisSite.origName);
+            dYellow.queryVal.push(queryVal);
+            dYellow.text.push(textMarker);
+            dYellow.lat.push(thisSite.point[0]);
+            dYellow.lon.push(thisSite.point[1]);
+        } else if (queryVal <= lowLimit + (highLimit - lowLimit) * .8) {
+            d.color.push("rgb(255,128,0)");
+            dOrange.siteName.push(thisSite.origName);
+            dOrange.queryVal.push(queryVal);
+            dOrange.text.push(textMarker);
+            dOrange.lat.push(thisSite.point[0]);
+            dOrange.lon.push(thisSite.point[1]);
+        } else if (queryVal <= lowLimit + (highLimit - lowLimit) * .9) {
+            d.color.push("rgb(255,64,0)");
+            dOrangeRed.siteName.push(thisSite.origName);
+            dOrangeRed.queryVal.push(queryVal);
+            dOrangeRed.text.push(textMarker);
+            dOrangeRed.lat.push(thisSite.point[0]);
+            dOrangeRed.lon.push(thisSite.point[1]);
+        } else {
+            d.color.push("rgb(255,0,0)");
+            dRed.siteName.push(thisSite.origName);
+            dRed.queryVal.push(queryVal);
+            dRed.text.push(textMarker);
+            dRed.lat.push(thisSite.point[0]);
+            dRed.lon.push(thisSite.point[1]);
+        }
     }// end of loop row
+
     return {
         d: d,
         dPurple: dPurple,
