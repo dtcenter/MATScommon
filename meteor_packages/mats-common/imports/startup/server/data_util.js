@@ -1239,7 +1239,7 @@ const addNullPoint = function (data, di, plotType, indVarName, newIndVar, statVa
     data.text.splice(di, 0, []);
 };
 
-// utility to make null a point on a graph
+// utility to make null an existing point on a graph
 const nullPoint = function (data, di, statVarName, isCTC, isScalar, hasLevels) {
     data[statVarName][di] = null;
     if (isCTC) {

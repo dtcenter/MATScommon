@@ -1247,6 +1247,7 @@ const generateHistogramPlotOptions = function (curves, axisMap, varUnits, plotBi
 
     // x-axis options
     layout['xaxis'] = {
+        // put units on the x-axis if we have them
         title: varUnits !== undefined && varUnits.length > 0 ? 'Bin (' + varUnits + ')' : 'Bin',
         titlefont: {
             size: 24,

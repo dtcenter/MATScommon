@@ -1650,7 +1650,7 @@ const parseQueryDataMapScalar = function (rows, d, dPurple, dBlue, dBlack, dOran
         } else {
             textMarker = queryVal === null ? "" : queryVal.toFixed(1)
         }
-        // sort data into color bins
+        // sort the data by the color it will appear on the map
         if (queryVal <= lowLimit + (highLimit - lowLimit) * .2) {
             d.color.push("rgb(0,0,255)");
             dPurple.siteName.push(d.siteName[didx]);
@@ -1850,8 +1850,8 @@ const parseQueryDataMapCTC = function (rows, d, dPurple, dPurpleBlue, dBlue, dBl
         d.lat.push(thisSite.point[0]);
         d.lon.push(thisSite.point[1]);
 
+        // sort the data by the color it will appear on the map
         var textMarker = queryVal === null ? "" : queryVal.toFixed(0);
-        // sort data into color bins
         if (queryVal <= lowLimit + (highLimit - lowLimit) * .1) {
             d.color.push("rgb(128,0,255)");
             dPurple.siteName.push(thisSite.origName);

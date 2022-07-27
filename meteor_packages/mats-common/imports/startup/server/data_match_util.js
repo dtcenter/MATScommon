@@ -404,7 +404,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                 }
             }
         } else if (isScalar && (curveDiffs[curveIndex] === undefined || curveDiffs[curveIndex] === null)) {
-            // need to recalculate the primary statistic with the newly matched hits, false alarms, etc.
+            // need to recalculate the primary statistic with the newly matched partial sums.
             dataLength = data[independentVarName].length;
             for (di = 0; di < dataLength; di++) {
                 if (data.subSquareDiffSum[di] instanceof Array) {

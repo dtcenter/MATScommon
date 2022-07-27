@@ -35,7 +35,7 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
         var data = dataset[curveIndex];
         var statType;
         if (curveInfoParams.statType === undefined) {
-            statType = 'default';
+            statType = 'default';   // dummy stat type
         } else if (Array.isArray(curveInfoParams.statType)) {
             statType = curveInfoParams.statType[curveIndex];
         } else {
@@ -357,7 +357,7 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
         var data = dataset[curveIndex];
         var statType;
         if (curveInfoParams.statType === undefined) {
-            statType = 'default';
+            statType = 'default';   // dummy stat type
         } else if (Array.isArray(curveInfoParams.statType)) {
             statType = curveInfoParams.statType[curveIndex];
         } else {
@@ -1094,7 +1094,7 @@ const processDataHistogram = function (allReturnedSubStats, allReturnedSubSecs, 
                 bookkeepingParams.alreadyMatched = true;
             }
 
-            // then take diffs
+            // then take diffs. isCTC and isScalar are always false, as histograms show distribution of sub-values and not overall stat
             const diffResult = matsDataDiffUtils.getDataForDiffCurve(dataset, diffFrom, appParams, false, false);
 
             // adjust axis stats based on new data from diff curve
