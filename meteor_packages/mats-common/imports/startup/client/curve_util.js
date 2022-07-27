@@ -1010,6 +1010,13 @@ const showHistogramFace = function () {
         'dieoff-type': 'Dieoff',
         'bin-parameter': 'Valid Date'
     };
+    // CTC histograms need to have the region be predefined mode.
+    // They are identified by the presence of a threshold selector
+    // (threshold only makes sense as a parameter for CTC stats).
+    if (matsParamUtils.getParameterForName('region-type') !== undefined && matsParamUtils.getParameterForName('threshold') !== undefined) {
+        faceOptions['region-type'] = 'none';
+        selectorsToReset['region-type'] = 'Predefined region';
+    }
     setSelectorVisibility(plotType, faceOptions, selectorsToReset);
     return selectorsToReset;
 };

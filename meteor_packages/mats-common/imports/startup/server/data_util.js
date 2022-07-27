@@ -107,7 +107,6 @@ const objectContainsObject = function (superObject, subObject) {
 
 // utility for calculating the sum of an array
 const sum = function (data) {
-    if (!isNaN(data)) return data;
     if (data.length === 0) return null;
     return data.reduce(function (sum, value) {
         return value == null ? sum : sum + value;
@@ -116,14 +115,12 @@ const sum = function (data) {
 
 // utility for calculating the average of an array
 const average = function (data) {
-    if (!isNaN(data)) return data;
     if (data.length === 0) return null;
     return sum(data) / data.length;
 };
 
 // utility for calculating the median of an array
 const median = function (data) {
-    if (!isNaN(data)) return data;
     if (data.length === 0) return null;
     data.sort(function (a, b) {
         return a - b;
@@ -396,6 +393,7 @@ const calculateStatCTC = function (hit, fa, miss, cn, n, statistic) {
             queryVal = n;
             break;
     }
+    if (isNaN(queryVal)) return null;
     return queryVal;
 };
 
@@ -430,7 +428,9 @@ const calculateStatScalar = function (squareDiffSum, NSum, obsModelDiffSum, mode
             queryVal = absSum / NSum;
             break;
     }
-    // need to convert to correct units
+    if (isNaN(queryVal)) return null;
+    // need to convert to correct units for surface data (variable names are capitalized in upper air
+    // ("2m temperature" vs "Temperature"), so that should not trigger this if statement).
     if (variable.includes("temperature") || variable.includes("dewpoint")) {
         if (statistic.includes("average")) {
             queryVal = queryVal - 32;
