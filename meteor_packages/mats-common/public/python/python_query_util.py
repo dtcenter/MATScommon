@@ -624,6 +624,9 @@ class QueryUtil:
             xmin = av_time if av_time < xmin else xmin
             xmax = av_time if av_time > xmax else xmax
             if stat_line_type == 'mode_pair' and (statistic == "OTS (Object Threat Score)" or statistic == "Model-obs centroid distance (unique pairs)"):
+                # in case loading wend wrong and we don't have all our rows
+                if object_row_idx >= len(object_data):
+                    continue
                 object_av_seconds, object_row, object_row_idx = \
                     self.get_object_row(av_seconds, object_data, object_row_idx, "Default")
                 if av_seconds < object_av_seconds and row_idx < len(query_data) - 1:
@@ -866,6 +869,9 @@ class QueryUtil:
                 ind_var = int(row['avtime'])
 
             if stat_line_type == 'mode_pair' and (statistic == "OTS (Object Threat Score)" or statistic == "Model-obs centroid distance (unique pairs)"):
+                # in case loading wend wrong and we don't have all our rows
+                if object_row_idx >= len(object_data):
+                    continue
                 object_ind_var, object_row, object_row_idx = \
                     self.get_object_row(ind_var, object_data, object_row_idx, plot_type)
                 if ind_var < object_ind_var and row_idx < len(query_data) - 1:
@@ -1128,6 +1134,9 @@ class QueryUtil:
         for row in query_data:
             av_seconds = int(row['avtime'])
             if 'mode_pair' in stat_line_type and (statistic == "OTS (Object Threat Score)" or statistic == "Model-obs centroid distance (unique pairs)"):
+                # in case loading wend wrong and we don't have all our rows
+                if object_row_idx >= len(object_data):
+                    continue
                 object_av_seconds, object_row, object_row_idx = \
                     self.get_object_row(av_seconds, object_data, object_row_idx, "Default")
                 if av_seconds < object_av_seconds and row_idx < len(query_data) - 1:
