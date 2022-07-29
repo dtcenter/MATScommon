@@ -1367,6 +1367,7 @@ const parseQueryDataPerformanceDiagram = function (rows, d, appParams) {
     var subFa = [];
     var subMiss = [];
     var subCn = [];
+    var subVals = [];
     var subSecs = [];
     var subLevs = [];
     for (var rowIndex = 0; rowIndex < rows.length; rowIndex++) {
@@ -1398,6 +1399,7 @@ const parseQueryDataPerformanceDiagram = function (rows, d, appParams) {
         var sub_fa = [];
         var sub_miss = [];
         var sub_cn = [];
+        var sub_values = [];
         var sub_secs = [];
         var sub_levs = [];
         if (pod !== null && rows[rowIndex].sub_data !== undefined && rows[rowIndex].sub_data !== null) {
@@ -1418,11 +1420,15 @@ const parseQueryDataPerformanceDiagram = function (rows, d, appParams) {
                         sub_fa.push(Number(curr_sub_data[3]));
                         sub_miss.push(Number(curr_sub_data[4]));
                         sub_cn.push(Number(curr_sub_data[5]));
+                        // this is a dummy to fit the expectations of common functions that xy line curves have a populated sub_values array. It isn't used for anything.
+                        sub_values.push(0);
                     } else {
                         sub_hit.push(Number(curr_sub_data[1]));
                         sub_fa.push(Number(curr_sub_data[2]));
                         sub_miss.push(Number(curr_sub_data[3]));
                         sub_cn.push(Number(curr_sub_data[4]));
+                        // this is a dummy to fit the expectations of common functions that xy line curves have a populated sub_values array. It isn't used for anything.
+                        sub_values.push(0);
                     }
                 }
             } catch (e) {
@@ -1444,6 +1450,7 @@ const parseQueryDataPerformanceDiagram = function (rows, d, appParams) {
         subFa.push(sub_fa);
         subMiss.push(sub_miss);
         subCn.push(sub_cn);
+        subVals.push(sub_values);
         subSecs.push(sub_secs);
         if (hasLevels) {
             subLevs.push(sub_levs);
@@ -1459,6 +1466,7 @@ const parseQueryDataPerformanceDiagram = function (rows, d, appParams) {
     d.subFa = subFa;
     d.subMiss = subMiss;
     d.subCn = subCn;
+    d.subVals = subVals;
     d.subSecs = subSecs;
     d.subLevs = subLevs;
     d.n = N0;
