@@ -393,7 +393,6 @@ const calculateStatCTC = function (hit, fa, miss, cn, n, statistic) {
             queryVal = n;
             break;
     }
-    if (isNaN(queryVal)) return null;
     return queryVal;
 };
 
