@@ -1592,32 +1592,34 @@ const parseQueryDataMapScalar = function (rows, d, dPurple, dBlue, dBlack, dOran
                 const obsSum = matsDataUtils.sum(sub_obs_sum);
                 const absSum = matsDataUtils.sum(sub_abs_sum);
                 queryVal = matsDataUtils.calculateStatScalar(squareDiffSum, NSum, obsModelDiffSum, modelSum, obsSum, absSum, statistic + "_" + variable);
+                queryVal = isNaN(Number(queryVal)) ? null : queryVal;
             } catch (e) {
                 // this is an error produced by a bug in the query function, not an error returned by the mysql database
                 e.message = "Error in parseQueryDataMapScalar. The expected fields don't seem to be present in the results cache: " + e.message;
                 throw new Error(e.message);
             }
+            d.queryVal.push(queryVal);
+            d.stats.push({
+                N_times: rows[rowIndex].N_times,
+                min_time: rows[rowIndex].min_secs,
+                max_time: rows[rowIndex].max_secs
+            });
+
+            var thisSite = siteMap.find(obj => {
+                return obj.options.id === site;
+            });
+
+            var tooltips = thisSite.origName +
+                "<br>" + variable + " " + statistic +
+                "<br>" + "model: " + dataSource +
+                "<br>" + "stat: " + queryVal + " " + varUnits +
+                "<br>" + "n: " + rows[rowIndex].N0;
+            d.text.push(tooltips);
+            d.siteName.push(thisSite.origName);
+            d.lat.push(thisSite.point[0]);
+            d.lon.push(thisSite.point[1]);
+            d.color.push("rgb(125,125,125)"); // dummy
         }
-        d.queryVal.push(queryVal);
-        d.stats.push({
-            N_times: rows[rowIndex].N_times,
-            min_time: rows[rowIndex].min_secs,
-            max_time: rows[rowIndex].max_secs
-        });
-
-        var thisSite = siteMap.find(obj => {
-            return obj.options.id === site;
-        });
-
-        var tooltips = thisSite.origName +
-            "<br>" + variable + " " + statistic +
-            "<br>" + "model: " + dataSource +
-            "<br>" + "model-obs: " + queryVal + " " + varUnits +
-            "<br>" + "n: " + rows[rowIndex].N0;
-        d.text.push(tooltips);
-        d.siteName.push(thisSite.origName);
-        d.lat.push(thisSite.point[0]);
-        d.lon.push(thisSite.point[1]);
     }
 
     // get range of values for colorscale, eliminating the highest and lowest as outliers
@@ -1650,6 +1652,7 @@ const parseQueryDataMapScalar = function (rows, d, dPurple, dBlue, dBlack, dOran
             d.siteName.splice(didx, 1);
             d.lat.splice(didx, 1);
             d.lon.splice(didx, 1);
+            d.color.splice(didx, 1);
             continue;
         }
         var textMarker;
@@ -1660,35 +1663,35 @@ const parseQueryDataMapScalar = function (rows, d, dPurple, dBlue, dBlack, dOran
         }
         // sort the data by the color it will appear on the map
         if (queryVal <= lowLimit + (highLimit - lowLimit) * .2) {
-            d.color.push("rgb(0,0,255)");
+            d.color[didx] = "rgb(0,0,255)";
             dPurple.siteName.push(d.siteName[didx]);
             dPurple.queryVal.push(queryVal);
             dPurple.text.push(textMarker);
             dPurple.lat.push(d.lat[didx]);
             dPurple.lon.push(d.lon[didx]);
         } else if (queryVal <= lowLimit + (highLimit - lowLimit) * .4) {
-            d.color.push("rgb(0,125,255)");
+            d.color[didx] = "rgb(0,125,255)";
             dBlue.siteName.push(d.siteName[didx]);
             dBlue.queryVal.push(queryVal);
             dBlue.text.push(textMarker);
             dBlue.lat.push(d.lat[didx]);
             dBlue.lon.push(d.lon[didx]);
         } else if (queryVal <= lowLimit + (highLimit - lowLimit) * .6) {
-            d.color.push("rgb(125,125,125)");
+            d.color[didx] = "rgb(125,125,125)";
             dBlack.siteName.push(d.siteName[didx]);
             dBlack.queryVal.push(queryVal);
             dBlack.text.push(textMarker);
             dBlack.lat.push(d.lat[didx]);
             dBlack.lon.push(d.lon[didx]);
         } else if (queryVal <= lowLimit + (highLimit - lowLimit) * .8) {
-            d.color.push("rgb(255,125,0)");
+            d.color[didx] = "rgb(255,125,0)";
             dOrange.siteName.push(d.siteName[didx]);
             dOrange.queryVal.push(queryVal);
             dOrange.text.push(textMarker);
             dOrange.lat.push(d.lat[didx]);
             dOrange.lon.push(d.lon[didx]);
         } else {
-            d.color.push("rgb(255,0,0)");
+            d.color[didx] = "rgb(255,0,0)";
             dRed.siteName.push(d.siteName[didx]);
             dRed.queryVal.push(queryVal);
             dRed.text.push(textMarker);
@@ -1824,112 +1827,113 @@ const parseQueryDataMapCTC = function (rows, d, dPurple, dPurpleBlue, dBlue, dBl
                 const miss = matsDataUtils.sum(sub_miss);
                 const cn = matsDataUtils.sum(sub_cn);
                 queryVal = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, sub_hit.length, statistic);
+                queryVal = isNaN(Number(queryVal)) ? null : queryVal;
             } catch (e) {
                 // this is an error produced by a bug in the query function, not an error returned by the mysql database
                 e.message = "Error in parseQueryDataMapCTC. The expected fields don't seem to be present in the results cache: " + e.message;
                 throw new Error(e.message);
             }
-        }
-        d.queryVal.push(queryVal);
-        d.stats.push({
-            N_times: rows[rowIndex].N_times,
-            min_time: rows[rowIndex].min_secs,
-            max_time: rows[rowIndex].max_secs,
-            hit: rows[rowIndex].hit,
-            fa: rows[rowIndex].fa,
-            miss: rows[rowIndex].miss,
-            cn: rows[rowIndex].cn
-        });
+            d.queryVal.push(queryVal);
+            d.stats.push({
+                N_times: rows[rowIndex].N_times,
+                min_time: rows[rowIndex].min_secs,
+                max_time: rows[rowIndex].max_secs,
+                hit: rows[rowIndex].hit,
+                fa: rows[rowIndex].fa,
+                miss: rows[rowIndex].miss,
+                cn: rows[rowIndex].cn
+            });
 
-        var thisSite = siteMap.find(obj => {
-            return obj.options.id === site;
-        });
+            var thisSite = siteMap.find(obj => {
+                return obj.options.id === site;
+            });
 
-        var tooltips = thisSite.origName +
-            "<br>" + "model: " + dataSource +
-            "<br>" + statistic + ": " + queryVal +
-            "<br>" + "n: " + rows[rowIndex].N_times +
-            "<br>" + "hits: " + rows[rowIndex].hit +
-            "<br>" + "false alarms: " + rows[rowIndex].fa +
-            "<br>" + "misses: " + rows[rowIndex].miss +
-            "<br>" + "correct nulls: " + rows[rowIndex].cn;
-        d.text.push(tooltips);
-        d.siteName.push(thisSite.origName);
-        d.lat.push(thisSite.point[0]);
-        d.lon.push(thisSite.point[1]);
+            var tooltips = thisSite.origName +
+                "<br>" + "model: " + dataSource +
+                "<br>" + statistic + ": " + queryVal +
+                "<br>" + "n: " + rows[rowIndex].N_times +
+                "<br>" + "hits: " + rows[rowIndex].hit +
+                "<br>" + "false alarms: " + rows[rowIndex].fa +
+                "<br>" + "misses: " + rows[rowIndex].miss +
+                "<br>" + "correct nulls: " + rows[rowIndex].cn;
+            d.text.push(tooltips);
+            d.siteName.push(thisSite.origName);
+            d.lat.push(thisSite.point[0]);
+            d.lon.push(thisSite.point[1]);
 
-        // sort the data by the color it will appear on the map
-        var textMarker = queryVal === null ? "" : queryVal.toFixed(0);
-        if (queryVal <= lowLimit + (highLimit - lowLimit) * .1) {
-            d.color.push("rgb(128,0,255)");
-            dPurple.siteName.push(thisSite.origName);
-            dPurple.queryVal.push(queryVal);
-            dPurple.text.push(textMarker);
-            dPurple.lat.push(thisSite.point[0]);
-            dPurple.lon.push(thisSite.point[1]);
-        } else if (queryVal <= lowLimit + (highLimit - lowLimit) * .2) {
-            d.color.push("rgb(64,0,255)");
-            dPurpleBlue.siteName.push(thisSite.origName);
-            dPurpleBlue.queryVal.push(queryVal);
-            dPurpleBlue.text.push(textMarker);
-            dPurpleBlue.lat.push(thisSite.point[0]);
-            dPurpleBlue.lon.push(thisSite.point[1]);
-        } else if (queryVal <= lowLimit + (highLimit - lowLimit) * .3) {
-            d.color.push("rgb(0,0,255)");
-            dBlue.siteName.push(thisSite.origName);
-            dBlue.queryVal.push(queryVal);
-            dBlue.text.push(textMarker);
-            dBlue.lat.push(thisSite.point[0]);
-            dBlue.lon.push(thisSite.point[1]);
-        } else if (queryVal <= lowLimit + (highLimit - lowLimit) * .4) {
-            d.color.push("rgb(64,128,128)");
-            dBlueGreen.siteName.push(thisSite.origName);
-            dBlueGreen.queryVal.push(queryVal);
-            dBlueGreen.text.push(textMarker);
-            dBlueGreen.lat.push(thisSite.point[0]);
-            dBlueGreen.lon.push(thisSite.point[1]);
-        } else if (queryVal <= lowLimit + (highLimit - lowLimit) * .5) {
-            d.color.push("rgb(128,255,0)");
-            dGreen.siteName.push(thisSite.origName);
-            dGreen.queryVal.push(queryVal);
-            dGreen.text.push(textMarker);
-            dGreen.lat.push(thisSite.point[0]);
-            dGreen.lon.push(thisSite.point[1]);
-        } else if (queryVal <= lowLimit + (highLimit - lowLimit) * .6) {
-            d.color.push("rgb(160,224,0)");
-            dGreenYellow.siteName.push(thisSite.origName);
-            dGreenYellow.queryVal.push(queryVal);
-            dGreenYellow.text.push(textMarker);
-            dGreenYellow.lat.push(thisSite.point[0]);
-            dGreenYellow.lon.push(thisSite.point[1]);
-        } else if (queryVal <= lowLimit + (highLimit - lowLimit) * .7) {
-            d.color.push("rgb(192,192,0)");
-            dYellow.siteName.push(thisSite.origName);
-            dYellow.queryVal.push(queryVal);
-            dYellow.text.push(textMarker);
-            dYellow.lat.push(thisSite.point[0]);
-            dYellow.lon.push(thisSite.point[1]);
-        } else if (queryVal <= lowLimit + (highLimit - lowLimit) * .8) {
-            d.color.push("rgb(255,128,0)");
-            dOrange.siteName.push(thisSite.origName);
-            dOrange.queryVal.push(queryVal);
-            dOrange.text.push(textMarker);
-            dOrange.lat.push(thisSite.point[0]);
-            dOrange.lon.push(thisSite.point[1]);
-        } else if (queryVal <= lowLimit + (highLimit - lowLimit) * .9) {
-            d.color.push("rgb(255,64,0)");
-            dOrangeRed.siteName.push(thisSite.origName);
-            dOrangeRed.queryVal.push(queryVal);
-            dOrangeRed.text.push(textMarker);
-            dOrangeRed.lat.push(thisSite.point[0]);
-            dOrangeRed.lon.push(thisSite.point[1]);
-        } else {
-            d.color.push("rgb(255,0,0)");
-            dRed.siteName.push(thisSite.origName);
-            dRed.queryVal.push(queryVal);
-            dRed.text.push(textMarker);
-            dRed.lat.push(thisSite.point[0]);
-            dRed.lon.push(thisSite.point[1]);
+            // sort the data by the color it will appear on the map
+            var textMarker = queryVal === null ? "" : queryVal.toFixed(0);
+            if (queryVal <= lowLimit + (highLimit - lowLimit) * .1) {
+                d.color.push("rgb(128,0,255)");
+                dPurple.siteName.push(thisSite.origName);
+                dPurple.queryVal.push(queryVal);
+                dPurple.text.push(textMarker);
+                dPurple.lat.push(thisSite.point[0]);
+                dPurple.lon.push(thisSite.point[1]);
+            } else if (queryVal <= lowLimit + (highLimit - lowLimit) * .2) {
+                d.color.push("rgb(64,0,255)");
+                dPurpleBlue.siteName.push(thisSite.origName);
+                dPurpleBlue.queryVal.push(queryVal);
+                dPurpleBlue.text.push(textMarker);
+                dPurpleBlue.lat.push(thisSite.point[0]);
+                dPurpleBlue.lon.push(thisSite.point[1]);
+            } else if (queryVal <= lowLimit + (highLimit - lowLimit) * .3) {
+                d.color.push("rgb(0,0,255)");
+                dBlue.siteName.push(thisSite.origName);
+                dBlue.queryVal.push(queryVal);
+                dBlue.text.push(textMarker);
+                dBlue.lat.push(thisSite.point[0]);
+                dBlue.lon.push(thisSite.point[1]);
+            } else if (queryVal <= lowLimit + (highLimit - lowLimit) * .4) {
+                d.color.push("rgb(64,128,128)");
+                dBlueGreen.siteName.push(thisSite.origName);
+                dBlueGreen.queryVal.push(queryVal);
+                dBlueGreen.text.push(textMarker);
+                dBlueGreen.lat.push(thisSite.point[0]);
+                dBlueGreen.lon.push(thisSite.point[1]);
+            } else if (queryVal <= lowLimit + (highLimit - lowLimit) * .5) {
+                d.color.push("rgb(128,255,0)");
+                dGreen.siteName.push(thisSite.origName);
+                dGreen.queryVal.push(queryVal);
+                dGreen.text.push(textMarker);
+                dGreen.lat.push(thisSite.point[0]);
+                dGreen.lon.push(thisSite.point[1]);
+            } else if (queryVal <= lowLimit + (highLimit - lowLimit) * .6) {
+                d.color.push("rgb(160,224,0)");
+                dGreenYellow.siteName.push(thisSite.origName);
+                dGreenYellow.queryVal.push(queryVal);
+                dGreenYellow.text.push(textMarker);
+                dGreenYellow.lat.push(thisSite.point[0]);
+                dGreenYellow.lon.push(thisSite.point[1]);
+            } else if (queryVal <= lowLimit + (highLimit - lowLimit) * .7) {
+                d.color.push("rgb(192,192,0)");
+                dYellow.siteName.push(thisSite.origName);
+                dYellow.queryVal.push(queryVal);
+                dYellow.text.push(textMarker);
+                dYellow.lat.push(thisSite.point[0]);
+                dYellow.lon.push(thisSite.point[1]);
+            } else if (queryVal <= lowLimit + (highLimit - lowLimit) * .8) {
+                d.color.push("rgb(255,128,0)");
+                dOrange.siteName.push(thisSite.origName);
+                dOrange.queryVal.push(queryVal);
+                dOrange.text.push(textMarker);
+                dOrange.lat.push(thisSite.point[0]);
+                dOrange.lon.push(thisSite.point[1]);
+            } else if (queryVal <= lowLimit + (highLimit - lowLimit) * .9) {
+                d.color.push("rgb(255,64,0)");
+                dOrangeRed.siteName.push(thisSite.origName);
+                dOrangeRed.queryVal.push(queryVal);
+                dOrangeRed.text.push(textMarker);
+                dOrangeRed.lat.push(thisSite.point[0]);
+                dOrangeRed.lon.push(thisSite.point[1]);
+            } else {
+                d.color.push("rgb(255,0,0)");
+                dRed.siteName.push(thisSite.origName);
+                dRed.queryVal.push(queryVal);
+                dRed.text.push(textMarker);
+                dRed.lat.push(thisSite.point[0]);
+                dRed.lon.push(thisSite.point[1]);
+            }
         }
     }// end of loop row
 
