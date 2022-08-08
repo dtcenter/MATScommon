@@ -141,6 +141,11 @@ var ReservedWords = {
     CTCOrangeCurveText: "70-80th percentile of possible range",
     CTCOrangeRedCurveText: "80-90th percentile of possible range",
     CTCRedCurveText: "90-100th percentile of possible range",
+    ScalarPurpleCurveText: "Lowest",
+    ScalarBlueCurveText: "Low",
+    ScalarBlackCurveText: "Moderate",
+    ScalarOrangeCurveText: "High",
+    ScalarRedCurveText: "Highest",
     contourSigLabel: "Curve1-Curve0 Significance"
 };
 
