@@ -45,7 +45,7 @@ if (Meteor.isClient) {
     const hostName = hostport.split(':')[0];
     const app = pathArray[3] == "" ? "/" : pathArray[3];
     const matsRef = protocol + "//" + hostport;
-    const helpRef = ref.endsWith('/') ? ref + "help" : ref + "/help";
+    const helpRef = ref.endsWith('/') ? ref + "packages/randyp_mats-common/public/help" : ref + "/packages/randyp_mats-common/public/help";
     Session.set("app", {appName: app, matsref: matsRef, appref: ref, helpref: helpRef, hostName: hostName});
     var collections = Object.keys(matsCollections).map(key => matsCollections[key]);
     Session.set("Mongol", {

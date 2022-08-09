@@ -280,6 +280,19 @@ Package.onUse(function (api) {
     api.addAssets('public/fonts/PublicSans-SemiBoldItalic.ttf', "client");
     api.addAssets('public/fonts/PublicSans-Thin.ttf', "client");
     api.addAssets('public/fonts/PublicSans-ThinItalic.ttf', "client");
+    api.addAssets('public/help/axis-selector.html', "client");
+    api.addAssets('public/help/axisMatchingHelp.html', "client");
+    api.addAssets('public/help/best-fit.html', "client");
+    api.addAssets('public/help/bottom-help.html', "client");
+    api.addAssets('public/help/completeness.html', "client");
+    api.addAssets('public/help/dateHelp.html', "client");
+    api.addAssets('public/help/label.html', "client");
+    api.addAssets('public/help/map-help.html', "client");
+    api.addAssets('public/help/region.html', "client");
+    api.addAssets('public/help/scatter-help.html', "client");
+    api.addAssets('public/help/StdErrorcalculationonEMBverificationpages.html', "client");
+    api.addAssets('public/help/top-help.html', "client");
+    api.addAssets('public/help/wfip2-statistic.html', "client");
 });
 
 Package.onTest(function (api) {

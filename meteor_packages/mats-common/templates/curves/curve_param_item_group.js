@@ -153,7 +153,8 @@ Template.curveParamItemGroup.helpers({
         for (var i = 0; i < pLabel.length; i++) {
             pLabel[i] = pLabel[i].charAt(0).toUpperCase() + pLabel[i].slice(1);
         }
-        return pLabel.join("-");
+        // return pLabel.join("-");
+        return pLabel.join(" ");
     },
     name: function(elem){
         return elem.name;
