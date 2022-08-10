@@ -189,6 +189,11 @@ Template.item.events({
     },
 
     'click .help' : function() {
+        if (this.type === matsTypes.InputTypes.dateRange) {
+            // the date range calendar is unfortunately bound to the help button, so we need to click it to re-close it
+            const idref = this.name + "-item";
+            $('#' + idref).click();
+        }
         var helpref = Session.get("app").helpref;
         $("#matshelp").load(helpref + "/" + this.help + " #matshelp");
         $("#helpModal").modal('show');
