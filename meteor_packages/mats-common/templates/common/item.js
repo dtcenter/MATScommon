@@ -25,7 +25,6 @@ Template.item.helpers({
         for (var i = 0; i < cbname.length; i++) {
             cbname[i] = cbname[i].charAt(0).toUpperCase() + cbname[i].slice(1);
         }
-        // return cbname.join("-");
         return cbname.join(" ");
     },
     textValue: function() {
