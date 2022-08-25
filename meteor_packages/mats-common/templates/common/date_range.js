@@ -80,21 +80,6 @@ Template.dateRange.onRendered(function () {
             const curVals = matsParamUtils.getValueForParamName(name).split(" - "); // it is a date object values are "someFromDate - someToDate"
             var startDsr = moment.utc(curVals[0], "MM/DD/YYYY HH:mm");
             var endDsr = moment.utc(curVals[1], "MM/DD/YYYY HH:mm");
-            if (!startDsr.isValid()) {
-                // error
-                setError("date_range refresh error: Your date range selector has an invalid start date-time: " + curVals[0]);
-                return false;
-            }
-            if (!endDsr.isValid()) {
-                // error
-                setError("date_range refresh error: Your date range selector has an invalid end date-time:" + curVals[1]);
-                return false;
-            }
-            if (startDsr.isAfter(endDsr)) {
-                // error
-                setError("date_range refresh error: Your date range selector has a start date/time that is later than the end date-time " + startDsr.toString() + " is not prior to " + endDsr.toString());
-                return false;
-            }
             // get superior values and check for errors
             var superiorVals = [];
             if (superiorNames !== undefined) {
