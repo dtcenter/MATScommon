@@ -149,6 +149,8 @@ Package.onUse(function (api) {
     api.addFiles('templates/footer.js', "client");
     api.addFiles('templates/Home.html', "client");
     api.addFiles('templates/Home.js', "client");
+    api.addFiles('templates/ScorecardHome.html', "client");
+    api.addFiles('templates/ScorecardHome.js', "client");
     api.addFiles('templates/Configure.html', "client");
     api.addFiles('templates/Configure.js', "client");
     api.addFiles('templates/CustomHome.html', "client");
@@ -162,6 +164,9 @@ Package.onUse(function (api) {
 
     api.addFiles("templates/plot/plot_list.html", "client");
     api.addFiles("templates/plot/plot_list.js", "client");
+
+    api.addFiles("templates/plot/scorecard_plot_list.html", "client");
+    api.addFiles("templates/plot/scorecard_plot_list.js", "client");
 
     api.addFiles('templates/help/help.html', "client");
 
@@ -226,6 +231,9 @@ Package.onUse(function (api) {
 
     api.addFiles("templates/params/param_list.html", "client");
     api.addFiles("templates/params/param_list.js", "client");
+
+    api.addFiles("templates/params/scorecard_param_list.html", "client");
+    api.addFiles("templates/params/scorecard_param_list.js", "client");
 
     api.addFiles("templates/params/curve_param_group.html", "client");
     api.addFiles("templates/params/curve_param_group.js", "client");

@@ -11,7 +11,7 @@ import { matsPlotUtils } from 'meteor/randyp:mats-common';
 import { matsParamUtils } from 'meteor/randyp:mats-common';
 import { matsSelectUtils } from 'meteor/randyp:mats-common';
 
-Template.plotList.helpers({
+Template.scorecardPlotList.helpers({
     Title: function() {
        return matsCollections.Settings.findOne({},{fields:{Title:1}}).Title;
     } ,
@@ -59,7 +59,7 @@ Template.plotList.helpers({
     }
 });
 
-Template.plotList.events({
+Template.scorecardPlotList.events({
     'click .cancel-restore' : function() {
         document.getElementById('restore_from_public').value = "";
         document.getElementById('restore_from_private').value = "";
@@ -289,7 +289,7 @@ Template.plotList.events({
                         p.data.paramData.plotParams[plotParam.name] === undefined ? matsTypes.InputTypes.unused : p.data.paramData.plotParams[plotParam.name];
                     matsParamUtils.setInputForParamName(plotParam.name,val);
                 });
-                
+
                 var paramNames = matsCollections.CurveParamsInfo.find({"curve_params": {"$exists": true}}).fetch()[0]["curve_params"];
                 params = [];
                 var superiors = [];
@@ -433,7 +433,7 @@ Template.plotList.events({
         return false;
     }
 });
-Template.plotList.onRendered( function() {
+Template.scorecardPlotList.onRendered( function() {
     // last bit of stuff that needs to be done when the page finally renders
     // need to display correct selectors on page load if default plot type is not timeseries
     const plotType = matsPlotUtils.getPlotType();
