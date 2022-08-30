@@ -690,32 +690,63 @@ const queryDBMapCTC = function (pool, statement, dataSource, statistic, siteMap,
         };
 
         var error = "";
+        var parsedData;
         const Future = require('fibers/future');
         var pFuture = new Future();
-        pool.query(statement, function (err, rows) {
-            // query callback - build the curve data from the results - or set an error
-            if (err !== undefined && err !== null) {
-                error = err.message;
-            } else if (rows === undefined || rows === null || rows.length === 0) {
-                error = matsTypes.Messages.NO_DATA_FOUND;
-            } else {
-                var parsedData;
-                parsedData = parseQueryDataMapCTC(rows, d, dPurple, dPurpleBlue, dBlue, dBlueGreen, dGreen, dGreenYellow, dYellow, dOrange, dOrangeRed, dRed, dataSource, siteMap, statistic, appParams);
-                d = parsedData.d;
-                dPurple = parsedData.dPurple;
-                dPurpleBlue = parsedData.dPurpleBlue;
-                dBlue = parsedData.dBlue;
-                dBlueGreen = parsedData.dBlueGreen;
-                dGreen = parsedData.dGreen;
-                dGreenYellow = parsedData.dGreenYellow;
-                dYellow = parsedData.dYellow;
-                dOrange = parsedData.dOrange;
-                dOrangeRed = parsedData.dOrangeRed;
-                dRed = parsedData.dRed;
-            }
-            // done waiting - have results
-            pFuture['return']();
-        });
+        if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
+            /*
+            we have to call the couchbase utilities as async functions but this
+            routine 'queryDBMapCTC' cannot itself be async because the graph page needs to wait
+            for its result, so we use an anonymous async() function here to wrap the queryCB call
+            */
+            (async () => {
+                const rows = await pool.queryCB(statement);
+                if (rows === undefined || rows === null || rows.length === 0) {
+                    error = matsTypes.Messages.NO_DATA_FOUND;
+                } else if (rows.includes("queryCB ERROR: ")) {
+                    error = rows;
+                } else {
+                    parsedData = parseQueryDataMapCTC(rows, d, dPurple, dPurpleBlue, dBlue, dBlueGreen, dGreen, dGreenYellow, dYellow, dOrange, dOrangeRed, dRed, dataSource, siteMap, statistic, appParams);
+                    d = parsedData.d;
+                    dPurple = parsedData.dPurple;
+                    dPurpleBlue = parsedData.dPurpleBlue;
+                    dBlue = parsedData.dBlue;
+                    dBlueGreen = parsedData.dBlueGreen;
+                    dGreen = parsedData.dGreen;
+                    dGreenYellow = parsedData.dGreenYellow;
+                    dYellow = parsedData.dYellow;
+                    dOrange = parsedData.dOrange;
+                    dOrangeRed = parsedData.dOrangeRed;
+                    dRed = parsedData.dRed;
+                }
+                pFuture.return();
+            })();
+        } else {
+            // if this app isn't couchbase, use mysql
+            pool.query(statement, function (err, rows) {
+                // query callback - build the curve data from the results - or set an error
+                if (err !== undefined && err !== null) {
+                    error = err.message;
+                } else if (rows === undefined || rows === null || rows.length === 0) {
+                    error = matsTypes.Messages.NO_DATA_FOUND;
+                } else {
+                    parsedData = parseQueryDataMapCTC(rows, d, dPurple, dPurpleBlue, dBlue, dBlueGreen, dGreen, dGreenYellow, dYellow, dOrange, dOrangeRed, dRed, dataSource, siteMap, statistic, appParams);
+                    d = parsedData.d;
+                    dPurple = parsedData.dPurple;
+                    dPurpleBlue = parsedData.dPurpleBlue;
+                    dBlue = parsedData.dBlue;
+                    dBlueGreen = parsedData.dBlueGreen;
+                    dGreen = parsedData.dGreen;
+                    dGreenYellow = parsedData.dGreenYellow;
+                    dYellow = parsedData.dYellow;
+                    dOrange = parsedData.dOrange;
+                    dOrangeRed = parsedData.dOrangeRed;
+                    dRed = parsedData.dRed;
+                }
+                // done waiting - have results
+                pFuture.return();
+            });
+        }
 
         // wait for future to finish
         pFuture.wait();

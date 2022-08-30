@@ -17,7 +17,7 @@ class CBUtilities {
                 const cluster = await couchbase.connect("couchbase://" + this.host, {
                     username: this.user,
                     password: this.pwd,
-                    queryTimeout: 600000
+                    queryTimeout: 3600000   // this will kill queries after an hour
                 });
                 const bucket = cluster.bucket(this.bucketName);
                 const collection = bucket.defaultCollection();
