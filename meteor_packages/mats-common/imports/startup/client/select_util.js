@@ -137,8 +137,10 @@ const checkHideOther = function (param, firstRender) {
                     // don't change anything if the parent parameter is unused in this curve and that situation isn't specified in hideOtherFor.
                     selectorControlElem = document.getElementById(controlledSelectors[i] + '-item');
                     if (selectorControlElem && selectorControlElem.style) {
-                        selectorControlElem.style.display = "block";
-                        selectorControlElem.purposelyHidden = false;
+                        if (param.controlButtonVisibility !== 'none') {
+                            selectorControlElem.style.display = "block";
+                            selectorControlElem.purposelyHidden = false;
+                        }
                     }
                     otherInputElement && otherInputElement.options && otherInputElement.selectedIndex >= 0 &&
                     otherInputElement.options[otherInputElement.selectedIndex].scrollIntoView();

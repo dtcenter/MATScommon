@@ -110,6 +110,30 @@ if (Meteor.isServer) {
         Picker.middleware(_clearCache(params, req, res, next));
     });
 
+    Picker.route('/getStats', function (params, req, res, next) {
+        Picker.middleware(_getStats(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/getStats', function (params, req, res, next) {
+        Picker.middleware(_getStats(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getStats', function (params, req, res, next) {
+        Picker.middleware(_getStats(params, req, res, next));
+    });
+
+    Picker.route('/getVariables', function (params, req, res, next) {
+        Picker.middleware(_getVariables(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/getVariables', function (params, req, res, next) {
+        Picker.middleware(_getVariables(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getVariables', function (params, req, res, next) {
+        Picker.middleware(_getVariables(params, req, res, next));
+    });
+
 // create picker routes for refreshMetaData
     Picker.route('/refreshMetadata', function (params, req, res, next) {
         Picker.middleware(_refreshMetadataMWltData(params, req, res, next));
@@ -221,6 +245,54 @@ const _clearCache = function (params, req, res, next) {
     if (Meteor.isServer) {
         matsCache.clear();
         res.end("<body><h1>clearCache Done!</h1></body>");
+    }
+};
+
+// private middleware for _getStats route
+const _getStats = function (params, req, res, next) {
+    if (Meteor.isServer) {
+        let flatJSON = "";
+        try {
+            let result;
+            if (matsCollections['statistic'] !== undefined && matsCollections['statistic'].findOne({name: 'statistic'}) !== undefined) {
+                // get list of variables
+                result = matsCollections['statistic'].findOne({name: 'statistic'}).options;
+                if (!Array.isArray(result)) result = Object.keys(result);
+            } else {
+                result = ["ACC"];
+            }
+            flatJSON = JSON.stringify(result);
+        } catch (e) {
+            console.log('error retrieving statistic: ', e);
+            flatJSON = JSON.stringify({error: e});
+        }
+        res.setHeader('Content-Type', 'application/json');
+        res.write(flatJSON);
+        res.end();
+    }
+};
+
+// private middleware for _getVariables route
+const _getVariables = function (params, req, res, next) {
+    if (Meteor.isServer) {
+        let flatJSON = "";
+        try {
+            let result;
+            if (matsCollections['variable'] !== undefined && matsCollections['variable'].findOne({name: 'variable'}) !== undefined) {
+                // get list of variables
+                result = matsCollections['variable'].findOne({name: 'variable'}).options;
+                if (!Array.isArray(result)) result = Object.keys(result);
+            } else {
+                result = "This app does not have a list of variables."
+            }
+            flatJSON = JSON.stringify(result);
+        } catch (e) {
+            console.log('error retrieving variables: ', e);
+            flatJSON = JSON.stringify({error: e});
+        }
+        res.setHeader('Content-Type', 'application/json');
+        res.write(flatJSON);
+        res.end();
     }
 };
 
