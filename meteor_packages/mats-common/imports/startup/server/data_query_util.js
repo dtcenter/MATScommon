@@ -537,7 +537,7 @@ const queryDBMapScalar = function (pool, statement, dataSource, statistic, varia
             text: [],
             color: ""
         };
-        var maxValue = 14; // dummy range for marker size
+        let valueLimits = {};
 
         var error = "";
         const Future = require('fibers/future');
@@ -557,7 +557,7 @@ const queryDBMapScalar = function (pool, statement, dataSource, statistic, varia
                 dModerate = parsedData.dModerate;
                 dHigh = parsedData.dHigh;
                 dHighest = parsedData.dHighest;
-                maxValue = parsedData.maxValue;
+                valueLimits = parsedData.valueLimits;
             }
             // done waiting - have results
             pFuture['return']();
@@ -572,7 +572,7 @@ const queryDBMapScalar = function (pool, statement, dataSource, statistic, varia
             dataModerate: dModerate,
             dataHigh: dHigh,
             dataHighest: dHighest,
-            maxValue: maxValue,
+            valueLimits: valueLimits,
             error: error
         };
     }
@@ -691,6 +691,7 @@ const queryDBMapCTC = function (pool, statement, dataSource, statistic, siteMap,
             text: [],
             color: "rgb(255,0,0)"
         };
+        let valueLimits = {};
 
         var error = "";
         var parsedData;
@@ -721,6 +722,7 @@ const queryDBMapCTC = function (pool, statement, dataSource, statistic, siteMap,
                     dOrange = parsedData.dOrange;
                     dOrangeRed = parsedData.dOrangeRed;
                     dRed = parsedData.dRed;
+                    valueLimits = parsedData.valueLimits;
                 }
                 pFuture.return();
             })();
@@ -745,6 +747,7 @@ const queryDBMapCTC = function (pool, statement, dataSource, statistic, siteMap,
                     dOrange = parsedData.dOrange;
                     dOrangeRed = parsedData.dOrangeRed;
                     dRed = parsedData.dRed;
+                    valueLimits = parsedData.valueLimits;
                 }
                 // done waiting - have results
                 pFuture.return();
@@ -765,6 +768,7 @@ const queryDBMapCTC = function (pool, statement, dataSource, statistic, siteMap,
             dataOrange: dOrange,
             dataOrangeRed: dOrangeRed,
             dataRed: dRed,
+            valueLimits: valueLimits,
             error: error
         };
     }
@@ -1779,7 +1783,11 @@ const parseQueryDataMapScalar = function (rows, d, dLowest, dLow, dModerate, dHi
         dModerate: dModerate,
         dHigh: dHigh,
         dHighest: dHighest,
-        maxValue: maxValue
+        valueLimits: {
+            maxValue: maxValue,
+            highLimit: highLimit,
+            lowLimit: lowLimit
+        }
     };
 };
 
@@ -2022,7 +2030,12 @@ const parseQueryDataMapCTC = function (rows, d, dPurple, dPurpleBlue, dBlue, dBl
         dYellow: dYellow,
         dOrange: dOrange,
         dOrangeRed: dOrangeRed,
-        dRed: dRed
+        dRed: dRed,
+        valueLimits: {
+            maxValue: highLimit,
+            highLimit: highLimit,
+            lowLimit: lowLimit
+        }
     };
 };
 

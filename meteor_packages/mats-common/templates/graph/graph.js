@@ -163,7 +163,7 @@ Template.graph.helpers({
             // for both plotly_legendclick and plotly_legenddoubleclick anyway, in the hopes that they 
             // eventually fix this and it gets pushed to https://cdn.plot.ly/plotly-latest.min.js, but 
             // until then, the double click show/hide all curves functionality will not exist.
-            $("#placeholder")[0].on('plotly_legendclick', function(data){
+            $("#placeholder")[0].on('plotly_legendclick', function (data) {
                 var dataset = matsCurveUtils.getGraphResult().data;
                 const curveToShowHide = data.curveNumber;
                 const label = dataset[curveToShowHide].label;
@@ -198,7 +198,7 @@ Template.graph.helpers({
                 }
             });
             Session.set('singleCurveIsolated', false);
-            $("#placeholder")[0].on('plotly_legenddoubleclick', function(data){
+            $("#placeholder")[0].on('plotly_legenddoubleclick', function (data) {
                 var dataset = matsCurveUtils.getGraphResult().data;
                 const curveToShowHide = data.curveNumber;
                 var label = dataset[curveToShowHide].label;
@@ -248,7 +248,9 @@ Template.graph.helpers({
                 }
                 // update the other curves
                 for (var i = 0; i < dataset.length; i++) {
-                    if (Object.values(matsTypes.ReservedWords).indexOf(dataset[i].label) >= 0 || i === curveToShowHide) {
+                    if (Object.values(matsTypes.ReservedWords).indexOf(dataset[i].label) >= 0
+                        || (plotType === matsTypes.PlotTypes.map && Object.values(matsTypes.ReservedWords).indexOf(dataset[i].reserved) >= 0)
+                        || i === curveToShowHide) {
                         continue; // don't process the zero or max curves
                     }
                     label = dataset[i].label;
@@ -287,7 +289,8 @@ Template.graph.helpers({
             // append annotations and other setup
             var localAnnotation;
             for (var i = 0; i < dataset.length; i++) {
-                if (Object.values(matsTypes.ReservedWords).indexOf(dataset[i].label) >= 0) {
+                if (Object.values(matsTypes.ReservedWords).indexOf(dataset[i].label) >= 0
+                    || (plotType === matsTypes.PlotTypes.map && Object.values(matsTypes.ReservedWords).indexOf(dataset[i].reserved) >= 0)) {
                     continue; // don't process the zero or max curves
                 }
                 switch (plotType) {
@@ -1310,7 +1313,7 @@ Template.graph.events({
                         updates[didx] = {
                             yaxis: "y1"
                         };
-                }
+                    }
                     Plotly.restyle($("#placeholder")[0], updates[didx], didx);
                 }
             }
@@ -1378,7 +1381,7 @@ Template.graph.events({
                 var jsonHappyKey = updatedKey.split(".").join("____");
                 curveOpsUpdate[uidx][jsonHappyKey] = updates[uidx][updatedKey];
             }
-        }     
+        }
     },
     'click .axisXSpace': function (event) {
         // equally space the x values, or restore them.

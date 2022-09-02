@@ -1188,9 +1188,9 @@ const generateMapPlotOptions = function (extraLegendSpace) {
         legend: {
             orientation: "h",
             x: 0,
-            y: extraLegendSpace ? 1.2 : 1.1,
+            y: extraLegendSpace ? 1.1 : 1.05,
             font: {
-                size: 12,
+                size: 14,
                 color: '#000000'
             }
         }

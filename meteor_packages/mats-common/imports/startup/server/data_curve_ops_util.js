@@ -505,13 +505,14 @@ const generateCTCMapCurveOptions = function (curve, dataSeries, appParams) {
     return curveOptions;
 };
 
-const generateMapColorTextOptions = function (label, dataSeries) {
+const generateMapColorTextOptions = function (label, legendText, dataSeries) {
 
     const curveOptions = {
         ...{
-            label: label,
+            label: legendText,
             curveId: label,
-            name: label,
+            name: legendText,
+            reserved: label,
             type: 'scattermapbox',
             mode: 'markers+text',
             marker: {
