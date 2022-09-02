@@ -537,6 +537,7 @@ const queryDBMapScalar = function (pool, statement, dataSource, statistic, varia
             text: [],
             color: ""
         };
+        var maxValue = 14; // dummy range for marker size
 
         var error = "";
         const Future = require('fibers/future');
@@ -556,6 +557,7 @@ const queryDBMapScalar = function (pool, statement, dataSource, statistic, varia
                 dModerate = parsedData.dModerate;
                 dHigh = parsedData.dHigh;
                 dHighest = parsedData.dHighest;
+                maxValue = parsedData.maxValue;
             }
             // done waiting - have results
             pFuture['return']();
@@ -570,6 +572,7 @@ const queryDBMapScalar = function (pool, statement, dataSource, statistic, varia
             dataModerate: dModerate,
             dataHigh: dHigh,
             dataHighest: dHighest,
+            maxValue: maxValue,
             error: error
         };
     }
@@ -1696,13 +1699,13 @@ const parseQueryDataMapScalar = function (rows, d, dLowest, dLow, dModerate, dHi
     var filteredValues = d.queryVal.filter(x => x);
     filteredValues = filteredValues.sort(function (a, b) {
         return Number(a) - Number(b);
-    })
+    });
     highLimit = filteredValues[(Math.floor(filteredValues.length * .98))];
     lowLimit = filteredValues[(Math.floor(filteredValues.length * .02))];
 
+    const maxValue = Math.abs(highLimit) > Math.abs(lowLimit) ? Math.abs(highLimit) : Math.abs(lowLimit);
     if (statistic === "Bias (Model - Obs)") {
         // bias colorscale needs to be symmetrical around 0
-        const maxValue = Math.abs(highLimit) > Math.abs(lowLimit) ? Math.abs(highLimit) : Math.abs(lowLimit);
         highLimit = maxValue;
         lowLimit = -1 * maxValue;
     }
@@ -1775,7 +1778,8 @@ const parseQueryDataMapScalar = function (rows, d, dLowest, dLow, dModerate, dHi
         dLow: dLow,
         dModerate: dModerate,
         dHigh: dHigh,
-        dHighest: dHighest
+        dHighest: dHighest,
+        maxValue: maxValue
     };
 };
 
