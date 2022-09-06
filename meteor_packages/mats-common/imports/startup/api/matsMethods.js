@@ -194,6 +194,30 @@ if (Meteor.isServer) {
         Picker.middleware(_getFcstLengths(params, req, res, next));
     });
 
+    Picker.route('/getValidTimes', function (params, req, res, next) {
+        Picker.middleware(_getValidTimes(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/getValidTimes', function (params, req, res, next) {
+        Picker.middleware(_getValidTimes(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getValidTimes', function (params, req, res, next) {
+        Picker.middleware(_getValidTimes(params, req, res, next));
+    });
+
+    Picker.route('/getDates', function (params, req, res, next) {
+        Picker.middleware(_getDates(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/getDates', function (params, req, res, next) {
+        Picker.middleware(_getDates(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getDates', function (params, req, res, next) {
+        Picker.middleware(_getDates(params, req, res, next));
+    });
+
 // create picker routes for refreshMetaData
     Picker.route('/refreshMetadata', function (params, req, res, next) {
         Picker.middleware(_refreshMetadataMWltData(params, req, res, next));
@@ -353,6 +377,37 @@ function _getMapByAppAndModel(selector) {
     return flatJSON;
 }
 
+// helper function for getting a date metadata map from a MATS selector, keyed by app title and model display text
+function _getDateMapByAppAndModel() {
+    let flatJSON = "";
+    try {
+        let result;
+        // the date map can be in a few places. we have to hunt for it.
+        if (matsCollections['database'] !== undefined && matsCollections['database'].findOne({name: 'database'}) !== undefined && matsCollections['database'].findOne({name: 'database'}).dates !== undefined) {
+            result = matsCollections['database'].findOne({name: 'database'}).dates;
+        } else if (matsCollections['variable'] !== undefined && matsCollections['variable'].findOne({name: 'variable'}) !== undefined && matsCollections['variable'].findOne({name: 'variable'}).dates !== undefined) {
+            result = matsCollections['variable'].findOne({name: 'variable'}).dates;
+        } else if (matsCollections['data-source'] !== undefined && matsCollections['data-source'].findOne({name: 'data-source'}) !== undefined && matsCollections['data-source'].findOne({name: 'data-source'}).dates !== undefined) {
+            result = matsCollections['data-source'].findOne({name: 'data-source'}).dates;
+        } else {
+            result = {};
+        }
+        if ((matsCollections['database'] === undefined) &&
+            !(matsCollections['variable'] !== undefined && matsCollections['threshold'] !== undefined)) {
+            // key by app title if we're not already
+            const appTitle = matsCollections.Settings.findOne().Title;
+            let newResult = {};
+            newResult[appTitle] = result;
+            result = newResult;
+        }
+        flatJSON = JSON.stringify(result);
+    } catch (e) {
+        console.log('error retrieving datemap', e);
+        flatJSON = JSON.stringify({error: e});
+    }
+    return flatJSON;
+}
+
 // helper function for getting a metadata map from a MATS selector, keyed by app title
 function _getMapByApp(selector) {
     let flatJSON = "";
@@ -461,6 +516,28 @@ const _getFcstLengths = function (params, req, res, next) {
     // this function returns a map of forecast lengths keyed by app title and model display text
     if (Meteor.isServer) {
         let flatJSON = _getMapByAppAndModel('forecast-length');
+        res.setHeader('Content-Type', 'application/json');
+        res.write(flatJSON);
+        res.end();
+    }
+};
+
+// private middleware for _getValidTimes route
+const _getValidTimes = function (params, req, res, next) {
+    // this function returns an map of valid times keyed by app title
+    if (Meteor.isServer) {
+        let flatJSON = _getMapByApp('valid-time');
+        res.setHeader('Content-Type', 'application/json');
+        res.write(flatJSON);
+        res.end();
+    }
+};
+
+// private middleware for _getDates route
+const _getDates = function (params, req, res, next) {
+    // this function returns a map of dates keyed by app title and model display text
+    if (Meteor.isServer) {
+        let flatJSON = _getDateMapByAppAndModel();
         res.setHeader('Content-Type', 'application/json');
         res.write(flatJSON);
         res.end();
