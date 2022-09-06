@@ -182,6 +182,18 @@ if (Meteor.isServer) {
         Picker.middleware(_getThresholds(params, req, res, next));
     });
 
+    Picker.route('/getTruths', function (params, req, res, next) {
+        Picker.middleware(_getTruths(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/getTruths', function (params, req, res, next) {
+        Picker.middleware(_getTruths(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getTruths', function (params, req, res, next) {
+        Picker.middleware(_getTruths(params, req, res, next));
+    });
+
     Picker.route('/getFcstLengths', function (params, req, res, next) {
         Picker.middleware(_getFcstLengths(params, req, res, next));
     });
@@ -552,6 +564,17 @@ const _getThresholds = function (params, req, res, next) {
     // this function returns a map of thresholds keyed by app title and model display text
     if (Meteor.isServer) {
         let flatJSON = _getMapByAppAndModel('threshold');
+        res.setHeader('Content-Type', 'application/json');
+        res.write(flatJSON);
+        res.end();
+    }
+};
+
+// private middleware for _getTruth route
+const _getTruths = function (params, req, res, next) {
+    // this function returns a map of truths keyed by app title and model display text
+    if (Meteor.isServer) {
+        let flatJSON = _getMapByAppAndModel('truth');
         res.setHeader('Content-Type', 'application/json');
         res.write(flatJSON);
         res.end();
