@@ -134,6 +134,18 @@ if (Meteor.isServer) {
         Picker.middleware(_getModels(params, req, res, next));
     });
 
+    Picker.route('/getRegions', function (params, req, res, next) {
+        Picker.middleware(_getRegions(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/getRegions', function (params, req, res, next) {
+        Picker.middleware(_getRegions(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getRegions', function (params, req, res, next) {
+        Picker.middleware(_getRegions(params, req, res, next));
+    });
+
     Picker.route('/getStats', function (params, req, res, next) {
         Picker.middleware(_getStats(params, req, res, next));
     });
@@ -334,6 +346,38 @@ const _getModels = function (params, req, res, next) {
     }
 };
 
+// private middleware for _getRegions route
+const _getRegions = function (params, req, res, next) {
+    // this function returns a MAP of regions keyed by APP and MODEL
+    if (Meteor.isServer) {
+        let flatJSON = "";
+        try {
+            let result;
+            if (matsCollections['region'] !== undefined && matsCollections['region'].findOne({name: 'region'}) !== undefined) {
+                // get map of regions
+                result = matsCollections['region'].findOne({name: 'region'}).optionsMap;
+                if ((matsCollections['database'] === undefined) &&
+                    !(matsCollections['variable'] !== undefined && matsCollections['threshold'] !== undefined)) {
+                    // key by app title if we're not already
+                    const appTitle = matsCollections.Settings.findOne().Title;
+                    let newResult = {};
+                    newResult[appTitle] = result;
+                    result = newResult;
+                }
+            } else {
+                result = {};
+            }
+            flatJSON = JSON.stringify(result);
+        } catch (e) {
+            console.log('error retrieving statistic: ', e);
+            flatJSON = JSON.stringify({error: e});
+        }
+        res.setHeader('Content-Type', 'application/json');
+        res.write(flatJSON);
+        res.end();
+    }
+};
+
 // private middleware for _getStats route
 const _getStats = function (params, req, res, next) {
     if (Meteor.isServer) {
@@ -369,7 +413,7 @@ const _getVariables = function (params, req, res, next) {
                 result = matsCollections['variable'].findOne({name: 'variable'}).options;
                 if (!Array.isArray(result)) result = Object.keys(result);
             } else {
-                result = "This app does not have a list of variables."
+                result = []
             }
             flatJSON = JSON.stringify(result);
         } catch (e) {
