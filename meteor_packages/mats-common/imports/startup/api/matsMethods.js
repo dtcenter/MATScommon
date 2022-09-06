@@ -170,6 +170,18 @@ if (Meteor.isServer) {
         Picker.middleware(_getVariables(params, req, res, next));
     });
 
+    Picker.route('/getThresholds', function (params, req, res, next) {
+        Picker.middleware(_getThresholds(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/getThresholds', function (params, req, res, next) {
+        Picker.middleware(_getThresholds(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getThresholds', function (params, req, res, next) {
+        Picker.middleware(_getThresholds(params, req, res, next));
+    });
+
 // create picker routes for refreshMetaData
     Picker.route('/refreshMetadata', function (params, req, res, next) {
         Picker.middleware(_refreshMetadataMWltData(params, req, res, next));
@@ -305,7 +317,7 @@ const _getApps = function (params, req, res, next) {
             }
             flatJSON = JSON.stringify(result);
         } catch (e) {
-            console.log('error retrieving statistic: ', e);
+            console.log('error retrieving apps: ', e);
             flatJSON = JSON.stringify({error: e});
         }
         res.setHeader('Content-Type', 'application/json');
@@ -337,7 +349,7 @@ const _getModels = function (params, req, res, next) {
             }
             flatJSON = JSON.stringify(result);
         } catch (e) {
-            console.log('error retrieving statistic: ', e);
+            console.log('error retrieving models: ', e);
             flatJSON = JSON.stringify({error: e});
         }
         res.setHeader('Content-Type', 'application/json');
@@ -369,7 +381,7 @@ const _getRegions = function (params, req, res, next) {
             }
             flatJSON = JSON.stringify(result);
         } catch (e) {
-            console.log('error retrieving statistic: ', e);
+            console.log('error retrieving regions: ', e);
             flatJSON = JSON.stringify({error: e});
         }
         res.setHeader('Content-Type', 'application/json');
@@ -380,6 +392,7 @@ const _getRegions = function (params, req, res, next) {
 
 // private middleware for _getStatistics route
 const _getStatistics = function (params, req, res, next) {
+    // this function returns an ARRAY of statistics
     if (Meteor.isServer) {
         let flatJSON = "";
         try {
@@ -393,7 +406,7 @@ const _getStatistics = function (params, req, res, next) {
             }
             flatJSON = JSON.stringify(result);
         } catch (e) {
-            console.log('error retrieving statistic: ', e);
+            console.log('error retrieving statistics: ', e);
             flatJSON = JSON.stringify({error: e});
         }
         res.setHeader('Content-Type', 'application/json');
@@ -404,6 +417,7 @@ const _getStatistics = function (params, req, res, next) {
 
 // private middleware for _getVariables route
 const _getVariables = function (params, req, res, next) {
+    // this function returns an ARRAY of variables
     if (Meteor.isServer) {
         let flatJSON = "";
         try {
@@ -418,6 +432,38 @@ const _getVariables = function (params, req, res, next) {
             flatJSON = JSON.stringify(result);
         } catch (e) {
             console.log('error retrieving variables: ', e);
+            flatJSON = JSON.stringify({error: e});
+        }
+        res.setHeader('Content-Type', 'application/json');
+        res.write(flatJSON);
+        res.end();
+    }
+};
+
+// private middleware for _getThresholds route
+const _getThresholds = function (params, req, res, next) {
+    // this function returns a MAP of thresholds keyed by APP and MODEL
+    if (Meteor.isServer) {
+        let flatJSON = "";
+        try {
+            let result;
+            if (matsCollections['threshold'] !== undefined && matsCollections['threshold'].findOne({name: 'threshold'}) !== undefined) {
+                // get map of regions
+                result = matsCollections['threshold'].findOne({name: 'threshold'}).optionsMap;
+                if ((matsCollections['database'] === undefined) &&
+                    !(matsCollections['variable'] !== undefined && matsCollections['threshold'] !== undefined)) {
+                    // key by app title if we're not already
+                    const appTitle = matsCollections.Settings.findOne().Title;
+                    let newResult = {};
+                    newResult[appTitle] = result;
+                    result = newResult;
+                }
+            } else {
+                result = {};
+            }
+            flatJSON = JSON.stringify(result);
+        } catch (e) {
+            console.log('error retrieving thresholds: ', e);
             flatJSON = JSON.stringify({error: e});
         }
         res.setHeader('Content-Type', 'application/json');
