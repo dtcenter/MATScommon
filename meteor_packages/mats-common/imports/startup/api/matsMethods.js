@@ -146,16 +146,16 @@ if (Meteor.isServer) {
         Picker.middleware(_getRegions(params, req, res, next));
     });
 
-    Picker.route('/getStats', function (params, req, res, next) {
-        Picker.middleware(_getStats(params, req, res, next));
+    Picker.route('/getStatistics', function (params, req, res, next) {
+        Picker.middleware(_getStatistics(params, req, res, next));
     });
 
-    Picker.route(Meteor.settings.public.proxy_prefix_path + '/getStats', function (params, req, res, next) {
-        Picker.middleware(_getStats(params, req, res, next));
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/getStatistics', function (params, req, res, next) {
+        Picker.middleware(_getStatistics(params, req, res, next));
     });
 
-    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getStats', function (params, req, res, next) {
-        Picker.middleware(_getStats(params, req, res, next));
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getStatistics', function (params, req, res, next) {
+        Picker.middleware(_getStatistics(params, req, res, next));
     });
 
     Picker.route('/getVariables', function (params, req, res, next) {
@@ -378,8 +378,8 @@ const _getRegions = function (params, req, res, next) {
     }
 };
 
-// private middleware for _getStats route
-const _getStats = function (params, req, res, next) {
+// private middleware for _getStatistics route
+const _getStatistics = function (params, req, res, next) {
     if (Meteor.isServer) {
         let flatJSON = "";
         try {
