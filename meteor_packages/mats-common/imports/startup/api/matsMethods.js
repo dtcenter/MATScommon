@@ -206,6 +206,18 @@ if (Meteor.isServer) {
         Picker.middleware(_getValidTimes(params, req, res, next));
     });
 
+    Picker.route('/getLevels', function (params, req, res, next) {
+        Picker.middleware(_getLevels(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/getLevels', function (params, req, res, next) {
+        Picker.middleware(_getLevels(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getLevels', function (params, req, res, next) {
+        Picker.middleware(_getLevels(params, req, res, next));
+    });
+
     Picker.route('/getDates', function (params, req, res, next) {
         Picker.middleware(_getDates(params, req, res, next));
     });
@@ -332,6 +344,21 @@ const _clearCache = function (params, req, res, next) {
     }
 };
 
+// helper function to map a results array to specific apps
+function _mapArrayToApps(result) {
+    // put results in a map keyed by app
+    let newResult = {};
+    let apps = _getListOfApps();
+    for (var aidx = 0; aidx < apps.length; aidx++) {
+        if (result[aidx] === apps[aidx]) {
+            newResult[apps[aidx]] = result[aidx];
+        } else {
+            newResult[apps[aidx]] = result;
+        }
+    }
+    return newResult;
+}
+
 // helper function for returning an array of database-distinct apps contained within a larger MATS app
 function _getListOfApps() {
     let apps;
@@ -383,11 +410,14 @@ function _getDateMapByAppAndModel() {
     try {
         let result;
         // the date map can be in a few places. we have to hunt for it.
-        if (matsCollections['database'] !== undefined && matsCollections['database'].findOne({name: 'database'}) !== undefined && matsCollections['database'].findOne({name: 'database'}).dates !== undefined) {
+        if (matsCollections['database'] !== undefined && matsCollections['database'].findOne({name: 'database'})
+            !== undefined && matsCollections['database'].findOne({name: 'database'}).dates !== undefined) {
             result = matsCollections['database'].findOne({name: 'database'}).dates;
-        } else if (matsCollections['variable'] !== undefined && matsCollections['variable'].findOne({name: 'variable'}) !== undefined && matsCollections['variable'].findOne({name: 'variable'}).dates !== undefined) {
+        } else if (matsCollections['variable'] !== undefined && matsCollections['variable'].findOne({name: 'variable'})
+            !== undefined && matsCollections['variable'].findOne({name: 'variable'}).dates !== undefined) {
             result = matsCollections['variable'].findOne({name: 'variable'}).dates;
-        } else if (matsCollections['data-source'] !== undefined && matsCollections['data-source'].findOne({name: 'data-source'}) !== undefined && matsCollections['data-source'].findOne({name: 'data-source'}).dates !== undefined) {
+        } else if (matsCollections['data-source'] !== undefined && matsCollections['data-source'].findOne({name: 'data-source'})
+            !== undefined && matsCollections['data-source'].findOne({name: 'data-source'}).dates !== undefined) {
             result = matsCollections['data-source'].findOne({name: 'data-source'}).dates;
         } else {
             result = {};
@@ -421,18 +451,35 @@ function _getMapByApp(selector) {
             result = ["ACC"];
         }
         // put results in a map keyed by app
-        let newResult = {};
-        let apps = _getListOfApps();
-        for (var aidx = 0; aidx < apps.length; aidx++) {
-            if (result[aidx] === apps[aidx]) {
-                newResult[apps[aidx]] = result[aidx];
-            } else {
-                newResult[apps[aidx]] = result;
-            }
-        }
+        let newResult = _mapArrayToApps(result);
         flatJSON = JSON.stringify(newResult);
     } catch (e) {
         console.log('error retrieving metadata from ' + selector + ': ', e);
+        flatJSON = JSON.stringify({error: e});
+    }
+    return flatJSON;
+}
+
+// helper function for populating the levels in a MATS selector
+function _getlevelsByApp() {
+    let flatJSON = "";
+    try {
+        let result;
+        if (matsCollections['level'] !== undefined && matsCollections['level'].findOne({name: 'level'}) !== undefined) {
+            // we have levels already defined
+            result = matsCollections['level'].findOne({name: 'level'}).options;
+            if (!Array.isArray(result)) result = Object.keys(result);
+        } else if (matsCollections['top'] !== undefined && matsCollections['top'].findOne({name: 'top'}) !== undefined) {
+            // use the MATS mandatory levels
+            result = _.range(100, 1050, 50);
+            if (!Array.isArray(result)) result = Object.keys(result);
+        } else {
+            result = [];
+        }
+        let newResult = _mapArrayToApps(result);
+        flatJSON = JSON.stringify(newResult);
+    } catch (e) {
+        console.log('error retrieving levels: ', e);
         flatJSON = JSON.stringify({error: e});
     }
     return flatJSON;
@@ -527,6 +574,17 @@ const _getValidTimes = function (params, req, res, next) {
     // this function returns an map of valid times keyed by app title
     if (Meteor.isServer) {
         let flatJSON = _getMapByApp('valid-time');
+        res.setHeader('Content-Type', 'application/json');
+        res.write(flatJSON);
+        res.end();
+    }
+};
+
+// private middleware for _getValidTimes route
+const _getLevels = function (params, req, res, next) {
+    // this function returns an map of pressure levels keyed by app title
+    if (Meteor.isServer) {
+        let flatJSON = _getlevelsByApp();
         res.setHeader('Content-Type', 'application/json');
         res.write(flatJSON);
         res.end();
