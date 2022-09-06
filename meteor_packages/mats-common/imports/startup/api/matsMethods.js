@@ -308,25 +308,88 @@ const _clearCache = function (params, req, res, next) {
     }
 };
 
+// helper function for returning an array of database-distinct apps contained within a larger MATS app
+function _getListOfApps() {
+    let apps;
+    if (matsCollections['database'] !== undefined && matsCollections['database'].findOne({name: 'database'}) !== undefined) {
+        // get list of databases (one per app)
+        apps = matsCollections['database'].findOne({name: 'database'}).options;
+        if (!Array.isArray(apps)) apps = Object.keys(apps);
+    } else if ((matsCollections['variable'] !== undefined && matsCollections['variable'].findOne({name: 'variable'}) !== undefined) &&
+        (matsCollections['threshold'] !== undefined && matsCollections['threshold'].findOne({name: 'threshold'}) !== undefined)) {
+        // get list of apps (variables in apps that also have thresholds)
+        apps = matsCollections['variable'].findOne({name: 'variable'}).options;
+        if (!Array.isArray(apps)) apps = Object.keys(apps);
+    } else {
+        apps = [matsCollections.Settings.findOne().Title];
+    }
+    return apps;
+}
+
+// helper function for getting a metadata map from a MATS selector, keyed by app title and model display text
+function _getMapByAppAndModel(selector) {
+    let flatJSON = "";
+    try {
+        let result;
+        if (matsCollections[selector] !== undefined && matsCollections[selector].findOne({name: selector}) !== undefined) {
+            // get map of requested selector's metadata
+            result = matsCollections[selector].findOne({name: selector}).optionsMap;
+            if ((matsCollections['database'] === undefined) &&
+                !(matsCollections['variable'] !== undefined && matsCollections['threshold'] !== undefined)) {
+                // key by app title if we're not already
+                const appTitle = matsCollections.Settings.findOne().Title;
+                let newResult = {};
+                newResult[appTitle] = result;
+                result = newResult;
+            }
+        } else {
+            result = {};
+        }
+        flatJSON = JSON.stringify(result);
+    } catch (e) {
+        console.log('error retrieving metadata from ' + selector + ': ', e);
+        flatJSON = JSON.stringify({error: e});
+    }
+    return flatJSON;
+}
+
+// helper function for getting a metadata map from a MATS selector, keyed by app title
+function _getMapByApp(selector) {
+    let flatJSON = "";
+    try {
+        let result;
+        if (matsCollections[selector] !== undefined && matsCollections[selector].findOne({name: selector}) !== undefined) {
+            // get array of requested selector's metadata
+            result = matsCollections[selector].findOne({name: selector}).options;
+            if (!Array.isArray(result)) result = Object.keys(result);
+        } else {
+            result = ["ACC"];
+        }
+        // put results in a map keyed by app
+        let newResult = {};
+        let apps = _getListOfApps();
+        for (var aidx = 0; aidx < apps.length; aidx++) {
+            if (result[aidx] === apps[aidx]) {
+                newResult[apps[aidx]] = result[aidx];
+            } else {
+                newResult[apps[aidx]] = result;
+            }
+        }
+        flatJSON = JSON.stringify(newResult);
+    } catch (e) {
+        console.log('error retrieving metadata from ' + selector + ': ', e);
+        flatJSON = JSON.stringify({error: e});
+    }
+    return flatJSON;
+}
+
 // private middleware for _getApps route
 const _getApps = function (params, req, res, next) {
-    // this function returns an ARRAY of apps. It may have some overlap with _getVariables
+    // this function returns map of apps and appRefs.
     if (Meteor.isServer) {
         let flatJSON = "";
         try {
-            let result;
-            if (matsCollections['database'] !== undefined && matsCollections['database'].findOne({name: 'database'}) !== undefined) {
-                // get list of databases (one per app)
-                result = matsCollections['database'].findOne({name: 'database'}).options;
-                if (!Array.isArray(result)) result = Object.keys(result);
-            } else if ((matsCollections['variable'] !== undefined && matsCollections['variable'].findOne({name: 'variable'}) !== undefined) &&
-                (matsCollections['threshold'] !== undefined && matsCollections['threshold'].findOne({name: 'threshold'}) !== undefined)) {
-                // get list of apps (variables in apps that also have thresholds)
-                result = matsCollections['variable'].findOne({name: 'variable'}).options;
-                if (!Array.isArray(result)) result = Object.keys(result);
-            } else {
-                result = [matsCollections.Settings.findOne().Title];
-            }
+            let result = _getListOfApps();
             flatJSON = JSON.stringify(result);
         } catch (e) {
             console.log('error retrieving apps: ', e);
@@ -340,30 +403,9 @@ const _getApps = function (params, req, res, next) {
 
 // private middleware for _getModels route
 const _getModels = function (params, req, res, next) {
-    // this function returns a MAP of models keyed by APP and display text
+    // this function returns a map of models keyed by app title and model display text
     if (Meteor.isServer) {
-        let flatJSON = "";
-        try {
-            let result;
-            if (matsCollections['data-source'] !== undefined && matsCollections['data-source'].findOne({name: 'data-source'}) !== undefined) {
-                // get map of models
-                result = matsCollections['data-source'].findOne({name: 'data-source'}).optionsMap;
-                if ((matsCollections['database'] === undefined) &&
-                    !(matsCollections['variable'] !== undefined && matsCollections['threshold'] !== undefined)) {
-                    // key by app title if we're not already
-                    const appTitle = matsCollections.Settings.findOne().Title;
-                    let newResult = {};
-                    newResult[appTitle] = result;
-                    result = newResult;
-                }
-            } else {
-                result = {};
-            }
-            flatJSON = JSON.stringify(result);
-        } catch (e) {
-            console.log('error retrieving models: ', e);
-            flatJSON = JSON.stringify({error: e});
-        }
+        let flatJSON = _getMapByAppAndModel('data-source');
         res.setHeader('Content-Type', 'application/json');
         res.write(flatJSON);
         res.end();
@@ -372,30 +414,9 @@ const _getModels = function (params, req, res, next) {
 
 // private middleware for _getRegions route
 const _getRegions = function (params, req, res, next) {
-    // this function returns a MAP of regions keyed by APP and MODEL
+    // this function returns a map of regions keyed by app title and model display text
     if (Meteor.isServer) {
-        let flatJSON = "";
-        try {
-            let result;
-            if (matsCollections['region'] !== undefined && matsCollections['region'].findOne({name: 'region'}) !== undefined) {
-                // get map of regions
-                result = matsCollections['region'].findOne({name: 'region'}).optionsMap;
-                if ((matsCollections['database'] === undefined) &&
-                    !(matsCollections['variable'] !== undefined && matsCollections['threshold'] !== undefined)) {
-                    // key by app title if we're not already
-                    const appTitle = matsCollections.Settings.findOne().Title;
-                    let newResult = {};
-                    newResult[appTitle] = result;
-                    result = newResult;
-                }
-            } else {
-                result = {};
-            }
-            flatJSON = JSON.stringify(result);
-        } catch (e) {
-            console.log('error retrieving regions: ', e);
-            flatJSON = JSON.stringify({error: e});
-        }
+        let flatJSON = _getMapByAppAndModel('region');
         res.setHeader('Content-Type', 'application/json');
         res.write(flatJSON);
         res.end();
@@ -404,23 +425,9 @@ const _getRegions = function (params, req, res, next) {
 
 // private middleware for _getStatistics route
 const _getStatistics = function (params, req, res, next) {
-    // this function returns an ARRAY of statistics
+    // this function returns an map of statistics keyed by app title
     if (Meteor.isServer) {
-        let flatJSON = "";
-        try {
-            let result;
-            if (matsCollections['statistic'] !== undefined && matsCollections['statistic'].findOne({name: 'statistic'}) !== undefined) {
-                // get list of variables
-                result = matsCollections['statistic'].findOne({name: 'statistic'}).options;
-                if (!Array.isArray(result)) result = Object.keys(result);
-            } else {
-                result = ["ACC"];
-            }
-            flatJSON = JSON.stringify(result);
-        } catch (e) {
-            console.log('error retrieving statistics: ', e);
-            flatJSON = JSON.stringify({error: e});
-        }
+        let flatJSON = _getMapByApp('statistic');
         res.setHeader('Content-Type', 'application/json');
         res.write(flatJSON);
         res.end();
@@ -429,23 +436,9 @@ const _getStatistics = function (params, req, res, next) {
 
 // private middleware for _getVariables route
 const _getVariables = function (params, req, res, next) {
-    // this function returns an ARRAY of variables
+    // this function returns an map of variables keyed by app title
     if (Meteor.isServer) {
-        let flatJSON = "";
-        try {
-            let result;
-            if (matsCollections['variable'] !== undefined && matsCollections['variable'].findOne({name: 'variable'}) !== undefined) {
-                // get list of variables
-                result = matsCollections['variable'].findOne({name: 'variable'}).options;
-                if (!Array.isArray(result)) result = Object.keys(result);
-            } else {
-                result = []
-            }
-            flatJSON = JSON.stringify(result);
-        } catch (e) {
-            console.log('error retrieving variables: ', e);
-            flatJSON = JSON.stringify({error: e});
-        }
+        let flatJSON = _getMapByApp('variable');
         res.setHeader('Content-Type', 'application/json');
         res.write(flatJSON);
         res.end();
@@ -454,30 +447,9 @@ const _getVariables = function (params, req, res, next) {
 
 // private middleware for _getThresholds route
 const _getThresholds = function (params, req, res, next) {
-    // this function returns a MAP of thresholds keyed by APP and MODEL
+    // this function returns a map of thresholds keyed by app title and model display text
     if (Meteor.isServer) {
-        let flatJSON = "";
-        try {
-            let result;
-            if (matsCollections['threshold'] !== undefined && matsCollections['threshold'].findOne({name: 'threshold'}) !== undefined) {
-                // get map of regions
-                result = matsCollections['threshold'].findOne({name: 'threshold'}).optionsMap;
-                if ((matsCollections['database'] === undefined) &&
-                    !(matsCollections['variable'] !== undefined && matsCollections['threshold'] !== undefined)) {
-                    // key by app title if we're not already
-                    const appTitle = matsCollections.Settings.findOne().Title;
-                    let newResult = {};
-                    newResult[appTitle] = result;
-                    result = newResult;
-                }
-            } else {
-                result = {};
-            }
-            flatJSON = JSON.stringify(result);
-        } catch (e) {
-            console.log('error retrieving thresholds: ', e);
-            flatJSON = JSON.stringify({error: e});
-        }
+        let flatJSON = _getMapByAppAndModel('threshold');
         res.setHeader('Content-Type', 'application/json');
         res.write(flatJSON);
         res.end();
@@ -486,30 +458,9 @@ const _getThresholds = function (params, req, res, next) {
 
 // private middleware for _getFcstLengths route
 const _getFcstLengths = function (params, req, res, next) {
-    // this function returns a MAP of forecast lengths keyed by APP and MODEL
+    // this function returns a map of forecast lengths keyed by app title and model display text
     if (Meteor.isServer) {
-        let flatJSON = "";
-        try {
-            let result;
-            if (matsCollections['forecast-length'] !== undefined && matsCollections['forecast-length'].findOne({name: 'forecast-length'}) !== undefined) {
-                // get map of regions
-                result = matsCollections['forecast-length'].findOne({name: 'forecast-length'}).optionsMap;
-                if ((matsCollections['database'] === undefined) &&
-                    !(matsCollections['variable'] !== undefined && matsCollections['threshold'] !== undefined)) {
-                    // key by app title if we're not already
-                    const appTitle = matsCollections.Settings.findOne().Title;
-                    let newResult = {};
-                    newResult[appTitle] = result;
-                    result = newResult;
-                }
-            } else {
-                result = {};
-            }
-            flatJSON = JSON.stringify(result);
-        } catch (e) {
-            console.log('error retrieving forecast lengths: ', e);
-            flatJSON = JSON.stringify({error: e});
-        }
+        let flatJSON = _getMapByAppAndModel('forecast-length');
         res.setHeader('Content-Type', 'application/json');
         res.write(flatJSON);
         res.end();
