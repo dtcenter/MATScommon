@@ -122,6 +122,18 @@ if (Meteor.isServer) {
         Picker.middleware(_getApps(params, req, res, next));
     });
 
+    Picker.route('/getModels', function (params, req, res, next) {
+        Picker.middleware(_getModels(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/getModels', function (params, req, res, next) {
+        Picker.middleware(_getModels(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getModels', function (params, req, res, next) {
+        Picker.middleware(_getModels(params, req, res, next));
+    });
+
     Picker.route('/getStats', function (params, req, res, next) {
         Picker.middleware(_getStats(params, req, res, next));
     });
@@ -278,6 +290,38 @@ const _getApps = function (params, req, res, next) {
                 if (!Array.isArray(result)) result = Object.keys(result);
             } else {
                 result = [matsCollections.Settings.findOne().Title];
+            }
+            flatJSON = JSON.stringify(result);
+        } catch (e) {
+            console.log('error retrieving statistic: ', e);
+            flatJSON = JSON.stringify({error: e});
+        }
+        res.setHeader('Content-Type', 'application/json');
+        res.write(flatJSON);
+        res.end();
+    }
+};
+
+// private middleware for _getModels route
+const _getModels = function (params, req, res, next) {
+    // this function returns a MAP of models keyed by APP and display text
+    if (Meteor.isServer) {
+        let flatJSON = "";
+        try {
+            let result;
+            if (matsCollections['data-source'] !== undefined && matsCollections['data-source'].findOne({name: 'data-source'}) !== undefined) {
+                // get map of models
+                result = matsCollections['data-source'].findOne({name: 'data-source'}).optionsMap;
+                if ((matsCollections['database'] === undefined) &&
+                    !(matsCollections['variable'] !== undefined && matsCollections['threshold'] !== undefined)) {
+                    // key by app title if we're not already
+                    const appTitle = matsCollections.Settings.findOne().Title;
+                    let newResult = {};
+                    newResult[appTitle] = result;
+                    result = newResult;
+                }
+            } else {
+                result = {};
             }
             flatJSON = JSON.stringify(result);
         } catch (e) {
