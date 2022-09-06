@@ -492,51 +492,52 @@ const queryDBMapScalar = function (pool, statement, dataSource, statistic, varia
             stats: [],
             text: []
         };
-        var dPurple = {
+        var dLowest = {
             siteName: [],
             queryVal: [],
             lat: [],
             lon: [],
             stats: [],
             text: [],
-            color: "rgb(0,0,255)"
+            color: ""
         };
-        var dBlue = {
+        var dLow = {
             siteName: [],
             queryVal: [],
             lat: [],
             lon: [],
             stats: [],
             text: [],
-            color: "rgb(0,125,255)"
+            color: ""
         };
-        var dBlack = {
+        var dModerate = {
             siteName: [],
             queryVal: [],
             lat: [],
             lon: [],
             stats: [],
             text: [],
-            color: "rgb(125,125,125)"
+            color: ""
         };
-        var dOrange = {
+        var dHigh = {
             siteName: [],
             queryVal: [],
             lat: [],
             lon: [],
             stats: [],
             text: [],
-            color: "rgb(255,125,0)"
+            color: ""
         };
-        var dRed = {
+        var dHighest = {
             siteName: [],
             queryVal: [],
             lat: [],
             lon: [],
             stats: [],
             text: [],
-            color: "rgb(255,0,0)"
+            color: ""
         };
+        let valueLimits = {};
 
         var error = "";
         const Future = require('fibers/future');
@@ -549,13 +550,14 @@ const queryDBMapScalar = function (pool, statement, dataSource, statistic, varia
                 error = matsTypes.Messages.NO_DATA_FOUND;
             } else {
                 var parsedData;
-                parsedData = parseQueryDataMapScalar(rows, d, dPurple, dBlue, dBlack, dOrange, dRed, dataSource, siteMap, statistic, variable, varUnits, appParams);
+                parsedData = parseQueryDataMapScalar(rows, d, dLowest, dLow, dModerate, dHigh, dHighest, dataSource, siteMap, statistic, variable, varUnits, appParams);
                 d = parsedData.d;
-                dPurple = parsedData.dPurple;
-                dBlue = parsedData.dBlue;
-                dBlack = parsedData.dBlack;
-                dOrange = parsedData.dOrange;
-                dRed = parsedData.dRed;
+                dLowest = parsedData.dLowest;
+                dLow = parsedData.dLow;
+                dModerate = parsedData.dModerate;
+                dHigh = parsedData.dHigh;
+                dHighest = parsedData.dHighest;
+                valueLimits = parsedData.valueLimits;
             }
             // done waiting - have results
             pFuture['return']();
@@ -565,11 +567,12 @@ const queryDBMapScalar = function (pool, statement, dataSource, statistic, varia
         pFuture.wait();
         return {
             data: d,
-            dataPurple: dPurple,
-            dataBlue: dBlue,
-            dataBlack: dBlack,
-            dataOrange: dOrange,
-            dataRed: dRed,
+            dataLowest: dLowest,
+            dataLow: dLow,
+            dataModerate: dModerate,
+            dataHigh: dHigh,
+            dataHighest: dHighest,
+            valueLimits: valueLimits,
             error: error
         };
     }
@@ -688,6 +691,7 @@ const queryDBMapCTC = function (pool, statement, dataSource, statistic, siteMap,
             text: [],
             color: "rgb(255,0,0)"
         };
+        let valueLimits = {};
 
         var error = "";
         var parsedData;
@@ -718,6 +722,7 @@ const queryDBMapCTC = function (pool, statement, dataSource, statistic, siteMap,
                     dOrange = parsedData.dOrange;
                     dOrangeRed = parsedData.dOrangeRed;
                     dRed = parsedData.dRed;
+                    valueLimits = parsedData.valueLimits;
                 }
                 pFuture.return();
             })();
@@ -742,6 +747,7 @@ const queryDBMapCTC = function (pool, statement, dataSource, statistic, siteMap,
                     dOrange = parsedData.dOrange;
                     dOrangeRed = parsedData.dOrangeRed;
                     dRed = parsedData.dRed;
+                    valueLimits = parsedData.valueLimits;
                 }
                 // done waiting - have results
                 pFuture.return();
@@ -762,6 +768,7 @@ const queryDBMapCTC = function (pool, statement, dataSource, statistic, siteMap,
             dataOrange: dOrange,
             dataOrangeRed: dOrangeRed,
             dataRed: dRed,
+            valueLimits: valueLimits,
             error: error
         };
     }
@@ -1527,7 +1534,7 @@ const parseQueryDataPerformanceDiagram = function (rows, d, appParams) {
 };
 
 // this method parses the returned query data for maps
-const parseQueryDataMapScalar = function (rows, d, dPurple, dBlue, dBlack, dOrange, dRed, dataSource, siteMap, statistic, variable, varUnits, appParams) {
+const parseQueryDataMapScalar = function (rows, d, dLowest, dLow, dModerate, dHigh, dHighest, dataSource, siteMap, statistic, variable, varUnits, appParams) {
     const hasLevels = appParams.hasLevels;
     var highLimit = 10;
     var lowLimit = -10
@@ -1537,6 +1544,45 @@ const parseQueryDataMapScalar = function (rows, d, dPurple, dBlue, dBlack, dOran
     } else {
         outlierQCParam = 100;
     }
+
+    // determine which colormap will be used for this plot
+    let colorLowest = "";
+    let colorLow = "";
+    let colorModerate= "";
+    let colorHigh = "";
+    let colorHighest = "";
+    if (statistic.includes('Bias')) {
+        if (variable.includes('RH') || variable.toLowerCase().includes('dewpoint')) {
+            colorLowest = "rgb(140,81,00)";
+            colorLow = "rgb(191,129,45)";
+            colorModerate= "rgb(125,125,125)";
+            colorHigh = "rgb(53,151,143)";
+            colorHighest = "rgb(1,102,95)";
+        } else if (variable.toLowerCase().includes('temp')) {
+            colorLowest = "rgb(5,48,97)";
+            colorLow = "rgb(67,147,195)";
+            colorModerate= "rgb(125,125,125)";
+            colorHigh = "rgb(214,96,77)";
+            colorHighest = "rgb(103,0,31)";
+        } else {
+            colorLowest = "rgb(0,134,0)";
+            colorLow = "rgb(80,255,80)";
+            colorModerate= "rgb(125,125,125)";
+            colorHigh = "rgb(255,80,255)";
+            colorHighest = "rgb(134,0,134)";
+        }
+    } else {
+        colorLowest = "rgb(125,125,125)";
+        colorLow = "rgb(196,179,139)";
+        colorModerate= "rgb(243,164,96)";
+        colorHigh = "rgb(210,105,30)";
+        colorHighest = "rgb(237,0,0)";
+    }
+    dLowest.color = colorLowest;
+    dLow.color = colorLow;
+    dModerate.color = colorModerate;
+    dHigh.color = colorHigh;
+    dHighest.color = colorHighest;
 
     var queryVal;
     for (var rowIndex = 0; rowIndex < rows.length; rowIndex++) {
@@ -1657,13 +1703,13 @@ const parseQueryDataMapScalar = function (rows, d, dPurple, dBlue, dBlack, dOran
     var filteredValues = d.queryVal.filter(x => x);
     filteredValues = filteredValues.sort(function (a, b) {
         return Number(a) - Number(b);
-    })
+    });
     highLimit = filteredValues[(Math.floor(filteredValues.length * .98))];
     lowLimit = filteredValues[(Math.floor(filteredValues.length * .02))];
 
+    const maxValue = Math.abs(highLimit) > Math.abs(lowLimit) ? Math.abs(highLimit) : Math.abs(lowLimit);
     if (statistic === "Bias (Model - Obs)") {
         // bias colorscale needs to be symmetrical around 0
-        const maxValue = Math.abs(highLimit) > Math.abs(lowLimit) ? Math.abs(highLimit) : Math.abs(lowLimit);
         highLimit = maxValue;
         lowLimit = -1 * maxValue;
     }
@@ -1694,49 +1740,54 @@ const parseQueryDataMapScalar = function (rows, d, dPurple, dBlue, dBlack, dOran
         }
         // sort the data by the color it will appear on the map
         if (queryVal <= lowLimit + (highLimit - lowLimit) * .2) {
-            d.color[didx] = "rgb(0,0,255)";
-            dPurple.siteName.push(d.siteName[didx]);
-            dPurple.queryVal.push(queryVal);
-            dPurple.text.push(textMarker);
-            dPurple.lat.push(d.lat[didx]);
-            dPurple.lon.push(d.lon[didx]);
+            d.color[didx] = colorLowest;
+            dLowest.siteName.push(d.siteName[didx]);
+            dLowest.queryVal.push(queryVal);
+            dLowest.text.push(textMarker);
+            dLowest.lat.push(d.lat[didx]);
+            dLowest.lon.push(d.lon[didx]);
         } else if (queryVal <= lowLimit + (highLimit - lowLimit) * .4) {
-            d.color[didx] = "rgb(0,125,255)";
-            dBlue.siteName.push(d.siteName[didx]);
-            dBlue.queryVal.push(queryVal);
-            dBlue.text.push(textMarker);
-            dBlue.lat.push(d.lat[didx]);
-            dBlue.lon.push(d.lon[didx]);
+            d.color[didx] = colorLow;
+            dLow.siteName.push(d.siteName[didx]);
+            dLow.queryVal.push(queryVal);
+            dLow.text.push(textMarker);
+            dLow.lat.push(d.lat[didx]);
+            dLow.lon.push(d.lon[didx]);
         } else if (queryVal <= lowLimit + (highLimit - lowLimit) * .6) {
-            d.color[didx] = "rgb(125,125,125)";
-            dBlack.siteName.push(d.siteName[didx]);
-            dBlack.queryVal.push(queryVal);
-            dBlack.text.push(textMarker);
-            dBlack.lat.push(d.lat[didx]);
-            dBlack.lon.push(d.lon[didx]);
+            d.color[didx] = colorModerate;
+            dModerate.siteName.push(d.siteName[didx]);
+            dModerate.queryVal.push(queryVal);
+            dModerate.text.push(textMarker);
+            dModerate.lat.push(d.lat[didx]);
+            dModerate.lon.push(d.lon[didx]);
         } else if (queryVal <= lowLimit + (highLimit - lowLimit) * .8) {
-            d.color[didx] = "rgb(255,125,0)";
-            dOrange.siteName.push(d.siteName[didx]);
-            dOrange.queryVal.push(queryVal);
-            dOrange.text.push(textMarker);
-            dOrange.lat.push(d.lat[didx]);
-            dOrange.lon.push(d.lon[didx]);
+            d.color[didx] = colorHigh;
+            dHigh.siteName.push(d.siteName[didx]);
+            dHigh.queryVal.push(queryVal);
+            dHigh.text.push(textMarker);
+            dHigh.lat.push(d.lat[didx]);
+            dHigh.lon.push(d.lon[didx]);
         } else {
-            d.color[didx] = "rgb(255,0,0)";
-            dRed.siteName.push(d.siteName[didx]);
-            dRed.queryVal.push(queryVal);
-            dRed.text.push(textMarker);
-            dRed.lat.push(d.lat[didx]);
-            dRed.lon.push(d.lon[didx]);
+            d.color[didx] = colorHighest;
+            dHighest.siteName.push(d.siteName[didx]);
+            dHighest.queryVal.push(queryVal);
+            dHighest.text.push(textMarker);
+            dHighest.lat.push(d.lat[didx]);
+            dHighest.lon.push(d.lon[didx]);
         }
     }// end of loop row
     return {
         d: d,
-        dPurple: dPurple,
-        dBlue: dBlue,
-        dOrange: dOrange,
-        dRed: dRed,
-        dBlack: dBlack
+        dLowest: dLowest,
+        dLow: dLow,
+        dModerate: dModerate,
+        dHigh: dHigh,
+        dHighest: dHighest,
+        valueLimits: {
+            maxValue: maxValue,
+            highLimit: highLimit,
+            lowLimit: lowLimit
+        }
     };
 };
 
@@ -1979,7 +2030,12 @@ const parseQueryDataMapCTC = function (rows, d, dPurple, dPurpleBlue, dBlue, dBl
         dYellow: dYellow,
         dOrange: dOrange,
         dOrangeRed: dOrangeRed,
-        dRed: dRed
+        dRed: dRed,
+        valueLimits: {
+            maxValue: highLimit,
+            highLimit: highLimit,
+            lowLimit: lowLimit
+        }
     };
 };
 

@@ -440,11 +440,11 @@ const generateBarChartCurveOptions = function (curve, curveIndex, axisMap, dataB
     return curveOptions;
 };
 
-const generateMapCurveOptions = function (curve, dataSeries, appParams, orderOfMagnitude) {
+const generateMapCurveOptions = function (curve, dataSeries, appParams, maxValue) {
 
     const markerSizes = dataSeries.queryVal.map(function (val) {
-        var size = Math.ceil(Math.abs(val * 4 / Math.pow(2, orderOfMagnitude))) + 2;
-        size = size > 30 ? 30 : size; // prevent really massive bad data from obscuring map
+        var size = 2 + Math.ceil(Math.abs(val * 18/maxValue));
+        size = size > 20 ? 20 : size; // prevent really massive bad data from obscuring map
         if (curve["statistic"] === "N" || curve["statistic"].includes("average")) size = 10;
         return size;
     });
@@ -505,13 +505,14 @@ const generateCTCMapCurveOptions = function (curve, dataSeries, appParams) {
     return curveOptions;
 };
 
-const generateMapColorTextOptions = function (label, dataSeries) {
+const generateMapColorTextOptions = function (label, legendText, dataSeries) {
 
     const curveOptions = {
         ...{
-            label: label,
+            label: legendText,
             curveId: label,
-            name: label,
+            name: legendText,
+            reserved: label,
             type: 'scattermapbox',
             mode: 'markers+text',
             marker: {
