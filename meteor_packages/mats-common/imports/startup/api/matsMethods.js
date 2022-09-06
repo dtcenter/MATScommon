@@ -110,6 +110,18 @@ if (Meteor.isServer) {
         Picker.middleware(_clearCache(params, req, res, next));
     });
 
+    Picker.route('/getApps', function (params, req, res, next) {
+        Picker.middleware(_getApps(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/getApps', function (params, req, res, next) {
+        Picker.middleware(_getApps(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getApps', function (params, req, res, next) {
+        Picker.middleware(_getApps(params, req, res, next));
+    });
+
     Picker.route('/getStats', function (params, req, res, next) {
         Picker.middleware(_getStats(params, req, res, next));
     });
@@ -245,6 +257,36 @@ const _clearCache = function (params, req, res, next) {
     if (Meteor.isServer) {
         matsCache.clear();
         res.end("<body><h1>clearCache Done!</h1></body>");
+    }
+};
+
+// private middleware for _getApps route
+const _getApps = function (params, req, res, next) {
+    // this function returns an ARRAY of apps. It may have some overlap with _getVariables
+    if (Meteor.isServer) {
+        let flatJSON = "";
+        try {
+            let result;
+            if (matsCollections['database'] !== undefined && matsCollections['database'].findOne({name: 'database'}) !== undefined) {
+                // get list of databases (one per app)
+                result = matsCollections['database'].findOne({name: 'database'}).options;
+                if (!Array.isArray(result)) result = Object.keys(result);
+            } else if ((matsCollections['variable'] !== undefined && matsCollections['variable'].findOne({name: 'variable'}) !== undefined) &&
+                (matsCollections['threshold'] !== undefined && matsCollections['threshold'].findOne({name: 'threshold'}) !== undefined)) {
+                // get list of apps (variables in apps that also have thresholds)
+                result = matsCollections['variable'].findOne({name: 'variable'}).options;
+                if (!Array.isArray(result)) result = Object.keys(result);
+            } else {
+                result = [matsCollections.Settings.findOne().Title];
+            }
+            flatJSON = JSON.stringify(result);
+        } catch (e) {
+            console.log('error retrieving statistic: ', e);
+            flatJSON = JSON.stringify({error: e});
+        }
+        res.setHeader('Content-Type', 'application/json');
+        res.write(flatJSON);
+        res.end();
     }
 };
 
