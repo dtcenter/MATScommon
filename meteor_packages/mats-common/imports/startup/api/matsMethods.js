@@ -182,6 +182,18 @@ if (Meteor.isServer) {
         Picker.middleware(_getThresholds(params, req, res, next));
     });
 
+    Picker.route('/getFcstLengths', function (params, req, res, next) {
+        Picker.middleware(_getFcstLengths(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/getFcstLengths', function (params, req, res, next) {
+        Picker.middleware(_getFcstLengths(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getFcstLengths', function (params, req, res, next) {
+        Picker.middleware(_getFcstLengths(params, req, res, next));
+    });
+
 // create picker routes for refreshMetaData
     Picker.route('/refreshMetadata', function (params, req, res, next) {
         Picker.middleware(_refreshMetadataMWltData(params, req, res, next));
@@ -464,6 +476,38 @@ const _getThresholds = function (params, req, res, next) {
             flatJSON = JSON.stringify(result);
         } catch (e) {
             console.log('error retrieving thresholds: ', e);
+            flatJSON = JSON.stringify({error: e});
+        }
+        res.setHeader('Content-Type', 'application/json');
+        res.write(flatJSON);
+        res.end();
+    }
+};
+
+// private middleware for _getFcstLengths route
+const _getFcstLengths = function (params, req, res, next) {
+    // this function returns a MAP of forecast lengths keyed by APP and MODEL
+    if (Meteor.isServer) {
+        let flatJSON = "";
+        try {
+            let result;
+            if (matsCollections['forecast-length'] !== undefined && matsCollections['forecast-length'].findOne({name: 'forecast-length'}) !== undefined) {
+                // get map of regions
+                result = matsCollections['forecast-length'].findOne({name: 'forecast-length'}).optionsMap;
+                if ((matsCollections['database'] === undefined) &&
+                    !(matsCollections['variable'] !== undefined && matsCollections['threshold'] !== undefined)) {
+                    // key by app title if we're not already
+                    const appTitle = matsCollections.Settings.findOne().Title;
+                    let newResult = {};
+                    newResult[appTitle] = result;
+                    result = newResult;
+                }
+            } else {
+                result = {};
+            }
+            flatJSON = JSON.stringify(result);
+        } catch (e) {
+            console.log('error retrieving forecast lengths: ', e);
             flatJSON = JSON.stringify({error: e});
         }
         res.setHeader('Content-Type', 'application/json');
