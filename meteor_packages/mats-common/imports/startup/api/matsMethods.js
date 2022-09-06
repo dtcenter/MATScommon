@@ -182,6 +182,18 @@ if (Meteor.isServer) {
         Picker.middleware(_getThresholds(params, req, res, next));
     });
 
+    Picker.route('/getScales', function (params, req, res, next) {
+        Picker.middleware(_getScales(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/getScales', function (params, req, res, next) {
+        Picker.middleware(_getScales(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getScales', function (params, req, res, next) {
+        Picker.middleware(_getScales(params, req, res, next));
+    });
+
     Picker.route('/getTruths', function (params, req, res, next) {
         Picker.middleware(_getTruths(params, req, res, next));
     });
@@ -204,6 +216,18 @@ if (Meteor.isServer) {
 
     Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getFcstLengths', function (params, req, res, next) {
         Picker.middleware(_getFcstLengths(params, req, res, next));
+    });
+
+    Picker.route('/getFcstTypes', function (params, req, res, next) {
+        Picker.middleware(_getFcstTypes(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/getFcstTypes', function (params, req, res, next) {
+        Picker.middleware(_getFcstTypes(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getFcstTypes', function (params, req, res, next) {
+        Picker.middleware(_getFcstTypes(params, req, res, next));
     });
 
     Picker.route('/getValidTimes', function (params, req, res, next) {
@@ -570,6 +594,17 @@ const _getThresholds = function (params, req, res, next) {
     }
 };
 
+// private middleware for _getScales route
+const _getScales = function (params, req, res, next) {
+    // this function returns a map of scales keyed by app title and model display text
+    if (Meteor.isServer) {
+        let flatJSON = _getMapByAppAndModel('scale');
+        res.setHeader('Content-Type', 'application/json');
+        res.write(flatJSON);
+        res.end();
+    }
+};
+
 // private middleware for _getTruth route
 const _getTruths = function (params, req, res, next) {
     // this function returns a map of truths keyed by app title and model display text
@@ -586,6 +621,17 @@ const _getFcstLengths = function (params, req, res, next) {
     // this function returns a map of forecast lengths keyed by app title and model display text
     if (Meteor.isServer) {
         let flatJSON = _getMapByAppAndModel('forecast-length');
+        res.setHeader('Content-Type', 'application/json');
+        res.write(flatJSON);
+        res.end();
+    }
+};
+
+// private middleware for _getFcstTypes route
+const _getFcstTypes = function (params, req, res, next) {
+    // this function returns a map of forecast types keyed by app title and model display text
+    if (Meteor.isServer) {
+        let flatJSON = _getMapByAppAndModel('forecast-type');
         res.setHeader('Content-Type', 'application/json');
         res.write(flatJSON);
         res.end();
