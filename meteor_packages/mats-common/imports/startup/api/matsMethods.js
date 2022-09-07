@@ -182,6 +182,18 @@ if (Meteor.isServer) {
         Picker.middleware(_getVariables(params, req, res, next));
     });
 
+    Picker.route('/getVariablesValuesMap', function (params, req, res, next) {
+        Picker.middleware(_getVariablesValuesMap(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/getVariablesValuesMap', function (params, req, res, next) {
+        Picker.middleware(_getVariablesValuesMap(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getVariablesValuesMap', function (params, req, res, next) {
+        Picker.middleware(_getVariablesValuesMap(params, req, res, next));
+    });
+
     Picker.route('/getThresholds', function (params, req, res, next) {
         Picker.middleware(_getThresholds(params, req, res, next));
     });
@@ -648,6 +660,17 @@ const _getVariables = function (params, req, res, next) {
     // this function returns an map of variables keyed by app title
     if (Meteor.isServer) {
         let flatJSON = _getMapByApp('variable');
+        res.setHeader('Content-Type', 'application/json');
+        res.write(flatJSON);
+        res.end();
+    }
+};
+
+// private middleware for _getVariablesValuesMap route
+const _getVariablesValuesMap = function (params, req, res, next) {
+    // this function returns a map of regions keyed by app title and model display text
+    if (Meteor.isServer) {
+        let flatJSON = _getMapByAppAndModel('variable', 'valuesMap');
         res.setHeader('Content-Type', 'application/json');
         res.write(flatJSON);
         res.end();
