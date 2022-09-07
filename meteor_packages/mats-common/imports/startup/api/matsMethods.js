@@ -146,6 +146,18 @@ if (Meteor.isServer) {
         Picker.middleware(_getRegions(params, req, res, next));
     });
 
+    Picker.route('/getRegionsValuesMap', function (params, req, res, next) {
+        Picker.middleware(_getRegionsValuesMap(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/getRegionsValuesMap', function (params, req, res, next) {
+        Picker.middleware(_getRegionsValuesMap(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getRegionsValuesMap', function (params, req, res, next) {
+        Picker.middleware(_getRegionsValuesMap(params, req, res, next));
+    });
+
     Picker.route('/getStatistics', function (params, req, res, next) {
         Picker.middleware(_getStatistics(params, req, res, next));
     });
@@ -414,13 +426,13 @@ function _getListOfApps() {
 }
 
 // helper function for getting a metadata map from a MATS selector, keyed by app title and model display text
-function _getMapByAppAndModel(selector) {
+function _getMapByAppAndModel(selector, mapType) {
     let flatJSON = "";
     try {
         let result;
         if (matsCollections[selector] !== undefined && matsCollections[selector].findOne({name: selector}) !== undefined) {
             // get map of requested selector's metadata
-            result = matsCollections[selector].findOne({name: selector}).optionsMap;
+            result = matsCollections[selector].findOne({name: selector})[mapType];
             if ((matsCollections['database'] === undefined) &&
                 !(matsCollections['variable'] !== undefined && matsCollections['threshold'] !== undefined)) {
                 // key by app title if we're not already
@@ -543,7 +555,7 @@ const _getApps = function (params, req, res, next) {
 const _getModels = function (params, req, res, next) {
     // this function returns a map of models keyed by app title and model display text
     if (Meteor.isServer) {
-        let flatJSON = _getMapByAppAndModel('data-source');
+        let flatJSON = _getMapByAppAndModel('data-source', 'optionsMap');
         res.setHeader('Content-Type', 'application/json');
         res.write(flatJSON);
         res.end();
@@ -554,7 +566,18 @@ const _getModels = function (params, req, res, next) {
 const _getRegions = function (params, req, res, next) {
     // this function returns a map of regions keyed by app title and model display text
     if (Meteor.isServer) {
-        let flatJSON = _getMapByAppAndModel('region');
+        let flatJSON = _getMapByAppAndModel('region', 'optionsMap');
+        res.setHeader('Content-Type', 'application/json');
+        res.write(flatJSON);
+        res.end();
+    }
+};
+
+// private middleware for _getRegionsValuesMap route
+const _getRegionsValuesMap = function (params, req, res, next) {
+    // this function returns a map of regions keyed by app title and model display text
+    if (Meteor.isServer) {
+        let flatJSON = _getMapByAppAndModel('region', 'valuesMap');
         res.setHeader('Content-Type', 'application/json');
         res.write(flatJSON);
         res.end();
@@ -587,7 +610,7 @@ const _getVariables = function (params, req, res, next) {
 const _getThresholds = function (params, req, res, next) {
     // this function returns a map of thresholds keyed by app title and model display text
     if (Meteor.isServer) {
-        let flatJSON = _getMapByAppAndModel('threshold');
+        let flatJSON = _getMapByAppAndModel('threshold', 'optionsMap');
         res.setHeader('Content-Type', 'application/json');
         res.write(flatJSON);
         res.end();
@@ -598,7 +621,7 @@ const _getThresholds = function (params, req, res, next) {
 const _getScales = function (params, req, res, next) {
     // this function returns a map of scales keyed by app title and model display text
     if (Meteor.isServer) {
-        let flatJSON = _getMapByAppAndModel('scale');
+        let flatJSON = _getMapByAppAndModel('scale', 'optionsMap');
         res.setHeader('Content-Type', 'application/json');
         res.write(flatJSON);
         res.end();
@@ -609,7 +632,7 @@ const _getScales = function (params, req, res, next) {
 const _getTruths = function (params, req, res, next) {
     // this function returns a map of truths keyed by app title and model display text
     if (Meteor.isServer) {
-        let flatJSON = _getMapByAppAndModel('truth');
+        let flatJSON = _getMapByAppAndModel('truth', 'optionsMap');
         res.setHeader('Content-Type', 'application/json');
         res.write(flatJSON);
         res.end();
@@ -620,7 +643,7 @@ const _getTruths = function (params, req, res, next) {
 const _getFcstLengths = function (params, req, res, next) {
     // this function returns a map of forecast lengths keyed by app title and model display text
     if (Meteor.isServer) {
-        let flatJSON = _getMapByAppAndModel('forecast-length');
+        let flatJSON = _getMapByAppAndModel('forecast-length', 'optionsMap');
         res.setHeader('Content-Type', 'application/json');
         res.write(flatJSON);
         res.end();
@@ -631,7 +654,7 @@ const _getFcstLengths = function (params, req, res, next) {
 const _getFcstTypes = function (params, req, res, next) {
     // this function returns a map of forecast types keyed by app title and model display text
     if (Meteor.isServer) {
-        let flatJSON = _getMapByAppAndModel('forecast-type');
+        let flatJSON = _getMapByAppAndModel('forecast-type', 'optionsMap');
         res.setHeader('Content-Type', 'application/json');
         res.write(flatJSON);
         res.end();
