@@ -635,7 +635,7 @@ const _getRegions = function (params, req, res, next) {
 
 // private middleware for _getRegionsValuesMap route
 const _getRegionsValuesMap = function (params, req, res, next) {
-    // this function returns a map of regions keyed by app title and model display text
+    // this function returns a map of regions values keyed by app title and model display text
     if (Meteor.isServer) {
         let flatJSON = _getMapByAppAndModel('region', 'valuesMap');
         res.setHeader('Content-Type', 'application/json');
@@ -668,7 +668,7 @@ const _getVariables = function (params, req, res, next) {
 
 // private middleware for _getVariablesValuesMap route
 const _getVariablesValuesMap = function (params, req, res, next) {
-    // this function returns a map of regions keyed by app title and model display text
+    // this function returns a map of variable values keyed by app title and model display text
     if (Meteor.isServer) {
         let flatJSON = _getMapByAppAndModel('variable', 'valuesMap');
         res.setHeader('Content-Type', 'application/json');
@@ -690,7 +690,7 @@ const _getThresholds = function (params, req, res, next) {
 
 // private middleware for _getThresholdsValuesMap route
 const _getThresholdsValuesMap = function (params, req, res, next) {
-    // this function returns a map of thresholds keyed by app title and model display text
+    // this function returns a map of threshold values keyed by app title and model display text
     if (Meteor.isServer) {
         let flatJSON = _getMapByAppAndModel('threshold', 'valuesMap');
         res.setHeader('Content-Type', 'application/json');
@@ -712,7 +712,7 @@ const _getScales = function (params, req, res, next) {
 
 // private middleware for _getScalesValuesMap route
 const _getScalesValuesMap = function (params, req, res, next) {
-    // this function returns a map of scales keyed by app title and model display text
+    // this function returns a map of scale values keyed by app title and model display text
     if (Meteor.isServer) {
         let flatJSON = _getMapByAppAndModel('scale', 'valuesMap');
         res.setHeader('Content-Type', 'application/json');
@@ -734,7 +734,7 @@ const _getTruths = function (params, req, res, next) {
 
 // private middleware for _getTruthValuesMap route
 const _getTruthsValuesMap = function (params, req, res, next) {
-    // this function returns a map of truths keyed by app title and model display text
+    // this function returns a map of truth values keyed by app title and model display text
     if (Meteor.isServer) {
         let flatJSON = _getMapByAppAndModel('truth', 'valuesMap');
         res.setHeader('Content-Type', 'application/json');
@@ -767,7 +767,7 @@ const _getFcstTypes = function (params, req, res, next) {
 
 // private middleware for _getFcstTypesValuesMap route
 const _getFcstTypesValuesMap = function (params, req, res, next) {
-    // this function returns a map of forecast types keyed by app title and model display text
+    // this function returns a map of forecast type values keyed by app title and model display text
     if (Meteor.isServer) {
         let flatJSON = _getMapByAppAndModel('forecast-type', 'valuesMap');
         res.setHeader('Content-Type', 'application/json');
