@@ -1617,6 +1617,10 @@ const resetApp = async function (appRef) {
         const appTimeOut = Meteor.settings.public.mysql_wait_timeout ? Meteor.settings.public.mysql_wait_timeout : 300;
         var dep_env = process.env.NODE_ENV;
         var curve_params = Meteor.settings.public.curve_params ? Meteor.settings.public.curve_params : [];
+        var apps_to_score;
+        if (Meteor.settings.public.scorecard) {
+            apps_to_score = Meteor.settings.public.apps_to_score ? Meteor.settings.public.apps_to_score : [];
+        }
         var mapboxKey = "undefined";
 
         // see if there's any messages to display to the users
@@ -1647,6 +1651,7 @@ const resetApp = async function (appRef) {
                 "public": {
                     "run_environment": dep_env,
                     "curve_params": curve_params,
+                    "apps_to_score": apps_to_score,
                     "default_group": appDefaultGroup,
                     "default_db": appDefaultDB,
                     "default_model": appDefaultModel,
@@ -1796,6 +1801,16 @@ const resetApp = async function (appRef) {
             }
         } else {
             throw new Meteor.Error("curve_params are not initialized in app settings--cannot build selectors");
+        }
+        // if this is a scorecard also get the apps to score out of the settings file
+        if (Meteor.settings.public && Meteor.settings.public.scorecard) {
+            if (Meteor.settings.public.apps_to_score) {
+                apps_to_score = Meteor.settings.public.apps_to_score;
+                matsCollections.AppsToScore.remove({});
+                matsCollections.AppsToScore.insert({"apps_to_score": apps_to_score});
+            } else {
+                throw new Meteor.Error("apps_to_score are not initialized in app settings--cannot build selectors");
+            }
         }
         // invoke the app specific routines
         //const asrKeys = Object.keys(appSpecificResetRoutines);

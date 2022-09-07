@@ -33,6 +33,13 @@ if (Meteor.isServer) {
         }
         return this.ready();
     });
+    Meteor.publish("AppsToScore", function () {
+        var data = matsCollections.AppsToScore.find({});
+        if (data) {
+            return data;
+        }
+        return this.ready();
+    });
     Meteor.publish("CurveTextPatterns", function () {
         var data = matsCollections.CurveTextPatterns.find({});
         if (data) {

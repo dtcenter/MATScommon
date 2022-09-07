@@ -11,6 +11,7 @@ if (Meteor.isClient) {
     }
     Meteor.subscribe("Scatter2dParams");
     Meteor.subscribe("CurveParamsInfo");
+    Meteor.subscribe("AppsToScore");
     Meteor.subscribe("SavedCurveParams");
     Meteor.subscribe("PlotParams");
     Meteor.subscribe("PlotGraphFunctions");

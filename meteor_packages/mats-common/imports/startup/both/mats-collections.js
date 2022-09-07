@@ -17,6 +17,7 @@ for (var i = 0; i < params.length; i++) {
 }
 
 var CurveParamsInfo = new Mongo.Collection("CurveParamsInfo");
+var AppsToScore = new Mongo.Collection("AppsToScore");
 var Scatter2dParams = new Mongo.Collection("Scatter2dParams");
 var CurveTextPatterns = new Mongo.Collection("CurveTextPatterns");
 var ScatterAxisTextPattern = new Mongo.Collection("ScatterAxisTextPattern");
@@ -42,6 +43,7 @@ var appName = new Mongo.Collection("appName");
 
 const explicitCollections = {
     CurveParamsInfo:CurveParamsInfo,
+    AppsToScore: AppsToScore,
     Scatter2dParams:Scatter2dParams,
     CurveTextPatterns:CurveTextPatterns,
     ScatterAxisTextPattern:ScatterAxisTextPattern,
