@@ -110,16 +110,64 @@ if (Meteor.isServer) {
         Picker.middleware(_clearCache(params, req, res, next));
     });
 
-    Picker.route('/getStats', function (params, req, res, next) {
-        Picker.middleware(_getStats(params, req, res, next));
+    Picker.route('/getApps', function (params, req, res, next) {
+        Picker.middleware(_getApps(params, req, res, next));
     });
 
-    Picker.route(Meteor.settings.public.proxy_prefix_path + '/getStats', function (params, req, res, next) {
-        Picker.middleware(_getStats(params, req, res, next));
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/getApps', function (params, req, res, next) {
+        Picker.middleware(_getApps(params, req, res, next));
     });
 
-    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getStats', function (params, req, res, next) {
-        Picker.middleware(_getStats(params, req, res, next));
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getApps', function (params, req, res, next) {
+        Picker.middleware(_getApps(params, req, res, next));
+    });
+
+    Picker.route('/getModels', function (params, req, res, next) {
+        Picker.middleware(_getModels(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/getModels', function (params, req, res, next) {
+        Picker.middleware(_getModels(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getModels', function (params, req, res, next) {
+        Picker.middleware(_getModels(params, req, res, next));
+    });
+
+    Picker.route('/getRegions', function (params, req, res, next) {
+        Picker.middleware(_getRegions(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/getRegions', function (params, req, res, next) {
+        Picker.middleware(_getRegions(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getRegions', function (params, req, res, next) {
+        Picker.middleware(_getRegions(params, req, res, next));
+    });
+
+    Picker.route('/getRegionsValuesMap', function (params, req, res, next) {
+        Picker.middleware(_getRegionsValuesMap(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/getRegionsValuesMap', function (params, req, res, next) {
+        Picker.middleware(_getRegionsValuesMap(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getRegionsValuesMap', function (params, req, res, next) {
+        Picker.middleware(_getRegionsValuesMap(params, req, res, next));
+    });
+
+    Picker.route('/getStatistics', function (params, req, res, next) {
+        Picker.middleware(_getStatistics(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/getStatistics', function (params, req, res, next) {
+        Picker.middleware(_getStatistics(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getStatistics', function (params, req, res, next) {
+        Picker.middleware(_getStatistics(params, req, res, next));
     });
 
     Picker.route('/getVariables', function (params, req, res, next) {
@@ -132,6 +180,162 @@ if (Meteor.isServer) {
 
     Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getVariables', function (params, req, res, next) {
         Picker.middleware(_getVariables(params, req, res, next));
+    });
+
+    Picker.route('/getVariablesValuesMap', function (params, req, res, next) {
+        Picker.middleware(_getVariablesValuesMap(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/getVariablesValuesMap', function (params, req, res, next) {
+        Picker.middleware(_getVariablesValuesMap(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getVariablesValuesMap', function (params, req, res, next) {
+        Picker.middleware(_getVariablesValuesMap(params, req, res, next));
+    });
+
+    Picker.route('/getThresholds', function (params, req, res, next) {
+        Picker.middleware(_getThresholds(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/getThresholds', function (params, req, res, next) {
+        Picker.middleware(_getThresholds(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getThresholds', function (params, req, res, next) {
+        Picker.middleware(_getThresholds(params, req, res, next));
+    });
+
+    Picker.route('/getThresholdsValuesMap', function (params, req, res, next) {
+        Picker.middleware(_getThresholdsValuesMap(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/getThresholdsValuesMap', function (params, req, res, next) {
+        Picker.middleware(_getThresholdsValuesMap(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getThresholdsValuesMap', function (params, req, res, next) {
+        Picker.middleware(_getThresholdsValuesMap(params, req, res, next));
+    });
+
+    Picker.route('/getScales', function (params, req, res, next) {
+        Picker.middleware(_getScales(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/getScales', function (params, req, res, next) {
+        Picker.middleware(_getScales(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getScales', function (params, req, res, next) {
+        Picker.middleware(_getScales(params, req, res, next));
+    });
+
+    Picker.route('/getScalesValuesMap', function (params, req, res, next) {
+        Picker.middleware(_getScalesValuesMap(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/getScalesValuesMap', function (params, req, res, next) {
+        Picker.middleware(_getScalesValuesMap(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getScalesValuesMap', function (params, req, res, next) {
+        Picker.middleware(_getScalesValuesMap(params, req, res, next));
+    });
+
+    Picker.route('/getTruths', function (params, req, res, next) {
+        Picker.middleware(_getTruths(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/getTruths', function (params, req, res, next) {
+        Picker.middleware(_getTruths(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getTruths', function (params, req, res, next) {
+        Picker.middleware(_getTruths(params, req, res, next));
+    });
+
+    Picker.route('/getTruthsValuesMap', function (params, req, res, next) {
+        Picker.middleware(_getTruthsValuesMap(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/getTruthsValuesMap', function (params, req, res, next) {
+        Picker.middleware(_getTruthsValuesMap(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getTruthsValuesMap', function (params, req, res, next) {
+        Picker.middleware(_getTruthsValuesMap(params, req, res, next));
+    });
+
+    Picker.route('/getFcstLengths', function (params, req, res, next) {
+        Picker.middleware(_getFcstLengths(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/getFcstLengths', function (params, req, res, next) {
+        Picker.middleware(_getFcstLengths(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getFcstLengths', function (params, req, res, next) {
+        Picker.middleware(_getFcstLengths(params, req, res, next));
+    });
+
+    Picker.route('/getFcstTypes', function (params, req, res, next) {
+        Picker.middleware(_getFcstTypes(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/getFcstTypes', function (params, req, res, next) {
+        Picker.middleware(_getFcstTypes(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getFcstTypes', function (params, req, res, next) {
+        Picker.middleware(_getFcstTypes(params, req, res, next));
+    });
+
+    Picker.route('/getFcstTypesValuesMap', function (params, req, res, next) {
+        Picker.middleware(_getFcstTypesValuesMap(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/getFcstTypesValuesMap', function (params, req, res, next) {
+        Picker.middleware(_getFcstTypesValuesMap(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getFcstTypesValuesMap', function (params, req, res, next) {
+        Picker.middleware(_getFcstTypesValuesMap(params, req, res, next));
+    });
+
+    Picker.route('/getValidTimes', function (params, req, res, next) {
+        Picker.middleware(_getValidTimes(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/getValidTimes', function (params, req, res, next) {
+        Picker.middleware(_getValidTimes(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getValidTimes', function (params, req, res, next) {
+        Picker.middleware(_getValidTimes(params, req, res, next));
+    });
+
+    Picker.route('/getLevels', function (params, req, res, next) {
+        Picker.middleware(_getLevels(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/getLevels', function (params, req, res, next) {
+        Picker.middleware(_getLevels(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getLevels', function (params, req, res, next) {
+        Picker.middleware(_getLevels(params, req, res, next));
+    });
+
+    Picker.route('/getDates', function (params, req, res, next) {
+        Picker.middleware(_getDates(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/getDates', function (params, req, res, next) {
+        Picker.middleware(_getDates(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getDates', function (params, req, res, next) {
+        Picker.middleware(_getDates(params, req, res, next));
     });
 
 // create picker routes for refreshMetaData
@@ -248,22 +452,157 @@ const _clearCache = function (params, req, res, next) {
     }
 };
 
-// private middleware for _getStats route
-const _getStats = function (params, req, res, next) {
+// helper function to map a results array to specific apps
+function _mapArrayToApps(result) {
+    // put results in a map keyed by app
+    let newResult = {};
+    let apps = _getListOfApps();
+    for (var aidx = 0; aidx < apps.length; aidx++) {
+        if (result[aidx] === apps[aidx]) {
+            newResult[apps[aidx]] = result[aidx];
+        } else {
+            newResult[apps[aidx]] = result;
+        }
+    }
+    return newResult;
+}
+
+// helper function for returning an array of database-distinct apps contained within a larger MATS app
+function _getListOfApps() {
+    let apps;
+    if (matsCollections['database'] !== undefined && matsCollections['database'].findOne({name: 'database'}) !== undefined) {
+        // get list of databases (one per app)
+        apps = matsCollections['database'].findOne({name: 'database'}).options;
+        if (!Array.isArray(apps)) apps = Object.keys(apps);
+    } else if ((matsCollections['variable'] !== undefined && matsCollections['variable'].findOne({name: 'variable'}) !== undefined) &&
+        (matsCollections['threshold'] !== undefined && matsCollections['threshold'].findOne({name: 'threshold'}) !== undefined)) {
+        // get list of apps (variables in apps that also have thresholds)
+        apps = matsCollections['variable'].findOne({name: 'variable'}).options;
+        if (!Array.isArray(apps)) apps = Object.keys(apps);
+    } else {
+        apps = [matsCollections.Settings.findOne().Title];
+    }
+    return apps;
+}
+
+// helper function for getting a metadata map from a MATS selector, keyed by app title and model display text
+function _getMapByAppAndModel(selector, mapType) {
+    let flatJSON = "";
+    try {
+        let result;
+        if (matsCollections[selector] !== undefined && matsCollections[selector].findOne({name: selector}) !== undefined) {
+            // get map of requested selector's metadata
+            result = matsCollections[selector].findOne({name: selector})[mapType];
+            if ((matsCollections['database'] === undefined) &&
+                !(matsCollections['variable'] !== undefined && matsCollections['threshold'] !== undefined)) {
+                // key by app title if we're not already
+                const appTitle = matsCollections.Settings.findOne().Title;
+                let newResult = {};
+                newResult[appTitle] = result;
+                result = newResult;
+            }
+        } else {
+            result = {};
+        }
+        flatJSON = JSON.stringify(result);
+    } catch (e) {
+        console.log('error retrieving metadata from ' + selector + ': ', e);
+        flatJSON = JSON.stringify({error: e});
+    }
+    return flatJSON;
+}
+
+// helper function for getting a date metadata map from a MATS selector, keyed by app title and model display text
+function _getDateMapByAppAndModel() {
+    let flatJSON = "";
+    try {
+        let result;
+        // the date map can be in a few places. we have to hunt for it.
+        if (matsCollections['database'] !== undefined && matsCollections['database'].findOne({name: 'database'})
+            !== undefined && matsCollections['database'].findOne({name: 'database'}).dates !== undefined) {
+            result = matsCollections['database'].findOne({name: 'database'}).dates;
+        } else if (matsCollections['variable'] !== undefined && matsCollections['variable'].findOne({name: 'variable'})
+            !== undefined && matsCollections['variable'].findOne({name: 'variable'}).dates !== undefined) {
+            result = matsCollections['variable'].findOne({name: 'variable'}).dates;
+        } else if (matsCollections['data-source'] !== undefined && matsCollections['data-source'].findOne({name: 'data-source'})
+            !== undefined && matsCollections['data-source'].findOne({name: 'data-source'}).dates !== undefined) {
+            result = matsCollections['data-source'].findOne({name: 'data-source'}).dates;
+        } else {
+            result = {};
+        }
+        if ((matsCollections['database'] === undefined) &&
+            !(matsCollections['variable'] !== undefined && matsCollections['threshold'] !== undefined)) {
+            // key by app title if we're not already
+            const appTitle = matsCollections.Settings.findOne().Title;
+            let newResult = {};
+            newResult[appTitle] = result;
+            result = newResult;
+        }
+        flatJSON = JSON.stringify(result);
+    } catch (e) {
+        console.log('error retrieving datemap', e);
+        flatJSON = JSON.stringify({error: e});
+    }
+    return flatJSON;
+}
+
+// helper function for getting a metadata map from a MATS selector, keyed by app title
+function _getMapByApp(selector) {
+    let flatJSON = "";
+    try {
+        let result;
+        if (matsCollections[selector] !== undefined && matsCollections[selector].findOne({name: selector}) !== undefined) {
+            // get array of requested selector's metadata
+            result = matsCollections[selector].findOne({name: selector}).options;
+            if (!Array.isArray(result)) result = Object.keys(result);
+        } else {
+            result = ["ACC"];
+        }
+        // put results in a map keyed by app
+        let newResult = _mapArrayToApps(result);
+        flatJSON = JSON.stringify(newResult);
+    } catch (e) {
+        console.log('error retrieving metadata from ' + selector + ': ', e);
+        flatJSON = JSON.stringify({error: e});
+    }
+    return flatJSON;
+}
+
+// helper function for populating the levels in a MATS selector
+function _getlevelsByApp() {
+    let flatJSON = "";
+    try {
+        let result;
+        if (matsCollections['level'] !== undefined && matsCollections['level'].findOne({name: 'level'}) !== undefined) {
+            // we have levels already defined
+            result = matsCollections['level'].findOne({name: 'level'}).options;
+            if (!Array.isArray(result)) result = Object.keys(result);
+        } else if (matsCollections['top'] !== undefined && matsCollections['top'].findOne({name: 'top'}) !== undefined) {
+            // use the MATS mandatory levels
+            result = _.range(100, 1050, 50);
+            if (!Array.isArray(result)) result = Object.keys(result);
+        } else {
+            result = [];
+        }
+        let newResult = _mapArrayToApps(result);
+        flatJSON = JSON.stringify(newResult);
+    } catch (e) {
+        console.log('error retrieving levels: ', e);
+        flatJSON = JSON.stringify({error: e});
+    }
+    return flatJSON;
+}
+
+// private middleware for _getApps route
+const _getApps = function (params, req, res, next) {
+    // this function returns map of apps and appRefs.
     if (Meteor.isServer) {
         let flatJSON = "";
         try {
-            let result;
-            if (matsCollections['statistic'] !== undefined && matsCollections['statistic'].findOne({name: 'statistic'}) !== undefined) {
-                // get list of variables
-                result = matsCollections['statistic'].findOne({name: 'statistic'}).options;
-                if (!Array.isArray(result)) result = Object.keys(result);
-            } else {
-                result = ["ACC"];
-            }
+            let result = _getListOfApps();
             flatJSON = JSON.stringify(result);
         } catch (e) {
-            console.log('error retrieving statistic: ', e);
+            console.log('error retrieving apps: ', e);
             flatJSON = JSON.stringify({error: e});
         }
         res.setHeader('Content-Type', 'application/json');
@@ -272,24 +611,198 @@ const _getStats = function (params, req, res, next) {
     }
 };
 
+// private middleware for _getModels route
+const _getModels = function (params, req, res, next) {
+    // this function returns a map of models keyed by app title and model display text
+    if (Meteor.isServer) {
+        let flatJSON = _getMapByAppAndModel('data-source', 'optionsMap');
+        res.setHeader('Content-Type', 'application/json');
+        res.write(flatJSON);
+        res.end();
+    }
+};
+
+// private middleware for _getRegions route
+const _getRegions = function (params, req, res, next) {
+    // this function returns a map of regions keyed by app title and model display text
+    if (Meteor.isServer) {
+        let flatJSON = _getMapByAppAndModel('region', 'optionsMap');
+        res.setHeader('Content-Type', 'application/json');
+        res.write(flatJSON);
+        res.end();
+    }
+};
+
+// private middleware for _getRegionsValuesMap route
+const _getRegionsValuesMap = function (params, req, res, next) {
+    // this function returns a map of regions values keyed by app title and model display text
+    if (Meteor.isServer) {
+        let flatJSON = _getMapByAppAndModel('region', 'valuesMap');
+        res.setHeader('Content-Type', 'application/json');
+        res.write(flatJSON);
+        res.end();
+    }
+};
+
+// private middleware for _getStatistics route
+const _getStatistics = function (params, req, res, next) {
+    // this function returns an map of statistics keyed by app title
+    if (Meteor.isServer) {
+        let flatJSON = _getMapByApp('statistic');
+        res.setHeader('Content-Type', 'application/json');
+        res.write(flatJSON);
+        res.end();
+    }
+};
+
 // private middleware for _getVariables route
 const _getVariables = function (params, req, res, next) {
+    // this function returns an map of variables keyed by app title
     if (Meteor.isServer) {
-        let flatJSON = "";
-        try {
-            let result;
-            if (matsCollections['variable'] !== undefined && matsCollections['variable'].findOne({name: 'variable'}) !== undefined) {
-                // get list of variables
-                result = matsCollections['variable'].findOne({name: 'variable'}).options;
-                if (!Array.isArray(result)) result = Object.keys(result);
-            } else {
-                result = "This app does not have a list of variables."
-            }
-            flatJSON = JSON.stringify(result);
-        } catch (e) {
-            console.log('error retrieving variables: ', e);
-            flatJSON = JSON.stringify({error: e});
-        }
+        let flatJSON = _getMapByApp('variable');
+        res.setHeader('Content-Type', 'application/json');
+        res.write(flatJSON);
+        res.end();
+    }
+};
+
+// private middleware for _getVariablesValuesMap route
+const _getVariablesValuesMap = function (params, req, res, next) {
+    // this function returns a map of variable values keyed by app title and model display text
+    if (Meteor.isServer) {
+        let flatJSON = _getMapByAppAndModel('variable', 'valuesMap');
+        res.setHeader('Content-Type', 'application/json');
+        res.write(flatJSON);
+        res.end();
+    }
+};
+
+// private middleware for _getThresholds route
+const _getThresholds = function (params, req, res, next) {
+    // this function returns a map of thresholds keyed by app title and model display text
+    if (Meteor.isServer) {
+        let flatJSON = _getMapByAppAndModel('threshold', 'optionsMap');
+        res.setHeader('Content-Type', 'application/json');
+        res.write(flatJSON);
+        res.end();
+    }
+};
+
+// private middleware for _getThresholdsValuesMap route
+const _getThresholdsValuesMap = function (params, req, res, next) {
+    // this function returns a map of threshold values keyed by app title and model display text
+    if (Meteor.isServer) {
+        let flatJSON = _getMapByAppAndModel('threshold', 'valuesMap');
+        res.setHeader('Content-Type', 'application/json');
+        res.write(flatJSON);
+        res.end();
+    }
+};
+
+// private middleware for _getScales route
+const _getScales = function (params, req, res, next) {
+    // this function returns a map of scales keyed by app title and model display text
+    if (Meteor.isServer) {
+        let flatJSON = _getMapByAppAndModel('scale', 'optionsMap');
+        res.setHeader('Content-Type', 'application/json');
+        res.write(flatJSON);
+        res.end();
+    }
+};
+
+// private middleware for _getScalesValuesMap route
+const _getScalesValuesMap = function (params, req, res, next) {
+    // this function returns a map of scale values keyed by app title and model display text
+    if (Meteor.isServer) {
+        let flatJSON = _getMapByAppAndModel('scale', 'valuesMap');
+        res.setHeader('Content-Type', 'application/json');
+        res.write(flatJSON);
+        res.end();
+    }
+};
+
+// private middleware for _getTruth route
+const _getTruths = function (params, req, res, next) {
+    // this function returns a map of truths keyed by app title and model display text
+    if (Meteor.isServer) {
+        let flatJSON = _getMapByAppAndModel('truth', 'optionsMap');
+        res.setHeader('Content-Type', 'application/json');
+        res.write(flatJSON);
+        res.end();
+    }
+};
+
+// private middleware for _getTruthValuesMap route
+const _getTruthsValuesMap = function (params, req, res, next) {
+    // this function returns a map of truth values keyed by app title and model display text
+    if (Meteor.isServer) {
+        let flatJSON = _getMapByAppAndModel('truth', 'valuesMap');
+        res.setHeader('Content-Type', 'application/json');
+        res.write(flatJSON);
+        res.end();
+    }
+};
+
+// private middleware for _getFcstLengths route
+const _getFcstLengths = function (params, req, res, next) {
+    // this function returns a map of forecast lengths keyed by app title and model display text
+    if (Meteor.isServer) {
+        let flatJSON = _getMapByAppAndModel('forecast-length', 'optionsMap');
+        res.setHeader('Content-Type', 'application/json');
+        res.write(flatJSON);
+        res.end();
+    }
+};
+
+// private middleware for _getFcstTypes route
+const _getFcstTypes = function (params, req, res, next) {
+    // this function returns a map of forecast types keyed by app title and model display text
+    if (Meteor.isServer) {
+        let flatJSON = _getMapByAppAndModel('forecast-type', 'optionsMap');
+        res.setHeader('Content-Type', 'application/json');
+        res.write(flatJSON);
+        res.end();
+    }
+};
+
+// private middleware for _getFcstTypesValuesMap route
+const _getFcstTypesValuesMap = function (params, req, res, next) {
+    // this function returns a map of forecast type values keyed by app title and model display text
+    if (Meteor.isServer) {
+        let flatJSON = _getMapByAppAndModel('forecast-type', 'valuesMap');
+        res.setHeader('Content-Type', 'application/json');
+        res.write(flatJSON);
+        res.end();
+    }
+};
+
+// private middleware for _getValidTimes route
+const _getValidTimes = function (params, req, res, next) {
+    // this function returns an map of valid times keyed by app title
+    if (Meteor.isServer) {
+        let flatJSON = _getMapByApp('valid-time');
+        res.setHeader('Content-Type', 'application/json');
+        res.write(flatJSON);
+        res.end();
+    }
+};
+
+// private middleware for _getValidTimes route
+const _getLevels = function (params, req, res, next) {
+    // this function returns an map of pressure levels keyed by app title
+    if (Meteor.isServer) {
+        let flatJSON = _getlevelsByApp();
+        res.setHeader('Content-Type', 'application/json');
+        res.write(flatJSON);
+        res.end();
+    }
+};
+
+// private middleware for _getDates route
+const _getDates = function (params, req, res, next) {
+    // this function returns a map of dates keyed by app title and model display text
+    if (Meteor.isServer) {
+        let flatJSON = _getDateMapByAppAndModel();
         res.setHeader('Content-Type', 'application/json');
         res.write(flatJSON);
         res.end();
