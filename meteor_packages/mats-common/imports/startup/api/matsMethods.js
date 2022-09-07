@@ -194,6 +194,18 @@ if (Meteor.isServer) {
         Picker.middleware(_getThresholds(params, req, res, next));
     });
 
+    Picker.route('/getThresholdsValuesMap', function (params, req, res, next) {
+        Picker.middleware(_getThresholdsValuesMap(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/getThresholdsValuesMap', function (params, req, res, next) {
+        Picker.middleware(_getThresholdsValuesMap(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getThresholdsValuesMap', function (params, req, res, next) {
+        Picker.middleware(_getThresholdsValuesMap(params, req, res, next));
+    });
+
     Picker.route('/getScales', function (params, req, res, next) {
         Picker.middleware(_getScales(params, req, res, next));
     });
@@ -206,6 +218,18 @@ if (Meteor.isServer) {
         Picker.middleware(_getScales(params, req, res, next));
     });
 
+    Picker.route('/getScalesValuesMap', function (params, req, res, next) {
+        Picker.middleware(_getScalesValuesMap(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/getScalesValuesMap', function (params, req, res, next) {
+        Picker.middleware(_getScalesValuesMap(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getScalesValuesMap', function (params, req, res, next) {
+        Picker.middleware(_getScalesValuesMap(params, req, res, next));
+    });
+
     Picker.route('/getTruths', function (params, req, res, next) {
         Picker.middleware(_getTruths(params, req, res, next));
     });
@@ -216,6 +240,18 @@ if (Meteor.isServer) {
 
     Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getTruths', function (params, req, res, next) {
         Picker.middleware(_getTruths(params, req, res, next));
+    });
+
+    Picker.route('/getTruthsValuesMap', function (params, req, res, next) {
+        Picker.middleware(_getTruthsValuesMap(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/getTruthsValuesMap', function (params, req, res, next) {
+        Picker.middleware(_getTruthsValuesMap(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getTruthsValuesMap', function (params, req, res, next) {
+        Picker.middleware(_getTruthsValuesMap(params, req, res, next));
     });
 
     Picker.route('/getFcstLengths', function (params, req, res, next) {
@@ -240,6 +276,18 @@ if (Meteor.isServer) {
 
     Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getFcstTypes', function (params, req, res, next) {
         Picker.middleware(_getFcstTypes(params, req, res, next));
+    });
+
+    Picker.route('/getFcstTypesValuesMap', function (params, req, res, next) {
+        Picker.middleware(_getFcstTypesValuesMap(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/getFcstTypesValuesMap', function (params, req, res, next) {
+        Picker.middleware(_getFcstTypesValuesMap(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getFcstTypesValuesMap', function (params, req, res, next) {
+        Picker.middleware(_getFcstTypesValuesMap(params, req, res, next));
     });
 
     Picker.route('/getValidTimes', function (params, req, res, next) {
@@ -617,6 +665,17 @@ const _getThresholds = function (params, req, res, next) {
     }
 };
 
+// private middleware for _getThresholdsValuesMap route
+const _getThresholdsValuesMap = function (params, req, res, next) {
+    // this function returns a map of thresholds keyed by app title and model display text
+    if (Meteor.isServer) {
+        let flatJSON = _getMapByAppAndModel('threshold', 'valuesMap');
+        res.setHeader('Content-Type', 'application/json');
+        res.write(flatJSON);
+        res.end();
+    }
+};
+
 // private middleware for _getScales route
 const _getScales = function (params, req, res, next) {
     // this function returns a map of scales keyed by app title and model display text
@@ -628,11 +687,33 @@ const _getScales = function (params, req, res, next) {
     }
 };
 
+// private middleware for _getScalesValuesMap route
+const _getScalesValuesMap = function (params, req, res, next) {
+    // this function returns a map of scales keyed by app title and model display text
+    if (Meteor.isServer) {
+        let flatJSON = _getMapByAppAndModel('scale', 'valuesMap');
+        res.setHeader('Content-Type', 'application/json');
+        res.write(flatJSON);
+        res.end();
+    }
+};
+
 // private middleware for _getTruth route
 const _getTruths = function (params, req, res, next) {
     // this function returns a map of truths keyed by app title and model display text
     if (Meteor.isServer) {
         let flatJSON = _getMapByAppAndModel('truth', 'optionsMap');
+        res.setHeader('Content-Type', 'application/json');
+        res.write(flatJSON);
+        res.end();
+    }
+};
+
+// private middleware for _getTruthValuesMap route
+const _getTruthsValuesMap = function (params, req, res, next) {
+    // this function returns a map of truths keyed by app title and model display text
+    if (Meteor.isServer) {
+        let flatJSON = _getMapByAppAndModel('truth', 'valuesMap');
         res.setHeader('Content-Type', 'application/json');
         res.write(flatJSON);
         res.end();
@@ -655,6 +736,17 @@ const _getFcstTypes = function (params, req, res, next) {
     // this function returns a map of forecast types keyed by app title and model display text
     if (Meteor.isServer) {
         let flatJSON = _getMapByAppAndModel('forecast-type', 'optionsMap');
+        res.setHeader('Content-Type', 'application/json');
+        res.write(flatJSON);
+        res.end();
+    }
+};
+
+// private middleware for _getFcstTypesValuesMap route
+const _getFcstTypesValuesMap = function (params, req, res, next) {
+    // this function returns a map of forecast types keyed by app title and model display text
+    if (Meteor.isServer) {
+        let flatJSON = _getMapByAppAndModel('forecast-type', 'valuesMap');
         res.setHeader('Content-Type', 'application/json');
         res.write(flatJSON);
         res.end();
