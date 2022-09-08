@@ -332,23 +332,38 @@ const doSettings = function (title, dbType, version, buildDate, appType, mapboxK
     matsCollections.Settings.update(settingsId, {$set: settings});
 };
 
-const callMetadataAPI = function (queryURL, destinationStructure) {
+const callMetadataAPI = function (selector, queryURL, destinationStructure, expectedApps, hideOtherFor) {
     const Future = require('fibers/future');
     let pFuture = new Future();
     HTTP.get(queryURL, {}, function (error, response) {
         if (error) {
             console.log(error);
         } else {
+            const metadata = JSON.parse(response.content);
             if (Array.isArray(destinationStructure)) {
-                destinationStructure = [...destinationStructure, ...JSON.parse(response.content)];
+                destinationStructure = [...destinationStructure, ...metadata];
+                expectedApps = metadata;
             } else {
-                destinationStructure = {...destinationStructure, ...JSON.parse(response.content)};
+                if (Object.keys(metadata).length === 0) {
+                    // this metadata type (e.g. 'threshold') is not valid for this app
+                    let dummyMetadata = {};
+                    if (!selector.includes('values')) {
+                        hideOtherFor[selector] = hideOtherFor[selector] === undefined ? [] : hideOtherFor[selector];
+                        for (let eidx = 0; eidx < expectedApps.length; eidx++) {
+                            dummyMetadata[expectedApps[eidx]] = {"NULL": "NULL"};
+                            hideOtherFor[selector].push(expectedApps[eidx]);
+                        }
+                    }
+                    destinationStructure = {...destinationStructure, ...dummyMetadata};
+                } else {
+                    destinationStructure = {...destinationStructure, ...metadata};
+                }
             }
         }
         pFuture['return']();
     });
     pFuture.wait();
-    return destinationStructure;
+    return [destinationStructure, expectedApps, hideOtherFor];
 };
 
 // calculates the statistic for ctc plots
