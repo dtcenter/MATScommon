@@ -332,6 +332,25 @@ const doSettings = function (title, dbType, version, buildDate, appType, mapboxK
     matsCollections.Settings.update(settingsId, {$set: settings});
 };
 
+const callMetadataAPI = function (queryURL, destinationStructure) {
+    const Future = require('fibers/future');
+    let pFuture = new Future();
+    HTTP.get(queryURL, {}, function (error, response) {
+        if (error) {
+            console.log(error);
+        } else {
+            if (Array.isArray(destinationStructure)) {
+                destinationStructure = [...destinationStructure, ...JSON.parse(response.content)];
+            } else {
+                destinationStructure = {...destinationStructure, ...JSON.parse(response.content)};
+            }
+        }
+        pFuture['return']();
+    });
+    pFuture.wait();
+    return destinationStructure;
+};
+
 // calculates the statistic for ctc plots
 const calculateStatCTC = function (hit, fa, miss, cn, n, statistic) {
     if (isNaN(hit) || isNaN(fa) || isNaN(miss) || isNaN(cn)) return null;
@@ -1291,6 +1310,7 @@ export default matsDataUtils = {
     doCredentials: doCredentials,
     doRoles: doRoles,
     doSettings: doSettings,
+    callMetadataAPI: callMetadataAPI,
     calculateStatCTC: calculateStatCTC,
     calculateStatScalar: calculateStatScalar,
     get_err: get_err,
