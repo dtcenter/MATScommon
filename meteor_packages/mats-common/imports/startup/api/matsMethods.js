@@ -467,6 +467,22 @@ function _mapArrayToApps(result) {
     return newResult;
 }
 
+// helper function to map a results map to specific apps
+function _mapMapToApps(result) {
+    // put results in a map keyed by app
+    let newResult = {};
+    let apps = _getListOfApps();
+    let resultKeys = Object.keys(result);
+    if (!matsDataUtils.arraysEqual(apps.sort(), resultKeys.sort())) {
+        for (var aidx = 0; aidx < apps.length; aidx++) {
+            newResult[apps[aidx]] = result;
+        }
+    } else {
+        newResult =  result;
+    }
+    return newResult;
+}
+
 // helper function for returning an array of database-distinct apps contained within a larger MATS app
 function _getListOfApps() {
     let apps;
@@ -490,14 +506,18 @@ function _getMapByAppAndModel(selector, mapType) {
     let flatJSON = "";
     try {
         let result;
-        if (matsCollections[selector] !== undefined && matsCollections[selector].findOne({name: selector}) !== undefined) {
+        if (matsCollections[selector] !== undefined && matsCollections[selector].findOne({name: selector}) !== undefined && matsCollections[selector].findOne({name: selector})[mapType] !== undefined) {
             // get map of requested selector's metadata
             result = matsCollections[selector].findOne({name: selector})[mapType];
-            if ((matsCollections['database'] === undefined) &&
+            let newResult = {};
+            if (mapType === 'valuesMap') {
+                // valueMaps always need to be re-keyed by app
+                newResult = _mapMapToApps(result);
+                result = newResult;
+            } else if ((matsCollections['database'] === undefined) &&
                 !(matsCollections['variable'] !== undefined && matsCollections['threshold'] !== undefined)) {
                 // key by app title if we're not already
                 const appTitle = matsCollections.Settings.findOne().Title;
-                let newResult = {};
                 newResult[appTitle] = result;
                 result = newResult;
             }
