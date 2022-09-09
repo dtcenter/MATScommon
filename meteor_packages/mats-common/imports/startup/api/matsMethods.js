@@ -474,6 +474,7 @@ function _mapMapToApps(result) {
     let apps = _getListOfApps();
     let resultKeys = Object.keys(result);
     if (!matsDataUtils.arraysEqual(apps.sort(), resultKeys.sort())) {
+        if (resultKeys.includes('Predefined region')) result = result['Predefined region'];
         for (var aidx = 0; aidx < apps.length; aidx++) {
             newResult[apps[aidx]] = result;
         }
@@ -510,8 +511,8 @@ function _getMapByAppAndModel(selector, mapType) {
             // get map of requested selector's metadata
             result = matsCollections[selector].findOne({name: selector})[mapType];
             let newResult = {};
-            if (mapType === 'valuesMap') {
-                // valueMaps always need to be re-keyed by app
+            if (mapType === 'valuesMap' || selector === 'variable' || selector === 'statistic') {
+                // valueMaps always need to be re-keyed by app (statistic and variable get their valuesMaps from optionsMaps)
                 newResult = _mapMapToApps(result);
                 result = newResult;
             } else if ((matsCollections['database'] === undefined) &&
@@ -706,7 +707,7 @@ const _getVariables = function (params, req, res, next) {
 const _getVariablesValuesMap = function (params, req, res, next) {
     // this function returns a map of variable values keyed by app title
     if (Meteor.isServer) {
-        let flatJSON = _getMapByAppAndModel('variable', 'valuesMap');
+        let flatJSON = _getMapByAppAndModel('variable', 'optionsMap');
         res.setHeader('Content-Type', 'application/json');
         res.write(flatJSON);
         res.end();
