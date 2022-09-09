@@ -2119,6 +2119,7 @@ const resetApp = async function (appRef) {
         const metaDataTableRecords = appRef.appMdr;
         const appPools = appRef.appPools;
         const type = appRef.appType;
+        const scorecard = Meteor.settings.public.scorecard ? Meteor.settings.public.scorecard : false;
         const dbType = appRef.dbType ? appRef.dbType : matsTypes.DbTypes.mysql;
         const appName = Meteor.settings.public.app ? Meteor.settings.public.app : "unnamed";
         const appTitle = Meteor.settings.public.title ? Meteor.settings.public.title : "Unnamed App";
@@ -2315,7 +2316,7 @@ const resetApp = async function (appRef) {
         matsCollections.ColorScheme.remove({});
         matsDataUtils.doColorScheme();
         matsCollections.Settings.remove({});
-        matsDataUtils.doSettings(appTitle, dbType, appVersion, buildDate, appType, mapboxKey, appDefaultGroup, appDefaultDB, appDefaultModel, thresholdUnits, appMessage);
+        matsDataUtils.doSettings(appTitle, dbType, appVersion, buildDate, appType, mapboxKey, appDefaultGroup, appDefaultDB, appDefaultModel, thresholdUnits, appMessage, scorecard);
         matsCollections.PlotParams.remove({});
         matsCollections.CurveTextPatterns.remove({});
         // get the curve params for this app out of the settings file

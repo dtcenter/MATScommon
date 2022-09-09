@@ -394,7 +394,7 @@ const checkDiffs = function () {
 };
 
 const setSelectorVisibility = function(plotType, faceOptions, selectorsToReset) {
-    if (document.getElementById('plotTypes-selector').value === plotType) {
+    if (document.getElementById('plotTypes-selector') !== undefined && document.getElementById('plotTypes-selector') !== null && document.getElementById('plotTypes-selector').value === plotType) {
         // reset selectors that may have been set to something invalid for the new plot type
         const resetSelectors = Object.keys(selectorsToReset);
         for (var ridx = 0; ridx < resetSelectors.length; ridx++) {

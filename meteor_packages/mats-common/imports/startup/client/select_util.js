@@ -175,6 +175,7 @@ const refresh = function (event, paramName) {
     const optionsGroups = param.optionsGroups;
     const optionsMap = param.optionsMap;
     const isMetexpress = matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
+    const isScorecard = matsCollections.Settings.findOne({}).scorecard;
     var statisticTranslations = {};
     if (isMetexpress) {
         statisticTranslations = matsCollections["statistic"].findOne({name: "statistic"}).valuesMap;
@@ -286,7 +287,11 @@ const refresh = function (event, paramName) {
                 for (var theseSuperiorsIndex = 0; theseSuperiorsIndex < theseSuperiors.length; theseSuperiorsIndex++) {
                     var superior = theseSuperiors[theseSuperiorsIndex];
                     var selectedSuperiorValue = superior.value;
-                    firstSuperiorOptions = firstSuperiorOptions[selectedSuperiorValue];
+                    if (isScorecard) {
+                        firstSuperiorOptions = firstSuperiorOptions[selectedSuperiorValue] !== undefined ? firstSuperiorOptions[selectedSuperiorValue] : firstSuperiorOptions["NULL"];
+                    } else {
+                        firstSuperiorOptions = firstSuperiorOptions[selectedSuperiorValue];
+                    }
                 }
                 myOptions = Array.isArray(firstSuperiorOptions) ? firstSuperiorOptions : Object.keys(firstSuperiorOptions);
             } else {

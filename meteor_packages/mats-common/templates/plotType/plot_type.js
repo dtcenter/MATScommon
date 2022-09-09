@@ -50,6 +50,15 @@ Template.plotType.helpers({
         } else {
             return alertMessage;
         }
+    },
+    isNotScorecard: function () {
+        if (matsCollections.Settings === undefined || matsCollections.Settings.findOne({}) === undefined) return "none";
+        const isScorecard = matsCollections.Settings.findOne({}).scorecard;
+        if (isScorecard === undefined || isScorecard === "") {
+            return true;
+        } else {
+            return !isScorecard;
+        }
     }
 });
 
