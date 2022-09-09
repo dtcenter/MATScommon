@@ -332,7 +332,7 @@ const doSettings = function (title, dbType, version, buildDate, appType, mapboxK
     matsCollections.Settings.update(settingsId, {$set: settings});
 };
 
-const callMetadataAPI = function (selector, queryURL, destinationStructure, expectedApps, hideOtherFor) {
+const callMetadataAPI = function (selector, queryURL, destinationStructure, expectedApps, fakeMetadata, hideOtherFor) {
     const Future = require('fibers/future');
     let pFuture = new Future();
     HTTP.get(queryURL, {}, function (error, response) {
@@ -350,7 +350,7 @@ const callMetadataAPI = function (selector, queryURL, destinationStructure, expe
                     if (!selector.includes('values')) {
                         hideOtherFor[selector] = hideOtherFor[selector] === undefined ? [] : hideOtherFor[selector];
                         for (let eidx = 0; eidx < expectedApps.length; eidx++) {
-                            dummyMetadata[expectedApps[eidx]] = {"NULL": "NULL"};
+                            dummyMetadata[expectedApps[eidx]] = fakeMetadata;
                             hideOtherFor[selector].push(expectedApps[eidx]);
                         }
                     }
