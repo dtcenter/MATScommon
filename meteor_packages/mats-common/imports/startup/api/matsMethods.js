@@ -122,6 +122,18 @@ if (Meteor.isServer) {
         Picker.middleware(_getApps(params, req, res, next));
     });
 
+    Picker.route('/getAppSumsDBs', function (params, req, res, next) {
+        Picker.middleware(_getAppSumsDBs(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/getAppSumsDBs', function (params, req, res, next) {
+        Picker.middleware(_getAppSumsDBs(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getAppSumsDBs', function (params, req, res, next) {
+        Picker.middleware(_getAppSumsDBs(params, req, res, next));
+    });
+
     Picker.route('/getModels', function (params, req, res, next) {
         Picker.middleware(_getModels(params, req, res, next));
     });
@@ -168,6 +180,18 @@ if (Meteor.isServer) {
 
     Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getStatistics', function (params, req, res, next) {
         Picker.middleware(_getStatistics(params, req, res, next));
+    });
+
+    Picker.route('/getStatisticsValuesMap', function (params, req, res, next) {
+        Picker.middleware(_getStatisticsValuesMap(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/getStatisticsValuesMap', function (params, req, res, next) {
+        Picker.middleware(_getStatisticsValuesMap(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getStatisticsValuesMap', function (params, req, res, next) {
+        Picker.middleware(_getStatisticsValuesMap(params, req, res, next));
     });
 
     Picker.route('/getVariables', function (params, req, res, next) {
@@ -467,6 +491,23 @@ function _mapArrayToApps(result) {
     return newResult;
 }
 
+// helper function to map a results map to specific apps
+function _mapMapToApps(result) {
+    // put results in a map keyed by app
+    let newResult = {};
+    let apps = _getListOfApps();
+    let resultKeys = Object.keys(result);
+    if (!matsDataUtils.arraysEqual(apps.sort(), resultKeys.sort())) {
+        if (resultKeys.includes('Predefined region')) result = result['Predefined region'];
+        for (var aidx = 0; aidx < apps.length; aidx++) {
+            newResult[apps[aidx]] = result;
+        }
+    } else {
+        newResult =  result;
+    }
+    return newResult;
+}
+
 // helper function for returning an array of database-distinct apps contained within a larger MATS app
 function _getListOfApps() {
     let apps;
@@ -485,19 +526,50 @@ function _getListOfApps() {
     return apps;
 }
 
+// helper function for returning a map of database-distinct apps contained within a larger MATS app and their DBs
+function _getListOfAppDBs() {
+    let apps;
+    let result = {};
+    let aidx;
+    if (matsCollections['database'] !== undefined && matsCollections['database'].findOne({name: 'database'}) !== undefined) {
+        // get list of databases (one per app)
+        apps = matsCollections['database'].findOne({name: 'database'}).options;
+        if (!Array.isArray(apps)) apps = Object.keys(apps);
+        for (aidx = 0; aidx < apps.length; aidx++) {
+            result[apps[aidx]] = matsCollections['database'].findOne({name: 'database'}).optionsMap[apps[aidx]].sumsDB;
+        }
+    } else if ((matsCollections['variable'] !== undefined && matsCollections['variable'].findOne({name: 'variable'}) !== undefined) &&
+        (matsCollections['threshold'] !== undefined && matsCollections['threshold'].findOne({name: 'threshold'}) !== undefined)) {
+        // get list of apps (variables in apps that also have thresholds)
+        apps = matsCollections['variable'].findOne({name: 'variable'}).options;
+        if (!Array.isArray(apps)) apps = Object.keys(apps);
+        for (aidx = 0; aidx < apps.length; aidx++) {
+            result[apps[aidx]] = matsCollections['variable'].findOne({name: 'variable'}).optionsMap[apps[aidx]];
+            if (typeof result[apps[aidx]] !== 'string' && !(result[apps[aidx]] instanceof String)) result[apps[aidx]] = result[apps[aidx]].sumsDB;
+        }
+    } else {
+        result[matsCollections.Settings.findOne().Title] = matsCollections.Databases.findOne({role: matsTypes.DatabaseRoles.SUMS_DATA, status: "active"}).database;
+    }
+    return result;
+}
+
 // helper function for getting a metadata map from a MATS selector, keyed by app title and model display text
 function _getMapByAppAndModel(selector, mapType) {
     let flatJSON = "";
     try {
         let result;
-        if (matsCollections[selector] !== undefined && matsCollections[selector].findOne({name: selector}) !== undefined) {
+        if (matsCollections[selector] !== undefined && matsCollections[selector].findOne({name: selector}) !== undefined && matsCollections[selector].findOne({name: selector})[mapType] !== undefined) {
             // get map of requested selector's metadata
             result = matsCollections[selector].findOne({name: selector})[mapType];
-            if ((matsCollections['database'] === undefined) &&
+            let newResult = {};
+            if (mapType === 'valuesMap' || selector === 'variable' || selector === 'statistic') {
+                // valueMaps always need to be re-keyed by app (statistic and variable get their valuesMaps from optionsMaps)
+                newResult = _mapMapToApps(result);
+                result = newResult;
+            } else if ((matsCollections['database'] === undefined) &&
                 !(matsCollections['variable'] !== undefined && matsCollections['threshold'] !== undefined)) {
                 // key by app title if we're not already
                 const appTitle = matsCollections.Settings.findOne().Title;
-                let newResult = {};
                 newResult[appTitle] = result;
                 result = newResult;
             }
@@ -611,11 +683,29 @@ function _getlevelsByApp() {
 
 // private middleware for _getApps route
 const _getApps = function (params, req, res, next) {
-    // this function returns map of apps and appRefs.
+    // this function returns an array of apps.
     if (Meteor.isServer) {
         let flatJSON = "";
         try {
             let result = _getListOfApps();
+            flatJSON = JSON.stringify(result);
+        } catch (e) {
+            console.log('error retrieving apps: ', e);
+            flatJSON = JSON.stringify({error: e});
+        }
+        res.setHeader('Content-Type', 'application/json');
+        res.write(flatJSON);
+        res.end();
+    }
+};
+
+// private middleware for _getAppSumsDBs route
+const _getAppSumsDBs = function (params, req, res, next) {
+    // this function returns map of apps and appRefs.
+    if (Meteor.isServer) {
+        let flatJSON = "";
+        try {
+            let result = _getListOfAppDBs();
             flatJSON = JSON.stringify(result);
         } catch (e) {
             console.log('error retrieving apps: ', e);
@@ -671,6 +761,17 @@ const _getStatistics = function (params, req, res, next) {
     }
 };
 
+// private middleware for _getStatisticsValuesMap route
+const _getStatisticsValuesMap = function (params, req, res, next) {
+    // this function returns a map of statistic values keyed by app title
+    if (Meteor.isServer) {
+        let flatJSON = _getMapByAppAndModel('statistic', 'optionsMap');
+        res.setHeader('Content-Type', 'application/json');
+        res.write(flatJSON);
+        res.end();
+    }
+};
+
 // private middleware for _getVariables route
 const _getVariables = function (params, req, res, next) {
     // this function returns an map of variables keyed by app title
@@ -686,7 +787,7 @@ const _getVariables = function (params, req, res, next) {
 const _getVariablesValuesMap = function (params, req, res, next) {
     // this function returns a map of variable values keyed by app title
     if (Meteor.isServer) {
-        let flatJSON = _getMapByAppAndModel('variable', 'valuesMap');
+        let flatJSON = _getMapByAppAndModel('variable', 'optionsMap');
         res.setHeader('Content-Type', 'application/json');
         res.write(flatJSON);
         res.end();
