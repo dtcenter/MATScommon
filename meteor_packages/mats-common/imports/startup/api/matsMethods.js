@@ -170,6 +170,18 @@ if (Meteor.isServer) {
         Picker.middleware(_getStatistics(params, req, res, next));
     });
 
+    Picker.route('/getStatisticsValuesMap', function (params, req, res, next) {
+        Picker.middleware(_getStatisticsValuesMap(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/getStatisticsValuesMap', function (params, req, res, next) {
+        Picker.middleware(_getStatisticsValuesMap(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getStatisticsValuesMap', function (params, req, res, next) {
+        Picker.middleware(_getStatisticsValuesMap(params, req, res, next));
+    });
+
     Picker.route('/getVariables', function (params, req, res, next) {
         Picker.middleware(_getVariables(params, req, res, next));
     });
@@ -686,6 +698,17 @@ const _getStatistics = function (params, req, res, next) {
     // this function returns an map of statistics keyed by app title
     if (Meteor.isServer) {
         let flatJSON = _getMapByApp('statistic');
+        res.setHeader('Content-Type', 'application/json');
+        res.write(flatJSON);
+        res.end();
+    }
+};
+
+// private middleware for _getStatisticsValuesMap route
+const _getStatisticsValuesMap = function (params, req, res, next) {
+    // this function returns a map of statistic values keyed by app title
+    if (Meteor.isServer) {
+        let flatJSON = _getMapByAppAndModel('statistic', 'optionsMap');
         res.setHeader('Content-Type', 'application/json');
         res.write(flatJSON);
         res.end();
