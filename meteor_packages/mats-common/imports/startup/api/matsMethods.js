@@ -459,7 +459,7 @@ function _mapArrayToApps(result) {
     let apps = _getListOfApps();
     for (var aidx = 0; aidx < apps.length; aidx++) {
         if (result[aidx] === apps[aidx]) {
-            newResult[apps[aidx]] = result[aidx];
+            newResult[apps[aidx]] = [result[aidx]];
         } else {
             newResult[apps[aidx]] = result;
         }
