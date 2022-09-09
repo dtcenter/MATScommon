@@ -122,6 +122,18 @@ if (Meteor.isServer) {
         Picker.middleware(_getApps(params, req, res, next));
     });
 
+    Picker.route('/getAppSumsDBs', function (params, req, res, next) {
+        Picker.middleware(_getAppSumsDBs(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/getAppSumsDBs', function (params, req, res, next) {
+        Picker.middleware(_getAppSumsDBs(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/getAppSumsDBs', function (params, req, res, next) {
+        Picker.middleware(_getAppSumsDBs(params, req, res, next));
+    });
+
     Picker.route('/getModels', function (params, req, res, next) {
         Picker.middleware(_getModels(params, req, res, next));
     });
@@ -514,6 +526,33 @@ function _getListOfApps() {
     return apps;
 }
 
+// helper function for returning a map of database-distinct apps contained within a larger MATS app and their DBs
+function _getListOfAppDBs() {
+    let apps;
+    let result = {};
+    let aidx;
+    if (matsCollections['database'] !== undefined && matsCollections['database'].findOne({name: 'database'}) !== undefined) {
+        // get list of databases (one per app)
+        apps = matsCollections['database'].findOne({name: 'database'}).options;
+        if (!Array.isArray(apps)) apps = Object.keys(apps);
+        for (aidx = 0; aidx < apps.length; aidx++) {
+            result[apps[aidx]] = matsCollections['database'].findOne({name: 'database'}).optionsMap[apps[aidx]].sumsDB;
+        }
+    } else if ((matsCollections['variable'] !== undefined && matsCollections['variable'].findOne({name: 'variable'}) !== undefined) &&
+        (matsCollections['threshold'] !== undefined && matsCollections['threshold'].findOne({name: 'threshold'}) !== undefined)) {
+        // get list of apps (variables in apps that also have thresholds)
+        apps = matsCollections['variable'].findOne({name: 'variable'}).options;
+        if (!Array.isArray(apps)) apps = Object.keys(apps);
+        for (aidx = 0; aidx < apps.length; aidx++) {
+            result[apps[aidx]] = matsCollections['variable'].findOne({name: 'variable'}).optionsMap[apps[aidx]];
+            if (typeof result[apps[aidx]] !== 'string' && !(result[apps[aidx]] instanceof String)) result[apps[aidx]] = result[apps[aidx]].sumsDB;
+        }
+    } else {
+        result[matsCollections.Settings.findOne().Title] = matsCollections.Databases.findOne({role: matsTypes.DatabaseRoles.SUMS_DATA, status: "active"}).database;
+    }
+    return result;
+}
+
 // helper function for getting a metadata map from a MATS selector, keyed by app title and model display text
 function _getMapByAppAndModel(selector, mapType) {
     let flatJSON = "";
@@ -644,11 +683,29 @@ function _getlevelsByApp() {
 
 // private middleware for _getApps route
 const _getApps = function (params, req, res, next) {
-    // this function returns map of apps and appRefs.
+    // this function returns an array of apps.
     if (Meteor.isServer) {
         let flatJSON = "";
         try {
             let result = _getListOfApps();
+            flatJSON = JSON.stringify(result);
+        } catch (e) {
+            console.log('error retrieving apps: ', e);
+            flatJSON = JSON.stringify({error: e});
+        }
+        res.setHeader('Content-Type', 'application/json');
+        res.write(flatJSON);
+        res.end();
+    }
+};
+
+// private middleware for _getAppSumsDBs route
+const _getAppSumsDBs = function (params, req, res, next) {
+    // this function returns map of apps and appRefs.
+    if (Meteor.isServer) {
+        let flatJSON = "";
+        try {
+            let result = _getListOfAppDBs();
             flatJSON = JSON.stringify(result);
         } catch (e) {
             console.log('error retrieving apps: ', e);
