@@ -341,11 +341,14 @@ const callMetadataAPI = function (selector, queryURL, destinationStructure, expe
         } else {
             const metadata = JSON.parse(response.content);
             if (Array.isArray(destinationStructure)) {
+                // this is the list of apps. It's the only array in the API.
                 destinationStructure = [...destinationStructure, ...metadata];
                 expectedApps = metadata;
             } else {
                 if (Object.keys(metadata).length === 0) {
                     // this metadata type (e.g. 'threshold') is not valid for this app
+                    // we need to add placeholder metadata to the destination structure
+                    // and add the selector in question to the hideOtherFor map.
                     let dummyMetadata = {};
                     if (!selector.includes('values')) {
                         hideOtherFor[selector] = hideOtherFor[selector] === undefined ? [] : hideOtherFor[selector];
