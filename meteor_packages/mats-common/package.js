@@ -165,8 +165,8 @@ Package.onUse(function (api) {
     api.addFiles("templates/plot/plot_list.html", "client");
     api.addFiles("templates/plot/plot_list.js", "client");
 
-    api.addFiles("templates/plot/scorecard_plot_list.html", "client");
-    api.addFiles("templates/plot/scorecard_plot_list.js", "client");
+    api.addFiles("templates/curves/scorecard_curve_list.html", "client");
+    api.addFiles("templates/curves/scorecard_curve_list.js", "client");
 
     api.addFiles('templates/help/help.html', "client");
 

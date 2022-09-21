@@ -26,5 +26,14 @@ Template.ScorecardHome.helpers({
             }
             matsParamUtils.setAllParamsToDefault();
         });
+    },
+    hideForScorecard: function() {
+        if (matsCollections.Settings === undefined || matsCollections.Settings.findOne({}) === undefined) return "hidden";
+        const isScorecard = matsCollections.Settings.findOne({}).scorecard;
+        if (isScorecard === undefined || isScorecard === "") {
+            return "";
+        } else {
+            return "hidden";
+        }
     }
 });

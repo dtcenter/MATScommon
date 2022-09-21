@@ -8,6 +8,9 @@
         {{>help}}
         <div class="container row pull-left col-lg-8" style="width:100%;">
             {{>error}}
+            <div class=" row pull-left col-lg-8" id="plotTypeContainer" {{hideForScorecard}}>
+                {{>plotType}}
+            </div>
             {{>About}}
             {{#if Template.subscriptionsReady}}
                 {{#if isUnderConstruction}}
@@ -19,17 +22,20 @@
                         {{>changePlotType}}
                     </div>
                     <div class="row pull-left col-lg-12">
-                        {{>curveList}}
+                        {{>scorecardCurveList}}
                     </div>
                     <div class=" row pull-left">
                         {{>error}}
                         {{>info}}
                     </div>
+                    <div id="scatterView" class=" row pull-left col-lg-10">
+                        {{>scatter2d}}
+                    </div>
                     <div id="paramView" class=" row pull-left col-lg-12">
                         {{>scorecardParamList}}
                     </div>
                     <div id="plotView" class=" row  pull-left col-lg-12" style="width:100%;">
-                        {{>scorecardPlotList}}
+                        {{>plotList}}
                     </div>
                     {{resetDefaults}}
                 {{/if}}
@@ -41,4 +47,6 @@
             {{>graph}}
         </div>
     </div>
+
+    {{>footer}}
 </template>

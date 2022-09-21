@@ -8,12 +8,13 @@
             </div>
             {{#if isEdit}}
                 <div class="row clearfix well-sm col-lg-12 pull-left btn-toolbar btn-group btn-lg" role="toolbar">
-                    <button type="submit" name="save" id="save" class="btn btn-success"><i class="fa fa-line-chart"></i>&nbsp;&nbsp;Submit</button>
+                    <button type="submit" name="save" id="save" class="btn btn-success"><i class="fa fa-line-chart"></i>&nbsp;&nbsp;Save Changes</button>
                     <button type="button" name="cancel" id="cancel" class="edit-cancel btn btn-info"><i class="fa icon-remove-sign"></i>&nbsp;&nbsp;Cancel</button>
                 </div>
             {{else}}
                 <div class="row clearfix well-sm col-lg-12 pull-left btn-toolbar btn-group btn-lg" role="toolbar">
                     <button type="submit" name="add" id="add" class="btn btn-success"><i class="fa fa-line-chart"></i>&nbsp;&nbsp;Add Row Group</button>
+                    <button type="button" name="reset" id="reset" class="reset btn btn-success"><i class=" fa fa-refresh"></i>&nbsp;&nbsp;Reset to Defaults</button>
                 </div>
             {{/if}}
         </form>

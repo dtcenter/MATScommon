@@ -62,7 +62,8 @@ var PlotTypes = {
     ensembleHistogram: "EnsembleHistogram",
     contour: "Contour",
     contourDiff: "ContourDiff",
-    scatter2d: "Scatter2d"
+    scatter2d: "Scatter2d",
+    scorecard: "Scorecard"
 };
 
 var ForecastTypes = {

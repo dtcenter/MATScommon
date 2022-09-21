@@ -6,17 +6,13 @@
         <div id="alertMessage" class="row text-center" style="display:{{alertMessageHidden}}">
             <span style="color: red; font-size: large;">{{alertMessage}}<br/><br/></span>
         </div>
-        {{#if isNotScorecard}}
-            <div class="row well well-sm pull-left" style="background-color: #b1edff; margin-left: 2px">
-                <span class="boldedPublicSans" style="font-size: large;">Plot Type:&nbsp;&nbsp;</span>
-                <select id="plotTypes-selector" class="boldedPublicSans plotTypes-selector" style="font-size: large;">
-                    {{#each plotTypes}}
-                        <option class="plot-type-{{plotType}}" name="plot-type" id="plot-type-{{plotType}}" {{display}} value="{{plotType}}" {{selected plotType}}>{{plotType}}</option>
-                    {{/each}}
-                </select>
-            </div>
-        {{else}}
-            <div><br/></div>
-        {{/if}}
+        <div class="row well well-sm pull-left" style="background-color: #b1edff; margin-left: 2px;">
+            <span class="boldedPublicSans" style="font-size: large;">Plot Type:&nbsp;&nbsp;</span>
+            <select id="plotTypes-selector" class="boldedPublicSans plotTypes-selector" style="font-size: large;">
+                {{#each plotTypes}}
+                    <option class="plot-type-{{plotType}}" name="plot-type" id="plot-type-{{plotType}}" {{display}} value="{{plotType}}" {{selected plotType}}>{{plotType}}</option>
+                {{/each}}
+            </select>
+        </div>
     </div>
 </template>

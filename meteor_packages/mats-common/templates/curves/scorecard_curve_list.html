@@ -1,0 +1,30 @@
+<template name="scorecardCurveList">
+    <div class="modal modal-dialog fade" id="modal-confirm-remove-all" tabindex="-1" role="dialog" aria-labelledby="confirmRemoveAll" aria-hidden="true" style="background-color: cornflowerblue">
+        <div class="modal-dialog">
+            <div class="modal-content"><i class="fa fa-4x fa-question" style="color:cornflowerblue"></i>
+                <h2 class="modal-title" style="text-align: center; color: red;">Remove All Rows?</h2>
+                <div class="modal-body">
+                    <h4 style="color:cornflowerblue">
+                        Are you sure you want to remove all the rows?
+                    </h4>
+                </div>
+                <div class="modal-footer">
+                    <button id="cancle-remove-all" class="cancle-remove-all btn btn-success" data-dismiss="modal">Cancel the Remove</button>
+                    <button id="confirm-remove-all" class="btn btn-danger confirm-remove-all" data-dismiss="modal">Remove all the rows</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="curveList"  class="well-sm clearfix col-lg-12" style="display:{{displayCurves}};">
+        {{#each curves}}
+            {{> curveItem this}}
+        {{/each}}
+        <div class="clearfix btn-toolbar  well well-sm pull-left" role="toolbar">
+            <button id='remove-all' class="remove-all btn btn-danger"><i class="fa fa-times fa-sm"></i>&nbsp;&nbsp;Remove All Rows</button>
+            <button type="button" class="btn spacebutton" id="cl-spacer"></button>
+            <button type="button" name="submitScoreCard" id="submitScorecard"  class="submit-scorecard btn btn-success" style="display:{{displaySubmitScorecard}};"><i class="fa fa-area-chart"></i>  Submit Scorecard</button>
+            <button type="button" class="btn spacebutton" id="cl-spacer"></button>
+        </div>
+    </div>
+</template>

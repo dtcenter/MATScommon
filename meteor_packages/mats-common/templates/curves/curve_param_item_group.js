@@ -3,7 +3,7 @@
  */
 
 import { matsTypes } from 'meteor/randyp:mats-common';
- import { matsCollections } from 'meteor/randyp:mats-common';
+import { matsCollections } from 'meteor/randyp:mats-common';
 import { matsPlotUtils } from 'meteor/randyp:mats-common';
 import { matsParamUtils } from 'meteor/randyp:mats-common';
 var allGroups = {};
@@ -72,6 +72,9 @@ Template.curveParamItemGroup.helpers({
                 break;
             case matsTypes.PlotTypes.scatter2d:
                 pattern = matsCollections.CurveTextPatterns.findOne({plotType: matsTypes.PlotTypes.scatter2d});
+                break;
+            case matsTypes.PlotTypes.scorecard:
+                pattern = matsCollections.CurveTextPatterns.findOne({plotType: matsTypes.PlotTypes.scorecard});
                 break;
             case matsTypes.PlotTypes.timeSeries:
             default:

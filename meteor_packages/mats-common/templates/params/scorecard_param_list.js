@@ -29,7 +29,7 @@ Template.scorecardParamList.helpers({
         return res;
     },
     isEdit: function () {
-        return Session.get('editMode') != '';
+        return Session.get('editMode') != '' && Session.get('editMode') !== undefined;
     },
     log: function () {
         console.log(this);
@@ -305,7 +305,7 @@ Template.scorecardParamList.events({
     }
 });
 
-Template.scorecardParamList.onRendered(function () {
+Template.paramList.onRendered(function () {
     Session.set('displayPriority', 1);
     Session.set('editMode', '');
 
