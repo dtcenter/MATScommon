@@ -27,13 +27,11 @@ Template.ScorecardHome.helpers({
             matsParamUtils.setAllParamsToDefault();
         });
     },
-    hideForScorecard: function() {
-        if (matsCollections.Settings === undefined || matsCollections.Settings.findOne({}) === undefined) return "hidden";
-        const isScorecard = matsCollections.Settings.findOne({}).scorecard;
-        if (isScorecard === undefined || isScorecard === "") {
+    title: function () {
+        if (matsCollections.Settings === undefined || matsCollections.Settings.findOne({}, {fields: {Title: 1}}) === undefined) {
             return "";
         } else {
-            return "hidden";
+            return matsCollections.Settings.findOne({}, {fields: {Title: 1}}).Title;
         }
     }
 });

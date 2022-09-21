@@ -26,5 +26,12 @@ Template.Home.helpers({
             }
             matsParamUtils.setAllParamsToDefault();
         });
+    },
+    title: function () {
+        if (matsCollections.Settings === undefined || matsCollections.Settings.findOne({}, {fields: {Title: 1}}) === undefined) {
+            return "";
+        } else {
+            return matsCollections.Settings.findOne({}, {fields: {Title: 1}}).Title;
+        }
     }
 });
