@@ -335,7 +335,6 @@ const doSettings = function (title, dbType, version, buildDate, appType, mapboxK
 
 const callMetadataAPI = function (selector, queryURL, destinationStructure, expectedApps, fakeMetadata, hideOtherFor) {
     const Future = require('fibers/future');
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
     let pFuture = new Future();
     HTTP.get(queryURL, {}, function (error, response) {
         if (error) {
