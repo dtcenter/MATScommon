@@ -297,6 +297,7 @@ const resizeGraph = function (plotType) {
 // helper to bring up the text page
 const setTextView = function (plotType) {
     //shows text page and proper text output, hides everything else
+    document.getElementById('appTitleText').style.display = 'none';
     document.getElementById('placeholder').style.width = width(plotType);
     document.getElementById('placeholder').style.height = height(plotType);
     document.getElementById('graph-container').style.display = 'block';
@@ -329,6 +330,7 @@ const setTextView = function (plotType) {
 // helper to bring up the graph page
 const setGraphView = function (plotType) {
     //shows graph page, hides everything else
+    document.getElementById('appTitleText').style.display = 'none';
     document.getElementById('placeholder').style.width = width(plotType);
     document.getElementById('placeholder').style.height = height(plotType);
     document.getElementById('graph-container').style.display = 'block';
@@ -371,6 +373,7 @@ const standAloneSetGraphView = function () {
 // helper to bring up the main selector page
 const setDefaultView = function () {
     // show elements of the main page
+    document.getElementById('appTitleText').style.display = 'block';
     document.getElementById('graph-container').style.display = 'none';
     document.getElementById('plotType').style.display = 'block';
     document.getElementById('paramList').style.display = 'block';
