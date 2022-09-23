@@ -2361,25 +2361,13 @@ const resetApp = async function (appRef) {
             throw new Meteor.Error("dbpools not initialized " + Meteor.settings.public.undefinedRoles);
         }
 
-        // Try getting Version from env
-        let { version: appVersion, commit: buildDate, branch } = versionInfo.getVersionsFromEnv();
+        // Try getting version from env
+        let { version: appVersion, commit: commit, branch: branch } = versionInfo.getVersionsFromEnv();
         if (appVersion === 'Unknown') {
             // Try getting versionInfo from the appProduction database
-            console.log("VERSION not set in the environment - try getting from deployment.json")
-            var deploymentText = Assets.getText('public/deployment/deployment.json');
-            var deployment = JSON.parse(deploymentText);
-            var app = {};
-            // sort through the deployments to find the app that matches this deployment environment that is currently running
-            for (var ai = 0; ai < deployment.length; ai++) {
-                var dep = deployment[ai];
-                if (dep.deployment_environment == dep_env) {
-                    app = dep.apps.filter(function (app) {
-                        return app.app === appName;
-                    })[0];
-                }
-            }
-            appVersion = app ? app.version : "unknown";
-            buildDate = app ? app.buildDate : "unknown";
+            console.log("VERSION not set in the environment - using localhost")
+            appVersion = "localhost";
+            commit = "HEAD";
         }
         const appType = type ? type : matsTypes.AppTypes.mats;
         matsCollections.appName.upsert({ app: appName }, { $set: { app: appName } });
@@ -2417,7 +2405,7 @@ const resetApp = async function (appRef) {
         matsCollections.ColorScheme.remove({});
         matsDataUtils.doColorScheme();
         matsCollections.Settings.remove({});
-        matsDataUtils.doSettings(appTitle, dbType, appVersion, buildDate, appType, mapboxKey, appDefaultGroup, appDefaultDB, appDefaultModel, thresholdUnits, appMessage, scorecard);
+        matsDataUtils.doSettings(appTitle, dbType, appVersion, commit, appType, mapboxKey, appDefaultGroup, appDefaultDB, appDefaultModel, thresholdUnits, appMessage, scorecard);
         matsCollections.PlotParams.remove({});
         matsCollections.CurveTextPatterns.remove({});
         // get the curve params for this app out of the settings file

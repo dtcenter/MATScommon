@@ -24,13 +24,13 @@ Template.About.helpers({
     version: function () {
         var settings = matsCollections.Settings.findOne({});
         var version = "unknown";
-        var buildDate = "unkown";
+        var commit = "unkown";
         if (settings) {
             version = settings.appVersion;
-            buildDate = settings.buildDate;
+            commit = settings.commit;
         }
-        versionStr = "<div class='row' style='text-align:center'>Version: " + version + "</div>";
-        return versionStr + "<div class='row' style='text-align:center'> Last Build Date: " + buildDate + "</div>";
+        let versionStr = "<div class='row' style='text-align:center'>Version: " + version + "</div>";
+        return versionStr + "<div class='row' style='text-align:center'> Last commit: " + commit + "</div>";
 
     },
     releaseNotes: function() {

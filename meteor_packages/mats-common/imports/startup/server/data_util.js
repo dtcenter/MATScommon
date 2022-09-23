@@ -293,7 +293,7 @@ const doRoles = function () {
 };
 
 // for use in matsMethods.resetApp() to establish default settings
-const doSettings = function (title, dbType, version, buildDate, appType, mapboxKey, appDefaultGroup, appDefaultDB, appDefaultModel, thresholdUnits, appMessage, scorecard) {
+const doSettings = function (title, dbType, version, commit, appType, mapboxKey, appDefaultGroup, appDefaultDB, appDefaultModel, thresholdUnits, appMessage, scorecard) {
     if (matsCollections.Settings.findOne({}) === undefined || matsCollections.Settings.findOne({}).resetFromCode === undefined || matsCollections.Settings.findOne({}).resetFromCode == true) {
         matsCollections.Settings.remove({});
     }
@@ -303,7 +303,7 @@ const doSettings = function (title, dbType, version, buildDate, appType, mapboxK
             Title: title,
             dbType: dbType,
             appVersion: version,
-            buildDate: buildDate,
+            commit: commit,
             appType: appType,
             LineWidth: 3.5,
             NullFillString: "---",
@@ -320,9 +320,10 @@ const doSettings = function (title, dbType, version, buildDate, appType, mapboxK
     // always update the version, roles, and the hostname, not just if it doesn't exist...
     var settings = matsCollections.Settings.findOne({});
     const deploymentRoles = {
-        "mats-dev": "development",
-        "mats-int": "integration",
-        "mats": "production"
+        "mats-docker-dev": "development",
+        "mats-docker-preint": "integration",
+        "esrl": "production",
+        "metexpress": "production"
     };
     var settingsId = settings._id;
     var os = Npm.require('os');
