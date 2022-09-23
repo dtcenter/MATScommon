@@ -262,7 +262,6 @@ Package.onUse(function (api) {
     api.addAssets('public/img/texturetastic_gray.png', "client");
     api.addAssets('public/img/subtle_grunge_@2X.png', "client");
     api.addAssets('public/img/underConstruction.jpg', "client");
-    api.addAssets('public/deployment/deployment.json', "server");
     api.addAssets('public/MATSReleaseNotes.html', "server");
     api.addAssets('public/python/python_query_util.py', "server");
     api.addAssets('public/python/python_ctc_error.py', "server");
