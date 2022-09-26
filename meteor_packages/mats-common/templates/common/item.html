@@ -1,7 +1,8 @@
 <template name="item">
     <div id="{{name}}-item" class="item btn-group"  role="group" style="display:{{display}}">
         <button type="button" class="control-button btn btn-primary mediumPublicSans" id="{{controlButton}}" style="display:{{controlButtonCovered}}; margin-left: 0">{{cbname}}</button>
-        <div id="{{element}}" style="display:{{elementHidden}};float:right;background-color: white;" >
+        <span style="display:inline-block;">&nbsp;</span>
+        <div id="{{element}}" style="display:{{elementHidden}};{{position}};z-index: {{zIndexVal}};float:right;background-color: white;" >
             {{#if isSelect}}
                 {{> select this}}
             {{else}} {{#if isSpinner}}
