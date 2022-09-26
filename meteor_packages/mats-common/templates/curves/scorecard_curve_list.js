@@ -10,6 +10,16 @@ import {matsPlotUtils} from 'meteor/randyp:mats-common';
 import {matsParamUtils} from 'meteor/randyp:mats-common';
 
 Template.scorecardCurveList.helpers({
+    displayScorecardStatus: function() {
+        // don't allow plotting when editing
+        const mode = Session.get("editMode");
+        if (mode === undefined || mode === "") {
+            return "block";
+        } else {
+            return "none";
+        }
+    },
+
     curves: function () {
         return Session.get('Curves');
     },
@@ -52,10 +62,19 @@ Template.scorecardCurveList.events({
         Session.set("confirmRemoveAll", Date.now());
         $("#remove-all").trigger('click');
     },
-    'click .submit-rows': function (event) {
+
+    /*
+    A note about how things get to the backend.
+    When the user clicks "Submit Scorecard"
+    */
+    'click .submitScorecard': function (event) {
         document.getElementById("spinner").style.display = "block";
         matsPlotUtils.disableActionButtons();
         event.preventDefault();
+        // trigger the submit on the plot_list plot_list.js - click .submit-params
+        Session.set('plotParameter', matsTypes.PlotActions.scorecard);
+        document.getElementById("plot-curves").click();
         return false;
+
     },
 });

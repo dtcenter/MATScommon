@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import { matsTypes } from 'meteor/randyp:mats-common'; 
+import { matsTypes } from 'meteor/randyp:mats-common';
 Template.radioGroup.helpers({
     checkedByDefault: function (def) {
         if (def == this) {
@@ -17,7 +17,6 @@ Template.radioGroup.helpers({
 });
 
 
-// Currently have no radioGroup params - this is undoubtedly broken - FIX ME
 Template.radioGroup.events({
     'change, blur': function (event) {
         try {

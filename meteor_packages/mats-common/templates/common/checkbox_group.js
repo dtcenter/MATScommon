@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import { matsTypes } from 'meteor/randyp:mats-common'; 
+import { matsTypes } from 'meteor/randyp:mats-common';
 Template.checkboxGroup.helpers({
     checkedByDefault: function (def) {
         if (def == this) {
@@ -16,7 +16,6 @@ Template.checkboxGroup.helpers({
     }
 });
 
-// Currently have no checkboxGroup params - this is undoubtedly broken - FIX ME
 Template.checkboxGroup.events({
     'change, blur': function (event) {
         try {

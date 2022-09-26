@@ -124,16 +124,32 @@ const containsPoint = function (pointArray, point) {
 
 // disable the action buttons while the query and plot routines are processing, then re-enable them afterwards
 const disableActionButtons = function () {
-    document.getElementById('plotMatched').disabled = true;
-    document.getElementById('plotUnmatched').disabled = true;
-    document.getElementById('add').disabled = true;
-    document.getElementById('remove-all').disabled = true;
+    if (document.getElementById('plotMatched')) {
+        document.getElementById('plotMatched').disabled = true;
+    }
+    if (document.getElementById('plotUnmatched')) {
+        document.getElementById('plotUnmatched').disabled = true;
+    }
+    if (document.getElementById('add')) {
+        document.getElementById('add').disabled = true;
+    }
+    if (document.getElementById('remove-all')) {
+        document.getElementById('remove-all').disabled = true;
+    }
 };
 const enableActionButtons = function () {
-    document.getElementById('plotMatched').disabled = false;
-    document.getElementById('plotUnmatched').disabled = false;
-    document.getElementById('add').disabled = false;
-    document.getElementById('remove-all').disabled = false;
+    if (document.getElementById('plotMatched')) {
+        document.getElementById('plotMatched').disabled = false;
+    }
+    if (document.getElementById('plotUnmatched')) {
+        document.getElementById('plotUnmatched').disabled = false;
+    }
+    if (document.getElementById('plotUnmatched')) {
+        document.getElementById('add').disabled = false;
+    }
+    if (document.getElementById('remove-all')) {
+        document.getElementById('remove-all').disabled = false;
+    }
 };
 
 export default matsPlotUtils = {

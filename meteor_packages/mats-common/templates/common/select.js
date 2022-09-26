@@ -275,5 +275,9 @@ Template.select.events({
             $(controlElem).trigger('click');  // reopen the select2 - the regular open is not located properly so do it by clicking the control element button
         }
         return false;
+    },
+    'focusout' : function (event) {
+        // close the selector if it is left open
+        //event.currentTarget....
     }
 });

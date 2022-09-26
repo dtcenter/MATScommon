@@ -81,7 +81,8 @@ var PlotFormats = {
 
 var PlotActions = {
     matched: "matched",
-    unmatched: "unmatched"
+    unmatched: "unmatched",
+    scorecard: "scorecard"
 };
 
 var BestFits = {
