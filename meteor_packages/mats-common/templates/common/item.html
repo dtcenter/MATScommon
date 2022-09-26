@@ -1,8 +1,7 @@
 <template name="item">
     <div id="{{name}}-item" class="item btn-group"  role="group" style="display:{{display}}">
         <button type="button" class="control-button btn btn-primary mediumPublicSans" id="{{controlButton}}" style="display:{{controlButtonCovered}}; margin-left: 0">{{cbname}}</button>
-        <span style="display:inline-block;">&nbsp;</span>
-        <div id="{{element}}" style="display:{{elementHidden}};position:absolute;z-index: {{zIndexVal}};float:right;background-color: white;" >
+        <div id="{{element}}" style="display:{{elementHidden}};float:right;background-color: white;" >
             {{#if isSelect}}
                 {{> select this}}
             {{else}} {{#if isSpinner}}
@@ -20,7 +19,7 @@
                 </div>
             {{else}} {{#if isRadioGroup}}
                 <div class="container btn-group" style="font-size:large;background-color:lightcyan;width:100%;white-space: nowrap;">
-                    <span style="vertical-align: bottom;">{{name}}:</span>
+                    <span>{{name}}:</span>
                     {{#each options}}
                         {{> radioGroup this}}
                     {{/each}}
