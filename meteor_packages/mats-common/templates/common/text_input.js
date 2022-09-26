@@ -38,8 +38,7 @@ Template.textInput.events({
         try {
             // label is handled differently - special case because of NextCurveLabel stored in Session
             const text = event.currentTarget.value;
-            if (event.target.name == "label" && Session.get('NextCurveLabel') == text) {
-            } else {
+            if (!(event.target.name == "label" && Session.get('NextCurveLabel') == text)) {
                 matsParamUtils.setValueTextForParamName(event.target.name, text);
             }
         } catch (error){
@@ -50,14 +49,18 @@ Template.textInput.events({
         try {
             // label is handled differently - special case because of NextCurveLabel stored in Session
             const text = event.currentTarget.value;
-            if (Object.values(matsTypes.ReservedWords).indexOf(text) === -1) {
-                matsParamUtils.setValueTextForParamName(event.target.name, text);
-                Session.set("NextCurveLabel", text);
+            if (event.target.name == "label" && Session.get('NextCurveLabel') == text) {
+                if (Object.values(matsTypes.ReservedWords).indexOf(text) === -1) {
+                    matsParamUtils.setValueTextForParamName(event.target.name, text);
+                    Session.set("NextCurveLabel", text);
+                } else {
+                    console.log("that curve label is not allowed");
+                    setTimeout(function () {
+                        matsParamUtils.setValueTextForParamName(event.target.name, "LabelNotAllowed");
+                    }, 10);
+                }
             } else {
-                console.log("that curve label is not allowed");
-                setTimeout(function (){
-                    matsParamUtils.setValueTextForParamName(event.target.name, "LabelNotAllowed");
-                }, 10);
+                matsParamUtils.setValueTextForParamName(event.target.name, text);
             }
         } catch (error){
             matsParamUtils.setValueTextForParamName(event.target.name, "");
