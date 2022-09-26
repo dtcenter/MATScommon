@@ -289,7 +289,7 @@ Template.plotList.events({
                         p.data.paramData.plotParams[plotParam.name] === undefined ? matsTypes.InputTypes.unused : p.data.paramData.plotParams[plotParam.name];
                     matsParamUtils.setInputForParamName(plotParam.name,val);
                 });
-                
+
                 var paramNames = matsCollections.CurveParamsInfo.find({"curve_params": {"$exists": true}}).fetch()[0]["curve_params"];
                 params = [];
                 var superiors = [];
