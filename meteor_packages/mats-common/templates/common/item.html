@@ -1,6 +1,6 @@
 <template name="item">
     <div id="{{name}}-item" class="item btn-group"  role="group" style="display:{{display}}">
-        <button type="button" class="control-button btn btn-primary mediumPublicSans" id="{{controlButton}}" style="display:{{controlButtonCovered}}; margin-left: 0">{{cbname}}</button>
+        <button type="button" class="control-button btn btn-primary mediumPublicSans" id="{{controlButton}}" style="display:{{controlButtonCovered}}; margin-left: 0">{{tcname}}</button>
         <span style="display:inline-block;">&nbsp;</span>
         <div id="{{element}}" style="display:{{elementHidden}};{{position}};z-index: {{zIndexVal}};float:right;background-color: white;" >
             {{#if isSelect}}
@@ -13,14 +13,14 @@
                 {{> dateRange this}}
             {{else}} {{#if isCheckBoxGroup}}
                 <div class="container" style="background-color:lightcyan;width:100%">
-                    {{name}}:
+                    {{lcname}}:
                     {{#each options}}
                         {{> checkboxGroup this}}
                     {{/each}}
                 </div>
             {{else}} {{#if isRadioGroup}}
                 <div class="container btn-group" style="font-size:large;background-color:lightcyan;width:100%;white-space: nowrap;">
-                    <span>{{name}}:</span>
+                    <span>{{lcname}}:</span>
                     {{#each options}}
                         {{> radioGroup this}}
                     {{/each}}

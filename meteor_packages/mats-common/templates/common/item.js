@@ -8,24 +8,45 @@ import {matsParamUtils } from 'meteor/randyp:mats-common';
 import {matsCollections } from 'meteor/randyp:mats-common';
 
 Template.item.helpers({
-    cbname: function() {
+    tcname: function() {
         // Make everything title case
-        var cbname = "";
+        var tcname = "";
         if (this.controlButtonText !== undefined) {
-            cbname = this.controlButtonText
+            tcname = this.controlButtonText
         } else {
-            cbname = this.name;
+            tcname = this.name;
         }
-        cbname = cbname.split(" ");
-        for (var i = 0; i < cbname.length; i++) {
-            cbname[i] = cbname[i].charAt(0).toUpperCase() + cbname[i].slice(1);
-            cbname[i] = cbname[i] === "Utc" ? "UTC" : cbname[i];
+        tcname = tcname.split(" ");
+        for (var i = 0; i < tcname.length; i++) {
+            tcname[i] = tcname[i].charAt(0).toUpperCase() + tcname[i].slice(1);
+            tcname[i] = tcname[i] === "Utc" ? "UTC" : tcname[i];
         }
-        cbname = cbname.join(" ").split("-");
-        for (var i = 0; i < cbname.length; i++) {
-            cbname[i] = cbname[i].charAt(0).toUpperCase() + cbname[i].slice(1);
+        tcname = tcname.join(" ").split("-");
+        for (var i = 0; i < tcname.length; i++) {
+            tcname[i] = tcname[i].charAt(0).toUpperCase() + tcname[i].slice(1);
         }
-        return cbname.join(" ");
+        return tcname.join(" ");
+    },
+    lcname: function() {
+        // Make everything lower case except first word
+        var lcname = "";
+        if (this.controlButtonText !== undefined) {
+            lcname = this.controlButtonText
+        } else {
+            lcname = this.name;
+        }
+        lcname = lcname.split(" ");
+        lcname[0] = lcname[0].charAt(0).toUpperCase() + lcname[0].slice(1);
+        for (var i = 1; i < lcname.length; i++) {
+            lcname[i] = lcname[i].charAt(0).toLowerCase() + lcname[i].slice(1);
+            lcname[i] = lcname[i] === "Utc" ? "UTC" : lcname[i];
+        }
+        lcname = lcname.join(" ").split("-");
+        lcname[0] = lcname[0].charAt(0).toUpperCase() + lcname[0].slice(1);
+        for (var i = 1; i < lcname.length; i++) {
+            lcname[i] = lcname[i].charAt(0).toLowerCase() + lcname[i].slice(1);
+        }
+        return lcname.join(" ");
     },
     textValue: function() {
         Session.get('lastUpdate');
