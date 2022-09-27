@@ -12,6 +12,12 @@ import {
     matsMethods
 } from 'meteor/randyp:mats-common';
 
+import {
+    Datepicker
+} from 'vanillajs-datepicker';
+
+let datepicker;
+
 Template.ScorecardHome.onCreated(function () {
     this.subscribe("matsPlotUtils").ready();
     this.subscribe("matsTypes").ready();
@@ -49,53 +55,86 @@ Template.ScorecardHome.helpers({
                 }
             }).Title;
         }
-    }
+    },
 });
 
 Template.ScorecardHome.events({
-    'change #date-range-custom-relative-radioGroup-relative'(event) {
-        if (document.getElementById('date-range-custom-relative-radioGroup-relative').checked === true) {
-            document.getElementById("date-range-item").style.display = "none";
-            document.getElementById("relative-date-range-value-item").style.display = "block";
-            document.getElementById("relative-date-range-type-item").style.display = "block";
-            document.getElementById("relative-date-range-type-item").value = "hours";
-            document.getElementById("cron-hour-item").style.display = "block";
-            document.getElementById("cron-day-item").style.display = "block";
-            document.getElementById("cron-day-of-month-item").style.display = "block";
-            document.getElementById("cron-month-item").style.display = "block";
-            document.getElementById("cron-year-item").style.display = "block";
+    'change #scorecard-schedule-mode-radioGroup-recurring'(event) {
+        if (document.getElementById('scorecard-schedule-mode-radioGroup-recurring').checked === true) {
+            document.getElementById("one-time-data-range-item").style.display = "none";
+            document.getElementById("scorecard-recurrence-interval-item").style.display = "block";
+            document.getElementById("scorecard-recurrence-interval-radioGroup-weekly").checked = true;
+            document.getElementById("these-hours-of-the-day-item").style.display = "block";
+            document.getElementById("these-days-of-the-week-item").style.display = "block";
+            document.getElementById("these-days-of-the-month-item").style.display = "none";
+            document.getElementById("these-months-item").style.display = "none";
         } else {
-            document.getElementById("date-range-item").style.display = "block";
-            document.getElementById("relative-date-range-value-item").style.display = "none";
-            document.getElementById("relative-date-range-type-item").style.display = "none";
-            document.getElementById("cron-hour-item").style.display = "none";
-            document.getElementById("cron-day-item").style.display = "none";
-            document.getElementById("cron-day-of-month-item").style.display = "none";
-            document.getElementById("cron-month-item").style.display = "none";
-            document.getElementById("cron-year-item").style.display = "none";
+            document.getElementById("one-time-data-range-item").style.display = "block";
+            document.getElementById("scorecard-recurrence-interval-item").style.display = "none";
+            document.getElementById("these-hours-of-the-day-item").style.display = "none";
+            document.getElementById("these-days-of-the-week-item").style.display = "none";
+            document.getElementById("these-days-of-the-month-item").style.display = "none";
+            document.getElementById("these-months-item").style.display = "none";
+            document.getElementById("these-years-item").style.display = "none";
         }
     },
-    'change #date-range-custom-relative-radioGroup-custom'(event) {
-        if (document.getElementById('date-range-custom-relative-radioGroup-custom').checked === true) {
-            document.getElementById("date-range-item").style.display = "block";
-            document.getElementById("relative-date-range-value-item").style.display = "none";
-            document.getElementById("relative-date-range-type-item").style.display = "none";
-            document.getElementById("cron-hour-item").style.display = "none";
-            document.getElementById("cron-day-item").style.display = "none";
-            document.getElementById("cron-day-of-month-item").style.display = "none";
-            document.getElementById("cron-month-item").style.display = "none";
-            document.getElementById("cron-year-item").style.display = "none";
+    'change #scorecard-schedule-mode-radioGroup-once'(event) {
+        if (document.getElementById('scorecard-schedule-mode-radioGroup-once').checked === true) {
+            document.getElementById("one-time-data-range-item").style.display = "block";
+            document.getElementById("scorecard-recurrence-interval-item").style.display = "none";
+            document.getElementById("these-hours-of-the-day-item").style.display = "none";
+            document.getElementById("these-days-of-the-week-item").style.display = "none";
+            document.getElementById("these-days-of-the-month-item").style.display = "none";
+            document.getElementById("these-months-item").style.display = "none";
+            document.getElementById("these-years-item").style.display = "none";
         } else {
-            document.getElementById("date-range-item").style.display = "none";
-            document.getElementById("relative-date-range-value-item").style.display = "block";
-            document.getElementById("relative-date-range-type-item").style.display = "block";
-            matsParamUtils.setInputForParamName("relative-type-item","hours");
-
-            document.getElementById("cron-hour-item").style.display = "block";
-            document.getElementById("cron-day-item").style.display = "block";
-            document.getElementById("cron-day-of-month-item").style.display = "block";
-            document.getElementById("cron-month-item").style.display = "block";
-            document.getElementById("cron-year-item").style.display = "block";
+            document.getElementById("one-time-data-range-item").style.display = "none";
+            matsParamUtils.setInputForParamName("relative-type-item", "hours");
+            document.getElementById("scorecard-recurrence-interval-item").style.display = "block";
+            document.getElementById("scorecard-recurrence-interval-radioGroup-weekly").checked = true;
+            document.getElementById("these-hours-of-the-day-item").style.display = "block";
+            document.getElementById("these-days-of-the-week-item").style.display = "block";
+            document.getElementById("these-days-of-the-month-item").style.display = "none";
+            document.getElementById("these-months-item").style.display = "none";
+        }
+    },
+    'change #scorecard-recurrence-interval-item'(event) {
+        if (document.getElementById("scorecard-recurrence-interval-radioGroup-daily").checked) {
+            document.getElementById("these-hours-of-the-day-item").style.display = "block";
+            document.getElementById("these-days-of-the-week-item").style.display = "none";
+            document.getElementById("these-days-of-the-month-item").style.display = "none";
+            document.getElementById("these-months-item").style.display = "none";
+        }
+        if (document.getElementById("scorecard-recurrence-interval-radioGroup-weekly").checked) {
+            document.getElementById("these-hours-of-the-day-item").style.display = "block";
+            document.getElementById("these-days-of-the-week-item").style.display = "block";
+            document.getElementById("these-days-of-the-month-item").style.display = "none";
+            document.getElementById("these-months-item").style.display = "none";
+        }
+        if (document.getElementById("scorecard-recurrence-interval-radioGroup-monthly").checked) {
+            document.getElementById("these-hours-of-the-day-item").style.display = "block";
+            document.getElementById("these-days-of-the-week-item").style.display = "none";
+            document.getElementById("these-days-of-the-month-item").style.display = "block";
+            document.getElementById("these-months-item").style.display = "none";
+        }
+        if (document.getElementById("scorecard-recurrence-interval-radioGroup-yearly").checked) {
+            document.getElementById("these-hours-of-the-day-item").style.display = "block";
+            document.getElementById("these-days-of-the-week-item").style.display = "none";
+            document.getElementById("these-days-of-the-month-item").style.display = "block";
+            document.getElementById("these-months-item").style.display = "block";
+        }
+    },
+    'click #controlButton-scorecard-ends-on-value' (event) {
+            if (datepicker === undefined) {
+            today=new Date();
+            datepicker = new Datepicker(
+                document.getElementById('scorecard-ends-on-textInput'),
+                {
+                    buttonClass: 'btn',
+                    autohide: true,
+                    defaultViewDate:today,
+                    minDate:today,
+                });
         }
     }
 });

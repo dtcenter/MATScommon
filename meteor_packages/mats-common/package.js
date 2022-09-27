@@ -26,7 +26,8 @@ Package.onUse(function (api) {
         "node-file-cache" : "1.0.2",
         "python-shell": "1.0.8",
         "couchbase": "3.2.3",
-        "simpl-schema": "1.12.0"
+        "simpl-schema": "1.12.0",
+        "vanillajs-datepicker":"1.2.0"
     });
     api.mainModule("server/main.js", "server");
     api.mainModule("client/main.js", "client");
