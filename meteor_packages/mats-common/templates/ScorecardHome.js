@@ -17,6 +17,7 @@ import {
 } from 'vanillajs-datepicker';
 
 let datepicker;
+let scorecardEndsOnItemTooltip;
 
 Template.ScorecardHome.onCreated(function () {
     this.subscribe("matsPlotUtils").ready();
@@ -61,7 +62,7 @@ Template.ScorecardHome.helpers({
 Template.ScorecardHome.events({
     'change #scorecard-schedule-mode-radioGroup-recurring'(event) {
         if (document.getElementById('scorecard-schedule-mode-radioGroup-recurring').checked === true) {
-            document.getElementById("one-time-data-range-item").style.display = "none";
+            document.getElementById("dates-item").style.display = "none";
             document.getElementById("scorecard-recurrence-interval-item").style.display = "block";
             document.getElementById("scorecard-recurrence-interval-radioGroup-weekly").checked = true;
             document.getElementById("these-hours-of-the-day-item").style.display = "block";
@@ -69,7 +70,7 @@ Template.ScorecardHome.events({
             document.getElementById("these-days-of-the-month-item").style.display = "none";
             document.getElementById("these-months-item").style.display = "none";
         } else {
-            document.getElementById("one-time-data-range-item").style.display = "block";
+            document.getElementById("dates-item").style.display = "block";
             document.getElementById("scorecard-recurrence-interval-item").style.display = "none";
             document.getElementById("these-hours-of-the-day-item").style.display = "none";
             document.getElementById("these-days-of-the-week-item").style.display = "none";
@@ -80,7 +81,7 @@ Template.ScorecardHome.events({
     },
     'change #scorecard-schedule-mode-radioGroup-once'(event) {
         if (document.getElementById('scorecard-schedule-mode-radioGroup-once').checked === true) {
-            document.getElementById("one-time-data-range-item").style.display = "block";
+            document.getElementById("dates-item").style.display = "block";
             document.getElementById("scorecard-recurrence-interval-item").style.display = "none";
             document.getElementById("these-hours-of-the-day-item").style.display = "none";
             document.getElementById("these-days-of-the-week-item").style.display = "none";
@@ -88,7 +89,7 @@ Template.ScorecardHome.events({
             document.getElementById("these-months-item").style.display = "none";
             document.getElementById("these-years-item").style.display = "none";
         } else {
-            document.getElementById("one-time-data-range-item").style.display = "none";
+            document.getElementById("dates-item").style.display = "none";
             matsParamUtils.setInputForParamName("relative-type-item", "hours");
             document.getElementById("scorecard-recurrence-interval-item").style.display = "block";
             document.getElementById("scorecard-recurrence-interval-radioGroup-weekly").checked = true;
@@ -137,4 +138,5 @@ Template.ScorecardHome.events({
                 });
         }
     }
+ 
 });
