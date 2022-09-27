@@ -2,19 +2,20 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import { matsTypes } from 'meteor/randyp:mats-common';
-import { matsCollections } from 'meteor/randyp:mats-common';
-import { matsPlotUtils } from 'meteor/randyp:mats-common';
-import { matsParamUtils } from 'meteor/randyp:mats-common';
+import {matsTypes} from 'meteor/randyp:mats-common';
+import {matsCollections} from 'meteor/randyp:mats-common';
+import {matsPlotUtils} from 'meteor/randyp:mats-common';
+import {matsParamUtils} from 'meteor/randyp:mats-common';
+
 var allGroups = {};
 Template.curveParamItemGroup.helpers({
     curveParamGroups: function (c) {
         const label = c.label;
         const curves = Session.get("Curves");
         const index = curves.findIndex(
-           function(obj){
-               return obj.label === label;
-           }
+            function (obj) {
+                return obj.label === label;
+            }
         );
 
         // create a set of groups each with an array of 6 params for display
@@ -83,8 +84,14 @@ Template.curveParamItemGroup.helpers({
         }
         const groupSize = pattern.groupSize;
         const displayParams = pattern.displayParams;
-        for (var di=0; di < displayParams.length;di++) {
-            pValues.push({name: displayParams[di], value: c[displayParams[di]], color:c.color, curve:c.label, index:index});
+        for (var di = 0; di < displayParams.length; di++) {
+            pValues.push({
+                name: displayParams[di],
+                value: c[displayParams[di]],
+                color: c.color,
+                curve: c.label,
+                index: index
+            });
         }
 
         // create array of parameter value display groups each of groupSize
@@ -113,13 +120,13 @@ Template.curveParamItemGroup.helpers({
         allGroups[c.label] = pGroups;
         return pGroups;
     },
-    curveNumber: function(elem) {
+    curveNumber: function (elem) {
         return elem.index;
     },
-    curveParams: function(paramGroup) {
-      return paramGroup;
+    curveParams: function (paramGroup) {
+        return paramGroup;
     },
-    label: function(elem) {
+    label: function (elem) {
         var pLabel = "";
         if (matsPlotUtils.getPlotType() === matsTypes.PlotTypes.scatter2d) {
             const pNameArr = elem.name.match(/([xy]axis-)(.*)/);
@@ -133,7 +140,7 @@ Template.curveParamItemGroup.helpers({
                 if (p.controlButtonText) {
                     pLabel = (prefix + p.controlButtonText);
                 } else {
-                    pLabel =  elem.name;
+                    pLabel = elem.name;
                 }
             }
         } else {
@@ -158,27 +165,27 @@ Template.curveParamItemGroup.helpers({
         }
         return pLabel.join(" ");
     },
-    name: function(elem){
+    name: function (elem) {
         return elem.name;
     },
-    id: function(elem){
+    id: function (elem) {
         return elem.name;
     },
-    buttonId: function(elem) {
+    buttonId: function (elem) {
         const name = new String(elem.name);
         const upperName = name.toUpperCase();
         const curveNumber = elem.index;
         const spanId = upperName + "-curve-" + curveNumber + "-Button";
         return spanId;
     },
-    spanId: function(elem) {
+    spanId: function (elem) {
         const name = new String(elem.name);
         const upperName = name.toUpperCase();
         const curveNumber = elem.index;
         const spanId = upperName + "-curve-" + curveNumber + "-Item";
         return spanId;
     },
-    value: function(elem){
+    value: function (elem) {
         // have to get this from the session
         const curve = Session.get("Curves")[elem.index];
         if (curve === undefined) {
@@ -186,39 +193,39 @@ Template.curveParamItemGroup.helpers({
         }
         var value = curve[elem.name];
         var text = "";
-        if ( Object.prototype.toString.call( value ) === '[object Array]' ) {
+        if (Object.prototype.toString.call(value) === '[object Array]') {
             if (value.length === 1) {
                 text = value[0];
-            } else if (value.length > 1){
-                text = value[0] + " .. " + value[value.length -1];
+            } else if (value.length > 1) {
+                text = value[0] + " .. " + value[value.length - 1];
             }
         } else {
             text = value;
         }
         return text;
     },
-    defaultColor: function(elem){
+    defaultColor: function (elem) {
         return elem.color;
     },
-    border: function(elem) {
+    border: function (elem) {
         var elementChanged = Session.get("elementChanged");
         const name = elem.name; // for xaxis params
         const curve = elem.curve;
         const adb = (name === Session.get("activeDisplayButton"));
         const isEditMode = (curve === Session.get("editMode"));
         const inputElemIsVisible = matsParamUtils.isInputElementVisible(name);
-        if (adb && isEditMode &&  inputElemIsVisible) {
+        if (adb && isEditMode && inputElemIsVisible) {
             return "solid";
         }
         return "";
     },
-    editCurve: function() {
+    editCurve: function () {
         return Session.get('editMode');
     },
-    editTarget: function() {
+    editTarget: function () {
         return Session.get("eventTargetCurve");
     },
-    displayParam: function(elem) {
+    displayParam: function (elem) {
         if (elem.name === "label") {
             return "none";
         }
@@ -229,11 +236,13 @@ Template.curveParamItemGroup.helpers({
         // Second - Check the hide/show state based on the parameter hideOtherFor map in the parameter nad the state of this particular curve
         if (visibilityControllingParam !== undefined) {
             const curve = Session.get("Curves")[elem.index];
-            const hideOtherFor = visibilityControllingParam.hideOtherFor[elem.name][0];
-            if (curve!== undefined && visibilityControllingParam !== undefined && curve[visibilityControllingParam.name] !== undefined && curve[visibilityControllingParam.name] === hideOtherFor) {
+            const hideOtherFor = visibilityControllingParam.hideOtherFor[elem.name];
+            if (curve !== undefined && curve[visibilityControllingParam.name] !== undefined && hideOtherFor.indexOf(curve[visibilityControllingParam.name]) !== -1) {
+                elem.purposelyHidden = true;
                 return "none";
             }
         }
+        elem.purposelyHidden = false;
         return "block";
     }
 });
