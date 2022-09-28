@@ -17,7 +17,6 @@ import {
 } from 'vanillajs-datepicker';
 
 let datepicker;
-let scorecardEndsOnItemTooltip;
 
 Template.ScorecardHome.onCreated(function () {
     this.subscribe("matsPlotUtils").ready();
@@ -60,83 +59,30 @@ Template.ScorecardHome.helpers({
 });
 
 Template.ScorecardHome.events({
-    'change #scorecard-schedule-mode-radioGroup-recurring'(event) {
-        if (document.getElementById('scorecard-schedule-mode-radioGroup-recurring').checked === true) {
-            document.getElementById("dates-item").style.display = "none";
-            document.getElementById("scorecard-recurrence-interval-item").style.display = "block";
-            document.getElementById("scorecard-recurrence-interval-radioGroup-weekly").checked = true;
-            document.getElementById("these-hours-of-the-day-item").style.display = "block";
-            document.getElementById("these-days-of-the-week-item").style.display = "block";
-            document.getElementById("these-days-of-the-month-item").style.display = "none";
-            document.getElementById("these-months-item").style.display = "none";
-        } else {
-            document.getElementById("dates-item").style.display = "block";
-            document.getElementById("scorecard-recurrence-interval-item").style.display = "none";
-            document.getElementById("these-hours-of-the-day-item").style.display = "none";
-            document.getElementById("these-days-of-the-week-item").style.display = "none";
-            document.getElementById("these-days-of-the-month-item").style.display = "none";
-            document.getElementById("these-months-item").style.display = "none";
-            document.getElementById("these-years-item").style.display = "none";
-        }
-    },
-    'change #scorecard-schedule-mode-radioGroup-once'(event) {
-        if (document.getElementById('scorecard-schedule-mode-radioGroup-once').checked === true) {
-            document.getElementById("dates-item").style.display = "block";
-            document.getElementById("scorecard-recurrence-interval-item").style.display = "none";
-            document.getElementById("these-hours-of-the-day-item").style.display = "none";
-            document.getElementById("these-days-of-the-week-item").style.display = "none";
-            document.getElementById("these-days-of-the-month-item").style.display = "none";
-            document.getElementById("these-months-item").style.display = "none";
-            document.getElementById("these-years-item").style.display = "none";
-        } else {
-            document.getElementById("dates-item").style.display = "none";
-            matsParamUtils.setInputForParamName("relative-type-item", "hours");
-            document.getElementById("scorecard-recurrence-interval-item").style.display = "block";
-            document.getElementById("scorecard-recurrence-interval-radioGroup-weekly").checked = true;
-            document.getElementById("these-hours-of-the-day-item").style.display = "block";
-            document.getElementById("these-days-of-the-week-item").style.display = "block";
-            document.getElementById("these-days-of-the-month-item").style.display = "none";
-            document.getElementById("these-months-item").style.display = "none";
-        }
-    },
-    'change #scorecard-recurrence-interval-item'(event) {
-        if (document.getElementById("scorecard-recurrence-interval-radioGroup-daily").checked) {
-            document.getElementById("these-hours-of-the-day-item").style.display = "block";
-            document.getElementById("these-days-of-the-week-item").style.display = "none";
-            document.getElementById("these-days-of-the-month-item").style.display = "none";
-            document.getElementById("these-months-item").style.display = "none";
-        }
-        if (document.getElementById("scorecard-recurrence-interval-radioGroup-weekly").checked) {
-            document.getElementById("these-hours-of-the-day-item").style.display = "block";
-            document.getElementById("these-days-of-the-week-item").style.display = "block";
-            document.getElementById("these-days-of-the-month-item").style.display = "none";
-            document.getElementById("these-months-item").style.display = "none";
-        }
-        if (document.getElementById("scorecard-recurrence-interval-radioGroup-monthly").checked) {
-            document.getElementById("these-hours-of-the-day-item").style.display = "block";
-            document.getElementById("these-days-of-the-week-item").style.display = "none";
-            document.getElementById("these-days-of-the-month-item").style.display = "block";
-            document.getElementById("these-months-item").style.display = "none";
-        }
-        if (document.getElementById("scorecard-recurrence-interval-radioGroup-yearly").checked) {
-            document.getElementById("these-hours-of-the-day-item").style.display = "block";
-            document.getElementById("these-days-of-the-week-item").style.display = "none";
-            document.getElementById("these-days-of-the-month-item").style.display = "block";
-            document.getElementById("these-months-item").style.display = "block";
-        }
-    },
-    'click #controlButton-scorecard-ends-on-value' (event) {
-            if (datepicker === undefined) {
-            today=new Date();
+    'click #controlButton-scorecard-ends-on-value'(event) {
+        today = new Date();
+        if (datepicker === undefined) {
+            // declared at top of file - lazy instantiation
             datepicker = new Datepicker(
-                document.getElementById('scorecard-ends-on-textInput'),
-                {
+                document.getElementById('scorecard-ends-on-textInput'), {
                     buttonClass: 'btn',
                     autohide: true,
-                    defaultViewDate:today,
-                    minDate:today,
+                    defaultViewDate: today,
+                    minDate: today,
+                    container: "controlButton-scorecard-ends-on-value",
+                    orientation: 'top',
+                    title: "Scorecard ends on",
                 });
         }
+        datepicker.setDate(today);
+        datepicker.refresh();
+        datepicker.show();
+    },
+    'change #scorecard-schedule-mode-radioGroup-recurring'(event) {
+        // this event is only fired when 'recurring' is selected
+        // firing off a blur event will cause the hideForOthers stuff in radiogroup.js to happen
+        const defaultOption = matsParamUtils.getParameterForName('scorecard-recurrence-interval').default;
+        let elem = document.getElementById('scorecard-recurrence-interval-radioGroup-' + defaultOption);
+        elem.dispatchEvent(new Event("blur"));
     }
- 
 });
