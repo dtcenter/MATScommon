@@ -20,25 +20,25 @@ Template.radioGroup.helpers({
     }
 });
 
- /*
-    NOTE: hideOtherFor - radio button groups.
-    The hideOtherFor plotParam option for radio groups is similar to hideOtherFor for select params.
-    The key in the map is the param name that is to be hidden for any of the values in the value array.
-    hideOtherFor: {
-        'param-name-to-be-hidden':['checked-option-that-hides','other-checked-option-that-hides', ...]
-    }
+/*
+   NOTE: hideOtherFor - radio button groups.
+   The hideOtherFor plotParam option for radio groups is similar to hideOtherFor for select params.
+   The key in the map is the param name that is to be hidden for any of the values in the value array.
+   hideOtherFor: {
+       'param-name-to-be-hidden':['checked-option-that-hides','other-checked-option-that-hides', ...]
+   }
 
-    example:
-    hideOtherFor: {
-        'scorecard-recurrence-interval':['once'],
-        'these-hours-of-the-day':['once'],
-        'these-days-of-the-week':['once'],
-        'these-days-of-the-month':['once'],
-        'these-months':['once'],
-        'dates':['recurring']
-    },
+   example:
+   hideOtherFor: {
+       'scorecard-recurrence-interval':['once'],
+       'these-hours-of-the-day':['once'],
+       'these-days-of-the-week':['once'],
+       'these-days-of-the-month':['once'],
+       'these-months':['once'],
+       'dates':['recurring']
+   },
 
-    */
+   */
 Template.radioGroup.events({
     'change, blur': function (event) {
         try {

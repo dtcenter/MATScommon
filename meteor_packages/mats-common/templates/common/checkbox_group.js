@@ -12,7 +12,11 @@ Template.checkboxGroup.helpers({
         }
     },
     labelValue: function (optionsMap) {
-        return optionsMap[this];
+        if (optionsMap !== undefined) {
+            return optionsMap[this];
+        } else {
+            return this;
+        }
     }
 });
 

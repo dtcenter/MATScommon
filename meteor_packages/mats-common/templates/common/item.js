@@ -3,9 +3,20 @@
  */
 
 import { matsTypes } from 'meteor/randyp:mats-common';
-import { matsCurveUtils } from  'meteor/randyp:mats-common';
+import {matsSelectUtils } from 'meteor/randyp:mats-common';
 import {matsParamUtils } from 'meteor/randyp:mats-common';
 import {matsCollections } from 'meteor/randyp:mats-common';
+
+Template.item.onRendered( function () {
+    try {
+        if ((typeof this.data.type !== 'undefined') && (this.data.type === matsTypes.InputTypes.radioGroup)) {
+            matsSelectUtils.checkHideOther(this.data, true); // calls checkDisable
+        }
+    } catch (e) {
+        e.message = "Error in item.js rendered function checking to hide or disable other elements: " + e.message;
+        setError(e);
+    }
+});
 
 Template.item.helpers({
     tcname: function() {

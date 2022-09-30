@@ -119,8 +119,21 @@ const checkHideOther = function (param, firstRender) {
                 if (!elem) {
                     return;
                 }
-                const selectedOptions = elem.selectedOptions;
-                const selectedText = selectedOptions && selectedOptions.length > 0 ? selectedOptions[0].text : "";
+                let selectedOptions;
+                let selectedText;
+                if (param.type === matsTypes.InputTypes.radioGroup) {
+                    const radioButtons = elem.getElementsByTagName('input');
+                    for (let ridx = 0; ridx < radioButtons.length; ridx++) {
+                        if (radioButtons[ridx].checked) {
+                            selectedOptions = radioButtons[ridx].id.split('-');
+                            selectedText = selectedOptions[selectedOptions.length - 1];
+                            break;
+                        }
+                    }
+                } else {
+                    selectedOptions = elem.selectedOptions;
+                    selectedText = selectedOptions && selectedOptions.length > 0 ? selectedOptions[0].text : "";
+                }
 
                 var otherInputElement = matsParamUtils.getInputElementForParamName(controlledSelectors[i]);
 

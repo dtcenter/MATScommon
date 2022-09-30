@@ -12,14 +12,14 @@
             {{else}} {{#if isDateRange}}
                 {{> dateRange this}}
             {{else}} {{#if isCheckBoxGroup}}
-                <div class="container" style="background-color:lightcyan;width:100%">
+                <div class="container" id="{{name}}-{{type}}" style="font-size:large;background-color:lightcyan;width:100%;white-space: nowrap;">
                     {{lcname}}:
                     {{#each options}}
                         {{> checkboxGroup this}}
                     {{/each}}
                 </div>
             {{else}} {{#if isRadioGroup}}
-                <div class="container btn-group" style="font-size:large;background-color:lightcyan;width:100%;white-space: nowrap;">
+                <div class="container btn-group" id="{{name}}-{{type}}" style="font-size:large;background-color:lightcyan;width:100%;white-space: nowrap;">
                     <span>{{lcname}}:</span>
                     {{#each options}}
                         {{> radioGroup this}}
