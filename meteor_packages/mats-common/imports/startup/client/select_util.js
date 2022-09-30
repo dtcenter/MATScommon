@@ -135,8 +135,28 @@ const checkHideOther = function (param, firstRender) {
                     selectedText = selectedOptions && selectedOptions.length > 0 ? selectedOptions[0].text : "";
                 }
 
-                var otherInputElement = matsParamUtils.getInputElementForParamName(controlledSelectors[i]);
+                let doNotShow = false;
+                if (param.type === matsTypes.InputTypes.radioGroup && param.superiorRadioGroups !== undefined) {
+                    // if a superior radio group wants the target element hidden and it already is, leave it be.
+                    for (let sidx = 0; sidx < param.superiorRadioGroups.length; sidx++) {
+                        const superiorName = param.superiorRadioGroups[sidx];
+                        const superiorHideOtherFor = matsCollections.PlotParams.findOne({name: superiorName}).hideOtherFor;
+                        const superiorInputElementOptions = matsParamUtils.getInputElementForParamName(superiorName).getElementsByTagName('input');
+                        let superiorSelectedText = "";
+                        for (let sidx = 0; sidx < superiorInputElementOptions.length; sidx++) {
+                            if (superiorInputElementOptions[sidx].checked) {
+                                let superiorSelectedOptions = superiorInputElementOptions[sidx].id.split('-');
+                                superiorSelectedText = superiorSelectedOptions[superiorSelectedOptions.length - 1];
+                                break;
+                            }
+                        }
+                        if (superiorHideOtherFor !== undefined && Object.keys(superiorHideOtherFor).indexOf(controlledSelectors[i]) !== -1 && superiorHideOtherFor[controlledSelectors[i]].indexOf(superiorSelectedText) !== -1) {
+                            doNotShow = true;
+                        }
+                    }
+                }
 
+                let otherInputElement = matsParamUtils.getInputElementForParamName(controlledSelectors[i]);
                 var selectorControlElem;
                 if ((firstRender == true && param.default == param.hideOtherFor[controlledSelectors[i]]) ||
                     (param.hideOtherFor[controlledSelectors[i]] === matsTypes.InputTypes.unused && selectedText === "") ||
@@ -150,7 +170,7 @@ const checkHideOther = function (param, firstRender) {
                     // don't change anything if the parent parameter is unused in this curve and that situation isn't specified in hideOtherFor.
                     selectorControlElem = document.getElementById(controlledSelectors[i] + '-item');
                     if (selectorControlElem && selectorControlElem.style) {
-                        if (param.controlButtonVisibility !== 'none') {
+                        if (param.controlButtonVisibility !== 'none' && !doNotShow) {
                             selectorControlElem.style.display = "block";
                             selectorControlElem.purposelyHidden = false;
                         }
