@@ -18,6 +18,10 @@ Template.color.events({
         } catch (error){
             matsParamUtils.setValueTextForParamName(event.target.name, "#000000"); // make it black
         }
+    },
+    'change': function (event) {
+        document.getElementById("controlButton-" + event.currentTarget.name + "-value").style.backgroundColor=event.currentTarget.value;
+        this.value=event.currentTarget.value;
     }
 });
 

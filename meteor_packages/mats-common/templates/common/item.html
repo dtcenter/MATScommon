@@ -35,7 +35,11 @@
             <button type="button" class="control-button btn btn-info mediumPublicSans" name="{{controlButton}}-value" id="{{controlButton}}-value" style="display:{{controlButtonCovered}}"> {{textValue}}</button>
             <button style="background-color:#bbffbb; color: #000000; margin-left: 0; margin-right: 1em" type="button" class="btn btn-info boldedPublicSans help">?</button>
         {{else}}
-            <button type="button" class="control-button btn btn-info mediumPublicSans" name="{{controlButton}}-value" id="{{controlButton}}-value" style="display:{{controlButtonCovered}}; margin-right: 1em; background-color:{{defaultColor}}"> {{textValue}}</button>
+            {{#if iscolor}}
+                <button type="button" class="control-button btn btn-info mediumPublicSans" name="{{controlButton}}-value" id="{{controlButton}}-value" style="display:{{controlButtonCovered}}; margin-right: 1em; background-color:{{defaultColor}}"> {{textValue}}</button>
+            {{else}}
+                <button type="button" class="control-button btn btn-info mediumPublicSans" name="{{controlButton}}-value" id="{{controlButton}}-value" style="display:{{controlButtonCovered}}; margin-right: 1em;"> {{textValue}}</button>
+            {{/if}}
         {{/if}}
     </div>
 </template>
