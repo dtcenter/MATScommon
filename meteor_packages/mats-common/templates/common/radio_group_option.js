@@ -52,20 +52,6 @@ Template.radioGroup.events({
             const radioGroupParam = matsCollections.PlotParams.findOne({name: event.target.parentElement.id.replace('-radioGroup','')});
             if (radioGroupParam !== 'undefined') {
                 matsSelectUtils.checkHideOther(radioGroupParam, false); // calls checkDisable
-
-                // trigger changes in dependent radio groups, if any exist, without changing their values
-                // this makes sure that *their* hideOtherFor is correct
-                if (radioGroupParam.dependentRadioGroups !== undefined) {
-                    for (let didx = 0; didx < radioGroupParam.dependentRadioGroups.length; didx++) {
-                        let dependentElemOptions = matsParamUtils.getInputElementForParamName(radioGroupParam.dependentRadioGroups[didx]).getElementsByTagName('input');
-                        for (let deidx = 0; deidx < dependentElemOptions.length; deidx++) {
-                            if (dependentElemOptions[deidx].checked) {
-                                $("#" + dependentElemOptions[deidx].id).trigger('change');
-                                break;
-                            }
-                        }
-                    }
-                }
             }
         } catch (error){
             matsParamUtils.setValueTextForParamName(event.target.name, "");

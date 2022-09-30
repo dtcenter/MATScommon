@@ -159,6 +159,21 @@ const checkHideOther = function (param, firstRender) {
                     otherInputElement.options[otherInputElement.selectedIndex].scrollIntoView();
                 }
             }
+            if (param.type === matsTypes.InputTypes.radioGroup) {
+                // trigger changes in dependent radio groups, if any exist, without changing their values
+                // this makes sure that *their* hideOtherFor is correct
+                if (param.dependentRadioGroups !== undefined) {
+                    for (let didx = 0; didx < param.dependentRadioGroups.length; didx++) {
+                        let dependentElemOptions = matsParamUtils.getInputElementForParamName(param.dependentRadioGroups[didx]).getElementsByTagName('input');
+                        for (let deidx = 0; deidx < dependentElemOptions.length; deidx++) {
+                            if (dependentElemOptions[deidx].checked) {
+                                $("#" + dependentElemOptions[deidx].id).trigger('change');
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
             checkDisableOther(param, firstRender);
         }
     } catch (e) {
