@@ -197,6 +197,9 @@ Package.onUse(function (api) {
     api.addFiles("templates/common/text_input.html", "client");
     api.addFiles("templates/common/text_input.js", "client");
 
+    api.addFiles("templates/common/color.html", "client");
+    api.addFiles("templates/common/color.js", "client");
+
     api.addFiles("templates/graph/text_output.html", "client");
     api.addFiles("templates/graph/text_output.js", "client");
 

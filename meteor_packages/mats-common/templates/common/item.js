@@ -84,6 +84,9 @@ Template.item.helpers({
     isInput: function () {
         return ((typeof this.type !== 'undefined')  && (this.type == matsTypes.InputTypes.textInput));
     },
+    iscolor: function () {
+        return ((typeof this.type !== 'undefined')  && (this.type == matsTypes.InputTypes.color));
+    },
     isSpinner: function () {
         return ((typeof this.type !== 'undefined') && (this.type == matsTypes.InputTypes.numberSpinner));
     },
@@ -149,6 +152,9 @@ Template.item.helpers({
         } else {
             return "5";
         }
+    },
+    defaultColor: function() {
+        return this.default;
     }
 });
 

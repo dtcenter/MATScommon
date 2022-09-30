@@ -29,6 +29,7 @@ var DbTypes = {
 
 var InputTypes = {
     textInput: 'textInput',
+    color:"color",
     select: 'select',
     selectOrderEnforced: 'selectOrderEnforced',
     numberSpinner: 'numberSpinner',
