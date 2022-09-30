@@ -2,7 +2,10 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import { matsTypes } from 'meteor/randyp:mats-common';
+import { matsCollections } from 'meteor/randyp:mats-common';
+import { matsSelectUtils } from 'meteor/randyp:mats-common';
+import { matsParamUtils } from 'meteor/randyp:mats-common';
+
 Template.radioGroup.helpers({
     checkedByDefault: function (def) {
         if (def == this) {
@@ -44,35 +47,27 @@ Template.radioGroup.events({
         try {
             var text = event.currentTarget.value;
             matsParamUtils.setValueTextForParamName(event.target.name,text);
+
             // check hide other for
-            /*
-            document.getElementById(event.currentTarget.id).value
-            matsParamUtils.getParameterForName(event.currentTarget.name).hideOtherFor
-            Object.keys(matsParamUtils.getParameterForName(event.currentTarget.name).hideOtherFor)
-            document.getElementById(event.currentTarget.id).parentElement.style.display="none"
-            */
-            const value = document.getElementById(event.currentTarget.id).value;
-            if (matsParamUtils.getParameterForName(event.currentTarget.name) === undefined) {
-                return;
-            }
-            const hideOthersFor = matsParamUtils.getParameterForName(event.currentTarget.name).hideOtherFor
-            if (hideOthersFor === undefined) {
-                return;
-            }
-            const paramsOfConcern = Object.keys(hideOthersFor);
-            paramsOfConcern.forEach(function(p,i) {
-                let itemElem = document.getElementById(p + "-item");
-                if (itemElem === undefined) {
-                    return;
+            const radioGroupParam = matsCollections.PlotParams.findOne({name: event.target.parentElement.id.replace('-radioGroup','')});
+            if (radioGroupParam !== 'undefined') {
+                matsSelectUtils.checkHideOther(radioGroupParam, false); // calls checkDisable
+
+                // trigger changes in dependent radio groups, if any exist, without changing their values
+                // this makes sure that *their* hideOtherFor is correct
+                if (radioGroupParam.dependentRadioGroups !== undefined) {
+                    for (let didx = 0; didx < radioGroupParam.dependentRadioGroups.length; didx++) {
+                        let dependentElemId = radioGroupParam.dependentRadioGroups[didx] + '-radioGroup';
+                        let dependentElemOptions = document.getElementById(dependentElemId).getElementsByTagName('input');
+                        for (let deidx = 0; deidx < dependentElemOptions.length; deidx++) {
+                            if (dependentElemOptions[deidx].checked) {
+                                $("#" + dependentElemOptions[deidx].id).trigger('change');
+                                break;
+                            }
+                        }
+                    }
                 }
-                if (hideOthersFor[p].includes(value)) {
-                    // got to hide this one
-                    itemElem.style.display="none";
-                } else {
-                    // got to show this one
-                    itemElem.style.display="block"
-                }
-            });
+            }
         } catch (error){
             matsParamUtils.setValueTextForParamName(event.target.name, "");
         }
