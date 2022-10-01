@@ -38,6 +38,13 @@ Template.item.helpers({
         }
         return tcname.join(" ");
     },
+    fa: function() {
+        if (this.controlButtonFA !== undefined) {
+            return "<i class=\"" + this.controlButtonFA + "\"></i>";
+        } else {
+            return "";
+        }
+    },
     lcname: function() {
         // Make everything lower case except first word
         var lcname = "";
