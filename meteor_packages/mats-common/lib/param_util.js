@@ -80,7 +80,7 @@ const setValueTextForParamName = function (paramName, text) {
             }
         }
         const elem = getValueElementForParamName(paramName);
-        if (elem.textContent !== text) {
+        if (elem != null && elem.textContent !== text) {
             delete(elem.textContent);
             elem.textContent = text;
         }

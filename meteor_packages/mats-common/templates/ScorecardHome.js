@@ -84,5 +84,17 @@ Template.ScorecardHome.events({
         const defaultOption = matsParamUtils.getParameterForName('scorecard-recurrence-interval').default;
         let elem = document.getElementById('scorecard-recurrence-interval-radioGroup-' + defaultOption);
         elem.dispatchEvent(new Event("blur"));
-    }
+    },
+    'change #scorecard-color-theme-radioGroup-GreenRed'(event) {
+        document.querySelector('[name="major-truth-color-icon"]').style.color="#00ff00";
+        document.querySelector('[name="minor-truth-color-icon"]').style.color="#00ff00";
+        document.querySelector('[name="major-source-color-icon"]').style.color="#ff0000";
+        document.querySelector('[name="minor-source-color-icon"]').style.color="#ff0000";
+    },
+    'change #scorecard-color-theme-radioGroup-BlueRed'(event) {
+        document.querySelector('[name="major-truth-color-icon"]').style.color="#0000ff";
+        document.querySelector('[name="minor-truth-color-icon"]').style.color="#0000ff";
+        document.querySelector('[name="major-source-color-icon"]').style.color="#ff0000";
+        document.querySelector('[name="minor-source-color-icon"]').style.color="#ff0000";
+    },
 });

@@ -39,8 +39,9 @@ Template.item.helpers({
         return tcname.join(" ");
     },
     fa: function() {
+        // font awesome helper
         if (this.controlButtonFA !== undefined) {
-            return "<i class=\"" + this.controlButtonFA + "\"></i>";
+            return "<i name=\"" + this.name + "-icon" + "\" style=\"color:" + this.default + "\"  class=\"" + this.controlButtonFA + "\"></i>";
         } else {
             return "";
         }
@@ -53,6 +54,12 @@ Template.item.helpers({
         } else {
             lcname = this.name;
         }
+        /*
+        This little secion is transforming the lcname into something more presentable
+        like "scorecard-schedule-mode" into "Scorecard schedule mode"
+        or
+        "scorecard-percent-stdv" into "Scorecard percent stdv"
+        */
         lcname = lcname.split(" ");
         lcname[0] = lcname[0].charAt(0).toUpperCase() + lcname[0].slice(1);
         for (var i = 1; i < lcname.length; i++) {
@@ -102,7 +109,7 @@ Template.item.helpers({
     isInput: function () {
         return ((typeof this.type !== 'undefined')  && (this.type == matsTypes.InputTypes.textInput));
     },
-    iscolor: function () {
+    isColor: function () {
         return ((typeof this.type !== 'undefined')  && (this.type == matsTypes.InputTypes.color));
     },
     isSpinner: function () {
