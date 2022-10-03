@@ -125,7 +125,7 @@ const checkHideOther = function (param, firstRender) {
                     const radioButtons = elem.getElementsByTagName('input');
                     for (let ridx = 0; ridx < radioButtons.length; ridx++) {
                         if (radioButtons[ridx].checked) {
-                            selectedOptions = radioButtons[ridx].id.split('-');
+                            selectedOptions = radioButtons[ridx].id.split('-radioGroup-');
                             selectedText = selectedOptions[selectedOptions.length - 1];
                             break;
                         }
@@ -145,7 +145,7 @@ const checkHideOther = function (param, firstRender) {
                         let superiorSelectedText = "";
                         for (let sidx = 0; sidx < superiorInputElementOptions.length; sidx++) {
                             if (superiorInputElementOptions[sidx].checked) {
-                                let superiorSelectedOptions = superiorInputElementOptions[sidx].id.split('-');
+                                let superiorSelectedOptions = superiorInputElementOptions[sidx].id.split('-radioGroup-');
                                 superiorSelectedText = superiorSelectedOptions[superiorSelectedOptions.length - 1];
                                 break;
                             }
