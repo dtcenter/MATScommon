@@ -192,6 +192,9 @@ Package.onUse(function (api) {
     api.addFiles("templates/graphStandAlone/graphStandAlone.html", "client");
     api.addFiles("templates/graphStandAlone/graphStandAlone.js", "client");
 
+    api.addFiles("templates/scorecard/scorecardStatusPage.html", "client");
+    api.addFiles("templates/scorecard/scorecardStatusPage.js", "client");
+
     api.addFiles("templates/graph/displayFunctions/graph_plotly.js", "client");
 
     api.addFiles("templates/common/text_input.html", "client");

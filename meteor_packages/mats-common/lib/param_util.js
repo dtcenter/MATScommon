@@ -587,6 +587,31 @@ const visibilityControllerForParam = function (paramName) {
     return found;
 };
 
+const getSingleSelectCurveParamNames = function() {
+    let curveParamNames = matsCollections.CurveParamsInfo.find({},{"curve_params":1}).fetch()[0]["curve_params"];
+    let multiParamNames = getMultiSelectCurveParamNames();
+    let singleParamNames = curveParamNames.filter(function(n) {
+        return ! multiParamNames.includes(n);
+    });
+    return singleParamNames;
+};
+
+const getMultiSelectCurveParamNames = function() {
+    let curveParamNames = matsCollections.CurveParamsInfo.find({},{"curve_params":1}).fetch()[0]["curve_params"];
+    let multiParamNames = [];
+    curveParamNames.forEach (function(paramName){
+        if (matsParamUtils.getParameterForName(paramName)['multiple'] !== undefined) {
+            multiParamNames.push(paramName);
+        }
+    });
+    return multiParamNames;
+};
+
+const getPlotParamNames = function() {
+    let paramNames = matsCollections.PlotParams.find({},{_id:0,name:1}).fetch();
+    return paramNames;
+}
+
 export default matsParamUtils = {
     getDisabledOptionsForParamName: getDisabledOptionsForParamName,
     getControlButtonIdForParamName: getControlButtonIdForParamName,
@@ -617,5 +642,8 @@ export default matsParamUtils = {
     getAppName: getAppName,
     getDefaultDateRange: getDefaultDateRange,
     getMinMaxDates: getMinMaxDates,
-    getMinMaxDatesTC: getMinMaxDatesTC
+    getMinMaxDatesTC: getMinMaxDatesTC,
+    getSingleSelectCurveParamNames:getSingleSelectCurveParamNames,
+    getMultiSelectCurveParamNames:getMultiSelectCurveParamNames,
+    getPlotParamNames:getPlotParamNames
 };

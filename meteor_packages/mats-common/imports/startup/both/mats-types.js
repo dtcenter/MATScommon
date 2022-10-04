@@ -27,6 +27,12 @@ var DbTypes = {
     mysql: 'mysql'
 };
 
+var ScorecardStatus = {
+    'pending': 'Pending',
+    'running': 'Running',
+    'ready': 'Ready'
+};
+
 var InputTypes = {
     textInput: 'textInput',
     color:"color",
@@ -199,6 +205,7 @@ class MetaDataDBRecord {
 
 export default matsTypes = {
     InputTypes: InputTypes,
+    ScorecardStatus: ScorecardStatus,
     PlotTypes: PlotTypes,
     PlotFormats: PlotFormats,
     PlotActions: PlotActions,

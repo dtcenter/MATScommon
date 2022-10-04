@@ -41,7 +41,22 @@ Template.scorecardCurveList.helpers({
         }
     },
 });
-
+  /*
+    A note about how things get to the backend, and then to the graph or display view.
+    When the user clicks "Submit Scorecard" on the curve-list page
+    there is a spinner displayed and a plotParameter set, and then
+    the "plot-curves" button in the plot-form in plot_list.html which is a submit button
+    which triggers the event for the class 'submit-params' in plot_list.js.
+    the submit-params handler in plot_list.js is BADLY IN NEED OF REFACTORING, it has a complexity
+    rating of "Complexity is 131 Bloody hell..." - see MATS github issue #810 -RTP.
+    The submit handler transforms all the params into a plotParms document and puts it into the session, then
+    uses a switch on 'action' which is the event.currentTarget.name "save|restore|plot" which are
+    the names of type="submit" buttons in the form, like name="plot" or name="save".
+    In the type="submit" and name-"plot" case of the switch this call...
+    matsMethods.getGraphData.call({plotParams: p, plotType: pt, expireKey: expireKey}, function (error, ret) .....
+    is what invokes the data method in the backend, and the success handler of that call
+    is what sets up the graph page.
+    */
 Template.scorecardCurveList.events({
     'click .remove-all': function () {
         if (Session.get("confirmRemoveAll")) {
@@ -62,19 +77,14 @@ Template.scorecardCurveList.events({
         Session.set("confirmRemoveAll", Date.now());
         $("#remove-all").trigger('click');
     },
-
-    /*
-    A note about how things get to the backend.
-    When the user clicks "Submit Scorecard"
-    */
     'click .submitScorecard': function (event) {
         document.getElementById("spinner").style.display = "block";
         matsPlotUtils.disableActionButtons();
         event.preventDefault();
-        // trigger the submit on the plot_list plot_list.js - click .submit-params
+        // trigger the submit-params event (plot-curves) on plot_list.js - click plot-curves
         Session.set('plotParameter', matsTypes.PlotActions.scorecard);
         document.getElementById("plot-curves").click();
         return false;
 
-    },
+    }
 });

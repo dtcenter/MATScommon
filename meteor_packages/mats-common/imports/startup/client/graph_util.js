@@ -360,6 +360,23 @@ const setGraphView = function (plotType) {
     };
 };
 
+const setScorecardDisplayView = function (plotType) {
+    //shows scorecardStatusPage template, hides everything else
+    document.getElementById('appTitleText').style.display = 'none';
+    document.getElementById('plotType').style.display = 'none';
+    document.getElementById('paramList').style.display = 'none';
+    document.getElementById('plotList').style.display = 'none';
+    document.getElementById('curveList').style.display = 'none';
+    document.getElementById("plotTypeContainer").style.display = "none";
+    document.getElementById("scatterView").style.display = "none";
+    document.getElementById('spinner').style.display = "none";
+    document.getElementById('scorecardStatus').style.display = "block";
+    // Enable navigation prompt
+    window.onbeforeunload = function() {
+        return true;
+    };
+}
+
 // helper to bring up the graph page in a pop-up window
 const standAloneSetGraphView = function () {
     //shows graph page, hides everything else
@@ -443,5 +460,6 @@ export default matsGraphUtils = {
     setGraphView: setGraphView,
     standAloneSetGraphView: standAloneSetGraphView,
     setDefaultView: setDefaultView,
-    downloadFile: downloadFile
+    downloadFile: downloadFile,
+    setScorecardDisplayView: setScorecardDisplayView
 };

@@ -134,6 +134,23 @@ Template.curveList.helpers({
     }
 });
 
+ /*
+    A note about how things get to the backend, and then to the graph or display view.
+    When the user clicks "plot or plot matched" on the curve-list page
+    there is a spinner displayed and a plotParameter set, and then dynamically clicks
+    the "plot-curves" button in the plot-form in plot_list.html, which is a submit button,
+    that triggers the event for the class 'submit-params' in plot_list.js.
+    The submit-params handler in plot_list.js is BADLY IN NEED OF REFACTORING, it has a complexity
+    rating of "Complexity is 131 Bloody hell..." - RTP MATS issue .
+    It transforms all the params into a plotParms document and puts that into the session, then
+    uses a switch on 'action' which is the event.currentTarget.name "save|restore|plot" which are
+    the names of type="submit" buttons in the form, like name="plot" or name="save".
+    In the type="submit" and name-"plot" case of the switch this call...
+    matsMethods.getGraphData.call({plotParams: p, plotType: pt, expireKey: expireKey}, function (error, ret) .....
+    is what invokes the data method in the backend, and the success handler of that call
+    is what sets up the graph page.
+    */
+
 Template.curveList.events({
     'click .remove-all': function () {
         if (Session.get("confirmRemoveAll")) {
