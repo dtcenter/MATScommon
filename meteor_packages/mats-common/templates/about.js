@@ -24,7 +24,7 @@ Template.About.helpers({
     version: function () {
         var settings = matsCollections.Settings.findOne({});
         var version = "unknown";
-        var commit = "unkown";
+        var commit = "unknown";
         if (settings) {
             version = settings.appVersion;
             commit = settings.commit;
