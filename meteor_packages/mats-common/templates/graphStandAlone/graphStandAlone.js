@@ -189,6 +189,8 @@ Template.GraphStandAlone.helpers({
                     return "Contour " + p.dates + " : " + format;
                 case matsTypes.PlotTypes.contourDiff:
                     return "ContourDiff " + p.dates + " : " + format;
+                case matsTypes.PlotTypes.simpleScatter:
+                    return "SimpleScatter " + p.dates + " : " + format;
                 case matsTypes.PlotTypes.scatter2d:
                     break;
                 default:

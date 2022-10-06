@@ -431,6 +431,11 @@ const showTimeseriesFace = function () {
         'curve-dates': 'none',
         'dates': 'block',
         'statistic': 'block',
+        'x-statistic': 'none',
+        'y-statistic': 'none',
+        'variable': 'block',
+        'x-variable': 'none',
+        'y-variable': 'none',
         'threshold': 'block',
         'scale': 'block',
         'level': 'block',
@@ -474,6 +479,11 @@ const showProfileFace = function () {
         'curve-dates': 'block',
         'dates': 'none',
         'statistic': 'block',
+        'x-statistic': 'none',
+        'y-statistic': 'none',
+        'variable': 'block',
+        'x-variable': 'none',
+        'y-variable': 'none',
         'threshold': 'block',
         'scale': 'block',
         'level': 'none',
@@ -517,6 +527,11 @@ const showDieOffFace = function () {
         'curve-dates': 'block',
         'dates': 'none',
         'statistic': 'block',
+        'x-statistic': 'none',
+        'y-statistic': 'none',
+        'variable': 'block',
+        'x-variable': 'none',
+        'y-variable': 'none',
         'threshold': 'block',
         'scale': 'block',
         'level': 'block',
@@ -560,6 +575,11 @@ const showThresholdFace = function () {
         'curve-dates': 'block',
         'dates': 'none',
         'statistic': 'block',
+        'x-statistic': 'none',
+        'y-statistic': 'none',
+        'variable': 'block',
+        'x-variable': 'none',
+        'y-variable': 'none',
         'threshold': 'none',
         'scale': 'block',
         'level': 'block',
@@ -607,6 +627,11 @@ const showValidTimeFace = function () {
         'curve-dates': 'block',
         'dates': 'none',
         'statistic': 'block',
+        'x-statistic': 'none',
+        'y-statistic': 'none',
+        'variable': 'block',
+        'x-variable': 'none',
+        'y-variable': 'none',
         'threshold': 'block',
         'scale': 'block',
         'level': 'block',
@@ -650,6 +675,11 @@ const showGridScaleFace = function () {
         'curve-dates': 'block',
         'dates': 'none',
         'statistic': 'block',
+        'x-statistic': 'none',
+        'y-statistic': 'none',
+        'variable': 'block',
+        'x-variable': 'none',
+        'y-variable': 'none',
         'threshold': 'block',
         'scale': 'none',
         'level': 'block',
@@ -693,6 +723,11 @@ const showDailyModelCycleFace = function () {
         'curve-dates': 'none',
         'dates': 'block',
         'statistic': 'block',
+        'x-statistic': 'none',
+        'y-statistic': 'none',
+        'variable': 'block',
+        'x-variable': 'none',
+        'y-variable': 'none',
         'threshold': 'block',
         'scale': 'block',
         'level': 'block',
@@ -736,6 +771,11 @@ const showYearToYearFace = function () {
         'curve-dates': 'none',
         'dates': 'none',
         'statistic': 'block',
+        'x-statistic': 'none',
+        'y-statistic': 'none',
+        'variable': 'block',
+        'x-variable': 'none',
+        'y-variable': 'none',
         'threshold': 'block',
         'scale': 'block',
         'level': 'block',
@@ -779,6 +819,11 @@ const showReliabilityFace = function () {
         'curve-dates': 'none',
         'dates': 'block',
         'statistic': 'none',
+        'x-statistic': 'none',
+        'y-statistic': 'none',
+        'variable': 'block',
+        'x-variable': 'none',
+        'y-variable': 'none',
         'threshold': 'block',
         'scale': 'block',
         'level': 'block',
@@ -824,6 +869,11 @@ const showROCFace = function () {
         'curve-dates': 'block',
         'dates': 'none',
         'statistic': 'none',
+        'x-statistic': 'none',
+        'y-statistic': 'none',
+        'variable': 'block',
+        'x-variable': 'none',
+        'y-variable': 'none',
         'threshold': 'block',
         'scale': 'block',
         'level': 'block',
@@ -865,7 +915,7 @@ const showROCFace = function () {
     return selectorsToReset;
 };
 
-// method to display the appropriate selectors for a ROC curve
+// method to display the appropriate selectors for a performance diagram curve
 const showPerformanceDiagramFace = function () {
     const isMetexpress = matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
     const plotType = matsTypes.PlotTypes.performanceDiagram;
@@ -873,6 +923,11 @@ const showPerformanceDiagramFace = function () {
         'curve-dates': 'block',
         'dates': 'none',
         'statistic': 'none',
+        'x-statistic': 'none',
+        'y-statistic': 'none',
+        'variable': 'block',
+        'x-variable': 'none',
+        'y-variable': 'none',
         'threshold': 'block',
         'scale': 'block',
         'level': 'block',
@@ -926,6 +981,11 @@ const showMapFace = function () {
         'curve-dates': 'none',
         'dates': 'block',
         'statistic': 'block',
+        'x-statistic': 'none',
+        'y-statistic': 'none',
+        'variable': 'block',
+        'x-variable': 'none',
+        'y-variable': 'none',
         'threshold': 'block',
         'scale': 'block',
         'level': 'block',
@@ -978,6 +1038,11 @@ const showHistogramFace = function () {
         'curve-dates': 'block',
         'dates': 'none',
         'statistic': 'block',
+        'x-statistic': 'none',
+        'y-statistic': 'none',
+        'variable': 'block',
+        'x-variable': 'none',
+        'y-variable': 'none',
         'threshold': 'block',
         'scale': 'block',
         'level': 'block',
@@ -1028,6 +1093,11 @@ const showEnsembleHistogramFace = function () {
         'curve-dates': 'block',
         'dates': 'none',
         'statistic': 'none',
+        'x-statistic': 'none',
+        'y-statistic': 'none',
+        'variable': 'block',
+        'x-variable': 'none',
+        'y-variable': 'none',
         'threshold': 'block',
         'scale': 'block',
         'level': 'block',
@@ -1071,6 +1141,11 @@ const showContourFace = function () {
         'curve-dates': 'none',
         'dates': 'block',
         'statistic': 'block',
+        'x-statistic': 'none',
+        'y-statistic': 'none',
+        'variable': 'block',
+        'x-variable': 'none',
+        'y-variable': 'none',
         'threshold': 'block',
         'scale': 'block',
         'level': 'block',
@@ -1112,6 +1187,64 @@ const showContourFace = function () {
     return selectorsToReset;
 };
 
+// method to display the appropriate selectors for a simple scatter plot
+const showSimpleScatterFace = function () {
+    const isMetexpress = matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
+    const plotType = matsTypes.PlotTypes.simpleScatter;
+    let faceOptions = {
+        'curve-dates': 'block',
+        'dates': 'none',
+        'statistic': 'none',
+        'x-statistic': 'block',
+        'y-statistic': 'block',
+        'variable': 'none',
+        'x-variable': 'block',
+        'y-variable': 'block',
+        'threshold': 'block',
+        'scale': 'block',
+        'level': 'block',
+        'forecast-length': 'block',
+        'dieoff-type': 'none',
+        'average': 'none',
+        'valid-time': 'block',
+        'utc-cycle-start': 'none',
+        'histogram-type-controls': 'none',
+        'histogram-bin-controls': 'none',
+        'histogram-yaxis-controls': 'none',
+        'bin-number': 'none',
+        'bin-start': 'none',
+        'bin-stride': 'none',
+        'bin-pivot': 'none',
+        'bin-bounds': 'none',
+        'truth': 'block',
+        'year': 'block',
+        'storm': 'block',
+        'region-type' : 'none',
+        'x-axis-parameter': 'none',
+        'y-axis-parameter': 'none',
+        'bin-parameter': 'block',
+        'significance': 'none',
+        'plotFormat': 'none',
+        'QCParamGroup': 'none',
+        'QCParamGroup-lite': 'none'
+    };
+    const selectorsToReset = {
+        'dieoff-type': 'Dieoff',
+        'bin-parameter': 'Valid Date',
+        'plotFormat': matsTypes.PlotFormats.none
+    };
+    // in metexpress, users don't get to choose how to bin data
+    if (isMetexpress) {
+        faceOptions['bin-parameter'] = 'none';
+    }
+    // performance diagrams need to have the region be in predefined mode
+    if (matsParamUtils.getParameterForName('region-type') !== undefined) {
+        selectorsToReset['region-type'] = 'Predefined region';
+    }
+    setSelectorVisibility(plotType, faceOptions, selectorsToReset);
+    return selectorsToReset;
+};
+
 // method to display the appropriate selectors for a scatter plot
 const showScatterFace = function () {
     const plotType = matsTypes.PlotTypes.scatter2d;
@@ -1119,6 +1252,11 @@ const showScatterFace = function () {
         'curve-dates': 'none',
         'dates': 'block',
         'statistic': 'block',
+        'x-statistic': 'none',
+        'y-statistic': 'none',
+        'variable': 'block',
+        'x-variable': 'none',
+        'y-variable': 'none',
         'threshold': 'block',
         'scale': 'block',
         'level': 'block',
@@ -1202,6 +1340,7 @@ export default matsCurveUtils = {
     showHistogramFace: showHistogramFace,
     showEnsembleHistogramFace: showEnsembleHistogramFace,
     showContourFace: showContourFace,
+    showSimpleScatterFace: showSimpleScatterFace,
     showScatterFace: showScatterFace,
 };
 

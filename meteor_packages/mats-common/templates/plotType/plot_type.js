@@ -117,6 +117,9 @@ const setDatesAndShowFace = function (plotType, dateSelector) {
         case matsTypes.PlotTypes.contourDiff:
             selectorsToReset = matsCurveUtils.showContourFace();
             break;
+        case matsTypes.PlotTypes.simpleScatter:
+            selectorsToReset = matsCurveUtils.showSimpleScatterFace();
+            break;
         case matsTypes.PlotTypes.scatter2d:
             selectorsToReset = matsCurveUtils.showScatterFace();
             break;
@@ -170,6 +173,7 @@ const changePlotType = function (plotType, selectorsToInitialize, dateSelector) 
                         case matsTypes.PlotTypes.reliability:
                         case matsTypes.PlotTypes.roc:
                         case matsTypes.PlotTypes.performanceDiagram:
+                        case matsTypes.PlotTypes.simpleScatter:
                         case matsTypes.PlotTypes.scatter2d:
                         case matsTypes.PlotTypes.map:
                         case matsTypes.PlotTypes.contour:
@@ -306,6 +310,10 @@ Template.plotType.events({
             case matsTypes.PlotTypes.contourDiff:
                 selectorsToInitialize = ['statistic', 'threshold', 'scale', 'level', 'forecast-length', 'valid-time', 'truth', 'year', 'storm', 'region-type', 'region', 'x-axis-parameter', 'y-axis-parameter'];
                 dateSelector = 'dates';
+                break;
+            case matsTypes.PlotTypes.simpleScatter:
+                selectorsToInitialize = ['x-statistic', 'y-statistic', 'x-variable', 'y-variable', 'threshold', 'scale', 'level', 'forecast-length', 'valid-time', 'truth', 'year', 'storm', 'region-type', 'region', 'bin-parameter'];
+                dateSelector = 'curve-dates';
                 break;
             case matsTypes.PlotTypes.scatter2d:
                 selectorsToInitialize = [];

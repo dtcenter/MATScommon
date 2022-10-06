@@ -289,6 +289,9 @@ Template.plotList.events({
                             case matsTypes.PlotTypes.contourDiff:
                                 matsCurveUtils.showContourFace();
                                 break;
+                            case matsTypes.PlotTypes.simpleScatter:
+                                matsCurveUtils.showSimpleScatterFace();
+                                break;
                             case matsTypes.PlotTypes.scatter2d:
                                 matsCurveUtils.showScatterFace();
                                 break;
@@ -531,6 +534,9 @@ Template.plotList.onRendered( function() {
         case matsTypes.PlotTypes.contour:
         case matsTypes.PlotTypes.contourDiff:
             matsCurveUtils.showContourFace();
+            break;
+        case matsTypes.PlotTypes.simpleScatter:
+            matsCurveUtils.showSimpleScatterFace();
             break;
         case matsTypes.PlotTypes.scatter2d:
             matsCurveUtils.showScatterFace();
