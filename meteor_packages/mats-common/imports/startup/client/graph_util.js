@@ -396,7 +396,6 @@ const setDefaultView = function () {
     document.getElementById('paramList').style.display = 'block';
     document.getElementById('plotList').style.display = 'block';
     document.getElementById('curveList').style.display = 'block';
-    document.getElementById('scorecardStatus').style.display = "none";
     if (document.getElementById("plotTypeContainer")) {
         document.getElementById("plotTypeContainer").style.display = "block";
     }
@@ -413,6 +412,9 @@ const setDefaultView = function () {
     document.getElementById("graphView").style.display = "none";
     document.getElementById("textView").style.display = "none";
     document.getElementById('refresh-plot').style.display = "block";
+    if (document.getElementById('scorecardStatus')) {
+        document.getElementById('scorecardStatus').style.display = "none";
+    }
     // Remove navigation prompt
     window.onbeforeunload = null;
 };
