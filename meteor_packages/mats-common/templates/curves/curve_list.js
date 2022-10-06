@@ -34,6 +34,7 @@ Template.curveList.helpers({
                 case matsTypes.PlotTypes.roc:
                 case matsTypes.PlotTypes.performanceDiagram:
                 case matsTypes.PlotTypes.contour:
+                case matsTypes.PlotTypes.scorecard:
                     // allow matching for non-metexpress ROCs and performance diagrams
                     if ((matsCollections.Settings.findOne({}) !== undefined
                         && matsCollections.Settings.findOne({}).appType !== undefined
@@ -54,6 +55,7 @@ Template.curveList.helpers({
                 case matsTypes.PlotTypes.histogram:
                 case matsTypes.PlotTypes.ensembleHistogram:
                 case matsTypes.PlotTypes.contourDiff:
+                case matsTypes.PlotTypes.simpleScatter:
                 case matsTypes.PlotTypes.scatter2d:
                 default:
                     return "block";

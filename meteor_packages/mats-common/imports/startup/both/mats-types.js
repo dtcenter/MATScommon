@@ -69,6 +69,7 @@ var PlotTypes = {
     ensembleHistogram: "EnsembleHistogram",
     contour: "Contour",
     contourDiff: "ContourDiff",
+    simpleScatter: "SimpleScatter",
     scatter2d: "Scatter2d",
     scorecard: "Scorecard"
 };

@@ -71,6 +71,9 @@ Template.curveParamItemGroup.helpers({
             case matsTypes.PlotTypes.contourDiff:
                 pattern = matsCollections.CurveTextPatterns.findOne({plotType: matsTypes.PlotTypes.contourDiff});
                 break;
+            case matsTypes.PlotTypes.simpleScatter:
+                pattern = matsCollections.CurveTextPatterns.findOne({plotType: matsTypes.PlotTypes.simpleScatter});
+                break;
             case matsTypes.PlotTypes.scatter2d:
                 pattern = matsCollections.CurveTextPatterns.findOne({plotType: matsTypes.PlotTypes.scatter2d});
                 break;
