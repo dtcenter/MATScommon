@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import {matsDataUtils, matsTypes} from 'meteor/randyp:mats-common';
+import {matsDataUtils, matsTypes, matsCollections} from 'meteor/randyp:mats-common';
 import {Meteor} from "meteor/meteor";
 
 // utility to get the cadence for a particular model, so that the query function
@@ -1926,9 +1926,16 @@ const parseQueryDataMapCTC = function (rows, d, dPurple, dPurpleBlue, dBlue, dBl
                 cn: rows[rowIndex].cn
             });
 
-            var thisSite = siteMap.find(obj => {
-                return obj.options.id === site;
-            });
+            let thisSite;
+            if (appParams.isCouchbase) {
+                thisSite = siteMap.find(obj => {
+                    return obj.name === site;
+                });
+            } else {
+                thisSite = siteMap.find(obj => {
+                    return obj.options.id === site;
+                });
+            }
 
             var tooltips = thisSite.origName +
                 "<br>" + "model: " + dataSource +
