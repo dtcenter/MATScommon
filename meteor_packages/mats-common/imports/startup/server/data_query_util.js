@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import {matsDataUtils, matsTypes} from 'meteor/randyp:mats-common';
+import {matsDataUtils, matsTypes, matsCollections} from 'meteor/randyp:mats-common';
 import {Meteor} from "meteor/meteor";
 
 // utility to get the cadence for a particular model, so that the query function
@@ -459,6 +459,94 @@ const queryDBPerformanceDiagram = function (pool, statement, appParams) {
                     error = matsTypes.Messages.NO_DATA_FOUND;
                 } else {
                     parsedData = parseQueryDataPerformanceDiagram(rows, d, appParams);
+                    d = parsedData.d;
+                    N0 = parsedData.N0;
+                    N_times = parsedData.N_times;
+                }
+                // done waiting - have results
+                dFuture.return();
+            });
+        }
+        // wait for the future to finish - sort of like 'back to the future' ;)
+        dFuture.wait();
+
+        return {
+            data: d,
+            error: error,
+            N0: N0,
+            N_times: N_times
+        };
+    }
+};
+
+// this method queries the database for performance diagrams
+const queryDBSimpleScatter = function (pool, statement, appParams, statisticXStr, statisticYStr) {
+    if (Meteor.isServer) {
+        var d = {   // d will contain the curve data
+            x: [],
+            y: [],
+            binVals: [],
+            subSquareDiffSumX: [],
+            subNSumX: [],
+            subObsModelDiffSumX: [],
+            subModelSumX: [],
+            subObsSumX: [],
+            subAbsSumX: [],
+            subSquareDiffSumY: [],
+            subNSumY: [],
+            subObsModelDiffSumY: [],
+            subModelSumY: [],
+            subObsSumY: [],
+            subAbsSumY: [],
+            subValsX: [],
+            subValsY: [],
+            subSecs: [],
+            subLevs: [],
+            stats: [],
+            text: [],
+            xmin: Number.MAX_VALUE,
+            xmax: Number.MIN_VALUE,
+            ymin: Number.MAX_VALUE,
+            ymax: Number.MIN_VALUE,
+            sum: 0
+        };
+        var error = "";
+        var N0 = [];
+        var N_times = [];
+        var parsedData;
+        const Future = require('fibers/future');
+        var dFuture = new Future();
+
+        if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
+            /*
+            we have to call the couchbase utilities as async functions but this
+            routine 'queryDBSPerformanceDiagram' cannot itself be async because the graph page needs to wait
+            for its result, so we use an anonymous async() function here to wrap the queryCB call
+            */
+            (async () => {
+                const rows = await pool.queryCB(statement);
+                if (rows === undefined || rows === null || rows.length === 0) {
+                    error = matsTypes.Messages.NO_DATA_FOUND;
+                } else if (rows.includes("queryCB ERROR: ")) {
+                    error = rows;
+                } else {
+                    parsedData = parseQueryDataSimpleScatter(rows, d, appParams, statisticXStr, statisticYStr);
+                    d = parsedData.d;
+                    N0 = parsedData.N0;
+                    N_times = parsedData.N_times;
+                }
+                dFuture.return();
+            })();
+        } else {
+            // if this app isn't couchbase, use mysql
+            pool.query(statement, function (err, rows) {
+                // query callback - build the curve data from the results - or set an error
+                if (err !== undefined && err !== null) {
+                    error = err.message;
+                } else if (rows === undefined || rows === null || rows.length === 0) {
+                    error = matsTypes.Messages.NO_DATA_FOUND;
+                } else {
+                    parsedData = parseQueryDataSimpleScatter(rows, d, appParams, statisticXStr, statisticYStr);
                     d = parsedData.d;
                     N0 = parsedData.N0;
                     N_times = parsedData.N_times;
@@ -1533,6 +1621,263 @@ const parseQueryDataPerformanceDiagram = function (rows, d, appParams) {
     };
 };
 
+// this method parses the returned query data for simple scatter plots
+const parseQueryDataSimpleScatter = function (rows, d, appParams, statisticXStr, statisticYStr) {
+    /*
+        var d = {   // d will contain the curve data
+            x: [],
+            y: [],
+            binVals: [],
+            subSquareDiffSumX: [],
+            subNSumX: [],
+            subObsModelDiffSumX: [],
+            subModelSumX: [],
+            subObsSumX: [],
+            subAbsSumX: [],
+            subValsX: [],
+            subSquareDiffSumY: [],
+            subNSumY: [],
+            subObsModelDiffSumY: [],
+            subModelSumY: [],
+            subObsSumY: [],
+            subAbsSumY: [],
+            subValsY: [],
+            subSecs: [],
+            subLevs: [],
+            stats: [],
+            text: [],
+            xmin: Number.MAX_VALUE,
+            xmax: Number.MIN_VALUE,
+            ymin: Number.MAX_VALUE,
+            ymax: Number.MIN_VALUE,
+            sum: 0
+        };
+    */
+
+    const hasLevels = appParams.hasLevels;
+
+    // initialize local variables
+    var N0 = [];
+    var N_times = [];
+    var xStats = [];
+    var yStats = [];
+    var binVals = [];
+    var subSquareDiffSumX = [];
+    var subNSumX = [];
+    var subObsModelDiffSumX = [];
+    var subModelSumX = [];
+    var subObsSumX = [];
+    var subAbsSumX = [];
+    var subSquareDiffSumY = [];
+    var subNSumY = [];
+    var subObsModelDiffSumY = [];
+    var subModelSumY = [];
+    var subObsSumY = [];
+    var subAbsSumY = [];
+    var subValsX = [];
+    var subValsY = [];
+    var subSecs = [];
+    var subLevs = [];
+    for (var rowIndex = 0; rowIndex < rows.length; rowIndex++) {
+        var binVal = Number(rows[rowIndex].binVal);
+        var xStat;
+        var yStat;
+        if (rows[rowIndex].square_diff_sumX !== undefined && rows[rowIndex].square_diff_sumY !== undefined) {
+            // this is a scalar partial sums plot
+            const squareDiffSumX = Number(rows[rowIndex].square_diff_sumX);
+            const NSumX = Number(rows[rowIndex].N_sumX);
+            const obsModelDiffSumX = Number(rows[rowIndex].obs_model_diff_sumX);
+            const modelSumX = Number(rows[rowIndex].model_sumX);
+            const obsSumX = Number(rows[rowIndex].obs_sumX);
+            const absSumX = Number(rows[rowIndex].abs_sumX);
+            const squareDiffSumY = Number(rows[rowIndex].square_diff_sumY);
+            const NSumY = Number(rows[rowIndex].N_sumY);
+            const obsModelDiffSumY = Number(rows[rowIndex].obs_model_diff_sumY);
+            const modelSumY = Number(rows[rowIndex].model_sumY);
+            const obsSumY = Number(rows[rowIndex].obs_sumY);
+            const absSumY = Number(rows[rowIndex].abs_sumY);
+            if (NSumX > 0 && NSumY > 0) {
+                xStat = matsDataUtils.calculateStatScalar(squareDiffSumX, NSumX, obsModelDiffSumX, modelSumX, obsSumX, absSumX, statisticXStr);
+                xStat = isNaN(Number(xStat)) ? null : xStat;
+                yStat = matsDataUtils.calculateStatScalar(squareDiffSumY, NSumY, obsModelDiffSumY, modelSumY, obsSumY, absSumY, statisticYStr);
+                yStat = isNaN(Number(yStat)) ? null : yStat;
+            } else {
+                xStat = null;
+                yStat = null;
+            }
+        }
+        N0.push(rows[rowIndex].N0);             // number of values that go into a point on the graph
+        N_times.push(rows[rowIndex].N_times);   // number of times that go into a point on the graph
+        binVals.push(binVal);
+
+        var sub_square_diff_sumX = [];
+        var sub_N_sumX = [];
+        var sub_obs_model_diff_sumX = [];
+        var sub_model_sumX = [];
+        var sub_obs_sumX = [];
+        var sub_abs_sumX = [];
+        var sub_valuesX = [];
+        var sub_square_diff_sumY = [];
+        var sub_N_sumY = [];
+        var sub_obs_model_diff_sumY = [];
+        var sub_model_sumY = [];
+        var sub_obs_sumY = [];
+        var sub_abs_sumY = [];
+        var sub_valuesY = [];
+        var sub_secs = [];
+        var sub_levs = [];
+        if (xStat !== null && yStat !== null && rows[rowIndex].sub_data !== undefined && rows[rowIndex].sub_data !== null) {
+            // parse the sub-data
+            try {
+                var sub_data = rows[rowIndex].sub_data.toString().split(',');
+                var curr_sub_data;
+                for (var sd_idx = 0; sd_idx < sub_data.length; sd_idx++) {
+                    curr_sub_data = sub_data[sd_idx].split(';');
+                    sub_secs.push(Number(curr_sub_data[0]));
+                    if (hasLevels) {
+                        if (!isNaN(Number(curr_sub_data[1]))) {
+                            sub_levs.push(Number(curr_sub_data[1]));
+                        } else {
+                            sub_levs.push(curr_sub_data[1]);
+                        }
+                        sub_square_diff_sumX.push(Number(curr_sub_data[2]));
+                        sub_N_sumX.push(Number(curr_sub_data[3]));
+                        sub_obs_model_diff_sumX.push(Number(curr_sub_data[4]));
+                        sub_model_sumX.push(Number(curr_sub_data[5]));
+                        sub_obs_sumX.push(Number(curr_sub_data[6]));
+                        sub_abs_sumX.push(Number(curr_sub_data[7]));
+                        sub_valuesX.push(matsDataUtils.calculateStatScalar(Number(curr_sub_data[2]), Number(curr_sub_data[3]), Number(curr_sub_data[4]), Number(curr_sub_data[5]), Number(curr_sub_data[6]), Number(curr_sub_data[7]), statisticXStr));
+                        sub_square_diff_sumY.push(Number(curr_sub_data[8]));
+                        sub_N_sumY.push(Number(curr_sub_data[9]));
+                        sub_obs_model_diff_sumY.push(Number(curr_sub_data[10]));
+                        sub_model_sumY.push(Number(curr_sub_data[11]));
+                        sub_obs_sumY.push(Number(curr_sub_data[12]));
+                        sub_abs_sumY.push(Number(curr_sub_data[13]));
+                        sub_valuesY.push(matsDataUtils.calculateStatScalar(Number(curr_sub_data[8]), Number(curr_sub_data[9]), Number(curr_sub_data[10]), Number(curr_sub_data[11]), Number(curr_sub_data[12]), Number(curr_sub_data[13]), statisticYStr));
+                    } else {
+                        sub_square_diff_sumX.push(Number(curr_sub_data[1]));
+                        sub_N_sumX.push(Number(curr_sub_data[2]));
+                        sub_obs_model_diff_sumX.push(Number(curr_sub_data[3]));
+                        sub_model_sumX.push(Number(curr_sub_data[4]));
+                        sub_obs_sumX.push(Number(curr_sub_data[5]));
+                        sub_abs_sumX.push(Number(curr_sub_data[6]));
+                        sub_valuesX.push(matsDataUtils.calculateStatScalar(Number(curr_sub_data[1]), Number(curr_sub_data[2]), Number(curr_sub_data[3]), Number(curr_sub_data[4]), Number(curr_sub_data[5]), Number(curr_sub_data[6]), statisticXStr));
+                        sub_square_diff_sumY.push(Number(curr_sub_data[7]));
+                        sub_N_sumY.push(Number(curr_sub_data[8]));
+                        sub_obs_model_diff_sumY.push(Number(curr_sub_data[9]));
+                        sub_model_sumY.push(Number(curr_sub_data[10]));
+                        sub_obs_sumY.push(Number(curr_sub_data[11]));
+                        sub_abs_sumY.push(Number(curr_sub_data[12]));
+                        sub_valuesY.push(matsDataUtils.calculateStatScalar(Number(curr_sub_data[7]), Number(curr_sub_data[8]), Number(curr_sub_data[9]), Number(curr_sub_data[10]), Number(curr_sub_data[11]), Number(curr_sub_data[12]), statisticXStr));
+                    }
+                }
+                const squareDiffSumX = matsDataUtils.sum(sub_square_diff_sumX);
+                const NSumX = matsDataUtils.sum(sub_N_sumX);
+                const obsModelDiffSumX = matsDataUtils.sum(sub_obs_model_diff_sumX);
+                const modelSumX = matsDataUtils.sum(sub_model_sumX);
+                const obsSumX = matsDataUtils.sum(sub_obs_sumX);
+                const absSumX = matsDataUtils.sum(sub_abs_sumX);
+                xStat = matsDataUtils.calculateStatScalar(squareDiffSumX, NSumX, obsModelDiffSumX, modelSumX, obsSumX, absSumX, statisticXStr);
+                const squareDiffSumY = matsDataUtils.sum(sub_square_diff_sumY);
+                const NSumY = matsDataUtils.sum(sub_N_sumY);
+                const obsModelDiffSumY = matsDataUtils.sum(sub_obs_model_diff_sumY);
+                const modelSumY = matsDataUtils.sum(sub_model_sumY);
+                const obsSumY = matsDataUtils.sum(sub_obs_sumY);
+                const absSumY = matsDataUtils.sum(sub_abs_sumY);
+                yStat = matsDataUtils.calculateStatScalar(squareDiffSumY, NSumY, obsModelDiffSumY, modelSumY, obsSumY, absSumY, statisticYStr);
+            } catch (e) {
+                // this is an error produced by a bug in the query function, not an error returned by the mysql database
+                e.message = "Error in parseQueryDataXYCurve. The expected fields don't seem to be present in the results cache: " + e.message;
+                throw new Error(e.message);
+            }
+        } else {
+            sub_square_diff_sumX = NaN;
+            sub_N_sumX = NaN;
+            sub_obs_model_diff_sumX = NaN;
+            sub_model_sumX = NaN;
+            sub_obs_sumX = NaN;
+            sub_abs_sumX = NaN;
+            sub_valuesX = NaN;
+            sub_square_diff_sumY = NaN;
+            sub_N_sumY = NaN;
+            sub_obs_model_diff_sumY = NaN;
+            sub_model_sumY = NaN;
+            sub_obs_sumY = NaN;
+            sub_abs_sumY = NaN;
+            sub_valuesY = NaN;
+            sub_secs = NaN;
+            if (hasLevels) {
+                sub_levs = NaN;
+            }
+        }
+
+        xStats.push(xStat);
+        yStats.push(yStat);
+        subSquareDiffSumX.push(sub_square_diff_sumX);
+        subNSumX.push(sub_N_sumX);
+        subObsModelDiffSumX.push(sub_obs_model_diff_sumX);
+        subModelSumX.push(sub_model_sumX);
+        subObsSumX.push(sub_obs_sumX);
+        subAbsSumX.push(sub_abs_sumX);
+        subValsX.push(sub_valuesX);
+        subSquareDiffSumY.push(sub_square_diff_sumY);
+        subNSumY.push(sub_N_sumY);
+        subObsModelDiffSumY.push(sub_obs_model_diff_sumY);
+        subModelSumY.push(sub_model_sumY);
+        subObsSumY.push(sub_obs_sumY);
+        subAbsSumY.push(sub_abs_sumY);
+        subValsY.push(sub_valuesY);
+        subSecs.push(sub_secs);
+        if (hasLevels) {
+            subLevs.push(sub_levs);
+        }
+    }
+
+    d.x = xStats;
+    d.y = yStats;
+    d.binVals = binVals;
+    d.subSquareDiffSumX = subSquareDiffSumX;
+    d.subNSumX = subNSumX;
+    d.subObsModelDiffSumX = subObsModelDiffSumX;
+    d.subModelSumX = subModelSumX;
+    d.subObsSumX = subObsSumX;
+    d.subAbsSumX = subAbsSumX;
+    d.subValsX = subValsX;
+    d.subSquareDiffSumY = subSquareDiffSumY;
+    d.subNSumY = subNSumY;
+    d.subObsModelDiffSumY = subObsModelDiffSumY;
+    d.subModelSumY = subModelSumY;
+    d.subObsSumY = subObsSumY;
+    d.subAbsSumY = subAbsSumY;
+    d.subValsY = subValsY;
+    d.subSecs = subSecs;
+    d.subLevs = subLevs;
+    d.n = N0;
+
+    var xmin = Number.MAX_VALUE;
+    var xmax = -1 * Number.MAX_VALUE;
+    var ymin = Number.MAX_VALUE;
+    var ymax = -1 * Number.MAX_VALUE;
+
+    for (var d_idx = 0; d_idx < binVals.length; d_idx++) {
+        xmin = xStats[d_idx] !== null && xStats[d_idx] < xmin ? xStats[d_idx] : xmin;
+        xmax = xStats[d_idx] !== null && xStats[d_idx] > xmax ? xStats[d_idx] : xmax;
+        ymin = yStats[d_idx] !== null && yStats[d_idx] < ymin ? yStats[d_idx] : ymin;
+        ymax = yStats[d_idx] !== null && yStats[d_idx] > ymax ? yStats[d_idx] : ymax;
+    }
+
+    d.xmin = xmin;
+    d.xmax = xmax;
+    d.ymin = ymin;
+    d.ymax = ymax;
+debugger;
+    return {
+        d: d,
+        N0: N0,
+        N_times: N_times
+    };
+};
+
 // this method parses the returned query data for maps
 const parseQueryDataMapScalar = function (rows, d, dLowest, dLow, dModerate, dHigh, dHighest, dataSource, siteMap, statistic, variable, varUnits, appParams) {
     const hasLevels = appParams.hasLevels;
@@ -1548,33 +1893,33 @@ const parseQueryDataMapScalar = function (rows, d, dLowest, dLow, dModerate, dHi
     // determine which colormap will be used for this plot
     let colorLowest = "";
     let colorLow = "";
-    let colorModerate= "";
+    let colorModerate = "";
     let colorHigh = "";
     let colorHighest = "";
     if (statistic.includes('Bias')) {
         if (variable.includes('RH') || variable.toLowerCase().includes('dewpoint')) {
             colorLowest = "rgb(140,81,00)";
             colorLow = "rgb(191,129,45)";
-            colorModerate= "rgb(125,125,125)";
+            colorModerate = "rgb(125,125,125)";
             colorHigh = "rgb(53,151,143)";
             colorHighest = "rgb(1,102,95)";
         } else if (variable.toLowerCase().includes('temp')) {
             colorLowest = "rgb(5,48,97)";
             colorLow = "rgb(67,147,195)";
-            colorModerate= "rgb(125,125,125)";
+            colorModerate = "rgb(125,125,125)";
             colorHigh = "rgb(214,96,77)";
             colorHighest = "rgb(103,0,31)";
         } else {
             colorLowest = "rgb(0,134,0)";
             colorLow = "rgb(80,255,80)";
-            colorModerate= "rgb(125,125,125)";
+            colorModerate = "rgb(125,125,125)";
             colorHigh = "rgb(255,80,255)";
             colorHighest = "rgb(134,0,134)";
         }
     } else {
         colorLowest = "rgb(125,125,125)";
         colorLow = "rgb(196,179,139)";
-        colorModerate= "rgb(243,164,96)";
+        colorModerate = "rgb(243,164,96)";
         colorHigh = "rgb(210,105,30)";
         colorHighest = "rgb(237,0,0)";
     }
@@ -2667,6 +3012,7 @@ export default matsDataQueryUtils = {
     queryDBTimeSeries: queryDBTimeSeries,
     queryDBSpecialtyCurve: queryDBSpecialtyCurve,
     queryDBPerformanceDiagram: queryDBPerformanceDiagram,
+    queryDBSimpleScatter: queryDBSimpleScatter,
     queryDBMapScalar: queryDBMapScalar,
     queryDBMapCTC: queryDBMapCTC,
     queryDBContour: queryDBContour
