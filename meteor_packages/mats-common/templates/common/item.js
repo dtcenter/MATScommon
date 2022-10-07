@@ -12,6 +12,9 @@ Template.item.onRendered( function () {
         if ((typeof this.data.type !== 'undefined') && (this.data.type === matsTypes.InputTypes.radioGroup)) {
             matsSelectUtils.checkHideOther(this.data, true); // calls checkDisable
         }
+        $(document).ready(function(){
+            $('[data-toggle="tooltip"]').tooltip();
+        });
     } catch (e) {
         e.message = "Error in item.js rendered function checking to hide or disable other elements: " + e.message;
         setError(e);
@@ -180,6 +183,12 @@ Template.item.helpers({
     },
     defaultColor: function() {
         return this.default;
+    },
+    tooltipPlacement: function() {
+        return this.tooltipPlacement === undefined ? "top" : this.tooltipPlacement;
+    },
+    tooltipTitle: function() {
+        return this.tooltip === undefined ? "" : this.tooltip;
     }
 });
 

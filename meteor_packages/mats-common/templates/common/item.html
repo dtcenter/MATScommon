@@ -1,5 +1,5 @@
 <template name="item">
-    <div id="{{name}}-item" class="item btn-group"  role="group" style="display:{{display}}">
+    <div id="{{name}}-item" class="item btn-group"  role="group" style="display:{{display}}"  data-toggle="tooltip" data-placement="{{tooltipPlacement}}" title="{{tooltipTitle}}">
         {{#if isColor}}
             <button type="button" class="control-button btn btn-primary mediumPublicSans" id="{{controlButton}}" style="display:{{controlButtonCovered}}; background-color: transparent; margin-left: 0; font-size: 1.0em;border-style:none;">{{{fa}}}</button>
         {{else}}

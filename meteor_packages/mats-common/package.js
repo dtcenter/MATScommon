@@ -27,7 +27,8 @@ Package.onUse(function (api) {
         "python-shell": "1.0.8",
         "couchbase": "3.2.3",
         "simpl-schema": "1.12.0",
-        "vanillajs-datepicker":"1.2.0"
+        "vanillajs-datepicker":"1.2.0",
+	    "@fortawesome/fontawesome-free": "6.2.0"
     });
     api.mainModule("server/main.js", "server");
     api.mainModule("client/main.js", "client");
@@ -46,7 +47,6 @@ Package.onUse(function (api) {
     api.use('session');
     api.imply('session');
     api.use("twbs:bootstrap");
-    api.use("fortawesome:fontawesome");
     api.use("msavin:mongol");
     api.use("differential:event-hooks");
     api.use("risul:bootstrap-colorpicker");
@@ -343,7 +343,6 @@ Package.onTest(function (api) {
     api.use('session');
     api.imply('session');
     api.use("twbs:bootstrap");
-    api.use("fortawesome:fontawesome");
     api.use("msavin:mongol");
     api.use("differential:event-hooks");
     api.use("risul:bootstrap-colorpicker");
