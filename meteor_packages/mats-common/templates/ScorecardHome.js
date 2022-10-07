@@ -85,13 +85,13 @@ Template.ScorecardHome.events({
         let elem = document.getElementById('scorecard-recurrence-interval-radioGroup-' + defaultOption);
         elem.dispatchEvent(new Event("blur"));
     },
-    'change #scorecard-color-theme-radioGroup-GreenRed'(event) {
+    'change #scorecard-color-theme-radioGroup-RedGreen'(event) {
         document.querySelector('[name="major-truth-color-icon"]').style.color="#ff0000";
         document.querySelector('[name="minor-truth-color-icon"]').style.color="#ff0000";
         document.querySelector('[name="major-source-color-icon"]').style.color="#00ff00";
         document.querySelector('[name="minor-source-color-icon"]').style.color="#00ff00";
     },
-    'change #scorecard-color-theme-radioGroup-BlueRed'(event) {
+    'change #scorecard-color-theme-radioGroup-RedBlue'(event) {
         document.querySelector('[name="major-truth-color-icon"]').style.color="#ff0000";
         document.querySelector('[name="minor-truth-color-icon"]').style.color="#ff0000";
         document.querySelector('[name="major-source-color-icon"]').style.color="#0000ff";

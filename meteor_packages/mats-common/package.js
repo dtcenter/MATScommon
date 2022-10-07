@@ -27,8 +27,7 @@ Package.onUse(function (api) {
         "python-shell": "1.0.8",
         "couchbase": "3.2.3",
         "simpl-schema": "1.12.0",
-        "vanillajs-datepicker":"1.2.0",
-	    "@fortawesome/fontawesome-free": "6.2.0"
+        "vanillajs-datepicker":"1.2.0"
     });
     api.mainModule("server/main.js", "server");
     api.mainModule("client/main.js", "client");
