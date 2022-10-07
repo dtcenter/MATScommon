@@ -2271,9 +2271,16 @@ const parseQueryDataMapCTC = function (rows, d, dPurple, dPurpleBlue, dBlue, dBl
                 cn: rows[rowIndex].cn
             });
 
-            var thisSite = siteMap.find(obj => {
-                return obj.options.id === site;
-            });
+            let thisSite;
+            if (appParams.isCouchbase) {
+                thisSite = siteMap.find(obj => {
+                    return obj.name === site;
+                });
+            } else {
+                thisSite = siteMap.find(obj => {
+                    return obj.options.id === site;
+                });
+            }
 
             var tooltips = thisSite.origName +
                 "<br>" + "model: " + dataSource +
