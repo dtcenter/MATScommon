@@ -293,7 +293,9 @@ const generateSeriesCurveOptions = function (curve, curveIndex, axisMap, dataSer
     curveOptions['error_y'] = error_y_temp.error_y;
 
     // for performance diagram point filtering, need to know what we're plotting
-    if (appParams.plotType === matsTypes.PlotTypes.performanceDiagram || appParams.plotType === matsTypes.PlotTypes.roc) {
+    if (appParams.plotType === matsTypes.PlotTypes.performanceDiagram
+        || appParams.plotType === matsTypes.PlotTypes.simpleScatter
+        || appParams.plotType === matsTypes.PlotTypes.roc) {
         curveOptions['binParam'] = curve['binParam'];
     }
 
@@ -653,6 +655,72 @@ const getContourSignificanceLayer = function (dataset) {
     return curveOptions;
 };
 
+// provides curve options for all plot types with an independent x axis and an independent y axis
+const generateScatterCurveOptions = function (curve, curveIndex, axisXMap, axisYMap, dataSeries, appParams) {
+
+    const label = curve['label'];
+    const longLabel = matsPlotUtils.getCurveText(appParams.plotType, curve);
+    const annotation = curve['annotation'];
+
+    // adjust axes for later setting of the plot options
+    const ymin = curve['ymin'];
+    const ymax = curve['ymax'];
+    const xmin = curve['xmin'];
+    const xmax = curve['xmax'];
+    const axisXKey = curve['axisXKey'];
+    const axisYKey = curve['axisYKey'];
+    if (axisXKey in axisXMap) {
+        axisXMap[axisXKey].axisLabel = axisXKey;
+        axisXMap[axisXKey].xmin = xmin < axisXMap[axisXKey].xmin ? xmin : axisXMap[axisXKey].xmin;
+        axisXMap[axisXKey].xmax = xmax > axisXMap[axisXKey].xmax ? xmax : axisXMap[axisXKey].xmax;
+    } else {
+        axisXMap[axisXKey] = {
+            index: Object.keys(axisXMap).length + 1,
+            xmin: xmin,
+            xmax: xmax,
+            axisLabel: axisXKey
+        };
+    }
+    if (axisYKey in axisYMap) {
+        axisYMap[axisYKey].axisLabel = axisYKey;
+        axisYMap[axisYKey].ymin = xmin < axisYMap[axisYKey].ymin ? xmin : axisYMap[axisYKey].ymin;
+        axisYMap[axisYKey].ymax = xmax > axisYMap[axisYKey].ymax ? xmax : axisYMap[axisYKey].ymax;
+    } else {
+        axisYMap[axisXKey] = {
+            index: Object.keys(axisYMap).length + 1,
+            ymin: ymin,
+            ymax: ymax,
+            axisLabel: axisYKey
+        };
+    }
+
+    const axisXNumber = Object.keys(axisXMap).indexOf(axisXKey);
+    const axisYNumber = Object.keys(axisYMap).indexOf(axisYKey);
+
+    var curveOptions = {
+        ...{
+            label: label,
+            curveId: label,
+            name: longLabel,
+            binParam: curve['binParam'],
+            xaxis: "x" + (axisXNumber + 1),
+            yaxis: "y" + (axisYNumber + 1),
+            annotation: annotation,
+            annotateColor: curve['color'],
+            mode: "markers",
+            marker: {
+                symbol: "circle",
+                color: curve['color'],
+                size: 8
+            },
+            visible: true,
+            showlegend: true
+        }, ...dataSeries
+    };
+
+    return curveOptions;
+};
+
 export default matsDataCurveOpsUtils = {
 
     getHorizontalValueLine: getHorizontalValueLine,
@@ -668,6 +736,7 @@ export default matsDataCurveOpsUtils = {
     generateMapCurveOptions: generateMapCurveOptions,
     generateCTCMapCurveOptions: generateCTCMapCurveOptions,
     generateMapColorTextOptions: generateMapColorTextOptions,
-    generateContourCurveOptions: generateContourCurveOptions
+    generateContourCurveOptions: generateContourCurveOptions,
+    generateScatterCurveOptions: generateScatterCurveOptions
 
 }

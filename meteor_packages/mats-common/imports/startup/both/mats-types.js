@@ -138,6 +138,7 @@ var ReservedWords = {
     noSkill: "No Skill",
     constantBias: "Constant Bias",
     constantCSI: "Constant CSI",
+    centerLine: "X=Y",
     blueCurveText: "Cold bias",
     blackCurveText: "Small bias",
     redCurveText: "Warm bias",

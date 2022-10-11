@@ -274,20 +274,6 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
         data.subLevs = [];
     }
 
-    // add black 0 line curve
-    // need to define the minimum and maximum x value for making the zero curve
-    const zeroLine = matsDataCurveOpsUtils.getHorizontalValueLine(curveInfoParams.xmax, curveInfoParams.xmin, 0, matsTypes.ReservedWords.zero);
-    dataset.push(zeroLine);
-
-    //add ideal value lines, if any
-    var idealValueLine;
-    var idealLabel;
-    for (var ivIdx = 0; ivIdx < curveInfoParams.idealValues.length; ivIdx++) {
-        idealLabel = "ideal" + ivIdx.toString();
-        idealValueLine = matsDataCurveOpsUtils.getHorizontalValueLine(curveInfoParams.xmax, curveInfoParams.xmin, curveInfoParams.idealValues[ivIdx], matsTypes.ReservedWords[idealLabel]);
-        dataset.push(idealValueLine);
-    }
-
     // generate plot options
     var resultOptions;
     switch (appParams.plotType) {
@@ -312,6 +298,20 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
             break;
         default:
             break;
+    }
+
+    // add black 0 line curve
+    // need to define the minimum and maximum x value for making the zero curve
+    const zeroLine = matsDataCurveOpsUtils.getHorizontalValueLine(resultOptions.xaxis.range[1], resultOptions.xaxis.range[0], 0, matsTypes.ReservedWords.zero);
+    dataset.push(zeroLine);
+
+    //add ideal value lines, if any
+    var idealValueLine;
+    var idealLabel;
+    for (var ivIdx = 0; ivIdx < curveInfoParams.idealValues.length; ivIdx++) {
+        idealLabel = "ideal" + ivIdx.toString();
+        idealValueLine = matsDataCurveOpsUtils.getHorizontalValueLine(resultOptions.xaxis.range[1], resultOptions.xaxis.range[0], curveInfoParams.idealValues[ivIdx], matsTypes.ReservedWords[idealLabel]);
+        dataset.push(idealValueLine);
     }
 
     var totalProcessingFinish = moment();
@@ -621,8 +621,11 @@ const processDataReliability = function (dataset, appParams, curveInfoParams, pl
         };
     }
 
+    // generate plot options
+    var resultOptions = matsDataPlotOpsUtils.generateReliabilityPlotOptions();
+
     // add black perfect reliability line curve
-    const perfectLine = matsDataCurveOpsUtils.getLinearValueLine(curveInfoParams.xmax, curveInfoParams.xmin, data.ymax, data.ymin, matsTypes.ReservedWords.perfectReliability);
+    const perfectLine = matsDataCurveOpsUtils.getLinearValueLine(resultOptions.xaxis.range[1], resultOptions.xaxis.range[0], resultOptions.yaxis.range[1], resultOptions.yaxis.range[0], matsTypes.ReservedWords.perfectReliability);
     dataset.push(perfectLine);
 
     if (sample_climo >= data.ymin) {
@@ -637,18 +640,15 @@ const processDataReliability = function (dataset, appParams, curveInfoParams, pl
     }
 
     // add black no skill line curve
-    const noSkillLine = matsDataCurveOpsUtils.getLinearValueLine(curveInfoParams.xmax, curveInfoParams.xmin, skillmax, skillmin, matsTypes.ReservedWords.noSkill);
+    const noSkillLine = matsDataCurveOpsUtils.getLinearValueLine(resultOptions.xaxis.range[1], resultOptions.xaxis.range[0], skillmax, skillmin, matsTypes.ReservedWords.noSkill);
     dataset.push(noSkillLine);
 
     // add sample climo lines
-    const xClimoLine = matsDataCurveOpsUtils.getHorizontalValueLine(curveInfoParams.xmax, curveInfoParams.xmin, sample_climo, matsTypes.ReservedWords.zero);
+    const xClimoLine = matsDataCurveOpsUtils.getHorizontalValueLine(resultOptions.xaxis.range[1], resultOptions.xaxis.range[0], sample_climo, matsTypes.ReservedWords.zero);
     dataset.push(xClimoLine);
 
-    const yClimoLine = matsDataCurveOpsUtils.getVerticalValueLine(curveInfoParams.xmax, curveInfoParams.xmin, sample_climo, matsTypes.ReservedWords.zero);
+    const yClimoLine = matsDataCurveOpsUtils.getVerticalValueLine(resultOptions.xaxis.range[1], resultOptions.xaxis.range[0], sample_climo, matsTypes.ReservedWords.zero);
     dataset.push(yClimoLine);
-
-    // generate plot options
-    var resultOptions = matsDataPlotOpsUtils.generateReliabilityPlotOptions();
 
     var totalProcessingFinish = moment();
     bookkeepingParams.dataRequests["total retrieval and processing time for curve set"] = {
@@ -720,19 +720,19 @@ const processDataROC = function (dataset, appParams, curveInfoParams, plotParams
         };
     }
 
+    // generate plot options
+    var resultOptions = matsDataPlotOpsUtils.generateROCPlotOptions();
+
     // add black no skill line curve
-    const noSkillLine = matsDataCurveOpsUtils.getLinearValueLine(curveInfoParams.xmax, curveInfoParams.xmin, data.ymax, data.ymin, matsTypes.ReservedWords.noSkill);
+    const noSkillLine = matsDataCurveOpsUtils.getLinearValueLine(resultOptions.xaxis.range[1], resultOptions.xaxis.range[0], resultOptions.yaxis.range[1], data.ymin, matsTypes.ReservedWords.noSkill);
     dataset.push(noSkillLine);
 
     // add perfect forecast lines
-    const xPerfectLine = matsDataCurveOpsUtils.getHorizontalValueLine(curveInfoParams.xmax, curveInfoParams.xmin, data.ymax, matsTypes.ReservedWords.perfectForecast);
+    const xPerfectLine = matsDataCurveOpsUtils.getHorizontalValueLine(resultOptions.xaxis.range[1], resultOptions.xaxis.range[0], resultOptions.yaxis.range[1], matsTypes.ReservedWords.perfectForecast);
     dataset.push(xPerfectLine);
 
-    const yPerfectLine = matsDataCurveOpsUtils.getVerticalValueLine(curveInfoParams.xmax, curveInfoParams.xmin, data.xmin, matsTypes.ReservedWords.perfectForecast);
+    const yPerfectLine = matsDataCurveOpsUtils.getVerticalValueLine(resultOptions.xaxis.range[1], resultOptions.xaxis.range[0], resultOptions.xaxis.range[0], matsTypes.ReservedWords.perfectForecast);
     dataset.push(yPerfectLine);
-
-    // generate plot options
-    var resultOptions = matsDataPlotOpsUtils.generateROCPlotOptions();
 
     var totalProcessingFinish = moment();
     bookkeepingParams.dataRequests["total retrieval and processing time for curve set"] = {
@@ -985,12 +985,13 @@ const processDataEnsembleHistogram = function (dataset, appParams, curveInfoPara
 
     } // end curves
 
+    const resultOptions = matsDataPlotOpsUtils.generateEnsembleHistogramPlotOptions(dataset, curveInfoParams.curves, curveInfoParams.axisMap);
+
     // add black 0 line curve
     // need to define the minimum and maximum x value for making the zero curve
-    const zeroLine = matsDataCurveOpsUtils.getHorizontalValueLine(curveInfoParams.xmax, curveInfoParams.xmin, 0, matsTypes.ReservedWords.zero);
+    const zeroLine = matsDataCurveOpsUtils.getHorizontalValueLine(resultOptions.xaxis.range[1], resultOptions.xaxis.range[0], 0, matsTypes.ReservedWords.zero);
     dataset.push(zeroLine);
 
-    const resultOptions = matsDataPlotOpsUtils.generateEnsembleHistogramPlotOptions(dataset, curveInfoParams.curves, curveInfoParams.axisMap);
     var totalProcessingFinish = moment();
     bookkeepingParams.dataRequests["total retrieval and processing time for curve set"] = {
         begin: bookkeepingParams.totalProcessingStart.format(),
@@ -1270,6 +1271,83 @@ const processDataContour = function (dataset, curveInfoParams, plotParams, bookk
     };
 };
 
+const processDataSimpleScatter = function (dataset, appParams, curveInfoParams, plotParams, bookkeepingParams) {
+    var error = "";
+
+    const isMetexpress = matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
+
+    // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
+    if (curveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
+        dataset = matsDataMatchUtils.getMatchedDataSet(dataset, curveInfoParams, appParams, {});
+    }
+
+    // sort data statistics for each curve
+    for (var curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex++) {
+        var data = dataset[curveIndex];
+        var statType;
+        if (curveInfoParams.statType === undefined) {
+            statType = 'scalar';
+        } else if (Array.isArray(curveInfoParams.statType)) {
+            statType = curveInfoParams.statType[curveIndex];
+        } else {
+            statType = curveInfoParams.statType;
+        }
+        const label = dataset[curveIndex].label;
+
+        const statisticXSelect = curveInfoParams.curves[curveIndex]['x-statistic'];
+        const statisticYSelect = curveInfoParams.curves[curveIndex]['y-statistic'];
+        const variableXSelect = curveInfoParams.curves[curveIndex]['x-variable'];
+        const variableYSelect = curveInfoParams.curves[curveIndex]['y-variable'];
+
+        var di = 0;
+        while (di < data.x.length) {
+            var binValue = data.binVals[di];
+            binValue = data.binParam.indexOf("Date") > -1 ? moment.utc(binValue * 1000).format("YYYY-MM-DD HH:mm") : binValue;
+            // store statistics for this di datapoint
+            data.stats[di] = {
+                bin_value: binValue,
+                ystat: data.y[di],
+                xstat: data.x[di],
+                n: data.n[di]
+            };
+            // the tooltip is stored in data.text
+            data.text[di] = label;
+            data.text[di] = data.text[di] + "<br>bin value: " + binValue;
+            data.text[di] = data.text[di] + "<br>" + variableXSelect + " " + statisticXSelect + ": " + data.x[di];
+            data.text[di] = data.text[di] + "<br>" + variableYSelect + " " + statisticYSelect + ": " + data.y[di];
+            data.text[di] = data.text[di] + "<br>n: " + data.n[di];
+
+            di++;
+        }
+        dataset[curveIndex]['glob_stats'] = {};
+    }
+
+    // generate plot options
+    var resultOptions = matsDataPlotOpsUtils.generateScatterPlotOptions(curveInfoParams.axisXMap, curveInfoParams.axisYMap);
+
+    // add black center line
+    var centerLine = matsDataCurveOpsUtils.getLinearValueLine(resultOptions.xaxis.range[1], resultOptions.xaxis.range[0], resultOptions.yaxis.range[1], resultOptions.yaxis.range[0], matsTypes.ReservedWords.centerLine);
+    dataset.push(centerLine);
+
+    var totalProcessingFinish = moment();
+    bookkeepingParams.dataRequests["total retrieval and processing time for curve set"] = {
+        begin: bookkeepingParams.totalProcessingStart.format(),
+        finish: totalProcessingFinish.format(),
+        duration: moment.duration(totalProcessingFinish.diff(bookkeepingParams.totalProcessingStart)).asSeconds() + ' seconds'
+    };
+
+    // pass result to client-side plotting functions
+    return {
+        error: error,
+        data: dataset,
+        options: resultOptions,
+        basis: {
+            plotParams: plotParams,
+            queries: bookkeepingParams.dataRequests
+        }
+    };
+};
+
 export default matsDataProcessUtils = {
 
     processDataXYCurve: processDataXYCurve,
@@ -1279,6 +1357,7 @@ export default matsDataProcessUtils = {
     processDataPerformanceDiagram: processDataPerformanceDiagram,
     processDataHistogram: processDataHistogram,
     processDataEnsembleHistogram: processDataEnsembleHistogram,
-    processDataContour: processDataContour
+    processDataContour: processDataContour,
+    processDataSimpleScatter: processDataSimpleScatter
 
 }

@@ -56,7 +56,8 @@ const generateSeriesPlotOptions = function (axisMap, errorMax) {
         mirror: true,
         showgrid: true,
         gridwidth: 1,
-        gridcolor: "rgb(238,238,238)"
+        gridcolor: "rgb(238,238,238)",
+        zeroline: false
     };
 
     // allow support for multiple y-axes (currently 8)
@@ -189,7 +190,8 @@ const generateProfilePlotOptions = function (axisMap, errorMax) {
         type: 'linear',
         showgrid: true,
         gridwidth: 1,
-        gridcolor: "rgb(238,238,238)"
+        gridcolor: "rgb(238,238,238)",
+        zeroline: false
     };
 
     // allow support for multiple x-axes (currently 8)
@@ -322,7 +324,8 @@ const generateDieoffPlotOptions = function (axisMap, errorMax) {
         mirror: true,
         showgrid: true,
         gridwidth: 1,
-        gridcolor: "rgb(238,238,238)"
+        gridcolor: "rgb(238,238,238)",
+        zeroline: false
     };
 
     // allow support for multiple y-axes (currently 8)
@@ -463,7 +466,8 @@ const generateThresholdPlotOptions = function (dataset, axisMap, errorMax) {
         mirror: true,
         showgrid: true,
         gridwidth: 1,
-        gridcolor: "rgb(238,238,238)"
+        gridcolor: "rgb(238,238,238)",
+        zeroline: false
     };
 
     // allow support for multiple y-axes (currently 8)
@@ -587,7 +591,8 @@ const generateValidTimePlotOptions = function (axisMap, errorMax) {
         mirror: true,
         showgrid: true,
         gridwidth: 1,
-        gridcolor: "rgb(238,238,238)"
+        gridcolor: "rgb(238,238,238)",
+        zeroline: false
     };
 
     // allow support for multiple y-axes (currently 8)
@@ -715,7 +720,8 @@ const generateGridScalePlotOptions = function (axisMap, errorMax) {
         mirror: true,
         showgrid: true,
         gridwidth: 1,
-        gridcolor: "rgb(238,238,238)"
+        gridcolor: "rgb(238,238,238)",
+        zeroline: false
     };
 
     // allow support for multiple y-axes (currently 8)
@@ -841,7 +847,8 @@ const generateYearToYearPlotOptions = function (axisMap, errorMax) {
         mirror: true,
         showgrid: true,
         gridwidth: 1,
-        gridcolor: "rgb(238,238,238)"
+        gridcolor: "rgb(238,238,238)",
+        zeroline: false
     };
 
     // allow support for multiple y-axes (currently 8)
@@ -1079,7 +1086,7 @@ const generateROCPlotOptions = function () {
     return layout;
 };
 
-// sets plot options for ROC plots
+// sets plot options for performance diagrams
 const generatePerformanceDiagramPlotOptions = function () {
     var xmin = 0;
     var xmax = 1;
@@ -1516,6 +1523,150 @@ const generateContourPlotOptions = function (dataset) {
     return layout;
 };
 
+// sets plot options for simple scatter plots
+const generateScatterPlotOptions = function (axisXMap, axisYMap) {
+    const xAxisNumber = Object.keys(axisXMap).length;
+    const yAxisNumber = Object.keys(axisYMap).length;
+
+    // overall plot options
+    var layout = {
+        margin: {
+            l: 80,
+            r: 80,
+            b: 80,
+            t: xAxisNumber > 1 ? 80 : 20,
+            pad: 4
+        },
+        zeroline: false,
+        hovermode: 'closest',
+        hoverlabel: {
+            font: {
+                size: 16,
+                color: '#FFFFFF'
+            }
+        },
+        legend: {
+            orientation: "h",
+            x: 0,
+            y: 1.1,
+            font: {
+                size: 12,
+                color: '#000000'
+            }
+        }
+    };
+
+    // allow support for multiple y-axes (currently 8)
+    const axisAnchor = {0: 'x', 1: 'x', 2: 'free', 3: 'free', 4: 'free', 5: 'free', 6: 'free', 7: 'free'};
+    const axisSide = {0: 'left', 1: 'right', 2: 'left', 3: 'right', 4: 'left', 5: 'right', 6: 'left', 7: 'right'};
+    const axisPosition = {0: 0, 1: 1, 2: 0.1, 3: 0.9, 4: 0.2, 5: 0.8, 6: 0.3, 7: 0.7};
+
+    // loop over all x-axes
+    var axisKey;
+    var axisIdx;
+    var axisLabel;
+    for (axisIdx = 0; axisIdx < xAxisNumber; axisIdx++) {
+        // get max and min values and label for curves on this x-axis
+        axisKey = Object.keys(axisXMap)[axisIdx];
+        var xmin = axisXMap[axisKey].xmin;
+        var xmax = axisXMap[axisKey].xmax;
+        const xPad = ((xmax - xmin) * 0.025) !== 0 ? (xmax - xmin) * 0.025 : 0.025;
+        axisLabel = axisXMap[axisKey].axisLabel;
+        var axisObjectKey;
+        var axisObjectBegin = {
+            title: axisLabel,
+            titlefont: {
+                size: 24,
+                color: '#000000'
+            },
+            tickfont: {
+                size: 18,
+                color: '#000000'
+            },
+            linecolor: 'black',
+            linewidth: 2,
+            mirror: true,
+            showgrid: true,
+            gridwidth: 1,
+            gridcolor: "rgb(238,238,238)",
+            range: [xmin - xPad, xmax + xPad],  // need to allow room at the top for the legend
+            zeroline: false
+        };
+        if (axisIdx === 0) {
+            // the first (and main) x-axis
+            axisObjectKey = 'xaxis';
+            layout[axisObjectKey] = axisObjectBegin;
+        } else if (axisIdx < Object.keys(axisPosition).length) {
+            // subsequent x-axes, up to the 8 we support
+            axisObjectKey = 'xaxis' + (axisIdx + 1);
+            layout[axisObjectKey] = axisObjectBegin;
+            layout[axisObjectKey].anchor = axisAnchor[axisIdx];
+            layout[axisObjectKey].overlaying = 'x';
+            layout[axisObjectKey].side = axisSide[axisIdx];
+            layout[axisObjectKey].position = axisPosition[axisIdx];
+        } else {
+            // if the user by some miracle wants more than 8 x-axes, just shove them all into the position of the 8th
+            axisObjectKey = 'xaxis' + (axisIdx + 1);
+            layout[axisObjectKey] = axisObjectBegin;
+            layout[axisObjectKey].anchor = axisAnchor[Object.keys(axisPosition).length - 1];
+            layout[axisObjectKey].overlaying = 'x';
+            layout[axisObjectKey].side = axisSide[Object.keys(axisPosition).length - 1];
+            layout[axisObjectKey].position = axisPosition[Object.keys(axisPosition).length - 1];
+        }
+    }
+
+    // loop over all y-axes
+    for (axisIdx = 0; axisIdx < yAxisNumber; axisIdx++) {
+        // get max and min values and label for curves on this y-axis
+        axisKey = Object.keys(axisYMap)[axisIdx];
+        var ymin = axisYMap[axisKey].ymin;
+        var ymax = axisYMap[axisKey].ymax;
+        const yPad = ((ymax - ymin) * 0.025) !== 0 ? (ymax - ymin) * 0.025 : 0.025;
+        axisLabel = axisYMap[axisKey].axisLabel;
+        axisObjectBegin = {
+            title: axisLabel,
+            titlefont: {
+                size: 24,
+                color: '#000000'
+            },
+            tickfont: {
+                size: 18,
+                color: '#000000'
+            },
+            linecolor: 'black',
+            linewidth: 2,
+            mirror: true,
+            showgrid: true,
+            gridwidth: 1,
+            gridcolor: "rgb(238,238,238)",
+            range: [ymin - yPad, ymax + 8 * yPad],  // need to allow room at the top for the legend
+            zeroline: false
+        };
+        if (axisIdx === 0) {
+            // the first (and main) y-axis
+            axisObjectKey = 'yaxis';
+            layout[axisObjectKey] = axisObjectBegin;
+        } else if (axisIdx < Object.keys(axisPosition).length) {
+            // subsequent y-axes, up to the 8 we support
+            axisObjectKey = 'yaxis' + (axisIdx + 1);
+            layout[axisObjectKey] = axisObjectBegin;
+            layout[axisObjectKey].anchor = axisAnchor[axisIdx];
+            layout[axisObjectKey].overlaying = 'y';
+            layout[axisObjectKey].side = axisSide[axisIdx];
+            layout[axisObjectKey].position = axisPosition[axisIdx];
+        } else {
+            // if the user by some miracle wants more than 8 y-axes, just shove them all into the position of the 8th
+            axisObjectKey = 'yaxis' + (axisIdx + 1);
+            layout[axisObjectKey] = axisObjectBegin;
+            layout[axisObjectKey].anchor = axisAnchor[Object.keys(axisPosition).length - 1];
+            layout[axisObjectKey].overlaying = 'y';
+            layout[axisObjectKey].side = axisSide[Object.keys(axisPosition).length - 1];
+            layout[axisObjectKey].position = axisPosition[Object.keys(axisPosition).length - 1];
+        }
+    }
+    return layout;
+};
+
 export default matsDataPlotOpsUtils = {
 
     generateSeriesPlotOptions: generateSeriesPlotOptions,
@@ -1531,5 +1682,6 @@ export default matsDataPlotOpsUtils = {
     generateMapPlotOptions: generateMapPlotOptions,
     generateHistogramPlotOptions: generateHistogramPlotOptions,
     generateEnsembleHistogramPlotOptions: generateEnsembleHistogramPlotOptions,
-    generateContourPlotOptions: generateContourPlotOptions
+    generateContourPlotOptions: generateContourPlotOptions,
+    generateScatterPlotOptions: generateScatterPlotOptions
 }

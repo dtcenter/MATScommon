@@ -1870,7 +1870,7 @@ const parseQueryDataSimpleScatter = function (rows, d, appParams, statisticXStr,
     d.xmax = xmax;
     d.ymin = ymin;
     d.ymax = ymax;
-debugger;
+
     return {
         d: d,
         N0: N0,
