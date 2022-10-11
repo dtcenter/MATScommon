@@ -82,6 +82,7 @@ Template.graph.helpers({
                 case matsTypes.PlotTypes.reliability:
                 case matsTypes.PlotTypes.roc:
                 case matsTypes.PlotTypes.performanceDiagram:
+                case matsTypes.PlotTypes.simpleScatter:
                     // saved curve options for line graphs
                     var lineTypeResetOpts = [];
                     for (var lidx = 0; lidx < dataset.length; lidx++) {
@@ -97,9 +98,6 @@ Template.graph.helpers({
                             'text': [dataset[lidx].text],
                             'error_y': dataset[lidx].error_y,
                             'error_x': dataset[lidx].error_x,
-                            'line.dash': dataset[lidx].line.dash,
-                            'line.width': dataset[lidx].line.width,
-                            'line.color': dataset[lidx].line.color,
                             'marker.symbol': dataset[lidx].marker.symbol,
                             'marker.size': dataset[lidx].marker.size,
                             'marker.color': dataset[lidx].marker.color
@@ -108,6 +106,11 @@ Template.graph.helpers({
                             lineTypeResetOpts[lidx]["binVals"] = [dataset[lidx].binVals];
                         } else if (dataset[lidx].threshold_all !== undefined) {
                             lineTypeResetOpts[lidx]["threshold_all"] = [dataset[lidx].threshold_all];
+                        }
+                        if (plotType !== matsTypes.PlotTypes.simpleScatter) {
+                            lineTypeResetOpts[lidx]["line.dash"] = dataset[lidx].line.dash;
+                            lineTypeResetOpts[lidx]["line.width"] = dataset[lidx].line.width;
+                            lineTypeResetOpts[lidx]["line.color"] = dataset[lidx].line.color;
                         }
                     }
                     Session.set('lineTypeResetOpts', lineTypeResetOpts);
@@ -182,6 +185,7 @@ Template.graph.helpers({
                     case matsTypes.PlotTypes.performanceDiagram:
                         document.getElementById(label + "-curve-show-hide").click();
                         return false;
+                    case matsTypes.PlotTypes.simpleScatter:
                     case matsTypes.PlotTypes.scatter2d:
                         document.getElementById(label + "-curve-show-hide-points").click();
                         return false;
@@ -223,6 +227,7 @@ Template.graph.helpers({
                         case matsTypes.PlotTypes.performanceDiagram:
                             document.getElementById(label + "-curve-show-hide").click();
                             break;
+                        case matsTypes.PlotTypes.simpleScatter:
                         case matsTypes.PlotTypes.scatter2d:
                             document.getElementById(label + "-curve-show-hide-points").click();
                             break;
@@ -270,6 +275,7 @@ Template.graph.helpers({
                                 document.getElementById(label + "-curve-show-hide").click();
                             }
                             break;
+                        case matsTypes.PlotTypes.simpleScatter:
                         case matsTypes.PlotTypes.scatter2d:
                             if ((hideAllOtherCurves && dataset[i].visible !== 'legendonly') || (!hideAllOtherCurves && dataset[i].visible === 'legendonly')) {
                                 document.getElementById(label + "-curve-show-hide-points").click();
@@ -313,6 +319,7 @@ Template.graph.helpers({
                     case matsTypes.PlotTypes.performanceDiagram:
                     case matsTypes.PlotTypes.histogram:
                     case matsTypes.PlotTypes.ensembleHistogram:
+                    case matsTypes.PlotTypes.simpleScatter:
                     case matsTypes.PlotTypes.contour:
                     case matsTypes.PlotTypes.contourDiff:
                     default:
@@ -403,6 +410,7 @@ Template.graph.helpers({
                 case matsTypes.PlotTypes.reliability:
                 case matsTypes.PlotTypes.roc:
                 case matsTypes.PlotTypes.performanceDiagram:
+                case matsTypes.PlotTypes.simpleScatter:
                     fieldName = " bin values:";
                     break;
                 case matsTypes.PlotTypes.timeSeries:
@@ -440,6 +448,7 @@ Template.graph.helpers({
                             case matsTypes.PlotTypes.reliability:
                             case matsTypes.PlotTypes.roc:
                             case matsTypes.PlotTypes.performanceDiagram:
+                            case matsTypes.PlotTypes.simpleScatter:
                                 if (dataset[i].binVals !== undefined) {
                                     indValsArray = dataset[i].binVals;
                                 } else if (dataset[i].threshold_all !== undefined) {
@@ -463,7 +472,10 @@ Template.graph.helpers({
                         }
                         for (var j = 0; j < indValsArray.length; j++) {
                             indVals.push({
-                                val: ((plotType === matsTypes.PlotTypes.performanceDiagram || plotType === matsTypes.PlotTypes.roc) && dataset[i].binParam !== undefined && dataset[i].binParam.indexOf("Date") > -1) ?
+                                val: ((plotType === matsTypes.PlotTypes.performanceDiagram
+                                    || plotType === matsTypes.PlotTypes.simpleScatter
+                                    || plotType === matsTypes.PlotTypes.roc)
+                                    && dataset[i].binParam !== undefined && dataset[i].binParam.indexOf("Date") > -1) ?
                                     moment.utc(indValsArray[j] * 1000).format("YYYY-MM-DD HH:mm") : indValsArray[j],
                                 label: curveLabel + "---" + indValsArray[j].toString()
                             });
@@ -521,6 +533,7 @@ Template.graph.helpers({
                     case matsTypes.PlotTypes.map:
                     case matsTypes.PlotTypes.histogram:
                     case matsTypes.PlotTypes.ensembleHistogram:
+                    case matsTypes.PlotTypes.simpleScatter:
                     case matsTypes.PlotTypes.scatter2d:
                     case matsTypes.PlotTypes.contour:
                     case matsTypes.PlotTypes.contourDiff:
@@ -579,6 +592,9 @@ Template.graph.helpers({
                     return "Contour " + p.dates + " : " + format;
                 case matsTypes.PlotTypes.contourDiff:
                     return "ContourDiff " + p.dates + " : " + format;
+                case matsTypes.PlotTypes.simpleScatter:
+                    return "Simple Scatter: " + format;
+                    break;
                 case matsTypes.PlotTypes.scatter2d:
                     break;
                 default:
@@ -650,6 +666,7 @@ Template.graph.helpers({
             case matsTypes.PlotTypes.histogram:
             case matsTypes.PlotTypes.ensembleHistogram:
             case matsTypes.PlotTypes.scatter2d:
+            case matsTypes.PlotTypes.simpleScatter:
             case matsTypes.PlotTypes.contour:
             case matsTypes.PlotTypes.contourDiff:
             default:
@@ -675,6 +692,7 @@ Template.graph.helpers({
             case matsTypes.PlotTypes.histogram:
             case matsTypes.PlotTypes.ensembleHistogram:
             case matsTypes.PlotTypes.scatter2d:
+            case matsTypes.PlotTypes.simpleScatter:
             case matsTypes.PlotTypes.contour:
             case matsTypes.PlotTypes.contourDiff:
             default:
@@ -767,6 +785,7 @@ Template.graph.helpers({
             case matsTypes.PlotTypes.roc:
             case matsTypes.PlotTypes.performanceDiagram:
                 return "block";
+            case matsTypes.PlotTypes.simpleScatter:
             case matsTypes.PlotTypes.scatter2d:
             case matsTypes.PlotTypes.map:
             case matsTypes.PlotTypes.histogram:
@@ -791,6 +810,7 @@ Template.graph.helpers({
             case matsTypes.PlotTypes.reliability:
             case matsTypes.PlotTypes.roc:
             case matsTypes.PlotTypes.performanceDiagram:
+            case matsTypes.PlotTypes.simpleScatter:
             case matsTypes.PlotTypes.scatter2d:
                 return "block";
             case matsTypes.PlotTypes.map:
@@ -823,6 +843,7 @@ Template.graph.helpers({
                 case matsTypes.PlotTypes.histogram:
                 case matsTypes.PlotTypes.ensembleHistogram:
                 case matsTypes.PlotTypes.scatter2d:
+                case matsTypes.PlotTypes.simpleScatter:
                 case matsTypes.PlotTypes.contour:
                 case matsTypes.PlotTypes.contourDiff:
                 default:
@@ -857,6 +878,7 @@ Template.graph.helpers({
             case matsTypes.PlotTypes.reliability:
             case matsTypes.PlotTypes.roc:
             case matsTypes.PlotTypes.performanceDiagram:
+            case matsTypes.PlotTypes.simpleScatter:
             case matsTypes.PlotTypes.histogram:
             case matsTypes.PlotTypes.ensembleHistogram:
             case matsTypes.PlotTypes.contour:
@@ -879,6 +901,7 @@ Template.graph.helpers({
             case matsTypes.PlotTypes.reliability:
             case matsTypes.PlotTypes.roc:
             case matsTypes.PlotTypes.performanceDiagram:
+            case matsTypes.PlotTypes.simpleScatter:
             case matsTypes.PlotTypes.histogram:
             case matsTypes.PlotTypes.ensembleHistogram:
             case matsTypes.PlotTypes.contour:
@@ -1188,6 +1211,7 @@ Template.graph.events({
             case matsTypes.PlotTypes.reliability:
             case matsTypes.PlotTypes.roc:
             case matsTypes.PlotTypes.performanceDiagram:
+            case matsTypes.PlotTypes.simpleScatter:
             case matsTypes.PlotTypes.scatter2d:
                 // set the dimensions square
                 h = Math.max(document.documentElement.clientHeight, window.innerWidth || 0) * .85;
@@ -1565,6 +1589,7 @@ Template.graph.events({
     },
     'click .curveVisibility': function (event) {
         event.preventDefault();
+        const plotType = Session.get("plotType");
         var dataset = matsCurveUtils.getGraphResult().data;
         const id = event.target.id;
         const label = id.replace('-curve-show-hide', '');
@@ -1585,7 +1610,7 @@ Template.graph.events({
                     };
                     $('#' + id)[0].value = "show curve";
                     $('#' + id + "-points")[0].value = "show points";
-                } else if (dataset[myDataIdx].mode === "markers") {         // in point mode, points are visible, so make lines and points visible
+                } else if (dataset[myDataIdx].mode === "markers" && plotType !== matsTypes.PlotTypes.simpleScatter) {   // in point mode, points are visible, so make lines and points visible
                     update = {
                         mode: "lines+markers"
                     };
@@ -1620,6 +1645,7 @@ Template.graph.events({
     },
     'click .pointsVisibility': function (event) {
         event.preventDefault();
+        const plotType = Session.get("plotType");
         var dataset = matsCurveUtils.getGraphResult().data;
         const id = event.target.id;
         const label = id.replace('-curve-show-hide-points', '');
@@ -1642,8 +1668,10 @@ Template.graph.events({
                 } else if (dataset[myDataIdx].mode === "markers") {         // points are visible, so make nothing visible
                     update = {
                         visible: 'legendonly',
-                        mode: "lines"
                     };
+                    if (plotType !== matsTypes.PlotTypes.simpleScatter) {
+                        update["mode"] = "lines";
+                    }
                     $('#' + id)[0].value = "show points";
                 }
             } else {                                                        // nothing is visible, so make points visible
@@ -1875,6 +1903,7 @@ Template.graph.events({
                 case matsTypes.PlotTypes.reliability:
                 case matsTypes.PlotTypes.roc:
                 case matsTypes.PlotTypes.performanceDiagram:
+                case matsTypes.PlotTypes.simpleScatter:
                     // restyle for line plots
                     const lineTypeResetOpts = Session.get('lineTypeResetOpts');
                     for (var lidx = 0; lidx < lineTypeResetOpts.length; lidx++) {
@@ -1908,6 +1937,7 @@ Template.graph.events({
                                 case matsTypes.PlotTypes.reliability:
                                 case matsTypes.PlotTypes.roc:
                                 case matsTypes.PlotTypes.performanceDiagram:
+                                case matsTypes.PlotTypes.simpleScatter:
                                 case matsTypes.PlotTypes.histogram:
                                 case matsTypes.PlotTypes.ensembleHistogram:
                                 case matsTypes.PlotTypes.contour:
@@ -2189,6 +2219,7 @@ Template.graph.events({
                         break;
                     case matsTypes.PlotTypes.histogram:
                     case matsTypes.PlotTypes.ensembleHistogram:
+                    case matsTypes.PlotTypes.simpleScatter:
                         // options for bar plots
                         updates[index]['marker.color'] = elem.value;
                         break;
@@ -2325,6 +2356,7 @@ Template.graph.events({
                             case matsTypes.PlotTypes.reliability:
                             case matsTypes.PlotTypes.roc:
                             case matsTypes.PlotTypes.performanceDiagram:
+                            case matsTypes.PlotTypes.simpleScatter:
                                 indArray = dataset[i].binVals !== undefined ? dataset[i].binVals : dataset[i].threshold_all;
                                 j = isNaN(Number(indVal)) ? indArray.indexOf(indVal) : indArray.indexOf(Number(indVal));
                                 break;

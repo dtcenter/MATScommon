@@ -1326,8 +1326,11 @@ const processDataSimpleScatter = function (dataset, appParams, curveInfoParams, 
     var resultOptions = matsDataPlotOpsUtils.generateScatterPlotOptions(curveInfoParams.axisXMap, curveInfoParams.axisYMap);
 
     // add black center line
-    var centerLine = matsDataCurveOpsUtils.getLinearValueLine(resultOptions.xaxis.range[1], resultOptions.xaxis.range[0], resultOptions.yaxis.range[1], resultOptions.yaxis.range[0], matsTypes.ReservedWords.centerLine);
-    dataset.push(centerLine);
+    // commented out because I haven't decided yet if we actually want this
+    // let overallMin = resultOptions.xaxis.range[0] < resultOptions.yaxis.range[0] ? resultOptions.xaxis.range[0] : resultOptions.yaxis.range[0];
+    // let overallMax = resultOptions.xaxis.range[1] > resultOptions.yaxis.range[1] ? resultOptions.xaxis.range[1] : resultOptions.yaxis.range[1];
+    // var centerLine = matsDataCurveOpsUtils.getLinearValueLine(overallMax, overallMin, overallMax, overallMin, matsTypes.ReservedWords.centerLine);
+    // dataset.push(centerLine);
 
     var totalProcessingFinish = moment();
     bookkeepingParams.dataRequests["total retrieval and processing time for curve set"] = {
