@@ -686,7 +686,7 @@ const generateScatterCurveOptions = function (curve, curveIndex, axisXMap, axisY
         axisYMap[axisYKey].ymin = xmin < axisYMap[axisYKey].ymin ? xmin : axisYMap[axisYKey].ymin;
         axisYMap[axisYKey].ymax = xmax > axisYMap[axisYKey].ymax ? xmax : axisYMap[axisYKey].ymax;
     } else {
-        axisYMap[axisXKey] = {
+        axisYMap[axisYKey] = {
             index: Object.keys(axisYMap).length + 1,
             ymin: ymin,
             ymax: ymax,
