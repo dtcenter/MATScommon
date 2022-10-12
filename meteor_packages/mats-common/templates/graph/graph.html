@@ -36,6 +36,9 @@
                         {{#if isMultiAxisLinePlot}}
                             {{#if isProfile}}
                                 <button id="xAxisCombineButton" type="button" class="axisCombineButton btn btn-primary" style="display:block;"  data-toggle="tooltip" data-placement="top" title="combine x-axes"><i class="fa fa-arrows"></i>&nbsp;&nbsp;<strong>Merge X Axes</strong></button>
+                            {{/if}}
+                            {{#if isSimpleScatter}}
+                                <button id="axisCombineButton" type="button" class="axisCombineButton btn btn-primary" style="display:block;"  data-toggle="tooltip" data-placement="top" title="combine axes"><i class="fa fa-arrows"></i>&nbsp;&nbsp;<strong>Merge X/Y Axes</strong></button>
                             {{else}}
                                 <button id="yAxisCombineButton" type="button" class="axisCombineButton btn btn-primary" style="display:block;"  data-toggle="tooltip" data-placement="top" title="combine y-axes"><i class="fa fa-arrows"></i>&nbsp;&nbsp;<strong>Merge Y Axes</strong></button>
                             {{/if}}

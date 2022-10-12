@@ -647,6 +647,9 @@ Template.graph.helpers({
     isThreshold: function () {
         return (Session.get('plotType') === matsTypes.PlotTypes.threshold)
     },
+    isSimpleScatter: function () {
+        return (Session.get('plotType') === matsTypes.PlotTypes.simpleScatter)
+    },
     isLinePlot: function () {
         var plotType = Session.get('plotType');
         switch (plotType) {
@@ -684,6 +687,7 @@ Template.graph.helpers({
             case matsTypes.PlotTypes.gridscale:
             case matsTypes.PlotTypes.dailyModelCycle:
             case matsTypes.PlotTypes.yearToYear:
+            case matsTypes.PlotTypes.simpleScatter:
                 return true;
             case matsTypes.PlotTypes.reliability:
             case matsTypes.PlotTypes.roc:
@@ -692,7 +696,6 @@ Template.graph.helpers({
             case matsTypes.PlotTypes.histogram:
             case matsTypes.PlotTypes.ensembleHistogram:
             case matsTypes.PlotTypes.scatter2d:
-            case matsTypes.PlotTypes.simpleScatter:
             case matsTypes.PlotTypes.contour:
             case matsTypes.PlotTypes.contourDiff:
             default:
@@ -1319,7 +1322,7 @@ Template.graph.events({
         var dataset = matsCurveUtils.getGraphResult().data;
         var options = Session.get('options');
         var reservedWords = Object.values(matsTypes.ReservedWords);
-        var newAxisLabel = "";
+        var newAxisLabel;
         var min = Number.MAX_VALUE;      // placeholder xmin
         var max = -1 * Number.MAX_VALUE;      // placeholder xmax
         var didx;
@@ -1333,6 +1336,11 @@ Template.graph.events({
                         updates[didx] = {
                             xaxis: "x1"
                         };
+                    } else if (plotType === matsTypes.PlotTypes.simpleScatter) {
+                        updates[didx] = {
+                            xaxis: "x1",
+                            yaxis: "y1"
+                       };
                     } else {
                         updates[didx] = {
                             yaxis: "y1"
@@ -1341,8 +1349,9 @@ Template.graph.events({
                     Plotly.restyle($("#placeholder")[0], updates[didx], didx);
                 }
             }
-            if (plotType === matsTypes.PlotTypes.profile) {
-                for (var xidx = 0; xidx < xAxes.length; xidx++) {
+            if (plotType === matsTypes.PlotTypes.profile || plotType === matsTypes.PlotTypes.simpleScatter) {
+                newAxisLabel = "";
+                for (xidx = 0; xidx < xAxes.length; xidx++) {
                     newAxisLabel = newAxisLabel === "" ? options[xAxes[xidx]].title : newAxisLabel + "/" + options[xAxes[xidx]].title;
                     min = options[xAxes[xidx]]['range'][0] < min ? options[xAxes[xidx]]['range'][0] : min;
                     max = options[xAxes[xidx]]['range'][1] > max ? options[xAxes[xidx]]['range'][1] : max;
@@ -1350,8 +1359,10 @@ Template.graph.events({
                 newOpts['xaxis.title'] = newAxisLabel;
                 newOpts['xaxis.range[0]'] = min - ((max - min) * 0.125);
                 newOpts['xaxis.range[1]'] = max + ((max - min) * 0.125);
-            } else {
-                for (var yidx = 0; yidx < yAxes.length; yidx++) {
+            }
+            if (plotType !== matsTypes.PlotTypes.profile) {
+                newAxisLabel = "";
+                for (yidx = 0; yidx < yAxes.length; yidx++) {
                     newAxisLabel = newAxisLabel === "" ? options[yAxes[yidx]].title : newAxisLabel + "/" + options[yAxes[yidx]].title;
                     min = options[yAxes[yidx]]['range'][0] < min ? options[yAxes[yidx]]['range'][0] : min;
                     max = options[yAxes[yidx]]['range'][1] > max ? options[yAxes[yidx]]['range'][1] : max;
@@ -1371,6 +1382,11 @@ Template.graph.events({
                         updates[didx] = {
                             xaxis: lineTypeResetOpts[didx].xaxis
                         };
+                    } else if (plotType === matsTypes.PlotTypes.simpleScatter) {
+                        updates[didx] = {
+                            xaxis: lineTypeResetOpts[didx].xaxis,
+                            yaxis: lineTypeResetOpts[didx].yaxis
+                        };
                     } else {
                         updates[didx] = {
                             yaxis: lineTypeResetOpts[didx].yaxis
@@ -1379,13 +1395,14 @@ Template.graph.events({
                     Plotly.restyle($("#placeholder")[0], updates[didx], didx);
                 }
             }
-            if (plotType === matsTypes.PlotTypes.profile) {
+            if (plotType === matsTypes.PlotTypes.profile || plotType === matsTypes.PlotTypes.simpleScatter) {
                 for (xidx = 0; xidx < xAxes.length; xidx++) {
                     newOpts[xAxes[xidx] + '.title'] = options[xAxes[xidx]].title;
                     newOpts[xAxes[xidx] + '.range[0]'] = options[xAxes[xidx]]['range'][0];
                     newOpts[xAxes[xidx] + '.range[1]'] = options[xAxes[xidx]]['range'][1];
                 }
-            } else {
+            }
+            if (plotType !== matsTypes.PlotTypes.profile) {
                 for (yidx = 0; yidx < yAxes.length; yidx++) {
                     newOpts[yAxes[yidx] + '.title'] = options[yAxes[yidx]].title;
                     newOpts[yAxes[yidx] + '.range[0]'] = options[yAxes[yidx]]['range'][0];
