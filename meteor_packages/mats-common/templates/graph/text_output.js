@@ -118,6 +118,9 @@ Template.textOutput.helpers({
                     <th>minimum time</th>\
                     <th>maximum time</th>";
                 break;
+            case matsTypes.PlotTypes.simpleScatter:
+                header += "";
+                break;
             case matsTypes.PlotTypes.scatter2d:
                 // no stat for scatter
                 break;
@@ -281,6 +284,13 @@ Template.textOutput.helpers({
                         <th>start date</th>\
                         <th>end date</th>";
                 }
+                break;
+            case matsTypes.PlotTypes.simpleScatter:
+                header += "<th>" + curve.label + " bin value</th>\
+                        <th>x-statistic</th>\
+                        <th>y-statistic</th>\
+                        <th>n</th>\
+                        ";
                 break;
             case matsTypes.PlotTypes.scatter2d:
                 header += "<th>" + curve.label + " x axis</th>\
@@ -476,6 +486,12 @@ Template.textOutput.helpers({
                         "<td>" + (element['End Date'] != undefined && element['End Date'] !== null ? element['End Date'] : fillStr) + "</td>";
                 }
                 break;
+            case matsTypes.PlotTypes.simpleScatter:
+                line += "<td>" + element[labelKey += " bin value"] + "</td>" +
+                    "<td>" + (element['x-stat'] != undefined && element['x-stat'] !== null ? element['x-stat'].toPrecision(4) : fillStr) + "</td>" +
+                    "<td>" + (element['y-stat'] != undefined && element['y-stat'] !== null ? element['y-stat'] : fillStr) + "</td>" +
+                    "<td>" + (element['n'] != undefined && element['n'] !== null ? element['n'] : fillStr) + "</td>";
+                break;
             case matsTypes.PlotTypes.scatter2d:
                 line += "<td>" + (element['xAxis'] != undefined && element['xAxis'] !== null ? element['xAxis'].toPrecision(4) : fillStr) + "</td>" +
                     "<td>" + (element['yAxis'] != undefined && element['yAxis'] !== null ? element['yAxis'].toPrecision(4) : fillStr) + "</td>" +
@@ -571,6 +587,9 @@ Template.textOutput.helpers({
                     "<td>" + (stats['total number of points'] != undefined && stats['total number of points'] !== null ? stats['total number of points'] : "undefined").toString() + "</td>" +
                     "<td>" + (stats['minimum time'] != undefined && stats['minimum time'] != null ? stats['minimum time'] : "undefined").toString() + "</td>" +
                     "<td>" + (stats['maximum time'] != undefined && stats['maximum time'] != null ? stats['maximum time'] : "undefined").toString() + "</td>";
+                break;
+            case matsTypes.PlotTypes.simpleScatter:
+                line += "";
                 break;
             case matsTypes.PlotTypes.scatter2d:
                 line += "<td>" + curve['label'] + "</td>" +

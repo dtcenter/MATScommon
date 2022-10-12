@@ -5,7 +5,15 @@
 import {Meteor} from "meteor/meteor";
 import {ValidatedMethod} from 'meteor/mdg:validated-method';
 import SimpleSchema from 'simpl-schema';
-import {matsCache, matsCollections, matsDataQueryUtils, matsCouchbaseUtils, matsDataUtils, matsTypes, versionInfo} from 'meteor/randyp:mats-common';
+import {
+    matsCache,
+    matsCollections,
+    matsDataQueryUtils,
+    matsCouchbaseUtils,
+    matsDataUtils,
+    matsTypes,
+    versionInfo
+} from 'meteor/randyp:mats-common';
 import {mysql} from 'meteor/pcel:mysql';
 import {url} from 'url';
 import {Mongo} from 'meteor/mongo';
@@ -404,7 +412,7 @@ const _checkMetaDataRefresh = async function () {
             var tName = tableNames[ti];
             try {
                 if (Meteor.isServer) {
-                    switch(dbType) {
+                    switch (dbType) {
                         case matsTypes.DbTypes.mysql:
                             var rows = matsDataQueryUtils.simplePoolQueryWrapSynchronous(global[poolName], "SELECT UNIX_TIMESTAMP(UPDATE_TIME)" +
                                 "    FROM   information_schema.tables" +
@@ -503,7 +511,7 @@ function _mapMapToApps(result) {
             newResult[apps[aidx]] = result;
         }
     } else {
-        newResult =  result;
+        newResult = result;
     }
     return newResult;
 }
@@ -548,7 +556,10 @@ function _getListOfAppDBs() {
             if (typeof result[apps[aidx]] !== 'string' && !(result[apps[aidx]] instanceof String)) result[apps[aidx]] = result[apps[aidx]].sumsDB;
         }
     } else {
-        result[matsCollections.Settings.findOne().Title] = matsCollections.Databases.findOne({role: matsTypes.DatabaseRoles.SUMS_DATA, status: "active"}).database;
+        result[matsCollections.Settings.findOne().Title] = matsCollections.Databases.findOne({
+            role: matsTypes.DatabaseRoles.SUMS_DATA,
+            status: "active"
+        }).database;
     }
     return result;
 }
@@ -1157,6 +1168,31 @@ const _getFlattenedResultData = function (rk, p, np) {
                             }
                             curveDataElement['oy'] = data[ci].stats[cdi].obs_y;
                             curveDataElement['on'] = data[ci].stats[cdi].obs_n;
+                            curveData.push(curveDataElement);
+                        }
+                        returnData.data[data[ci].label] = curveData;
+                    }
+                    break;
+                case matsTypes.PlotTypes.simpleScatter:
+                    var returnData = {};
+                    returnData.stats = {};   // map of maps
+                    returnData.data = {};  // map of arrays of maps
+                    for (var ci = 0; ci < data.length; ci++) {  // for each curve
+                        // if the curve label is a reserved word do not process the curve (its a zero or max curve)
+                        var reservedWords = Object.values(matsTypes.ReservedWords);
+                        if (reservedWords.indexOf(data[ci].label) >= 0) {
+                            continue; // don't process the zero or max curves
+                        }
+                        var stats = {};
+                        stats['label'] = data[ci].label;
+
+                        var curveData = [];  // array of maps
+                        for (var cdi = 0; cdi < data[ci].y.length; cdi++) {  // for each datapoint
+                            var curveDataElement = {};
+                            curveDataElement[data[ci].label + ' bin value'] = data[ci].stats[cdi].bin_value;
+                            curveDataElement['x-stat'] = data[ci].stats[cdi].xstat;
+                            curveDataElement['y-stat'] = data[ci].stats[cdi].ystat;
+                            curveDataElement['n'] = data[ci].stats[cdi].n;
                             curveData.push(curveDataElement);
                         }
                         returnData.data[data[ci].label] = curveData;
@@ -2362,7 +2398,7 @@ const resetApp = async function (appRef) {
         }
 
         // Try getting version from env
-        let { version: appVersion, commit: commit, branch: branch } = versionInfo.getVersionsFromEnv();
+        let {version: appVersion, commit: commit, branch: branch} = versionInfo.getVersionsFromEnv();
         if (appVersion === 'Unknown') {
             // Try getting versionInfo from the appProduction database
             console.log("VERSION not set in the environment - using localhost")
@@ -2370,7 +2406,7 @@ const resetApp = async function (appRef) {
             commit = "HEAD";
         }
         const appType = type ? type : matsTypes.AppTypes.mats;
-        matsCollections.appName.upsert({ app: appName }, { $set: { app: appName } });
+        matsCollections.appName.upsert({app: appName}, {$set: {app: appName}});
 
         // remember that we updated the metadata tables just now - create metaDataTableUpdates
         /*
