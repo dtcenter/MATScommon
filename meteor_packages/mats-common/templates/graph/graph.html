@@ -53,7 +53,7 @@
                         {{/if}}
                         {{#if isNotMap}}
                             <button id="legendTextButton" type="button" class="legendTextButton btn btn-primary" style="display:block;"  data-toggle="tooltip" data-placement="top" title="edit legend text"><i class="fa fa-pencil"></i>&nbsp;&nbsp;<strong>Edit Legend</strong></button>
-                            {{#if isLinePlot}}
+                            {{#if isLineOrScatterPlot}}
                                 <button id="filterPointsButton" type="button" class="filterPointsButton btn btn-primary" style="display:block;"  data-toggle="tooltip" data-placement="top" title="filter graph points"><i class="fa fa-check-square"></i>&nbsp;&nbsp;<strong>Filter Points</strong></button>
                             {{/if}}
                             <button id="replotZoomButton" type="button" class="replotZoomButton btn btn-primary" style="display:{{displayReplotZoom}};"  data-toggle="tooltip" data-placement="top" title="replot graph to current zoom setting"><i class="fa fa-line-chart"></i>&nbsp;&nbsp;<strong>Re-sample</strong></button>
@@ -228,6 +228,8 @@
                             {{#if isLinePlot}}
                                 <label class="col-sm-2">Line Style</label>
                                 <label class="col-sm-2">Line Weight</label>
+                            {{/if}}
+                            {{#if isLineOrScatterPlot}}
                                 <label class="col-sm-2">Marker Style</label>
                                 <label class="col-sm-2">Marker Weight</label>
                             {{/if}}
@@ -244,6 +246,8 @@
                                         <option value="dashdot">Dash-dot</option>
                                     </select>
                                     <input id="{{this.label}}LineWeight" class="{{this.label}}-line-weight data-input numberInput col-sm-2" type="number" value="2" name="{{this.label}}LineWeight" style="width: 6em; font-size: small;"/>
+                                {{/if}}
+                                {{#if isLineOrScatterPlot}}
                                     <select id="{{this.label}}LineMarker" class="{{this.label}}-line-marker col-sm-2" style="font-size: small;">
                                         <option value="circle" selected="selected">Solid circle</option>
                                         <option value="circle-open">Open circle</option>
@@ -343,7 +347,7 @@
             </div>
             <!-- /.modal-dialog -->
         </div>
-        {{#if isLinePlot}}
+        {{#if isLineOrScatterPlot}}
             <div id="filterPointsModal" class="modal container" role="dialog">
                 <div class="modal-dialog">
                     <div class="modal-content">
