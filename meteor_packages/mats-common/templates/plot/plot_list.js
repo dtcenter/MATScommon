@@ -445,9 +445,9 @@ Template.plotList.events({
                     Session.set("plotResultKey", ret.key);
                     delete ret;
                     Session.set('graphFunction', graphFunction);
+                    Session.set('graphPlotType', JSON.parse(JSON.stringify(plotType)));
                     Session.set ('PlotResultsUpDated', new Date());
                     console.log("after successful getGraphData call time:", new Date(), ":Session key: ",  ret.key, " graphFunction:", graphFunction);
-                    matsGraphUtils.setGraphView(pt);
                 });
                 break;
             case "displayScorecardStatusPage":
@@ -474,7 +474,6 @@ Template.plotList.events({
                         return false;
                     }
                     Session.set('expireKey', false);
-                    const plotType = Session.get('plotType');
                     Session.set('graphFunction', graphFunction);
                     console.log("after successful getGraphData call time:", new Date(), ":Session key: ",  ret.key, " graphFunction:", graphFunction);
                     matsGraphUtils.setScorecardDisplayView(pt);

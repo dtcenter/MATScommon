@@ -17,6 +17,7 @@ Package.describe({
 Package.onUse(function (api) {
     api.versionsFrom('2.7');
     Npm.depends({
+        "@fortawesome/fontawesome-free": "6.2.0",
         'fs-extra': '7.0.0',
         "@babel/runtime": "7.10.4",
         "meteor-node-stubs": "0.4.1",
@@ -46,7 +47,6 @@ Package.onUse(function (api) {
     api.use('session');
     api.imply('session');
     api.use("twbs:bootstrap");
-    api.use("fortawesome:fontawesome");
     api.use("msavin:mongol");
     api.use("differential:event-hooks");
     api.use("risul:bootstrap-colorpicker");
@@ -343,7 +343,6 @@ Package.onTest(function (api) {
     api.use('session');
     api.imply('session');
     api.use("twbs:bootstrap");
-    api.use("fortawesome:fontawesome");
     api.use("msavin:mongol");
     api.use("differential:event-hooks");
     api.use("risul:bootstrap-colorpicker");

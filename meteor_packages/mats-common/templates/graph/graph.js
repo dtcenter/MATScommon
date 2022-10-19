@@ -43,7 +43,7 @@ Template.graph.helpers({
         var graphFunction = Session.get('graphFunction');
         if (graphFunction) {
             eval(graphFunction)(Session.get('plotResultKey'));
-            var plotType = Session.get('plotType');
+            var plotType = Session.get('graphPlotType');
             var dataset = matsCurveUtils.getGraphResult().data;
             var options = matsCurveUtils.getGraphResult().options;
             Session.set('options', options);
@@ -156,21 +156,22 @@ Template.graph.helpers({
                 return false;
             }
             Plotly.newPlot($("#placeholder")[0], dataset, options, {showLink: true});
+            matsGraphUtils.setGraphView(plotType);
 
-            // there seems to be a bug in the plotly API, where if you have a handler for plotly_legendclick, 
-            // it will always supersede the handler for plotly_legenddoubleclick. If you comment out the 
-            // handler for plotly_legendclick, then the one for plotly_legenddoubleclick will fire. This 
-            // is not the behavior that the plotly instruction manual implies should occur, but seems to 
-            // be the reality (the broader plotly_click and plotly_doubleclick work as expected, accurately 
-            // recognizing double clicks even if a single click handler exists). I'm going to add handlers 
-            // for both plotly_legendclick and plotly_legenddoubleclick anyway, in the hopes that they 
-            // eventually fix this and it gets pushed to https://cdn.plot.ly/plotly-latest.min.js, but 
+            // there seems to be a bug in the plotly API, where if you have a handler for plotly_legendclick,
+            // it will always supersede the handler for plotly_legenddoubleclick. If you comment out the
+            // handler for plotly_legendclick, then the one for plotly_legenddoubleclick will fire. This
+            // is not the behavior that the plotly instruction manual implies should occur, but seems to
+            // be the reality (the broader plotly_click and plotly_doubleclick work as expected, accurately
+            // recognizing double clicks even if a single click handler exists). I'm going to add handlers
+            // for both plotly_legendclick and plotly_legenddoubleclick anyway, in the hopes that they
+            // eventually fix this and it gets pushed to https://cdn.plot.ly/plotly-latest.min.js, but
             // until then, the double click show/hide all curves functionality will not exist.
             $("#placeholder")[0].on('plotly_legendclick', function (data) {
                 var dataset = matsCurveUtils.getGraphResult().data;
                 const curveToShowHide = data.curveNumber;
                 const label = dataset[curveToShowHide].label;
-                var plotType = Session.get('plotType');
+                var plotType = Session.get('graphPlotType');
                 switch (plotType) {
                     case matsTypes.PlotTypes.timeSeries:
                     case matsTypes.PlotTypes.profile:
@@ -206,7 +207,7 @@ Template.graph.helpers({
                 var dataset = matsCurveUtils.getGraphResult().data;
                 const curveToShowHide = data.curveNumber;
                 var label = dataset[curveToShowHide].label;
-                var plotType = Session.get('plotType');
+                var plotType = Session.get('graphPlotType');
                 var hideAllOtherCurves;
                 if (dataset[curveToShowHide].visible === 'legendonly') {
                     // we want to show this hidden curve and hide all others
