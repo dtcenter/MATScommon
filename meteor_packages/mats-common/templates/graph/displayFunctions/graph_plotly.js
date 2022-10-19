@@ -25,7 +25,7 @@ graphPlotly = function (key) {
 
     // initialize show/hide button labels
     var dataset = resultSet.data;
-    if (Session.get('plotType') !== matsTypes.PlotTypes.map) {
+    if (Session.get('graphPlotType') !== matsTypes.PlotTypes.map) {
         matsGraphUtils.setNoDataLabels(dataset);
     } else {
         matsGraphUtils.setNoDataLabelsMap(dataset);
