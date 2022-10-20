@@ -115,7 +115,7 @@ Template.plotList.events({
         Session.set("spinner_img", "spinner.gif");
         document.getElementById("spinner").style.display="block";
         event.preventDefault();
-        var action = plotAction.toUpperCase() === matsTypes.PlotTypes.scorecard.toUpperCase() ? "displayScorecardStatusPage" : event.currentTarget.name;
+        var action = plotAction !== undefined && plotAction.toUpperCase() === matsTypes.PlotTypes.scorecard.toUpperCase() ? "displayScorecardStatusPage" : event.currentTarget.name;
         var p = {};
         // get the plot-type elements checked state
         const plotTypeElems = document.getElementById("plotTypes-selector");

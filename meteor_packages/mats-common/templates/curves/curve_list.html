@@ -1,7 +1,7 @@
 <template name="curveList">
     <div class="modal modal-dialog fade" id="modal-confirm-remove-all" tabindex="-1" role="dialog" aria-labelledby="confirmRemoveAll" aria-hidden="true" style="background-color: cornflowerblue">
         <div class="modal-dialog">
-            <div class="modal-content"><i class="fa fa-4x fa-question" style="color:cornflowerblue"></i>
+            <div class="modal-content" style="padding-top: 2em;">
                 <h2 class="modal-title" style="text-align: center; color: red;">Remove All Curves?</h2>
                 <div class="modal-body">
                     <h4 style="color:cornflowerblue">
@@ -21,11 +21,11 @@
             {{> curveItem this}}
         {{/each}}
         <div class="clearfix btn-toolbar  well well-sm pull-left" role="toolbar">
-            <button id='remove-all' class="remove-all btn btn-danger"><i class="fa fa-times fa-sm"></i>&nbsp;&nbsp;Remove All </button>
-            <button type="button" name="save" id="save " class="save-settings btn btn-success" style="display:{{displaySaveSettings}};"><i class="fa fa-cloud-upload"></i>&nbsp;&nbsp;Save All Curve Settings</button>
+            <button id='remove-all' class="remove-all btn btn-danger"><i class="fa-solid fa-xmark"></i>&nbsp;&nbsp;Remove All </button>
+            <button type="button" name="save" id="save " class="save-settings btn btn-success" style="display:{{displaySaveSettings}};"><i class="fa-solid fa-cloud-arrow-up"></i>&nbsp;&nbsp;Save All Curve Settings</button>
             <button type="button" class="btn spacebutton" id="cl-spacer"></button>
-            <button type="button" name="plotUnMatched" id="plotUnmatched"  class="plot-curves-unmatched btn btn-success" style="display:{{displayPlotUnMatched}};"><i class="fa fa-area-chart"></i>&nbsp;&nbsp;Plot Unmatched</button>
-            <button type="button" name="plotMatched" id="plotMatched"  class="plot-curves-matched btn btn-success" style="display:{{displayPlotMatched}};"><i class="fa fa-area-chart"></i>  Plot Matched</button>
+            <button type="button" name="plotUnMatched" id="plotUnmatched"  class="plot-curves-unmatched btn btn-success" style="display:{{displayPlotUnMatched}};"><i class="fa-solid fa-diagram-project"></i>&nbsp;&nbsp;Plot Unmatched</button>
+            <button type="button" name="plotMatched" id="plotMatched"  class="plot-curves-matched btn btn-success" style="display:{{displayPlotMatched}};"><i class="fa-solid fa-diagram-project"></i>  Plot Matched</button>
             <button type="button" class="btn spacebutton" id="cl-spacer"></button>
             <span><input id="noGapsCheck" class="no-gaps-check data-input checkboxInput" type="checkbox" value="" name="noGapsCheck" style="margin: 10px 0 0 0;"/>&nbsp;<b>Hide Gaps</b></span>
             <div id="metarMismatch" style="display:{{metarMismatchHidden}}"><span style="color: red; font-size: large;"><br/>CAUTION: Your curves do not all have the same truth dataset. Is this intentional?</span></div>
