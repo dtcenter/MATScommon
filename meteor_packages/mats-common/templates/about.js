@@ -49,9 +49,13 @@ Template.About.events({
             notes = result;
             Session.set('notesUpdated', Date.now());
         });
+        document.getElementById('showNotes').style.display = "none";
+        document.getElementById('hideNotes').style.display = "block";
         document.getElementById('releaseNotes').style.display = "block";
     },
     'click .hide-release-notes': function () {
+        document.getElementById('showNotes').style.display = "block";
+        document.getElementById('hideNotes').style.display = "none";
         document.getElementById('releaseNotes').style.display = "none";
     }
 });

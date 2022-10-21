@@ -287,7 +287,7 @@ const setUsedColorsAndLabels = function () {
 
 const resetScatterApply = function () {
     if (matsPlotUtils.getPlotType() == matsTypes.PlotTypes.scatter2d) {
-        Session.set('axisCurveIcon', 'fa-asterisk');
+        Session.set('axisCurveIcon', 'fa-solid fa-asterisk');
         Session.set('xaxisCurveText', 'XAXIS NOT YET APPLIED');
         Session.set('yaxisCurveText', 'YAXIS NOT YET APPLIED');
         Session.set('xaxisCurveColor', 'red');
