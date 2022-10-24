@@ -391,8 +391,9 @@ const getDefaultDateRange = function (name) {
     if (dateParam === undefined) {
         dateParam = matsCollections.PlotParams.findOne({name: name});
     }
-    const startInit = dateParam.startDate;
-    const stopInit = dateParam.stopDate;
+    // make sure we have strings and not objects
+    const startInit = typeof dateParam.startDate === 'string' ? dateParam.startDate : moment.utc(dateParam.startDate).locale('en').format('MM/DD/YYYY HH:mm');
+    const stopInit = typeof dateParam.stopDate === 'string' ? dateParam.stopDate : moment.utc(dateParam.stopDate).locale('en').format('MM/DD/YYYY HH:mm');
     const dstr = dateParam.default;
     return {startDate: startInit, stopDate: stopInit, dstr: dstr};
 };

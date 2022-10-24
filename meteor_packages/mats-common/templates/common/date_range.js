@@ -2,8 +2,15 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import {matsCollections, matsCurveUtils, matsParamUtils, matsTypes} from 'meteor/randyp:mats-common';
+import {matsCollections, matsParamUtils, matsTypes} from 'meteor/randyp:mats-common';
 import daterangepicker from 'daterangepicker';
+
+Template.dateRange.helpers({
+    defaultDate: function() {
+        const defaultDateRange = matsParamUtils.getDefaultDateRange(this.name);
+        return defaultDateRange.dstr;
+    }
+});
 
 Template.dateRange.onRendered(function () {
     //NOTE: Date fields are special in that they are qualified by plotType.
@@ -12,7 +19,7 @@ Template.dateRange.onRendered(function () {
     // The decision to hide or show a dataRange is made here in the dateRange template
 
     const name = this.data.name;
-    const idref = name + "-item";
+    const idref = name + "-" + this.data.type;
     const elem = document.getElementById('element-' + name);
     const superiorNames = this.data.superiorNames;
     const defaultDateRange = matsParamUtils.getDefaultDateRange(name);
@@ -62,7 +69,7 @@ Template.dateRange.onRendered(function () {
                 "METARs often come in early."));
             return false;
         }
-        const valStr = picker.startDate.format('MM/DD/YYYY H:mm') + ' - ' + picker.endDate.format('MM/DD/YYYY H:mm');
+        const valStr = picker.startDate.locale('en').format('MM/DD/YYYY HH:mm') + ' - ' + picker.endDate.locale('en').format('MM/DD/YYYY HH:mm');
         matsParamUtils.setValueTextForParamName(name, valStr);
         elem.style.display = "none";
         const curveItem = (Session.get("editMode") === undefined && Session.get("editMode") === "") ? undefined : document.getElementById("curveItem-" + Session.get("editMode"));
@@ -73,6 +80,14 @@ Template.dateRange.onRendered(function () {
     $('#' + idref).on('cancel.daterangepicker', function () {
         elem.style.display = "none";
     });
+
+    // $( ".daterangepicker" ).each(function (index) {
+    //     if ($(this).find("div.dateTextInput").length === 0) {
+    //         $(this).prepend("<div class='dateTextInput' style='text-align: right'>" +
+    //             "<input style='width: 77.5%;' class='data-input textInput daterangepicker_range' type='text' name='daterangepicker_range'  value='" + dstr + "'/>" +
+    //             "</div>");
+    //     }
+    // });
 
     const refresh = function () {
         try {
@@ -202,7 +217,7 @@ Template.dateRange.onRendered(function () {
             const jqIdRef = "#" + idref;
             $(jqIdRef).data('daterangepicker').setStartDate(startDsr);
             $(jqIdRef).data('daterangepicker').setEndDate(endDsr);
-            const newDateStr = moment.utc(startDsr).format('MM/DD/YYYY HH:mm') + ' - ' + moment.utc(endDsr).format('MM/DD/YYYY HH:mm');
+            const newDateStr = moment.utc(startDsr).locale('en').format('MM/DD/YYYY HH:mm') + ' - ' + moment.utc(endDsr).locale('en').format('MM/DD/YYYY HH:mm');
             matsParamUtils.setValueTextForParamName(name, newDateStr);
         } catch (error) {
             console.log("Error in date_range.js.refresh : " + error.message);
@@ -214,3 +229,23 @@ Template.dateRange.onRendered(function () {
         refresh();
     });
 });
+
+Template.dateRange.events({
+    'click, blur': function (event) {
+        try {
+            const text = event.currentTarget.value;
+            matsParamUtils.setValueTextForParamName(event.target.name, text);
+        } catch (error){
+            matsParamUtils.setValueTextForParamName(event.target.name, "");
+        }
+    },
+    'change': function (event) {
+        try {
+            const text = event.currentTarget.value;
+           matsParamUtils.setValueTextForParamName(event.target.name, text);
+        } catch (error){
+            matsParamUtils.setValueTextForParamName(event.target.name, "");
+        }
+    }
+});
+
