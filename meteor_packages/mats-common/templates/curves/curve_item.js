@@ -411,8 +411,5 @@ Template.curveItem.events({
         inputElem && inputElem.focus();
         controlElem && controlElem.click();
         Session.set("elementChanged", Date.now());
-    },
-    'click .fa-paint-brush': function() {
-        $("#" + this.label + "-color-value").trigger('click');
     }
 });

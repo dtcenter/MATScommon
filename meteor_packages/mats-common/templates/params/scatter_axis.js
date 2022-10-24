@@ -91,7 +91,7 @@ Template.scatter2d.helpers({
             return t;
         } else {
             Session.set('axisCurveIcon', 'fa-asterisk');
-            return 'fa-asterisk';
+            return '-solid fa-asterisk';
         }
     },
     title: function() {
