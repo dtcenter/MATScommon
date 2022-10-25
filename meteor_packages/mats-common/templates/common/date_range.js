@@ -20,7 +20,7 @@ Template.dateRange.onRendered(function () {
 
     const name = this.data.name;
     const idref = name + "-" + this.data.type;
-    const elem = document.getElementById('element-' + name);
+    const elem = document.getElementById(idref);
     const superiorNames = this.data.superiorNames;
     const defaultDateRange = matsParamUtils.getDefaultDateRange(name);
     const startInit = defaultDateRange.startDate;

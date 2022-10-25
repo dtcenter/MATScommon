@@ -37,12 +37,7 @@ const refreshDependents = function (event, param) {
             for (var i = 0; i < dependentNames.length; i++) {
                 const name = dependentNames[i];
                 const targetParam = matsParamUtils.getParameterForName(name);
-                var targetId;
-                if (targetParam.type === matsTypes.InputTypes.dateRange) {
-                    targetId = "element-" + targetParam.name;
-                } else {
-                    targetId = targetParam.name + '-' + targetParam.type;
-                }
+                const targetId = targetParam.name + '-' + targetParam.type;
                 const targetElem = document.getElementById(targetId);
 
                 if (document.getElementById('selectAll')) {

@@ -106,11 +106,7 @@ const getInputIdForParamName = function (paramName) {
             return undefined;
         }
     }
-    if (param.type === matsTypes.InputTypes.dateRange) {
-        return ("element-" + param.name).replace(/ /g, '-');
-    } else {
-        return (param.name + "-" + param.type).replace(/ /g, '-');
-    }
+    return (param.name + "-" + param.type).replace(/ /g, '-');
 };
 
 
