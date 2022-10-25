@@ -20,7 +20,7 @@ Template.dateRange.onRendered(function () {
 
     const name = this.data.name;
     const idref = name + "-" + this.data.type;
-    const elem = document.getElementById(idref);
+    const elem = document.getElementById('element-' + name);
     const superiorNames = this.data.superiorNames;
     const defaultDateRange = matsParamUtils.getDefaultDateRange(name);
     const startInit = defaultDateRange.startDate;
@@ -81,13 +81,13 @@ Template.dateRange.onRendered(function () {
         elem.style.display = "none";
     });
 
-    // $( ".daterangepicker" ).each(function (index) {
-    //     if ($(this).find("div.dateTextInput").length === 0) {
-    //         $(this).prepend("<div class='dateTextInput' style='text-align: right'>" +
-    //             "<input style='width: 77.5%;' class='data-input textInput daterangepicker_range' type='text' name='daterangepicker_range'  value='" + dstr + "'/>" +
-    //             "</div>");
-    //     }
-    // });
+    elem.style.display = "none";
+
+    $( ".drp-buttons" ).each(function (index) {
+        if ($(this).find("span.newRangeLabel").length === 0) {
+            $(this).prepend("<span class='newRangeLabel' style='text-align: right; font-size: 16px;'>New selected range:&nbsp;&nbsp;</span>");
+        }
+    });
 
     const refresh = function () {
         try {
