@@ -38,6 +38,9 @@
                             {{#if isMultiAxisLinePlot}}
                                 {{#if isProfile}}
                                     <button id="xAxisCombineButton" type="button" class="axisCombineButton btn btn-primary" data-toggle="tooltip" data-placement="top" title="Combine x-axes"><i class="fa-solid fa-arrows-left-right"></i>&nbsp;&nbsp;<strong>Merge X Axes</strong></button>
+                                {{/if}}
+                                {{#if isSimpleScatter}}
+                                    <button id="axisCombineButton" type="button" class="axisCombineButton btn btn-primary" data-toggle="tooltip" data-placement="top" title="Combine axes"><i class="fa-solid fa-maximize"></i>&nbsp;&nbsp;<strong>Merge X/Y Axes</strong></button>
                                 {{else}}
                                     <button id="yAxisCombineButton" type="button" class="axisCombineButton btn btn-primary" data-toggle="tooltip" data-placement="top" title="Combine y-axes"><i class="fa-solid fa-arrows-up-down"></i>&nbsp;&nbsp;<strong>Merge Y Axes</strong></button>
                                 {{/if}}
@@ -54,7 +57,7 @@
                             {{/if}}
                             {{#if isNotMap}}
                                 <button id="legendTextButton" type="button" class="legendTextButton btn btn-primary" data-toggle="tooltip" data-placement="top" title="Edit legend text"><i class="fa-solid fa-pencil"></i>&nbsp;&nbsp;<strong>Edit Legend</strong></button>
-                                {{#if isLinePlot}}
+                                {{#if isLineOrScatterPlot}}
                                     <button id="filterPointsButton" type="button" class="filterPointsButton btn btn-primary" data-toggle="tooltip" data-placement="top" title="Filter graph points"><i class="fa-regular fa-square-check"></i>&nbsp;&nbsp;<strong>Filter Points</strong></button>
                                 {{/if}}
                                 <button id="replotZoomButton" type="button" class="replotZoomButton btn btn-primary" style="display: {{displayReplotZoom}};" data-toggle="tooltip" data-placement="top" title="Re-query data within current zoom range"><i class="fa-solid fa-magnifying-glass-chart"></i>&nbsp;&nbsp;<strong>Re-sample</strong></button>
@@ -225,6 +228,8 @@
                             {{#if isLinePlot}}
                                 <label class="col-sm-2">Line Style</label>
                                 <label class="col-sm-2">Line Weight</label>
+                            {{/if}}
+                            {{#if isLineOrScatterPlot}}
                                 <label class="col-sm-2">Marker Style</label>
                                 <label class="col-sm-2">Marker Weight</label>
                             {{/if}}
@@ -241,6 +246,8 @@
                                         <option value="dashdot">Dash-dot</option>
                                     </select>
                                     <input id="{{this.label}}LineWeight" class="{{this.label}}-line-weight data-input numberInput col-sm-2" type="number" value="2" name="{{this.label}}LineWeight" style="width: 6em; font-size: small;"/>
+                                {{/if}}
+                                {{#if isLineOrScatterPlot}}
                                     <select id="{{this.label}}LineMarker" class="{{this.label}}-line-marker col-sm-2" style="font-size: small;">
                                         <option value="circle" selected="selected">Solid circle</option>
                                         <option value="circle-open">Open circle</option>
@@ -340,7 +347,7 @@
             </div>
             <!-- /.modal-dialog -->
         </div>
-        {{#if isLinePlot}}
+        {{#if isLineOrScatterPlot}}
             <div id="filterPointsModal" class="modal container" role="dialog">
                 <div class="modal-dialog">
                     <div class="modal-content">
