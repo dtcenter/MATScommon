@@ -1230,14 +1230,34 @@ const removePoint = function (data, di, plotType, statVarName, isCTC, isScalar, 
         data.subMiss.splice(di, 1);
         data.subCn.splice(di, 1);
     } else if (isScalar) {
-        data.subSquareDiffSum.splice(di, 1);
-        data.subNSum.splice(di, 1);
-        data.subObsModelDiffSum.splice(di, 1);
-        data.subModelSum.splice(di, 1);
-        data.subObsSum.splice(di, 1);
-        data.subAbsSum.splice(di, 1);
+        if (data.subSquareDiffSumX !== undefined) {
+            data.subSquareDiffSumX.splice(di, 1);
+            data.subNSumX.splice(di, 1);
+            data.subObsModelDiffSumX.splice(di, 1);
+            data.subModelSumX.splice(di, 1);
+            data.subObsSumX.splice(di, 1);
+            data.subAbsSumX.splice(di, 1);
+            data.subSquareDiffSumY.splice(di, 1);
+            data.subNSumY.splice(di, 1);
+            data.subObsModelDiffSumY.splice(di, 1);
+            data.subModelSumY.splice(di, 1);
+            data.subObsSumY.splice(di, 1);
+            data.subAbsSumY.splice(di, 1);
+        } else {
+            data.subSquareDiffSum.splice(di, 1);
+            data.subNSum.splice(di, 1);
+            data.subObsModelDiffSum.splice(di, 1);
+            data.subModelSum.splice(di, 1);
+            data.subObsSum.splice(di, 1);
+            data.subAbsSum.splice(di, 1);
+        }
     }
-    data.subVals.splice(di, 1);
+    if (data.subValsX !== undefined) {
+        data.subValsX.splice(di, 1);
+        data.subValsY.splice(di, 1);
+    } else {
+        data.subVals.splice(di, 1);
+    }
     data.subSecs.splice(di, 1);
     if (hasLevels) {
         data.subLevs.splice(di, 1);
@@ -1261,14 +1281,34 @@ const addNullPoint = function (data, di, plotType, indVarName, newIndVar, statVa
         data.subMiss.splice(di, 0, []);
         data.subCn.splice(di, 0, []);
     } else if (isScalar) {
-        data.subSquareDiffSum.splice(di, 0, []);
-        data.subNSum.splice(di, 0, []);
-        data.subObsModelDiffSum.splice(di, 0, []);
-        data.subModelSum.splice(di, 0, []);
-        data.subObsSum.splice(di, 0, []);
-        data.subAbsSum.splice(di, 0, []);
+        if (data.subSquareDiffSumX !== undefined) {
+            data.subSquareDiffSumX.splice(di, 0, []);
+            data.subNSumX.splice(di, 0, []);
+            data.subObsModelDiffSumX.splice(di, 0, []);
+            data.subModelSumX.splice(di, 0, []);
+            data.subObsSumX.splice(di, 0, []);
+            data.subAbsSumX.splice(di, 0, []);
+            data.subSquareDiffSumY.splice(di, 0, []);
+            data.subNSumY.splice(di, 0, []);
+            data.subObsModelDiffSumY.splice(di, 0, []);
+            data.subModelSumY.splice(di, 0, []);
+            data.subObsSumY.splice(di, 0, []);
+            data.subAbsSumY.splice(di, 0, []);
+        } else {
+            data.subSquareDiffSum.splice(di, 0, []);
+            data.subNSum.splice(di, 0, []);
+            data.subObsModelDiffSum.splice(di, 0, []);
+            data.subModelSum.splice(di, 0, []);
+            data.subObsSum.splice(di, 0, []);
+            data.subAbsSum.splice(di, 0, []);
+        }
     }
-    data.subVals.splice(di, 0, []);
+    if (data.subValsX !== undefined) {
+        data.subValsX.splice(di, 0, []);
+        data.subValsY.splice(di, 0, []);
+    } else {
+        data.subVals.splice(di, 0, []);
+    }
     data.subSecs.splice(di, 0, []);
     if (hasLevels) {
         data.subLevs.splice(di, 0, []);
@@ -1286,14 +1326,34 @@ const nullPoint = function (data, di, statVarName, isCTC, isScalar, hasLevels) {
         data.subMiss[di] = [];
         data.subCn[di] = [];
     } else if (isScalar) {
-        data.subSquareDiffSum[di] = [];
-        data.subNSum[di] = [];
-        data.subObsModelDiffSum[di] = [];
-        data.subModelSum[di] = [];
-        data.subObsSum[di] = [];
-        data.subAbsSum[di] = [];
+        if (data.subSquareDiffSumX !== undefined) {
+            data.subSquareDiffSumX[di] = [];
+            data.subNSumX[di] = [];
+            data.subObsModelDiffSumX[di] = [];
+            data.subModelSumX[di] = [];
+            data.subObsSumX[di] = [];
+            data.subAbsSumX[di] = [];
+            data.subSquareDiffSumY[di] = [];
+            data.subNSumY[di] = [];
+            data.subObsModelDiffSumY[di] = [];
+            data.subModelSumY[di] = [];
+            data.subObsSumY[di] = [];
+            data.subAbsSumY[di] = [];
+        } else {
+            data.subSquareDiffSum[di] = [];
+            data.subNSum[di] = [];
+            data.subObsModelDiffSum[di] = [];
+            data.subModelSum[di] = [];
+            data.subObsSum[di] = [];
+            data.subAbsSum[di] = [];
+        }
     }
-    data.subVals[di] = [];
+    if (data.subValsX !== undefined) {
+        data.subValsX[di] = [];
+        data.subValsY[di] = [];
+    } else {
+        data.subVals[di] = [];
+    }
     data.subSecs[di] = [];
     if (hasLevels) {
         data.subLevs[di] = [];

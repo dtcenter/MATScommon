@@ -836,6 +836,24 @@ const processDataPerformanceDiagram = function (dataset, appParams, curveInfoPar
         dataset.push(csiLine);
     }
 
+    for (curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex++) {
+        // remove sub values and times to save space
+        data = dataset[curveIndex];
+        data.subHit = [];
+        data.subFa = [];
+        data.subMiss = [];
+        data.subCn = [];
+        data.subSquareDiffSum = [];
+        data.subNSum = [];
+        data.subObsModelDiffSum = [];
+        data.subModelSum = [];
+        data.subObsSum = [];
+        data.subAbsSum = [];
+        data.subInterest = [];
+        data.subVals = [];
+        data.subSecs = [];
+        data.subLevs = [];
+    }
 
     // generate plot options
     var resultOptions = matsDataPlotOpsUtils.generatePerformanceDiagramPlotOptions();
@@ -1163,6 +1181,25 @@ const processDataHistogram = function (allReturnedSubStats, allReturnedSubSecs, 
     curveInfoParams.axisMap[curveInfoParams.curves[0].axisKey]['ymin'] = ymin;
     curveInfoParams.axisMap[curveInfoParams.curves[0].axisKey]['ymax'] = ymax;
 
+    for (curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex++) {
+        // remove sub values and times to save space
+        data = dataset[curveIndex];
+        data.subHit = [];
+        data.subFa = [];
+        data.subMiss = [];
+        data.subCn = [];
+        data.subSquareDiffSum = [];
+        data.subNSum = [];
+        data.subObsModelDiffSum = [];
+        data.subModelSum = [];
+        data.subObsSum = [];
+        data.subAbsSum = [];
+        data.subInterest = [];
+        data.subVals = [];
+        data.subSecs = [];
+        data.subLevs = [];
+    }
+
     const resultOptions = matsDataPlotOpsUtils.generateHistogramPlotOptions(curveInfoParams.curves, curveInfoParams.axisMap, curveInfoParams.varUnits, plotBins);
     var totalProcessingFinish = moment();
     bookkeepingParams.dataRequests["total retrieval and processing time for curve set"] = {
@@ -1320,6 +1357,27 @@ const processDataSimpleScatter = function (dataset, appParams, curveInfoParams, 
             di++;
         }
         dataset[curveIndex]['glob_stats'] = {};
+    }
+
+    for (curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex++) {
+        // remove sub values and times to save space
+        data = dataset[curveIndex];
+        data.subSquareDiffSumX = [];
+        data.subNSumX = [];
+        data.subObsModelDiffSumX = [];
+        data.subModelSumX = [];
+        data.subObsSumX = [];
+        data.subAbsSumX = [];
+        data.subValsX = [];
+        data.subSquareDiffSumY = [];
+        data.subNSumY = [];
+        data.subObsModelDiffSumY = [];
+        data.subModelSumY = [];
+        data.subObsSumY = [];
+        data.subAbsSumY = [];
+        data.subValsY = [];
+        data.subSecs = [];
+        data.subLevs = [];
     }
 
     // generate plot options
