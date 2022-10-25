@@ -32,6 +32,7 @@ Template.dateRange.onRendered(function () {
     if (isMetexpress) {
         statisticTranslations = matsCollections["statistic"].findOne({name: "statistic"}).valuesMap;
     }
+
     $(function () {
         $('#' + idref).daterangepicker({
             "autoApply": true,
@@ -61,7 +62,7 @@ Template.dateRange.onRendered(function () {
     });
 
     $('#' + idref).on('apply.daterangepicker', function (ev, picker) {
-        if (picker.startDate.toString() == picker.endDate.toString()) {
+        if (picker.startDate.toString() === picker.endDate.toString()) {
             setError(new Error("date_range error:  Your start and end dates coincide, you must select a range! This is " +
                 "because METARs and other obs can come in at slightly different times, so selecting only one time might " +
                 "leave you with very few (or no) valid obs. Instead, try using a small range. For example, if you're " +
@@ -77,6 +78,7 @@ Template.dateRange.onRendered(function () {
             $('#save').trigger('click');
         }
     });
+
     $('#' + idref).on('cancel.daterangepicker', function () {
         elem.style.display = "none";
     });
@@ -85,7 +87,7 @@ Template.dateRange.onRendered(function () {
 
     $( ".drp-buttons" ).each(function (index) {
         if ($(this).find("span.newRangeLabel").length === 0) {
-            $(this).prepend("<span class='newRangeLabel' style='text-align: right; font-size: 16px;'>New selected range:&nbsp;&nbsp;</span>");
+            $(this).prepend("<span class='newRangeLabel' style='text-align: right; font-size: 16px;'>Apply this range?&nbsp;&nbsp;</span>");
         }
     });
 

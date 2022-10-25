@@ -84,6 +84,11 @@ const setValueTextForParamName = function (paramName, text) {
             delete(elem.textContent);
             elem.textContent = text;
         }
+        if (paramName.includes('dates')
+            && document.getElementById(paramName + "-dateRange") !== undefined
+            && document.getElementById(paramName + "-dateRange") !== null) {
+            document.getElementById(paramName + "-dateRange").value = text;
+        }
     } catch (error) {
         console.log("Error: could not find param: " + paramName);
     }
@@ -106,7 +111,11 @@ const getInputIdForParamName = function (paramName) {
             return undefined;
         }
     }
+    if (param.type === matsTypes.InputTypes.dateRange) {
+        return ("element-" + param.name).replace(/ /g, '-');
+    } else {
     return (param.name + "-" + param.type).replace(/ /g, '-');
+    }
 };
 
 
