@@ -88,6 +88,7 @@ Template.dateRange.onRendered(function () {
     $( ".drp-buttons" ).each(function (index) {
         if ($(this).find("span.newRangeLabel").length === 0) {
             $(this).prepend("<span class='newRangeLabel' style='text-align: right; font-size: 16px;'>Apply this range?&nbsp;&nbsp;</span>");
+            $(this).find('button.applyBtn').attr("id", name + "-applyBtn");
         }
     });
 
