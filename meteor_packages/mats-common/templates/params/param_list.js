@@ -138,7 +138,8 @@ Template.paramList.events({
 
         // remove any hidden date params or unused ones
         // iterate backwards so that we can splice to remove
-        // dates are a little different - there is no element named paramName-paramtype because of the way daterange widgets are attached
+        // dates are a little different - there is no element named paramName-paramtype
+        // because of the way daterange widgets are attached (--There is now but this still works--)
         // Instead we have to look for a document element with an id element-paramName
         for (var dindex = dateParamNames.length - 1; dindex >= 0; dindex--) {
             var dElem = document.getElementById(dateParamNames[dindex] + "-item");

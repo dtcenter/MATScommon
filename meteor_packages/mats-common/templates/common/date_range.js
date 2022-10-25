@@ -2,7 +2,15 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import {matsCollections, matsCurveUtils, matsParamUtils, matsTypes} from 'meteor/randyp:mats-common';
+import {matsCollections, matsParamUtils, matsTypes} from 'meteor/randyp:mats-common';
+import daterangepicker from 'daterangepicker';
+
+Template.dateRange.helpers({
+    defaultDate: function() {
+        const defaultDateRange = matsParamUtils.getDefaultDateRange(this.name);
+        return defaultDateRange.dstr;
+    }
+});
 
 Template.dateRange.onRendered(function () {
     //NOTE: Date fields are special in that they are qualified by plotType.
@@ -11,7 +19,7 @@ Template.dateRange.onRendered(function () {
     // The decision to hide or show a dataRange is made here in the dateRange template
 
     const name = this.data.name;
-    const idref = name + "-item";
+    const idref = name + "-" + this.data.type;
     const elem = document.getElementById('element-' + name);
     const superiorNames = this.data.superiorNames;
     const defaultDateRange = matsParamUtils.getDefaultDateRange(name);
@@ -54,7 +62,7 @@ Template.dateRange.onRendered(function () {
     });
 
     $('#' + idref).on('apply.daterangepicker', function (ev, picker) {
-        if (picker.startDate.toString() == picker.endDate.toString()) {
+        if (picker.startDate.toString() === picker.endDate.toString()) {
             setError(new Error("date_range error:  Your start and end dates coincide, you must select a range! This is " +
                 "because METARs and other obs can come in at slightly different times, so selecting only one time might " +
                 "leave you with very few (or no) valid obs. Instead, try using a small range. For example, if you're " +
@@ -62,7 +70,7 @@ Template.dateRange.onRendered(function () {
                 "METARs often come in early."));
             return false;
         }
-        const valStr = picker.startDate.format('MM/DD/YYYY H:mm') + ' - ' + picker.endDate.format('MM/DD/YYYY H:mm');
+        const valStr = picker.startDate.locale('en').format('MM/DD/YYYY HH:mm') + ' - ' + picker.endDate.locale('en').format('MM/DD/YYYY HH:mm');
         matsParamUtils.setValueTextForParamName(name, valStr);
         elem.style.display = "none";
         const curveItem = (Session.get("editMode") === undefined && Session.get("editMode") === "") ? undefined : document.getElementById("curveItem-" + Session.get("editMode"));
@@ -70,8 +78,21 @@ Template.dateRange.onRendered(function () {
             $('#save').trigger('click');
         }
     });
+
     $('#' + idref).on('cancel.daterangepicker', function () {
         elem.style.display = "none";
+    });
+
+    elem.style.display = "none";
+
+    $( ".drp-buttons" ).each(function (index) {
+        if ($(this).find("span.newRangeLabel").length === 0) {
+            $(this).prepend("<span class='newRangeLabel' style='text-align: right; font-size: 16px;'>Apply this range?&nbsp;&nbsp;</span>");
+            $(this).find('button.applyBtn').attr("id", name + "-applyBtn");
+            // $(this).find('span.drp-selected').on('change', function () {
+            //     document.getElementById(name + "-dateRange").value = $(this).find('span.drp-selected').text();
+            // });
+        }
     });
 
     const refresh = function () {
@@ -202,7 +223,7 @@ Template.dateRange.onRendered(function () {
             const jqIdRef = "#" + idref;
             $(jqIdRef).data('daterangepicker').setStartDate(startDsr);
             $(jqIdRef).data('daterangepicker').setEndDate(endDsr);
-            const newDateStr = moment.utc(startDsr).format('MM/DD/YYYY HH:mm') + ' - ' + moment.utc(endDsr).format('MM/DD/YYYY HH:mm');
+            const newDateStr = moment.utc(startDsr).locale('en').format('MM/DD/YYYY HH:mm') + ' - ' + moment.utc(endDsr).locale('en').format('MM/DD/YYYY HH:mm');
             matsParamUtils.setValueTextForParamName(name, newDateStr);
         } catch (error) {
             console.log("Error in date_range.js.refresh : " + error.message);
@@ -214,3 +235,23 @@ Template.dateRange.onRendered(function () {
         refresh();
     });
 });
+
+Template.dateRange.events({
+    'click, blur': function (event) {
+        try {
+            const text = event.currentTarget.value;
+            matsParamUtils.setValueTextForParamName(event.target.name, text);
+        } catch (error){
+            matsParamUtils.setValueTextForParamName(event.target.name, "");
+        }
+    },
+    'change': function (event) {
+        try {
+            const text = event.currentTarget.value;
+           matsParamUtils.setValueTextForParamName(event.target.name, text);
+        } catch (error){
+            matsParamUtils.setValueTextForParamName(event.target.name, "");
+        }
+    }
+});
+

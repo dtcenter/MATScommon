@@ -142,7 +142,7 @@ const setParamsToAxis = function(newAxis, currentParams) {
             const dateArr = currentParams[plotParam.name].split(' - ');
             const from = dateArr[0];
             const to = dateArr[1];
-            const idref = "#" + plotParam.name + "-item";
+            const idref = "#" + plotParam.name + "-" + plotParam.type;
             $(idref).data('daterangepicker').setStartDate(moment.utc(from, 'MM-DD-YYYY HH:mm'));
             $(idref).data('daterangepicker').setEndDate(moment.utc(to, 'MM-DD-YYYY HH:mm'));
             matsParamUtils.setValueTextForParamName(plotParam.name,currentParams[plotParam.name]);
@@ -166,7 +166,7 @@ const setParamsToAxis = function(newAxis, currentParams) {
             const dateArr = currentParams[currentParamName].split(' - ');
             const from = dateArr[0];
             const to = dateArr[1];
-            const idref = "#" + plotParam.name + "-item";
+            const idref = "#" + plotParam.name + "-" + plotParam.type;
             $(idref).data('daterangepicker').setStartDate(moment.utc(from, 'MM-DD-YYYY HH:mm'));
             $(idref).data('daterangepicker').setEndDate(moment.utc(to, 'MM-DD-YYYY HH:mm'));
             matsParamUtils.setValueTextForParamName(plotParam.name,currentParams[currentParamName]);
@@ -202,7 +202,7 @@ const correlateEditPanelToCurveItems = function(params, currentParams, doCheckHi
             const dateArr = currentParams[plotParam.name].split(' - ');
             const from = dateArr[0];
             const to = dateArr[1];
-            const idref = "#" + plotParam.name + "-item";
+            const idref = "#" + plotParam.name + "-" + plotParam.type;
             $(idref).data('daterangepicker').setStartDate(moment.utc(from, 'MM-DD-YYYY HH:mm'));
             $(idref).data('daterangepicker').setEndDate(moment.utc(to, 'MM-DD-YYYY HH:mm'));
             matsParamUtils.setValueTextForParamName(plotParam.name, currentParams[plotParam.name]);
@@ -320,7 +320,7 @@ Template.curveItem.events({
                 const dateArr = currentParams[plotParam.name].split(' - ');
                 const from = dateArr[0];
                 const to = dateArr[1];
-                const idref = "#" + plotParam.name + "-item";
+                const idref = "#" + plotParam.name + "-" + plotParam.type;
                 $(idref).data('daterangepicker').setStartDate(moment.utc(from, 'MM-DD-YYYY HH:mm'));
                 $(idref).data('daterangepicker').setEndDate(moment.utc(to, 'MM-DD-YYYY HH:mm'));
                 matsParamUtils.setValueTextForParamName(plotParam.name,currentParams[plotParam.name]);

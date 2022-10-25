@@ -226,7 +226,8 @@ Template.item.events({
         if ($.inArray(this,formats) !== -1){
             Session.set('diffStatus',this);
         }
-        if (this.multiple !== true && this.type !== matsTypes.InputTypes.numberSpinner && this.type !== matsTypes.InputTypes.textInput) {
+        if (!this.multiple && this.type !== matsTypes.InputTypes.numberSpinner
+            && this.type !== matsTypes.InputTypes.textInput && this.type !== matsTypes.InputTypes.dateRange) {
             // not too cool to collapse when trying to do a multi-select, a textInput, or a numberspinner
                 matsParamUtils.collapseParam(this.name);
         }
