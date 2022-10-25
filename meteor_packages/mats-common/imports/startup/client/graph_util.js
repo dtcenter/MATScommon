@@ -314,6 +314,9 @@ const setTextView = function (plotType) {
     if (document.getElementById("scatterView")) {
         document.getElementById("scatterView").style.display = "none";
     }
+    document.getElementById("exportButton").style.display = "block";
+    document.getElementById("plotButton").style.display = "block";
+    document.getElementById("textButton").style.display = "none";
     document.getElementById("text-page-button-group").style.display = "block";
     document.getElementById("plot-page-button-group").style.display = "none";
     document.getElementById("curves").style.display = "none";
@@ -347,6 +350,9 @@ const setGraphView = function (plotType) {
     if (document.getElementById("scatterView")) {
         document.getElementById("scatterView").style.display = "none";
     }
+    document.getElementById("exportButton").style.display = "none";
+    document.getElementById("plotButton").style.display = "none";
+    document.getElementById("textButton").style.display = "block";
     document.getElementById("text-page-button-group").style.display = "none";
     document.getElementById("plot-page-button-group").style.display = "block";
     document.getElementById("curves").style.display = "block";
@@ -405,6 +411,9 @@ const setDefaultView = function () {
     if (document.getElementById("scatterView")) {
         document.getElementById("scatterView").style.display = "block";
     }
+    document.getElementById("exportButton").style.display = "none";
+    document.getElementById("plotButton").style.display = "none";
+    document.getElementById("textButton").style.display = "block";
     document.getElementById("text-page-button-group").style.display = "none";
     document.getElementById("plot-page-button-group").style.display = "block";
     document.getElementById('plot-control-button-group').style.display = "block";

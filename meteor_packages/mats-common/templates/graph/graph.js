@@ -949,6 +949,17 @@ Template.graph.helpers({
             return "none";
         }
     },
+    recacheButtonRadius: function () {
+        // Make sure the button group is rounded for maps
+        Session.get("PlotParams");
+        Session.get('PlotResultsUpDated');
+        var plotType = Session.get('plotType');
+        if (plotType === matsTypes.PlotTypes.map) {
+            return "5px";
+        } else {
+            return "0";
+        }
+    },
     metApp: function () {
         Session.get("PlotParams");
         Session.get('PlotResultsUpDated');
