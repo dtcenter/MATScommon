@@ -670,7 +670,6 @@ const generateScatterCurveOptions = function (curve, curveIndex, axisXMap, axisY
     const axisXKey = curve['axisXKey'];
     const axisYKey = curve['axisYKey'];
     if (axisXKey in axisXMap) {
-        axisXMap[axisXKey].axisLabel = axisXKey;
         axisXMap[axisXKey].xmin = xmin < axisXMap[axisXKey].xmin ? xmin : axisXMap[axisXKey].xmin;
         axisXMap[axisXKey].xmax = xmax > axisXMap[axisXKey].xmax ? xmax : axisXMap[axisXKey].xmax;
     } else {
@@ -682,9 +681,8 @@ const generateScatterCurveOptions = function (curve, curveIndex, axisXMap, axisY
         };
     }
     if (axisYKey in axisYMap) {
-        axisYMap[axisYKey].axisLabel = axisYKey;
-        axisYMap[axisYKey].ymin = xmin < axisYMap[axisYKey].ymin ? xmin : axisYMap[axisYKey].ymin;
-        axisYMap[axisYKey].ymax = xmax > axisYMap[axisYKey].ymax ? xmax : axisYMap[axisYKey].ymax;
+        axisYMap[axisYKey].ymin = xmin < axisYMap[axisYKey].ymin ? ymin : axisYMap[axisYKey].ymin;
+        axisYMap[axisYKey].ymax = xmax > axisYMap[axisYKey].ymax ? ymax : axisYMap[axisYKey].ymax;
     } else {
         axisYMap[axisYKey] = {
             index: Object.keys(axisYMap).length + 1,
