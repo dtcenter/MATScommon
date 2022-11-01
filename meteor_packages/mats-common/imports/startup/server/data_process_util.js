@@ -302,7 +302,7 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
 
     // add black 0 line curve
     // need to define the minimum and maximum x value for making the zero curve
-    const zeroLine = matsDataCurveOpsUtils.getHorizontalValueLine(resultOptions.xaxis.range[1], resultOptions.xaxis.range[0], 0, matsTypes.ReservedWords.zero);
+    const zeroLine = matsDataCurveOpsUtils.getHorizontalValueLine(resultOptions.xaxis.range[1], resultOptions.xaxis.range[0], 0, "top left", matsTypes.ReservedWords.zero);
     dataset.push(zeroLine);
 
     //add ideal value lines, if any
@@ -310,7 +310,7 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
     var idealLabel;
     for (var ivIdx = 0; ivIdx < curveInfoParams.idealValues.length; ivIdx++) {
         idealLabel = "ideal" + ivIdx.toString();
-        idealValueLine = matsDataCurveOpsUtils.getHorizontalValueLine(resultOptions.xaxis.range[1], resultOptions.xaxis.range[0], curveInfoParams.idealValues[ivIdx], matsTypes.ReservedWords[idealLabel]);
+        idealValueLine = matsDataCurveOpsUtils.getHorizontalValueLine(resultOptions.xaxis.range[1], resultOptions.xaxis.range[0], curveInfoParams.idealValues[ivIdx], "bottom left", matsTypes.ReservedWords[idealLabel]);
         dataset.push(idealValueLine);
     }
 
@@ -553,9 +553,12 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
         data.subLevs = [];
     }
 
+    // generate plot options
+    const resultOptions = matsDataPlotOpsUtils.generateProfilePlotOptions(curveInfoParams.axisMap, errorMax);
+
     // add black 0 line curve
     // need to define the minimum and maximum y value for making the zero curve
-    const zeroLine = matsDataCurveOpsUtils.getVerticalValueLine(1100, 0, 0, matsTypes.ReservedWords.zero);
+    const zeroLine = matsDataCurveOpsUtils.getVerticalValueLine(resultOptions.yaxis.range[1], resultOptions.yaxis.range[0], 0, "bottom right", matsTypes.ReservedWords.zero);
     dataset.push(zeroLine);
 
     //add ideal value lines, if any
@@ -563,12 +566,10 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
     var idealLabel;
     for (var ivIdx = 0; ivIdx < curveInfoParams.idealValues.length; ivIdx++) {
         idealLabel = "ideal" + ivIdx.toString();
-        idealValueLine = matsDataCurveOpsUtils.getVerticalValueLine(1100, 0, curveInfoParams.idealValues[ivIdx], matsTypes.ReservedWords[idealLabel]);
+        idealValueLine = matsDataCurveOpsUtils.getVerticalValueLine(resultOptions.yaxis.range[1], resultOptions.yaxis.range[0], curveInfoParams.idealValues[ivIdx], "bottom left", matsTypes.ReservedWords[idealLabel]);
         dataset.push(idealValueLine);
     }
 
-    // generate plot options
-    const resultOptions = matsDataPlotOpsUtils.generateProfilePlotOptions(curveInfoParams.axisMap, errorMax);
     var totalProcessingFinish = moment();
     bookkeepingParams.dataRequests["total retrieval and processing time for curve set"] = {
         begin: bookkeepingParams.totalProcessingStart.format(),
@@ -644,10 +645,10 @@ const processDataReliability = function (dataset, appParams, curveInfoParams, pl
     dataset.push(noSkillLine);
 
     // add sample climo lines
-    const xClimoLine = matsDataCurveOpsUtils.getHorizontalValueLine(resultOptions.xaxis.range[1], resultOptions.xaxis.range[0], sample_climo, matsTypes.ReservedWords.zero);
+    const xClimoLine = matsDataCurveOpsUtils.getHorizontalValueLine(resultOptions.xaxis.range[1], resultOptions.xaxis.range[0], sample_climo, "top left", matsTypes.ReservedWords.zero);
     dataset.push(xClimoLine);
 
-    const yClimoLine = matsDataCurveOpsUtils.getVerticalValueLine(resultOptions.xaxis.range[1], resultOptions.xaxis.range[0], sample_climo, matsTypes.ReservedWords.zero);
+    const yClimoLine = matsDataCurveOpsUtils.getVerticalValueLine(resultOptions.yaxis.range[1], resultOptions.yaxis.range[0], sample_climo, " bottom right", matsTypes.ReservedWords.zero);
     dataset.push(yClimoLine);
 
     var totalProcessingFinish = moment();
@@ -728,10 +729,10 @@ const processDataROC = function (dataset, appParams, curveInfoParams, plotParams
     dataset.push(noSkillLine);
 
     // add perfect forecast lines
-    const xPerfectLine = matsDataCurveOpsUtils.getHorizontalValueLine(resultOptions.xaxis.range[1], resultOptions.xaxis.range[0], resultOptions.yaxis.range[1], matsTypes.ReservedWords.perfectForecast);
+    const xPerfectLine = matsDataCurveOpsUtils.getHorizontalValueLine(resultOptions.xaxis.range[0], resultOptions.xaxis.range[1], resultOptions.yaxis.range[1], "bottom right", matsTypes.ReservedWords.perfectForecast);
     dataset.push(xPerfectLine);
 
-    const yPerfectLine = matsDataCurveOpsUtils.getVerticalValueLine(resultOptions.xaxis.range[1], resultOptions.xaxis.range[0], resultOptions.xaxis.range[0], matsTypes.ReservedWords.perfectForecast);
+    const yPerfectLine = matsDataCurveOpsUtils.getVerticalValueLine(resultOptions.yaxis.range[0], resultOptions.yaxis.range[1], resultOptions.xaxis.range[1], "top left", matsTypes.ReservedWords.perfectForecast);
     dataset.push(yPerfectLine);
 
     var totalProcessingFinish = moment();
@@ -804,17 +805,17 @@ const processDataPerformanceDiagram = function (dataset, appParams, curveInfoPar
     // add black lines of constant bias
     var biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1, 0, 1, 0, matsTypes.ReservedWords.constantBias);
     dataset.push(biasLine);
-    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1 * 2, 0, 1, 0, matsTypes.ReservedWords.constantBias);
+    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(2, 0, 1, 0, matsTypes.ReservedWords.constantBias);
     dataset.push(biasLine);
-    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1 * 4, 0, 1, 0, matsTypes.ReservedWords.constantBias);
+    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(4, 0, 1, 0, matsTypes.ReservedWords.constantBias);
     dataset.push(biasLine);
-    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1 * 8, 0, 1, 0, matsTypes.ReservedWords.constantBias);
+    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(8, 0, 1, 0, matsTypes.ReservedWords.constantBias);
     dataset.push(biasLine);
-    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1 / 2, 0, 1, 0, matsTypes.ReservedWords.constantBias);
+    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1/2, 0, 1, 0, matsTypes.ReservedWords.constantBias);
     dataset.push(biasLine);
-    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1 / 4, 0, 1, 0, matsTypes.ReservedWords.constantBias);
+    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1/4, 0, 1, 0, matsTypes.ReservedWords.constantBias);
     dataset.push(biasLine);
-    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1 / 8, 0, 1, 0, matsTypes.ReservedWords.constantBias);
+    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1/8, 0, 1, 0, matsTypes.ReservedWords.constantBias);
     dataset.push(biasLine);
 
     var xvals;
@@ -1007,7 +1008,7 @@ const processDataEnsembleHistogram = function (dataset, appParams, curveInfoPara
 
     // add black 0 line curve
     // need to define the minimum and maximum x value for making the zero curve
-    const zeroLine = matsDataCurveOpsUtils.getHorizontalValueLine(resultOptions.xaxis.range[1], resultOptions.xaxis.range[0], 0, matsTypes.ReservedWords.zero);
+    const zeroLine = matsDataCurveOpsUtils.getHorizontalValueLine(resultOptions.xaxis.range[1], resultOptions.xaxis.range[0], 0, "top left", matsTypes.ReservedWords.zero);
     dataset.push(zeroLine);
 
     var totalProcessingFinish = moment();

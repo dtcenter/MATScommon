@@ -9,30 +9,28 @@ import {
 } from 'meteor/randyp:mats-common';
 
 // adds a horizontal black line along a specific y value
-const getHorizontalValueLine = function (xmax, xmin, yValue, cLabel) {
+const getHorizontalValueLine = function (xmax, xmin, yValue, textPos, cLabel) {
 
-    const valueLine = {
+    const textLabel = yValue % 1 === 0 ? yValue.toString() : yValue.toFixed(2);
+
+    return {
         "label": cLabel,
         "curveId": cLabel,
         "annotation": "",
-        "name": "y = " + yValue.toString(),
-        "mode": "lines",
+        "name": "y = " + textLabel,
+        "mode": "lines+text",
         "x": [xmin, xmax],
         "x_epoch": [xmin, xmax],
         "y": [yValue, yValue],
         "error_x": [null, null],
         "error_y": [null, null],
+        "text": ["", "y = " + textLabel],
+        "textposition": textPos,
         "subVals": [],
         "subSecs": [],
         "subLevs": [],
-        "stats": [{"d_mean": 0, "sd": 0, "n_good": 0, "lag1": 0, "stde": 0}, {
-            "d_mean": 0,
-            "sd": 0,
-            "n_good": 0,
-            "lag1": 0,
-            "stde": 0
-        }],
-        "tooltip": ["y = " + yValue.toString(), "y = " + yValue.toString()],
+        "stats": [{"d_mean": 0, "sd": 0, "n_good": 0, "lag1": 0, "stde": 0},
+            {"d_mean": 0, "sd": 0, "n_good": 0, "lag1": 0, "stde": 0}],
         "xmin": xmin,
         "xmax": xmax,
         "ymin": yValue,
@@ -45,36 +43,33 @@ const getHorizontalValueLine = function (xmax, xmin, yValue, cLabel) {
         "marker": {
             "symbol": "circle",
         },
-        "showlegend": false
+        "showlegend": false,
+        "hoverinfo": "none"
     };
-
-    return valueLine
 };
 
 // adds a vertical black line along a specific x value
-const getVerticalValueLine = function (ymax, ymin, xValue, cLabel) {
+const getVerticalValueLine = function (ymax, ymin, xValue, textPos, cLabel) {
 
-    const valueLine = {
+    const textLabel = xValue % 1 === 0 ? xValue.toString() : xValue.toFixed(2);
+
+    return {
         "label": cLabel,
         "curveId": cLabel,
         "annotation": "",
-        "name": "x = " + xValue.toString(),
-        "mode": "lines",
+        "name": "x = " + textLabel,
+        "mode": "lines+text",
         "x": [xValue, xValue],
         "y": [ymin, ymax],
         "error_x": [null, null],
         "error_y": [null, null],
+        "text": ["", " x = " + textLabel + " "],
+        "textposition": textPos,
         "subVals": [],
         "subSecs": [],
         "subLevs": [],
-        "stats": [{"d_mean": 0, "sd": 0, "n_good": 0, "lag1": 0, "stde": 0}, {
-            "d_mean": 0,
-            "sd": 0,
-            "n_good": 0,
-            "lag1": 0,
-            "stde": 0
-        }],
-        "tooltip": ["x = " + xValue.toString(), "x = " + xValue.toString()],
+        "stats": [{"d_mean": 0, "sd": 0, "n_good": 0, "lag1": 0, "stde": 0},
+        {"d_mean": 0, "sd": 0, "n_good": 0, "lag1": 0, "stde": 0}],
         "xmin": xValue,
         "xmax": xValue,
         "ymin": ymin,
@@ -87,10 +82,9 @@ const getVerticalValueLine = function (ymax, ymin, xValue, cLabel) {
         "marker": {
             "symbol": "circle",
         },
-        "showlegend": false
+        "showlegend": false,
+        "hoverinfo": "none"
     };
-
-    return valueLine
 };
 
 // adds a linear line
@@ -117,7 +111,6 @@ const getLinearValueLine = function (xmax, xmin, ymax, ymin, cLabel) {
             "lag1": 0,
             "stde": 0
         }],
-        "tooltip": "",
         "xmin": xmin,
         "xmax": xmax,
         "ymin": ymin,
@@ -130,7 +123,8 @@ const getLinearValueLine = function (xmax, xmin, ymax, ymin, cLabel) {
         "marker": {
             "symbol": "circle",
         },
-        "showlegend": false
+        "showlegend": false,
+        "hovermode": "none"
     };
 
     return valueLine
@@ -160,7 +154,6 @@ const getDashedLinearValueLine = function (xmax, xmin, ymax, ymin, cLabel) {
             "lag1": 0,
             "stde": 0
         }],
-        "tooltip": "",
         "xmin": xmin,
         "xmax": xmax,
         "ymin": ymin,
@@ -173,7 +166,8 @@ const getDashedLinearValueLine = function (xmax, xmin, ymax, ymin, cLabel) {
         "marker": {
             "symbol": "circle",
         },
-        "showlegend": false
+        "showlegend": false,
+        "hovermode": "none"
     };
 
     return valueLine
@@ -202,7 +196,6 @@ const getCurveLine = function (xvals, yvals, cLabel) {
             "lag1": 0,
             "stde": 0
         }],
-        "tooltip": "",
         "xmin": Math.min(xvals),
         "xmax": Math.max(xvals),
         "ymin": Math.min(yvals),
@@ -215,7 +208,8 @@ const getCurveLine = function (xvals, yvals, cLabel) {
         "marker": {
             "symbol": "circle",
         },
-        "showlegend": false
+        "showlegend": false,
+        "hovermode": "none"
     };
 
     return valueLine
