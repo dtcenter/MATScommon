@@ -812,31 +812,35 @@ const processDataPerformanceDiagram = function (dataset, appParams, curveInfoPar
     dataset.push(biasLine);
     biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(0.5, 0, 1, 0, " 0.5", "bottom right", matsTypes.ReservedWords.constantBias);
     dataset.push(biasLine);
-    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1, 0, 1, 0, "1  ", "bottom left", matsTypes.ReservedWords.constantBias);
+    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1, 0, 1, 0, "1.0  ", "bottom left", matsTypes.ReservedWords.constantBias);
     dataset.push(biasLine);
-    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1, 0, 0.5, 0, "2", "top left", matsTypes.ReservedWords.constantBias);
+    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1, 0, 0.5, 0, "2.0", "top left", matsTypes.ReservedWords.constantBias);
     dataset.push(biasLine);
-    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1, 0, 0.25, 0, "4", "top left", matsTypes.ReservedWords.constantBias);
+    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1, 0, 0.25, 0, "4.0", "top left", matsTypes.ReservedWords.constantBias);
     dataset.push(biasLine);
-    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1, 0, 0.125, 0, "8", "top left", matsTypes.ReservedWords.constantBias);
+    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1, 0, 0.125, 0, "8.0", "top left", matsTypes.ReservedWords.constantBias);
     dataset.push(biasLine);
 
     var xvals;
     var yvals;
+    var textVals;
     var cval;
     var csiLine;
     for (var csiidx = 1; csiidx < 10; csiidx++) {
         cval = csiidx / 10;
         xvals = _.range(cval, 1.01, 0.01);
         yvals = [];
+        textVals = [];
         var xval;
         var yval;
         for (var xidx = 0; xidx < xvals.length; xidx++) {
             xval = xvals[xidx];
             yval = xval * cval / (xval + xval * cval - cval);
             yvals.push(yval);
+            textVals.push("");
         }
-        csiLine = matsDataCurveOpsUtils.getCurveLine(xvals, yvals, matsTypes.ReservedWords.constantCSI);
+        textVals[Math.floor(xvals.length*0.6)] = cval
+        csiLine = matsDataCurveOpsUtils.getCurveLine(xvals, yvals, textVals, cval.toFixed(1), "bottom left", matsTypes.ReservedWords.constantCSI);
         dataset.push(csiLine);
     }
 

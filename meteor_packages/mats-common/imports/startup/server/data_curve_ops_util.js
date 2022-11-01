@@ -69,7 +69,7 @@ const getVerticalValueLine = function (ymax, ymin, xValue, textPos, cLabel) {
         "subSecs": [],
         "subLevs": [],
         "stats": [{"d_mean": 0, "sd": 0, "n_good": 0, "lag1": 0, "stde": 0},
-        {"d_mean": 0, "sd": 0, "n_good": 0, "lag1": 0, "stde": 0}],
+            {"d_mean": 0, "sd": 0, "n_good": 0, "lag1": 0, "stde": 0}],
         "xmin": xValue,
         "xmax": xValue,
         "ymin": ymin,
@@ -96,9 +96,9 @@ const getLinearValueLine = function (xmax, xmin, ymax, ymin, textLabel, textPos,
         "annotation": "",
         "name": cLabel,
         "mode": "lines+text",
-        "x": [xmin, (xmin+xmax)/2, xmax],
-        "x_epoch": [xmin, (xmin+xmax)/2, xmax],
-        "y": [ymin, (ymin+ymax)/2, ymax],
+        "x": [xmin, (xmin + xmax) / 2, xmax],
+        "x_epoch": [xmin, (xmin + xmax) / 2, xmax],
+        "y": [ymin, (ymin + ymax) / 2, ymax],
         "error_x": [null, null, null],
         "error_y": [null, null, null],
         "text": ["", textLabel, ""],
@@ -107,8 +107,8 @@ const getLinearValueLine = function (xmax, xmin, ymax, ymin, textLabel, textPos,
         "subSecs": [],
         "subLevs": [],
         "stats": [{"d_mean": 0, "sd": 0, "n_good": 0, "lag1": 0, "stde": 0},
-        {"d_mean": 0, "sd": 0, "n_good": 0, "lag1": 0, "stde": 0},
-        {"d_mean": 0, "sd": 0, "n_good": 0, "lag1": 0, "stde": 0}],
+            {"d_mean": 0, "sd": 0, "n_good": 0, "lag1": 0, "stde": 0},
+            {"d_mean": 0, "sd": 0, "n_good": 0, "lag1": 0, "stde": 0}],
         "xmin": xmin,
         "xmax": xmax,
         "ymin": ymin,
@@ -146,7 +146,7 @@ const getDashedLinearValueLine = function (xmax, xmin, ymax, ymin, textLabel, te
         "subSecs": [],
         "subLevs": [],
         "stats": [{"d_mean": 0, "sd": 0, "n_good": 0, "lag1": 0, "stde": 0},
-        {"d_mean": 0, "sd": 0, "n_good": 0, "lag1": 0, "stde": 0}],
+            {"d_mean": 0, "sd": 0, "n_good": 0, "lag1": 0, "stde": 0}],
         "xmin": xmin,
         "xmax": xmax,
         "ymin": ymin,
@@ -165,28 +165,25 @@ const getDashedLinearValueLine = function (xmax, xmin, ymax, ymin, textLabel, te
 };
 
 // adds a linear line
-const getCurveLine = function (xvals, yvals, cLabel) {
+const getCurveLine = function (xvals, yvals, textVals, textLabel, textPos, cLabel) {
 
-    const valueLine = {
+    return {
         "label": cLabel,
         "curveId": cLabel,
         "annotation": "",
         "name": cLabel,
-        "mode": "lines",
+        "mode": "lines+text",
         "x": xvals,
         "y": yvals,
         "error_x": [null, null],
         "error_y": [null, null],
+        "text": textVals,
+        "textposition": textPos,
         "subVals": [],
         "subSecs": [],
         "subLevs": [],
-        "stats": [{"d_mean": 0, "sd": 0, "n_good": 0, "lag1": 0, "stde": 0}, {
-            "d_mean": 0,
-            "sd": 0,
-            "n_good": 0,
-            "lag1": 0,
-            "stde": 0
-        }],
+        "stats": [{"d_mean": 0, "sd": 0, "n_good": 0, "lag1": 0, "stde": 0},
+            {"d_mean": 0, "sd": 0, "n_good": 0, "lag1": 0, "stde": 0}],
         "xmin": Math.min(xvals),
         "xmax": Math.max(xvals),
         "ymin": Math.min(yvals),
@@ -200,10 +197,8 @@ const getCurveLine = function (xvals, yvals, cLabel) {
             "symbol": "circle",
         },
         "showlegend": false,
-        "hovermode": "none"
+        "hoverinfo": "none"
     };
-
-    return valueLine
 };
 
 // provides curve options for all plot types with an independent x axis and a dependent y axis
@@ -430,7 +425,7 @@ const generateBarChartCurveOptions = function (curve, curveIndex, axisMap, dataB
 const generateMapCurveOptions = function (curve, dataSeries, appParams, maxValue) {
 
     const markerSizes = dataSeries.queryVal.map(function (val) {
-        var size = 2 + Math.ceil(Math.abs(val * 18/maxValue));
+        var size = 2 + Math.ceil(Math.abs(val * 18 / maxValue));
         size = size > 20 ? 20 : size; // prevent really massive bad data from obscuring map
         if (curve["statistic"] === "N" || curve["statistic"].includes("average")) size = 10;
         return size;
