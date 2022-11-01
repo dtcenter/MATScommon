@@ -1904,11 +1904,11 @@ const parseQueryDataMapScalar = function (rows, d, dLowest, dLow, dModerate, dHi
             colorHigh = "rgb(53,151,143)";
             colorHighest = "rgb(1,102,95)";
         } else if (variable.toLowerCase().includes('temp')) {
-            colorLowest = "rgb(5,48,97)";
+            colorLowest = "rgb(24,28,247)";
             colorLow = "rgb(67,147,195)";
             colorModerate = "rgb(125,125,125)";
-            colorHigh = "rgb(214,96,77)";
-            colorHighest = "rgb(103,0,31)";
+            colorHigh = "rgb(255,120,86)";
+            colorHighest = "rgb(216,21,47)";
         } else {
             colorLowest = "rgb(0,134,0)";
             colorLow = "rgb(80,255,80)";
