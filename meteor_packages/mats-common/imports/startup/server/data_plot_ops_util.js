@@ -1639,7 +1639,7 @@ const generateScatterPlotOptions = function (axisXMap, axisYMap) {
             showgrid: true,
             gridwidth: 1,
             gridcolor: "rgb(238,238,238)",
-            range: [ymin - yPad, ymax + 8 * yPad],  // need to allow room at the top for the legend
+            range: [ymin - yPad, ymax + yPad],  // need to allow room at the top for the legend
             zeroline: false
         };
         if (axisIdx === 0) {
