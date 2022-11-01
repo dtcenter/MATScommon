@@ -626,7 +626,7 @@ const processDataReliability = function (dataset, appParams, curveInfoParams, pl
     var resultOptions = matsDataPlotOpsUtils.generateReliabilityPlotOptions();
 
     // add black perfect reliability line curve
-    const perfectLine = matsDataCurveOpsUtils.getLinearValueLine(resultOptions.xaxis.range[1], resultOptions.xaxis.range[0], resultOptions.yaxis.range[1], resultOptions.yaxis.range[0], matsTypes.ReservedWords.perfectReliability);
+    const perfectLine = matsDataCurveOpsUtils.getLinearValueLine(resultOptions.xaxis.range[1], resultOptions.xaxis.range[0], resultOptions.yaxis.range[1], resultOptions.yaxis.range[0], matsTypes.ReservedWords.perfectReliability, "top left", matsTypes.ReservedWords.perfectReliability);
     dataset.push(perfectLine);
 
     if (sample_climo >= data.ymin) {
@@ -641,14 +641,14 @@ const processDataReliability = function (dataset, appParams, curveInfoParams, pl
     }
 
     // add black no skill line curve
-    const noSkillLine = matsDataCurveOpsUtils.getLinearValueLine(resultOptions.xaxis.range[1], resultOptions.xaxis.range[0], skillmax, skillmin, matsTypes.ReservedWords.noSkill);
+    const noSkillLine = matsDataCurveOpsUtils.getLinearValueLine(resultOptions.xaxis.range[1], resultOptions.xaxis.range[0], skillmax, skillmin, matsTypes.ReservedWords.noSkill, "bottom right", matsTypes.ReservedWords.noSkill);
     dataset.push(noSkillLine);
 
     // add sample climo lines
     const xClimoLine = matsDataCurveOpsUtils.getHorizontalValueLine(resultOptions.xaxis.range[1], resultOptions.xaxis.range[0], sample_climo, "top left", matsTypes.ReservedWords.zero);
     dataset.push(xClimoLine);
 
-    const yClimoLine = matsDataCurveOpsUtils.getVerticalValueLine(resultOptions.yaxis.range[1], resultOptions.yaxis.range[0], sample_climo, " bottom right", matsTypes.ReservedWords.zero);
+    const yClimoLine = matsDataCurveOpsUtils.getVerticalValueLine(resultOptions.yaxis.range[1], resultOptions.yaxis.range[0], sample_climo, "bottom right", matsTypes.ReservedWords.zero);
     dataset.push(yClimoLine);
 
     var totalProcessingFinish = moment();
@@ -725,7 +725,7 @@ const processDataROC = function (dataset, appParams, curveInfoParams, plotParams
     var resultOptions = matsDataPlotOpsUtils.generateROCPlotOptions();
 
     // add black no skill line curve
-    const noSkillLine = matsDataCurveOpsUtils.getLinearValueLine(resultOptions.xaxis.range[1], resultOptions.xaxis.range[0], resultOptions.yaxis.range[1], data.ymin, matsTypes.ReservedWords.noSkill);
+    const noSkillLine = matsDataCurveOpsUtils.getLinearValueLine(resultOptions.xaxis.range[1], resultOptions.xaxis.range[0], resultOptions.yaxis.range[1], data.ymin, matsTypes.ReservedWords.noSkill, "top left", matsTypes.ReservedWords.noSkill);
     dataset.push(noSkillLine);
 
     // add perfect forecast lines
@@ -802,20 +802,23 @@ const processDataPerformanceDiagram = function (dataset, appParams, curveInfoPar
         dataset[curveIndex]['glob_stats'] = {};
     }
 
+    // generate plot options
+    var resultOptions = matsDataPlotOpsUtils.generatePerformanceDiagramPlotOptions();
+
     // add black lines of constant bias
-    var biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1, 0, 1, 0, matsTypes.ReservedWords.constantBias);
+    var biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(0.125, 0, 1, 0, " 0.125", "bottom right", matsTypes.ReservedWords.constantBias);
     dataset.push(biasLine);
-    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(2, 0, 1, 0, matsTypes.ReservedWords.constantBias);
+    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(0.25, 0, 1, 0, " 0.25", "bottom right", matsTypes.ReservedWords.constantBias);
     dataset.push(biasLine);
-    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(4, 0, 1, 0, matsTypes.ReservedWords.constantBias);
+    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(0.5, 0, 1, 0, " 0.5", "bottom right", matsTypes.ReservedWords.constantBias);
     dataset.push(biasLine);
-    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(8, 0, 1, 0, matsTypes.ReservedWords.constantBias);
+    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1, 0, 1, 0, "1  ", "bottom left", matsTypes.ReservedWords.constantBias);
     dataset.push(biasLine);
-    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1/2, 0, 1, 0, matsTypes.ReservedWords.constantBias);
+    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1, 0, 0.5, 0, "2", "top left", matsTypes.ReservedWords.constantBias);
     dataset.push(biasLine);
-    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1/4, 0, 1, 0, matsTypes.ReservedWords.constantBias);
+    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1, 0, 0.25, 0, "4", "top left", matsTypes.ReservedWords.constantBias);
     dataset.push(biasLine);
-    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1/8, 0, 1, 0, matsTypes.ReservedWords.constantBias);
+    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1, 0, 0.125, 0, "8", "top left", matsTypes.ReservedWords.constantBias);
     dataset.push(biasLine);
 
     var xvals;
@@ -855,9 +858,6 @@ const processDataPerformanceDiagram = function (dataset, appParams, curveInfoPar
         data.subSecs = [];
         data.subLevs = [];
     }
-
-    // generate plot options
-    var resultOptions = matsDataPlotOpsUtils.generatePerformanceDiagramPlotOptions();
 
     var totalProcessingFinish = moment();
     bookkeepingParams.dataRequests["total retrieval and processing time for curve set"] = {
@@ -1383,13 +1383,6 @@ const processDataSimpleScatter = function (dataset, appParams, curveInfoParams, 
 
     // generate plot options
     var resultOptions = matsDataPlotOpsUtils.generateScatterPlotOptions(curveInfoParams.axisXMap, curveInfoParams.axisYMap);
-
-    // add black center line
-    // commented out because I haven't decided yet if we actually want this
-    // let overallMin = resultOptions.xaxis.range[0] < resultOptions.yaxis.range[0] ? resultOptions.xaxis.range[0] : resultOptions.yaxis.range[0];
-    // let overallMax = resultOptions.xaxis.range[1] > resultOptions.yaxis.range[1] ? resultOptions.xaxis.range[1] : resultOptions.yaxis.range[1];
-    // var centerLine = matsDataCurveOpsUtils.getLinearValueLine(overallMax, overallMin, overallMax, overallMin, matsTypes.ReservedWords.centerLine);
-    // dataset.push(centerLine);
 
     var totalProcessingFinish = moment();
     bookkeepingParams.dataRequests["total retrieval and processing time for curve set"] = {

@@ -88,29 +88,27 @@ const getVerticalValueLine = function (ymax, ymin, xValue, textPos, cLabel) {
 };
 
 // adds a linear line
-const getLinearValueLine = function (xmax, xmin, ymax, ymin, cLabel) {
+const getLinearValueLine = function (xmax, xmin, ymax, ymin, textLabel, textPos, cLabel) {
 
-    const valueLine = {
+    return {
         "label": cLabel,
         "curveId": cLabel,
         "annotation": "",
         "name": cLabel,
-        "mode": "lines",
-        "x": [xmin, xmax],
-        "x_epoch": [xmin, xmax],
-        "y": [ymin, ymax],
-        "error_x": [null, null],
-        "error_y": [null, null],
+        "mode": "lines+text",
+        "x": [xmin, (xmin+xmax)/2, xmax],
+        "x_epoch": [xmin, (xmin+xmax)/2, xmax],
+        "y": [ymin, (ymin+ymax)/2, ymax],
+        "error_x": [null, null, null],
+        "error_y": [null, null, null],
+        "text": ["", textLabel, ""],
+        "textposition": textPos,
         "subVals": [],
         "subSecs": [],
         "subLevs": [],
-        "stats": [{"d_mean": 0, "sd": 0, "n_good": 0, "lag1": 0, "stde": 0}, {
-            "d_mean": 0,
-            "sd": 0,
-            "n_good": 0,
-            "lag1": 0,
-            "stde": 0
-        }],
+        "stats": [{"d_mean": 0, "sd": 0, "n_good": 0, "lag1": 0, "stde": 0},
+        {"d_mean": 0, "sd": 0, "n_good": 0, "lag1": 0, "stde": 0},
+        {"d_mean": 0, "sd": 0, "n_good": 0, "lag1": 0, "stde": 0}],
         "xmin": xmin,
         "xmax": xmax,
         "ymin": ymin,
@@ -124,36 +122,31 @@ const getLinearValueLine = function (xmax, xmin, ymax, ymin, cLabel) {
             "symbol": "circle",
         },
         "showlegend": false,
-        "hovermode": "none"
+        "hoverinfo": "none"
     };
-
-    return valueLine
 };
 
 // adds a linear line
-const getDashedLinearValueLine = function (xmax, xmin, ymax, ymin, cLabel) {
+const getDashedLinearValueLine = function (xmax, xmin, ymax, ymin, textLabel, textPos, cLabel) {
 
-    const valueLine = {
+    return {
         "label": cLabel,
         "curveId": cLabel,
         "annotation": "",
         "name": cLabel,
-        "mode": "lines",
+        "mode": "lines+text",
         "x": [xmin, xmax],
         "x_epoch": [xmin, xmax],
         "y": [ymin, ymax],
         "error_x": [null, null],
         "error_y": [null, null],
+        "text": ["", textLabel],
+        "textposition": textPos,
         "subVals": [],
         "subSecs": [],
         "subLevs": [],
-        "stats": [{"d_mean": 0, "sd": 0, "n_good": 0, "lag1": 0, "stde": 0}, {
-            "d_mean": 0,
-            "sd": 0,
-            "n_good": 0,
-            "lag1": 0,
-            "stde": 0
-        }],
+        "stats": [{"d_mean": 0, "sd": 0, "n_good": 0, "lag1": 0, "stde": 0},
+        {"d_mean": 0, "sd": 0, "n_good": 0, "lag1": 0, "stde": 0}],
         "xmin": xmin,
         "xmax": xmax,
         "ymin": ymin,
@@ -167,10 +160,8 @@ const getDashedLinearValueLine = function (xmax, xmin, ymax, ymin, cLabel) {
             "symbol": "circle",
         },
         "showlegend": false,
-        "hovermode": "none"
+        "hoverinfo": "none"
     };
-
-    return valueLine
 };
 
 // adds a linear line
