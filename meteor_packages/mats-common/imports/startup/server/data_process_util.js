@@ -814,7 +814,7 @@ const processDataPerformanceDiagram = function (dataset, appParams, curveInfoPar
     dataset.push(biasLine);
     biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1, 0, 1, 0, "1.0  ", "bottom left", matsTypes.ReservedWords.constantBias);
     dataset.push(biasLine);
-    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1, 0, 0.5, 0, "2.0", "top left", matsTypes.ReservedWords.constantBias);
+    biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1, 0, 0.5, 0, "2.0", "bottom left", matsTypes.ReservedWords.constantBias);
     dataset.push(biasLine);
     biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(1, 0, 0.25, 0, "4.0", "top left", matsTypes.ReservedWords.constantBias);
     dataset.push(biasLine);
