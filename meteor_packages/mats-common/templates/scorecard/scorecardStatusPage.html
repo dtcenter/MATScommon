@@ -1,10 +1,79 @@
 <template name="scorecardStatusPage">
-    <div id="scorecardStatus" name="scorecardStatus" style="display:none;">
-        <h1>The scorecardstatus page is under underConstruction</h1>
-        <p>......</p>
-        <div>
-            <img src="{{image}}" alt="Building..." height="100%" width="100%">
+    <div id="scorecardStatus" class="container-fluid pull-left"
+        style="margin-top: 0.5em; padding-left: 5%; display:none;">
+        <div id="scorecardStatusPage-control" class="row">
+            <span id="all-plot-buttons-grp" class="btn-group btn-group-sm">
+                <button id="backButton" type="button" class="back btn btn-primary" style="border-radius: 5px;">
+                    <i class="fa-solid fa-arrow-left-long"></i>&nbsp;&nbsp;<strong>Back</strong>
+                </button>
+                <button id="gc-spacer" type="button" class="btn spacebutton"></button>
+                <button id="refresh-scorecard" type="button" class="btn btn-info"
+                    style="border-radius: 15px; background-color: #00badb;">
+                    <i class="fa-solid fa-arrows-rotate"></i>
+                </button>
+            </span>
         </div>
-        <p>......</p>
+        <h1>
+            Scorecard Status panel
+        </h1>
+        <div id="statusPanel" class="row">
+            <table id="userTable" class="table table-condensed table-responsive table-sm" cellspacing="0">
+                <thead>
+                    <th>user</th>
+                </thead>
+                <tbody>
+                    {{#each user in users}}
+                    <tr style="padding: 0;">
+                        <td style="vertical-align:top; padding: 0;">
+                            <button type="button" id="{{user}}-control" data-target="{{user}}"
+                                class="btn btn-info btn-xs user-control" role="button">{{user}}</button>
+                        </td>
+                        <td colspan="12" style="padding: 0;vertical-align:top;">
+                            <div id="{{user}}" style="background-color:#d4f6fb; display:none;">
+                                <table id="{{user}}-Table" class="table table-condensed table-responsive table-bordered table-sm" cellspacing="0">
+                                    <tbody>
+                                        {{#each name in names user}}
+                                        <tr style="padding: 0;">
+                                            <td style="vertical-align:top; padding: 0;">
+                                                <button type="button" id="{{user}}-{{name}}-control"
+                                                    class="btn btn-info btn-xs user-name-control"
+                                                    data-target="{{user}}-{{name}}" role="button">{{name}}</button>
+                                            </td>
+                                            <td colspan="12" style="vertical-align:top;">
+                                                <div id="{{user}}-{{name}}"
+                                                    style="background-color:#E9FCFE; display:none;">
+                                                    <table id="{{user}}-{{name}}-Table"
+                                                        class="table table-condensed table-responsive table-stripedtable-bordered">
+                                                        <thead>
+                                                            <tr class="info">
+                                                                <th>runtime</th>
+                                                                <th>status</th>
+                                                                <th>visit link</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {{#each runtime in runtimes user name}}
+                                                            <tr class={{statusType user name runtime}}>
+                                                                <td>{{runtime}}</td>
+                                                                <td>{{status user name runtime}}</td>
+                                                                <td><a href="https://www.esrl.noaa.gov/gsd/mats"
+                                                                        target="_blank">visit</a></td>
+                                                            </tr>
+                                                            {{/each}}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {{/each}}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        </div>
     </div>
 </template>
