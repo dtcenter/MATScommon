@@ -78,6 +78,9 @@ Template.ScorecardHome.events({
         datepicker.refresh();
         datepicker.show();
     },
+    'click #display-status'(event){
+        matsGraphUtils.setScorecardDisplayView('displayScorecardStatusPage');
+    },
     'change #scorecard-schedule-mode-radioGroup-recurring'(event) {
         // this event is only fired when 'recurring' is selected
         // firing off a blur event will cause the hideForOthers stuff in radiogroup.js to happen
