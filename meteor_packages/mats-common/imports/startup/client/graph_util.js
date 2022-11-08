@@ -370,15 +370,33 @@ const setGraphView = function (plotType) {
     };
 };
 
-const setScorecardDisplayView = function (plotType) {
+const setScorecardDisplayView = function () {
     //shows scorecardStatusPage template, hides everything else
     document.getElementById('appTitleText').style.display = 'none';
+    document.getElementById('graph-container').style.display = 'none';
     document.getElementById('plotType').style.display = 'none';
     document.getElementById('paramList').style.display = 'none';
     document.getElementById('plotList').style.display = 'none';
     document.getElementById('curveList').style.display = 'none';
-    document.getElementById("plotTypeContainer").style.display = "none";
-    document.getElementById("scatterView").style.display = "none";
+    if (document.getElementById("plotTypeContainer")) {
+        document.getElementById("plotTypeContainer").style.display = "none";
+    }
+    if (document.getElementById("scatter2d")) {
+        document.getElementById("scatter2d").style.display = "none";
+    }
+    if (document.getElementById("scatterView")) {
+        document.getElementById("scatterView").style.display = "none";
+    }
+    document.getElementById("exportButton").style.display = "none";
+    document.getElementById("plotButton").style.display = "none";
+    document.getElementById("textButton").style.display = "none";
+    document.getElementById("text-page-button-group").style.display = "none";
+    document.getElementById("plot-page-button-group").style.display = "none";
+    document.getElementById('plot-control-button-group').style.display = "none";
+    document.getElementById("curves").style.display = "none";
+    document.getElementById("graphView").style.display = "none";
+    document.getElementById("textView").style.display = "none";
+    document.getElementById('refresh-plot').style.display = "none";
     document.getElementById('spinner').style.display = "none";
     document.getElementById('scorecardStatus').style.display = "block";
     // Enable navigation prompt
@@ -402,10 +420,13 @@ const setDefaultView = function () {
     // show elements of the main page
     document.getElementById('appTitleText').style.display = 'block';
     document.getElementById('graph-container').style.display = 'none';
-    document.getElementById('plotType').style.display = 'block';
     document.getElementById('paramList').style.display = 'block';
     document.getElementById('plotList').style.display = 'block';
-    document.getElementById('curveList').style.display = 'block';
+    if (Session.get("Curves") !== undefined && Session.get("Curves").length > 0) {
+        document.getElementById('curveList').style.display = 'block';
+    } else {
+        document.getElementById('curveList').style.display = 'none';
+    }
     if (document.getElementById("plotTypeContainer")) {
         document.getElementById("plotTypeContainer").style.display = "block";
     }
@@ -426,7 +447,10 @@ const setDefaultView = function () {
     document.getElementById("textView").style.display = "none";
     document.getElementById('refresh-plot').style.display = "block";
     if (document.getElementById('scorecardStatus')) {
+        document.getElementById('plotType').style.display = 'none';
         document.getElementById('scorecardStatus').style.display = "none";
+    } else  {
+        document.getElementById('plotType').style.display = 'block';
     }
     // Remove navigation prompt
     window.onbeforeunload = null;

@@ -3,13 +3,10 @@
  */
 
 import {
-    matsCollections
-} from 'meteor/randyp:mats-common';
-import {
-    matsParamUtils
-} from 'meteor/randyp:mats-common';
-import {
-    matsMethods
+    matsCollections,
+    matsGraphUtils,
+    matsParamUtils,
+    matsMethods,
 } from 'meteor/randyp:mats-common';
 
 import {
@@ -60,7 +57,7 @@ Template.ScorecardHome.helpers({
 
 Template.ScorecardHome.events({
     'click #controlButton-scorecard-ends-on-value'(event) {
-        today = new Date();
+        const today = new Date();
         if (datepicker === undefined) {
             // declared at top of file - lazy instantiation
             datepicker = new Datepicker(
@@ -77,6 +74,9 @@ Template.ScorecardHome.events({
         datepicker.setDate(today);
         datepicker.refresh();
         datepicker.show();
+    },
+    'click #display-status'(event){
+        matsGraphUtils.setScorecardDisplayView();
     },
     'change #scorecard-schedule-mode-radioGroup-recurring'(event) {
         // this event is only fired when 'recurring' is selected

@@ -1,11 +1,17 @@
 /*
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
+import {
+    matsPlotUtils,
+    matsGraphUtils,
+    matsCurveUtils,
+} from 'meteor/randyp:mats-common';
+
 function stringToHash(string) {
     var hash = 0;
     if (string.length == 0) return hash;
-    for (i = 0; i < string.length; i++) {
-        char = string.charCodeAt(i);
+    for (let i = 0; i < string.length; i++) {
+        let char = string.charCodeAt(i);
         hash = ((hash << 5) - hash) + char;
         hash = hash & hash;
     }

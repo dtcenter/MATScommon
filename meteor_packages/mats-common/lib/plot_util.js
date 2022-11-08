@@ -144,7 +144,7 @@ const enableActionButtons = function () {
     if (document.getElementById('plotUnmatched')) {
         document.getElementById('plotUnmatched').disabled = false;
     }
-    if (document.getElementById('plotUnmatched')) {
+    if (document.getElementById('add')) {
         document.getElementById('add').disabled = false;
     }
     if (document.getElementById('remove-all')) {
