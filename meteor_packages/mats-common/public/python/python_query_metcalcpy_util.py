@@ -1,13 +1,16 @@
 import getopt
 import sys
-from sqlalchemy import create_engine
-from sqlalchemy.exc import SQLAlchemyError
+import pymysql
+import pymysql.cursors
 import math
 import numpy as np
-import pandas as pd
 import re
 import json
-import metcalcpy as mcp
+from contextlib import closing
+from scalar_stats import calculate_scalar_stat
+from vector_stats import calculate_vector_stat
+from ctc_stats import calculate_ctc_stat
+from mode_stats import calculate_mode_stat
 
 
 """class that contains all of the tools necessary for querying the db and calculating statistics from the 
@@ -141,20 +144,11 @@ class QueryUtil:
                     sub_secs.append(float(sub_datum[6]) if float(sub_datum[6]) != -9999 else np.nan)
                     if has_levels:
                         sub_levs.append(sub_datum[7])
-                sub_fbar = np.asarray(sub_fbar)
-                sub_obar = np.asarray(sub_obar)
-                sub_ffbar = np.asarray(sub_ffbar)
-                sub_oobar = np.asarray(sub_oobar)
-                sub_fobar = np.asarray(sub_fobar)
-                sub_total = np.asarray(sub_total)
-                sub_secs = np.asarray(sub_secs)
-                if len(sub_levs) == 0:
-                    sub_levs = np.empty(len(sub_secs))
-                else:
-                    sub_levs = np.asarray(sub_levs)
+
                 # calculate the scalar statistic
-                sub_values, stat, stat_error = calculate_scalar_stat(statistic, sub_fbar, sub_obar, sub_ffbar,
-                                                                     sub_oobar, sub_fobar, sub_total)
+                numpy_data = np.column_stack([sub_fbar, sub_obar, sub_ffbar, sub_oobar, sub_fobar, sub_total])
+                column_headers = np.asarray(['fbar', 'obar', 'ffbar', 'oobar', 'fobar', 'total'])
+                sub_values, stat, stat_error = calculate_scalar_stat(statistic, numpy_data, column_headers)
                 if stat_error != '':
                     self.error[idx] = stat_error
 
@@ -768,8 +762,8 @@ class QueryUtil:
                         list_interests = sub_interests_all[d_idx].tolist()
                         list_pair_fids = sub_pair_fids_all[d_idx].tolist()
                         list_pair_oids = sub_pair_oids_all[d_idx].tolist()
-                        list_sub_mode_header_ids = sub_mode_header_ids_all[d_idx].tolist()
-                        list_sub_cent_dists = sub_cent_dists_all[d_idx].tolist()
+                        list_sub_mode_header_ids = sub_mode_header_ids_all[d_idx]
+                        list_sub_cent_dists = sub_cent_dists_all[d_idx]
                         list_vals = []
                     else:
                         list_interests = []
@@ -778,9 +772,9 @@ class QueryUtil:
                         list_sub_mode_header_ids = []
                         list_sub_cent_dists = []
                         list_vals = sub_vals_all[d_idx].tolist()
-                    list_secs = sub_secs_all[d_idx].tolist()
+                    list_secs = sub_secs_all[d_idx]
                     if has_levels:
-                        list_levs = sub_levs_all[d_idx].tolist()
+                        list_levs = sub_levs_all[d_idx]
                     else:
                         list_levs = []
                     # JSON can't deal with numpy nans in subarrays for some reason, so we remove them
@@ -1768,10 +1762,11 @@ class QueryUtil:
 
             self.data[curve_index] = data
 
-    def query_db(self, cnx, query_array):
+    def query_db(self, cursor, query_array):
         """function for querying the database and sending the returned data to the parser"""
         for query in query_array:
             idx = query_array.index(query)
+            object_data = []
             if query["statLineType"] == 'mode_pair':
                 # there are two queries in this statement
                 statements = query["statement"].split(" ||| ")
@@ -1779,28 +1774,27 @@ class QueryUtil:
                     # only the mode statistic OTS needs the additional object information provided by the first query.
                     # we can ignore it for other stats
                     try:
-                        object_data = pd.read_sql(statements[1], cnx)
-                    except SQLAlchemyError as e:
+                        cursor.execute(statements[1])
+                    except pymysql.Error as e:
                         self.error[idx] = "Error executing query: " + str(e)
-                    # else:
-                        # if cursor.rowcount == 0:
-                        #     self.error[idx] = "INFO:0 data records found"
+                    else:
+                        if cursor.rowcount == 0:
+                            self.error[idx] = "INFO:0 data records found"
+                        else:
+                            # get object data
+                            object_data = cursor.fetchall()
                 statement = statements[0]
             else:
                 statement = query["statement"]
 
             try:
-                query_result = pd.read_sql(statement, cnx)
-            except SQLAlchemyError as e:
+                cursor.execute(statement)
+            except pymysql.Error as e:
                 self.error[idx] = "Error executing query: " + str(e)
             else:
-                # if cursor.rowcount == 0:
-                #     self.error[idx] = "INFO:0 data records found"
-                # else:
-
-
-
-
+                if cursor.rowcount == 0:
+                    self.error[idx] = "INFO:0 data records found"
+                else:
                     if query["appParams"]["plotType"] == 'TimeSeries' and not query["appParams"]["hideGaps"]:
                         self.parse_query_data_timeseries(idx, cursor, query["statLineType"], query["statistic"],
                                                          query["appParams"]["hasLevels"],
@@ -1887,15 +1881,15 @@ class QueryUtil:
     def do_query(self, options):
         """function for validating options and passing them to the query function"""
         self.validate_options(options)
-        engine = create_engine(url="mysql+pymysql://{0}:{1}@{2}:{3}/{4}".format(
-            options["user"], options["password"], options["host"], options["port"], options["database"]
-        ))
-        cnx = engine.connect()
-        cnx.execute('set group_concat_max_len = 4294967295')
-        cnx.execute('set session wait_timeout = ' + str(options["timeout"]))
-        self.query_db(cnx, options["query_array"])
+        cnx = pymysql.Connect(host=options["host"], port=options["port"], user=options["user"],
+                              passwd=options["password"],
+                              db=options["database"], charset='utf8',
+                              cursorclass=pymysql.cursors.DictCursor)
+        with closing(cnx.cursor()) as cursor:
+            cursor.execute('set group_concat_max_len = 4294967295')
+            cursor.execute('set session wait_timeout = ' + str(options["timeout"]))
+            self.query_db(cursor, options["query_array"])
         cnx.close()
-        engine.dispose()
 
 
 if __name__ == '__main__':

@@ -148,7 +148,7 @@ const queryDBPython = function (pool, queryArray) {
         var N0 = [];
         var N_times = [];
 
-        pyShell.PythonShell.run('python_query_util.py', pyOptions, function (err, results) {
+        pyShell.PythonShell.run('python_query_metcalcpy_util.py', pyOptions, function (err, results) {
             // query callback - build the curve data from the results - or set an error
             if (err !== undefined && err !== null) {
                 error = err.message === undefined ? err : err.message;

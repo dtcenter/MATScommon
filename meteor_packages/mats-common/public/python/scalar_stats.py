@@ -1,4 +1,5 @@
 import numpy as np
+import metcalcpy.util.sl1l2_statistics as calc_sl1l2
 
 
 def calculate_acc(fbar, obar, ffbar, oobar, fobar, total):
@@ -17,17 +18,18 @@ def calculate_acc(fbar, obar, ffbar, oobar, fobar, total):
     return acc, error
 
 
-def calculate_rmse(ffbar, oobar, fobar):
+def calculate_rmse(numpy_data, column_headers):
     """function for calculating RMSE from MET partial sums"""
     error = ""
+    data_length = numpy_data.shape[0]
+    rmse = np.empty([data_length])
     try:
-        rmse = np.sqrt(ffbar + oobar - 2 * fobar)
+        for idx in range(data_length):
+            rmse[idx] = calc_sl1l2.calculate_rmse(numpy_data[[idx], :], column_headers)
     except TypeError as e:
-        error = "Error calculating RMS: " + str(e)
-        rmse = np.empty(len(ffbar))
+        error = "Error calculating RMSE: " + str(e)
     except ValueError as e:
-        error = "Error calculating RMS: " + str(e)
-        rmse = np.empty(len(ffbar))
+        error = "Error calculating RMSE: " + str(e)
     return rmse, error
 
 
@@ -188,7 +190,7 @@ def calculate_pcc(fbar, obar, ffbar, oobar, fobar, total):
     return pcc, error
 
 
-def calculate_scalar_stat(statistic, fbar, obar, ffbar, oobar, fobar, total):
+def calculate_scalar_stat(statistic, numpy_data, column_headers):
     """function for determining and calling the appropriate scalar statistical calculation function"""
     stat_switch = {  # dispatcher of statistical calculation functions
         'ACC': calculate_acc,
@@ -207,33 +209,15 @@ def calculate_scalar_stat(statistic, fbar, obar, ffbar, oobar, fobar, total):
         'Error stdev': calculate_e_stdev,
         'Pearson correlation': calculate_pcc
     }
-    args_switch = {  # dispatcher of arguments for statistical calculation functions
-        'ACC': (fbar, obar, ffbar, oobar, fobar, total),
-        'RMSE': (ffbar, oobar, fobar),
-        'Bias-corrected RMSE': (fbar, obar, ffbar, oobar, fobar),
-        'MSE': (ffbar, oobar, fobar),
-        'Bias-corrected MSE': (fbar, obar, ffbar, oobar, fobar),
-        'ME (Additive bias)': (fbar, obar),
-        'Fractional Error': (fbar, obar),
-        'Multiplicative bias': (fbar, obar),
-        'N': (total,),
-        'Forecast mean': (fbar,),
-        'Observed mean': (obar,),
-        'Forecast stdev': (fbar, ffbar, total),
-        'Observed stdev': (obar, oobar, total),
-        'Error stdev': (fbar, obar, ffbar, oobar, fobar, total),
-        'Pearson correlation': (fbar, obar, ffbar, oobar, fobar, total)
-    }
     try:
-        stat_args = args_switch[statistic]  # get args
-        sub_stats, error = stat_switch[statistic](*stat_args)  # call stat function
+        sub_stats, error = stat_switch[statistic](numpy_data, column_headers)  # call stat function
         stat = np.nanmean(sub_stats)  # calculate overall stat
     except KeyError as e:
         error = "Error choosing statistic: " + str(e)
-        sub_stats = np.empty(len(fbar))
+        sub_stats = np.nan
         stat = 'null'
     except ValueError as e:
         error = "Error calculating statistic: " + str(e)
-        sub_stats = np.empty(len(fbar))
+        sub_stats = np.nan
         stat = 'null'
     return sub_stats, stat, error
