@@ -7,11 +7,7 @@ import numpy as np
 import pandas as pd
 import re
 import json
-from contextlib import closing
-from scalar_stats import calculate_scalar_stat
-from vector_stats import calculate_vector_stat
-from ctc_stats import calculate_ctc_stat
-from mode_stats import calculate_mode_stat
+import metcalcpy as mcp
 
 
 """class that contains all of the tools necessary for querying the db and calculating statistics from the 
@@ -1776,7 +1772,6 @@ class QueryUtil:
         """function for querying the database and sending the returned data to the parser"""
         for query in query_array:
             idx = query_array.index(query)
-            object_data = []
             if query["statLineType"] == 'mode_pair':
                 # there are two queries in this statement
                 statements = query["statement"].split(" ||| ")
@@ -1784,27 +1779,28 @@ class QueryUtil:
                     # only the mode statistic OTS needs the additional object information provided by the first query.
                     # we can ignore it for other stats
                     try:
-                        query_result = pd.read_sql(statements[1], cnx)
+                        object_data = pd.read_sql(statements[1], cnx)
                     except SQLAlchemyError as e:
                         self.error[idx] = "Error executing query: " + str(e)
-                    else:
-                        if cursor.rowcount == 0:
-                            self.error[idx] = "INFO:0 data records found"
-                        else:
-                            # get object data
-                            object_data = cursor.fetchall()
+                    # else:
+                        # if cursor.rowcount == 0:
+                        #     self.error[idx] = "INFO:0 data records found"
                 statement = statements[0]
             else:
                 statement = query["statement"]
 
             try:
-                cursor.execute(statement)
-            except pymysql.Error as e:
+                query_result = pd.read_sql(statement, cnx)
+            except SQLAlchemyError as e:
                 self.error[idx] = "Error executing query: " + str(e)
             else:
-                if cursor.rowcount == 0:
-                    self.error[idx] = "INFO:0 data records found"
-                else:
+                # if cursor.rowcount == 0:
+                #     self.error[idx] = "INFO:0 data records found"
+                # else:
+
+
+
+
                     if query["appParams"]["plotType"] == 'TimeSeries' and not query["appParams"]["hideGaps"]:
                         self.parse_query_data_timeseries(idx, cursor, query["statLineType"], query["statistic"],
                                                          query["appParams"]["hasLevels"],
