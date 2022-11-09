@@ -1,20 +1,19 @@
 import numpy as np
 import metcalcpy.util.sl1l2_statistics as calc_sl1l2
+import metcalcpy.util.sal1l2_statistics as calc_sal1l2
 
 
-def calculate_acc(fbar, obar, ffbar, oobar, fobar, total):
+def calculate_acc(numpy_data, column_headers, data_length):
     """function for calculating anomaly correlation from MET partial sums"""
     error = ""
+    acc = np.empty([data_length])
     try:
-        denom = (np.power(total, 2) * ffbar - np.power(total, 2) * np.power(fbar, 2)) \
-                * (np.power(total, 2) * oobar - np.power(total, 2) * np.power(obar, 2))
-        acc = (np.power(total, 2) * fobar - np.power(total, 2) * fbar * obar) / np.sqrt(denom)
+        for idx in range(data_length):
+            acc[idx] = calc_sal1l2.calculate_anom_corr(numpy_data[[idx], :], column_headers)
     except TypeError as e:
         error = "Error calculating ACC: " + str(e)
-        acc = np.empty(len(ffbar))
     except ValueError as e:
         error = "Error calculating ACC: " + str(e)
-        acc = np.empty(len(ffbar))
     return acc, error
 
 

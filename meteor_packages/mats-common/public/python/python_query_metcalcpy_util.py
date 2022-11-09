@@ -147,7 +147,10 @@ class QueryUtil:
 
                 # calculate the scalar statistic
                 numpy_data = np.column_stack([sub_fbar, sub_obar, sub_ffbar, sub_oobar, sub_fobar, sub_total])
-                column_headers = np.asarray(['fbar', 'obar', 'ffbar', 'oobar', 'fobar', 'total'])
+                if statistic == 'ACC':
+                    column_headers = np.asarray(['fabar', 'oabar', 'ffabar', 'ooabar', 'foabar', 'total'])
+                else:
+                    column_headers = np.asarray(['fbar', 'obar', 'ffbar', 'oobar', 'fobar', 'total'])
                 sub_values, stat, stat_error = calculate_scalar_stat(statistic, numpy_data, column_headers)
                 if stat_error != '':
                     self.error[idx] = stat_error
