@@ -759,9 +759,9 @@ class QueryUtil:
                     # put the data in our final data dictionary, converting the numpy arrays to lists so we can jsonify
                     loop_sum += curve_stats[d_idx]
                     if stat_line_type == 'mode_pair':
-                        list_interests = sub_interests_all[d_idx].tolist()
-                        list_pair_fids = sub_pair_fids_all[d_idx].tolist()
-                        list_pair_oids = sub_pair_oids_all[d_idx].tolist()
+                        list_interests = sub_interests_all[d_idx]
+                        list_pair_fids = sub_pair_fids_all[d_idx]
+                        list_pair_oids = sub_pair_oids_all[d_idx]
                         list_sub_mode_header_ids = sub_mode_header_ids_all[d_idx]
                         list_sub_cent_dists = sub_cent_dists_all[d_idx]
                         list_vals = []
@@ -1045,11 +1045,11 @@ class QueryUtil:
                 # put the data in our final data dictionary, converting the numpy arrays to lists so we can jsonify
                 loop_sum += curve_stats[d_idx]
                 if stat_line_type == 'mode_pair':
-                    list_interests = sub_interests_all[d_idx].tolist()
-                    list_pair_fids = sub_pair_fids_all[d_idx].tolist()
-                    list_pair_oids = sub_pair_oids_all[d_idx].tolist()
-                    list_sub_mode_header_ids = sub_mode_header_ids_all[d_idx].tolist()
-                    list_sub_cent_dists_all = sub_cent_dists_all[d_idx].tolist()
+                    list_interests = sub_interests_all[d_idx]
+                    list_pair_fids = sub_pair_fids_all[d_idx]
+                    list_pair_oids = sub_pair_oids_all[d_idx]
+                    list_sub_mode_header_ids = sub_mode_header_ids_all[d_idx]
+                    list_sub_cent_dists_all = sub_cent_dists_all[d_idx]
                     list_vals = []
                 else:
                     list_interests = []
@@ -1058,9 +1058,9 @@ class QueryUtil:
                     list_sub_mode_header_ids = []
                     list_sub_cent_dists_all = []
                     list_vals = sub_vals_all[d_idx].tolist()
-                list_secs = sub_secs_all[d_idx].tolist()
+                list_secs = sub_secs_all[d_idx]
                 if has_levels:
-                    list_levs = sub_levs_all[d_idx].tolist()
+                    list_levs = sub_levs_all[d_idx]
                 else:
                     list_levs = []
                 # JSON can't deal with numpy nans in subarrays for some reason, so we remove them
@@ -1181,10 +1181,10 @@ class QueryUtil:
                 # store parsed data for later
                 list_vals = sub_values.tolist()
                 sub_vals_all.append(list_vals)
-                list_secs = sub_secs.tolist()
+                list_secs = sub_secs
                 sub_secs_all.append(list_secs)
                 if has_levels:
-                    list_levs = sub_levs.tolist()
+                    list_levs = sub_levs
                     sub_levs_all.append(list_levs)
 
             # we successfully processed a cycle, so increment both indices
@@ -1236,9 +1236,9 @@ class QueryUtil:
 
                 else:
                     list_vals = sub_values.tolist()
-                    list_secs = sub_secs.tolist()
+                    list_secs = sub_secs
                     if has_levels:
-                        list_levs = sub_levs.tolist()
+                        list_levs = sub_levs
 
                     # JSON can't deal with numpy nans in subarrays for some reason, so we remove them
                     bad_value_indices = [index for index, value in enumerate(list_vals) if not self.is_number(value)]

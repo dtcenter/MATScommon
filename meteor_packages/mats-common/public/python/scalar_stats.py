@@ -18,10 +18,9 @@ def calculate_acc(fbar, obar, ffbar, oobar, fobar, total):
     return acc, error
 
 
-def calculate_rmse(numpy_data, column_headers):
+def calculate_rmse(numpy_data, column_headers, data_length):
     """function for calculating RMSE from MET partial sums"""
     error = ""
-    data_length = numpy_data.shape[0]
     rmse = np.empty([data_length])
     try:
         for idx in range(data_length):
@@ -33,87 +32,87 @@ def calculate_rmse(numpy_data, column_headers):
     return rmse, error
 
 
-def calculate_bcrmse(fbar, obar, ffbar, oobar, fobar):
+def calculate_bcrmse(numpy_data, column_headers, data_length):
     """function for calculating bias-corrected RMSE from MET partial sums"""
     error = ""
+    bcrmse = np.empty([data_length])
     try:
-        bcrmse = np.sqrt((ffbar + oobar - 2 * fobar) - (fbar - obar) ** 2)
+        for idx in range(data_length):
+            bcrmse[idx] = calc_sl1l2.calculate_bcrmse(numpy_data[[idx], :], column_headers)
     except TypeError as e:
-        error = "Error calculating RMS: " + str(e)
-        bcrmse = np.empty(len(ffbar))
+        error = "Error calculating bias-corrected RMSE: " + str(e)
     except ValueError as e:
-        error = "Error calculating RMS: " + str(e)
-        bcrmse = np.empty(len(ffbar))
+        error = "Error calculating bias-corrected RMSE: " + str(e)
     return bcrmse, error
 
 
-def calculate_mse(ffbar, oobar, fobar):
+def calculate_mse(numpy_data, column_headers, data_length):
     """function for calculating MSE from MET partial sums"""
     error = ""
+    mse = np.empty([data_length])
     try:
-        mse = ffbar + oobar - 2 * fobar
+        for idx in range(data_length):
+            mse[idx] = calc_sl1l2.calculate_mse(numpy_data[[idx], :], column_headers)
     except TypeError as e:
-        error = "Error calculating RMS: " + str(e)
-        mse = np.empty(len(ffbar))
+        error = "Error calculating MSE: " + str(e)
     except ValueError as e:
-        error = "Error calculating RMS: " + str(e)
-        mse = np.empty(len(ffbar))
+        error = "Error calculating MSE: " + str(e)
     return mse, error
 
 
-def calculate_bcmse(fbar, obar, ffbar, oobar, fobar):
+def calculate_bcmse(numpy_data, column_headers, data_length):
     """function for calculating bias-corrected MSE from MET partial sums"""
     error = ""
+    bcmse = np.empty([data_length])
     try:
-        bcmse = (ffbar + oobar - 2 * fobar) - (fbar - obar) ** 2
+        for idx in range(data_length):
+            bcmse[idx] = calc_sl1l2.calculate_bcmse(numpy_data[[idx], :], column_headers)
     except TypeError as e:
-        error = "Error calculating RMS: " + str(e)
-        bcmse = np.empty(len(ffbar))
+        error = "Error calculating bias-corrected MSE: " + str(e)
     except ValueError as e:
-        error = "Error calculating RMS: " + str(e)
-        bcmse = np.empty(len(ffbar))
+        error = "Error calculating bias-corrected MSE: " + str(e)
     return bcmse, error
 
 
-def calculate_me(fbar, obar):
+def calculate_me(numpy_data, column_headers, data_length):
     """function for calculating additive bias from MET partial sums"""
     error = ""
+    me = np.empty([data_length])
     try:
-        me = fbar - obar
+        for idx in range(data_length):
+            me[idx] = calc_sl1l2.calculate_me(numpy_data[[idx], :], column_headers)
     except TypeError as e:
         error = "Error calculating bias: " + str(e)
-        me = np.empty(len(fbar))
     except ValueError as e:
         error = "Error calculating bias: " + str(e)
-        me = np.empty(len(fbar))
     return me, error
 
 
-def calculate_fe(fbar, obar):
+def calculate_fe(numpy_data, column_headers, data_length):
     """function for calculating fractional error from MET partial sums"""
     error = ""
+    fe = np.empty([data_length])
     try:
-        fe = (fbar - obar) / fbar
+        for idx in range(data_length):
+            fe[idx] = calc_sl1l2.calculate_fe(numpy_data[[idx], :], column_headers)
     except TypeError as e:
         error = "Error calculating fractional error: " + str(e)
-        fe = np.empty(len(fbar))
     except ValueError as e:
         error = "Error calculating fractional error: " + str(e)
-        fe = np.empty(len(fbar))
     return fe, error
 
 
-def calculate_mbias(fbar, obar):
+def calculate_mbias(numpy_data, column_headers, data_length):
     """function for calculating multiplicative bias from MET partial sums"""
     error = ""
+    mbias = np.empty([data_length])
     try:
-        mbias = fbar / obar
+        for idx in range(data_length):
+            mbias[idx] = calc_sl1l2.calculate_mbias(numpy_data[[idx], :], column_headers)
     except TypeError as e:
-        error = "Error calculating bias: " + str(e)
-        mbias = np.empty(len(fbar))
+        error = "Error calculating multiplicative bias: " + str(e)
     except ValueError as e:
-        error = "Error calculating bias: " + str(e)
-        mbias = np.empty(len(fbar))
+        error = "Error calculating multiplicative bias: " + str(e)
     return mbias, error
 
 
@@ -132,61 +131,59 @@ def calculate_o_mean(obar):
     return obar, ""
 
 
-def calculate_f_stdev(fbar, ffbar, total):
+def calculate_f_stdev(numpy_data, column_headers, data_length):
     """function for calculating forecast stdev from MET partial sums"""
     error = ""
+    fstdev = np.empty([data_length])
     try:
-        fstdev = np.sqrt(((ffbar * total) - (fbar * total) * (fbar * total) / total) / (total - 1))
+        for idx in range(data_length):
+            fstdev[idx] = calc_sl1l2.calculate_fstdev(numpy_data[[idx], :], column_headers)
     except TypeError as e:
-        error = "Error calculating bias: " + str(e)
-        fstdev = np.empty(len(fbar))
+        error = "Error calculating forecast stdev: " + str(e)
     except ValueError as e:
-        error = "Error calculating bias: " + str(e)
-        fstdev = np.empty(len(fbar))
+        error = "Error calculating forecast stdev: " + str(e)
     return fstdev, error
 
 
-def calculate_o_stdev(obar, oobar, total):
+def calculate_o_stdev(numpy_data, column_headers, data_length):
     """function for calculating observed stdev from MET partial sums"""
     error = ""
+    ostdev = np.empty([data_length])
     try:
-        ostdev = np.sqrt(((oobar * total) - (obar * total) * (obar * total) / total) / (total - 1))
+        for idx in range(data_length):
+            ostdev[idx] = calc_sl1l2.calculate_ostdev(numpy_data[[idx], :], column_headers)
     except TypeError as e:
-        error = "Error calculating bias: " + str(e)
-        ostdev = np.empty(len(obar))
+        error = "Error calculating observed stdev: " + str(e)
     except ValueError as e:
-        error = "Error calculating bias: " + str(e)
-        ostdev = np.empty(len(obar))
+        error = "Error calculating observed stdev: " + str(e)
     return ostdev, error
 
 
-def calculate_e_stdev(fbar, obar, ffbar, oobar, fobar, total):
+def calculate_e_stdev(numpy_data, column_headers, data_length):
     """function for calculating error stdev from MET partial sums"""
     error = ""
+    estdev = np.empty([data_length])
     try:
-        estdev = np.sqrt((((ffbar + oobar - 2 * fobar) * total) - ((fbar - obar) * total) *
-                          ((fbar - obar) * total) / total) / (total - 1))
+        for idx in range(data_length):
+            estdev[idx] = calc_sl1l2.calculate_estdev(numpy_data[[idx], :], column_headers)
     except TypeError as e:
-        error = "Error calculating bias: " + str(e)
-        estdev = np.empty(len(fbar))
+        error = "Error calculating error stdev: " + str(e)
     except ValueError as e:
-        error = "Error calculating bias: " + str(e)
-        estdev = np.empty(len(fbar))
+        error = "Error calculating error stdev: " + str(e)
     return estdev, error
 
 
-def calculate_pcc(fbar, obar, ffbar, oobar, fobar, total):
+def calculate_pcc(numpy_data, column_headers, data_length):
     """function for calculating pearson correlation from MET partial sums"""
     error = ""
+    pcc = np.empty([data_length])
     try:
-        pcc = (total ** 2 * fobar - total ** 2 * fbar * obar) / np.sqrt(
-            (total ** 2 * ffbar - total ** 2 * fbar ** 2) * (total ** 2 * oobar - total ** 2 * obar ** 2))
+        for idx in range(data_length):
+            pcc[idx] = calc_sl1l2.calculate_pr_corr(numpy_data[[idx], :], column_headers)
     except TypeError as e:
-        error = "Error calculating bias: " + str(e)
-        pcc = np.empty(len(fbar))
+        error = "Error calculating pcc: " + str(e)
     except ValueError as e:
-        error = "Error calculating bias: " + str(e)
-        pcc = np.empty(len(fbar))
+        error = "Error calculating pcc: " + str(e)
     return pcc, error
 
 
@@ -210,7 +207,8 @@ def calculate_scalar_stat(statistic, numpy_data, column_headers):
         'Pearson correlation': calculate_pcc
     }
     try:
-        sub_stats, error = stat_switch[statistic](numpy_data, column_headers)  # call stat function
+        data_length = numpy_data.shape[0]
+        sub_stats, error = stat_switch[statistic](numpy_data, column_headers, data_length)  # call stat function
         stat = np.nanmean(sub_stats)  # calculate overall stat
     except KeyError as e:
         error = "Error choosing statistic: " + str(e)
