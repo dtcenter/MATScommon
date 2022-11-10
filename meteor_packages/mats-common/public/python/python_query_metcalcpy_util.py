@@ -110,9 +110,11 @@ class QueryUtil:
         except ValueError:
             return False
 
-    def get_stat(self, idx, has_levels, row, statistic, stat_line_type, object_row):
+    def get_stat(self, idx, app_params, row, statistic, stat_line_type, object_row):
         """function for processing the sub-values from the query and calling a calculate_stat function"""
         # these are the sub-fields that are returned in the end
+        has_levels = app_params["hasLevels"]
+        agg_method = app_params["aggMethod"]
         sub_levs = []
         sub_secs = []
         sub_values = np.empty(0)
@@ -151,7 +153,7 @@ class QueryUtil:
                     column_headers = np.asarray(['fabar', 'oabar', 'ffabar', 'ooabar', 'foabar', 'total'])
                 else:
                     column_headers = np.asarray(['fbar', 'obar', 'ffbar', 'oobar', 'fobar', 'total'])
-                sub_values, stat, stat_error = calculate_scalar_stat(statistic, numpy_data, column_headers)
+                sub_values, stat, stat_error = calculate_scalar_stat(statistic, agg_method, numpy_data, column_headers)
                 if stat_error != '':
                     self.error[idx] = stat_error
 
@@ -196,7 +198,7 @@ class QueryUtil:
                     column_headers = np.asarray(['ufabar', 'vfabar', 'uoabar', 'voabar', 'uvfoabar', 'uvffabar', 'uvooabar', 'total'])
                 else:
                     column_headers = np.asarray(['ufbar', 'vfbar', 'uobar', 'vobar', 'uvfobar', 'uvffbar', 'uvoobar', 'total'])
-                sub_values, stat, stat_error = calculate_vector_stat(statistic, numpy_data, column_headers)
+                sub_values, stat, stat_error = calculate_vector_stat(statistic, agg_method, numpy_data, column_headers)
                 if stat_error != '':
                     self.error[idx] = stat_error
 
@@ -561,10 +563,11 @@ class QueryUtil:
 
         return ti
 
-    def parse_query_data_timeseries(self, idx, cursor, stat_line_type, statistic, has_levels, completeness_qc_param,
-                                    vts, object_data):
+    def parse_query_data_timeseries(self, idx, cursor, stat_line_type, statistic, app_params, vts, object_data):
         """function for parsing the data returned by a timeseries query"""
         # initialize local variables
+        has_levels = app_params["hasLevels"]
+        completeness_qc_param = float(app_params["completeness"]) / 100
         xmax = float("-inf")
         xmin = float("inf")
         curve_times = []
@@ -648,7 +651,7 @@ class QueryUtil:
             if data_exists:
                 stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, \
                     sub_mode_header_ids, sub_cent_dists, individual_obj_lookup \
-                    = self.get_stat(idx, has_levels, row, statistic, stat_line_type, object_row)
+                    = self.get_stat(idx, app_params, row, statistic, stat_line_type, object_row)
                 if stat == 'null' or not self.is_number(stat):
                     # there's bad data at this time point
                     stat = 'null'
@@ -808,10 +811,13 @@ class QueryUtil:
         self.data[idx]['ymax'] = ymax
         self.data[idx]['sum'] = loop_sum
 
-    def parse_query_data_specialty_curve(self, idx, cursor, stat_line_type, statistic, plot_type, has_levels, hide_gaps,
-                                         completeness_qc_param, object_data):
+    def parse_query_data_specialty_curve(self, idx, cursor, stat_line_type, statistic, app_params, object_data):
         """function for parsing the data returned by a profile/dieoff/threshold/validtime/gridscale etc query"""
         # initialize local variables
+        plot_type = app_params["plotType"]
+        hide_gaps = app_params["hideGaps"]
+        has_levels = app_params["hasLevels"]
+        completeness_qc_param = float(app_params["completeness"]) / 100
         ind_var_min = sys.float_info.max
         ind_var_max = -1 * sys.float_info.max
         curve_ind_vars = []
@@ -891,7 +897,7 @@ class QueryUtil:
                 ind_var_max = ind_var if ind_var > ind_var_max else ind_var_max
                 stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, \
                     sub_mode_header_ids, sub_cent_dists, individual_obj_lookup \
-                    = self.get_stat(idx, has_levels, row, statistic, stat_line_type, object_row)
+                    = self.get_stat(idx, app_params, row, statistic, stat_line_type, object_row)
                 if stat == 'null' or not self.is_number(stat):
                     # there's bad data at this point
                     stat = 'null'
@@ -1101,9 +1107,10 @@ class QueryUtil:
             self.data[idx]['ymax'] = dep_var_max
         self.data[idx]['sum'] = loop_sum
 
-    def parse_query_data_histogram(self, idx, cursor, stat_line_type, statistic, has_levels, object_data):
+    def parse_query_data_histogram(self, idx, cursor, stat_line_type, statistic, app_params, object_data):
         """function for parsing the data returned by a histogram query"""
         # initialize local variables
+        has_levels = app_params["hasLevels"]
         sub_vals_all = []
         sub_secs_all = []
         sub_levs_all = []
@@ -1156,7 +1163,7 @@ class QueryUtil:
             if data_exists:
                 stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, \
                     sub_mode_header_ids, sub_cent_dists, individual_obj_lookup \
-                    = self.get_stat(idx, has_levels, row, statistic, stat_line_type, object_row)
+                    = self.get_stat(idx, app_params, row, statistic, stat_line_type, object_row)
                 if stat == 'null' or not self.is_number(stat):
                     # there's bad data at this point
                     continue
@@ -1189,9 +1196,10 @@ class QueryUtil:
         if has_levels:
             self.data[idx]['subLevs'] = [item for sublist in sub_levs_all for item in sublist]
 
-    def parse_query_data_ensemble_histogram(self, idx, cursor, statistic, has_levels):
+    def parse_query_data_ensemble_histogram(self, idx, cursor, statistic, app_params):
         """function for parsing the data returned by an ensemble histogram query"""
         # initialize local variables
+        has_levels = app_params["hasLevels"]
         bins = []
         bin_counts = []
         sub_vals_all = []
@@ -1264,9 +1272,10 @@ class QueryUtil:
             self.data[idx]['ymax'] = max(bin_counts)
             self.data[idx]['ymin'] = 0
 
-    def parse_query_data_ensemble(self, idx, cursor, plot_type):
+    def parse_query_data_ensemble(self, idx, cursor, app_params):
         """function for parsing the data returned by an ensemble query"""
         # initialize local variables
+        plot_type = app_params["plotType"]
         threshold_all = []
         oy_all = []
         on_all = []
@@ -1339,9 +1348,10 @@ class QueryUtil:
         self.data[idx]['ymax'] = 1.0
         self.data[idx]['ymin'] = 0.0
 
-    def parse_query_data_contour(self, idx, cursor, stat_line_type, statistic, has_levels):
+    def parse_query_data_contour(self, idx, cursor, stat_line_type, statistic, app_params):
         """function for parsing the data returned by a contour query"""
         # initialize local variables
+        has_levels = app_params["hasLevels"]
         curve_stat_lookup = {}
         curve_n_lookup = {}
 
@@ -1373,7 +1383,7 @@ class QueryUtil:
             if data_exists:
                 stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, \
                     sub_mode_header_ids, sub_cent_dists, individual_obj_lookup \
-                    = self.get_stat(idx, has_levels, row, statistic, stat_line_type, [])
+                    = self.get_stat(idx, app_params, row, statistic, stat_line_type, [])
                 if stat == 'null' or not self.is_number(stat):
                     # there's bad data at this point
                     continue
@@ -1789,28 +1799,21 @@ class QueryUtil:
                 else:
                     if query["appParams"]["plotType"] == 'TimeSeries' and not query["appParams"]["hideGaps"]:
                         self.parse_query_data_timeseries(idx, cursor, query["statLineType"], query["statistic"],
-                                                         query["appParams"]["hasLevels"],
-                                                         float(query["appParams"]["completeness"]) / 100, query["vts"],
-                                                         object_data)
+                                                         query["appParams"], query["vts"], object_data)
                     elif query["appParams"]["plotType"] == 'Histogram':
                         self.parse_query_data_histogram(idx, cursor, query["statLineType"], query["statistic"],
-                                                        query["appParams"]["hasLevels"], object_data)
+                                                        query["appParams"], object_data)
                     elif query["appParams"]["plotType"] == 'Contour':
                         self.parse_query_data_contour(idx, cursor, query["statLineType"], query["statistic"],
-                                                      query["appParams"]["hasLevels"])
+                                                      query["appParams"])
                     elif query["appParams"]["plotType"] == 'Reliability' or query["appParams"]["plotType"] == 'ROC' or \
                             query["appParams"]["plotType"] == 'PerformanceDiagram':
-                        self.parse_query_data_ensemble(idx, cursor, query["appParams"]["plotType"])
+                        self.parse_query_data_ensemble(idx, cursor, query["appParams"])
                     elif query["appParams"]["plotType"] == 'EnsembleHistogram':
-                        self.parse_query_data_ensemble_histogram(idx, cursor, query["statistic"],
-                                                                 query["appParams"]["hasLevels"])
+                        self.parse_query_data_ensemble_histogram(idx, cursor, query["statistic"], query["appParams"])
                     else:
                         self.parse_query_data_specialty_curve(idx, cursor, query["statLineType"], query["statistic"],
-                                                              query["appParams"]["plotType"],
-                                                              query["appParams"]["hasLevels"],
-                                                              query["appParams"]["hideGaps"],
-                                                              float(query["appParams"]["completeness"]) / 100,
-                                                              object_data)
+                                                              query["appParams"], object_data)
 
     def validate_options(self, options):
         """makes sure all expected options were indeed passed in"""

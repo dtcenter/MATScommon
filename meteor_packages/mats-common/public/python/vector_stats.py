@@ -3,20 +3,6 @@ import metcalcpy.util.vl1l2_statistics as calc_vl1l2
 import metcalcpy.util.val1l2_statistics as calc_val1l2
 
 
-def calculate_vacc(numpy_data, column_headers, data_length):
-    """function for calculating vector anomaly correlation from MET partial sums"""
-    error = ""
-    acc = np.empty([data_length])
-    try:
-        for idx in range(data_length):
-            acc[idx] = calc_val1l2.calculate_val1l2_anom_corr(numpy_data[[idx], :], column_headers)
-    except TypeError as e:
-        error = "Error calculating ACC: " + str(e)
-    except ValueError as e:
-        error = "Error calculating ACC: " + str(e)
-    return acc, error
-
-
 def calculate_fbar(f_speed_bar):
     """function for calculating forecast mean of wind vector length from MET partial sums"""
     return f_speed_bar, ""
@@ -319,10 +305,10 @@ def calculate_wind_vector_speed(ucomp, vcomp):
     return speeds, error
 
 
-def calculate_vector_stat(statistic, numpy_data, column_headers):
-    """function for determining and calling the appropriate vector statistical calculation function"""
+def calculate_vector_stat(statistic, agg_method, numpy_data, column_headers):
+    """function for determining and calling the appropriate scalar statistical calculation function"""
     stat_switch = {  # dispatcher of statistical calculation functions
-        'Vector ACC': calculate_vacc,
+        'Vector ACC': calc_val1l2.calculate_val1l2_anom_corr,
         'Forecast length of mean wind vector': calculate_fbar_speed,
         'Observed length of mean wind vector': calculate_obar_speed,
         'Forecast length - observed length of mean wind vector': calculate_speed_err,
@@ -346,10 +332,19 @@ def calculate_vector_stat(statistic, numpy_data, column_headers):
         'Forecast stdev of wind vector length': calculate_fstdev,
         'Observed stdev of wind vector length': calculate_ostdev
     }
+    error = ""
+    data_length = numpy_data.shape[0]
+    sub_stats = np.empty([data_length])
     try:
-        data_length = numpy_data.shape[0]
-        sub_stats, error = stat_switch[statistic](numpy_data, column_headers, data_length)  # call stat function
-        stat = np.nanmean(sub_stats)  # calculate overall stat
+        for idx in range(data_length):
+            sub_stats[idx] = stat_switch[statistic](numpy_data[[idx], :], column_headers)
+        if agg_method == "Mean statistic":
+            stat = np.nanmean(sub_stats)  # calculate stat as mean of sub_values
+        elif agg_method == "Median statistic":
+            stat = np.nanmedian(sub_stats)  # calculate stat as mean of sub_values
+        else:
+            numpy_data[:, 5] = 1  # METcalcpy is weird about how it calculates totals. This gets what we want here.
+            stat = stat_switch[statistic](numpy_data, column_headers, True)  # calculate overall stat
     except KeyError as e:
         error = "Error choosing statistic: " + str(e)
         sub_stats = np.nan
