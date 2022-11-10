@@ -189,25 +189,14 @@ class QueryUtil:
                         sub_secs.append(float(sub_datum[8]) if float(sub_datum[8]) != -9999 else np.nan)
                         if has_levels:
                             sub_levs.append(sub_datum[9])
-                sub_ufbar = np.asarray(sub_ufbar)
-                sub_vfbar = np.asarray(sub_vfbar)
-                sub_uobar = np.asarray(sub_uobar)
-                sub_vobar = np.asarray(sub_vobar)
-                sub_uvfobar = np.asarray(sub_uvfobar)
-                sub_uvffbar = np.asarray(sub_uvffbar)
-                sub_uvoobar = np.asarray(sub_uvoobar)
-                sub_f_speed_bar = np.asarray(sub_f_speed_bar)
-                sub_o_speed_bar = np.asarray(sub_o_speed_bar)
-                sub_total = np.asarray(sub_total)
-                sub_secs = np.asarray(sub_secs)
-                if len(sub_levs) == 0:
-                    sub_levs = np.empty(len(sub_secs))
+
+                # calculate the vector statistic
+                numpy_data = np.column_stack([sub_ufbar, sub_vfbar, sub_uobar, sub_vobar, sub_uvfobar, sub_uvffbar, sub_uvoobar, sub_total])
+                if statistic == 'Vector ACC':
+                    column_headers = np.asarray(['ufabar', 'vfabar', 'uoabar', 'voabar', 'uvfoabar', 'uvffabar', 'uvooabar', 'total'])
                 else:
-                    sub_levs = np.asarray(sub_levs)
-                # calculate the scalar statistic
-                sub_values, stat, stat_error = calculate_vector_stat(statistic, sub_ufbar, sub_vfbar, sub_uobar,
-                                                                     sub_vobar, sub_uvfobar, sub_uvffbar, sub_uvoobar,
-                                                                     sub_f_speed_bar, sub_o_speed_bar, sub_total)
+                    column_headers = np.asarray(['ufbar', 'vfbar', 'uobar', 'vobar', 'uvfobar', 'uvffbar', 'uvoobar', 'total'])
+                sub_values, stat, stat_error = calculate_vector_stat(statistic, numpy_data, column_headers)
                 if stat_error != '':
                     self.error[idx] = stat_error
 

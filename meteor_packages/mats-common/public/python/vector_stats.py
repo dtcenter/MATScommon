@@ -1,18 +1,19 @@
 import numpy as np
+import metcalcpy.util.vl1l2_statiatics as calc_vl1l2
+import metcalcpy.util.val1l2_statistics as calc_val1l2
 
 
-def calculate_vacc(ufbar, vfbar, uobar, vobar, uvfobar, uvffbar, uvoobar):
+def calculate_vacc(numpy_data, column_headers, data_length):
     """function for calculating vector anomaly correlation from MET partial sums"""
     error = ""
+    acc = np.empty([data_length])
     try:
-        acc = (uvfobar - ufbar * uobar - vfbar * vobar) / (np.sqrt(uvffbar - ufbar * ufbar - vfbar * vfbar)
-                                                           * np.sqrt(uvoobar - uobar * uobar - vobar * vobar))
+        for idx in range(data_length):
+            acc[idx] = calc_val1l2.calculate_val1l2_anom_corr(numpy_data[[idx], :], column_headers)
     except TypeError as e:
         error = "Error calculating ACC: " + str(e)
-        acc = np.empty(len(ufbar))
     except ValueError as e:
         error = "Error calculating ACC: " + str(e)
-        acc = np.empty(len(ufbar))
     return acc, error
 
 
@@ -318,8 +319,7 @@ def calculate_wind_vector_speed(ucomp, vcomp):
     return speeds, error
 
 
-def calculate_vector_stat(statistic, ufbar, vfbar, uobar, vobar, uvfobar, uvffbar, uvoobar, f_speed_bar,
-                          o_speed_bar, total):
+def calculate_vector_stat(statistic, numpy_data, column_headers):
     """function for determining and calling the appropriate vector statistical calculation function"""
     stat_switch = {  # dispatcher of statistical calculation functions
         'Vector ACC': calculate_vacc,
@@ -346,41 +346,16 @@ def calculate_vector_stat(statistic, ufbar, vfbar, uobar, vobar, uvfobar, uvffba
         'Forecast stdev of wind vector length': calculate_fstdev,
         'Observed stdev of wind vector length': calculate_ostdev
     }
-    args_switch = {  # dispatcher of arguments for statistical calculation functions
-        'Vector ACC': (ufbar, vfbar, uobar, vobar, uvfobar, uvffbar, uvoobar),
-        'Forecast length of mean wind vector': (ufbar, vfbar),
-        'Observed length of mean wind vector': (uobar, vobar),
-        'Forecast length - observed length of mean wind vector': (ufbar, vfbar, uobar, vobar),
-        'abs(Forecast length - observed length of mean wind vector)': (ufbar, vfbar, uobar, vobar),
-        'Length of forecast - observed mean wind vector': (ufbar, vfbar, uobar, vobar),
-        'abs(Length of forecast - observed mean wind vector)': (ufbar, vfbar, uobar, vobar),
-        'Forecast direction of mean wind vector': (ufbar, vfbar),
-        'Observed direction of mean wind vector': (uobar, vobar),
-        'Angle between mean forecast and mean observed wind vectors': (ufbar, vfbar, uobar, vobar),
-        'abs(Angle between mean forecast and mean observed wind vectors)': (ufbar, vfbar, uobar, vobar),
-        'Direction of forecast - observed mean wind vector': (ufbar, vfbar, uobar, vobar),
-        'abs(Direction of forecast - observed mean wind vector)': (ufbar, vfbar, uobar, vobar),
-        'RMSE of forecast wind vector length': (uvffbar,),
-        'RMSE of observed wind vector length': (uvoobar,),
-        'Vector wind speed MSVE': (uvffbar, uvfobar, uvoobar),
-        'Vector wind speed RMSVE': (uvffbar, uvfobar, uvoobar),
-        'Forecast mean of wind vector length': (f_speed_bar,),
-        'Observed mean of wind vector length': (o_speed_bar,),
-        'Forecast mean - observed mean of wind vector length': (f_speed_bar, o_speed_bar),
-        'abs(Forecast mean - observed mean of wind vector length)': (f_speed_bar, o_speed_bar),
-        'Forecast stdev of wind vector length': (uvffbar, f_speed_bar),
-        'Observed stdev of wind vector length': (uvoobar, o_speed_bar)
-    }
     try:
-        stat_args = args_switch[statistic]  # get args
-        sub_stats, error = stat_switch[statistic](*stat_args)  # call stat function
+        data_length = numpy_data.shape[0]
+        sub_stats, error = stat_switch[statistic](numpy_data, column_headers, data_length)  # call stat function
         stat = np.nanmean(sub_stats)  # calculate overall stat
     except KeyError as e:
         error = "Error choosing statistic: " + str(e)
-        sub_stats = np.empty(len(ufbar))
+        sub_stats = np.nan
         stat = 'null'
     except ValueError as e:
         error = "Error calculating statistic: " + str(e)
-        sub_stats = np.empty(len(ufbar))
+        sub_stats = np.nan
         stat = 'null'
     return sub_stats, stat, error
