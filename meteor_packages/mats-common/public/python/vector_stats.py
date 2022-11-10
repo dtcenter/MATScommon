@@ -1,5 +1,5 @@
 import numpy as np
-import metcalcpy.util.vl1l2_statiatics as calc_vl1l2
+import metcalcpy.util.vl1l2_statistics as calc_vl1l2
 import metcalcpy.util.val1l2_statistics as calc_val1l2
 
 
