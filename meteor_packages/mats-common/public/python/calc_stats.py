@@ -1,7 +1,7 @@
 import numpy as np
 import metcalcpy.util.sl1l2_statistics as calc_sl1l2
 import metcalcpy.util.sal1l2_statistics as calc_sal1l2
-import metcalcpy.util.vl1l2_statistics as calc_vl1l2
+import metcalcpy.util.vcnt_statistics as calc_vcnt
 import metcalcpy.util.val1l2_statistics as calc_val1l2
 from ctc_stats import calculate_ctc_stat
 from mode_stats import calculate_mode_stat
@@ -54,28 +54,23 @@ def calculate_vector_stat(statistic, agg_method, numpy_data, column_headers):
     """function for determining and calling the appropriate scalar statistical calculation function"""
     stat_switch = {  # dispatcher of statistical calculation functions
         'Vector ACC': calc_val1l2.calculate_val1l2_anom_corr,
-        # 'Forecast length of mean wind vector': calculate_fbar_speed,
-        # 'Observed length of mean wind vector': calculate_obar_speed,
-        # 'Forecast length - observed length of mean wind vector': calculate_speed_err,
-        # 'abs(Forecast length - observed length of mean wind vector)': calculate_speed_err_abs,
-        # 'Length of forecast - observed mean wind vector': calculate_vdiff_speed,
-        # 'abs(Length of forecast - observed mean wind vector)': calculate_vdiff_speed_abs,
-        # 'Forecast direction of mean wind vector': calculate_fdir,
-        # 'Observed direction of mean wind vector': calculate_odir,
-        # 'Angle between mean forecast and mean observed wind vectors': calculate_dir_err,  # Fix this
-        # 'abs(Angle between mean forecast and mean observed wind vectors)': calculate_dir_err_abs,  # Fix this
-        # 'Direction of forecast - observed mean wind vector': calculate_vdiff_dir,  # Fix this
-        # 'abs(Direction of forecast - observed mean wind vector)': calculate_vdiff_dir_abs,  # Fix this
-        # 'RMSE of forecast wind vector length': calculate_fs_rms,
-        # 'RMSE of observed wind vector length': calculate_os_rms,
-        # 'Vector wind speed MSVE': calculate_msve,
-        # 'Vector wind speed RMSVE': calculate_rmsve,
-        # 'Forecast mean of wind vector length': calculate_fbar,
-        # 'Observed mean of wind vector length': calculate_obar,
-        # 'Forecast mean - observed mean of wind vector length': calculate_fbar_m_obar,
-        # 'abs(Forecast mean - observed mean of wind vector length)': calculate_fbar_m_obar_abs,
-        # 'Forecast stdev of wind vector length': calculate_fstdev,
-        # 'Observed stdev of wind vector length': calculate_ostdev
+        'Forecast length of mean wind vector': calc_vcnt.calculate_vcnt_fbar_speed,
+        'Observed length of mean wind vector': calc_vcnt.calculate_vcnt_obar_speed,
+        'Forecast length - observed length of mean wind vector': calc_vcnt.calculate_vcnt_speed_err,
+        'abs(Forecast length - observed length of mean wind vector)': calc_vcnt.calculate_vcnt_speed_abserr,
+        'Length of forecast - observed mean wind vector': calc_vcnt.calculate_vcnt_vdiff_speed,
+        'Direction of forecast - observed mean wind vector': calc_vcnt.calculate_vcnt_vdiff_dir,
+        'Forecast direction of mean wind vector': calc_vcnt.calculate_vcnt_fdir,
+        'Observed direction of mean wind vector': calc_vcnt.calculate_vcnt_odir,
+        'Angle between mean forecast and mean observed wind vectors': calc_vcnt.calculate_vcnt_vdiff_dir,  # Fix this
+        'RMSE of forecast wind vector length': calc_vcnt.calculate_vcnt_fs_rms,
+        'RMSE of observed wind vector length': calc_vcnt.calculate_vcnt_os_rms,
+        'Vector wind speed MSVE': calc_vcnt.calculate_vcnt_msve,
+        'Vector wind speed RMSVE': calc_vcnt.calculate_vcnt_rmsve,
+        'Forecast mean of wind vector length': calc_vcnt.calculate_vcnt_fbar,
+        'Observed mean of wind vector length': calc_vcnt.calculate_vcnt_obar,
+        'Forecast stdev of wind vector length': calc_vcnt.calculate_vcnt_fstdev,
+        'Observed stdev of wind vector length': calc_vcnt.calculate_vcnt_fstdev
     }
     error = ""
     data_length = numpy_data.shape[0]
@@ -108,6 +103,7 @@ def get_stat(idx, app_params, row, statistic, stat_line_type, object_row):
     agg_method = app_params["aggMethod"]
 
     # these are the sub-fields that are returned in the end
+    stat = "null"
     sub_levs = []
     sub_secs = []
     sub_values = np.empty(0)
@@ -238,7 +234,8 @@ def get_stat(idx, app_params, row, statistic, stat_line_type, object_row):
             if stat_error != '':
                 error = stat_error
 
-        elif 'mode_pair' in stat_line_type:  # histograms will pass in 'mode_pair_histogram', but we still want to use this code here.
+        elif 'mode_pair' in stat_line_type:
+            # histograms will pass in 'mode_pair_histogram', but we still want to use this code here.
             if statistic == "OTS (Object Threat Score)" or statistic == "Model-obs centroid distance (unique pairs)":
                 object_sub_data = str(object_row['sub_data2']).split(',')
                 for sub_datum2 in object_sub_data:
@@ -370,11 +367,11 @@ def get_stat(idx, app_params, row, statistic, stat_line_type, object_row):
 
     except KeyError as e:
         error = "Error parsing query data. The expected fields don't seem to be present " \
-                     "in the results cache: " + str(e)
+                "in the results cache: " + str(e)
         # if we don't have the data we expect just stop now and return empty data objects
-        return np.nan, np.empty(0), np.empty(0), np.empty(0), np.empty(0), np.empty(0), np.empty(0), np.empty(0)
+        return np.nan, np.empty(0), np.empty(0), np.empty(0), np.empty(0), np.empty(0), \
+               np.empty(0), np.empty(0), np.empty(0), {}, error
 
     # if we do have the data we expect, return the requested statistic
     return stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, sub_mode_header_ids, \
            sub_cent_dists, individual_obj_lookup, error
-
