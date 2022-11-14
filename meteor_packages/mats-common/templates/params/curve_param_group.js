@@ -45,26 +45,54 @@ for each axis. The double set of parameters will get sent back to the backend.
     }
 };
 
+const getParams = function(num) {
+    var paramNames = matsCollections.CurveParamsInfo.find({"curve_params": {"$exists": true}}).fetch()[0]["curve_params"];
+    var paramMap = {};
+    var params = [];
+    var param;
+    for (var i = 0; i < paramNames.length; i++) {
+        param = matsCollections[paramNames[i]].find({}).fetch()[0];
+        if (param.displayGroup === num) {
+            paramMap[param.displayOrder] = param;
+        }
+    }
+    const displayOrders = Object.keys(paramMap).sort(function (a, b) {
+        return a - b
+    });
+    for (var dor = 0; dor < displayOrders.length; dor++) {
+        params.push(paramMap[displayOrders[dor]]);
+    }
+    params = filterParams(params);
+    return params;
+}
+
 Template.curveParamGroup.helpers({
     CurveParams: function (num) {
         var restoreSettingsTime = Session.get("restoreSettingsTime"); // used to force re-render
         var lastUpdate = Session.get('lastUpdate');
-        var paramNames = matsCollections.CurveParamsInfo.find({"curve_params": {"$exists": true}}).fetch()[0]["curve_params"];
-        var paramMap = {};
-        var params = [];
-        var param;
-        for (var i = 0; i < paramNames.length; i++) {
-            param = matsCollections[paramNames[i]].find({}).fetch()[0];
-            if (param.displayGroup === num) {
-                paramMap[param.displayOrder] = param;
+        return getParams(num);
+    },
+    gapAbove: function (num) {
+        var restoreSettingsTime = Session.get("restoreSettingsTime"); // used to force re-render
+        var lastUpdate = Session.get('lastUpdate');
+        const params = getParams(num);
+        for (var i = 0; i < params.length; i++) {
+            if (params[i].gapAbove) {
+                return "margin-top: 1em; border-top: 2px solid gray;";
             }
         }
-        const displayOrders = Object.keys(paramMap).sort(function(a, b){return a - b});
-        for (var dor = 0; dor < displayOrders.length; dor++) {
-            params.push(paramMap[displayOrders[dor]]);
+        return "";
+    },
+    gapBelow: function (num) {
+        var restoreSettingsTime = Session.get("restoreSettingsTime"); // used to force re-render
+        var lastUpdate = Session.get('lastUpdate');
+        const params = getParams(num);
+        for (var i = 0; i < params.length; i++) {
+            if (params[i].gapBelow) {
+                return "margin-bottom: 1em;";
+            }
         }
-        params = filterParams(params);
-        return params;
+        return "";
     },
     displayGroup: function() {
         return "block";
