@@ -274,7 +274,6 @@ Package.onUse(function (api) {
     api.addAssets('public/python/python_query_metcalcpy_util.py', "server");
     api.addAssets('public/python/python_ctc_error.py', "server");
     api.addAssets('public/python/calc_stats.py', "server");
-    api.addAssets('public/python/ctc_stats.py', "server");
     api.addAssets('public/python/mode_stats.py', "server");
     api.addAssets('public/fonts/PublicSans-Black.ttf', "client");
     api.addAssets('public/fonts/PublicSans-BlackItalic.ttf', "client");

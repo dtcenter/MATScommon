@@ -3,13 +3,13 @@ import metcalcpy.util.sl1l2_statistics as calc_sl1l2
 import metcalcpy.util.sal1l2_statistics as calc_sal1l2
 import metcalcpy.util.vcnt_statistics as calc_vcnt
 import metcalcpy.util.val1l2_statistics as calc_val1l2
-from ctc_stats import calculate_ctc_stat
+import metcalcpy.util.ctc_statistics as calc_ctc
 from mode_stats import calculate_mode_stat
 
 
-def calculate_scalar_stat(statistic, agg_method, numpy_data, column_headers):
-    """function for determining and calling the appropriate scalar statistical calculation function"""
-    stat_switch = {  # dispatcher of statistical calculation functions
+def scalar_stat_switch():
+    """function for defining the appropriate scalar statistical calculation functions"""
+    return {
         'ACC': calc_sal1l2.calculate_anom_corr,
         'RMSE': calc_sl1l2.calculate_rmse,
         'Bias-corrected RMSE': calc_sl1l2.calculate_bcrmse,
@@ -26,33 +26,11 @@ def calculate_scalar_stat(statistic, agg_method, numpy_data, column_headers):
         'Error stdev': calc_sl1l2.calculate_estdev,
         'Pearson correlation': calc_sl1l2.calculate_pr_corr
     }
-    error = ""
-    data_length = numpy_data.shape[0]
-    sub_stats = np.empty([data_length])
-    try:
-        for idx in range(data_length):
-            sub_stats[idx] = stat_switch[statistic](numpy_data[[idx], :], column_headers)
-        if agg_method == "Mean statistic":
-            stat = np.nanmean(sub_stats)  # calculate stat as mean of sub_values
-        elif agg_method == "Median statistic":
-            stat = np.nanmedian(sub_stats)  # calculate stat as mean of sub_values
-        else:
-            numpy_data[:, 5] = 1  # METcalcpy is weird about how it calculates totals. This gets what we want here.
-            stat = stat_switch[statistic](numpy_data, column_headers, True)  # calculate overall stat
-    except KeyError as e:
-        error = "Error choosing statistic: " + str(e)
-        sub_stats = np.nan
-        stat = 'null'
-    except ValueError as e:
-        error = "Error calculating statistic: " + str(e)
-        sub_stats = np.nan
-        stat = 'null'
-    return sub_stats, stat, error
 
 
-def calculate_vector_stat(statistic, agg_method, numpy_data, column_headers):
-    """function for determining and calling the appropriate scalar statistical calculation function"""
-    stat_switch = {  # dispatcher of statistical calculation functions
+def vector_stat_switch():
+    """function for defining the appropriate vector statistical calculation functions"""
+    return {
         'Vector ACC': calc_val1l2.calculate_val1l2_anom_corr,
         'Forecast length of mean wind vector': calc_vcnt.calculate_vcnt_fbar_speed,
         'Observed length of mean wind vector': calc_vcnt.calculate_vcnt_obar_speed,
@@ -72,8 +50,36 @@ def calculate_vector_stat(statistic, agg_method, numpy_data, column_headers):
         'Forecast stdev of wind vector length': calc_vcnt.calculate_vcnt_fstdev,
         'Observed stdev of wind vector length': calc_vcnt.calculate_vcnt_fstdev
     }
+
+
+def ctc_stat_switch():
+    """function for defining the appropriate ctc statistical calculation functions"""
+    return {
+        'CSI (Critical Success Index)': calc_ctc.calculate_csi,
+        'FAR (False Alarm Ratio)': calc_ctc.calculate_far,
+        'FBIAS (Frequency Bias)': calc_ctc.calculate_fbias,
+        'GSS (Gilbert Skill Score)': calc_ctc.calculate_gss,
+        'HSS (Heidke Skill Score)': calc_ctc.calculate_hss,
+        'PODy (Probability of positive detection)': calc_ctc.calculate_pody,
+        'PODn (Probability of negative detection)': calc_ctc.calculate_podn,
+        'POFD (Probability of false detection)': calc_ctc.calculate_pofd
+    }
+
+
+def calculate_stat(statistic, stat_line_type, agg_method, numpy_data, column_headers):
+    """function for determining and calling the appropriate statistical calculation function"""
+    if stat_line_type == 'scalar':
+        stat_switch = scalar_stat_switch()
+    elif stat_line_type == 'vector':
+        stat_switch = vector_stat_switch()
+    elif stat_line_type == 'ctc':
+        stat_switch = ctc_stat_switch()
+    else:
+        stat_switch = {}
+
     error = ""
     data_length = numpy_data.shape[0]
+    total_index = np.where(column_headers == 'total')[0]
     sub_stats = np.empty([data_length])
     try:
         for idx in range(data_length):
@@ -83,8 +89,8 @@ def calculate_vector_stat(statistic, agg_method, numpy_data, column_headers):
         elif agg_method == "Median statistic":
             stat = np.nanmedian(sub_stats)  # calculate stat as mean of sub_values
         else:
-            numpy_data[:, 5] = 1  # METcalcpy is weird about how it calculates totals. This gets what we want here.
-            stat = stat_switch[statistic](numpy_data, column_headers, True)  # calculate overall stat
+            numpy_data[:, total_index] = 1  # METcalcpy is weird about how it calculates totals. This gets what we want here.
+            stat = stat_switch[statistic](numpy_data, column_headers)  # calculate overall stat
     except KeyError as e:
         error = "Error choosing statistic: " + str(e)
         sub_stats = np.nan
@@ -96,7 +102,7 @@ def calculate_vector_stat(statistic, agg_method, numpy_data, column_headers):
     return sub_stats, stat, error
 
 
-def get_stat(idx, app_params, row, statistic, stat_line_type, object_row):
+def get_stat(row, statistic, stat_line_type, app_params, object_row):
     """function for processing the sub-values from the query and calling a calculate_stat function"""
 
     has_levels = app_params["hasLevels"]
@@ -144,7 +150,7 @@ def get_stat(idx, app_params, row, statistic, stat_line_type, object_row):
                 column_headers = np.asarray(['fbar', 'obar', 'ffbar', 'oobar', 'fobar', 'total'])
             else:
                 column_headers = np.asarray(['fabar', 'oabar', 'ffabar', 'ooabar', 'foabar', 'total'])
-            sub_values, stat, stat_error = calculate_scalar_stat(statistic, agg_method, numpy_data, column_headers)
+            sub_values, stat, stat_error = calculate_stat(statistic, stat_line_type, agg_method, numpy_data, column_headers)
             if stat_error != '':
                 error = stat_error
 
@@ -196,7 +202,7 @@ def get_stat(idx, app_params, row, statistic, stat_line_type, object_row):
                     [sub_ufbar, sub_vfbar, sub_uobar, sub_vobar, sub_uvfobar, sub_uvffbar, sub_uvoobar, sub_total])
                 column_headers = np.asarray(
                     ['ufabar', 'vfabar', 'uoabar', 'voabar', 'uvfoabar', 'uvffabar', 'uvooabar', 'total'])
-            sub_values, stat, stat_error = calculate_vector_stat(statistic, agg_method, numpy_data, column_headers)
+            sub_values, stat, stat_error = calculate_stat(statistic, stat_line_type, agg_method, numpy_data, column_headers)
             if stat_error != '':
                 error = stat_error
 
@@ -218,19 +224,11 @@ def get_stat(idx, app_params, row, statistic, stat_line_type, object_row):
                 sub_secs.append(float(sub_datum[5]) if float(sub_datum[5]) != -9999 else np.nan)
                 if has_levels:
                     sub_levs.append(sub_datum[6])
-            sub_fy_oy = np.asarray(sub_fy_oy)
-            sub_fy_on = np.asarray(sub_fy_on)
-            sub_fn_oy = np.asarray(sub_fn_oy)
-            sub_fn_on = np.asarray(sub_fn_on)
-            sub_total = np.asarray(sub_total)
-            sub_secs = np.asarray(sub_secs)
-            if len(sub_levs) == 0:
-                sub_levs = np.empty(len(sub_secs))
-            else:
-                sub_levs = np.asarray(sub_levs)
+
             # calculate the ctc statistic
-            sub_values, stat, stat_error = calculate_ctc_stat(statistic, sub_fy_oy, sub_fy_on, sub_fn_oy, sub_fn_on,
-                                                              sub_total)
+            numpy_data = np.column_stack([sub_fy_oy, sub_fy_on, sub_fn_oy, sub_fn_on, sub_total])
+            column_headers = np.asarray(['fy_oy', 'fy_on', 'fn_oy', 'fn_on', 'total'])
+            sub_values, stat, stat_error = calculate_stat(statistic, stat_line_type, agg_method, numpy_data, column_headers)
             if stat_error != '':
                 error = stat_error
 

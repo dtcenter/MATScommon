@@ -382,7 +382,7 @@ class QueryUtil:
             if data_exists:
                 stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, \
                     sub_mode_header_ids, sub_cent_dists, individual_obj_lookup, self.error[idx] \
-                    = get_stat(idx, app_params, row, statistic, stat_line_type, object_row)
+                    = get_stat(row, statistic, stat_line_type, app_params, object_row)
                 if stat == 'null' or not self.is_number(stat):
                     # there's bad data at this time point
                     stat = 'null'
@@ -628,7 +628,7 @@ class QueryUtil:
                 ind_var_max = ind_var if ind_var > ind_var_max else ind_var_max
                 stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, \
                     sub_mode_header_ids, sub_cent_dists, individual_obj_lookup, self.error[idx] \
-                    = get_stat(idx, app_params, row, statistic, stat_line_type, object_row)
+                    = get_stat(row, statistic, stat_line_type, app_params, object_row)
                 if stat == 'null' or not self.is_number(stat):
                     # there's bad data at this point
                     stat = 'null'
@@ -894,7 +894,7 @@ class QueryUtil:
             if data_exists:
                 stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, \
                     sub_mode_header_ids, sub_cent_dists, individual_obj_lookup, self.error[idx] \
-                    = get_stat(idx, app_params, row, statistic, stat_line_type, object_row)
+                    = get_stat(row, statistic, stat_line_type, app_params, object_row)
                 if stat == 'null' or not self.is_number(stat):
                     # there's bad data at this point
                     continue
@@ -1114,7 +1114,7 @@ class QueryUtil:
             if data_exists:
                 stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, \
                     sub_mode_header_ids, sub_cent_dists, individual_obj_lookup, self.error[idx] \
-                    = get_stat(idx, app_params, row, statistic, stat_line_type, [])
+                    = get_stat(row, statistic, stat_line_type, app_params, [])
                 if stat == 'null' or not self.is_number(stat):
                     # there's bad data at this point
                     continue
