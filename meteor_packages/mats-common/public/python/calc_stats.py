@@ -40,7 +40,7 @@ def vector_stat_switch():
         'Direction of forecast - observed mean wind vector': calc_vcnt.calculate_vcnt_vdiff_dir,
         'Forecast direction of mean wind vector': calc_vcnt.calculate_vcnt_fdir,
         'Observed direction of mean wind vector': calc_vcnt.calculate_vcnt_odir,
-        'Angle between mean forecast and mean observed wind vectors': calc_vcnt.calculate_vcnt_vdiff_dir,  # Fix this
+        'Angle between mean forecast and mean observed wind vectors': calc_vcnt.calculate_vcnt_vdiff_dir,
         'RMSE of forecast wind vector length': calc_vcnt.calculate_vcnt_fs_rms,
         'RMSE of observed wind vector length': calc_vcnt.calculate_vcnt_os_rms,
         'Vector wind speed MSVE': calc_vcnt.calculate_vcnt_msve,
@@ -90,7 +90,10 @@ def calculate_stat(statistic, stat_line_type, agg_method, numpy_data, column_hea
             stat = np.nanmedian(sub_stats)  # calculate stat as mean of sub_values
         else:
             numpy_data[:, total_index] = 1  # METcalcpy is weird about how it calculates totals. This gets what we want here.
-            stat = stat_switch[statistic](numpy_data, column_headers)  # calculate overall stat
+            if stat_line_type == 'ctc':
+                stat = stat_switch[statistic](numpy_data, column_headers)  # calculate overall stat
+            else:
+                stat = stat_switch[statistic](numpy_data, column_headers, True)  # calculate overall stat
     except KeyError as e:
         error = "Error choosing statistic: " + str(e)
         sub_stats = np.nan
@@ -113,11 +116,6 @@ def get_stat(row, statistic, stat_line_type, app_params, object_row):
     sub_levs = []
     sub_secs = []
     sub_values = np.empty(0)
-    sub_interests = np.empty(0)
-    sub_pair_fids = np.empty(0)
-    sub_pair_oids = np.empty(0)
-    sub_mode_header_ids = np.empty(0)
-    sub_cent_dists = np.empty(0)
     individual_obj_lookup = {}
     error = ""
 
@@ -367,9 +365,7 @@ def get_stat(row, statistic, stat_line_type, app_params, object_row):
         error = "Error parsing query data. The expected fields don't seem to be present " \
                 "in the results cache: " + str(e)
         # if we don't have the data we expect just stop now and return empty data objects
-        return np.nan, np.empty(0), np.empty(0), np.empty(0), np.empty(0), np.empty(0), \
-               np.empty(0), np.empty(0), np.empty(0), {}, error
+        return np.nan, np.empty(0), np.empty(0), np.empty(0), np.empty(0), np.empty(0), error
 
     # if we do have the data we expect, return the requested statistic
-    return stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, sub_mode_header_ids, \
-           sub_cent_dists, individual_obj_lookup, error
+    return stat, sub_levs, sub_secs, sub_values, numpy_data, column_headers, error

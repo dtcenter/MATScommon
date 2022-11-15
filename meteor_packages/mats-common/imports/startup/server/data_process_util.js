@@ -61,7 +61,7 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
             }
 
             if ((diffFrom === null || diffFrom === undefined) || !appParams.matching) {
-                if (statType !== 'ctc' && statType !== 'scalar' && statType !== 'met-mode_pair') {
+                if (!isMetexpress && statType !== 'ctc' && statType !== 'scalar' && statType !== 'met-mode_pair') {
                     // assign recalculated statistic to data[di][1], which is the value to be plotted
                     // we have already recalculated the statistic for ctc and scalar stats if there was matching, etc, so keep that value
                     if (statisticSelect === 'N' || statisticSelect === 'N times*levels(*stations if station plot) per graph point') {
@@ -378,7 +378,7 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
             }
 
             if ((diffFrom === null || diffFrom === undefined) || !appParams.matching) {
-                if (statType !== 'ctc' && statType !== 'scalar' && statType !== 'met-mode_pair') {
+                if (!isMetexpress && statType !== 'ctc' && statType !== 'scalar' && statType !== 'met-mode_pair') {
                     // assign recalculated statistic to data[di][1], which is the value to be plotted
                     // we have already recalculated the statistic for ctc and scalar stats if there was matching, etc, so keep that value
                     if (statisticSelect === 'N' || statisticSelect === 'N times*levels(*stations if station plot) per graph point') {
