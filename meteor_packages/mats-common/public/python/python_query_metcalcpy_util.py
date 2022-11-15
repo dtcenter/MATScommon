@@ -481,7 +481,6 @@ class QueryUtil:
         n0_max = max(self.n0[idx])
         n_times_max = max(self.n_times[idx])
         time_interval = time_interval * 1000
-        loop_time = ind_var_min
         loop_sum = 0
         dep_var_min = sys.float_info.max
         dep_var_max = -1 * sys.float_info.max
@@ -634,16 +633,11 @@ class QueryUtil:
                 object_row = []
             data_exists = False
             if stat_line_type == 'scalar':
-                data_exists = row['fbar'] != "null" and row['fbar'] != "NULL" and row['obar'] != "null" and row[
-                    'obar'] != "NULL"
+                data_exists = row['fbar'] != "null" and row['fbar'] != "NULL"
             elif stat_line_type == 'vector':
-                data_exists = row['ufbar'] != "null" and row['ufbar'] != "NULL" and row['vfbar'] != "null" and row[
-                    'vfbar'] != "NULL" and row['uobar'] != "null" and row['uobar'] != "NULL" and row[
-                                  'vobar'] != "null" and row['vobar'] != "NULL"
+                data_exists = row['ufbar'] != "null" and row['ufbar'] != "NULL"
             elif stat_line_type == 'ctc':
-                data_exists = row['fy_oy'] != "null" and row['fy_oy'] != "NULL" and row['fy_on'] != "null" and row[
-                    'fy_on'] != "NULL" and row['fn_oy'] != "null" and row['fn_oy'] != "NULL" and row[
-                                  'fn_on'] != "null" and row['fn_on'] != "NULL"
+                data_exists = row['fy_oy'] != "null" and row['fy_oy'] != "NULL"
             elif 'mode_pair' in stat_line_type:
                 # the word histogram might have already been appended, so look for the sub-string
                 data_exists = row['interest'] != "null" and row['interest'] != "NULL"
@@ -657,8 +651,7 @@ class QueryUtil:
             self.n_times[idx].append(int(row['N_times']))
 
             if data_exists:
-                stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, \
-                    sub_mode_header_ids, sub_cent_dists, individual_obj_lookup, self.error[idx] \
+                stat, sub_levs, sub_secs, sub_values, sub_data, sub_headers, self.error[idx] \
                     = get_stat(row, statistic, stat_line_type, app_params, object_row)
                 if stat == 'null' or not is_number(stat):
                     # there's bad data at this point
@@ -786,7 +779,7 @@ class QueryUtil:
         # loop through the query results and store the returned values
         for row in query_data:
             data_exists = row['bin_number'] != "null" and row['bin_number'] != "NULL" and row['oy_i'] != "null" and row[
-                'oy_i'] != "NULL" and row['on_i'] != "null" and row['on_i'] != "NULL"
+                'oy_i'] != "NULL"
 
             if data_exists:
                 bin_number = int(row['bin_number'])
@@ -863,22 +856,16 @@ class QueryUtil:
             stat_key = str(row_x_val) + '_' + str(row_y_val)
             data_exists = False
             if stat_line_type == 'scalar':
-                data_exists = row['fbar'] != "null" and row['fbar'] != "NULL" and row['obar'] != "null" and row[
-                    'obar'] != "NULL"
+                data_exists = row['fbar'] != "null" and row['fbar'] != "NULL"
             elif stat_line_type == 'vector':
-                data_exists = row['ufbar'] != "null" and row['ufbar'] != "NULL" and row['vfbar'] != "null" and row[
-                    'vfbar'] != "NULL" and row['uobar'] != "null" and row['uobar'] != "NULL" and row[
-                                  'vobar'] != "null" and row['vobar'] != "NULL"
+                data_exists = row['ufbar'] != "null" and row['ufbar'] != "NULL"
             elif stat_line_type == 'ctc':
-                data_exists = row['fy_oy'] != "null" and row['fy_oy'] != "NULL" and row['fy_on'] != "null" and row[
-                    'fy_on'] != "NULL" and row['fn_oy'] != "null" and row['fn_oy'] != "NULL" and row[
-                                  'fn_on'] != "null" and row['fn_on'] != "NULL"
+                data_exists = row['fy_oy'] != "null" and row['fy_oy'] != "NULL"
             elif stat_line_type == 'precalculated':
                 data_exists = row['stat'] != "null" and row['stat'] != "NULL"
 
             if data_exists:
-                stat, sub_levs, sub_secs, sub_values, sub_interests, sub_pair_fids, sub_pair_oids, \
-                    sub_mode_header_ids, sub_cent_dists, individual_obj_lookup, self.error[idx] \
+                stat, sub_levs, sub_secs, sub_values, sub_data, sub_headers, self.error[idx] \
                     = get_stat(row, statistic, stat_line_type, app_params, [])
                 if stat == 'null' or not is_number(stat):
                     # there's bad data at this point

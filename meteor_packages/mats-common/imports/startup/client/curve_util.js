@@ -1168,7 +1168,7 @@ const showContourFace = function () {
         'average': 'none',
         'valid-time': 'block',
         'utc-cycle-start': 'none',
-        'aggregation-method': 'none',
+        'aggregation-method': 'block',
         'histogram-type-controls': 'none',
         'histogram-bin-controls': 'none',
         'histogram-yaxis-controls': 'none',
