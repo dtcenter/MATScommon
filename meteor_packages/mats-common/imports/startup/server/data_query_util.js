@@ -963,7 +963,7 @@ const queryDBContour = function (pool, statement, appParams, statisticStr) {
 };
 
 // this method parses the returned query data for xy curves
-const parseQueryDataXYCurve = function (rows, d, appParams, statisticStr, foreCastOffset, cycles, regular) {
+const parseQueryDataXYCurve = function (rows, d, appParams, statisticStr, forecastOffset, cycles, regular) {
     /*
         var d = {   // d will contain the curve data
             x: [],
@@ -1417,11 +1417,11 @@ const parseQueryDataXYCurve = function (rows, d, appParams, statisticStr, foreCa
                 if (!regular) {
                     // if it's not a regular model, we only want to add a null point if this is an init time that should have had a forecast.
                     thisCadence = (newTime % dayInMilliSeconds); // current hour of day (valid time)
-                    if (Number(thisCadence) - (Number(foreCastOffset) * 3600 * 1000) < 0) { // check to see if cycle time was on a previous day -- if so, need to wrap around 00Z to get current hour of day (cycle time)
-                        numberOfDaysBack = Math.ceil(-1 * (Number(thisCadence) - (Number(foreCastOffset) * 3600 * 1000)) / dayInMilliSeconds);
-                        thisCadence = (Number(thisCadence) - (Number(foreCastOffset) * 3600 * 1000) + numberOfDaysBack * dayInMilliSeconds); // current hour of day (cycle time)
+                    if (Number(thisCadence) - (Number(forecastOffset) * 3600 * 1000) < 0) { // check to see if cycle time was on a previous day -- if so, need to wrap around 00Z to get current hour of day (cycle time)
+                        numberOfDaysBack = Math.ceil(-1 * (Number(thisCadence) - (Number(forecastOffset) * 3600 * 1000)) / dayInMilliSeconds);
+                        thisCadence = (Number(thisCadence) - (Number(forecastOffset) * 3600 * 1000) + numberOfDaysBack * dayInMilliSeconds); // current hour of day (cycle time)
                     } else {
-                        thisCadence = (Number(thisCadence) - (Number(foreCastOffset) * 3600 * 1000)); // current hour of day (cycle time)
+                        thisCadence = (Number(thisCadence) - (Number(forecastOffset) * 3600 * 1000)); // current hour of day (cycle time)
                     }
                     if (cycles.indexOf(thisCadence) !== -1) {
                         matsDataUtils.addNullPoint(d, d_idx + 1, matsTypes.PlotTypes.timeSeries, 'x', newTime, 'y', isCTC, isScalar, hasLevels);
