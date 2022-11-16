@@ -12,6 +12,7 @@ from calc_stats import get_stat
 
 def null_point(data, di, plot_type, stat_var_name, has_levels):
     """utility to make null a point on a graph"""
+    di = int(di)
     data[stat_var_name][di] = 'null'
     if plot_type == "PerformanceDiagram" or plot_type == "ROC":
         data["oy_all"][di] = 'NaN'
@@ -28,13 +29,14 @@ def null_point(data, di, plot_type, stat_var_name, has_levels):
 
 def add_null_point(data, di, plot_type, ind_var_name, new_ind_var, stat_var_name, has_levels):
     """function to add an additional null point on a graph"""
+    di = int(di)
     data[ind_var_name].insert(di, new_ind_var)
     data[stat_var_name].insert(di, 'null')
     if plot_type == "PerformanceDiagram" or plot_type == "ROC":
-        data["oy_all"][di].insert(di, [])
-        data["on_all"][di].insert(di, [])
+        data["oy_all"].insert(di, [])
+        data["on_all"].insert(di, [])
     if len(data['error_' + stat_var_name]) > 0:
-        data['error_' + stat_var_name][di].insert(di, 'null')
+        data['error_' + stat_var_name].insert(di, 'null')
     data['subData'].insert(di, [])
     data['subHeaders'].insert(di, [])
     data['subVals'].insert(di, [])
@@ -45,6 +47,7 @@ def add_null_point(data, di, plot_type, ind_var_name, new_ind_var, stat_var_name
 
 def remove_point(data, di, plot_type, stat_var_name, has_levels):
     """utility to remove a point on a graph"""
+    di = int(di)
     del (data["x"][di])
     del (data["y"][di])
     if plot_type == "PerformanceDiagram" or plot_type == "ROC":
@@ -586,9 +589,9 @@ class QueryUtil:
                         else:
                             this_cadence = (float(this_cadence) - (float(fcst_offset) * 3600 * 1000))
                         if this_cadence in vts:
-                            add_null_point(self.data, d_idx + 1, plot_type, 'x', new_time, 'y', has_levels)
+                            add_null_point(self.data[idx], d_idx + 1, plot_type, 'x', new_time, 'y', has_levels)
                     else:
-                        add_null_point(self.data, d_idx + 1, plot_type, 'x', new_time, 'y', has_levels)
+                        add_null_point(self.data[idx], d_idx + 1, plot_type, 'x', new_time, 'y', has_levels)
 
         if plot_type == 'Profile':
             self.data[idx]['xmin'] = dep_var_min

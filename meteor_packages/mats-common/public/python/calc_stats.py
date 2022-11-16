@@ -83,7 +83,10 @@ def calculate_stat(statistic, stat_line_type, agg_method, numpy_data, column_hea
     sub_stats = np.empty([data_length])
     try:
         for idx in range(data_length):
-            sub_stats[idx] = stat_switch[statistic](numpy_data[[idx], :], column_headers)
+            if stat_line_type == "precalculated":
+                sub_stats[idx] = numpy_data[idx, 0]
+            else:
+                sub_stats[idx] = stat_switch[statistic](numpy_data[[idx], :], column_headers)
         if agg_method == "Mean statistic":
             stat = np.nanmean(sub_stats)  # calculate stat as mean of sub_values
         elif agg_method == "Median statistic":
@@ -339,25 +342,27 @@ def get_stat(row, statistic, stat_line_type, app_params, object_row):
                     error = stat_error
 
         elif stat_line_type == 'precalculated':
-            stat = float(row['stat']) if float(row['stat']) != -9999 else 'null'
             sub_data = str(row['sub_data']).split(',')
             # these are the sub-fields specific to precalculated stats
             sub_values = []
+            sub_total = []
             for sub_datum in sub_data:
                 sub_datum = sub_datum.split(';')
                 sub_values.append(float(sub_datum[0]) if float(sub_datum[0]) != -9999 else np.nan)
+                sub_total.append(1)
                 sub_secs.append(float(sub_datum[2]) if float(sub_datum[2]) != -9999 else np.nan)
                 if has_levels:
                     sub_levs.append(sub_datum[3])
-            sub_values = np.asarray(sub_values)
-            sub_secs = np.asarray(sub_secs)
-            if len(sub_levs) == 0:
-                sub_levs = np.empty(len(sub_secs))
-            else:
-                sub_levs = np.asarray(sub_levs)
+            numpy_data = np.column_stack([sub_values, sub_total])
+            column_headers = np.asarray(['precalc', 'total'])
+            sub_values, stat, stat_error = calculate_stat(statistic, stat_line_type, agg_method, numpy_data, column_headers)
+            if stat_error != '':
+                error = stat_error
 
         else:
             stat = 'null'
+            numpy_data = np.empty(0)
+            column_headers = np.empty(0)
             sub_secs = np.empty(0)
             sub_levs = np.empty(0)
 
