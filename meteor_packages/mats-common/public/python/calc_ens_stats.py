@@ -3,44 +3,6 @@ import metcalcpy.util.sl1l2_statistics as calc_sl1l2
 from calc_stats import calculate_stat
 
 
-def get_ens_hist_stat(row, statistic, stat_line_type, app_params):
-    """function for processing the sub-values from the query and getting the overall ensemble histogram statistics"""
-
-    has_levels = app_params["hasLevels"]
-    agg_method = app_params["aggMethod"]
-
-    error = ""
-    try:
-        # get all of the sub-values for each time
-        stat = float(row['bin_count']) if float(row['bin_count']) > -1 else 'null'
-        sub_data = str(row['sub_data']).split(',')
-        sub_values = []
-        sub_secs = []
-        sub_levs = []
-        sub_total = []
-        for sub_datum in sub_data:
-            sub_datum = sub_datum.split(';')
-            sub_values.append(float(sub_datum[0]) if float(sub_datum[0]) != -9999 else np.nan)
-            sub_total.append(1)
-            sub_secs.append(float(sub_datum[2]) if float(sub_datum[2]) != -9999 else np.nan)
-            if has_levels:
-                sub_levs.append(sub_datum[3])
-        numpy_data = np.column_stack([sub_values, sub_total])
-        column_headers = np.asarray(['precalc', 'total'])
-        sub_values, stat, stat_error = calculate_stat(statistic, stat_line_type, agg_method, numpy_data, column_headers)
-        if stat_error != '':
-            error = stat_error
-
-    except KeyError as e:
-        error = "Error parsing query data. The expected fields don't seem to be present " \
-                          "in the results cache: " + str(e)
-        # if we don't have the data we expect just stop now and return empty data objects
-        return np.nan, np.empty(0), np.empty(0), np.empty(0), error
-
-    # if we do have the data we expect, return the requested statistic
-    return stat, sub_levs, sub_secs, sub_values, error
-
-
 def get_ens_stat(plot_type, forecast_total, observed_total, on_all, oy_all, threshold_all, total_times,
                  total_values):
     """function for processing the sub-values from the query and getting the overall ensemble statistics"""

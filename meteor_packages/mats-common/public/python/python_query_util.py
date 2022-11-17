@@ -8,7 +8,7 @@ import re
 import json
 from contextlib import closing
 from calc_stats import get_stat
-from calc_ens_stats import get_ens_stat, get_ens_hist_stat
+from calc_ens_stats import get_ens_stat
 
 
 def null_point(data, di, plot_type, stat_var_name, has_levels):
@@ -472,6 +472,8 @@ class QueryUtil:
         """function for parsing the data returned by a histogram query"""
         # initialize local variables
         has_levels = app_params["hasLevels"]
+        sub_data_all = []
+        sub_headers_all = []
         sub_vals_all = []
         sub_secs_all = []
         sub_levs_all = []
@@ -527,12 +529,18 @@ class QueryUtil:
                     nan_value_indices = np.argwhere(np.isnan(sub_values))
                     inf_value_indices = np.argwhere(np.isinf(sub_values))
                     bad_value_indices = np.union1d(nan_value_indices, inf_value_indices)
+                    sub_data = np.delete(sub_data, bad_value_indices)
+                    sub_headers = np.delete(sub_headers, bad_value_indices)
                     sub_values = np.delete(sub_values, bad_value_indices)
                     sub_secs = np.delete(sub_secs, bad_value_indices)
                     if has_levels:
                         sub_levs = np.delete(sub_levs, bad_value_indices)
 
                 # store parsed data for later
+                list_data = sub_data.tolist()
+                sub_data_all.append(list_data)
+                list_headers = sub_headers.tolist()
+                sub_headers_all.append(list_headers)
                 list_vals = sub_values.tolist()
                 sub_vals_all.append(list_vals)
                 list_secs = sub_secs
@@ -546,6 +554,8 @@ class QueryUtil:
             object_row_idx = object_row_idx + 1
 
         # we don't have bins yet, so we want all of the data in one array
+        self.data[idx]['subData'] = [item for sublist in sub_data_all for item in sublist]
+        self.data[idx]['subHeaders'] = [item for sublist in sub_headers_all for item in sublist]
         self.data[idx]['subVals'] = [item for sublist in sub_vals_all for item in sublist]
         self.data[idx]['subSecs'] = [item for sublist in sub_secs_all for item in sublist]
         if has_levels:
@@ -557,6 +567,8 @@ class QueryUtil:
         has_levels = app_params["hasLevels"]
         bins = []
         bin_counts = []
+        sub_data_all = []
+        sub_headers_all = []
         sub_vals_all = []
         sub_secs_all = []
         sub_levs_all = []
@@ -578,18 +590,22 @@ class QueryUtil:
                 self.n_times[idx].append(int(row['N_times']))
 
                 # this function deals with rhist/phist/relp and rhist_rank/phist_bin/relp_ens tables
-                stat, sub_levs, sub_secs, sub_values, self.error[idx] \
-                    = get_ens_hist_stat(row, statistic, stat_line_type, app_params)
+                stat, sub_levs, sub_secs, sub_values, sub_data, sub_headers, self.error[idx] \
+                    = get_stat(row, statistic, stat_line_type, app_params, {})
                 if stat == 'null' or not is_number(stat):
                     # there's bad data at this point
                     bins.append(bin_number)
                     bin_counts.append(0)
+                    sub_data_all.append([])
+                    sub_headers_all.append([])
                     sub_vals_all.append([])
                     sub_secs_all.append([])
                     if has_levels:
                         sub_levs_all.append([])
 
                 else:
+                    list_data = sub_data.tolist()
+                    list_headers = sub_headers.tolist()
                     list_vals = sub_values.tolist()
                     list_secs = sub_secs
                     if has_levels:
@@ -598,6 +614,8 @@ class QueryUtil:
                     # JSON can't deal with numpy nans in subarrays for some reason, so we remove them
                     bad_value_indices = [index for index, value in enumerate(list_vals) if not is_number(value)]
                     for bad_value_index in sorted(bad_value_indices, reverse=True):
+                        del list_data[bad_value_index]
+                        del list_headers[bad_value_index]
                         del list_vals[bad_value_index]
                         del list_secs[bad_value_index]
                         if has_levels:
@@ -606,6 +624,8 @@ class QueryUtil:
                     # store parsed data
                     bins.append(bin_number)
                     bin_counts.append(bin_count)
+                    sub_data_all.append(list_data)
+                    sub_headers_all.append(list_headers)
                     sub_vals_all.append(list_vals)
                     sub_secs_all.append(list_secs)
                     if has_levels:
@@ -619,6 +639,8 @@ class QueryUtil:
         if len(bins) > 0:
             self.data[idx]['x'] = bins
             self.data[idx]['y'] = bin_counts
+            self.data[idx]['subData'] = sub_data_all
+            self.data[idx]['subHeaders'] = sub_headers_all
             self.data[idx]['subVals'] = sub_vals_all
             self.data[idx]['subSecs'] = sub_secs_all
             self.data[idx]['subLevs'] = sub_levs_all
