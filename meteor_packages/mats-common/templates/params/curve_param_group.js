@@ -92,27 +92,29 @@ Template.curveParamGroup.helpers({
             if (params[i].gapAbove) {
                 if (params[i].name === "aggregation-method") {
                     switch (plotType) {
+                        case matsTypes.PlotTypes.histogram:
+                        case matsTypes.PlotTypes.ensembleHistogram:
+                        case matsTypes.PlotTypes.roc:
+                        case matsTypes.PlotTypes.performanceDiagram:
+                            return "Date range:";
                         case matsTypes.PlotTypes.profile:
                         case matsTypes.PlotTypes.dieoff:
                         case matsTypes.PlotTypes.threshold:
                         case matsTypes.PlotTypes.validtime:
                         case matsTypes.PlotTypes.gridscale:
-                        case matsTypes.PlotTypes.roc:
-                        case matsTypes.PlotTypes.performanceDiagram:
-                        case matsTypes.PlotTypes.histogram:
-                        case matsTypes.PlotTypes.ensembleHistogram:
                         case matsTypes.PlotTypes.simpleScatter:
                             return "Aggregation / Date range:";
                         case matsTypes.PlotTypes.timeSeries:
                         case matsTypes.PlotTypes.dailyModelCycle:
                         case matsTypes.PlotTypes.yearToYear:
-                        case matsTypes.PlotTypes.reliability:
                         case matsTypes.PlotTypes.map:
                         case matsTypes.PlotTypes.contour:
                         case matsTypes.PlotTypes.contourDiff:
                         case matsTypes.PlotTypes.scatter2d:
-                        default:
                             return "Aggregation:";
+                        case matsTypes.PlotTypes.reliability:
+                        default:
+                            return "";
                     }
                 } else {
                     return "Filter by parameters:";

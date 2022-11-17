@@ -148,7 +148,7 @@ const queryDBPython = function (pool, queryArray) {
         var N0 = [];
         var N_times = [];
 
-        pyShell.PythonShell.run('python_query_metcalcpy_util.py', pyOptions, function (err, results) {
+        pyShell.PythonShell.run('python_query_util.py', pyOptions, function (err, results) {
             // query callback - build the curve data from the results - or set an error
             if (err !== undefined && err !== null) {
                 error = err.message === undefined ? err : err.message;
@@ -182,11 +182,9 @@ const queryDBPython = function (pool, queryArray) {
                     if (d[idx].subVals.length > 0) {
                         d[idx].subVals[didx] = NaN;
                     }
-                    if (d[idx].subData.length > 0) {
-                        d[idx].subData[didx] = NaN;
-                        d[idx].subHeaders[didx] = NaN;
+                    if (d[idx].subInterest.length > 0) {
+                        d[idx].subInterest[didx] = NaN;
                     }
-
                     d[idx].subSecs[didx] = NaN;
                     d[idx].subLevs[didx] = NaN;
                 }

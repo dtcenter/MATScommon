@@ -90,7 +90,9 @@ def calculate_stat(statistic, stat_line_type, agg_method, numpy_data, column_hea
         if agg_method == "Mean statistic":
             stat = np.nanmean(sub_stats)  # calculate stat as mean of sub_values
         elif agg_method == "Median statistic":
-            stat = np.nanmedian(sub_stats)  # calculate stat as mean of sub_values
+            stat = np.nanmedian(sub_stats)  # calculate stat as median of sub_values
+        elif statistic in ['rhist', 'phist', 'relp']:
+            stat = np.nansum(sub_stats)  # calculate stat as sum of sub_values
         else:
             numpy_data[:, total_index] = 1  # METcalcpy is weird about how it calculates totals. This gets what we want here.
             if stat_line_type == 'ctc':
