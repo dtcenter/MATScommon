@@ -1,6 +1,5 @@
 import numpy as np
 import metcalcpy.util.sl1l2_statistics as calc_sl1l2
-from calc_stats import calculate_stat
 
 
 def get_ens_stat(plot_type, forecast_total, observed_total, on_all, oy_all, threshold_all, total_times,
