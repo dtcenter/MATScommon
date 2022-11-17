@@ -6,6 +6,7 @@ import metcalcpy.util.vcnt_statistics as calc_vcnt
 import metcalcpy.util.val1l2_statistics as calc_val1l2
 import metcalcpy.util.ctc_statistics as calc_ctc
 import metcalcpy.util.ecnt_statistics as calc_ecnt
+import metcalcpy.util.nbrcnt_statistics as calc_nbrcnt
 from mode_stats import calculate_mode_stat
 
 
@@ -68,8 +69,15 @@ def ctc_stat_switch():
     }
 
 
+def nbrcnt_stat_switch():
+    """function for defining the appropriate nbrcnt statistical calculation functions"""
+    return {
+        'CSI (Critical Success Index)': calc_nbrcnt.calculate_nbr_fss
+    }
+
+
 def ecnt_stat_switch():
-    """function for defining the appropriate ctc statistical calculation functions"""
+    """function for defining the appropriate ecnt statistical calculation functions"""
     return {
         'RMSE': [calc_ecnt.calculate_ecnt_rmse, '', 'mse'],     # will need to add np.square when rc1 is released
         'RMSE with obs error': [calc_ecnt.calculate_ecnt_rmse_oerr, '', 'mse_oerr'],     # ditto
@@ -107,6 +115,8 @@ def calculate_stat(statistic, stat_line_type, agg_method, numpy_data, column_hea
         stat_switch = vector_stat_switch()
     elif stat_line_type == 'ctc':
         stat_switch = ctc_stat_switch()
+    elif stat_line_type == 'nbrcnt':
+        stat_switch = nbrcnt_stat_switch()
     elif stat_line_type == 'ecnt':
         stat_switch = ecnt_stat_switch()
     else:
@@ -275,6 +285,28 @@ def get_stat(row, statistic, stat_line_type, app_params, object_row):
             # calculate the ctc statistic
             numpy_data = np.column_stack([sub_fy_oy, sub_fy_on, sub_fn_oy, sub_fn_on, sub_total])
             column_headers = np.asarray(['fy_oy', 'fy_on', 'fn_oy', 'fn_on', 'total'])
+            sub_values, stat, stat_error = calculate_stat(statistic, stat_line_type, agg_method, numpy_data, column_headers)
+            if stat_error != '':
+                error = stat_error
+
+        elif stat_line_type == 'nbrcnt':
+            sub_data = str(row['sub_data']).split(',')
+            # these are the sub-fields specific to ctc stats
+            sub_fss = []
+            sub_fbs = []
+            sub_total = []
+            for sub_datum in sub_data:
+                sub_datum = sub_datum.split(';')
+                sub_fss.append(float(sub_datum[0]) if float(sub_datum[0]) != -9999 else np.nan)
+                sub_fbs.append(float(sub_datum[1]) if float(sub_datum[1]) != -9999 else np.nan)
+                sub_total.append(float(sub_datum[2]) if float(sub_datum[2]) != -9999 else np.nan)
+                sub_secs.append(float(sub_datum[3]) if float(sub_datum[3]) != -9999 else np.nan)
+                if has_levels:
+                    sub_levs.append(sub_datum[4])
+
+            # calculate the ctc statistic
+            numpy_data = np.column_stack([sub_fss, sub_fbs, sub_total])
+            column_headers = np.asarray(['fss', 'fbs', 'total'])
             sub_values, stat, stat_error = calculate_stat(statistic, stat_line_type, agg_method, numpy_data, column_headers)
             if stat_error != '':
                 error = stat_error

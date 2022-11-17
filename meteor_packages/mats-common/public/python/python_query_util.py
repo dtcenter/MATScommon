@@ -270,6 +270,8 @@ class QueryUtil:
                 data_exists = row['ufbar'] != "null" and row['ufbar'] != "NULL"
             elif stat_line_type == 'ctc':
                 data_exists = row['fy_oy'] != "null" and row['fy_oy'] != "NULL"
+            elif stat_line_type == 'nbrcnt':
+                data_exists = row['fss'] != "null" and row['fss'] != "NULL"
             elif stat_line_type == 'mode_pair':
                 data_exists = row['interest'] != "null" and row['interest'] != "NULL"
             else:
@@ -506,6 +508,8 @@ class QueryUtil:
                 data_exists = row['ufbar'] != "null" and row['ufbar'] != "NULL"
             elif stat_line_type == 'ctc':
                 data_exists = row['fy_oy'] != "null" and row['fy_oy'] != "NULL"
+            elif stat_line_type == 'nbrcnt':
+                data_exists = row['fss'] != "null" and row['fss'] != "NULL"
             elif 'mode_pair' in stat_line_type:
                 # the word histogram might have already been appended, so look for the sub-string
                 data_exists = row['interest'] != "null" and row['interest'] != "NULL"
@@ -749,6 +753,8 @@ class QueryUtil:
                 data_exists = row['ufbar'] != "null" and row['ufbar'] != "NULL"
             elif stat_line_type == 'ctc':
                 data_exists = row['fy_oy'] != "null" and row['fy_oy'] != "NULL"
+            elif stat_line_type == 'nbrcnt':
+                data_exists = row['fss'] != "null" and row['fss'] != "NULL"
             else:
                 data_exists = row['stat'] != "null" and row['stat'] != "NULL"
 
