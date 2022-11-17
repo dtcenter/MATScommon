@@ -272,7 +272,7 @@ class QueryUtil:
                 data_exists = row['fy_oy'] != "null" and row['fy_oy'] != "NULL"
             elif stat_line_type == 'mode_pair':
                 data_exists = row['interest'] != "null" and row['interest'] != "NULL"
-            elif stat_line_type == 'precalculated':
+            else:
                 data_exists = row['stat'] != "null" and row['stat'] != "NULL"
             if hasattr(row, 'N0'):
                 self.n0[idx].append(int(row['N0']))
@@ -510,7 +510,7 @@ class QueryUtil:
                 # the word histogram might have already been appended, so look for the sub-string
                 data_exists = row['interest'] != "null" and row['interest'] != "NULL"
                 stat_line_type = 'mode_pair_histogram'  # let the get_stat function know that this is a histogram
-            elif stat_line_type == 'precalculated':
+            else:
                 data_exists = row['stat'] != "null" and row['stat'] != "NULL"
             if hasattr(row, 'N0'):
                 self.n0[idx].append(int(row['N0']))
@@ -749,7 +749,7 @@ class QueryUtil:
                 data_exists = row['ufbar'] != "null" and row['ufbar'] != "NULL"
             elif stat_line_type == 'ctc':
                 data_exists = row['fy_oy'] != "null" and row['fy_oy'] != "NULL"
-            elif stat_line_type == 'precalculated':
+            else:
                 data_exists = row['stat'] != "null" and row['stat'] != "NULL"
 
             if data_exists:

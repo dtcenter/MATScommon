@@ -1,9 +1,11 @@
 import numpy as np
+import math
 import metcalcpy.util.sl1l2_statistics as calc_sl1l2
 import metcalcpy.util.sal1l2_statistics as calc_sal1l2
 import metcalcpy.util.vcnt_statistics as calc_vcnt
 import metcalcpy.util.val1l2_statistics as calc_val1l2
 import metcalcpy.util.ctc_statistics as calc_ctc
+import metcalcpy.util.ecnt_statistics as calc_ecnt
 from mode_stats import calculate_mode_stat
 
 
@@ -66,6 +68,37 @@ def ctc_stat_switch():
     }
 
 
+def ecnt_stat_switch():
+    """function for defining the appropriate ctc statistical calculation functions"""
+    return {
+        'RMSE': [calc_ecnt.calculate_ecnt_rmse, '', 'mse'],     # will need to add np.square when rc1 is released
+        'RMSE with obs error': [calc_ecnt.calculate_ecnt_rmse_oerr, '', 'mse_oerr'],     # ditto
+        'Spread': [calc_ecnt.calculate_ecnt_spread, np.square, 'variance'],
+        'Spread with obs error': [calc_ecnt.calculate_ecnt_spread_oerr, np.square, 'variance_oerr'],
+        'ME (Additive bias)': [calc_ecnt.calculate_ecnt_me, '', 'me'],
+        'ME with obs error': [calc_ecnt.calculate_ecnt_me_oerr, '', 'me_oerr'],
+        'CRPS': [calc_ecnt.calculate_ecnt_crps, '', 'crps'],
+        'CRPSS': [calc_ecnt.calculate_ecnt_crpss, '', 'crpss'],
+        'MAE': [calc_ecnt.calculate_ecnt_mae, '', 'mae'],
+        # 'BS': ['precalculated', 'line_data_pstd', 'brier'],
+        # 'BSS': ['precalculated', 'line_data_pstd', 'bss'],
+        # 'BS reliability': ['precalculated', 'line_data_pstd', 'reliability'],
+        # 'BS resolution': ['precalculated', 'line_data_pstd', 'resolution'],
+        # 'BS uncertainty': ['precalculated', 'line_data_pstd', 'uncertainty'],
+        # 'BS lower confidence limit': ['precalculated', 'line_data_pstd', 'brier_ncl'],
+        # 'BS upper confidence limit': ['precalculated', 'line_data_pstd', 'brier_ncu'],
+        # 'ROC AUC': ['precalculated', 'line_data_pstd', 'roc_auc'],
+        # 'EV': ['precalculated', 'line_data_eclv', 'value_baser'],
+        # 'FSS': ['precalculated', 'line_data_nbrcnt', 'fss'],
+        #
+        # 'Reliability': ['precalculated', 'line_data_pct', ''],
+        # 'ROC': ['precalculated', 'line_data_pct', ''],
+        # 'rhist': ['precalculated', 'line_data_rhist', ''],
+        # 'phist': ['precalculated', 'line_data_phist', ''],
+        # 'relp': ['precalculated', 'line_data_relp ', '']
+    }
+
+
 def calculate_stat(statistic, stat_line_type, agg_method, numpy_data, column_headers):
     """function for determining and calling the appropriate statistical calculation function"""
     if stat_line_type == 'scalar':
@@ -74,6 +107,8 @@ def calculate_stat(statistic, stat_line_type, agg_method, numpy_data, column_hea
         stat_switch = vector_stat_switch()
     elif stat_line_type == 'ctc':
         stat_switch = ctc_stat_switch()
+    elif stat_line_type == 'ecnt':
+        stat_switch = ecnt_stat_switch()
     else:
         stat_switch = {}
 
@@ -81,16 +116,25 @@ def calculate_stat(statistic, stat_line_type, agg_method, numpy_data, column_hea
     data_length = numpy_data.shape[0]
     total_index = np.where(column_headers == 'total')[0]
     sub_stats = np.empty([data_length])
+    if stat_line_type == "ecnt":
+        column_headers[0] = stat_switch[statistic][2]
     try:
         for idx in range(data_length):
             if stat_line_type == "precalculated":
                 sub_stats[idx] = numpy_data[idx, 0]
+            elif stat_line_type == "ecnt":
+                if stat_switch[statistic][1] != '':
+                    numpy_data[[idx], :] = stat_switch[statistic][1](numpy_data[[idx], :])
+                sub_stats[idx] = stat_switch[statistic][0](numpy_data[[idx], :], column_headers)
             else:
                 sub_stats[idx] = stat_switch[statistic](numpy_data[[idx], :], column_headers)
         if agg_method == "Mean statistic":
             stat = np.nanmean(sub_stats)  # calculate stat as mean of sub_values
         elif agg_method == "Median statistic":
             stat = np.nanmedian(sub_stats)  # calculate stat as median of sub_values
+        elif agg_method == "Mean statistic weighted by N":
+            total = np.nansum(numpy_data[:, total_index])
+            stat = np.nansum(sub_stats * (numpy_data[:, total_index] / total)[:, 0])  # calculate stat as weighted average of sub_values
         elif statistic in ['rhist', 'phist', 'relp']:
             stat = np.nansum(sub_stats)  # calculate stat as sum of sub_values
         else:
@@ -343,7 +387,7 @@ def get_stat(row, statistic, stat_line_type, app_params, object_row):
                 if stat_error != '':
                     error = stat_error
 
-        elif stat_line_type == 'precalculated':
+        else:
             sub_data = str(row['sub_data']).split(',')
             # these are the sub-fields specific to precalculated stats
             sub_values = []
@@ -351,7 +395,7 @@ def get_stat(row, statistic, stat_line_type, app_params, object_row):
             for sub_datum in sub_data:
                 sub_datum = sub_datum.split(';')
                 sub_values.append(float(sub_datum[0]) if float(sub_datum[0]) != -9999 else np.nan)
-                sub_total.append(1)
+                sub_total.append(float(sub_datum[1]) if float(sub_datum[1]) != -9999 else np.nan)
                 sub_secs.append(float(sub_datum[2]) if float(sub_datum[2]) != -9999 else np.nan)
                 if has_levels:
                     sub_levs.append(sub_datum[3])
@@ -360,13 +404,6 @@ def get_stat(row, statistic, stat_line_type, app_params, object_row):
             sub_values, stat, stat_error = calculate_stat(statistic, stat_line_type, agg_method, numpy_data, column_headers)
             if stat_error != '':
                 error = stat_error
-
-        else:
-            stat = 'null'
-            numpy_data = np.empty(0)
-            column_headers = np.empty(0)
-            sub_secs = np.empty(0)
-            sub_levs = np.empty(0)
 
     except KeyError as e:
         error = "Error parsing query data. The expected fields don't seem to be present " \
