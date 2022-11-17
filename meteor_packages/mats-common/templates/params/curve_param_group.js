@@ -2,14 +2,14 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import { matsTypes } from 'meteor/randyp:mats-common';
- import { matsCollections } from 'meteor/randyp:mats-common';
-import { matsPlotUtils } from 'meteor/randyp:mats-common';
+import {matsTypes} from 'meteor/randyp:mats-common';
+import {matsCollections} from 'meteor/randyp:mats-common';
+import {matsPlotUtils} from 'meteor/randyp:mats-common';
 
-var duplicate = function(param) {
+var duplicate = function (param) {
     var obj = {};
     var keys = Object.keys(param);
-    for (var i=0; i<keys.length;i++){
+    for (var i = 0; i < keys.length; i++) {
         if (keys[i] !== "_id") {
             obj[keys[i]] = param[keys[i]];
         }
@@ -17,16 +17,16 @@ var duplicate = function(param) {
     return obj;
 };
 
-var filterParams = function(params) {
-/*
-If the plottype is a 2d scatter plot we need to basically create a new set of parameters (except for the label)
-for each axis. The double set of parameters will get sent back to the backend.
- */
+var filterParams = function (params) {
+    /*
+    If the plottype is a 2d scatter plot we need to basically create a new set of parameters (except for the label)
+    for each axis. The double set of parameters will get sent back to the backend.
+     */
     if (matsPlotUtils.getPlotType() === matsTypes.PlotTypes.scatter2d) {
         var xparams = [];
         var yparams = [];
         var newParams = [];
-        for (var i = 0; i < params.length;i++) {
+        for (var i = 0; i < params.length; i++) {
             var xp = duplicate(params[i]);
             xp.name = "xaxis-" + params[i].name;
             xp.hidden = true;
@@ -45,7 +45,7 @@ for each axis. The double set of parameters will get sent back to the backend.
     }
 };
 
-const getParams = function(num) {
+const getParams = function (num) {
     var paramNames = matsCollections.CurveParamsInfo.find({"curve_params": {"$exists": true}}).fetch()[0]["curve_params"];
     var paramMap = {};
     var params = [];
@@ -83,21 +83,72 @@ Template.curveParamGroup.helpers({
         }
         return "";
     },
+    gapMessage: function (num) {
+        var restoreSettingsTime = Session.get("restoreSettingsTime"); // used to force re-render
+        var lastUpdate = Session.get('lastUpdate');
+        let plotType = Session.get('plotType');
+        const params = getParams(num);
+        for (var i = 0; i < params.length; i++) {
+            if (params[i].gapAbove) {
+                if (params[i].name === "aggregation-method") {
+                    switch (plotType) {
+                        case matsTypes.PlotTypes.profile:
+                        case matsTypes.PlotTypes.dieoff:
+                        case matsTypes.PlotTypes.threshold:
+                        case matsTypes.PlotTypes.validtime:
+                        case matsTypes.PlotTypes.gridscale:
+                        case matsTypes.PlotTypes.roc:
+                        case matsTypes.PlotTypes.performanceDiagram:
+                        case matsTypes.PlotTypes.histogram:
+                        case matsTypes.PlotTypes.ensembleHistogram:
+                        case matsTypes.PlotTypes.simpleScatter:
+                            return "Aggregation / Date range:";
+                        case matsTypes.PlotTypes.timeSeries:
+                        case matsTypes.PlotTypes.dailyModelCycle:
+                        case matsTypes.PlotTypes.yearToYear:
+                        case matsTypes.PlotTypes.reliability:
+                        case matsTypes.PlotTypes.map:
+                        case matsTypes.PlotTypes.contour:
+                        case matsTypes.PlotTypes.contourDiff:
+                        case matsTypes.PlotTypes.scatter2d:
+                        default:
+                            return "Aggregation:";
+                    }
+                } else {
+                    return "Filter by parameters:";
+                }
+            } else if (params[i].name === "label") {
+                return "Define the curve:";
+            }
+        }
+        return "";
+    },
+    gapMessageSpacing: function (num) {
+        var restoreSettingsTime = Session.get("restoreSettingsTime"); // used to force re-render
+        var lastUpdate = Session.get('lastUpdate');
+        const params = getParams(num);
+        for (var i = 0; i < params.length; i++) {
+            if (params[i].gapAbove) {
+                return "margin-left: 10px; margin-top: 1em;";
+            }
+        }
+        return "margin-left: 10px;";
+    },
     gapBelow: function (num) {
         var restoreSettingsTime = Session.get("restoreSettingsTime"); // used to force re-render
         var lastUpdate = Session.get('lastUpdate');
         const params = getParams(num);
         for (var i = 0; i < params.length; i++) {
             if (params[i].gapBelow) {
-                return "margin-bottom: 1em;";
+                return "margin-bottom: 2em;";
             }
         }
         return "";
     },
-    displayGroup: function() {
+    displayGroup: function () {
         return "block";
     },
-    log: function() {
+    log: function () {
         console.log(this);
     }
 });
