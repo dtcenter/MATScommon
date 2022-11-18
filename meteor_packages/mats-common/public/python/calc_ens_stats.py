@@ -1,7 +1,3 @@
-import numpy as np
-import metcalcpy.util.sl1l2_statistics as calc_sl1l2
-
-
 def get_ens_stat(plot_type, forecast_total, observed_total, on_all, oy_all, threshold_all, total_times,
                  total_values):
     """function for processing the sub-values from the query and getting the overall ensemble statistics"""

@@ -87,22 +87,6 @@ def ecnt_stat_switch():
         'CRPS': [calc_ecnt.calculate_ecnt_crps, '', 'crps'],
         'CRPSS': [calc_ecnt.calculate_ecnt_crpss, '', 'crpss'],
         'MAE': [calc_ecnt.calculate_ecnt_mae, '', 'mae'],
-        # 'BS': ['precalculated', 'line_data_pstd', 'brier'],
-        # 'BSS': ['precalculated', 'line_data_pstd', 'bss'],
-        # 'BS reliability': ['precalculated', 'line_data_pstd', 'reliability'],
-        # 'BS resolution': ['precalculated', 'line_data_pstd', 'resolution'],
-        # 'BS uncertainty': ['precalculated', 'line_data_pstd', 'uncertainty'],
-        # 'BS lower confidence limit': ['precalculated', 'line_data_pstd', 'brier_ncl'],
-        # 'BS upper confidence limit': ['precalculated', 'line_data_pstd', 'brier_ncu'],
-        # 'ROC AUC': ['precalculated', 'line_data_pstd', 'roc_auc'],
-        # 'EV': ['precalculated', 'line_data_eclv', 'value_baser'],
-        # 'FSS': ['precalculated', 'line_data_nbrcnt', 'fss'],
-        #
-        # 'Reliability': ['precalculated', 'line_data_pct', ''],
-        # 'ROC': ['precalculated', 'line_data_pct', ''],
-        # 'rhist': ['precalculated', 'line_data_rhist', ''],
-        # 'phist': ['precalculated', 'line_data_phist', ''],
-        # 'relp': ['precalculated', 'line_data_relp ', '']
     }
 
 

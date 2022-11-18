@@ -710,7 +710,7 @@ class QueryUtil:
                     continue
 
         # this function deals with pct and pct_thresh tables
-        ens_stats = self.get_ens_stat(plot_type, forecast_total, observed_total, on_all, oy_all, threshold_all,
+        ens_stats = get_ens_stat(plot_type, forecast_total, observed_total, on_all, oy_all, threshold_all,
                                       total_times, total_values)
 
         # Since everything is combined already, put it into the data structure
