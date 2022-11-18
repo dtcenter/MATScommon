@@ -7,7 +7,7 @@ import numpy as np
 import re
 import json
 from contextlib import closing
-from calc_stats import get_stat
+from calc_stats import get_stat, calculate_stat
 from calc_ens_stats import get_ens_stat
 
 
@@ -79,6 +79,7 @@ def is_number(s):
 
 
 def get_object_row(ind_var, object_data, object_row_idx, plot_type):
+    """function to iterate through MODE object rows until we find one that matches the current pair"""
     object_row = object_data[object_row_idx]
     if plot_type == 'ValidTime':
         object_ind_var = float(object_row['hr_of_day'])
@@ -263,7 +264,6 @@ class QueryUtil:
                     continue
             else:
                 object_row = []
-            data_exists = False
             if stat_line_type == 'scalar':
                 data_exists = row['fbar'] != "null" and row['fbar'] != "NULL"
             elif stat_line_type == 'vector':
@@ -828,11 +828,8 @@ class QueryUtil:
         """function for matching data in the output object"""
         sub_secs_raw = {}
         sub_levs_raw = {}
-        sub_interest = []
-        sub_pair_fid = []
-        sub_pair_oid = []
-        sub_mode_header_id = []
-        sub_cent_dist = []
+        sub_data = []
+        sub_headers = []
         sub_values = []
         sub_secs = []
         sub_levs = []
@@ -1002,29 +999,19 @@ class QueryUtil:
                             null_point(data, di, plot_type, stat_var_name, has_levels)
                         # then move on to the next independentVar. There's no need to mess with the subSecs or subLevs
                         continue
-                if 0 <= di < len(data["subInterest"]):
-                    sub_interest = data["subInterest"][di]
-                    sub_pair_fid = data["subPairFid"][di]
-                    sub_pair_oid = data["subPairOid"][di]
-                    sub_mode_header_id = data["subModeHeaderId"][di]
-                    sub_cent_dist = data["subCentDist"][di]
-                else:
-                    sub_values = data["subVals"][di]
+                sub_data = data["subData"][di]
+                sub_headers = data["subHeaders"][di]
+                sub_values = data["subVals"][di]
                 sub_secs = data["subSecs"][di]
                 if has_levels:
                     sub_levs = data["subLevs"][di]
 
                 if (not has_levels and len(sub_secs) > 0) or (has_levels and len(sub_secs) > 0 and len(sub_levs) > 0):
                     curr_independent_var = data[independent_var_name][di]
-                    new_sub_interest = []
-                    new_sub_pair_fid = []
-                    new_sub_pair_oid = []
-                    new_sub_mode_header_id = []
-                    new_sub_cent_dist = []
+                    new_sub_data = []
                     new_sub_values = []
                     new_sub_secs = []
-                    if has_levels:
-                        new_sub_levs = []
+                    new_sub_levs = []
 
                     # loop over all subSecs for this independentVar
                     for si in range(0, len(sub_secs)):
@@ -1038,14 +1025,8 @@ class QueryUtil:
                                 (remove_non_matching_ind_vars and
                                  ((not has_levels and sub_secs[si] in sub_sec_intersection_object[curr_independent_var])
                                   or (has_levels and temp_pair in sub_intersections_object[curr_independent_var]))):
-                            if 0 <= di < len(data["subInterest"]):
-                                new_sub_interest.append(sub_interest[si])
-                                new_sub_pair_fid.append(sub_pair_fid[si])
-                                new_sub_pair_oid.append(sub_pair_oid[si])
-                                new_sub_mode_header_id.append(sub_mode_header_id[si])
-                                new_sub_cent_dist.append(sub_cent_dist[si])
-                            else:
-                                new_sub_values.append(sub_values[si])
+                            new_sub_data.append(sub_data[si])
+                            new_sub_values.append(sub_values[si])
                             new_sub_secs.append(sub_secs[si])
                             if has_levels:
                                 new_sub_levs.append(sub_levs[si])
@@ -1055,14 +1036,9 @@ class QueryUtil:
                         null_point(data, di, plot_type, stat_var_name, has_levels)
                     else:
                         # store the filtered data
-                        if 0 <= di < len(data["subInterest"]):
-                            data["subInterest"][di] = new_sub_interest
-                            data["subPairFid"][di] = new_sub_pair_fid
-                            data["subPairOid"][di] = new_sub_pair_oid
-                            data["subModeHeaderId"][di] = new_sub_mode_header_id
-                            data["subCentDist"][di] = new_sub_cent_dist
-                        else:
-                            data["subVals"][di] = new_sub_values
+                        data["subData"][di] = new_sub_data
+                        data["subHeaders"][di] = sub_headers
+                        data["subVals"][di] = new_sub_values
                         data["subSecs"][di] = new_sub_secs
                         if has_levels:
                             data["subLevs"][di] = new_sub_levs
@@ -1073,20 +1049,15 @@ class QueryUtil:
             data_length = len(data[independent_var_name])
             for di in range(0, data_length):
                 if data[stat_var_name][di] != 'null':
-                    if len(data["subInterest"]) > 0:
-                        # Need to recalculate the MODE stat
-                        new_stat, new_error = calculate_mode_stat(options["query_array"][curve_index]["statistic"],
-                                                                  np.asarray(data["subInterest"][di]),
-                                                                  np.asarray(data["subPairFid"][di]),
-                                                                  np.asarray(data["subPairOid"][di]),
-                                                                  np.asarray(data["subModeHeaderId"][di]),
-                                                                  np.asarray(data["subCentDist"][di]),
-                                                                  data["individualObjLookup"][di])
-                        data[stat_var_name][di] = new_stat
-                        if len(new_error) > 0:
-                            self.error[curve_index] = new_error
-                    else:
-                        data[stat_var_name][di] = sum(data["subVals"][di]) / len(data["subVals"][di])
+                    statistic = options["query_array"][curve_index]["statistic"]
+                    stat_line_type = options["query_array"][curve_index]["statLineType"]
+                    agg_method = options["query_array"][curve_index]["appParams"]["aggMethod"]
+
+                    sub_stats, stat, stat_error = calculate_stat(statistic, stat_line_type, agg_method,
+                        np.asarray(data["subData"][di]), np.asarray(data["subHeaders"][di]))
+                    data[stat_var_name][di] = stat
+                    if stat_error != '':
+                        self.error[curve_index] = stat_error
 
                     if is_number(data["x"][di]) and data["x"][di] < data["xmin"]:
                         data["xmin"] = data["x"][di]
@@ -1107,7 +1078,8 @@ class QueryUtil:
             if query["statLineType"] == 'mode_pair':
                 # there are two queries in this statement
                 statements = query["statement"].split(" ||| ")
-                if query["statistic"] == "OTS (Object Threat Score)" or query["statistic"] == "Model-obs centroid distance (unique pairs)":
+                if query["statistic"] == "OTS (Object Threat Score)" \
+                        or query["statistic"] == "Model-obs centroid distance (unique pairs)":
                     # only the mode statistic OTS needs the additional object information provided by the first query.
                     # we can ignore it for other stats
                     try:
