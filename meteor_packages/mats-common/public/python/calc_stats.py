@@ -71,15 +71,15 @@ def ctc_stat_switch():
 def nbrcnt_stat_switch():
     """function for defining the appropriate nbrcnt statistical calculation functions"""
     return {
-        'CSI (Critical Success Index)': calc_nbrcnt.calculate_nbr_fss
+        'FSS': calc_nbrcnt.calculate_nbr_fss
     }
 
 
 def ecnt_stat_switch():
     """function for defining the appropriate ecnt statistical calculation functions"""
     return {
-        'RMSE': [calc_ecnt.calculate_ecnt_rmse, '', 'mse'],     # will need to add np.square when rc1 is released
-        'RMSE with obs error': [calc_ecnt.calculate_ecnt_rmse_oerr, '', 'mse_oerr'],     # ditto
+        'RMSE': [calc_ecnt.calculate_ecnt_rmse, np.square, 'mse'],
+        'RMSE with obs error': [calc_ecnt.calculate_ecnt_rmse_oerr, np.square, 'mse_oerr'],
         'Spread': [calc_ecnt.calculate_ecnt_spread, np.square, 'variance'],
         'Spread with obs error': [calc_ecnt.calculate_ecnt_spread_oerr, np.square, 'variance_oerr'],
         'ME (Additive bias)': [calc_ecnt.calculate_ecnt_me, '', 'me'],

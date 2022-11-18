@@ -1095,6 +1095,8 @@ const sortHistogramBins = function (curveSubStats, curveSubSecs, curveSubLevs, b
             subFa: [],
             subMiss: [],
             subCn: [],
+            subData: [],
+            subHeaders: [],
             subVals: [],
             subSecs: [],
             subLevs: [],

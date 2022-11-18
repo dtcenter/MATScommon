@@ -579,6 +579,8 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
             var d = {   // relevant fields to recalculate
                 x: [],
                 y: [],
+                subData: [],
+                subHeaders: [],
                 subVals: [],
                 subSecs: [],
                 subLevs: [],

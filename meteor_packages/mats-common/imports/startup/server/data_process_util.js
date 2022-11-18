@@ -150,7 +150,7 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
             }
 
             // store statistics for this di datapoint
-            if (statType === 'ctc') {
+            if (statType === 'ctc' || statType === 'met-ctc') {
                 data.stats[di] = {
                     stat: data.y[di],
                     n: Array.isArray(data.subHit[di]) || !isNaN(data.subHit[di]) ? data.subHit[di].length : 0,
@@ -269,6 +269,8 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
         data.subObsSum = [];
         data.subAbsSum = [];
         data.subInterest = [];
+        data.subData = [];
+        data.subHeaders = [];
         data.subVals = [];
         data.subSecs = [];
         data.subLevs = [];
@@ -548,6 +550,8 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
         data.subObsSum = [];
         data.subAbsSum = [];
         data.subInterest = [];
+        data.subData = [];
+        data.subHeaders = [];
         data.subVals = [];
         data.subSecs = [];
         data.subLevs = [];
@@ -858,6 +862,8 @@ const processDataPerformanceDiagram = function (dataset, appParams, curveInfoPar
         data.subObsSum = [];
         data.subAbsSum = [];
         data.subInterest = [];
+        data.subData = [];
+        data.subHeaders = [];
         data.subVals = [];
         data.subSecs = [];
         data.subLevs = [];
@@ -1087,6 +1093,8 @@ const processDataHistogram = function (allReturnedSubStats, allReturnedSubSecs, 
             subModelSum: [],
             subObsSum: [],
             subAbsSum: [],
+            subData: [],
+            subHeaders: [],
             subVals: [],
             subSecs: [],
             subLevs: [],
@@ -1200,6 +1208,8 @@ const processDataHistogram = function (allReturnedSubStats, allReturnedSubSecs, 
         data.subObsSum = [];
         data.subAbsSum = [];
         data.subInterest = [];
+        data.subData = [];
+        data.subHeaders = [];
         data.subVals = [];
         data.subSecs = [];
         data.subLevs = [];
@@ -1287,6 +1297,8 @@ const processDataContour = function (dataset, curveInfoParams, plotParams, bookk
     data.subModelSum = [];
     data.subObsSum = [];
     data.subAbsSum = [];
+    data.subData = [];
+    data.subHeaders = [];
     data.subVals = [];
     data.subSecs = [];
     data.subLevs = [];

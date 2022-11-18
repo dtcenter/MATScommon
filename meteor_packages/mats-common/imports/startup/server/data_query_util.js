@@ -173,20 +173,48 @@ const queryDBPython = function (pool, queryArray) {
             for (var didx = 0; didx < d[idx].y.length; didx++) {
                 if (d[idx].y[didx] === 'null') {
                     d[idx].y[didx] = null;
-                    if (d[idx].subHit.length > 0) {
-                        d[idx].subHit[didx] = NaN;
-                        d[idx].subFa[didx] = NaN;
-                        d[idx].subMiss[didx] = NaN;
-                        d[idx].subCn[didx] = NaN;
-                    }
                     if (d[idx].subVals.length > 0) {
+                        d[idx].subData[didx] = NaN;
+                        d[idx].subHeaders[didx] = NaN;
                         d[idx].subVals[didx] = NaN;
+                        if (queryArray[idx]["statLineType"] === 'ctc') {
+                            d[idx].subHit.push(NaN);
+                            d[idx].subFa.push(NaN);
+                            d[idx].subMiss.push(NaN);
+                            d[idx].subCn.push(NaN);
+                        }
                     }
-                    // if (d[idx].subInterest.length > 0) {
-                    //     d[idx].subInterest[didx] = NaN;
-                    // }
                     d[idx].subSecs[didx] = NaN;
                     d[idx].subLevs[didx] = NaN;
+                } else if (d[idx].x[didx] === 'null') {
+                    d[idx].x[didx] = null;
+                    if (d[idx].subVals.length > 0) {
+                        d[idx].subData[didx] = NaN;
+                        d[idx].subHeaders[didx] = NaN;
+                        d[idx].subVals[didx] = NaN;
+                        if (queryArray[idx]["statLineType"] === 'ctc') {
+                            d[idx].subHit.push(NaN);
+                            d[idx].subFa.push(NaN);
+                            d[idx].subMiss.push(NaN);
+                            d[idx].subCn.push(NaN);
+                        }
+                    }
+                    d[idx].subSecs[didx] = NaN;
+                    d[idx].subLevs[didx] = NaN;
+                } else {
+                    if (queryArray[idx]["statLineType"] === 'ctc') {
+                        // store ctc components for text display
+                        d[idx].subHit.push([]);
+                        d[idx].subFa.push([]);
+                        d[idx].subMiss.push([]);
+                        d[idx].subCn.push([]);
+                        for (var sidx = 0; sidx < d[idx].subData[didx].length; sidx++) {
+                            d[idx].subHit[didx].push(d[idx].subData[didx][sidx][0]);
+                            d[idx].subFa[didx].push(d[idx].subData[didx][sidx][1]);
+                            d[idx].subMiss[didx].push(d[idx].subData[didx][sidx][2]);
+                            d[idx].subCn[didx].push(d[idx].subData[didx][sidx][3]);
+                        }
+                    }
                 }
             }
         }
@@ -233,6 +261,8 @@ const queryDBTimeSeries = function (pool, statement, dataSource, forecastOffset,
             subModelSum: [],
             subObsSum: [],
             subAbsSum: [],
+            subData: [],
+            subHeaders: [],
             subVals: [],
             subSecs: [],
             subLevs: [],
@@ -320,6 +350,8 @@ const queryDBSpecialtyCurve = function (pool, statement, appParams, statisticStr
             subModelSum: [],
             subObsSum: [],
             subAbsSum: [],
+            subData: [],
+            subHeaders: [],
             subVals: [],
             subSecs: [],
             subLevs: [],
@@ -412,6 +444,8 @@ const queryDBPerformanceDiagram = function (pool, statement, appParams) {
             subFa: [],
             subMiss: [],
             subCn: [],
+            subData: [],
+            subHeaders: [],
             subVals: [],
             subSecs: [],
             subLevs: [],
@@ -880,6 +914,8 @@ const queryDBContour = function (pool, statement, appParams, statisticStr) {
             subModelSum: [],
             subObsSum: [],
             subAbsSum: [],
+            subData: [],
+            subHeaders: [],
             subVals: [],
             subSecs: [],
             subLevs: [],
@@ -978,6 +1014,8 @@ const parseQueryDataXYCurve = function (rows, d, appParams, statisticStr, foreca
             subModelSum: [],
             subObsSum: [],
             subAbsSum: [],
+            subData: [],
+            subHeaders: [],
             subVals: [],
             subSecs: [],
             subLevs: [],
@@ -1467,6 +1505,8 @@ const parseQueryDataPerformanceDiagram = function (rows, d, appParams) {
             subFa: [],
             subMiss: [],
             subCn: [],
+            subData: [],
+            subHeaders: [],
             subVals: [],
             subSecs: [],
             subLevs: [],
@@ -2409,6 +2449,8 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
             subModelSum: [],
             subObsSum: [],
             subAbsSum: [],
+            subData: [],
+            subHeaders: [],
             subVals: [],
             subSecs: [],
             subLevs: [],
@@ -2564,6 +2606,8 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
             subModelSum: [],
             subObsSum: [],
             subAbsSum: [],
+            subData: [],
+            subHeaders: [],
             subVals: [],
             subSecs: [],
             subLevs: [],
