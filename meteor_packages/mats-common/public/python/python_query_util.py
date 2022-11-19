@@ -406,7 +406,6 @@ class QueryUtil:
                     bad_value_indices = [index for index, value in enumerate(list_vals) if not is_number(value)]
                     for bad_value_index in sorted(bad_value_indices, reverse=True):
                         del list_data[bad_value_index]
-                        del list_headers[bad_value_index]
                         del list_vals[bad_value_index]
                         del list_secs[bad_value_index]
                         if has_levels:
@@ -534,7 +533,6 @@ class QueryUtil:
                     inf_value_indices = np.argwhere(np.isinf(sub_values))
                     bad_value_indices = np.union1d(nan_value_indices, inf_value_indices)
                     sub_data = np.delete(sub_data, bad_value_indices)
-                    sub_headers = np.delete(sub_headers, bad_value_indices)
                     sub_values = np.delete(sub_values, bad_value_indices)
                     sub_secs = np.delete(sub_secs, bad_value_indices)
                     if has_levels:
@@ -619,7 +617,6 @@ class QueryUtil:
                     bad_value_indices = [index for index, value in enumerate(list_vals) if not is_number(value)]
                     for bad_value_index in sorted(bad_value_indices, reverse=True):
                         del list_data[bad_value_index]
-                        del list_headers[bad_value_index]
                         del list_vals[bad_value_index]
                         del list_secs[bad_value_index]
                         if has_levels:
@@ -828,9 +825,6 @@ class QueryUtil:
         """function for matching data in the output object"""
         sub_secs_raw = {}
         sub_levs_raw = {}
-        sub_data = []
-        sub_headers = []
-        sub_values = []
         sub_secs = []
         sub_levs = []
         independent_var_groups = []

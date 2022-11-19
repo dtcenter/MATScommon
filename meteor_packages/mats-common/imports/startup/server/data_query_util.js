@@ -202,7 +202,9 @@ const queryDBPython = function (pool, queryArray) {
                     d[idx].subSecs[didx] = NaN;
                     d[idx].subLevs[didx] = NaN;
                 } else {
-                    if (queryArray[idx]["statLineType"] === 'ctc') {
+                    if (queryArray[idx]["statLineType"] === 'ctc'
+                        && queryArray[idx]["appParams"]["plotType"] !== matsTypes.PlotTypes.contour
+                        && queryArray[idx]["appParams"]["plotType"] !== matsTypes.PlotTypes.contourDiff) {
                         // store ctc components for text display
                         d[idx].subHit.push([]);
                         d[idx].subFa.push([]);
