@@ -20,6 +20,7 @@ Template.dateRange.onRendered(function () {
 
     const name = this.data.name;
     const idref = name + "-" + this.data.type;
+    const controlButtonRef = "controlButton-" + name + "-value";
     const elem = document.getElementById('element-' + name);
     const superiorNames = this.data.superiorNames;
     const defaultDateRange = matsParamUtils.getDefaultDateRange(name);
@@ -225,6 +226,9 @@ Template.dateRange.onRendered(function () {
             $(jqIdRef).data('daterangepicker').setEndDate(endDsr);
             const newDateStr = moment.utc(startDsr).locale('en').format('MM/DD/YYYY HH:mm') + ' - ' + moment.utc(endDsr).locale('en').format('MM/DD/YYYY HH:mm');
             matsParamUtils.setValueTextForParamName(name, newDateStr);
+            if (elem && elem.style && elem.style.display === 'block') {
+                $("#" + controlButtonRef).click();
+            }
         } catch (error) {
             console.log("Error in date_range.js.refresh : " + error.message);
         }
