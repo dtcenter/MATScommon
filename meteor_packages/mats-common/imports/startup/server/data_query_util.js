@@ -192,7 +192,9 @@ const queryDBPython = function (pool, queryArray) {
                         d[idx].subData[didx] = NaN;
                         d[idx].subHeaders[didx] = NaN;
                         d[idx].subVals[didx] = NaN;
-                        if (queryArray[idx]["statLineType"] === 'ctc') {
+                        if (queryArray[idx]["statLineType"] === 'ctc'
+                            && queryArray[idx]["appParams"]["plotType"] !== matsTypes.PlotTypes.contour
+                            && queryArray[idx]["appParams"]["plotType"] !== matsTypes.PlotTypes.contourDiff) {
                             d[idx].subHit.push(NaN);
                             d[idx].subFa.push(NaN);
                             d[idx].subMiss.push(NaN);
