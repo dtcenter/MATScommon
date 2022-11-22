@@ -7,6 +7,7 @@ import metcalcpy.util.ctc_statistics as calc_ctc
 import metcalcpy.util.ecnt_statistics as calc_ecnt
 import metcalcpy.util.nbrcnt_statistics as calc_nbrcnt
 import metcalcpy.util.mode_2d_ratio_statistics as calc_2d_ratio
+import metcalcpy.util.mode_2d_arearat_statistics as calc_2d_arearat
 from mode_stats import calculate_mode_stat
 
 
@@ -120,6 +121,31 @@ def mode_single_stat_switch():
         'Ratio of forecast simple objects to forecast cluster objects': calc_2d_ratio.calculate_2d_ratio_fsa_fca,
         'Ratio of observed cluster objects to observed simple objects': calc_2d_ratio.calculate_2d_ratio_oca_osa,
         'Ratio of observed simple objects to observed cluster objects': calc_2d_ratio.calculate_2d_ratio_osa_oca,
+        'Area-weighted ratio of simple objects that are forecast objects': calc_2d_arearat.calculate_2d_arearat_fsa_asa,
+        'Area-weighted ratio of simple objects that are observation objects': calc_2d_arearat.calculate_2d_arearat_osa_asa,
+        'Area-weighted ratio of simple objects that are matched': calc_2d_arearat.calculate_2d_arearat_asm_asa,
+        'Area-weighted ratio of simple objects that are unmatched': calc_2d_arearat.calculate_2d_arearat_asu_asa,
+        'Area-weighted ratio of simple forecast objects that are matched': calc_2d_arearat.calculate_2d_arearat_fsm_fsa,
+        'Area-weighted ratio of simple forecast objects that are unmatched': calc_2d_arearat.calculate_2d_arearat_fsu_fsa,
+        'Area-weighted ratio of simple observed objects that are matched': calc_2d_arearat.calculate_2d_arearat_osm_osa,
+        'Area-weighted ratio of simple observed objects that are unmatched': calc_2d_arearat.calculate_2d_arearat_osu_osa,
+        'Area-weighted ratio of simple matched objects that are forecast objects': calc_2d_arearat.calculate_2d_arearat_fsm_asm,
+        'Area-weighted ratio of simple matched objects that are observed objects': calc_2d_arearat.calculate_2d_arearat_osm_asm,
+        'Area-weighted ratio of simple unmatched objects that are observed objects': calc_2d_arearat.calculate_2d_arearat_osu_asu,
+        'Area-weighted ratio of forecast objects that are simple': calc_2d_arearat.calculate_2d_arearat_fsa_faa,
+        'Area-weighted ratio of forecast objects that are cluster': calc_2d_arearat.calculate_2d_arearat_fca_faa,
+        'Area-weighted ratio of observed objects that are simple': calc_2d_arearat.calculate_2d_arearat_osa_oaa,
+        'Area-weighted ratio of observed objects that are cluster': calc_2d_arearat.calculate_2d_arearat_oca_oaa,
+        'Area-weighted ratio of cluster objects that are forecast objects': calc_2d_arearat.calculate_2d_arearat_fca_aca,
+        'Area-weighted ratio of cluster objects that are observation objects': calc_2d_arearat.calculate_2d_arearat_oca_aca,
+        'Area-weighted ratio of simple forecasts to simple observations (frequency bias)': calc_2d_arearat.calculate_2d_arearat_fsa_osa,
+        'Area-weighted ratio of simple observations to simple forecasts (1 / frequency bias)': calc_2d_arearat.calculate_2d_arearat_osa_fsa,
+        'Area-weighted ratio of cluster objects to simple objects': calc_2d_arearat.calculate_2d_arearat_aca_asa,
+        'Area-weighted ratio of simple objects to cluster objects': calc_2d_arearat.calculate_2d_arearat_asa_aca,
+        'Area-weighted ratio of forecast cluster objects to forecast simple objects': calc_2d_arearat.calculate_2d_arearat_fca_fsa,
+        'Area-weighted ratio of forecast simple objects to forecast cluster objects': calc_2d_arearat.calculate_2d_arearat_fsa_fca,
+        'Area-weighted ratio of observed cluster objects to observed simple objects': calc_2d_arearat.calculate_2d_arearat_oca_osa,
+        'Area-weighted ratio of observed simple objects to observed cluster objects': calc_2d_arearat.calculate_2d_arearat_osa_oca,
     }
 
 
