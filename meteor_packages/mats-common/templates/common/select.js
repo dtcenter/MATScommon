@@ -163,7 +163,7 @@ Template.select.events({
         $('#' + this.name + "-" + this.type).select2("close").trigger('change'); // apply the selection choices to the select2
         const editMode = Session.get("editMode");
         const curveItem = (editMode === undefined && editMode === "") ? undefined : document.getElementById("curveItem-" + editMode);
-        if (curveItem) {
+        if (curveItem && this.type !== matsTypes.InputTypes.dateRange) {
             $('#save').trigger('click');
         }
         if (editMode) {
@@ -266,7 +266,7 @@ Template.select.events({
         }
         const editMode = Session.get("editMode");
         const curveItem = (editMode === undefined && editMode === "") ? undefined : document.getElementById("curveItem-" + editMode);
-        if (curveItem) {
+        if (curveItem && this.type !== matsTypes.InputTypes.dateRange) {
             $('#save').trigger('click');
         }
         if (event.target.multiple) {

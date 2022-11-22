@@ -229,7 +229,7 @@ Template.item.events({
         if (!this.multiple && this.type !== matsTypes.InputTypes.numberSpinner
             && this.type !== matsTypes.InputTypes.textInput && this.type !== matsTypes.InputTypes.dateRange) {
             // not too cool to collapse when trying to do a multi-select, a textInput, or a numberspinner
-                matsParamUtils.collapseParam(this.name);
+            matsParamUtils.collapseParam(this.name);
         }
     },
     'change .data-input': function (event) {
@@ -250,7 +250,7 @@ Template.item.events({
             }
          }
         const curveItem = (Session.get("editMode") === undefined && Session.get("editMode") === "") ? undefined : document.getElementById("curveItem-" + Session.get("editMode"));
-        if (curveItem) {
+        if (curveItem && this.type !== matsTypes.InputTypes.dateRange) {
             $('#save').trigger('click');
         }
 

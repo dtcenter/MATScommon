@@ -6,7 +6,7 @@ import {matsCollections, matsParamUtils, matsTypes} from 'meteor/randyp:mats-com
 import daterangepicker from 'daterangepicker';
 
 Template.dateRange.helpers({
-    defaultDate: function() {
+    defaultDate: function () {
         const defaultDateRange = matsParamUtils.getDefaultDateRange(this.name);
         return defaultDateRange.dstr;
     }
@@ -86,13 +86,10 @@ Template.dateRange.onRendered(function () {
 
     elem.style.display = "none";
 
-    $( ".drp-buttons" ).each(function (index) {
+    $(".drp-buttons").each(function (index) {
         if ($(this).find("span.newRangeLabel").length === 0) {
             $(this).prepend("<span class='newRangeLabel' style='text-align: right; font-size: 16px;'>Apply this range?&nbsp;&nbsp;</span>");
             $(this).find('button.applyBtn').attr("id", name + "-applyBtn");
-            // $(this).find('span.drp-selected').on('change', function () {
-            //     document.getElementById(name + "-dateRange").value = $(this).find('span.drp-selected').text();
-            // });
         }
     });
 
@@ -196,7 +193,7 @@ Template.dateRange.onRendered(function () {
             }
             // now we have a normalized date range for the selected superiors.
             // evaluate DRS
-            if ( appName !== "met-cyclone") {    // we want the exact duration of the selected hurricane season
+            if (appName !== "met-cyclone") {    // we want the exact duration of the selected hurricane season
                 if ((dataEnd.isBefore(startDsr) || (dataStart.isAfter(endDsr)))) {
                     // the current user setting and the valid range do not overlap so just set the DSR to the most recent 30 days of the valid range
                     endDsr = dataEnd;
@@ -227,7 +224,7 @@ Template.dateRange.onRendered(function () {
             const newDateStr = moment.utc(startDsr).locale('en').format('MM/DD/YYYY HH:mm') + ' - ' + moment.utc(endDsr).locale('en').format('MM/DD/YYYY HH:mm');
             matsParamUtils.setValueTextForParamName(name, newDateStr);
             if (elem && elem.style && elem.style.display === 'block') {
-                $("#" + controlButtonRef).click();
+                elem.style.display = 'none';
             }
         } catch (error) {
             console.log("Error in date_range.js.refresh : " + error.message);
@@ -245,15 +242,15 @@ Template.dateRange.events({
         try {
             const text = event.currentTarget.value;
             matsParamUtils.setValueTextForParamName(event.target.name, text);
-        } catch (error){
+        } catch (error) {
             matsParamUtils.setValueTextForParamName(event.target.name, "");
         }
     },
     'change': function (event) {
         try {
             const text = event.currentTarget.value;
-           matsParamUtils.setValueTextForParamName(event.target.name, text);
-        } catch (error){
+            matsParamUtils.setValueTextForParamName(event.target.name, text);
+        } catch (error) {
             matsParamUtils.setValueTextForParamName(event.target.name, "");
         }
     }

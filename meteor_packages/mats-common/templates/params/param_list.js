@@ -124,16 +124,6 @@ Template.paramList.events({
             if (param.type === matsTypes.InputTypes.dateRange) {
                 dateParamNames.push(cname);
             }
-            var ctlElem = document.getElementById(cname + "-item");
-            var isHidden = (matsParamUtils.getInputElementForParamName(cname) &&
-                matsParamUtils.getInputElementForParamName(cname).style &&
-                matsParamUtils.getInputElementForParamName(cname).style.display === 'none') ||
-                (ctlElem && ctlElem.style && ctlElem.style.display === 'none');
-            if (isHidden && cname !== 'plot-type' && cname !== 'phase') {
-                // MET apps have a hidden plot-type selector that needs to be included in the curve
-                // phase needs to be preserved in the raobamdar app
-                curveNames.splice(cindex, 1);
-            }
         }
 
         // remove any hidden date params or unused ones
