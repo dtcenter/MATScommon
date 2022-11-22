@@ -187,8 +187,7 @@ class QueryUtil:
         }
         self.output_JSON = json.dumps(self.output_JSON)
 
-    def parse_query_data_xy_curve(self, idx, cursor, stat_line_type, statistic, app_params,
-                                  fcst_offset, vts, object_data):
+    def parse_query_data_xy_curve(self, idx, cursor, stat_line_type, statistic, app_params, fcst_offset, vts):
         """function for parsing the data returned by an x-y curve query"""
         # initialize local variables
         plot_type = app_params["plotType"]
@@ -231,7 +230,6 @@ class QueryUtil:
 
         # loop through the query results and store the returned values
         row_idx = 0
-        object_row_idx = 0
         for row in query_data:
             if plot_type == 'ValidTime':
                 ind_var = float(row['hr_of_day'])
@@ -251,19 +249,6 @@ class QueryUtil:
             else:
                 ind_var = int(row['avtime'])
 
-            if stat_line_type == 'mode_pair' and (statistic == "OTS (Object Threat Score)" or statistic == "Model-obs centroid distance (unique pairs)"):
-                # in case loading wend wrong and we don't have all our rows
-                if object_row_idx >= len(object_data):
-                    continue
-                object_ind_var, object_row, object_row_idx = \
-                    get_object_row(ind_var, object_data, object_row_idx, plot_type)
-                if ind_var < object_ind_var and row_idx < len(query_data) - 1:
-                    # the time from the object row is too large, meaning we are missing the correct object row
-                    # for this data row. Skip this cycle.
-                    row_idx = row_idx + 1
-                    continue
-            else:
-                object_row = []
             if stat_line_type == 'scalar':
                 data_exists = row['fbar'] != "null" and row['fbar'] != "NULL"
             elif stat_line_type == 'vector':
@@ -274,6 +259,8 @@ class QueryUtil:
                 data_exists = row['fss'] != "null" and row['fss'] != "NULL"
             elif stat_line_type == 'mode_pair':
                 data_exists = row['interest'] != "null" and row['interest'] != "NULL"
+            elif stat_line_type == 'mode_single':
+                data_exists = row['area'] != "null" and row['area'] != "NULL"
             else:
                 data_exists = row['stat'] != "null" and row['stat'] != "NULL"
             if hasattr(row, 'N0'):
@@ -290,7 +277,7 @@ class QueryUtil:
                 ind_var_min = ind_var if ind_var < ind_var_min else ind_var_min
                 ind_var_max = ind_var if ind_var > ind_var_max else ind_var_max
                 stat, sub_levs, sub_secs, sub_values, sub_data, sub_headers, self.error[idx] \
-                    = get_stat(row, statistic, stat_line_type, app_params, object_row)
+                    = get_stat(row, statistic, stat_line_type, app_params)
                 if stat == 'null' or not is_number(stat):
                     # there's bad data at this point
                     stat = 'null'
@@ -335,7 +322,6 @@ class QueryUtil:
 
             # we successfully processed a cycle, so increment both indices
             row_idx = row_idx + 1
-            object_row_idx = object_row_idx + 1
 
         # make sure lists are definitely sorted by the float ind_var values, instead of their former strings
         if has_levels:
@@ -469,7 +455,7 @@ class QueryUtil:
             self.data[idx]['ymax'] = dep_var_max
         self.data[idx]['sum'] = loop_sum
 
-    def parse_query_data_histogram(self, idx, cursor, stat_line_type, statistic, app_params, object_data):
+    def parse_query_data_histogram(self, idx, cursor, stat_line_type, statistic, app_params):
         """function for parsing the data returned by a histogram query"""
         # initialize local variables
         has_levels = app_params["hasLevels"]
@@ -484,22 +470,8 @@ class QueryUtil:
 
         # loop through the query results and store the returned values
         row_idx = 0
-        object_row_idx = 0
         for row in query_data:
             av_seconds = int(row['avtime'])
-            if 'mode_pair' in stat_line_type and (statistic == "OTS (Object Threat Score)" or statistic == "Model-obs centroid distance (unique pairs)"):
-                # in case loading wend wrong and we don't have all our rows
-                if object_row_idx >= len(object_data):
-                    continue
-                object_av_seconds, object_row, object_row_idx = \
-                    get_object_row(av_seconds, object_data, object_row_idx, "Default")
-                if av_seconds < object_av_seconds and row_idx < len(query_data) - 1:
-                    # the time from the object row is too large, meaning we are missing the correct object row
-                    # for this data row. Skip this cycle.
-                    row_idx = row_idx + 1
-                    continue
-            else:
-                object_row = []
             data_exists = False
             if stat_line_type == 'scalar':
                 data_exists = row['fbar'] != "null" and row['fbar'] != "NULL"
@@ -523,7 +495,7 @@ class QueryUtil:
 
             if data_exists:
                 stat, sub_levs, sub_secs, sub_values, sub_data, sub_headers, self.error[idx] \
-                    = get_stat(row, statistic, stat_line_type, app_params, object_row)
+                    = get_stat(row, statistic, stat_line_type, app_params)
                 if stat == 'null' or not is_number(stat):
                     # there's bad data at this point
                     continue
@@ -553,7 +525,6 @@ class QueryUtil:
 
             # we successfully processed a cycle, so increment both indices
             row_idx = row_idx + 1
-            object_row_idx = object_row_idx + 1
 
         # we don't have bins yet, so we want all of the data in one array
         self.data[idx]['subData'] = [item for sublist in sub_data_all for item in sublist]
@@ -593,7 +564,7 @@ class QueryUtil:
 
                 # this function deals with rhist/phist/relp and rhist_rank/phist_bin/relp_ens tables
                 stat, sub_levs, sub_secs, sub_values, sub_data, sub_headers, self.error[idx] \
-                    = get_stat(row, statistic, stat_line_type, app_params, {})
+                    = get_stat(row, statistic, stat_line_type, app_params)
                 if stat == 'null' or not is_number(stat):
                     # there's bad data at this point
                     bins.append(bin_number)
@@ -757,7 +728,7 @@ class QueryUtil:
 
             if data_exists:
                 stat, sub_levs, sub_secs, sub_values, sub_data, sub_headers, self.error[idx] \
-                    = get_stat(row, statistic, stat_line_type, app_params, [])
+                    = get_stat(row, statistic, stat_line_type, app_params)
                 if stat == 'null' or not is_number(stat):
                     # there's bad data at this point
                     continue
@@ -1068,28 +1039,7 @@ class QueryUtil:
         """function for querying the database and sending the returned data to the parser"""
         for query in query_array:
             idx = query_array.index(query)
-            object_data = []
-            if query["statLineType"] == 'mode_pair':
-                # there are two queries in this statement
-                statements = query["statement"].split(" ||| ")
-                if query["statistic"] == "OTS (Object Threat Score)" \
-                        or query["statistic"] == "Model-obs centroid distance (unique pairs)":
-                    # only the mode statistic OTS needs the additional object information provided by the first query.
-                    # we can ignore it for other stats
-                    try:
-                        cursor.execute(statements[1])
-                    except pymysql.Error as e:
-                        self.error[idx] = "Error executing query: " + str(e)
-                    else:
-                        if cursor.rowcount == 0:
-                            self.error[idx] = "INFO:0 data records found"
-                        else:
-                            # get object data
-                            object_data = cursor.fetchall()
-                statement = statements[0]
-            else:
-                statement = query["statement"]
-
+            statement = query["statement"]
             try:
                 cursor.execute(statement)
             except pymysql.Error as e:
@@ -1100,7 +1050,7 @@ class QueryUtil:
                 else:
                     if query["appParams"]["plotType"] == 'Histogram':
                         self.parse_query_data_histogram(idx, cursor, query["statLineType"], query["statistic"],
-                                                        query["appParams"], object_data)
+                                                        query["appParams"])
                     elif query["appParams"]["plotType"] == 'Contour':
                         self.parse_query_data_contour(idx, cursor, query["statLineType"], query["statistic"],
                                                       query["appParams"])
@@ -1112,8 +1062,7 @@ class QueryUtil:
                                                                  query["statistic"], query["appParams"])
                     else:
                         self.parse_query_data_xy_curve(idx, cursor, query["statLineType"], query["statistic"],
-                                                       query["appParams"], query["fcstOffset"], query["vts"],
-                                                       object_data)
+                                                       query["appParams"], query["fcstOffset"], query["vts"])
 
     def validate_options(self, options):
         """makes sure all expected options were indeed passed in"""

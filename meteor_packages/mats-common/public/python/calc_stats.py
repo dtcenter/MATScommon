@@ -6,6 +6,7 @@ import metcalcpy.util.val1l2_statistics as calc_val1l2
 import metcalcpy.util.ctc_statistics as calc_ctc
 import metcalcpy.util.ecnt_statistics as calc_ecnt
 import metcalcpy.util.nbrcnt_statistics as calc_nbrcnt
+import metcalcpy.util.mode_2d_ratio_statistics as calc_2d_ratio
 from mode_stats import calculate_mode_stat
 
 
@@ -90,6 +91,38 @@ def ecnt_stat_switch():
     }
 
 
+def mode_single_stat_switch():
+    """function for defining the appropriate ecnt statistical calculation functions"""
+    return {
+        'Ratio of simple objects that are forecast objects': calc_2d_ratio.calculate_2d_ratio_fsa_asa,
+        'Ratio of simple objects that are observation objects': calc_2d_ratio.calculate_2d_ratio_osa_asa,
+        'Ratio of simple objects that are matched': calc_2d_ratio.calculate_2d_ratio_asm_asa,
+        'Ratio of simple objects that are unmatched': calc_2d_ratio.calculate_2d_ratio_asu_asa,
+        'Ratio of simple forecast objects that are matched': calc_2d_ratio.calculate_2d_ratio_fsm_fsa,
+        'Ratio of simple forecast objects that are unmatched': calc_2d_ratio.calculate_2d_ratio_fsu_fsa,
+        'Ratio of simple observed objects that are matched': calc_2d_ratio.calculate_2d_ratio_osm_osa,
+        'Ratio of simple observed objects that are unmatched': calc_2d_ratio.calculate_2d_ratio_osu_osa,
+        'Ratio of simple matched objects that are forecast objects': calc_2d_ratio.calculate_2d_ratio_fsm_asm,
+        'Ratio of simple matched objects that are observed objects': calc_2d_ratio.calculate_2d_ratio_osm_asm,
+        'Ratio of simple unmatched objects that are forecast objects': calc_2d_ratio.calculate_2d_ratio_fsu_asu,
+        'Ratio of simple unmatched objects that are observed objects': calc_2d_ratio.calculate_2d_ratio_osu_asu,
+        'Ratio of forecast objects that are simple': calc_2d_ratio.calculate_2d_ratio_fsa_faa,
+        'Ratio of forecast objects that are cluster': calc_2d_ratio.calculate_2d_ratio_fca_faa,
+        'Ratio of observed objects that are simple': calc_2d_ratio.calculate_2d_ratio_osa_oaa,
+        'Ratio of observed objects that are cluster': calc_2d_ratio.calculate_2d_ratio_oca_oaa,
+        'Ratio of cluster objects that are forecast objects': calc_2d_ratio.calculate_2d_ratio_fca_aca,
+        'Ratio of cluster objects that are observation objects': calc_2d_ratio.calculate_2d_ratio_oca_aca,
+        'Ratio of simple forecasts to simple observations (frequency bias)': calc_2d_ratio.calculate_2d_ratio_fsa_osa,
+        'Ratio of simple observations to simple forecasts (1 / frequency bias)': calc_2d_ratio.calculate_2d_ratio_osa_fsa,
+        'Ratio of cluster objects to simple objects': calc_2d_ratio.calculate_2d_ratio_aca_asa,
+        'Ratio of simple objects to cluster objects': calc_2d_ratio.calculate_2d_ratio_asa_aca,
+        'Ratio of forecast cluster objects to forecast simple objects': calc_2d_ratio.calculate_2d_ratio_fca_fsa,
+        'Ratio of forecast simple objects to forecast cluster objects': calc_2d_ratio.calculate_2d_ratio_fsa_fca,
+        'Ratio of observed cluster objects to observed simple objects': calc_2d_ratio.calculate_2d_ratio_oca_osa,
+        'Ratio of observed simple objects to observed cluster objects': calc_2d_ratio.calculate_2d_ratio_osa_oca,
+    }
+
+
 def calculate_stat(statistic, stat_line_type, agg_method, numpy_data, column_headers):
     """function for determining and calling the appropriate statistical calculation function"""
     if stat_line_type == 'scalar':
@@ -102,6 +135,8 @@ def calculate_stat(statistic, stat_line_type, agg_method, numpy_data, column_hea
         stat_switch = nbrcnt_stat_switch()
     elif stat_line_type == 'ecnt':
         stat_switch = ecnt_stat_switch()
+    elif stat_line_type == 'mode_single':
+        stat_switch = mode_single_stat_switch()
     else:
         stat_switch = {}
 
@@ -132,7 +167,7 @@ def calculate_stat(statistic, stat_line_type, agg_method, numpy_data, column_hea
             stat = np.nansum(sub_stats)  # calculate stat as sum of sub_values
         else:
             numpy_data[:, total_index] = 1  # METcalcpy is weird about how it calculates totals. This gets what we want here.
-            if stat_line_type == 'ctc':
+            if stat_line_type == 'ctc' or 'mode' in stat_line_type:
                 stat = stat_switch[statistic](numpy_data, column_headers)  # calculate overall stat
             else:
                 stat = stat_switch[statistic](numpy_data, column_headers, True)  # calculate overall stat
@@ -147,7 +182,7 @@ def calculate_stat(statistic, stat_line_type, agg_method, numpy_data, column_hea
     return sub_stats, stat, error
 
 
-def get_stat(row, statistic, stat_line_type, app_params, object_row):
+def get_stat(row, statistic, stat_line_type, app_params):
     """function for processing the sub-values from the query and calling a calculate_stat function"""
 
     has_levels = app_params["hasLevels"]
@@ -179,8 +214,8 @@ def get_stat(row, statistic, stat_line_type, app_params, object_row):
                 sub_ffbar.append(float(sub_datum[2]) if float(sub_datum[2]) != -9999 else np.nan)
                 sub_oobar.append(float(sub_datum[3]) if float(sub_datum[3]) != -9999 else np.nan)
                 sub_fobar.append(float(sub_datum[4]) if float(sub_datum[4]) != -9999 else np.nan)
-                sub_total.append(float(sub_datum[5]) if float(sub_datum[5]) != -9999 else np.nan)
-                sub_secs.append(float(sub_datum[6]) if float(sub_datum[6]) != -9999 else np.nan)
+                sub_total.append(int(sub_datum[5]) if int(sub_datum[5]) != -9999 else np.nan)
+                sub_secs.append(int(sub_datum[6]) if int(sub_datum[6]) != -9999 else np.nan)
                 if has_levels:
                     sub_levs.append(sub_datum[7])
 
@@ -219,13 +254,13 @@ def get_stat(row, statistic, stat_line_type, app_params, object_row):
                 if "ACC" not in statistic:
                     sub_f_speed_bar.append(float(sub_datum[7]) if float(sub_datum[7]) != -9999 else np.nan)
                     sub_o_speed_bar.append(float(sub_datum[8]) if float(sub_datum[8]) != -9999 else np.nan)
-                    sub_total.append(float(sub_datum[9]) if float(sub_datum[9]) != -9999 else np.nan)
-                    sub_secs.append(float(sub_datum[10]) if float(sub_datum[10]) != -9999 else np.nan)
+                    sub_total.append(int(sub_datum[9]) if int(sub_datum[9]) != -9999 else np.nan)
+                    sub_secs.append(int(sub_datum[10]) if int(sub_datum[10]) != -9999 else np.nan)
                     if has_levels:
                         sub_levs.append(sub_datum[11])
                 else:
-                    sub_total.append(float(sub_datum[7]) if float(sub_datum[7]) != -9999 else np.nan)
-                    sub_secs.append(float(sub_datum[8]) if float(sub_datum[8]) != -9999 else np.nan)
+                    sub_total.append(int(sub_datum[7]) if int(sub_datum[7]) != -9999 else np.nan)
+                    sub_secs.append(int(sub_datum[8]) if int(sub_datum[8]) != -9999 else np.nan)
                     if has_levels:
                         sub_levs.append(sub_datum[9])
 
@@ -256,12 +291,12 @@ def get_stat(row, statistic, stat_line_type, app_params, object_row):
             sub_total = []
             for sub_datum in sub_data:
                 sub_datum = sub_datum.split(';')
-                sub_fy_oy.append(float(sub_datum[0]) if float(sub_datum[0]) != -9999 else np.nan)
-                sub_fy_on.append(float(sub_datum[1]) if float(sub_datum[1]) != -9999 else np.nan)
-                sub_fn_oy.append(float(sub_datum[2]) if float(sub_datum[2]) != -9999 else np.nan)
-                sub_fn_on.append(float(sub_datum[3]) if float(sub_datum[3]) != -9999 else np.nan)
-                sub_total.append(float(sub_datum[4]) if float(sub_datum[4]) != -9999 else np.nan)
-                sub_secs.append(float(sub_datum[5]) if float(sub_datum[5]) != -9999 else np.nan)
+                sub_fy_oy.append(int(sub_datum[0]) if int(sub_datum[0]) != -9999 else np.nan)
+                sub_fy_on.append(int(sub_datum[1]) if int(sub_datum[1]) != -9999 else np.nan)
+                sub_fn_oy.append(int(sub_datum[2]) if int(sub_datum[2]) != -9999 else np.nan)
+                sub_fn_on.append(int(sub_datum[3]) if int(sub_datum[3]) != -9999 else np.nan)
+                sub_total.append(int(sub_datum[4]) if int(sub_datum[4]) != -9999 else np.nan)
+                sub_secs.append(int(sub_datum[5]) if int(sub_datum[5]) != -9999 else np.nan)
                 if has_levels:
                     sub_levs.append(sub_datum[6])
 
@@ -282,8 +317,8 @@ def get_stat(row, statistic, stat_line_type, app_params, object_row):
                 sub_datum = sub_datum.split(';')
                 sub_fss.append(float(sub_datum[0]) if float(sub_datum[0]) != -9999 else np.nan)
                 sub_fbs.append(float(sub_datum[1]) if float(sub_datum[1]) != -9999 else np.nan)
-                sub_total.append(float(sub_datum[2]) if float(sub_datum[2]) != -9999 else np.nan)
-                sub_secs.append(float(sub_datum[3]) if float(sub_datum[3]) != -9999 else np.nan)
+                sub_total.append(int(sub_datum[2]) if int(sub_datum[2]) != -9999 else np.nan)
+                sub_secs.append(int(sub_datum[3]) if int(sub_datum[3]) != -9999 else np.nan)
                 if has_levels:
                     sub_levs.append(sub_datum[4])
 
@@ -294,114 +329,148 @@ def get_stat(row, statistic, stat_line_type, app_params, object_row):
             if stat_error != '':
                 error = stat_error
 
-        elif 'mode_pair' in stat_line_type:
-            # histograms will pass in 'mode_pair_histogram', but we still want to use this code here.
-            if statistic == "OTS (Object Threat Score)" or statistic == "Model-obs centroid distance (unique pairs)":
-                object_sub_data = str(object_row['sub_data2']).split(',')
-                for sub_datum2 in object_sub_data:
-                    sub_datum2 = sub_datum2.split(';')
-                    obj_id = sub_datum2[0]
-                    mode_header_id = sub_datum2[1]
-                    area = sub_datum2[2]
-                    intensity_nn = sub_datum2[3]
-                    centroid_lat = sub_datum2[4]
-                    centroid_lon = sub_datum2[5]
-                    if mode_header_id not in individual_obj_lookup.keys():
-                        individual_obj_lookup[mode_header_id] = {}
-                    individual_obj_lookup[mode_header_id][obj_id] = {
-                        "area": float(area),
-                        "intensity_nn": float(intensity_nn),
-                        "centroid_lat": float(centroid_lat),
-                        "centroid_lon": float(centroid_lon)
-                    }
+        elif stat_line_type == 'mode_single':
             sub_data = str(row['sub_data']).split(',')
-            # these are the sub-fields specific to mode stats
-            sub_interests = []
-            sub_pair_fids = []
-            sub_pair_oids = []
-            sub_mode_header_ids = []
-            sub_cent_dists = []
-            sub_secs = []
-            sub_levs = []
+            # these are the sub-fields specific to ctc stats
+            sub_obj_id = []
+            sub_obj_cat = []
+            sub_obj_type = []
+            sub_area = []
+            sub_total = []
+            sub_fcst_flag = []
+            sub_simple_flag = []
+            sub_matched_flag = []
             for sub_datum in sub_data:
                 sub_datum = sub_datum.split(';')
-                obj_id = sub_datum[1]
-                if obj_id.find("_") >= 0:
-                    sub_interests.append(float(sub_datum[0]) if float(sub_datum[0]) != -9999 else np.nan)
-                    sub_pair_fids.append(obj_id.split("_")[0])
-                    sub_pair_oids.append(obj_id.split("_")[1])
-                    sub_mode_header_ids.append(int(sub_datum[2]) if float(sub_datum[2]) != -9999 else np.nan)
-                    sub_cent_dists.append(float(sub_datum[3]) if float(sub_datum[3]) != -9999 else np.nan)
-                    sub_secs.append(int(sub_datum[4]) if float(sub_datum[4]) != -9999 else np.nan)
-                    sub_levs.append(sub_datum[5])
+                sub_obj_id.append(sub_datum[0])
+                sub_obj_cat.append(sub_datum[1])
+                sub_obj_type.append('2d')
+                sub_area.append(float(sub_datum[2]) if float(sub_datum[2]) != -9999 else np.nan)
+                sub_total.append(int(sub_datum[3]) if int(sub_datum[3]) != -9999 else np.nan)
+                sub_fcst_flag.append(int(sub_datum[4]) if int(sub_datum[4]) != -9999 else np.nan)
+                sub_simple_flag.append(int(sub_datum[5]) if int(sub_datum[5]) != -9999 else np.nan)
+                sub_matched_flag.append(int(sub_datum[6]) if int(sub_datum[6]) != -9999 else np.nan)
+                sub_secs.append(int(sub_datum[7]) if int(sub_datum[7]) != -9999 else np.nan)
+                if has_levels:
+                    sub_levs.append(sub_datum[8])
 
-            if 'histogram' in stat_line_type:
-                # need to get an array of sub-values, one for each unique mode_header_id
-                sub_interest_map = {}
-                sub_pair_fid_map = {}
-                sub_pair_oid_map = {}
-                sub_mode_header_id_map = {}
-                sub_cent_dist_map = {}
-                sub_secs_map = {}
-                sub_levs_map = {}
-                for i in range(0, len(sub_mode_header_ids)):
-                    this_mode_header_id = str(sub_mode_header_ids[i])
-                    if this_mode_header_id not in sub_interest_map.keys():
-                        sub_interest_map[this_mode_header_id] = []
-                        sub_pair_fid_map[this_mode_header_id] = []
-                        sub_pair_oid_map[this_mode_header_id] = []
-                        sub_mode_header_id_map[this_mode_header_id] = []
-                        sub_cent_dist_map[this_mode_header_id] = []
-                        sub_secs_map[this_mode_header_id] = []
-                        sub_levs_map[this_mode_header_id] = []
-                    sub_interest_map[this_mode_header_id].append(sub_interests[i])
-                    sub_pair_fid_map[this_mode_header_id].append(sub_pair_fids[i])
-                    sub_pair_oid_map[this_mode_header_id].append(sub_pair_oids[i])
-                    sub_mode_header_id_map[this_mode_header_id].append(sub_mode_header_ids[i])
-                    sub_cent_dist_map[this_mode_header_id].append(sub_cent_dists[i])
-                    sub_secs_map[this_mode_header_id].append(sub_secs[i])
-                    sub_levs_map[this_mode_header_id].append(sub_levs[i])
-                sub_values = []
-                sub_secs = []
-                sub_levs = []
-                all_header_ids = sub_mode_header_id_map.keys()
-                for header_id in all_header_ids:
-                    stat, stat_error = calculate_mode_stat(statistic, np.asarray(sub_interest_map[header_id]),
-                                                           np.asarray(sub_pair_fid_map[header_id]),
-                                                           np.asarray(sub_pair_oid_map[header_id]),
-                                                           np.asarray(sub_mode_header_id_map[header_id]),
-                                                           np.asarray(sub_cent_dist_map[header_id]),
-                                                           individual_obj_lookup)
-                    if stat_error != '':
-                        error = stat_error
-                    if stat == 'null':
-                        sub_values.append(np.nan)
-                    else:
-                        sub_values.append(stat)
-                    # time and level are consistent for each header_id, so just take the first one
-                    sub_secs.append(sub_secs_map[header_id][0])
-                    sub_levs.append(sub_levs_map[header_id][0])
-                sub_values = np.asarray(sub_values)
-                sub_secs = np.asarray(sub_secs)
-                sub_levs = np.asarray(sub_levs)
-            else:
-                sub_interests = np.asarray(sub_interests)
-                sub_pair_fids = np.asarray(sub_pair_fids)
-                sub_pair_oids = np.asarray(sub_pair_oids)
-                sub_mode_header_ids = np.asarray(sub_mode_header_ids)
-                sub_cent_dists = np.asarray(sub_cent_dists)
-                sub_secs = np.asarray(sub_secs)
-                if len(sub_levs) == 0:
-                    sub_levs = np.empty(len(sub_secs))
-                else:
-                    sub_levs = np.asarray(sub_levs)
+            # calculate the ctc statistic
+            numpy_data = np.column_stack([sub_obj_id, sub_obj_cat, sub_obj_type, sub_area, sub_total,
+                                          sub_fcst_flag, sub_simple_flag, sub_matched_flag])
+            column_headers = np.asarray(['object_id', 'object_cat', 'object_type', 'area', 'total',
+                                         'fcst_flag', 'simple_flag', 'matched_flag'])
+            sub_values, stat, stat_error = calculate_stat(statistic, stat_line_type, agg_method, numpy_data, column_headers)
+            if stat_error != '':
+                error = stat_error
 
-                # calculate the mode statistic
-                stat, stat_error = calculate_mode_stat(statistic, sub_interests, sub_pair_fids, sub_pair_oids,
-                                                       sub_mode_header_ids, sub_cent_dists, individual_obj_lookup)
-                if stat_error != '':
-                    error = stat_error
-
+        # elif 'mode_pair' in stat_line_type:
+        #     # histograms will pass in 'mode_pair_histogram', but we still want to use this code here.
+        #     if statistic == "OTS (Object Threat Score)" or statistic == "Model-obs centroid distance (unique pairs)":
+        #         object_sub_data = str(object_row['sub_data2']).split(',')
+        #         for sub_datum2 in object_sub_data:
+        #             sub_datum2 = sub_datum2.split(';')
+        #             obj_id = sub_datum2[0]
+        #             mode_header_id = sub_datum2[1]
+        #             area = sub_datum2[2]
+        #             intensity_nn = sub_datum2[3]
+        #             centroid_lat = sub_datum2[4]
+        #             centroid_lon = sub_datum2[5]
+        #             if mode_header_id not in individual_obj_lookup.keys():
+        #                 individual_obj_lookup[mode_header_id] = {}
+        #             individual_obj_lookup[mode_header_id][obj_id] = {
+        #                 "area": float(area),
+        #                 "intensity_nn": float(intensity_nn),
+        #                 "centroid_lat": float(centroid_lat),
+        #                 "centroid_lon": float(centroid_lon)
+        #             }
+        #     sub_data = str(row['sub_data']).split(',')
+        #     # these are the sub-fields specific to mode stats
+        #     sub_interests = []
+        #     sub_pair_fids = []
+        #     sub_pair_oids = []
+        #     sub_mode_header_ids = []
+        #     sub_cent_dists = []
+        #     sub_secs = []
+        #     sub_levs = []
+        #     for sub_datum in sub_data:
+        #         sub_datum = sub_datum.split(';')
+        #         obj_id = sub_datum[1]
+        #         if obj_id.find("_") >= 0:
+        #             sub_interests.append(float(sub_datum[0]) if float(sub_datum[0]) != -9999 else np.nan)
+        #             sub_pair_fids.append(obj_id.split("_")[0])
+        #             sub_pair_oids.append(obj_id.split("_")[1])
+        #             sub_mode_header_ids.append(int(sub_datum[2]) if float(sub_datum[2]) != -9999 else np.nan)
+        #             sub_cent_dists.append(float(sub_datum[3]) if float(sub_datum[3]) != -9999 else np.nan)
+        #             sub_secs.append(int(sub_datum[4]) if float(sub_datum[4]) != -9999 else np.nan)
+        #             sub_levs.append(sub_datum[5])
+        #
+        #     if 'histogram' in stat_line_type:
+        #         # need to get an array of sub-values, one for each unique mode_header_id
+        #         sub_interest_map = {}
+        #         sub_pair_fid_map = {}
+        #         sub_pair_oid_map = {}
+        #         sub_mode_header_id_map = {}
+        #         sub_cent_dist_map = {}
+        #         sub_secs_map = {}
+        #         sub_levs_map = {}
+        #         for i in range(0, len(sub_mode_header_ids)):
+        #             this_mode_header_id = str(sub_mode_header_ids[i])
+        #             if this_mode_header_id not in sub_interest_map.keys():
+        #                 sub_interest_map[this_mode_header_id] = []
+        #                 sub_pair_fid_map[this_mode_header_id] = []
+        #                 sub_pair_oid_map[this_mode_header_id] = []
+        #                 sub_mode_header_id_map[this_mode_header_id] = []
+        #                 sub_cent_dist_map[this_mode_header_id] = []
+        #                 sub_secs_map[this_mode_header_id] = []
+        #                 sub_levs_map[this_mode_header_id] = []
+        #             sub_interest_map[this_mode_header_id].append(sub_interests[i])
+        #             sub_pair_fid_map[this_mode_header_id].append(sub_pair_fids[i])
+        #             sub_pair_oid_map[this_mode_header_id].append(sub_pair_oids[i])
+        #             sub_mode_header_id_map[this_mode_header_id].append(sub_mode_header_ids[i])
+        #             sub_cent_dist_map[this_mode_header_id].append(sub_cent_dists[i])
+        #             sub_secs_map[this_mode_header_id].append(sub_secs[i])
+        #             sub_levs_map[this_mode_header_id].append(sub_levs[i])
+        #         sub_values = []
+        #         sub_secs = []
+        #         sub_levs = []
+        #         all_header_ids = sub_mode_header_id_map.keys()
+        #         for header_id in all_header_ids:
+        #             stat, stat_error = calculate_mode_stat(statistic, np.asarray(sub_interest_map[header_id]),
+        #                                                    np.asarray(sub_pair_fid_map[header_id]),
+        #                                                    np.asarray(sub_pair_oid_map[header_id]),
+        #                                                    np.asarray(sub_mode_header_id_map[header_id]),
+        #                                                    np.asarray(sub_cent_dist_map[header_id]),
+        #                                                    individual_obj_lookup)
+        #             if stat_error != '':
+        #                 error = stat_error
+        #             if stat == 'null':
+        #                 sub_values.append(np.nan)
+        #             else:
+        #                 sub_values.append(stat)
+        #             # time and level are consistent for each header_id, so just take the first one
+        #             sub_secs.append(sub_secs_map[header_id][0])
+        #             sub_levs.append(sub_levs_map[header_id][0])
+        #         sub_values = np.asarray(sub_values)
+        #         sub_secs = np.asarray(sub_secs)
+        #         sub_levs = np.asarray(sub_levs)
+        #     else:
+        #         sub_interests = np.asarray(sub_interests)
+        #         sub_pair_fids = np.asarray(sub_pair_fids)
+        #         sub_pair_oids = np.asarray(sub_pair_oids)
+        #         sub_mode_header_ids = np.asarray(sub_mode_header_ids)
+        #         sub_cent_dists = np.asarray(sub_cent_dists)
+        #         sub_secs = np.asarray(sub_secs)
+        #         if len(sub_levs) == 0:
+        #             sub_levs = np.empty(len(sub_secs))
+        #         else:
+        #             sub_levs = np.asarray(sub_levs)
+        #
+        #         # calculate the mode statistic
+        #         stat, stat_error = calculate_mode_stat(statistic, sub_interests, sub_pair_fids, sub_pair_oids,
+        #                                                sub_mode_header_ids, sub_cent_dists, individual_obj_lookup)
+        #         if stat_error != '':
+        #             error = stat_error
+        #
         else:
             sub_data = str(row['sub_data']).split(',')
             # these are the sub-fields specific to precalculated stats
