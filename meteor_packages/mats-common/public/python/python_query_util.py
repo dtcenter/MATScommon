@@ -78,34 +78,6 @@ def is_number(s):
         return False
 
 
-def get_object_row(ind_var, object_data, object_row_idx, plot_type):
-    """function to iterate through MODE object rows until we find one that matches the current pair"""
-    object_row = object_data[object_row_idx]
-    if plot_type == 'ValidTime':
-        object_ind_var = float(object_row['hr_of_day'])
-    elif plot_type == 'GridScale':
-        object_ind_var = float(object_row['gridscale'])
-    elif plot_type == 'Profile':
-        object_ind_var = float(str(object_row['avVal']).replace('P', ''))
-    elif plot_type == 'DailyModelCycle' or plot_type == 'TimeSeries':
-        object_ind_var = int(object_row['avtime']) * 1000
-    elif plot_type == 'DieOff':
-        object_ind_var = int(object_row['fcst_lead'])
-        object_ind_var = object_ind_var if object_ind_var % 10000 != 0 else object_ind_var / 10000
-    elif plot_type == 'Threshold':
-        object_ind_var = float(object_row['thresh'].replace('=', '').replace('<', '').replace('>', ''))
-    elif plot_type == 'YearToYear':
-        object_ind_var = float(object_row['year'])
-    else:
-        object_ind_var = int(object_row['avtime'])
-    if ind_var > object_ind_var and object_row_idx < len(object_data) - 1:
-        # the time from the object row is too small, meaning it has no data row.
-        # move on with the magic of recursion.
-        object_row_idx = object_row_idx + 1
-        object_ind_var, object_row, object_row_idx = get_object_row(ind_var, object_data, object_row_idx, plot_type)
-    return object_ind_var, object_row, object_row_idx
-
-
 """class that contains all of the tools necessary for querying the db and calculating statistics from the
 returned data. In the future, we plan to split this into two classes, one for querying and one for statistics."""
 class QueryUtil:
@@ -173,12 +145,6 @@ class QueryUtil:
 
     def construct_output_json(self):
         """function for constructing and jsonifying a dictionary of the output variables"""
-        for i in range(0, len(self.data)):
-            self.data[i]["individualObjLookup"] = []
-            self.data[i]["subPairFid"] = []
-            self.data[i]["subPairOid"] = []
-            self.data[i]["subModeHeaderId"] = []
-            self.data[i]["subCentDist"] = []
         self.output_JSON = {
             "data": self.data,
             "N0": self.n0,
@@ -387,15 +353,12 @@ class QueryUtil:
                     list_levs = sub_levs_all[d_idx]
                 else:
                     list_levs = []
-                # JSON can't deal with numpy nans in subarrays for some reason, so we remove them
-                if stat_line_type != 'mode_pair':
-                    bad_value_indices = [index for index, value in enumerate(list_vals) if not is_number(value)]
-                    for bad_value_index in sorted(bad_value_indices, reverse=True):
-                        del list_data[bad_value_index]
-                        del list_vals[bad_value_index]
-                        del list_secs[bad_value_index]
-                        if has_levels:
-                            del list_levs[bad_value_index]
+
+                # JSON can't deal with numpy nans in subarrays for some reason, so we make them string NaNs
+                bad_value_indices = [index for index, value in enumerate(list_vals) if not is_number(value)]
+                for bad_value_index in sorted(bad_value_indices, reverse=True):
+                    list_vals[bad_value_index] = 'NaN'
+
                 # store data
                 if plot_type == 'Profile':
                     # profile has the stat first, and then the ind_var. The others have ind_var and then stat.
@@ -481,10 +444,6 @@ class QueryUtil:
                 data_exists = row['fy_oy'] != "null" and row['fy_oy'] != "NULL"
             elif stat_line_type == 'nbrcnt':
                 data_exists = row['fss'] != "null" and row['fss'] != "NULL"
-            elif 'mode_pair' in stat_line_type:
-                # the word histogram might have already been appended, so look for the sub-string
-                data_exists = row['interest'] != "null" and row['interest'] != "NULL"
-                stat_line_type = 'mode_pair_histogram'  # let the get_stat function know that this is a histogram
             else:
                 data_exists = row['stat'] != "null" and row['stat'] != "NULL"
             if hasattr(row, 'N0'):
@@ -500,6 +459,7 @@ class QueryUtil:
                     # there's bad data at this point
                     continue
                 # JSON can't deal with numpy nans in subarrays for some reason, so we remove them
+                # Don 't need them for matching because histograms don't do Overall Statistic
                 if np.isnan(sub_values).any() or np.isinf(sub_values).any():
                     nan_value_indices = np.argwhere(np.isnan(sub_values))
                     inf_value_indices = np.argwhere(np.isinf(sub_values))
@@ -585,6 +545,7 @@ class QueryUtil:
                         list_levs = sub_levs
 
                     # JSON can't deal with numpy nans in subarrays for some reason, so we remove them
+                    # Don 't need them for matching because histograms don't do Overall Statistic
                     bad_value_indices = [index for index, value in enumerate(list_vals) if not is_number(value)]
                     for bad_value_index in sorted(bad_value_indices, reverse=True):
                         del list_data[bad_value_index]
