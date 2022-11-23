@@ -68,7 +68,7 @@ def _calculate_mode_ctc(statistic, numpy_data, column_headers):
         mode_header_id_idx = np.where(column_headers == 'mode_header_id')[0]
 
         if numpy_data.shape[0] > 0:
-            interest_2d_arrays, mode_header_lookup = _get_interest2d(numpy_data[:, interest_idx].flatten(),
+            interest_2d_arrays, mode_header_lookup = _get_interest2d(numpy_data[:, interest_idx].flatten().astype(float),
                                                                      numpy_data[:, mode_header_id_idx].flatten(),
                                                                      numpy_data[:, pair_fid_idx].flatten(),
                                                                      numpy_data[:, pair_oid_idx].flatten())
@@ -131,10 +131,24 @@ def _calculate_mode_ctc(statistic, numpy_data, column_headers):
     return ctc, error
 
 
-def calculate_ots(sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id, individual_obj_lookup):
+def calculate_ots(numpy_data, column_headers):
     """function for calculating object threat score from MET MODE output"""
     error = ""
     try:
+        interest_idx = np.where(column_headers == 'interest')[0]
+        pair_fid_idx = np.where(column_headers == 'object_f_id')[0]
+        pair_oid_idx = np.where(column_headers == 'object_o_id')[0]
+        mode_header_id_idx = np.where(column_headers == 'mode_header_id')[0]
+        f_area_idx = np.where(column_headers == 'f_area')[0]
+        o_area_idx = np.where(column_headers == 'o_area')[0]
+
+        sub_interest = numpy_data[:, interest_idx].flatten().astype(float)
+        sub_pair_fid = numpy_data[:, pair_fid_idx].flatten()
+        sub_pair_oid = numpy_data[:, pair_oid_idx].flatten()
+        sub_mode_header_id = numpy_data[:, mode_header_id_idx].flatten()
+        sub_f_area = numpy_data[:, f_area_idx].flatten().astype(float)
+        sub_o_area = numpy_data[:, o_area_idx].flatten().astype(float)
+
         ots_sum = 0.0
         if len(sub_pair_fid) > 0 and len(sub_pair_oid) > 0:
             # Sort the pair_interest array but keep that sorted interest linked with the pair object IDs
@@ -145,7 +159,8 @@ def calculate_ots(sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id, 
             sorted_fid = sub_pair_fid[indices]
             sorted_oid = sub_pair_oid[indices]
             sorted_mode_header = sub_mode_header_id[indices]
-
+            sorted_f_area = sub_f_area[indices]
+            sorted_o_area = sub_o_area[indices]
             matched_fid = {}
             matched_oid = {}
             all_f_areas = []
@@ -154,13 +169,8 @@ def calculate_ots(sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id, 
                 this_mode_header_id = str(sorted_mode_header[i])
                 this_fid = sorted_fid[i]
                 this_oid = sorted_oid[i]
-                if this_mode_header_id not in individual_obj_lookup \
-                        or this_fid not in individual_obj_lookup[this_mode_header_id] \
-                        or this_oid not in individual_obj_lookup[this_mode_header_id]:
-                    # sometimes data loading can happen too early and stats can be incomplete
-                    continue
-                f_area = individual_obj_lookup[this_mode_header_id][this_fid]["area"]
-                o_area = individual_obj_lookup[this_mode_header_id][this_oid]["area"]
+                f_area = sorted_f_area[i]
+                o_area = sorted_o_area[i]
                 if this_mode_header_id not in matched_fid.keys():
                     matched_fid[this_mode_header_id] = []
                     matched_oid[this_mode_header_id] = []
@@ -183,13 +193,20 @@ def calculate_ots(sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id, 
     return ots
 
 
-def calculate_mmi(sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id):
+def calculate_mmi(numpy_data, column_headers):
     """function for calculating median of maximum interest from MET MODE output"""
     error = ""
     try:
-        if len(sub_pair_fid) > 0 and len(sub_pair_oid) > 0:
-            interest_2d_arrays, mode_header_lookup = _get_interest2d(sub_interest, sub_mode_header_id,
-                                                                     sub_pair_fid, sub_pair_oid)
+        interest_idx = np.where(column_headers == 'interest')[0]
+        pair_fid_idx = np.where(column_headers == 'object_f_id')[0]
+        pair_oid_idx = np.where(column_headers == 'object_o_id')[0]
+        mode_header_id_idx = np.where(column_headers == 'mode_header_id')[0]
+
+        if numpy_data.shape[0] > 0:
+            interest_2d_arrays, mode_header_lookup = _get_interest2d(numpy_data[:, interest_idx].flatten().astype(float),
+                                                                     numpy_data[:, mode_header_id_idx].flatten(),
+                                                                     numpy_data[:, pair_fid_idx].flatten(),
+                                                                     numpy_data[:, pair_oid_idx].flatten())
             max_int_array = np.empty(0, dtype=np.float)
             for key in interest_2d_arrays:
                 interest_2d = interest_2d_arrays[key]
@@ -208,13 +225,20 @@ def calculate_mmi(sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id):
     return mmi
 
 
-def calculate_ofb(sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id):
+def calculate_ofb(numpy_data, column_headers):
     """function for calculating object frequency bias from MET MODE output"""
     error = ""
     try:
-        if len(sub_pair_fid) > 0 and len(sub_pair_oid) > 0:
-            interest_2d_arrays, mode_header_lookup = _get_interest2d(sub_interest, sub_mode_header_id,
-                                                                     sub_pair_fid, sub_pair_oid)
+        interest_idx = np.where(column_headers == 'interest')[0]
+        pair_fid_idx = np.where(column_headers == 'object_f_id')[0]
+        pair_oid_idx = np.where(column_headers == 'object_o_id')[0]
+        mode_header_id_idx = np.where(column_headers == 'mode_header_id')[0]
+
+        if numpy_data.shape[0] > 0:
+            interest_2d_arrays, mode_header_lookup = _get_interest2d(numpy_data[:, interest_idx].flatten().astype(float),
+                                                                     numpy_data[:, mode_header_id_idx].flatten(),
+                                                                     numpy_data[:, pair_fid_idx].flatten(),
+                                                                     numpy_data[:, pair_oid_idx].flatten())
             # Sum the numbers of forecast and observed objects
             n_f = 0
             n_o = 0
@@ -233,13 +257,23 @@ def calculate_ofb(sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id):
     return ofb
 
 
-def calculate_mcd(sub_interest, sub_pair_fid, sub_pair_oid, sub_mode_header_id, sub_cent_dist):
+def calculate_mcd(numpy_data, column_headers):
     """function for calculating mean centroid distance from MET MODE output"""
     error = ""
     total_error_array = []
     try:
-        # The commented sections here are not currently used, but may be in the future.
-        # They will be removed if they are not made active within two METexpress versions.
+        interest_idx = np.where(column_headers == 'interest')[0]
+        pair_fid_idx = np.where(column_headers == 'object_f_id')[0]
+        pair_oid_idx = np.where(column_headers == 'object_o_id')[0]
+        mode_header_id_idx = np.where(column_headers == 'mode_header_id')[0]
+        cent_dist_idx = np.where(column_headers == 'centroid_dist')[0]
+
+        sub_interest = numpy_data[:, interest_idx].flatten().astype(float)
+        sub_pair_fid = numpy_data[:, pair_fid_idx].flatten()
+        sub_pair_oid = numpy_data[:, pair_oid_idx].flatten()
+        sub_mode_header_id = numpy_data[:, mode_header_id_idx].flatten()
+        sub_cent_dist = numpy_data[:, cent_dist_idx].flatten().astype(float)
+
         if len(sub_pair_fid) > 0 and len(sub_pair_oid) > 0:
             # Mean distance calculated in a general sense using the same method as for OTS
             # this method does not require object "matches"
