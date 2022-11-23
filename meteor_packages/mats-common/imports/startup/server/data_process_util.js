@@ -52,7 +52,7 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
             // errorResult holds all the calculated curve stats like mean, sd, etc.
             // These don't make sense for aggregated MODE stats, so skip for them.
             var errorResult;
-            if (statType !== 'met-mode_pair') {
+            if (!statType.includes('met-mode')) {
                 if (appParams.hasLevels) {
                     errorResult = matsDataUtils.get_err(data.subVals[di], data.subSecs[di], data.subLevs[di], appParams);
                 } else {
@@ -61,7 +61,7 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
             }
 
             if ((diffFrom === null || diffFrom === undefined) || !appParams.matching) {
-                if (!isMetexpress && statType !== 'ctc' && statType !== 'scalar' && statType !== 'met-mode_pair') {
+                if (!isMetexpress && statType !== 'ctc' && statType !== 'scalar' && !statType.includes('met-mode')) {
                     // assign recalculated statistic to data[di][1], which is the value to be plotted
                     // we have already recalculated the statistic for ctc and scalar stats if there was matching, etc, so keep that value
                     if (statisticSelect === 'N' || statisticSelect === 'N times*levels(*stations if station plot) per graph point') {
@@ -86,7 +86,7 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
 
             // store error bars if matching and not an aggregated MODE stat
             var errorLength = 0;
-            if (!appParams.matching || statType === 'met-mode_pair') {
+            if (!appParams.matching || statType.includes('met-mode')) {
                 data.error_y.array[di] = null;
             } else if (statType === 'ctc') {
                 // call the python ctc error bar code for diff curves
@@ -173,7 +173,7 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
                     n: Array.isArray(data.subInterest[di]) || !isNaN(data.subInterest[di]) ? data.subInterest[di].length : 0,
                     raw_stat: data.y[di],
                     n_good: Array.isArray(data.subInterest[di]) || !isNaN(data.subInterest[di]) ? data.subInterest[di].length : 0,
-                    avgInterest: Array.isArray(data.subInterest[di]) || !isNaN(data.subInterest[di]) ? matsDataUtils.average(data.subInterest[di]) : null,
+                    avgInterest: Array.isArray(data.subInterest[di]) || !isNaN(data.subInterest[di]) ? matsDataUtils.average(data.subInterest[di]).toPrecision(4) : null,
                 };
                 data.text[di] = data.text[di] +
                     "<br>" + statisticSelect + ": " + (data.y[di] === null ? null : data.y[di].toPrecision(4)) +
@@ -375,12 +375,12 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
 
             // errorResult holds all the calculated curve stats like mean, sd, etc.
             // These don't make sense for aggregated MODE stats, so skip for them.
-            if (statType !== 'met-mode_pair') {
+            if (!statType.includes('met-mode')) {
                 var errorResult = matsDataUtils.get_err(data.subVals[di], data.subSecs[di], data.subLevs[di], appParams);
             }
 
             if ((diffFrom === null || diffFrom === undefined) || !appParams.matching) {
-                if (!isMetexpress && statType !== 'ctc' && statType !== 'scalar' && statType !== 'met-mode_pair') {
+                if (!isMetexpress && statType !== 'ctc' && statType !== 'scalar' && !statType.includes('met-mode')) {
                     // assign recalculated statistic to data[di][1], which is the value to be plotted
                     // we have already recalculated the statistic for ctc and scalar stats if there was matching, etc, so keep that value
                     if (statisticSelect === 'N' || statisticSelect === 'N times*levels(*stations if station plot) per graph point') {
@@ -405,7 +405,7 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
 
             // store error bars if matching and not an aggregated MODE stat
             var errorLength = 0;
-            if (!appParams.matching || statType === 'met-mode_pair') {
+            if (!appParams.matching || statType.includes('met-mode')) {
                 data.error_x.array[di] = null;
             } else if (statType === 'ctc') {
                 // call the python ctc error bar code for diff curves
@@ -460,7 +460,7 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
                     n: Array.isArray(data.subInterest[di]) || !isNaN(data.subInterest[di]) ? data.subInterest[di].length : 0,
                     raw_stat: data.x[di],
                     n_good: Array.isArray(data.subInterest[di]) || !isNaN(data.subInterest[di]) ? data.subInterest[di].length : 0,
-                    avgInterest: Array.isArray(data.subInterest[di]) || !isNaN(data.subInterest[di]) ? matsDataUtils.average(data.subInterest[di]) : null,
+                    avgInterest: Array.isArray(data.subInterest[di]) || !isNaN(data.subInterest[di]) ? matsDataUtils.average(data.subInterest[di]).toPrecision(4) : null,
                 };
                 data.text[di] = data.text[di] +
                     "<br>" + statisticSelect + ": " + (data.x[di] === null ? null : data.x[di].toPrecision(4)) +

@@ -11,7 +11,7 @@ from calc_stats import get_stat, calculate_stat
 from calc_ens_stats import get_ens_stat
 
 
-def null_point(data, di, plot_type, stat_var_name, has_levels):
+def _null_point(data, di, plot_type, stat_var_name, has_levels):
     """utility to make null a point on a graph"""
     di = int(di)
     data[stat_var_name][di] = 'null'
@@ -28,7 +28,7 @@ def null_point(data, di, plot_type, stat_var_name, has_levels):
         data["subLevs"][di] = 'NaN'
 
 
-def add_null_point(data, di, plot_type, ind_var_name, new_ind_var, stat_var_name, has_levels):
+def _add_null_point(data, di, plot_type, ind_var_name, new_ind_var, stat_var_name, has_levels):
     """function to add an additional null point on a graph"""
     di = int(di)
     data[ind_var_name].insert(di, new_ind_var)
@@ -46,7 +46,7 @@ def add_null_point(data, di, plot_type, ind_var_name, new_ind_var, stat_var_name
         data['subLevs'].insert(di, [])
 
 
-def remove_point(data, di, plot_type, stat_var_name, has_levels):
+def _remove_point(data, di, plot_type, stat_var_name, has_levels):
     """utility to remove a point on a graph"""
     di = int(di)
     del (data["x"][di])
@@ -64,7 +64,7 @@ def remove_point(data, di, plot_type, stat_var_name, has_levels):
         del (data["subLevs"][di])
 
 
-def is_number(s):
+def _is_number(s):
     """function to check if a certain value is a float or int"""
     try:
         if np.isnan(s) or np.isinf(s):
@@ -102,6 +102,7 @@ class QueryUtil:
                 "subVals": [],
                 "subSecs": [],
                 "subLevs": [],
+                "subInterest": [],
                 "subHit": [],
                 "subFa": [],
                 "subMiss": [],
@@ -145,6 +146,15 @@ class QueryUtil:
 
     def construct_output_json(self):
         """function for constructing and jsonifying a dictionary of the output variables"""
+        for i in range(len(self.data)):
+            # only save relevant mode data if this is mode
+            if 'interest' in self.data[i]["subHeaders"][0]:
+                interest_idx = self.data[i]["subHeaders"][0].index('interest')
+                for j in range(len(self.data[i]["subData"])):
+                    self.data[i]["subInterest"].append([float(a[interest_idx]) for a in self.data[i]["subData"][j]])
+                self.data[i]["subHeaders"] = []
+                self.data[i]["subData"] = []
+
         self.output_JSON = {
             "data": self.data,
             "N0": self.n0,
@@ -244,7 +254,7 @@ class QueryUtil:
                 ind_var_max = ind_var if ind_var > ind_var_max else ind_var_max
                 stat, sub_levs, sub_secs, sub_values, sub_data, sub_headers, self.error[idx] \
                     = get_stat(row, statistic, stat_line_type, app_params)
-                if stat == 'null' or not is_number(stat):
+                if stat == 'null' or not _is_number(stat):
                     # there's bad data at this point
                     stat = 'null'
                     sub_values = 'NaN'  # These are string NaNs instead of numerical NaNs because the JSON encoder can't figure out what to do with np.nan or float('nan')
@@ -355,7 +365,7 @@ class QueryUtil:
                     list_levs = []
 
                 # JSON can't deal with numpy nans in subarrays for some reason, so we make them string NaNs
-                bad_value_indices = [index for index, value in enumerate(list_vals) if not is_number(value)]
+                bad_value_indices = [index for index, value in enumerate(list_vals) if not _is_number(value)]
                 for bad_value_index in sorted(bad_value_indices, reverse=True):
                     list_vals[bad_value_index] = 'NaN'
 
@@ -402,9 +412,9 @@ class QueryUtil:
                         else:
                             this_cadence = (float(this_cadence) - (float(fcst_offset) * 3600 * 1000))
                         if this_cadence in vts:
-                            add_null_point(self.data[idx], d_idx + 1, plot_type, 'x', new_time, 'y', has_levels)
+                            _add_null_point(self.data[idx], d_idx + 1, plot_type, 'x', new_time, 'y', has_levels)
                     else:
-                        add_null_point(self.data[idx], d_idx + 1, plot_type, 'x', new_time, 'y', has_levels)
+                        _add_null_point(self.data[idx], d_idx + 1, plot_type, 'x', new_time, 'y', has_levels)
 
         if plot_type == 'Profile':
             self.data[idx]['xmin'] = dep_var_min
@@ -455,7 +465,7 @@ class QueryUtil:
             if data_exists:
                 stat, sub_levs, sub_secs, sub_values, sub_data, sub_headers, self.error[idx] \
                     = get_stat(row, statistic, stat_line_type, app_params)
-                if stat == 'null' or not is_number(stat):
+                if stat == 'null' or not _is_number(stat):
                     # there's bad data at this point
                     continue
                 # JSON can't deal with numpy nans in subarrays for some reason, so we remove them
@@ -525,7 +535,7 @@ class QueryUtil:
                 # this function deals with rhist/phist/relp and rhist_rank/phist_bin/relp_ens tables
                 stat, sub_levs, sub_secs, sub_values, sub_data, sub_headers, self.error[idx] \
                     = get_stat(row, statistic, stat_line_type, app_params)
-                if stat == 'null' or not is_number(stat):
+                if stat == 'null' or not _is_number(stat):
                     # there's bad data at this point
                     bins.append(bin_number)
                     bin_counts.append(0)
@@ -546,7 +556,7 @@ class QueryUtil:
 
                     # JSON can't deal with numpy nans in subarrays for some reason, so we remove them
                     # Don 't need them for matching because histograms don't do Overall Statistic
-                    bad_value_indices = [index for index, value in enumerate(list_vals) if not is_number(value)]
+                    bad_value_indices = [index for index, value in enumerate(list_vals) if not _is_number(value)]
                     for bad_value_index in sorted(bad_value_indices, reverse=True):
                         del list_data[bad_value_index]
                         del list_vals[bad_value_index]
@@ -690,7 +700,7 @@ class QueryUtil:
             if data_exists:
                 stat, sub_levs, sub_secs, sub_values, sub_data, sub_headers, self.error[idx] \
                     = get_stat(row, statistic, stat_line_type, app_params)
-                if stat == 'null' or not is_number(stat):
+                if stat == 'null' or not _is_number(stat):
                     # there's bad data at this point
                     continue
                 n = row['n']
@@ -919,10 +929,10 @@ class QueryUtil:
                         # if this is not a common non-null independentVar value, we'll have to remove some data
                         if data[independent_var_name][di] not in matching_independent_has_point:
                             # if at least one curve doesn't even have a null here, much less a matching value (because of the cadence), just drop this independentVar
-                            remove_point(data, di, plot_type, stat_var_name, has_levels)
+                            _remove_point(data, di, plot_type, stat_var_name, has_levels)
                         else:
                             # if all of the curves have either data or nulls at this independentVar, and there is at least one null, ensure all of the curves are null
-                            null_point(data, di, plot_type, stat_var_name, has_levels)
+                            _null_point(data, di, plot_type, stat_var_name, has_levels)
                         # then move on to the next independentVar. There's no need to mess with the subSecs or subLevs
                         continue
                 sub_data = data["subData"][di]
@@ -959,7 +969,7 @@ class QueryUtil:
 
                     if len(new_sub_secs) == 0:
                         # no matching sub-values, so null the point
-                        null_point(data, di, plot_type, stat_var_name, has_levels)
+                        _null_point(data, di, plot_type, stat_var_name, has_levels)
                     else:
                         # store the filtered data
                         data["subData"][di] = new_sub_data
@@ -970,7 +980,7 @@ class QueryUtil:
                             data["subLevs"][di] = new_sub_levs
                 else:
                     # no sub-values to begin with, so null the point
-                    null_point(data, di, plot_type, stat_var_name, has_levels)
+                    _null_point(data, di, plot_type, stat_var_name, has_levels)
 
             data_length = len(data[independent_var_name])
             for di in range(0, data_length):
@@ -985,13 +995,13 @@ class QueryUtil:
                     if stat_error != '':
                         self.error[curve_index] = stat_error
 
-                    if is_number(data["x"][di]) and data["x"][di] < data["xmin"]:
+                    if _is_number(data["x"][di]) and data["x"][di] < data["xmin"]:
                         data["xmin"] = data["x"][di]
-                    if is_number(data["x"][di]) and data["x"][di] > data["xmax"]:
+                    if _is_number(data["x"][di]) and data["x"][di] > data["xmax"]:
                         data["xmax"] = data["x"][di]
-                    if is_number(data["y"][di]) and data["y"][di] < data["ymin"]:
+                    if _is_number(data["y"][di]) and data["y"][di] < data["ymin"]:
                         data["ymin"] = data["y"][di]
-                    if is_number(data["y"][di]) and data["y"][di] > data["ymax"]:
+                    if _is_number(data["y"][di]) and data["y"][di] > data["ymax"]:
                         data["ymax"] = data["y"][di]
 
             self.data[curve_index] = data
