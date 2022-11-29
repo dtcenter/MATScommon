@@ -153,26 +153,45 @@ class QueryUtil:
             self.n_times.append([])
             self.error.append("")
 
-    def construct_output_json(self, plot_type):
+    def construct_output_json(self, plot_type, stat_line_type):
         """function for constructing and jsonifying a dictionary of the output variables"""
         for i in range(len(self.data)):
             # only save relevant sub-data
             if plot_type in ['ValidTime', 'GridScale', 'Profile', 'DailyModelCycle', 'TimeSeries',
                              'DieOff', 'Threshold', 'YearToYear']:
-                if len(self.data[i]["subHeaders"]) > 0 and 'interest' in self.data[i]["subHeaders"][0]:
-                    interest_idx = self.data[i]["subHeaders"][0].index('interest')
+                if stat_line_type == 'mode_pair':
                     for j in range(len(self.data[i]["subData"])):
-                        self.data[i]["subInterest"].append([float(a[interest_idx]) for a in self.data[i]["subData"][j]])
-                elif len(self.data[i]["subHeaders"]) > 0 and 'fy_oy' in self.data[i]["subHeaders"][0]:
-                    hit_idx = self.data[i]["subHeaders"][0].index('fy_oy')
-                    fa_idx = self.data[i]["subHeaders"][0].index('fy_on')
-                    miss_idx = self.data[i]["subHeaders"][0].index('fn_oy')
-                    cn_idx = self.data[i]["subHeaders"][0].index('fn_on')
+                        if self.data[i]["subHeaders"][j] == 'NaN' or len(self.data[i]["subHeaders"][j]) == 0:
+                            self.data[i]["subInterest"].append('NaN')
+                        else:
+                            try:
+                                interest_idx = self.data[i]["subHeaders"][j].index('interest')
+                                self.data[i]["subInterest"].append([float(a[interest_idx]) for a in self.data[i]["subData"][j]])
+                            except Exception as e:
+                                self.data[i]["subInterest"].append('NaN')
+                elif stat_line_type == 'ctc':
                     for j in range(len(self.data[i]["subData"])):
-                        self.data[i]["subHit"].append([int(a[hit_idx]) for a in self.data[i]["subData"][j]])
-                        self.data[i]["subFa"].append([int(a[fa_idx]) for a in self.data[i]["subData"][j]])
-                        self.data[i]["subMiss"].append([int(a[miss_idx]) for a in self.data[i]["subData"][j]])
-                        self.data[i]["subCn"].append([int(a[cn_idx]) for a in self.data[i]["subData"][j]])
+                        if self.data[i]["subHeaders"][j] == 'NaN' or len(self.data[i]["subHeaders"][j]) == 0:
+                            self.data[i]["subHit"].append('NaN')
+                            self.data[i]["subFa"].append('NaN')
+                            self.data[i]["subMiss"].append('NaN')
+                            self.data[i]["subCn"].append('NaN')
+                        else:
+                            try:
+                                hit_idx = self.data[i]["subHeaders"][j].index('fy_oy')
+                                fa_idx = self.data[i]["subHeaders"][j].index('fy_on')
+                                miss_idx = self.data[i]["subHeaders"][j].index('fn_oy')
+                                cn_idx = self.data[i]["subHeaders"][j].index('fn_on')
+                                self.data[i]["subHit"].append([int(a[hit_idx]) for a in self.data[i]["subData"][j]])
+                                self.data[i]["subFa"].append([int(a[fa_idx]) for a in self.data[i]["subData"][j]])
+                                self.data[i]["subMiss"].append([int(a[miss_idx]) for a in self.data[i]["subData"][j]])
+                                self.data[i]["subCn"].append([int(a[cn_idx]) for a in self.data[i]["subData"][j]])
+                            except Exception as e:
+                                self.data[i]["subHit"].append('NaN')
+                                self.data[i]["subFa"].append('NaN')
+                                self.data[i]["subMiss"].append('NaN')
+                                self.data[i]["subCn"].append('NaN')
+
             self.data[i]["subHeaders"] = []
             self.data[i]["subData"] = []
 
@@ -1135,5 +1154,6 @@ if __name__ == '__main__':
     qutil.do_query(options)
     if options["query_array"][0]["appParams"]["matching"]:
         qutil.do_matching(options)
-    qutil.construct_output_json(options["query_array"][0]["appParams"]["plotType"])
+    qutil.construct_output_json(options["query_array"][0]["appParams"]["plotType"],
+                                options["query_array"][0]["statLineType"])
     print(qutil.output_JSON)
