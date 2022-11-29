@@ -78,9 +78,23 @@ def _is_number(s):
         return False
 
 
-"""class that contains all of the tools necessary for querying the db and calculating statistics from the
-returned data. In the future, we plan to split this into two classes, one for querying and one for statistics."""
+class NpEncoder(json.JSONEncoder):
+    """class that hopefully allows JSON to encode numpy types"""
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        if isinstance(obj, np.floating):
+            return float(obj)
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        if isinstance(obj, np.nan) or isinstance(obj, np.inf):
+            return 'NaN'
+        return super(NpEncoder, self).default(obj)
+
+
 class QueryUtil:
+    """class that contains all of the tools necessary for querying the db and calculating statistics from the
+    returned data. In the future, we plan to split this into two classes, one for querying and one for statistics."""
     error = []  # one of the four fields to return at the end -- records any error message
     n0 = []  # one of the four fields to return at the end -- number of sub_values for each independent variable
     n_times = []  # one of the four fields to return at the end -- number of sub_secs for each independent variable
@@ -144,16 +158,28 @@ class QueryUtil:
             self.n_times.append([])
             self.error.append("")
 
-    def construct_output_json(self):
+    def construct_output_json(self, plot_type):
         """function for constructing and jsonifying a dictionary of the output variables"""
         for i in range(len(self.data)):
-            # only save relevant mode data if this is mode
-            if 'interest' in self.data[i]["subHeaders"][0]:
-                interest_idx = self.data[i]["subHeaders"][0].index('interest')
-                for j in range(len(self.data[i]["subData"])):
-                    self.data[i]["subInterest"].append([float(a[interest_idx]) for a in self.data[i]["subData"][j]])
-                self.data[i]["subHeaders"] = []
-                self.data[i]["subData"] = []
+            # only save relevant sub-data
+            if plot_type in ['ValidTime', 'GridScale', 'Profile', 'DailyModelCycle', 'TimeSeries',
+                             'DieOff', 'Threshold', 'YearToYear']:
+                if len(self.data[i]["subHeaders"]) > 0 and 'interest' in self.data[i]["subHeaders"][0]:
+                    interest_idx = self.data[i]["subHeaders"][0].index('interest')
+                    for j in range(len(self.data[i]["subData"])):
+                        self.data[i]["subInterest"].append([float(a[interest_idx]) for a in self.data[i]["subData"][j]])
+                elif len(self.data[i]["subHeaders"]) > 0 and 'fy_oy' in self.data[i]["subHeaders"][0]:
+                    hit_idx = self.data[i]["subHeaders"][0].index('fy_oy')
+                    fa_idx = self.data[i]["subHeaders"][0].index('fy_on')
+                    miss_idx = self.data[i]["subHeaders"][0].index('fn_oy')
+                    cn_idx = self.data[i]["subHeaders"][0].index('fn_on')
+                    for j in range(len(self.data[i]["subData"])):
+                        self.data[i]["subHit"].append([int(a[hit_idx]) for a in self.data[i]["subData"][j]])
+                        self.data[i]["subFa"].append([int(a[fa_idx]) for a in self.data[i]["subData"][j]])
+                        self.data[i]["subMiss"].append([int(a[miss_idx]) for a in self.data[i]["subData"][j]])
+                        self.data[i]["subCn"].append([int(a[cn_idx]) for a in self.data[i]["subData"][j]])
+            self.data[i]["subHeaders"] = []
+            self.data[i]["subData"] = []
 
         self.output_JSON = {
             "data": self.data,
@@ -161,7 +187,7 @@ class QueryUtil:
             "N_times": self.n_times,
             "error": self.error
         }
-        self.output_JSON = json.dumps(self.output_JSON)
+        self.output_JSON = json.dumps(self.output_JSON, cls=NpEncoder)
 
     def parse_query_data_xy_curve(self, idx, cursor, stat_line_type, statistic, app_params, fcst_offset, vts):
         """function for parsing the data returned by an x-y curve query"""
@@ -364,11 +390,6 @@ class QueryUtil:
                 else:
                     list_levs = []
 
-                # JSON can't deal with numpy nans in subarrays for some reason, so we make them string NaNs
-                bad_value_indices = [index for index, value in enumerate(list_vals) if not _is_number(value)]
-                for bad_value_index in sorted(bad_value_indices, reverse=True):
-                    list_vals[bad_value_index] = 'NaN'
-
                 # store data
                 if plot_type == 'Profile':
                     # profile has the stat first, and then the ind_var. The others have ind_var and then stat.
@@ -468,13 +489,13 @@ class QueryUtil:
                 if stat == 'null' or not _is_number(stat):
                     # there's bad data at this point
                     continue
-                # JSON can't deal with numpy nans in subarrays for some reason, so we remove them
-                # Don 't need them for matching because histograms don't do Overall Statistic
+
+                # We don't need to keep bad data for histograms
                 if np.isnan(sub_values).any() or np.isinf(sub_values).any():
                     nan_value_indices = np.argwhere(np.isnan(sub_values))
                     inf_value_indices = np.argwhere(np.isinf(sub_values))
                     bad_value_indices = np.union1d(nan_value_indices, inf_value_indices)
-                    sub_data = np.delete(sub_data, bad_value_indices)
+                    sub_data = np.delete(sub_data, bad_value_indices, axis=0)
                     sub_values = np.delete(sub_values, bad_value_indices)
                     sub_secs = np.delete(sub_secs, bad_value_indices)
                     if has_levels:
@@ -1114,5 +1135,5 @@ if __name__ == '__main__':
     qutil.do_query(options)
     if options["query_array"][0]["appParams"]["matching"]:
         qutil.do_matching(options)
-    qutil.construct_output_json()
+    qutil.construct_output_json(options["query_array"][0]["appParams"]["plotType"])
     print(qutil.output_JSON)

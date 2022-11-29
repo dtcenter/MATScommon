@@ -254,13 +254,13 @@ def get_stat(row, statistic, stat_line_type, app_params):
             sub_total = []
             for sub_datum in sub_data:
                 sub_datum = sub_datum.split(';')
-                sub_fbar.append(float(sub_datum[0]) if float(sub_datum[0]) != -9999 else np.nan)
-                sub_obar.append(float(sub_datum[1]) if float(sub_datum[1]) != -9999 else np.nan)
-                sub_ffbar.append(float(sub_datum[2]) if float(sub_datum[2]) != -9999 else np.nan)
-                sub_oobar.append(float(sub_datum[3]) if float(sub_datum[3]) != -9999 else np.nan)
-                sub_fobar.append(float(sub_datum[4]) if float(sub_datum[4]) != -9999 else np.nan)
-                sub_total.append(int(sub_datum[5]) if int(sub_datum[5]) != -9999 else np.nan)
-                sub_secs.append(int(sub_datum[6]) if int(sub_datum[6]) != -9999 else np.nan)
+                sub_fbar.append(float(sub_datum[0]) if abs(float(sub_datum[0])) != 9999. else np.nan)
+                sub_obar.append(float(sub_datum[1]) if abs(float(sub_datum[1])) != 9999. else np.nan)
+                sub_ffbar.append(float(sub_datum[2]) if abs(float(sub_datum[2])) != 9999. else np.nan)
+                sub_oobar.append(float(sub_datum[3]) if abs(float(sub_datum[3])) != 9999. else np.nan)
+                sub_fobar.append(float(sub_datum[4]) if abs(float(sub_datum[4])) != 9999. else np.nan)
+                sub_total.append(int(sub_datum[5]) if abs(int(sub_datum[5])) != 9999 else np.nan)
+                sub_secs.append(int(sub_datum[6]) if abs(int(sub_datum[6])) != 9999 else np.nan)
                 if has_levels:
                     sub_levs.append(sub_datum[7])
 
@@ -289,23 +289,23 @@ def get_stat(row, statistic, stat_line_type, app_params):
             sub_total = []
             for sub_datum in sub_data:
                 sub_datum = sub_datum.split(';')
-                sub_ufbar.append(float(sub_datum[0]) if float(sub_datum[0]) != -9999 else np.nan)
-                sub_vfbar.append(float(sub_datum[1]) if float(sub_datum[1]) != -9999 else np.nan)
-                sub_uobar.append(float(sub_datum[2]) if float(sub_datum[2]) != -9999 else np.nan)
-                sub_vobar.append(float(sub_datum[3]) if float(sub_datum[3]) != -9999 else np.nan)
-                sub_uvfobar.append(float(sub_datum[4]) if float(sub_datum[4]) != -9999 else np.nan)
-                sub_uvffbar.append(float(sub_datum[5]) if float(sub_datum[5]) != -9999 else np.nan)
-                sub_uvoobar.append(float(sub_datum[6]) if float(sub_datum[6]) != -9999 else np.nan)
+                sub_ufbar.append(float(sub_datum[0]) if abs(float(sub_datum[0])) != 9999. else np.nan)
+                sub_vfbar.append(float(sub_datum[1]) if abs(float(sub_datum[1])) != 9999. else np.nan)
+                sub_uobar.append(float(sub_datum[2]) if abs(float(sub_datum[2])) != 9999. else np.nan)
+                sub_vobar.append(float(sub_datum[3]) if abs(float(sub_datum[3])) != 9999. else np.nan)
+                sub_uvfobar.append(float(sub_datum[4]) if abs(float(sub_datum[4])) != 9999. else np.nan)
+                sub_uvffbar.append(float(sub_datum[5]) if abs(float(sub_datum[5])) != 9999. else np.nan)
+                sub_uvoobar.append(float(sub_datum[6]) if abs(float(sub_datum[6])) != 9999. else np.nan)
                 if "ACC" not in statistic:
-                    sub_f_speed_bar.append(float(sub_datum[7]) if float(sub_datum[7]) != -9999 else np.nan)
-                    sub_o_speed_bar.append(float(sub_datum[8]) if float(sub_datum[8]) != -9999 else np.nan)
-                    sub_total.append(int(sub_datum[9]) if int(sub_datum[9]) != -9999 else np.nan)
-                    sub_secs.append(int(sub_datum[10]) if int(sub_datum[10]) != -9999 else np.nan)
+                    sub_f_speed_bar.append(float(sub_datum[7]) if abs(float(sub_datum[7])) != 9999. else np.nan)
+                    sub_o_speed_bar.append(float(sub_datum[8]) if abs(float(sub_datum[8])) != 9999. else np.nan)
+                    sub_total.append(int(sub_datum[9]) if abs(int(sub_datum[9])) != 9999 else np.nan)
+                    sub_secs.append(int(sub_datum[10]) if abs(int(sub_datum[10])) != 9999 else np.nan)
                     if has_levels:
                         sub_levs.append(sub_datum[11])
                 else:
-                    sub_total.append(int(sub_datum[7]) if int(sub_datum[7]) != -9999 else np.nan)
-                    sub_secs.append(int(sub_datum[8]) if int(sub_datum[8]) != -9999 else np.nan)
+                    sub_total.append(int(sub_datum[7]) if abs(int(sub_datum[7])) != 9999 else np.nan)
+                    sub_secs.append(int(sub_datum[8]) if abs(int(sub_datum[8])) != 9999 else np.nan)
                     if has_levels:
                         sub_levs.append(sub_datum[9])
 
@@ -336,12 +336,12 @@ def get_stat(row, statistic, stat_line_type, app_params):
             sub_total = []
             for sub_datum in sub_data:
                 sub_datum = sub_datum.split(';')
-                sub_fy_oy.append(int(sub_datum[0]) if int(sub_datum[0]) != -9999 else np.nan)
-                sub_fy_on.append(int(sub_datum[1]) if int(sub_datum[1]) != -9999 else np.nan)
-                sub_fn_oy.append(int(sub_datum[2]) if int(sub_datum[2]) != -9999 else np.nan)
-                sub_fn_on.append(int(sub_datum[3]) if int(sub_datum[3]) != -9999 else np.nan)
-                sub_total.append(int(sub_datum[4]) if int(sub_datum[4]) != -9999 else np.nan)
-                sub_secs.append(int(sub_datum[5]) if int(sub_datum[5]) != -9999 else np.nan)
+                sub_fy_oy.append(int(sub_datum[0]) if abs(int(sub_datum[0])) != 9999 else np.nan)
+                sub_fy_on.append(int(sub_datum[1]) if abs(int(sub_datum[1])) != 9999 else np.nan)
+                sub_fn_oy.append(int(sub_datum[2]) if abs(int(sub_datum[2])) != 9999 else np.nan)
+                sub_fn_on.append(int(sub_datum[3]) if abs(int(sub_datum[3])) != 9999 else np.nan)
+                sub_total.append(int(sub_datum[4]) if abs(int(sub_datum[4])) != 9999 else np.nan)
+                sub_secs.append(int(sub_datum[5]) if abs(int(sub_datum[5])) != 9999 else np.nan)
                 if has_levels:
                     sub_levs.append(sub_datum[6])
 
@@ -360,10 +360,10 @@ def get_stat(row, statistic, stat_line_type, app_params):
             sub_total = []
             for sub_datum in sub_data:
                 sub_datum = sub_datum.split(';')
-                sub_fss.append(float(sub_datum[0]) if float(sub_datum[0]) != -9999 else np.nan)
-                sub_fbs.append(float(sub_datum[1]) if float(sub_datum[1]) != -9999 else np.nan)
-                sub_total.append(int(sub_datum[2]) if int(sub_datum[2]) != -9999 else np.nan)
-                sub_secs.append(int(sub_datum[3]) if int(sub_datum[3]) != -9999 else np.nan)
+                sub_fss.append(float(sub_datum[0]) if abs(float(sub_datum[0])) != 9999. else np.nan)
+                sub_fbs.append(float(sub_datum[1]) if abs(float(sub_datum[1])) != 9999. else np.nan)
+                sub_total.append(int(sub_datum[2]) if abs(int(sub_datum[2])) != 9999 else np.nan)
+                sub_secs.append(int(sub_datum[3]) if abs(int(sub_datum[3])) != 9999 else np.nan)
                 if has_levels:
                     sub_levs.append(sub_datum[4])
 
@@ -390,12 +390,12 @@ def get_stat(row, statistic, stat_line_type, app_params):
                 sub_obj_id.append(sub_datum[0])
                 sub_obj_cat.append(sub_datum[1])
                 sub_obj_type.append('2d')
-                sub_area.append(float(sub_datum[2]) if float(sub_datum[2]) != -9999 else np.nan)
-                sub_total.append(int(sub_datum[3]) if int(sub_datum[3]) != -9999 else np.nan)
-                sub_fcst_flag.append(int(sub_datum[4]) if int(sub_datum[4]) != -9999 else np.nan)
-                sub_simple_flag.append(int(sub_datum[5]) if int(sub_datum[5]) != -9999 else np.nan)
-                sub_matched_flag.append(int(sub_datum[6]) if int(sub_datum[6]) != -9999 else np.nan)
-                sub_secs.append(int(sub_datum[7]) if int(sub_datum[7]) != -9999 else np.nan)
+                sub_area.append(float(sub_datum[2]) if abs(float(sub_datum[2])) != 9999. else np.nan)
+                sub_total.append(int(sub_datum[3]) if abs(int(sub_datum[3])) != 9999 else np.nan)
+                sub_fcst_flag.append(int(sub_datum[4]) if abs(int(sub_datum[4])) != 9999 else np.nan)
+                sub_simple_flag.append(int(sub_datum[5]) if abs(int(sub_datum[5])) != 9999 else np.nan)
+                sub_matched_flag.append(int(sub_datum[6]) if abs(int(sub_datum[6])) != 9999 else np.nan)
+                sub_secs.append(int(sub_datum[7]) if abs(int(sub_datum[7])) != 9999 else np.nan)
                 if has_levels:
                     sub_levs.append(sub_datum[8])
 
@@ -441,27 +441,27 @@ def get_stat(row, statistic, stat_line_type, app_params):
                     sub_mode_header_id.append(sub_datum[0])
                     sub_obj_pair_id.append(sub_datum[1])
                     sub_obj_type.append('2d')
-                    sub_interest.append(float(sub_datum[4]) if float(sub_datum[4]) != -9999 else np.nan)
-                    sub_centroid_dist.append(float(sub_datum[5]) if float(sub_datum[5]) != -9999 else np.nan)
-                    sub_total.append(int(sub_datum[10]) if int(sub_datum[10]) != -9999 else np.nan)
-                    sub_secs.append(int(sub_datum[10]) if int(sub_datum[10]) != -9999 else np.nan)
+                    sub_interest.append(float(sub_datum[4]) if abs(float(sub_datum[4])) != 9999. else np.nan)
+                    sub_centroid_dist.append(float(sub_datum[5]) if abs(float(sub_datum[5])) != 9999. else np.nan)
+                    sub_total.append(int(sub_datum[10]) if abs(int(sub_datum[10])) != 9999 else np.nan)
+                    sub_secs.append(int(sub_datum[10]) if abs(int(sub_datum[10])) != 9999 else np.nan)
                     if has_levels:
                         sub_levs.append(sub_datum[11])
                     sub_obj_f_id.append(sub_datum[2])
                     sub_obj_f_cat.append(sub_datum[3])
-                    sub_f_area.append(float(sub_datum[6]) if float(sub_datum[6]) != -9999 else np.nan)
-                    sub_f_intensity_nn.append(float(sub_datum[7]) if float(sub_datum[7]) != -9999 else np.nan)
-                    sub_f_centroid_lat.append(float(sub_datum[8]) if float(sub_datum[8]) != -9999 else np.nan)
-                    sub_f_centroid_lon.append(float(sub_datum[9]) if float(sub_datum[9]) != -9999 else np.nan)
+                    sub_f_area.append(float(sub_datum[6]) if abs(float(sub_datum[6])) != 9999. else np.nan)
+                    sub_f_intensity_nn.append(float(sub_datum[7]) if abs(float(sub_datum[7])) != 9999. else np.nan)
+                    sub_f_centroid_lat.append(float(sub_datum[8]) if abs(float(sub_datum[8])) != 9999. else np.nan)
+                    sub_f_centroid_lon.append(float(sub_datum[9]) if abs(float(sub_datum[9])) != 9999. else np.nan)
                 elif sub_datum[2] == obj_o_id:
                     # make sure the o object IDs match--the mysql join sometimes matches complex and simple objects
                     # when it isn't supposed to, because of the format of the names
                     sub_obj_o_id.append(sub_datum[2])
                     sub_obj_o_cat.append(sub_datum[3])
-                    sub_o_area.append(float(sub_datum[6]) if float(sub_datum[6]) != -9999 else np.nan)
-                    sub_o_intensity_nn.append(float(sub_datum[7]) if float(sub_datum[7]) != -9999 else np.nan)
-                    sub_o_centroid_lat.append(float(sub_datum[8]) if float(sub_datum[8]) != -9999 else np.nan)
-                    sub_o_centroid_lon.append(float(sub_datum[9]) if float(sub_datum[9]) != -9999 else np.nan)
+                    sub_o_area.append(float(sub_datum[6]) if abs(float(sub_datum[6])) != 9999. else np.nan)
+                    sub_o_intensity_nn.append(float(sub_datum[7]) if abs(float(sub_datum[7])) != 9999. else np.nan)
+                    sub_o_centroid_lat.append(float(sub_datum[8]) if abs(float(sub_datum[8])) != 9999. else np.nan)
+                    sub_o_centroid_lon.append(float(sub_datum[9]) if abs(float(sub_datum[9])) != 9999. else np.nan)
 
             # calculate the single-object mode statistic
             numpy_data = np.column_stack([sub_mode_header_id, sub_obj_pair_id, sub_obj_f_id, sub_obj_o_id,
@@ -484,9 +484,9 @@ def get_stat(row, statistic, stat_line_type, app_params):
             sub_total = []
             for sub_datum in sub_data:
                 sub_datum = sub_datum.split(';')
-                sub_values.append(float(sub_datum[0]) if float(sub_datum[0]) != -9999 else np.nan)
-                sub_total.append(float(sub_datum[1]) if float(sub_datum[1]) != -9999 else np.nan)
-                sub_secs.append(float(sub_datum[2]) if float(sub_datum[2]) != -9999 else np.nan)
+                sub_values.append(float(sub_datum[0]) if abs(float(sub_datum[0])) != 9999. else np.nan)
+                sub_total.append(int(sub_datum[1]) if abs(int(sub_datum[1])) != 9999 else np.nan)
+                sub_secs.append(int(sub_datum[2]) if abs(int(sub_datum[2])) != 9999 else np.nan)
                 if has_levels:
                     sub_levs.append(sub_datum[3])
             numpy_data = np.column_stack([sub_values, sub_total])
