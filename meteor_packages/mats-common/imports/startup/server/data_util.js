@@ -469,13 +469,15 @@ const calculateStatScalar = function (squareDiffSum, NSum, obsModelDiffSum, mode
     if (isNaN(queryVal)) return null;
     // need to convert to correct units for surface data (variable names are capitalized in upper air
     // ("2m temperature" vs "Temperature"), so that should not trigger this if statement).
-    if (variable.includes("temperature") || variable.includes("dewpoint")) {
-        if (statistic.includes("average")) {
-            queryVal = queryVal - 32;
+    if (statistic !== 'N') {
+        if (variable.includes("temperature") || variable.includes("dewpoint")) {
+            if (statistic.includes("average")) {
+                queryVal = queryVal - 32;
+            }
+            queryVal = queryVal / 1.8;
+        } else if (variable.includes("wind")) {
+            queryVal = queryVal / 2.23693629;
         }
-        queryVal = queryVal / 1.8;
-    } else if (variable.includes("wind")) {
-        queryVal = queryVal / 2.23693629;
     }
     return queryVal;
 };
