@@ -178,12 +178,12 @@ const queryDBPython = function (pool, queryArray) {
                         d[idx].subHeaders[didx] = NaN;
                         d[idx].subVals[didx] = NaN;
                         if (queryArray[idx]["statLineType"] === 'ctc') {
-                            d[idx].subHit.push(NaN);
-                            d[idx].subFa.push(NaN);
-                            d[idx].subMiss.push(NaN);
-                            d[idx].subCn.push(NaN);
+                            d[idx].subHit[didx] = NaN;
+                            d[idx].subFa[didx] = NaN;
+                            d[idx].subMiss[didx] = NaN;
+                            d[idx].subCn[didx] = NaN;
                         } else if (queryArray[idx]["statLineType"] === 'mode_pair') {
-                            d[idx].subInterest.push(NaN);
+                            d[idx].subInterest[didx] = NaN;
                         }
                     }
                     d[idx].subSecs[didx] = NaN;
@@ -195,12 +195,12 @@ const queryDBPython = function (pool, queryArray) {
                         d[idx].subHeaders[didx] = NaN;
                         d[idx].subVals[didx] = NaN;
                         if (queryArray[idx]["statLineType"] === 'ctc') {
-                            d[idx].subHit.push(NaN);
-                            d[idx].subFa.push(NaN);
-                            d[idx].subMiss.push(NaN);
-                            d[idx].subCn.push(NaN);
+                            d[idx].subHit[didx] = NaN;
+                            d[idx].subFa[didx] = NaN;
+                            d[idx].subMiss[didx] = NaN;
+                            d[idx].subCn[didx] = NaN;
                         } else if (queryArray[idx]["statLineType"] === 'mode_pair') {
-                            d[idx].subInterest.push(NaN);
+                            d[idx].subInterest[didx] = NaN;
                         }
                     }
                     d[idx].subSecs[didx] = NaN;
