@@ -85,11 +85,6 @@ class NpEncoder(json.JSONEncoder):
             return int(obj)
         if isinstance(obj, np.floating):
             return float(obj)
-        if isinstance(obj, np.ndarray):
-            return obj.tolist()
-        if isinstance(obj, np.nan) or isinstance(obj, np.inf):
-            return 'NaN'
-        return super(NpEncoder, self).default(obj)
 
 
 class QueryUtil:
@@ -389,6 +384,11 @@ class QueryUtil:
                     list_levs = sub_levs_all[d_idx]
                 else:
                     list_levs = []
+
+                # JSON can't deal with numpy nans in subarrays for some reason, so we make them string NaNs
+                bad_value_indices = [index for index, value in enumerate(list_vals) if not _is_number(value)]
+                for bad_value_index in sorted(bad_value_indices, reverse=True):
+                    list_vals[bad_value_index] = 'NaN'
 
                 # store data
                 if plot_type == 'Profile':

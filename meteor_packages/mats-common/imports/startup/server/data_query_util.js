@@ -182,6 +182,8 @@ const queryDBPython = function (pool, queryArray) {
                             d[idx].subFa.push(NaN);
                             d[idx].subMiss.push(NaN);
                             d[idx].subCn.push(NaN);
+                        } else if (queryArray[idx]["statLineType"] === 'mode_pair') {
+                            d[idx].subInterest.push(NaN);
                         }
                     }
                     d[idx].subSecs[didx] = NaN;
@@ -192,33 +194,17 @@ const queryDBPython = function (pool, queryArray) {
                         d[idx].subData[didx] = NaN;
                         d[idx].subHeaders[didx] = NaN;
                         d[idx].subVals[didx] = NaN;
-                        if (queryArray[idx]["statLineType"] === 'ctc'
-                            && queryArray[idx]["appParams"]["plotType"] !== matsTypes.PlotTypes.contour
-                            && queryArray[idx]["appParams"]["plotType"] !== matsTypes.PlotTypes.contourDiff) {
+                        if (queryArray[idx]["statLineType"] === 'ctc') {
                             d[idx].subHit.push(NaN);
                             d[idx].subFa.push(NaN);
                             d[idx].subMiss.push(NaN);
                             d[idx].subCn.push(NaN);
+                        } else if (queryArray[idx]["statLineType"] === 'mode_pair') {
+                            d[idx].subInterest.push(NaN);
                         }
                     }
                     d[idx].subSecs[didx] = NaN;
                     d[idx].subLevs[didx] = NaN;
-                } else {
-                    if (queryArray[idx]["statLineType"] === 'ctc'
-                        && queryArray[idx]["appParams"]["plotType"] !== matsTypes.PlotTypes.contour
-                        && queryArray[idx]["appParams"]["plotType"] !== matsTypes.PlotTypes.contourDiff) {
-                        // store ctc components for text display
-                        d[idx].subHit.push([]);
-                        d[idx].subFa.push([]);
-                        d[idx].subMiss.push([]);
-                        d[idx].subCn.push([]);
-                        for (var sidx = 0; sidx < d[idx].subData[didx].length; sidx++) {
-                            d[idx].subHit[didx].push(d[idx].subData[didx][sidx][0]);
-                            d[idx].subFa[didx].push(d[idx].subData[didx][sidx][1]);
-                            d[idx].subMiss[didx].push(d[idx].subData[didx][sidx][2]);
-                            d[idx].subCn[didx].push(d[idx].subData[didx][sidx][3]);
-                        }
-                    }
                 }
             }
         }
