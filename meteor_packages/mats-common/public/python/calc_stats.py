@@ -94,7 +94,7 @@ def _ecnt_stat_switch():
 
 
 def _mode_single_stat_switch():
-    """function for defining the appropriate ecnt statistical calculation functions"""
+    """function for defining the appropriate mode_single statistical calculation functions"""
     return {
         'Ratio of simple objects that are forecast objects': calc_2d_ratio.calculate_2d_ratio_fsa_asa,
         'Ratio of simple objects that are observation objects': calc_2d_ratio.calculate_2d_ratio_osa_asa,
@@ -151,7 +151,7 @@ def _mode_single_stat_switch():
 
 
 def _mode_pair_stat_switch():
-    """function for defining the appropriate ecnt statistical calculation functions"""
+    """function for defining the appropriate mode_pair statistical calculation functions"""
     return {
         'OTS (Object Threat Score)': calculate_ots,
         'MMI (Median of Maximum Interest)': calculate_mmi,
