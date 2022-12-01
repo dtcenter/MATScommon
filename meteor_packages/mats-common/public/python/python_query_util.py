@@ -1048,8 +1048,8 @@ class QueryUtil:
 
     def query_db(self, cursor, query_array):
         """function for querying the database and sending the returned data to the parser"""
+        idx = 0
         for query in query_array:
-            idx = query_array.index(query)
             statement = query["statement"]
             try:
                 cursor.execute(statement)
@@ -1074,6 +1074,7 @@ class QueryUtil:
                     else:
                         self.parse_query_data_xy_curve(idx, cursor, query["statLineType"], query["statistic"],
                                                        query["appParams"], query["fcstOffset"], query["vts"])
+            idx = idx + 1
 
     def validate_options(self, options):
         """makes sure all expected options were indeed passed in"""
