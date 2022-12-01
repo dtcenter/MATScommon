@@ -437,7 +437,7 @@ const calculateStatCTC = function (hit, fa, miss, cn, n, statistic) {
 
 // calculates the statistic for scalar partial sums plots
 const calculateStatScalar = function (squareDiffSum, NSum, obsModelDiffSum, modelSum, obsSum, absSum, statistic) {
-    if (isNaN(squareDiffSum) || isNaN(NSum) || isNaN(obsModelDiffSum) || isNaN(modelSum) || isNaN(obsSum)  || isNaN(absSum)) return null;
+    if (isNaN(squareDiffSum) || isNaN(NSum) || isNaN(obsModelDiffSum) || isNaN(modelSum) || isNaN(obsSum) || isNaN(absSum)) return null;
     var queryVal;
     var variable = statistic.split("_")[1];
     statistic = statistic.split("_")[0];
@@ -567,9 +567,17 @@ const get_err = function (sVals, sSecs, sLevs, appParams) {
 
     for (i = 0; i < sSecs.length; i++) {
         var sec = sSecs[i];
+        if (typeof sec === 'string' || sec instanceof String) sec = Number(sec);
         var lev;
         if (hasLevels) {
             lev = sLevs[i];
+            if (typeof lev === 'string' || lev instanceof String) {
+                if (lev[0] === 'P') {
+                    lev = Number(lev.substring(1));
+                } else {
+                    lev = Number(lev);
+                }
+            }
             // find first time the pressure changes
             if (lag1_p === 0 && lastPressure > 0) {
                 if (lev !== lastPressure) {

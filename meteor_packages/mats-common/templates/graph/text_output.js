@@ -179,8 +179,8 @@ Template.textOutput.helpers({
                         <th>average interest</th>";
                 } else {
                     header += "<th>" + curve.label + labelSuffix + "</th>\
-                        <th>stat</th>\
-                        <th>mean</th>\
+                        <th>plotted stat</th>\
+                        <th>mean of sub values</th>\
                         <th>std dev</th>\
                         <th>std error</th>\
                         <th>lag1</th>\
@@ -208,8 +208,8 @@ Template.textOutput.helpers({
                         <th>average interest</th>";
                 } else {
                     header += "<th>" + curve.label + labelSuffix + "</th>\
-                        <th>stat</th>\
-                        <th>mean</th>\
+                        <th>plotted stat</th>\
+                        <th>mean of sub values</th>\
                         <th>std dev</th>\
                         <th>n</th>";
                 }
