@@ -1032,6 +1032,7 @@ const _getFlattenedResultData = function (rk, p, np) {
             var plotType = (_.invert(plotTypes))[true];
             // extract data
             let isCTC = false;
+            let isModeSingle = false;
             let isModePairs = false;
             var data = result.data;
             var dsiRealPageIndex = result.dsiRealPageIndex;
@@ -1079,6 +1080,8 @@ const _getFlattenedResultData = function (rk, p, np) {
                                 || (data[ci].hitTextOutput !== undefined && data[ci].hitTextOutput.length > 0));
                         isModePairs = data[ci] !== undefined && ((data[ci].stats !== undefined && data[ci].stats[0] !== undefined
                             && data[ci].stats[0].avgInterest !== undefined));
+                        isModeSingle = data[ci] !== undefined && ((data[ci].stats !== undefined && data[ci].stats[0] !== undefined
+                            && data[ci].stats[0].n_forecast !== undefined));
                         // if the curve label is a reserved word do not process the curve (its a zero or max curve)
                         var reservedWords = Object.values(matsTypes.ReservedWords);
                         if (reservedWords.indexOf(data[ci].label) >= 0) {
@@ -1112,6 +1115,12 @@ const _getFlattenedResultData = function (rk, p, np) {
                                 curveDataElement['fa'] = data[ci].stats[cdi].fa;
                                 curveDataElement['miss'] = data[ci].stats[cdi].miss;
                                 curveDataElement['cn'] = data[ci].stats[cdi].cn;
+                            } else if (isModeSingle) {
+                                curveDataElement['stat'] = data[ci].stats[cdi].stat;
+                                curveDataElement['n_forecast'] = data[ci].stats[cdi].n_forecast;
+                                curveDataElement['n_matched'] = data[ci].stats[cdi].n_matched;
+                                curveDataElement['n_simple'] = data[ci].stats[cdi].n_simple;
+                                curveDataElement['n_total'] = data[ci].stats[cdi].n_total;
                             } else if (isModePairs) {
                                 curveDataElement['stat'] = data[ci].stats[cdi].stat;
                                 curveDataElement['n'] = data[ci].stats[cdi].n;

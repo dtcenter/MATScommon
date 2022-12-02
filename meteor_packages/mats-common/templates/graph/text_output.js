@@ -135,6 +135,7 @@ Template.textOutput.helpers({
         var header = "";
         let curveData = getDataForCurve(curve);
         let isCTC = curveData !== undefined && curveData[0] !== undefined && Object.keys(curveData[0]).indexOf('hit') !== -1;
+        let isModeSingle = curveData !== undefined && curveData[0] !== undefined && Object.keys(curveData[0]).indexOf('n_forecast') !== -1;
         var isModePairs = Session.get('isModePairs') === undefined ? false : Session.get('isModePairs');
         var plotType = Session.get('plotType');
         var labelSuffix;
@@ -173,6 +174,13 @@ Template.textOutput.helpers({
                         <th>false alarms</th>\
                         <th>misses</th>\
                         <th>correct nulls</th>";
+                } else if (isModeSingle) {
+                    header += "<th>" + curve.label + labelSuffix + "</th>\
+                        <th>plotted stat</th>\
+                        <th>Number of forecast objects</th>\
+                        <th>Number of matched objects</th>\
+                        <th>Number of simple objects</th>\
+                        <th>Number of total objects</th>";
                 } else if (isModePairs) {
                     header += "<th>" + curve.label + labelSuffix + "</th>\
                         <th>stat</th>\
@@ -202,6 +210,13 @@ Template.textOutput.helpers({
                         <th>false alarms</th>\
                         <th>misses</th>\
                         <th>correct nulls</th>";
+                } else if (isModeSingle) {
+                    header += "<th>" + curve.label + labelSuffix + "</th>\
+                        <th>plotted stat</th>\
+                        <th>Number of forecast objects</th>\
+                        <th>Number of matched objects</th>\
+                        <th>Number of simple objects</th>\
+                        <th>Number of total objects</th>";
                 } else if (isModePairs) {
                     header += "<th>" + curve.label + labelSuffix + "</th>\
                         <th>stat</th>\
@@ -338,6 +353,7 @@ Template.textOutput.helpers({
         var elementLabel = "";
         var line = "";
         let isCTC = element['hit'] !== undefined && element['hit'] !== null;
+        let isModeSingle = element['n_forecast'] !== undefined && element['n_forecast'] !== null;
         var isModePairs = Session.get('isModePairs') === undefined ? false : Session.get('isModePairs');
         var plotType = Session.get('plotType');
         var labelSuffix;
@@ -376,6 +392,13 @@ Template.textOutput.helpers({
                         "<td>" + (element['fa'] != undefined && element['fa'] !== null ? element['fa'].toString() : fillStr) + "</td>" +
                         "<td>" + (element['miss'] != undefined && element['miss'] !== null ? element['miss'].toString() : fillStr) + "</td>" +
                         "<td>" + (element['cn'] != undefined && element['cn'] !== null ? element['cn'].toString() : fillStr) + "</td>";
+                } else if (isModeSingle) {
+                    line += "<td>" + element[labelKey += labelSuffix] + "</td>" +
+                        "<td>" + (element['stat'] != undefined && element['stat'] !== null ? element['stat'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (element['n_forecast'] != undefined && element['n_forecast'] !== null ? element['n_forecast'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['n_matched'] != undefined && element['n_matched'] !== null ? element['n_matched'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['n_simple'] != undefined && element['n_simple'] !== null ? element['n_simple'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['n_total'] != undefined && element['n_total'] !== null ? element['n_total'].toString() : fillStr) + "</td>";
                 } else if (isModePairs) {
                     line += "<td>" + element[labelKey += labelSuffix] + "</td>" +
                         "<td>" + (element['stat'] != undefined && element['stat'] !== null ? element['stat'].toPrecision(4) : fillStr) + "</td>" +
@@ -405,6 +428,13 @@ Template.textOutput.helpers({
                         "<td>" + (element['fa'] != undefined && element['fa'] !== null ? element['fa'].toString() : fillStr) + "</td>" +
                         "<td>" + (element['miss'] != undefined && element['miss'] !== null ? element['miss'].toString() : fillStr) + "</td>" +
                         "<td>" + (element['cn'] != undefined && element['cn'] !== null ? element['cn'].toString() : fillStr) + "</td>";
+                } else if (isModeSingle) {
+                    line += "<td>" + element[labelKey += labelSuffix] + "</td>" +
+                        "<td>" + (element['stat'] != undefined && element['stat'] !== null ? element['stat'].toPrecision(4) : fillStr) + "</td>" +
+                        "<td>" + (element['n_forecast'] != undefined && element['n_forecast'] !== null ? element['n_forecast'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['n_matched'] != undefined && element['n_matched'] !== null ? element['n_matched'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['n_simple'] != undefined && element['n_simple'] !== null ? element['n_simple'].toString() : fillStr) + "</td>" +
+                        "<td>" + (element['n_total'] != undefined && element['n_total'] !== null ? element['n_total'].toString() : fillStr) + "</td>";
                 } else if (isModePairs) {
                     line += "<td>" + element[labelKey += labelSuffix] + "</td>" +
                         "<td>" + (element['stat'] != undefined && element['stat'] !== null ? element['stat'].toPrecision(4) : fillStr) + "</td>" +

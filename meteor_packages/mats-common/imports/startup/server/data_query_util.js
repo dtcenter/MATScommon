@@ -184,6 +184,11 @@ const queryDBPython = function (pool, queryArray) {
                             d[idx].subCn[didx] = NaN;
                         } else if (queryArray[idx]["statLineType"] === 'mode_pair') {
                             d[idx].subInterest[didx] = NaN;
+                        } else if (queryArray[idx]["statLineType"] === 'mode_pair') {
+                            d[idx].n_forecast[didx] = 0;
+                            d[idx].n_matched[didx] = 0;
+                            d[idx].n_simple[didx] = 0;
+                            d[idx].n_total[didx] = 0;
                         }
                     }
                     d[idx].subSecs[didx] = NaN;
@@ -201,6 +206,11 @@ const queryDBPython = function (pool, queryArray) {
                             d[idx].subCn[didx] = NaN;
                         } else if (queryArray[idx]["statLineType"] === 'mode_pair') {
                             d[idx].subInterest[didx] = NaN;
+                        } else if (queryArray[idx]["statLineType"] === 'mode_pair') {
+                            d[idx].n_forecast[didx] = 0;
+                            d[idx].n_matched[didx] = 0;
+                            d[idx].n_simple[didx] = 0;
+                            d[idx].n_total[didx] = 0;
                         }
                     }
                     d[idx].subSecs[didx] = NaN;
@@ -258,6 +268,10 @@ const queryDBTimeSeries = function (pool, statement, dataSource, forecastOffset,
             subLevs: [],
             stats: [],
             text: [],
+            n_forecast: [],
+            n_matched: [],
+            n_simple: [],
+            n_total: [],
             glob_stats: {},
             xmin: Number.MAX_VALUE,
             xmax: Number.MIN_VALUE,
@@ -347,6 +361,10 @@ const queryDBSpecialtyCurve = function (pool, statement, appParams, statisticStr
             subLevs: [],
             stats: [],
             text: [],
+            n_forecast: [],
+            n_matched: [],
+            n_simple: [],
+            n_total: [],
             glob_stats: {},
             bin_stats: [],
             xmin: Number.MAX_VALUE,
@@ -441,6 +459,10 @@ const queryDBPerformanceDiagram = function (pool, statement, appParams) {
             subLevs: [],
             stats: [],
             text: [],
+            n_forecast: [],
+            n_matched: [],
+            n_simple: [],
+            n_total: [],
             xmin: Number.MAX_VALUE,
             xmax: Number.MIN_VALUE,
             ymin: Number.MAX_VALUE,
@@ -928,6 +950,10 @@ const queryDBContour = function (pool, statement, appParams, statisticStr) {
             maxDateTextOutput: [],
             stdev: [],
             stats: [],
+            n_forecast: [],
+            n_matched: [],
+            n_simple: [],
+            n_total: [],
             glob_stats: {},
             xmin: Number.MAX_VALUE,
             xmax: Number.MIN_VALUE,

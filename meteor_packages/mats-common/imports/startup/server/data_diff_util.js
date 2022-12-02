@@ -121,6 +121,10 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC, isSca
             'glob_max': null,
             'glob_min': null
         },
+        n_forecast: [],
+        n_matched: [],
+        n_simple: [],
+        n_total: [],
         xmin: Number.MAX_VALUE,
         xmax: Number.MIN_VALUE,
         ymin: Number.MAX_VALUE,

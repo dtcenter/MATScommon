@@ -516,7 +516,6 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                 matsDataUtils.nullPoint(data, di, statVarName, isCTC, isScalar, hasLevels);
             }
         }
-        // debugger;
 
         if (isCTC && (curveDiffs[curveIndex] === undefined || curveDiffs[curveIndex] === null)) {
             // need to recalculate the primary statistic with the newly matched hits, false alarms, etc.
