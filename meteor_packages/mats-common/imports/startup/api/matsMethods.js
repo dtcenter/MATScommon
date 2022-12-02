@@ -1323,7 +1323,7 @@ const _getFlattenedResultData = function (rk, p, np) {
                     returnData.stats[data[0].label] = stats;
 
                     var curveData = [];  // array of maps
-                    isCTC = data[0] !== undefined &&data[ci].hitTextOutput !== undefined && data[ci].hitTextOutput.length > 0;
+                    isCTC = data[0] !== undefined && data[0].hitTextOutput !== undefined && data[0].hitTextOutput.length > 0;
                     for (var si = 0; si < data[0].xTextOutput.length; si++) {
                         var curveDataElement = {};
                         curveDataElement['xVal'] = data[0].xTextOutput[si];
