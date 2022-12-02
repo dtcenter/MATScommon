@@ -60,17 +60,7 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
                 }
             }
 
-            if ((diffFrom === null || diffFrom === undefined) || !appParams.matching) {
-                if (!isMetexpress && statType !== 'ctc' && statType !== 'scalar') {
-                    // assign recalculated statistic to data[di][1], which is the value to be plotted
-                    // we have already recalculated the statistic for ctc and scalar stats if there was matching, etc, so keep that value
-                    if (statisticSelect === 'N' || statisticSelect === 'N times*levels(*stations if station plot) per graph point') {
-                        data.y[di] = errorResult.sum;
-                    } else {
-                        data.y[di] = errorResult.d_mean;
-                    }
-                }
-            } else {
+            if (diffFrom !== null && diffFrom !== undefined) {
                 if (dataset[diffFrom[0]].y[di] !== null && dataset[diffFrom[1]].y[di] !== null) {
                     // make sure that the diff curve actually shows the difference when matching.
                     // otherwise outlier filtering etc. can make it slightly off.
@@ -150,7 +140,7 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
             }
 
             // store statistics for this di datapoint
-            if (statType === 'ctc' || statType === 'met-ctc') {
+            if (statType === 'ctc') {
                 data.stats[di] = {
                     stat: data.y[di],
                     n: Array.isArray(data.subHit[di]) || !isNaN(data.subHit[di]) ? data.subHit[di].length : 0,
@@ -389,17 +379,7 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
                 var errorResult = matsDataUtils.get_err(data.subVals[di], data.subSecs[di], data.subLevs[di], appParams);
             }
 
-            if ((diffFrom === null || diffFrom === undefined) || !appParams.matching) {
-                if (!isMetexpress && statType !== 'ctc' && statType !== 'scalar') {
-                    // assign recalculated statistic to data[di][1], which is the value to be plotted
-                    // we have already recalculated the statistic for ctc and scalar stats if there was matching, etc, so keep that value
-                    if (statisticSelect === 'N' || statisticSelect === 'N times*levels(*stations if station plot) per graph point') {
-                        data.x[di] = errorResult.sum;
-                    } else {
-                        data.x[di] = errorResult.d_mean;
-                    }
-                }
-            } else {
+            if (diffFrom !== null && diffFrom !== undefined) {
                 if (dataset[diffFrom[0]].x[di] !== null && dataset[diffFrom[1]].x[di] !== null) {
                     // make sure that the diff curve actually shows the difference when matching.
                     // otherwise outlier filtering etc. can make it slightly off.

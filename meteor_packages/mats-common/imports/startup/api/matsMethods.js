@@ -1031,12 +1031,9 @@ const _getFlattenedResultData = function (rk, p, np) {
             var plotTypes = result.basis.plotParams.plotTypes;
             var plotType = (_.invert(plotTypes))[true];
             // extract data
+            let isCTC = false;
+            let isModePairs = false;
             var data = result.data;
-            const isCTC = data[0] !== undefined &&
-                ((data[0].stats !== undefined && data[0].stats[0] !== undefined && data[0].stats[0].hit !== undefined)
-                    || (data[0].hitTextOutput !== undefined && data[0].hitTextOutput.length > 0));
-            const isModePairs = data[0] !== undefined && ((data[0].stats !== undefined && data[0].stats[0] !== undefined
-                && data[0].stats[0].avgInterest !== undefined));
             var dsiRealPageIndex = result.dsiRealPageIndex;
             var dsiTextDirection = result.dsiTextDirection;
             switch (plotType) {
@@ -1077,6 +1074,11 @@ const _getFlattenedResultData = function (rk, p, np) {
                     returnData.stats = {};   // map of maps
                     returnData.data = {};  // map of arrays of maps
                     for (var ci = 0; ci < data.length; ci++) {  // for each curve
+                        isCTC = data[ci] !== undefined &&
+                            ((data[ci].stats !== undefined && data[ci].stats[0] !== undefined && data[ci].stats[0].hit !== undefined)
+                                || (data[ci].hitTextOutput !== undefined && data[ci].hitTextOutput.length > 0));
+                        isModePairs = data[ci] !== undefined && ((data[ci].stats !== undefined && data[ci].stats[0] !== undefined
+                            && data[ci].stats[0].avgInterest !== undefined));
                         // if the curve label is a reserved word do not process the curve (its a zero or max curve)
                         var reservedWords = Object.values(matsTypes.ReservedWords);
                         if (reservedWords.indexOf(data[ci].label) >= 0) {
@@ -1222,6 +1224,7 @@ const _getFlattenedResultData = function (rk, p, np) {
                     returnData.stats[data[0].label] = stats;
 
                     var curveData = [];  // map of maps
+                    isCTC = data[0] !== undefined && data[0].stats !== undefined && data[0].stats[0] !== undefined && data[0].stats[0].hit !== undefined;
                     for (var si = 0; si < data[0].siteName.length; si++) {
                         var curveDataElement = {};
                         curveDataElement['site name'] = data[0].siteName[si];
@@ -1320,6 +1323,7 @@ const _getFlattenedResultData = function (rk, p, np) {
                     returnData.stats[data[0].label] = stats;
 
                     var curveData = [];  // array of maps
+                    isCTC = data[0] !== undefined &&data[ci].hitTextOutput !== undefined && data[ci].hitTextOutput.length > 0;
                     for (var si = 0; si < data[0].xTextOutput.length; si++) {
                         var curveDataElement = {};
                         curveDataElement['xVal'] = data[0].xTextOutput[si];

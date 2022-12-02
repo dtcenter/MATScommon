@@ -516,6 +516,10 @@ const get_err = function (sVals, sSecs, sLevs, appParams) {
     var secs;
     var delta;
     for (i = 0; i < sSecs.length; i++) {
+        if (isNaN(sVals[i])) {
+            n = n - 1;
+            continue;
+        }
         secs = (sSecs[i]);
         delta = Math.abs(secs - last_secs);
         if (delta > 0 && delta < minDelta) {
@@ -532,9 +536,10 @@ const get_err = function (sVals, sSecs, sLevs, appParams) {
 
     if (minDelta < 0) {
         error = ("Invalid time interval - minDelta: " + minDelta);
-        console.log("matsDataUtil.getErr: Invalid time interval - minDelta: " + minDelta)
+        console.log("matsDataUtil.getErr: " + error)
     }
     for (i = 0; i < sVals.length; i++) {
+        if (isNaN(sVals[i])) continue;
         minVal = minVal < sVals[i] ? minVal : sVals[i];
         maxVal = maxVal > sVals[i] ? maxVal : sVals[i];
         sum += sVals[i];
@@ -566,6 +571,7 @@ const get_err = function (sVals, sSecs, sLevs, appParams) {
     var n_deltas = 0;
 
     for (i = 0; i < sSecs.length; i++) {
+        if (isNaN(sVals[i])) continue;
         var sec = sSecs[i];
         if (typeof sec === 'string' || sec instanceof String) sec = Number(sec);
         var lev;

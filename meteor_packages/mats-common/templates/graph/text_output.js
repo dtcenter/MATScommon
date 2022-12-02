@@ -133,7 +133,16 @@ Template.textOutput.helpers({
     // get the table header for each curve's data
     elementHeaders: function (curve) {
         var header = "";
-        var isCTC = Session.get('isCTC') === undefined ? false : Session.get('isCTC');
+        let isMetexpress = false;
+        if (matsCollections.Settings.findOne({}) !== undefined && matsCollections.Settings.findOne({}).appType !== undefined) {
+            isMetexpress = matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
+        }
+        let isCTC = Session.get('isCTC');
+        if (isCTC && isMetexpress &&
+            !(curve['aggregation-method'] !== undefined && curve['aggregation-method'] === "Overall statistic")) {
+            // Even if it is a CTC curve, we don't want hits, misses, etc in the text output unless we're doing the overall stat
+            isCTC = false;
+        }
         var isModePairs = Session.get('isModePairs') === undefined ? false : Session.get('isModePairs');
         var plotType = Session.get('plotType');
         var labelSuffix;
@@ -166,7 +175,7 @@ Template.textOutput.helpers({
             case matsTypes.PlotTypes.profile:
                 if (isCTC) {
                     header += "<th>" + curve.label + labelSuffix + "</th>\
-                        <th>stat</th>\
+                        <th>plotted stat</th>\
                         <th>n</th>\
                         <th>hits</th>\
                         <th>false alarms</th>\
@@ -195,7 +204,7 @@ Template.textOutput.helpers({
             case matsTypes.PlotTypes.yearToYear:
                 if (isCTC) {
                     header += "<th>" + curve.label + labelSuffix + "</th>\
-                        <th>stat</th>\
+                        <th>plotted stat</th>\
                         <th>n</th>\
                         <th>hits</th>\
                         <th>false alarms</th>\
@@ -336,7 +345,7 @@ Template.textOutput.helpers({
         var labelKey = Template.parentData().label;
         var elementLabel = "";
         var line = "";
-        var isCTC = Session.get('isCTC') === undefined ? false : Session.get('isCTC');
+        let isCTC = element['hit'] !== undefined && element['hit'] !== null;
         var isModePairs = Session.get('isModePairs') === undefined ? false : Session.get('isModePairs');
         var plotType = Session.get('plotType');
         var labelSuffix;
