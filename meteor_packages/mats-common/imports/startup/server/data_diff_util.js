@@ -57,6 +57,10 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC, isSca
             subLevs: [],
             stats: [],
             text: [],
+            n_forecast: [],
+            n_matched: [],
+            n_simple: [],
+            n_total: [],
             glob_stats: {},
             xmin: Number.MAX_VALUE,
             xmax: Number.MIN_VALUE,
@@ -238,6 +242,15 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC, isSca
                             var subtrahendDataSubModelSum = subtrahendData.subModelSum[subtrahendIndex];
                             var subtrahendDataSubObsSum = subtrahendData.subObsSum[subtrahendIndex];
                             var subtrahendDataSubAbsSum = subtrahendData.subAbsSum[subtrahendIndex];
+                        } else if (minuendData.n_total.length > 0 && subtrahendData.n_total.length) {
+                            var minuendDataNForecast = minuendData.n_forecast[minuendIndex];
+                            var minuendDataNMatched = minuendData.n_matched[minuendIndex];
+                            var minuendDataNSimple = minuendData.n_simple[minuendIndex];
+                            var minuendDataNTotal = minuendData.n_total[minuendIndex];
+                            var subtrahendDataNForecast = subtrahendData.n_forecast[subtrahendIndex];
+                            var subtrahendDataNMatched = subtrahendData.n_matched[subtrahendIndex];
+                            var subtrahendDataNSimple = subtrahendData.n_simple[subtrahendIndex];
+                            var subtrahendDataNTotal = subtrahendData.n_total[subtrahendIndex];
                         }
                         var minuendDataSubValues = minuendData.subVals[minuendIndex];
                         var subtrahendDataSubValues = subtrahendData.subVals[subtrahendIndex];
@@ -290,6 +303,12 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC, isSca
                         d.subSecs.push(tempSubSecsArray);
                         if (hasLevels) {
                             d.subLevs.push(tempSubLevsArray);
+                        }
+                        if (minuendData.n_total.length > 0 && subtrahendData.n_total.length) {
+                            d.n_forecast.push(minuendDataNForecast - subtrahendDataNForecast);
+                            d.n_matched.push(minuendDataNMatched - subtrahendDataNMatched);
+                            d.n_simple.push(minuendDataNSimple - subtrahendDataNSimple);
+                            d.n_total.push(minuendDataNTotal - subtrahendDataNTotal);
                         }
                         d.sum = d.sum + d[independentVarName][largeIntervalCurveIndex];
 
