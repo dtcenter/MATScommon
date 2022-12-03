@@ -136,7 +136,7 @@ Template.textOutput.helpers({
         let curveData = getDataForCurve(curve);
         let isCTC = curveData !== undefined && curveData[0] !== undefined && Object.keys(curveData[0]).indexOf('hit') !== -1;
         let isModeSingle = curveData !== undefined && curveData[0] !== undefined && Object.keys(curveData[0]).indexOf('n_forecast') !== -1;
-        var isModePairs = Session.get('isModePairs') === undefined ? false : Session.get('isModePairs');
+        var isModePairs = curveData !== undefined && curveData[0] !== undefined && Object.keys(curveData[0]).indexOf('avgInterest') !== -1;
         var plotType = Session.get('plotType');
         var labelSuffix;
         switch (plotType) {
@@ -354,7 +354,7 @@ Template.textOutput.helpers({
         var line = "";
         let isCTC = element['hit'] !== undefined && element['hit'] !== null;
         let isModeSingle = element['n_forecast'] !== undefined && element['n_forecast'] !== null;
-        var isModePairs = Session.get('isModePairs') === undefined ? false : Session.get('isModePairs');
+        var isModePairs = element['avgInterest'] !== undefined && element['avgInterest'] !== null;
         var plotType = Session.get('plotType');
         var labelSuffix;
         switch (plotType) {
