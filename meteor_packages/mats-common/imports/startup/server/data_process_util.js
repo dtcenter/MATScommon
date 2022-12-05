@@ -60,17 +60,7 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
                 }
             }
 
-            if ((diffFrom === null || diffFrom === undefined) || !appParams.matching) {
-                if (!isMetexpress && statType !== 'ctc' && statType !== 'scalar') {
-                    // assign recalculated statistic to data[di][1], which is the value to be plotted
-                    // we have already recalculated the statistic for ctc and scalar stats if there was matching, etc, so keep that value
-                    if (statisticSelect === 'N' || statisticSelect === 'N times*levels(*stations if station plot) per graph point') {
-                        data.y[di] = errorResult.sum;
-                    } else {
-                        data.y[di] = errorResult.d_mean;
-                    }
-                }
-            } else {
+            if (diffFrom !== null && diffFrom !== undefined) {
                 if (dataset[diffFrom[0]].y[di] !== null && dataset[diffFrom[1]].y[di] !== null) {
                     // make sure that the diff curve actually shows the difference when matching.
                     // otherwise outlier filtering etc. can make it slightly off.
@@ -150,7 +140,7 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
             }
 
             // store statistics for this di datapoint
-            if (statType === 'ctc' || statType === 'met-ctc') {
+            if (statType === 'ctc') {
                 data.stats[di] = {
                     stat: data.y[di],
                     n: Array.isArray(data.subHit[di]) || !isNaN(data.subHit[di]) ? data.subHit[di].length : 0,
@@ -182,13 +172,17 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
             } else if (statType === 'met-mode_single') {
                 data.stats[di] = {
                     stat: data.y[di],
-                    n: Array.isArray(data.subVals[di]) || !isNaN(data.subVals[di]) ? data.subVals[di].length : 0,
-                    raw_stat: data.y[di],
-                    n_good: Array.isArray(data.subVals[di]) || !isNaN(data.subVals[di]) ? data.subVals[di].length : 0
+                    n_forecast: data.n_forecast[di],
+                    n_matched: data.n_matched[di],
+                    n_simple: data.n_simple[di],
+                    n_total: data.n_total[di]
                 };
                 data.text[di] = data.text[di] +
                     "<br>" + statisticSelect + ": " + (data.y[di] === null ? null : data.y[di].toPrecision(4)) +
-                    "<br>n: " + (Array.isArray(data.subVals[di]) || !isNaN(data.subVals[di]) ? data.subVals[di].length : 0);
+                    "<br>Forecast objects: " + data.n_forecast[di].toString() +
+                    "<br>Matched objects: " + data.n_matched[di].toString() +
+                    "<br>Simple objects: " + data.n_simple[di].toString() +
+                    "<br>Total objects: " + data.n_total[di].toString();
             } else {
                 data.stats[di] = {
                     stat: data.y[di],
@@ -281,6 +275,10 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
         data.subInterest = [];
         data.subData = [];
         data.subHeaders = [];
+        data.n_forecast = [];
+        data.n_matched = [];
+        data.n_simple = [];
+        data.n_total = [];
         data.subVals = [];
         data.subSecs = [];
         data.subLevs = [];
@@ -389,17 +387,7 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
                 var errorResult = matsDataUtils.get_err(data.subVals[di], data.subSecs[di], data.subLevs[di], appParams);
             }
 
-            if ((diffFrom === null || diffFrom === undefined) || !appParams.matching) {
-                if (!isMetexpress && statType !== 'ctc' && statType !== 'scalar') {
-                    // assign recalculated statistic to data[di][1], which is the value to be plotted
-                    // we have already recalculated the statistic for ctc and scalar stats if there was matching, etc, so keep that value
-                    if (statisticSelect === 'N' || statisticSelect === 'N times*levels(*stations if station plot) per graph point') {
-                        data.x[di] = errorResult.sum;
-                    } else {
-                        data.x[di] = errorResult.d_mean;
-                    }
-                }
-            } else {
+            if (diffFrom !== null && diffFrom !== undefined) {
                 if (dataset[diffFrom[0]].x[di] !== null && dataset[diffFrom[1]].x[di] !== null) {
                     // make sure that the diff curve actually shows the difference when matching.
                     // otherwise outlier filtering etc. can make it slightly off.
@@ -478,14 +466,18 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
                     "<br>Average Interest: " + (Array.isArray(data.subInterest[di]) || !isNaN(data.subInterest[di]) ? matsDataUtils.average(data.subInterest[di]).toPrecision(4) : null);
             } else if (statType === 'met-mode_single') {
                 data.stats[di] = {
-                    stat: data.x[di],
-                    n: Array.isArray(data.subVals[di]) || !isNaN(data.subVals[di]) ? data.subVals[di].length : 0,
-                    raw_stat: data.x[di],
-                    n_good: Array.isArray(data.subVals[di]) || !isNaN(data.subVals[di]) ? data.subVals[di].length : 0
+                    stat: data.y[di],
+                    n_forecast: data.n_forecast[di],
+                    n_matched: data.n_matched[di],
+                    n_simple: data.n_simple[di],
+                    n_total: data.n_total[di]
                 };
                 data.text[di] = data.text[di] +
-                    "<br>" + statisticSelect + ": " + (data.x[di] === null ? null : data.x[di].toPrecision(4)) +
-                    "<br>n: " + (Array.isArray(data.subVals[di]) || !isNaN(data.subVals[di]) ? data.subVals[di].length : 0);
+                    "<br>" + statisticSelect + ": " + (data.y[di] === null ? null : data.y[di].toPrecision(4)) +
+                    "<br>Forecast objects: " + data.n_forecast[di].toString() +
+                    "<br>Matched objects: " + data.n_matched[di].toString() +
+                    "<br>Simple objects: " + data.n_simple[di].toString() +
+                    "<br>Total objects: " + data.n_total[di].toString();
             } else {
                 data.stats[di] = {
                     stat: data.x[di],
@@ -572,6 +564,10 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
         data.subInterest = [];
         data.subData = [];
         data.subHeaders = [];
+        data.n_forecast = [];
+        data.n_matched = [];
+        data.n_simple = [];
+        data.n_total = [];
         data.subVals = [];
         data.subSecs = [];
         data.subLevs = [];
@@ -884,6 +880,10 @@ const processDataPerformanceDiagram = function (dataset, appParams, curveInfoPar
         data.subInterest = [];
         data.subData = [];
         data.subHeaders = [];
+        data.n_forecast = [];
+        data.n_matched = [];
+        data.n_simple = [];
+        data.n_total = [];
         data.subVals = [];
         data.subSecs = [];
         data.subLevs = [];
@@ -1120,6 +1120,10 @@ const processDataHistogram = function (allReturnedSubStats, allReturnedSubSecs, 
             subLevs: [],
             stats: [],
             text: [],
+            n_forecast: [],
+            n_matched: [],
+            n_simple: [],
+            n_total: [],
             glob_stats: {},
             bin_stats: [],
             xmin: Number.MAX_VALUE,
@@ -1230,6 +1234,10 @@ const processDataHistogram = function (allReturnedSubStats, allReturnedSubSecs, 
         data.subInterest = [];
         data.subData = [];
         data.subHeaders = [];
+        data.n_forecast = [];
+        data.n_matched = [];
+        data.n_simple = [];
+        data.n_total = [];
         data.subVals = [];
         data.subSecs = [];
         data.subLevs = [];
@@ -1319,6 +1327,10 @@ const processDataContour = function (dataset, curveInfoParams, plotParams, bookk
     data.subAbsSum = [];
     data.subData = [];
     data.subHeaders = [];
+    data.n_forecast = [];
+    data.n_matched = [];
+    data.n_simple = [];
+    data.n_total = [];
     data.subVals = [];
     data.subSecs = [];
     data.subLevs = [];

@@ -87,40 +87,46 @@ Template.curveParamGroup.helpers({
         var restoreSettingsTime = Session.get("restoreSettingsTime"); // used to force re-render
         var lastUpdate = Session.get('lastUpdate');
         let plotType = Session.get('plotType');
+        let isMetexpress = false;
+        if (matsCollections.Settings.findOne({}) !== undefined && matsCollections.Settings.findOne({}).appType !== undefined) {
+            isMetexpress = matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
+        }
         const params = getParams(num);
-        for (var i = 0; i < params.length; i++) {
-            if (params[i].gapAbove) {
-                if (params[i].name === "aggregation-method") {
-                    switch (plotType) {
-                        case matsTypes.PlotTypes.histogram:
-                        case matsTypes.PlotTypes.ensembleHistogram:
-                        case matsTypes.PlotTypes.roc:
-                        case matsTypes.PlotTypes.performanceDiagram:
-                            return "Date range:";
-                        case matsTypes.PlotTypes.profile:
-                        case matsTypes.PlotTypes.dieoff:
-                        case matsTypes.PlotTypes.threshold:
-                        case matsTypes.PlotTypes.validtime:
-                        case matsTypes.PlotTypes.gridscale:
-                        case matsTypes.PlotTypes.simpleScatter:
-                            return "Aggregation / Date range:";
-                        case matsTypes.PlotTypes.timeSeries:
-                        case matsTypes.PlotTypes.dailyModelCycle:
-                        case matsTypes.PlotTypes.yearToYear:
-                        case matsTypes.PlotTypes.map:
-                        case matsTypes.PlotTypes.contour:
-                        case matsTypes.PlotTypes.contourDiff:
-                        case matsTypes.PlotTypes.scatter2d:
-                            return "Aggregation:";
-                        case matsTypes.PlotTypes.reliability:
-                        default:
-                            return "";
+        if (isMetexpress) {
+            for (var i = 0; i < params.length; i++) {
+                if (params[i].gapAbove) {
+                    if (params[i].name === "aggregation-method") {
+                        switch (plotType) {
+                            case matsTypes.PlotTypes.histogram:
+                            case matsTypes.PlotTypes.ensembleHistogram:
+                            case matsTypes.PlotTypes.roc:
+                            case matsTypes.PlotTypes.performanceDiagram:
+                                return "Date range:";
+                            case matsTypes.PlotTypes.profile:
+                            case matsTypes.PlotTypes.dieoff:
+                            case matsTypes.PlotTypes.threshold:
+                            case matsTypes.PlotTypes.validtime:
+                            case matsTypes.PlotTypes.gridscale:
+                            case matsTypes.PlotTypes.simpleScatter:
+                                return "Aggregation / Date range:";
+                            case matsTypes.PlotTypes.timeSeries:
+                            case matsTypes.PlotTypes.dailyModelCycle:
+                            case matsTypes.PlotTypes.yearToYear:
+                            case matsTypes.PlotTypes.map:
+                            case matsTypes.PlotTypes.contour:
+                            case matsTypes.PlotTypes.contourDiff:
+                            case matsTypes.PlotTypes.scatter2d:
+                                return "Aggregation:";
+                            case matsTypes.PlotTypes.reliability:
+                            default:
+                                return "";
+                        }
+                    } else {
+                        return "Filter by parameters:";
                     }
-                } else {
-                    return "Filter by parameters:";
+                } else if (params[i].name === "label") {
+                    return "Define the curve:";
                 }
-            } else if (params[i].name === "label") {
-                return "Define the curve:";
             }
         }
         return "";

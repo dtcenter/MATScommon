@@ -131,6 +131,10 @@ class QueryUtil:
                 "threshold_all": [],
                 "oy_all": [],
                 "on_all": [],
+                "n_forecast": [],
+                "n_matched": [],
+                "n_simple": [],
+                "n_total": [],
                 "sample_climo": 0,
                 "auc": 0,
                 "glob_stats": {
@@ -153,9 +157,10 @@ class QueryUtil:
             self.n_times.append([])
             self.error.append("")
 
-    def construct_output_json(self, plot_type, stat_line_type):
+    def construct_output_json(self, plot_type, queries):
         """function for constructing and jsonifying a dictionary of the output variables"""
         for i in range(len(self.data)):
+            stat_line_type = queries[i]["statLineType"]
             # only save relevant sub-data
             if plot_type in ['ValidTime', 'GridScale', 'Profile', 'DailyModelCycle', 'TimeSeries',
                              'DieOff', 'Threshold', 'YearToYear']:
@@ -169,6 +174,27 @@ class QueryUtil:
                                 self.data[i]["subInterest"].append([float(a[interest_idx]) for a in self.data[i]["subData"][j]])
                             except Exception as e:
                                 self.data[i]["subInterest"].append('NaN')
+                elif stat_line_type == 'mode_single':
+                    for j in range(len(self.data[i]["subData"])):
+                        if self.data[i]["subHeaders"][j] == 'NaN' or len(self.data[i]["subHeaders"][j]) == 0:
+                            self.data[i]["n_forecast"].append(0)
+                            self.data[i]["n_matched"].append(0)
+                            self.data[i]["n_simple"].append(0)
+                            self.data[i]["n_total"].append(0)
+                        else:
+                            try:
+                                forecast_idx = self.data[i]["subHeaders"][j].index('fcst_flag')
+                                matched_idx = self.data[i]["subHeaders"][j].index('matched_flag')
+                                simple_idx = self.data[i]["subHeaders"][j].index('simple_flag')
+                                self.data[i]["n_forecast"].append(sum([int(a[forecast_idx]) for a in self.data[i]["subData"][j]]))
+                                self.data[i]["n_matched"].append(sum([int(a[matched_idx]) for a in self.data[i]["subData"][j]]))
+                                self.data[i]["n_simple"].append(sum([int(a[simple_idx]) for a in self.data[i]["subData"][j]]))
+                                self.data[i]["n_total"].append(len([int(a[forecast_idx]) for a in self.data[i]["subData"][j]]))
+                            except Exception as e:
+                                self.data[i]["n_forecast"].append(0)
+                                self.data[i]["n_matched"].append(0)
+                                self.data[i]["n_simple"].append(0)
+                                self.data[i]["n_total"].append(0)
                 elif stat_line_type == 'ctc':
                     for j in range(len(self.data[i]["subData"])):
                         if self.data[i]["subHeaders"][j] == 'NaN' or len(self.data[i]["subHeaders"][j]) == 0:
@@ -712,6 +738,7 @@ class QueryUtil:
         """function for parsing the data returned by a contour query"""
         # initialize local variables
         has_levels = app_params["hasLevels"]
+        agg_method = app_params["aggMethod"]
         curve_stat_lookup = {}
         curve_n_lookup = {}
 
@@ -750,6 +777,8 @@ class QueryUtil:
                 # there's no data at this point
                 stat = 'null'
                 n = 0
+                sub_headers = 'NaN'
+                sub_data = 'NaN'
                 min_date = 'null'
                 max_date = 'null'
             # store flat arrays of all the parsed data, used by the text output and for some calculations later
@@ -757,6 +786,23 @@ class QueryUtil:
             self.data[idx]['yTextOutput'].append(row_y_val)
             self.data[idx]['zTextOutput'].append(stat)
             self.data[idx]['nTextOutput'].append(n)
+            if stat_line_type == 'ctc' and agg_method == 'Overall statistic':
+                if isinstance(sub_headers, np.ndarray) and len(sub_headers) > 0:
+                    flat_data = np.sum(sub_data, axis=0)
+                    hit_idx = np.where(sub_headers == 'fy_oy')[0][0]
+                    fa_idx = np.where(sub_headers == 'fy_on')[0][0]
+                    miss_idx = np.where(sub_headers == 'fn_oy')[0][0]
+                    cn_idx = np.where(sub_headers == 'fn_on')[0][0]
+                    self.data[idx]["hitTextOutput"].append(flat_data[hit_idx])
+                    self.data[idx]["faTextOutput"].append(flat_data[fa_idx])
+                    self.data[idx]["missTextOutput"].append(flat_data[miss_idx])
+                    self.data[idx]["cnTextOutput"].append(flat_data[cn_idx])
+                else:
+                    self.data[idx]["hitTextOutput"].append('null')
+                    self.data[idx]["faTextOutput"].append('null')
+                    self.data[idx]["missTextOutput"].append('null')
+                    self.data[idx]["cnTextOutput"].append('null')
+
             self.data[idx]['minDateTextOutput'].append(min_date)
             self.data[idx]['maxDateTextOutput'].append(max_date)
             curve_stat_lookup[stat_key] = stat
@@ -1048,8 +1094,8 @@ class QueryUtil:
 
     def query_db(self, cursor, query_array):
         """function for querying the database and sending the returned data to the parser"""
+        idx = 0
         for query in query_array:
-            idx = query_array.index(query)
             statement = query["statement"]
             try:
                 cursor.execute(statement)
@@ -1074,6 +1120,7 @@ class QueryUtil:
                     else:
                         self.parse_query_data_xy_curve(idx, cursor, query["statLineType"], query["statistic"],
                                                        query["appParams"], query["fcstOffset"], query["vts"])
+            idx = idx + 1
 
     def validate_options(self, options):
         """makes sure all expected options were indeed passed in"""
@@ -1154,6 +1201,5 @@ if __name__ == '__main__':
     qutil.do_query(options)
     if options["query_array"][0]["appParams"]["matching"]:
         qutil.do_matching(options)
-    qutil.construct_output_json(options["query_array"][0]["appParams"]["plotType"],
-                                options["query_array"][0]["statLineType"])
+    qutil.construct_output_json(options["query_array"][0]["appParams"]["plotType"], options["query_array"])
     print(qutil.output_JSON)
