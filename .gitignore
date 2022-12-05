@@ -1,3 +1,4 @@
 .DS_Store
 .idea
+meteor_packages/.idea
 meteor_packages/mats-common/.npm/package/npm-shrinkwrap.json
