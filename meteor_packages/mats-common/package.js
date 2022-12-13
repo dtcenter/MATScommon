@@ -26,7 +26,7 @@ Package.onUse(function (api) {
         "csv-stringify": "4.3.1",
         "node-file-cache" : "1.0.2",
         "python-shell": "1.0.8",
-        "couchbase": "3.2.3",
+        "couchbase": "4.1.3",
         "simpl-schema": "1.12.0",
         "vanillajs-datepicker":"1.2.0",
         "daterangepicker": "3.1.0"
