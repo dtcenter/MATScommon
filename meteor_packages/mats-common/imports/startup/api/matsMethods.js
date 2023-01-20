@@ -2,8 +2,12 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import {Meteor} from "meteor/meteor";
-import {ValidatedMethod} from 'meteor/mdg:validated-method';
+import {
+    Meteor
+} from "meteor/meteor";
+import {
+    ValidatedMethod
+} from 'meteor/mdg:validated-method';
 import SimpleSchema from 'simpl-schema';
 import {
     matsCache,
@@ -14,9 +18,15 @@ import {
     matsTypes,
     versionInfo
 } from 'meteor/randyp:mats-common';
-import {mysql} from 'meteor/pcel:mysql';
-import {url} from 'url';
-import {Mongo} from 'meteor/mongo';
+import {
+    mysql
+} from 'meteor/pcel:mysql';
+import {
+    url
+} from 'url';
+import {
+    Mongo
+} from 'meteor/mongo';
 
 // PRIVATE
 
@@ -37,8 +47,16 @@ const isEmpty = function (map) {
 // Define routes for server
 if (Meteor.isServer) {
     // add indexes to result and axes collections
-    DownSampleResults.rawCollection().createIndex({"createdAt": 1}, {expireAfterSeconds: 3600 * 8}); // 8 hour expiration
-    LayoutStoreCollection.rawCollection().createIndex({"createdAt": 1}, {expireAfterSeconds: 900}); // 15 min expiration
+    DownSampleResults.rawCollection().createIndex({
+        "createdAt": 1
+    }, {
+        expireAfterSeconds: 3600 * 8
+    }); // 8 hour expiration
+    LayoutStoreCollection.rawCollection().createIndex({
+        "createdAt": 1
+    }, {
+        expireAfterSeconds: 900
+    }); // 15 min expiration
     // set the default proxy prefix path to ""
     // If the settings are not complete, they will be set by the configuration and written out, which will cause the app to reset
     if (Meteor.settings.public != null && Meteor.settings.public.proxy_prefix_path == null) {
@@ -370,7 +388,7 @@ if (Meteor.isServer) {
         Picker.middleware(_getDates(params, req, res, next));
     });
 
-// create picker routes for refreshMetaData
+    // create picker routes for refreshMetaData
     Picker.route('/refreshMetadata', function (params, req, res, next) {
         Picker.middleware(_refreshMetadataMWltData(params, req, res, next));
     });
@@ -462,7 +480,13 @@ const _checkMetaDataRefresh = async function () {
                 global.appSpecificResetRoutines[ai]();
             }
             // remember that we updated ALL the metadata tables just now
-            metaDataTableUpdates.update({_id: id}, {$set: {lastRefreshed: moment().format()}});
+            metaDataTableUpdates.update({
+                _id: id
+            }, {
+                $set: {
+                    lastRefreshed: moment().format()
+                }
+            });
         }
     }
     return true;
@@ -519,14 +543,24 @@ function _mapMapToApps(result) {
 // helper function for returning an array of database-distinct apps contained within a larger MATS app
 function _getListOfApps() {
     let apps;
-    if (matsCollections['database'] !== undefined && matsCollections['database'].findOne({name: 'database'}) !== undefined) {
+    if (matsCollections['database'] !== undefined && matsCollections['database'].findOne({
+            name: 'database'
+        }) !== undefined) {
         // get list of databases (one per app)
-        apps = matsCollections['database'].findOne({name: 'database'}).options;
+        apps = matsCollections['database'].findOne({
+            name: 'database'
+        }).options;
         if (!Array.isArray(apps)) apps = Object.keys(apps);
-    } else if ((matsCollections['variable'] !== undefined && matsCollections['variable'].findOne({name: 'variable'}) !== undefined) &&
-        (matsCollections['threshold'] !== undefined && matsCollections['threshold'].findOne({name: 'threshold'}) !== undefined)) {
+    } else if ((matsCollections['variable'] !== undefined && matsCollections['variable'].findOne({
+            name: 'variable'
+        }) !== undefined) &&
+        (matsCollections['threshold'] !== undefined && matsCollections['threshold'].findOne({
+            name: 'threshold'
+        }) !== undefined)) {
         // get list of apps (variables in apps that also have thresholds)
-        apps = matsCollections['variable'].findOne({name: 'variable'}).options;
+        apps = matsCollections['variable'].findOne({
+            name: 'variable'
+        }).options;
         if (!Array.isArray(apps)) apps = Object.keys(apps);
     } else {
         apps = [matsCollections.Settings.findOne().Title];
@@ -539,20 +573,34 @@ function _getListOfAppDBs() {
     let apps;
     let result = {};
     let aidx;
-    if (matsCollections['database'] !== undefined && matsCollections['database'].findOne({name: 'database'}) !== undefined) {
+    if (matsCollections['database'] !== undefined && matsCollections['database'].findOne({
+            name: 'database'
+        }) !== undefined) {
         // get list of databases (one per app)
-        apps = matsCollections['database'].findOne({name: 'database'}).options;
+        apps = matsCollections['database'].findOne({
+            name: 'database'
+        }).options;
         if (!Array.isArray(apps)) apps = Object.keys(apps);
         for (aidx = 0; aidx < apps.length; aidx++) {
-            result[apps[aidx]] = matsCollections['database'].findOne({name: 'database'}).optionsMap[apps[aidx]].sumsDB;
+            result[apps[aidx]] = matsCollections['database'].findOne({
+                name: 'database'
+            }).optionsMap[apps[aidx]].sumsDB;
         }
-    } else if ((matsCollections['variable'] !== undefined && matsCollections['variable'].findOne({name: 'variable'}) !== undefined) &&
-        (matsCollections['threshold'] !== undefined && matsCollections['threshold'].findOne({name: 'threshold'}) !== undefined)) {
+    } else if ((matsCollections['variable'] !== undefined && matsCollections['variable'].findOne({
+            name: 'variable'
+        }) !== undefined) &&
+        (matsCollections['threshold'] !== undefined && matsCollections['threshold'].findOne({
+            name: 'threshold'
+        }) !== undefined)) {
         // get list of apps (variables in apps that also have thresholds)
-        apps = matsCollections['variable'].findOne({name: 'variable'}).options;
+        apps = matsCollections['variable'].findOne({
+            name: 'variable'
+        }).options;
         if (!Array.isArray(apps)) apps = Object.keys(apps);
         for (aidx = 0; aidx < apps.length; aidx++) {
-            result[apps[aidx]] = matsCollections['variable'].findOne({name: 'variable'}).optionsMap[apps[aidx]];
+            result[apps[aidx]] = matsCollections['variable'].findOne({
+                name: 'variable'
+            }).optionsMap[apps[aidx]];
             if (typeof result[apps[aidx]] !== 'string' && !(result[apps[aidx]] instanceof String)) result[apps[aidx]] = result[apps[aidx]].sumsDB;
         }
     } else {
@@ -569,9 +617,15 @@ function _getMapByAppAndModel(selector, mapType) {
     let flatJSON = "";
     try {
         let result;
-        if (matsCollections[selector] !== undefined && matsCollections[selector].findOne({name: selector}) !== undefined && matsCollections[selector].findOne({name: selector})[mapType] !== undefined) {
+        if (matsCollections[selector] !== undefined && matsCollections[selector].findOne({
+                name: selector
+            }) !== undefined && matsCollections[selector].findOne({
+                name: selector
+            })[mapType] !== undefined) {
             // get map of requested selector's metadata
-            result = matsCollections[selector].findOne({name: selector})[mapType];
+            result = matsCollections[selector].findOne({
+                name: selector
+            })[mapType];
             let newResult = {};
             if (mapType === 'valuesMap' || selector === 'variable' || selector === 'statistic') {
                 // valueMaps always need to be re-keyed by app (statistic and variable get their valuesMaps from optionsMaps)
@@ -590,7 +644,9 @@ function _getMapByAppAndModel(selector, mapType) {
         flatJSON = JSON.stringify(result);
     } catch (e) {
         console.log('error retrieving metadata from ' + selector + ': ', e);
-        flatJSON = JSON.stringify({error: e});
+        flatJSON = JSON.stringify({
+            error: e
+        });
     }
     return flatJSON;
 }
@@ -601,15 +657,33 @@ function _getDateMapByAppAndModel() {
     try {
         let result;
         // the date map can be in a few places. we have to hunt for it.
-        if (matsCollections['database'] !== undefined && matsCollections['database'].findOne({name: 'database'})
-            !== undefined && matsCollections['database'].findOne({name: 'database'}).dates !== undefined) {
-            result = matsCollections['database'].findOne({name: 'database'}).dates;
-        } else if (matsCollections['variable'] !== undefined && matsCollections['variable'].findOne({name: 'variable'})
-            !== undefined && matsCollections['variable'].findOne({name: 'variable'}).dates !== undefined) {
-            result = matsCollections['variable'].findOne({name: 'variable'}).dates;
-        } else if (matsCollections['data-source'] !== undefined && matsCollections['data-source'].findOne({name: 'data-source'})
-            !== undefined && matsCollections['data-source'].findOne({name: 'data-source'}).dates !== undefined) {
-            result = matsCollections['data-source'].findOne({name: 'data-source'}).dates;
+        if (matsCollections['database'] !== undefined && matsCollections['database'].findOne({
+                name: 'database'
+            }) !==
+            undefined && matsCollections['database'].findOne({
+                name: 'database'
+            }).dates !== undefined) {
+            result = matsCollections['database'].findOne({
+                name: 'database'
+            }).dates;
+        } else if (matsCollections['variable'] !== undefined && matsCollections['variable'].findOne({
+                name: 'variable'
+            }) !==
+            undefined && matsCollections['variable'].findOne({
+                name: 'variable'
+            }).dates !== undefined) {
+            result = matsCollections['variable'].findOne({
+                name: 'variable'
+            }).dates;
+        } else if (matsCollections['data-source'] !== undefined && matsCollections['data-source'].findOne({
+                name: 'data-source'
+            }) !==
+            undefined && matsCollections['data-source'].findOne({
+                name: 'data-source'
+            }).dates !== undefined) {
+            result = matsCollections['data-source'].findOne({
+                name: 'data-source'
+            }).dates;
         } else {
             result = {};
         }
@@ -624,7 +698,9 @@ function _getDateMapByAppAndModel() {
         flatJSON = JSON.stringify(result);
     } catch (e) {
         console.log('error retrieving datemap', e);
-        flatJSON = JSON.stringify({error: e});
+        flatJSON = JSON.stringify({
+            error: e
+        });
     }
     return flatJSON;
 }
@@ -634,9 +710,13 @@ function _getMapByApp(selector) {
     let flatJSON = "";
     try {
         let result;
-        if (matsCollections[selector] !== undefined && matsCollections[selector].findOne({name: selector}) !== undefined) {
+        if (matsCollections[selector] !== undefined && matsCollections[selector].findOne({
+                name: selector
+            }) !== undefined) {
             // get array of requested selector's metadata
-            result = matsCollections[selector].findOne({name: selector}).options;
+            result = matsCollections[selector].findOne({
+                name: selector
+            }).options;
             if (!Array.isArray(result)) result = Object.keys(result);
         } else {
             if (selector === 'statistic') {
@@ -657,7 +737,9 @@ function _getMapByApp(selector) {
         flatJSON = JSON.stringify(newResult);
     } catch (e) {
         console.log('error retrieving metadata from ' + selector + ': ', e);
-        flatJSON = JSON.stringify({error: e});
+        flatJSON = JSON.stringify({
+            error: e
+        });
     }
     return flatJSON;
 }
@@ -667,11 +749,17 @@ function _getlevelsByApp() {
     let flatJSON = "";
     try {
         let result;
-        if (matsCollections['level'] !== undefined && matsCollections['level'].findOne({name: 'level'}) !== undefined) {
+        if (matsCollections['level'] !== undefined && matsCollections['level'].findOne({
+                name: 'level'
+            }) !== undefined) {
             // we have levels already defined
-            result = matsCollections['level'].findOne({name: 'level'}).options;
+            result = matsCollections['level'].findOne({
+                name: 'level'
+            }).options;
             if (!Array.isArray(result)) result = Object.keys(result);
-        } else if (matsCollections['top'] !== undefined && matsCollections['top'].findOne({name: 'top'}) !== undefined) {
+        } else if (matsCollections['top'] !== undefined && matsCollections['top'].findOne({
+                name: 'top'
+            }) !== undefined) {
             // use the MATS mandatory levels
             result = _.range(100, 1050, 50);
             if (!Array.isArray(result)) result = Object.keys(result);
@@ -687,7 +775,9 @@ function _getlevelsByApp() {
         flatJSON = JSON.stringify(newResult);
     } catch (e) {
         console.log('error retrieving levels: ', e);
-        flatJSON = JSON.stringify({error: e});
+        flatJSON = JSON.stringify({
+            error: e
+        });
     }
     return flatJSON;
 }
@@ -702,7 +792,9 @@ const _getApps = function (params, req, res, next) {
             flatJSON = JSON.stringify(result);
         } catch (e) {
             console.log('error retrieving apps: ', e);
-            flatJSON = JSON.stringify({error: e});
+            flatJSON = JSON.stringify({
+                error: e
+            });
         }
         res.setHeader('Content-Type', 'application/json');
         res.write(flatJSON);
@@ -720,7 +812,9 @@ const _getAppSumsDBs = function (params, req, res, next) {
             flatJSON = JSON.stringify(result);
         } catch (e) {
             console.log('error retrieving apps: ', e);
-            flatJSON = JSON.stringify({error: e});
+            flatJSON = JSON.stringify({
+                error: e
+            });
         }
         res.setHeader('Content-Type', 'application/json');
         res.write(flatJSON);
@@ -962,14 +1056,16 @@ const _getCSV = function (params, req, res, next) {
                 if (dataSubArray[0] === undefined) {
                     continue;
                 }
-                for (var dsi = 0; dsi < dataSubArray.length; dsi++) {  // push this curves data
+                for (var dsi = 0; dsi < dataSubArray.length; dsi++) { // push this curves data
                     dataResultArray.push(Object.values(dataSubArray[dsi]));
                 }
             }
             var fileName = "matsplot-" + moment.utc().format('YYYYMMDD-HH.mm.ss') + ".csv";
             res.setHeader('Content-disposition', 'attachment; filename=' + fileName);
             res.setHeader('Content-Type', 'attachment.ContentType');
-            stringify(statResultArray, {header: true}, function (err, output) {
+            stringify(statResultArray, {
+                header: true
+            }, function (err, output) {
                 if (err) {
                     console.log("error in _getCSV:", err);
                     res.write("error," + err.toLocaleString());
@@ -977,7 +1073,9 @@ const _getCSV = function (params, req, res, next) {
                     return;
                 }
                 res.write(output);
-                stringify(dataResultArray, {header: true}, function (err, output) {
+                stringify(dataResultArray, {
+                    header: true
+                }, function (err, output) {
                     if (err) {
                         console.log("error in _getCSV:", err);
                         res.write("error," + err.toLocaleString());
@@ -1007,7 +1105,9 @@ const _getJSON = function (params, req, res, next) {
             flatJSON = JSON.stringify(result);
         } catch (e) {
             console.log('error retrieving data: ', e);
-            flatJSON = JSON.stringify({error: e});
+            flatJSON = JSON.stringify({
+                error: e
+            });
             delete flatJSON.dsiRealPageIndex;
             delete flatJSON.dsiTextDirection;
         }
@@ -1072,16 +1172,16 @@ const _getFlattenedResultData = function (rk, p, np) {
                             break;
                     }
                     var returnData = {};
-                    returnData.stats = {};   // map of maps
-                    returnData.data = {};  // map of arrays of maps
-                    for (var ci = 0; ci < data.length; ci++) {  // for each curve
+                    returnData.stats = {}; // map of maps
+                    returnData.data = {}; // map of arrays of maps
+                    for (var ci = 0; ci < data.length; ci++) { // for each curve
                         isCTC = data[ci] !== undefined &&
-                            ((data[ci].stats !== undefined && data[ci].stats[0] !== undefined && data[ci].stats[0].hit !== undefined)
-                                || (data[ci].hitTextOutput !== undefined && data[ci].hitTextOutput.length > 0));
-                        isModePairs = data[ci] !== undefined && ((data[ci].stats !== undefined && data[ci].stats[0] !== undefined
-                            && data[ci].stats[0].avgInterest !== undefined));
-                        isModeSingle = data[ci] !== undefined && ((data[ci].stats !== undefined && data[ci].stats[0] !== undefined
-                            && data[ci].stats[0].n_forecast !== undefined));
+                            ((data[ci].stats !== undefined && data[ci].stats[0] !== undefined && data[ci].stats[0].hit !== undefined) ||
+                                (data[ci].hitTextOutput !== undefined && data[ci].hitTextOutput.length > 0));
+                        isModePairs = data[ci] !== undefined && ((data[ci].stats !== undefined && data[ci].stats[0] !== undefined &&
+                            data[ci].stats[0].avgInterest !== undefined));
+                        isModeSingle = data[ci] !== undefined && ((data[ci].stats !== undefined && data[ci].stats[0] !== undefined &&
+                            data[ci].stats[0].n_forecast !== undefined));
                         // if the curve label is a reserved word do not process the curve (its a zero or max curve)
                         var reservedWords = Object.values(matsTypes.ReservedWords);
                         if (reservedWords.indexOf(data[ci].label) >= 0) {
@@ -1100,8 +1200,8 @@ const _getFlattenedResultData = function (rk, p, np) {
                         stats['maximum'] = data[ci].glob_stats.maxVal;
                         returnData.stats[data[ci].label] = stats;
 
-                        var curveData = [];  // array of maps
-                        for (var cdi = 0; cdi < data[ci].x.length; cdi++) {  // for each datapoint
+                        var curveData = []; // array of maps
+                        for (var cdi = 0; cdi < data[ci].x.length; cdi++) { // for each datapoint
                             var curveDataElement = {};
                             if (plotType === matsTypes.PlotTypes.profile) {
                                 curveDataElement[data[ci].label + labelSuffix] = data[ci].y[cdi];
@@ -1144,9 +1244,9 @@ const _getFlattenedResultData = function (rk, p, np) {
                 case matsTypes.PlotTypes.roc:
                 case matsTypes.PlotTypes.performanceDiagram:
                     var returnData = {};
-                    returnData.stats = {};   // map of maps
-                    returnData.data = {};  // map of arrays of maps
-                    for (var ci = 0; ci < data.length; ci++) {  // for each curve
+                    returnData.stats = {}; // map of maps
+                    returnData.data = {}; // map of arrays of maps
+                    for (var ci = 0; ci < data.length; ci++) { // for each curve
                         // if the curve label is a reserved word do not process the curve (its a zero or max curve)
                         var reservedWords = Object.values(matsTypes.ReservedWords);
                         if (reservedWords.indexOf(data[ci].label) >= 0) {
@@ -1161,8 +1261,8 @@ const _getFlattenedResultData = function (rk, p, np) {
                         }
                         returnData.stats[data[ci].label] = stats;
 
-                        var curveData = [];  // array of maps
-                        for (var cdi = 0; cdi < data[ci].y.length; cdi++) {  // for each datapoint
+                        var curveData = []; // array of maps
+                        for (var cdi = 0; cdi < data[ci].y.length; cdi++) { // for each datapoint
                             var curveDataElement = {};
                             if (plotType === matsTypes.PlotTypes.reliability) {
                                 curveDataElement[data[ci].label + ' probability bin'] = data[ci].stats[cdi].prob_bin;
@@ -1186,9 +1286,9 @@ const _getFlattenedResultData = function (rk, p, np) {
                     break;
                 case matsTypes.PlotTypes.simpleScatter:
                     var returnData = {};
-                    returnData.stats = {};   // map of maps
-                    returnData.data = {};  // map of arrays of maps
-                    for (var ci = 0; ci < data.length; ci++) {  // for each curve
+                    returnData.stats = {}; // map of maps
+                    returnData.data = {}; // map of arrays of maps
+                    for (var ci = 0; ci < data.length; ci++) { // for each curve
                         // if the curve label is a reserved word do not process the curve (its a zero or max curve)
                         var reservedWords = Object.values(matsTypes.ReservedWords);
                         if (reservedWords.indexOf(data[ci].label) >= 0) {
@@ -1197,8 +1297,8 @@ const _getFlattenedResultData = function (rk, p, np) {
                         var stats = {};
                         stats['label'] = data[ci].label;
 
-                        var curveData = [];  // array of maps
-                        for (var cdi = 0; cdi < data[ci].y.length; cdi++) {  // for each datapoint
+                        var curveData = []; // array of maps
+                        for (var cdi = 0; cdi < data[ci].y.length; cdi++) { // for each datapoint
                             var curveDataElement = {};
                             curveDataElement[data[ci].label + ' bin value'] = data[ci].stats[cdi].bin_value;
                             curveDataElement['x-stat'] = data[ci].stats[cdi].xstat;
@@ -1211,8 +1311,8 @@ const _getFlattenedResultData = function (rk, p, np) {
                     break;
                 case matsTypes.PlotTypes.map:
                     var returnData = {};
-                    returnData.stats = {};   // map of maps
-                    returnData.data = {};  // map of arrays of maps
+                    returnData.stats = {}; // map of maps
+                    returnData.data = {}; // map of arrays of maps
 
                     var stats = {};
                     stats['label'] = data[0].label;
@@ -1232,7 +1332,7 @@ const _getFlattenedResultData = function (rk, p, np) {
 
                     returnData.stats[data[0].label] = stats;
 
-                    var curveData = [];  // map of maps
+                    var curveData = []; // map of maps
                     isCTC = data[0] !== undefined && data[0].stats !== undefined && data[0].stats[0] !== undefined && data[0].stats[0].hit !== undefined;
                     for (var si = 0; si < data[0].siteName.length; si++) {
                         var curveDataElement = {};
@@ -1255,9 +1355,9 @@ const _getFlattenedResultData = function (rk, p, np) {
                     break;
                 case matsTypes.PlotTypes.histogram:
                     var returnData = {};
-                    returnData.stats = {};   // map of maps
-                    returnData.data = {};  // map of arrays of maps
-                    for (var ci = 0; ci < data.length; ci++) {  // for each curve
+                    returnData.stats = {}; // map of maps
+                    returnData.data = {}; // map of arrays of maps
+                    for (var ci = 0; ci < data.length; ci++) { // for each curve
                         // if the curve label is a reserved word do not process the curve (its a zero or max curve)
                         var reservedWords = Object.values(matsTypes.ReservedWords);
                         if (reservedWords.indexOf(data[ci].label) >= 0) {
@@ -1272,8 +1372,8 @@ const _getFlattenedResultData = function (rk, p, np) {
                         stats['maximum'] = data[ci].glob_stats.glob_max;
                         returnData.stats[data[ci].label] = stats;
 
-                        var curveData = [];  // array of maps
-                        for (var cdi = 0; cdi < data[ci].x.length; cdi++) {  // for each datapoint
+                        var curveData = []; // array of maps
+                        for (var cdi = 0; cdi < data[ci].x.length; cdi++) { // for each datapoint
                             var curveDataElement = {};
                             curveDataElement[data[ci].label + ' bin range'] = data[ci].bin_stats[cdi]['binLabel'];
                             curveDataElement['n'] = data[ci].bin_stats[cdi].bin_n;
@@ -1289,9 +1389,9 @@ const _getFlattenedResultData = function (rk, p, np) {
                     break;
                 case matsTypes.PlotTypes.ensembleHistogram:
                     var returnData = {};
-                    returnData.stats = {};   // map of maps
-                    returnData.data = {};  // map of arrays of maps
-                    for (var ci = 0; ci < data.length; ci++) {  // for each curve
+                    returnData.stats = {}; // map of maps
+                    returnData.data = {}; // map of arrays of maps
+                    for (var ci = 0; ci < data.length; ci++) { // for each curve
                         // if the curve label is a reserved word do not process the curve (its a zero or max curve)
                         var reservedWords = Object.values(matsTypes.ReservedWords);
                         if (reservedWords.indexOf(data[ci].label) >= 0) {
@@ -1306,8 +1406,8 @@ const _getFlattenedResultData = function (rk, p, np) {
                         stats['maximum'] = data[ci].glob_stats.maxVal;
                         returnData.stats[data[ci].label] = stats;
 
-                        var curveData = [];  // array of maps
-                        for (var cdi = 0; cdi < data[ci].x.length; cdi++) {  // for each datapoint
+                        var curveData = []; // array of maps
+                        for (var cdi = 0; cdi < data[ci].x.length; cdi++) { // for each datapoint
                             var curveDataElement = {};
                             curveDataElement[data[ci].label + ' bin'] = data[ci].x[cdi];
                             curveDataElement['n'] = data[ci].bin_stats[cdi].bin_n;
@@ -1320,8 +1420,8 @@ const _getFlattenedResultData = function (rk, p, np) {
                 case matsTypes.PlotTypes.contour:
                 case matsTypes.PlotTypes.contourDiff:
                     var returnData = {};
-                    returnData.stats = {};   // map of maps
-                    returnData.data = {};  // map of arrays of maps
+                    returnData.stats = {}; // map of maps
+                    returnData.data = {}; // map of arrays of maps
                     var stats = {};
                     stats['label'] = data[0].label;
                     stats['total number of points'] = data[0].glob_stats.n;
@@ -1331,7 +1431,7 @@ const _getFlattenedResultData = function (rk, p, np) {
 
                     returnData.stats[data[0].label] = stats;
 
-                    var curveData = [];  // array of maps
+                    var curveData = []; // array of maps
                     isCTC = data[0] !== undefined && data[0].hitTextOutput !== undefined && data[0].hitTextOutput.length > 0;
                     for (var si = 0; si < data[0].xTextOutput.length; si++) {
                         var curveDataElement = {};
@@ -1583,21 +1683,34 @@ const _saveResultData = function (result) {
                     }
                     downSampleResult.data[ci] = downSampleResult[ci];
                 }
-                DownSampleResults.rawCollection().insert({"createdAt": new Date(), key: key, result: downSampleResult});// createdAt ensures expiration set in mats-collections
-                ret = {key: key, result: downSampleResult};
+                DownSampleResults.rawCollection().insert({
+                    "createdAt": new Date(),
+                    key: key,
+                    result: downSampleResult
+                }); // createdAt ensures expiration set in mats-collections
+                ret = {
+                    key: key,
+                    result: downSampleResult
+                };
             } else {
-                ret = {key: key, result: result};
+                ret = {
+                    key: key,
+                    result: result
+                };
             }
             // save original dataset in the matsCache
             if (result.basis.plotParams.plotTypes.TimeSeries || result.basis.plotParams.plotTypes.DailyModelCycle) {
                 for (var ci = 0; ci < result.data.length; ci++) {
-                    delete (result.data[ci]['x_epoch']);     // we only needed this as an index for downsampling
+                    delete(result.data[ci]['x_epoch']); // we only needed this as an index for downsampling
                 }
             }
-            matsCache.storeResult(key, {key: key, result: result}); // lifespan is handled by lowDb (internally) in matscache
+            matsCache.storeResult(key, {
+                key: key,
+                result: result
+            }); // lifespan is handled by lowDb (internally) in matscache
         } catch (error) {
             if (error.toLocaleString().indexOf("larger than the maximum size") != -1) {
-                throw new Meteor.Error(+": Requesting too much data... try averaging");
+                throw new Meteor.Error(": Requesting too much data... try averaging");
             }
         }
         return ret;
@@ -1614,7 +1727,9 @@ const _write_settings = function (settings, appName) {
         settingsPath = "/usr/app/settings";
     }
     if (!fs.existsSync(settingsPath)) {
-        fs.mkdirSync(settingsPath, {recursive: true});
+        fs.mkdirSync(settingsPath, {
+            recursive: true
+        });
     }
     var appSettings = {};
     var newSettings = {};
@@ -1629,8 +1744,14 @@ const _write_settings = function (settings, appName) {
     }
     newSettings = settings;
     // Merge settings into appSettings
-    newSettings.private = {...appSettings.private, ...settings.private};
-    newSettings.public = {...appSettings.public, ...settings.public};
+    newSettings.private = {
+        ...appSettings.private,
+        ...settings.private
+    };
+    newSettings.public = {
+        ...appSettings.public,
+        ...settings.public
+    };
     // write the settings file
     const jsonSettings = JSON.stringify(newSettings, null, 2);
     //console.log (jsonSettings);
@@ -1639,19 +1760,92 @@ const _write_settings = function (settings, appName) {
         flag: 'w'
     });
 }
+//return the scorecard for the provided selectors
+const _getScorecardData = async function (userName,name,submitTime,runTime) {
+    try {
+        const statement = `SELECT sc.*
+            From
+                vxdata._default.SCORECARD sc
+            WHERE
+                sc.type='SC'
+                AND sc.userName='` + userName + `'
+                AND sc.name='` + name + `'
+                AND sc.processedAt=` + runTime + `
+                AND sc.submitted=` + submitTime + `;`
+        const result = await cbScorecardPool.queryCB(statement);
+        return result;
+    } catch (err) {
+        console.log("_getScorecardData error : " + err.message);
+        return {
+            "error": err.message
+        }
+    }
+};
+
+// return the scorecard status information from the couchbase database
+const _getScorecardInfo = async function () {
+    try {
+        const statement = `SELECT
+            sc.id,
+            sc.userName,
+            sc.name,
+            sc.status,
+            sc.processedAt as runtime,
+            sc.submitted,
+            sc.dateRange
+            From
+            vxdata._default.SCORECARD sc
+            WHERE
+            sc.type='SC';`
+        const rows = await cbScorecardPool.queryCB(statement);
+        scMap = {};
+        rows.forEach(function (elem) {
+            if (!Object.keys(scMap).includes(elem.userName)) {
+                scMap[elem.userName] = {};
+            }
+            userElem = scMap[elem.userName];
+            if (!Object.keys(userElem).includes(elem.name)) {
+                userElem[elem.name] = {};
+            }
+            nameElem = userElem[elem.name];
+            if (!Object.keys(nameElem).includes(elem.submited)) {
+                nameElem[elem.submitted] = {};
+            }
+            submittedElem = nameElem[elem.submitted];
+            submittedElem[elem.runtime] = {
+                'id': elem.id,
+                'status': elem.status,
+                'submitted': elem.submitted,
+            }
+        });
+        return scMap;
+    } catch (err) {
+        console.log("_getScorecardInfo error : " + err.message);
+        return {
+            "error": err.message
+        }
+    }
+};
 
 // PUBLIC METHODS
 //administration tools
 const addSentAddress = new ValidatedMethod({
     name: 'matsMethods.addSentAddress',
     validate: new SimpleSchema({
-        toAddress: {type: String}
+        toAddress: {
+            type: String
+        }
     }).validator(),
     run(toAddress) {
         if (!Meteor.userId()) {
             throw new Meteor.Error(401, "not-logged-in");
         }
-        matsCollections.SentAddresses.upsert({address: toAddress}, {address: toAddress, userId: Meteor.userId()});
+        matsCollections.SentAddresses.upsert({
+            address: toAddress
+        }, {
+            address: toAddress,
+            userId: Meteor.userId()
+        });
         return false;
     }
 });
@@ -1661,7 +1855,10 @@ const addSentAddress = new ValidatedMethod({
 const applyAuthorization = new ValidatedMethod({
     name: 'matsMethods.applyAuthorization',
     validate: new SimpleSchema({
-        settings: {type: Object, blackbox: true}
+        settings: {
+            type: Object,
+            blackbox: true
+        }
     }).validator(),
     run(settings) {
         if (Meteor.isServer) {
@@ -1680,10 +1877,18 @@ const applyAuthorization = new ValidatedMethod({
                 roleName = authorizationRole;
             } else if (userRoleName && userRoleDescription) {
                 // possible new role - see if it happens to already exist
-                var role = matsCollections.Roles.findOne({name: userRoleName});
+                var role = matsCollections.Roles.findOne({
+                    name: userRoleName
+                });
                 if (role === undefined) {
                     // need to add new role using description
-                    matsCollections.Roles.upsert({name: userRoleName}, {$set: {description: userRoleDescription}});
+                    matsCollections.Roles.upsert({
+                        name: userRoleName
+                    }, {
+                        $set: {
+                            description: userRoleDescription
+                        }
+                    });
                     roleName = userRoleName;
                 } else {
                     // see if the description matches...
@@ -1691,7 +1896,13 @@ const applyAuthorization = new ValidatedMethod({
                     var description = role.description;
                     if (description != userRoleDescription) {
                         // have to update the description
-                        matsCollections.Roles.upsert({name: userRoleName}, {$set: {description: userRoleDescription}});
+                        matsCollections.Roles.upsert({
+                            name: userRoleName
+                        }, {
+                            $set: {
+                                description: userRoleDescription
+                            }
+                        });
                     }
                 }
             }
@@ -1699,18 +1910,28 @@ const applyAuthorization = new ValidatedMethod({
             if (existingUserEmail) {
                 // existing user -  no need to verify as the selection list came from the database
                 // see if it already has the role
-                authorization = matsCollections.Authorization.findOne({email: existingUserEmail});
+                authorization = matsCollections.Authorization.findOne({
+                    email: existingUserEmail
+                });
                 roles = authorization.roles;
                 if (roles.indexOf(roleName) == -1) {
                     // have to add the role
                     if (roleName) {
                         roles.push(roleName);
                     }
-                    matsCollections.Authorization.upsert({email: existingUserEmail}, {$set: {roles: roles}});
+                    matsCollections.Authorization.upsert({
+                        email: existingUserEmail
+                    }, {
+                        $set: {
+                            roles: roles
+                        }
+                    });
                 }
             } else if (newUserEmail) {
                 // possible new authorization - see if it happens to exist
-                authorization = matsCollections.Authorization.findOne({email: newUserEmail});
+                authorization = matsCollections.Authorization.findOne({
+                    email: newUserEmail
+                });
                 if (authorization !== undefined) {
                     // authorization exists - add role to roles if necessary
                     roles = authorization.roles;
@@ -1719,7 +1940,13 @@ const applyAuthorization = new ValidatedMethod({
                         if (roleName) {
                             roles.push(roleName);
                         }
-                        matsCollections.Authorization.upsert({email: existingUserEmail}, {$set: {roles: roles}});
+                        matsCollections.Authorization.upsert({
+                            email: existingUserEmail
+                        }, {
+                            $set: {
+                                roles: roles
+                            }
+                        });
                     }
                 } else {
                     // need a new authorization
@@ -1728,7 +1955,13 @@ const applyAuthorization = new ValidatedMethod({
                         roles.push(roleName);
                     }
                     if (newUserEmail) {
-                        matsCollections.Authorization.upsert({email: newUserEmail}, {$set: {roles: roles}});
+                        matsCollections.Authorization.upsert({
+                            email: newUserEmail
+                        }, {
+                            $set: {
+                                roles: roles
+                            }
+                        });
                     }
                 }
             }
@@ -1741,13 +1974,18 @@ const applyAuthorization = new ValidatedMethod({
 const applyDatabaseSettings = new ValidatedMethod({
     name: 'matsMethods.applyDatabaseSettings',
     validate: new SimpleSchema({
-        settings: {type: Object, blackbox: true}
+        settings: {
+            type: Object,
+            blackbox: true
+        }
     }).validator(),
 
     run(settings) {
         if (Meteor.isServer) {
             if (settings.name) {
-                matsCollections.Databases.upsert({name: settings.name}, {
+                matsCollections.Databases.upsert({
+                    name: settings.name
+                }, {
                     $set: {
                         name: settings.name,
                         role: settings.role,
@@ -1777,7 +2015,9 @@ const deleteSettings = new ValidatedMethod({
             throw new Meteor.Error("not-logged-in");
         }
         if (Meteor.isServer) {
-            matsCollections.CurveSettings.remove({name: params.name});
+            matsCollections.CurveSettings.remove({
+                name: params.name
+            });
         }
     }
 });
@@ -1786,9 +2026,15 @@ const deleteSettings = new ValidatedMethod({
 const emailImage = new ValidatedMethod({
     name: 'matsMethods.emailImage',
     validate: new SimpleSchema({
-        imageStr: {type: String},
-        toAddress: {type: String},
-        subject: {type: String}
+        imageStr: {
+            type: String
+        },
+        toAddress: {
+            type: String
+        },
+        subject: {
+            type: String
+        }
     }).validator(),
     run(params) {
         var imageStr = params.imageStr;
@@ -1806,7 +2052,9 @@ const emailImage = new ValidatedMethod({
         //var clientId = "339389735380-382sf11aicmgdgn7e72p4end5gnm9sad.apps.googleusercontent.com";
         //var clientSecret = "7CfNN-tRl5QAL595JTW2TkRl";
         //var refresh_token = "1/PDql7FR01N2gmq5NiTfnrT-OlCYC3U67KJYYDNPeGnA";
-        var credentials = matsCollections.Credentials.findOne({name: "oauth_google"}, {
+        var credentials = matsCollections.Credentials.findOne({
+            name: "oauth_google"
+        }, {
             clientId: 1,
             clientSecret: 1,
             refresh_token: 1
@@ -1839,12 +2087,10 @@ const emailImage = new ValidatedMethod({
                 from: fromAddress,
                 to: toAddress,
                 subject: subject,
-                attachments: [
-                    {
-                        filename: "graph.png",
-                        contents: new Buffer(imageStr.split("base64,")[1], "base64")
-                    }
-                ]
+                attachments: [{
+                    filename: "graph.png",
+                    contents: new Buffer(imageStr.split("base64,")[1], "base64")
+                }]
             };
 
             smtpTransporter.sendMail(mailOptions, function (error, response) {
@@ -1870,7 +2116,9 @@ const getAuthorizations = new ValidatedMethod({
         var roles = [];
         if (Meteor.isServer) {
             var userEmail = Meteor.user().services.google.email.toLowerCase();
-            roles = matsCollections.Authorization.findOne({email: userEmail}).roles;
+            roles = matsCollections.Authorization.findOne({
+                email: userEmail
+            }).roles;
         }
         return roles;
     }
@@ -1911,7 +2159,9 @@ const getGraphData = new ValidatedMethod({
     }).validator(),
     run(params) {
         if (Meteor.isServer) {
-            var plotGraphFunction = matsCollections.PlotGraphFunctions.findOne({plotType: params.plotType});
+            var plotGraphFunction = matsCollections.PlotGraphFunctions.findOne({
+                plotType: params.plotType
+            });
             var dataFunction = plotGraphFunction.dataFunction;
             var ret;
             try {
@@ -1932,14 +2182,24 @@ const getGraphData = new ValidatedMethod({
                     return future.wait();
                 } else { // results were already in the matsCache (same params and not yet expired)
                     // are results in the downsampled collection?
-                    var dsResults = DownSampleResults.findOne({key: key}, {}, {disableOplog: true});
+                    var dsResults = DownSampleResults.findOne({
+                        key: key
+                    }, {}, {
+                        disableOplog: true
+                    });
                     if (dsResults !== undefined) {
                         // results are in the mongo cache downsampled collection - returned the downsampled graph data
                         ret = dsResults;
                         // update the expire time in the downsampled collection - this requires a new Date
-                        DownSampleResults.rawCollection().update({key: key}, {$set: {"createdAt": new Date()}});
+                        DownSampleResults.rawCollection().update({
+                            key: key
+                        }, {
+                            $set: {
+                                "createdAt": new Date()
+                            }
+                        });
                     } else {
-                        ret = results;  // {key:someKey, result:resultObject}
+                        ret = results; // {key:someKey, result:resultObject}
                         // refresh expire time. The only way to perform a refresh on matsCache is to re-save the result.
                         matsCache.storeResult(results.key, results);
                     }
@@ -1972,7 +2232,11 @@ const getGraphDataByKey = new ValidatedMethod({
             var ret;
             var key = params.resultKey;
             try {
-                var dsResults = DownSampleResults.findOne({key: key}, {}, {disableOplog: true});
+                var dsResults = DownSampleResults.findOne({
+                    key: key
+                }, {}, {
+                    disableOplog: true
+                });
                 if (dsResults !== undefined) {
                     ret = dsResults;
                 } else {
@@ -2001,7 +2265,9 @@ const getLayout = new ValidatedMethod({
             var ret;
             var key = params.resultKey;
             try {
-                ret = LayoutStoreCollection.rawCollection().findOne({key: key});
+                ret = LayoutStoreCollection.rawCollection().findOne({
+                    key: key
+                });
                 return ret;
             } catch (error) {
                 throw new Meteor.Error("Error in getLayout function:" + key + " : " + error.message);
@@ -2024,9 +2290,15 @@ A new page index of -1000 means get all the data i.e. no pagenation.
 const getPlotResult = new ValidatedMethod({
     name: 'matsMethods.getPlotResult',
     validate: new SimpleSchema({
-        resultKey: {type: String},
-        pageIndex: {type: Number},
-        newPageIndex: {type: Number}
+        resultKey: {
+            type: String
+        },
+        pageIndex: {
+            type: Number
+        },
+        newPageIndex: {
+            type: Number
+        }
     }).validator(),
     run(params) {
         if (Meteor.isServer) {
@@ -2082,6 +2354,38 @@ const getReleaseNotes = new ValidatedMethod({
     }
 });
 
+const getScorecardData = new ValidatedMethod({
+    name: 'matsMethods.getScorecardData',
+    validate: new SimpleSchema({
+        userName: {
+            type: String
+        },
+        name: {
+            type: String
+        },
+        submitTime: {
+            type: String
+        },
+        runTime: {
+            type: String
+        }
+    }).validator(),
+    run(params) {
+        if (Meteor.isServer) {
+            return _getScorecardData(params.userName,params.name,params.submitTime,params.runTime);
+        }
+    }
+});
+
+const getScorecardInfo = new ValidatedMethod({
+    name: 'matsMethods.getScorecardInfo',
+    validate: new SimpleSchema({}).validator(),
+    run() {
+        if (Meteor.isServer) {
+            return _getScorecardInfo();
+        }
+    }
+});
 
 // administration tool
 const getUserAddress = new ValidatedMethod({
@@ -2098,8 +2402,12 @@ const getUserAddress = new ValidatedMethod({
 const insertColor = new ValidatedMethod({
     name: 'matsMethods.insertColor',
     validate: new SimpleSchema({
-        newColor: {type: String},
-        insertAfterIndex: {type: Number}
+        newColor: {
+            type: String
+        },
+        insertAfterIndex: {
+            type: Number
+        }
     }).validator(),
     run(params) {
         if (params.newColor == "rgb(255,255,255)") {
@@ -2164,7 +2472,10 @@ const refreshMetaData = new ValidatedMethod({
 const removeAuthorization = new ValidatedMethod({
     name: 'matsMethods.removeAuthorization',
     validate: new SimpleSchema({
-        settings: {type: Object, blackbox: true}
+        settings: {
+            type: Object,
+            blackbox: true
+        }
     }).validator(),
     run(settings) {
         if (Meteor.isServer) {
@@ -2188,18 +2499,36 @@ const removeAuthorization = new ValidatedMethod({
 
             // if user and role remove the role from the user
             if (email && roleName) {
-                matsCollections.Authorization.update({email: email}, {$pull: {roles: roleName}});
+                matsCollections.Authorization.update({
+                    email: email
+                }, {
+                    $pull: {
+                        roles: roleName
+                    }
+                });
             }
             // if user and no role remove the user
             if (email && !roleName) {
-                matsCollections.Authorization.remove({email: email});
+                matsCollections.Authorization.remove({
+                    email: email
+                });
             }
             // if role and no user remove role and remove role from all users
             if (roleName && !email) {
                 // remove the role
-                matsCollections.Roles.remove({name: roleName});
+                matsCollections.Roles.remove({
+                    name: roleName
+                });
                 // remove the roleName role from all the authorizations
-                matsCollections.Authorization.update({roles: roleName}, {$pull: {roles: roleName}}, {multi: true});
+                matsCollections.Authorization.update({
+                    roles: roleName
+                }, {
+                    $pull: {
+                        roles: roleName
+                    }
+                }, {
+                    multi: true
+                });
             }
             return false;
         }
@@ -2210,7 +2539,9 @@ const removeAuthorization = new ValidatedMethod({
 const removeColor = new ValidatedMethod({
     name: 'matsMethods.removeColor',
     validate: new SimpleSchema({
-        removeColor: {type: String}
+        removeColor: {
+            type: String
+        }
     }).validator(),
     run(removeColor) {
         var colorScheme = matsCollections.ColorScheme.findOne({});
@@ -2225,11 +2556,15 @@ const removeColor = new ValidatedMethod({
 const removeDatabase = new ValidatedMethod({
     name: 'matsMethods.removeDatabase',
     validate: new SimpleSchema({
-        dbName: {type: String}
+        dbName: {
+            type: String
+        }
     }).validator(),
     run(dbName) {
         if (Meteor.isServer) {
-            matsCollections.Databases.remove({name: dbName});
+            matsCollections.Databases.remove({
+                name: dbName
+            });
         }
     }
 });
@@ -2237,7 +2572,10 @@ const removeDatabase = new ValidatedMethod({
 const applySettingsData = new ValidatedMethod({
     name: 'matsMethods.applySettingsData',
     validate: new SimpleSchema({
-        settings: {type: Object, blackbox: true}
+        settings: {
+            type: Object,
+            blackbox: true
+        }
     }).validator(),
     // this method forces a restart on purpose. We do not want retries
     applyOptions: {
@@ -2308,7 +2646,13 @@ const resetApp = async function (appRef) {
 
         // if there isn't an app listing in matsCollections create one here so that the configuration-> applySettingsData won't fail
         if (matsCollections.appName.findOne({}) == undefined) {
-            matsCollections.appName.upsert({app: appName}, {$set: {app: appName}});
+            matsCollections.appName.upsert({
+                app: appName
+            }, {
+                $set: {
+                    app: appName
+                }
+            });
         }
 
         // set meteor settings defaults if they do not exist
@@ -2345,7 +2689,7 @@ const resetApp = async function (appRef) {
                     "threshold_units": thresholdUnits
                 }
             };
-            _write_settings(settings, appName);  // this is going to cause the app to restart in the meteor development environment!!!
+            _write_settings(settings, appName); // this is going to cause the app to restart in the meteor development environment!!!
             // exit for production - probably won't ever get here in development mode (running with meteor)
             // This depends on whatever system is running the node process to restart it.
             console.log('resetApp - exiting after creating default settings');
@@ -2411,7 +2755,11 @@ const resetApp = async function (appRef) {
         }
 
         // Try getting version from env
-        let {version: appVersion, commit: commit, branch: branch} = versionInfo.getVersionsFromEnv();
+        let {
+            version: appVersion,
+            commit: commit,
+            branch: branch
+        } = versionInfo.getVersionsFromEnv();
         if (appVersion === 'Unknown') {
             // Try getting versionInfo from the appProduction database
             console.log("VERSION not set in the environment - using localhost")
@@ -2419,7 +2767,13 @@ const resetApp = async function (appRef) {
             commit = "HEAD";
         }
         const appType = type ? type : matsTypes.AppTypes.mats;
-        matsCollections.appName.upsert({app: appName}, {$set: {app: appName}});
+        matsCollections.appName.upsert({
+            app: appName
+        }, {
+            $set: {
+                app: appName
+            }
+        });
 
         // remember that we updated the metadata tables just now - create metaDataTableUpdates
         /*
@@ -2436,8 +2790,14 @@ const resetApp = async function (appRef) {
             for (var mdti = 0; mdti < metaDataTables.length; mdti++) {
                 const metaDataRef = metaDataTables[mdti];
                 metaDataRef.lastRefreshed = moment().format();
-                if (metaDataTableUpdates.find({name: metaDataRef.name}).count() == 0) {
-                    metaDataTableUpdates.update({name: metaDataRef.name}, metaDataRef, {upsert: true});
+                if (metaDataTableUpdates.find({
+                        name: metaDataRef.name
+                    }).count() == 0) {
+                    metaDataTableUpdates.update({
+                        name: metaDataRef.name
+                    }, metaDataRef, {
+                        upsert: true
+                    });
                 }
             }
         } else {
@@ -2461,7 +2821,9 @@ const resetApp = async function (appRef) {
         if (Meteor.settings.public && Meteor.settings.public.curve_params) {
             curve_params = Meteor.settings.public.curve_params;
             matsCollections.CurveParamsInfo.remove({});
-            matsCollections.CurveParamsInfo.insert({"curve_params": curve_params});
+            matsCollections.CurveParamsInfo.insert({
+                "curve_params": curve_params
+            });
             for (var cp = 0; cp < curve_params.length; cp++) {
                 if (matsCollections[curve_params[cp]] !== undefined) {
                     matsCollections[curve_params[cp]].remove({});
@@ -2475,7 +2837,9 @@ const resetApp = async function (appRef) {
             if (Meteor.settings.public.apps_to_score) {
                 apps_to_score = Meteor.settings.public.apps_to_score;
                 matsCollections.AppsToScore.remove({});
-                matsCollections.AppsToScore.insert({"apps_to_score": apps_to_score});
+                matsCollections.AppsToScore.insert({
+                    "apps_to_score": apps_to_score
+                });
             } else {
                 throw new Meteor.Error("apps_to_score are not initialized in app settings--cannot build selectors");
             }
@@ -2496,10 +2860,12 @@ const saveLayout = new ValidatedMethod({
             type: String
         },
         layout: {
-            type: Object, blackbox: true
+            type: Object,
+            blackbox: true
         },
         curveOpsUpdate: {
-            type: Object, blackbox: true
+            type: Object,
+            blackbox: true
         },
         annotation: {
             type: String
@@ -2512,7 +2878,9 @@ const saveLayout = new ValidatedMethod({
             var curveOpsUpdate = params.curveOpsUpdate;
             var annotation = params.annotation;
             try {
-                LayoutStoreCollection.upsert({key: key}, {
+                LayoutStoreCollection.upsert({
+                    key: key
+                }, {
                     $set: {
                         "createdAt": new Date(),
                         layout: layout,
@@ -2544,7 +2912,9 @@ const saveSettings = new ValidatedMethod({
     }).validator(),
     run(params) {
         var user = "anonymous";
-        matsCollections.CurveSettings.upsert({name: params.saveAs}, {
+        matsCollections.CurveSettings.upsert({
+            name: params.saveAs
+        }, {
             created: moment().format("MM/DD/YYYY HH:mm:ss"),
             name: params.saveAs,
             data: params.p,
@@ -2568,14 +2938,23 @@ const testGetMetaDataTableUpdates = new ValidatedMethod({
 
 const testGetTables = new ValidatedMethod({
     name: 'matsMethods.testGetTables',
-    validate: new SimpleSchema(
-        {
-            host: {type: String},
-            port: {type: String},
-            user: {type: String},
-            password: {type: String},
-            database: {type: String}
-        }).validator(),
+    validate: new SimpleSchema({
+        host: {
+            type: String
+        },
+        port: {
+            type: String
+        },
+        user: {
+            type: String
+        },
+        password: {
+            type: String
+        },
+        database: {
+            type: String
+        }
+    }).validator(),
     async run(params) {
         if (Meteor.isServer) {
             if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
@@ -2629,7 +3008,13 @@ const testSetMetaDataTableUpdatesLastRefreshedBack = new ValidatedMethod({
     run() {
         var mtu = metaDataTableUpdates.find({}).fetch();
         var id = mtu[0]._id;
-        metaDataTableUpdates.update({_id: id}, {$set: {lastRefreshed: 0}});
+        metaDataTableUpdates.update({
+            _id: id
+        }, {
+            $set: {
+                lastRefreshed: 0
+            }
+        });
         return metaDataTableUpdates.find({}).fetch();
     }
 });
@@ -2644,6 +3029,8 @@ export default matsMethods = {
     getRunEnvironment: getRunEnvironment,
     getDefaultGroupList: getDefaultGroupList,
     getGraphData: getGraphData,
+    getScorecardInfo: getScorecardInfo,
+    getScorecardData:getScorecardData,
     getGraphDataByKey: getGraphDataByKey,
     getLayout: getLayout,
     getPlotResult: getPlotResult,

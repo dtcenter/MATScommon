@@ -39,8 +39,8 @@ Package.onUse(function (api) {
     api.use('modules');
     api.imply('ecmascript');
     api.use(['templating'], 'client');
-    api.use("accounts-google", 'client');
     api.use("accounts-ui", 'client');
+    api.use("accounts-password", 'client');
     api.use("service-configuration", 'server');
     api.use("yasinuslu:json-view", "client");
     api.use("mdg:validated-method");
@@ -60,6 +60,7 @@ Package.onUse(function (api) {
     api.use("meteorhacks:picker");
     api.use("momentjs:moment");
     api.use("pcel:mysql");
+    api.use("reactive-var");
 
     // modules
     api.export("matsCollections", ['client', 'server']);
@@ -191,6 +192,9 @@ Package.onUse(function (api) {
 
     api.addFiles("templates/graphStandAlone/graphStandAlone.html", "client");
     api.addFiles("templates/graphStandAlone/graphStandAlone.js", "client");
+
+    api.addFiles("templates/scorecardDisplay/scorecardDisplay.html", "client");
+    api.addFiles("templates/scorecardDisplay/scorecardDisplay.js", "client");
 
     api.addFiles("templates/scorecard/scorecardStatusPage.html", "client");
     api.addFiles("templates/scorecard/scorecardStatusPage.js", "client");
@@ -333,8 +337,8 @@ Package.onTest(function (api) {
     api.use('modules');
     api.imply('ecmascript');
     api.use(['templating'], 'client');
-    api.use("accounts-google", 'client');
     api.use("accounts-ui", 'client');
+    api.use("accounts-password", 'client');
     api.use("service-configuration", 'server');
     api.use("yasinuslu:json-view", "client");
     api.use("mdg:validated-method");

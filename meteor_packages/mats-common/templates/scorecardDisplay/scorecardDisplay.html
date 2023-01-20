@@ -1,0 +1,81 @@
+<template name="ScorecardDisplay">
+ <div class="container-fluid">
+    <div class="row" id="scorecard-display-header" style="padding-left: 5%; display:{{scorecardDispay}}">
+        <div id="header" class="row">
+            <h4><span>Scorecard : {{Title}}</span></h4>
+        </div>
+        <div class="row form-inline previewCurveButtons">
+                <label class="input-sm col-sm-2" for="exportFileName">FileName</label>
+                <input class="input-sm col-sm-7" id="exportFileName" value="{{fileNamePlaceholder}}">
+                <button type="button" class="btn-primary btn-xs col-sm pull-right btn-outline-primary exportpdf" id="exportpdf">save pdf</button>
+                <button type="button" class="btn-primary btn-xs col-sm pull-right btn-outline-primary exportpng" id="exportpng">save png</button>
+        </div>
+    </div>
+</div>
+<div class="container float-child">
+    <div id="scorecard-display-container" class="row" style="padding-left: 5%; display:{{scorecardDispay}}">
+        <div class="row">
+            <div class="col-xs-1">stat</div>
+            <div class="col-xs-1">variable</div>
+            <div class="col-xs-2">region1</div>
+            <div class="col-xs-2">region2</div>
+            <div class="col-xs-2">region3</div>
+            <div class="col-xs-2">region4</div>
+        </div>
+        <div class="row col-xs-2">
+            <div>
+                <table>
+                    <thead>
+                    </thead>
+                    <tbody>
+                    <tr>&nbsp;</tr>
+                    <tr>&nbsp;</tr>
+                    <tr>
+                        <td class="col-xs-1">RMSE</td>
+                        <td class="col-xs-1 col-xs-offset-1">RH</td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-1">RMSE</td>
+                        <td class="col-xs-1 col-xs-offset-1">DP</td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-1">RMSE</td>
+                        <td class="col-xs-1 col-xs-offset-1">TEMP</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="row col-xs-offset-2">
+            <div class="table col-xs-2">
+                <table>
+                    <thead>
+                    <tr>
+                        <th style="word-wrap:break-word;max-width:1em; font-family:monospace;">01</th>
+                        <th style="word-wrap:break-word;max-width:1em; font-family:monospace;">02</th>
+                        <th style="word-wrap:break-word;max-width:1em; font-family:monospace;">03</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span style="background-color: pink;">X</span></td>
+                            <td><span style="background-color: pink;">X</span></td>
+                            <td><span style="background-color: pink;">X</span></td>
+                        </tr>
+                        <tr>
+                            <td><span style="background-color: pink;">X</span></td>
+                            <td><span style="background-color: pink;">X</span></td>
+                            <td><span style="background-color: pink;">X</span></td>
+                        </tr>
+                        <tr>
+                            <td><span style="background-color: pink;">X</span></td>
+                            <td><span style="background-color: pink;">X</span></td>
+                            <td><span style="background-color: pink;">X</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    </div>
+</template>

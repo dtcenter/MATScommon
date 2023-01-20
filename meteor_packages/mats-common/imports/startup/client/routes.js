@@ -44,6 +44,14 @@ FlowRouter.route('/JSON/:graphFunction/:key/:matching/:appName', {
     }
 });
 
+FlowRouter.route('/scorecard_display/:userName/:name/:submitTime/:runTime', {
+    name: 'scorecard_display',
+    action(params) {
+        console.log("in scorecard_display route- setting params", params);
+        this.render('ScorecardDisplay', params);
+    }
+});
+
 
 FlowRouter.route('/preview/:graphFunction/:key/:matching/:appName', {
     name: 'preview',
@@ -92,6 +100,15 @@ FlowRouter.route(Meteor.settings.public.proxy_prefix_path + '/preview/:graphFunc
 });
 
 
+FlowRouter.route(Meteor.settings.public.proxy_prefix_path + '/scorecard_display/:userName/:name/:submitTime/:runTime', {
+        name: 'scorecard_display',
+    action(params) {
+        console.log("in scorecard_display route- setting params", params);
+        this.render('ScorecardDisplay', params);
+    }
+});
+
+
 // appname routes
 FlowRouter.route(Meteor.settings.public.proxy_prefix_path + '/:appName', {
     name: 'main',
@@ -128,6 +145,15 @@ FlowRouter.route(Meteor.settings.public.proxy_prefix_path + '/*/preview/:graphFu
         this.render('GraphStandAlone', params);
     }
 });
+
+
+FlowRouter.route(Meteor.settings.public.proxy_prefix_path + '/*/scorecard_display/:userName/:name/:submitTime/:runTime', {
+        name: 'scorecard_display',
+    action(params) {
+        this.render('ScorecardDisplay', params);
+    }
+});
+
 
 // exception routes
 FlowRouter.route(Meteor.settings.public.proxy_prefix_path + '/*/', {

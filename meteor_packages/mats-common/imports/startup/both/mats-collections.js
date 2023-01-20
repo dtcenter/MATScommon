@@ -65,7 +65,7 @@ const explicitCollections = {
     SavedCredentials:SavedCredentials,
     SiteMap:SiteMap,
     StationMap:StationMap,
-    appName:appName
+    appName:appName,
 };
 
 export default matsCollections = {
