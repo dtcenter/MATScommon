@@ -11,7 +11,6 @@ class CBUtilities
         this.conn = undefined;
     }
 
-    const
     getConnection = async () =>
     {
         // DO NOT require couchbase at the top of the file, the client breaks if it gets couchbase included into it.
@@ -27,6 +26,7 @@ class CBUtilities
                     password: this.pwd,
                     timeouts: {
                         kvTimeout: 3600000, // this will kill queries after an hour
+                        queryTimeout: 3600000 
                     }
                 });
                 const bucket = cluster.bucket(this.bucketName);
@@ -42,7 +42,6 @@ class CBUtilities
         }
     };
 
-    const
     closeConnection = async () =>
     {
         console.log("closing couchbase connection to: " + this.host);
@@ -52,7 +51,6 @@ class CBUtilities
         }
     }
 
-    const
     upsertCB = async (key, doc) =>
     {
         const couchbase = require("couchbase");
@@ -71,7 +69,6 @@ class CBUtilities
         }
     };
 
-    const
     removeCB = async (key) =>
     {
         const couchbase = require("couchbase");
@@ -87,7 +84,6 @@ class CBUtilities
         }
     };
 
-    const
     getCB = async (key) =>
     {
         const couchbase = require("couchbase");
@@ -103,7 +99,6 @@ class CBUtilities
         }
     };
 
-    const
     queryCB = async (statement) =>
     {
         const couchbase = require("couchbase");
@@ -119,7 +114,6 @@ class CBUtilities
         }
     };
 
-    const
     searchStationsByBoundingBox = async (topleft_lon, topleft_lat, bottomright_lon, bottomright_lat) =>
     {
         const couchbase = require("couchbase");
@@ -137,7 +131,6 @@ class CBUtilities
         }
     };
 
-    const
     trfmSQLForDbTarget = (sqlstr) =>
     {
         var val = sqlstr.replace(/vxBUCKET/g, this.bucket);
