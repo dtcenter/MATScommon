@@ -2316,7 +2316,6 @@ const getPlotResult = new ValidatedMethod({
     }
 });
 
-
 const getReleaseNotes = new ValidatedMethod({
     name: 'matsMethods.getReleaseNotes',
     validate: new SimpleSchema({}).validator(),
@@ -3029,12 +3028,12 @@ export default matsMethods = {
     getRunEnvironment: getRunEnvironment,
     getDefaultGroupList: getDefaultGroupList,
     getGraphData: getGraphData,
-    getScorecardInfo: getScorecardInfo,
-    getScorecardData:getScorecardData,
     getGraphDataByKey: getGraphDataByKey,
     getLayout: getLayout,
     getPlotResult: getPlotResult,
     getReleaseNotes: getReleaseNotes,
+    getScorecardInfo: getScorecardInfo,
+    getScorecardData:getScorecardData,
     getUserAddress: getUserAddress,
     insertColor: insertColor,
     readFunctionFile: readFunctionFile,

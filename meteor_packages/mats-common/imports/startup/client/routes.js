@@ -10,14 +10,12 @@ import { FlowRouter } from 'meteor/ostrio:flow-router-extra';
 FlowRouter.route('/', {
     name: 'main',
     action() {
-        //console.log("flowrouter.route")
         if (Meteor.settings.public.scorecard) {
             this.render('ScorecardHome');
         } else {
             if (Meteor.settings.public.custom) {
                 this.render('CustomHome');
             } else {
-                    //console.log ('Meteor.settings.public.undefinedRoles is:' + Meteor.settings.public.undefinedRoles)
                     if (Meteor.settings.public.undefinedRoles != undefined && Meteor.settings.public.undefinedRoles.length > 0) {
                         this.render('Configure');
                     } else {
@@ -31,7 +29,6 @@ FlowRouter.route('/', {
 FlowRouter.route('/CSV/:graphFunction/:key/:matching/:appName', {
     name: 'csv',
     action(params) {
-        console.log("in csv route");
         window.location.href=FlowRouter.path;
     }
 });
@@ -39,7 +36,6 @@ FlowRouter.route('/CSV/:graphFunction/:key/:matching/:appName', {
 FlowRouter.route('/JSON/:graphFunction/:key/:matching/:appName', {
     name: 'json',
     action(params) {
-        console.log("in json route");
         window.location.href=FlowRouter.path;
     }
 });
@@ -47,7 +43,6 @@ FlowRouter.route('/JSON/:graphFunction/:key/:matching/:appName', {
 FlowRouter.route('/scorecard_display/:userName/:name/:submitTime/:runTime', {
     name: 'scorecard_display',
     action(params) {
-        console.log("in scorecard_display route- setting params", params);
         this.render('ScorecardDisplay', params);
     }
 });
@@ -56,7 +51,6 @@ FlowRouter.route('/scorecard_display/:userName/:name/:submitTime/:runTime', {
 FlowRouter.route('/preview/:graphFunction/:key/:matching/:appName', {
     name: 'preview',
     action(params) {
-        console.log("in preview route- setting params", params);
         this.render('GraphStandAlone', params);
     }
 });
@@ -77,7 +71,6 @@ FlowRouter.route(Meteor.settings.public.proxy_prefix_path + '/', {
 FlowRouter.route(Meteor.settings.public.proxy_prefix_path + '/CSV/:graphFunction/:key/:matching/:appName', {
     name: 'csv',
     action(params) {
-        console.log("in csv route");
         window.location.href=FlowRouter.path;
     }
 });
@@ -85,7 +78,6 @@ FlowRouter.route(Meteor.settings.public.proxy_prefix_path + '/CSV/:graphFunction
 FlowRouter.route(Meteor.settings.public.proxy_prefix_path + '/JSON/:graphFunction/:key/:matching/:appName', {
     name: 'json',
     action(params) {
-        console.log("in json route");
         window.location.href=FlowRouter.path;
     }
 });
@@ -94,7 +86,6 @@ FlowRouter.route(Meteor.settings.public.proxy_prefix_path + '/JSON/:graphFunctio
 FlowRouter.route(Meteor.settings.public.proxy_prefix_path + '/preview/:graphFunction/:key/:matching/:appName', {
     name: 'preview',
     action(params) {
-        console.log("in preview route- setting params", params);
         this.render('GraphStandAlone', params);
     }
 });
@@ -103,7 +94,6 @@ FlowRouter.route(Meteor.settings.public.proxy_prefix_path + '/preview/:graphFunc
 FlowRouter.route(Meteor.settings.public.proxy_prefix_path + '/scorecard_display/:userName/:name/:submitTime/:runTime', {
         name: 'scorecard_display',
     action(params) {
-        console.log("in scorecard_display route- setting params", params);
         this.render('ScorecardDisplay', params);
     }
 });
@@ -125,7 +115,6 @@ FlowRouter.route(Meteor.settings.public.proxy_prefix_path + '/:appName', {
 FlowRouter.route(Meteor.settings.public.proxy_prefix_path + '/*/CSV/:graphFunction/:key/:matching/:appName', {
     name: 'csv',
     action(params) {
-        console.log("in csv route");
         window.location.href=FlowRouter.path;
     }
 });
@@ -133,7 +122,6 @@ FlowRouter.route(Meteor.settings.public.proxy_prefix_path + '/*/CSV/:graphFuncti
 FlowRouter.route(Meteor.settings.public.proxy_prefix_path + '/*/JSON/:graphFunction/:key/:matching/:appName', {
     name: 'json',
     action(params) {
-        console.log("in json route");
         window.location.href=FlowRouter.path;
     }
 });
@@ -141,7 +129,6 @@ FlowRouter.route(Meteor.settings.public.proxy_prefix_path + '/*/JSON/:graphFunct
 FlowRouter.route(Meteor.settings.public.proxy_prefix_path + '/*/preview/:graphFunction/:key/:matching/:appName', {
     name: 'preview',
     action(params) {
-        console.log("in preview route- setting params", params);
         this.render('GraphStandAlone', params);
     }
 });

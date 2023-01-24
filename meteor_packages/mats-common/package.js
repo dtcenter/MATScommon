@@ -22,6 +22,9 @@ Package.onUse(function (api) {
         "@babel/runtime": "7.10.4",
         "meteor-node-stubs": "0.4.1",
         "url": "0.11.0",
+        "jquery": "3.6.3",
+        "datatables.net-bs": '1.13.1',
+        "datatables.net-dt": '1.13.1',
         "jquery-ui": "1.12.1",
         "csv-stringify": "4.3.1",
         "node-file-cache" : "1.0.2",
@@ -29,7 +32,8 @@ Package.onUse(function (api) {
         "couchbase": "3.2.3",
         "simpl-schema": "1.12.0",
         "vanillajs-datepicker":"1.2.0",
-        "daterangepicker": "3.1.0"
+        "daterangepicker": "3.1.0",
+        "lighten-darken-color": "1.0.0"
     });
     api.mainModule("server/main.js", "server");
     api.mainModule("client/main.js", "client");

@@ -2,20 +2,50 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import {Meteor} from 'meteor/meteor';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import {
-    matsCollections,
-    matsCurveUtils,
-    matsGraphUtils,
-    matsMethods,
-    matsTypes
-} from 'meteor/randyp:mats-common';
+import {matsMethods,} from 'meteor/randyp:mats-common';
 import {Template} from 'meteor/templating';
+import { LightenDarkenColor } from 'lighten-darken-color';
 import './scorecardDisplay.html';
+import 'datatables.net-bs';
+import 'datatables.net-dt';
+
+
+const getAllStats = function(rowName) {
+    const myRegions = Object.keys(Template.instance().myScorecard.get()['results']['rows'][rowName]['data']);
+    let myStats = new Set();
+    myRegions.forEach(function(r){
+        const rStats = Object.keys(Template.instance().myScorecard.get()['results']['rows'][rowName]['data'][r]);
+        rStats.forEach(function (s){
+            myStats.add(s);
+        });
+    });
+    return Array.from(myStats).sort();
+};
+
+const getAllVariables = function (rowName) {
+    let myVars = new Set();
+    let myStats = new Set();
+    const myRegions = Object.keys(Template.instance().myScorecard.get()['results']['rows'][rowName]['data']);
+    myRegions.forEach(function(r){
+        const rStats = Object.keys(Template.instance().myScorecard.get()['results']['rows'][rowName]['data'][r]);
+        rStats.forEach(function (s){
+            const rVars = Object.keys(Template.instance().myScorecard.get()['results']['rows'][rowName]['data'][r][s]);
+            rVars.forEach(function(v){
+                myVars.add(v);
+            });
+        });
+    });
+    return Array.from(myVars).sort();
+};
 
 Template.ScorecardDisplay.created = function (){
+    // $('#scOuterTable').DataTable({
+    //     scrollY: true,
+    //     scrollX: true,
+    // });
+
     var self = this;
     self.myScorecard = new ReactiveVar();
     matsMethods.getScorecardData.call({userName:this.data.userName,name:this.data.name,submitTime:this.data.submitTime,runTime:this.data.runTime}, function (error, ret) {
@@ -23,33 +53,161 @@ Template.ScorecardDisplay.created = function (){
             setError(error);
             self.myScorecard.set({"error":error.message});
         } else {
-            self.myScorecard.set(ret);
+            self.myScorecard.set(ret[0]);
         }
     });
 };
 
 
 Template.ScorecardDisplay.helpers({
-    rows: function() {
-        return [];
-    },
 
-    regions: function() {
-        return [];
+    rowTitle: function(rowName) {
+        if (Template.instance().myScorecard.get() == undefined) {return "";}
+        const rowTitle = Template.instance().myScorecard.get()['results']['rows'][rowName]['rowTitle'];
+        return "Scorecard Row: " + rowName + " Datasource: " + rowTitle['datasource'] + " ValidationDatasource: " + rowTitle['validationDatasource'];
     },
-
     scorecardRows: function() {
-
+        if (Template.instance().myScorecard.get() == undefined) {return [];}
+        return Object.keys(Template.instance().myScorecard.get()['results']['rows']).sort();
+    },
+    regions: function(rowName) {
+        if (Template.instance().myScorecard.get() == undefined) {return [];}
+        return Template.instance().myScorecard.get()['results']['rows'][rowName]['regions'].sort();
+    },
+    fcstlens: function(rowName) {
+        if (Template.instance().myScorecard.get() == undefined) {return [];}
+        let myFcstlenStrs = Template.instance().myScorecard.get()['results']['rows'][rowName]['fcstlens'];
+        let myFcstLengths = [];
+        let fcstLength = myFcstlenStrs.length;
+        // padd the fcst lengths with leading '0' for single digit fcsts
+        for (let i=0; i<fcstLength; i++) {
+            myFcstLengths[i] = (Number(myFcstlenStrs[i]) < 10 ? '0' : '') + myFcstlenStrs[i];
+        }
+        return myFcstLengths.sort();
+    },
+    numFcsts: function(rowName) {
+        if (Template.instance().myScorecard.get() == undefined) {return [];}
+        return Template.instance().myScorecard.get()['results']['rows'][rowName]['fcstlens'].length;
+    },
+    sigIconId: function(rowName, region, stat, variable, fcstlen) {
+        if (Template.instance().myScorecard.get() == undefined) {return "";}
+        //un padd the possibly padded fcstlen
+        let fcstlenStr = Number(fcstlen) + "";
+        return rowName + '-' + region + '-' + stat + '-' + variable + '-' + fcstlen
     },
 
-    scorecardDispay: function () {
-        return "block";
+    significanceClass: function(rowName, region, stat, variable, fcstlen) {
+        if (Template.instance().myScorecard.get() == undefined) {return "";}
+        //un padd the possibly padded fcstlen
+        let fcstlenStr = Number(fcstlen) + "";
+        const sigVal = Template.instance().myScorecard.get()['results']['rows'][rowName]['data'][region][stat][variable][fcstlenStr];
+        const majorTruthIcon = "fa fa-caret-down fa-lg";
+        const minorTruthIcon = "fa fa-caret-down fa-sm";
+        const majorSourceIcon = "fa fa-caret-up fa-lg";
+        const minorSourceIcon = "fa fa-caret-up fa-sm";
+        const neutralIcon = "fa icon-check-empty fa-sm";
+        if (sigVal == -2) {
+            return majorSourceIcon;
+        }
+        if (sigVal == -1) {
+            return minorSourceIcon;
+        }
+        if (sigVal == 0) {
+            return neutralIcon;
+        }
+        if (sigVal == 2) {
+            return majorTruthIcon;
+        }
+        if (sigVal == 1) {
+            return minorTruthIcon;
+        }
     },
+    significanceColor:  function(rowName, region, stat, variable, fcstlen) {
+        if (Template.instance().myScorecard.get() == undefined) {return "";}
+        //un padd the possibly padded fcstlen
+        let fcstlenStr = Number(fcstlen) + "";
+        const sigVal = Template.instance().myScorecard.get()['results']['rows'][rowName]['data'][region][stat][variable][fcstlenStr];
+        if (sigVal == -2) {
+            return Template.instance().myScorecard.get()['significanceColors']['major-truth-color'];
+        }
+        if (sigVal == -1) {
+            return Template.instance().myScorecard.get()['significanceColors']['minor-truth-color'];
+        }
+        if (sigVal == 0) {
+            return 'lightgrey ';
+        }
+        if (sigVal == 2) {
+            return Template.instance().myScorecard.get()['significanceColors']['major-source-color'];
+        }
+        if (sigVal == 1) {
+            return Template.instance().myScorecard.get()['significanceColors']['minor-source-color'];
+        }
+    },
+    significanceBackgroundColor:  function(rowName, region, stat, variable, fcstlen) {
+        if (Template.instance().myScorecard.get() == undefined) {return "";}
+        //un padd the possibly padded fcstlen
+        let fcstlenStr = Number(fcstlen) + "";
+        const sigVal = Template.instance().myScorecard.get()['results']['rows'][rowName]['data'][region][stat][variable][fcstlenStr];
+        if (sigVal == -2) {
+            return LightenDarkenColor(Template.instance().myScorecard.get()['significanceColors']['major-truth-color'], 100);
+        }
+        if (sigVal == -1) {
+            return LightenDarkenColor(Template.instance().myScorecard.get()['significanceColors']['minor-truth-color'], 180);
+        }
+        if (sigVal == 0) {
+            return 'lightgrey ';
+        }
+        if (sigVal == 2) {
+            return LightenDarkenColor(Template.instance().myScorecard.get()['significanceColors']['major-source-color'], 100);
+        }
+        if (sigVal == 1) {
+            return LightenDarkenColor(Template.instance().myScorecard.get()['significanceColors']['minor-source-color'], 180);
+        }
+    },
+    stats: function(rowName) {
+        if (Template.instance().myScorecard.get() == undefined) {return [];}
+        // return a distinct list of all the possible stats
+        return getAllStats(rowName);
+    },
+
+    variables: function(rowName) {
+        if (Template.instance().myScorecard.get() == undefined) {return [];}
+        // return the distinct list of all the possible variables for this stat
+        return getAllVariables(rowName);
+    },
+
+    varsLength: function(rowName){
+        let maxLength = 0;
+        const varList = getAllVariables(rowName);
+        varList.forEach(function(aVar){
+            maxLength = aVar.length > maxLength ? aVar.length: maxLength;
+        });
+        return maxLength;
+    },
+
+    statsLength: function(rowName){
+        let maxLength = 0;
+        const statList = getAllStats(rowName);
+        statList.forEach(function(aStat){
+            maxLength = aStat.length > maxLength ? aStat.length: maxLength;
+        });
+        return maxLength;
+    },
+
+    plotParams: function() {
+        if (Template.instance().myScorecard.get() == undefined) {return [];}
+        return JSON.stringify(Template.instance().myScorecard.get()['results']['plotParams']);
+    },
+
     Title: function () {
-        return this.userName + " : " + this.name + " : " + this.timestamp;
+        let runTimestamp = "unprocessed";
+        if (this.runTime != 0) {
+            runTimestamp = new Date(this.runTime * 1000).toUTCString();
+        }
+        return this.userName + " : " + this.name + " : "  + runTimestamp;
     },
     fileNamePlaceholder: function() {
-        let x = new Date(this.timestamp);
+        let x = new Date(this.submitTime * 1000);
         let y = x.getFullYear().toString();
         let m = (x.getMonth() + 1).toString();
         let d = x.getDate().toString();
@@ -109,6 +267,16 @@ Template.ScorecardDisplay.events({
                 window.open(uri);
             }
         }
+    },
+    'click .scTableSigTd': function (e) {
+        // this needs to be a lot more intelligent
+        const row=e.currentTarget.dataset.scorecardrow
+        const region=e.currentTarget.dataset.region
+        const stat=e.currentTarget.dataset.stat
+        const variable=e.currentTarget.dataset.variable
+        const fcstlen=e.currentTarget.dataset.fcstlen
+        const plotParamsJSON=e.currentTarget.dataset.plotParams
+        e.view.window.open("https://www.esrl.noaa.gov/gsd/mats", "_blank");
     }
 });
 
