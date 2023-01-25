@@ -6,7 +6,7 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import {matsMethods,} from 'meteor/randyp:mats-common';
 import {Template} from 'meteor/templating';
-import { LightenDarkenColor } from 'lighten-darken-color';
+import {LightenDarkenColor} from 'lighten-darken-color';
 import './scorecardDisplay.html';
 import 'datatables.net-bs';
 import 'datatables.net-dt';
@@ -41,11 +41,6 @@ const getAllVariables = function (rowName) {
 };
 
 Template.ScorecardDisplay.created = function (){
-    // $('#scOuterTable').DataTable({
-    //     scrollY: true,
-    //     scrollX: true,
-    // });
-
     var self = this;
     self.myScorecard = new ReactiveVar();
     matsMethods.getScorecardData.call({userName:this.data.userName,name:this.data.name,submitTime:this.data.submitTime,runTime:this.data.runTime}, function (error, ret) {
@@ -63,6 +58,11 @@ Template.ScorecardDisplay.helpers({
 
     rowTitle: function(rowName) {
         if (Template.instance().myScorecard.get() == undefined) {return "";}
+        // haven't gotten datatable to work yet, but it seems that this way of initializing is better than in created
+        // var dt = new DataTable('.scOuterTable-' + rowName,{
+        //           scrollY: true,
+        //           scrollX: true,
+        //         });
         const rowTitle = Template.instance().myScorecard.get()['results']['rows'][rowName]['rowTitle'];
         return "Scorecard Row: " + rowName + " Datasource: " + rowTitle['datasource'] + " ValidationDatasource: " + rowTitle['validationDatasource'];
     },
@@ -270,13 +270,15 @@ Template.ScorecardDisplay.events({
     },
     'click .scTableSigTd': function (e) {
         // this needs to be a lot more intelligent
-        const row=e.currentTarget.dataset.scorecardrow
-        const region=e.currentTarget.dataset.region
-        const stat=e.currentTarget.dataset.stat
-        const variable=e.currentTarget.dataset.variable
-        const fcstlen=e.currentTarget.dataset.fcstlen
-        const plotParamsJSON=e.currentTarget.dataset.plotParams
-        e.view.window.open("https://www.esrl.noaa.gov/gsd/mats", "_blank");
+        const row=e.currentTarget.dataset.scorecardrow;
+        const region=e.currentTarget.dataset.region;
+        const stat=e.currentTarget.dataset.stat;
+        const variable=e.currentTarget.dataset.variable;
+        const fcstlen=e.currentTarget.dataset.fcstlen;
+        const plotParams = Template.instance().myScorecard.get().plotParams;
+        const plotParamsJSON=JSON.stringify(plotParams);
+        const application = Template.instance().myScorecard.get().plotParams.curves.find(r=>r['label'] == row)['application'].toLowerCase();
+        e.view.window.open("https://www.esrl.noaa.gov/gsd/mats/" + application, "_blank");
     }
 });
 
