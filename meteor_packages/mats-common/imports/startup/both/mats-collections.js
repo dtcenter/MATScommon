@@ -40,6 +40,7 @@ var SavedCredentials = new Mongo.Collection("SavedCredentials");
 var SiteMap = new Mongo.Collection("SiteMap");
 var StationMap = new Mongo.Collection("StationMap");
 var appName = new Mongo.Collection("appName");
+var Scorecard = new Mongo.Collection("Scorecard");
 
 const explicitCollections = {
     CurveParamsInfo:CurveParamsInfo,
@@ -66,6 +67,7 @@ const explicitCollections = {
     SiteMap:SiteMap,
     StationMap:StationMap,
     appName:appName,
+    Scorecard:Scorecard,
 };
 
 export default matsCollections = {
