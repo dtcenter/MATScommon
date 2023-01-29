@@ -4,7 +4,7 @@
 
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import {matsMethods,} from 'meteor/randyp:mats-common';
+import {matsMethods, matsCollections} from 'meteor/randyp:mats-common';
 import {Template} from 'meteor/templating';
 import {LightenDarkenColor} from 'lighten-darken-color';
 import './scorecardDisplay.html';
@@ -13,10 +13,10 @@ import 'datatables.net-dt';
 
 
 const getAllStats = function(rowName) {
-    const myRegions = Object.keys(Template.instance().myScorecard.get()['results']['rows'][rowName]['data']);
+    const myRegions = Object.keys(Template.instance().myScorecard.get()['scorecard']['results']['rows'][rowName]['data']);
     let myStats = new Set();
     myRegions.forEach(function(r){
-        const rStats = Object.keys(Template.instance().myScorecard.get()['results']['rows'][rowName]['data'][r]);
+        const rStats = Object.keys(Template.instance().myScorecard.get()['scorecard']['results']['rows'][rowName]['data'][r]);
         rStats.forEach(function (s){
             myStats.add(s);
         });
@@ -27,11 +27,11 @@ const getAllStats = function(rowName) {
 const getAllVariables = function (rowName) {
     let myVars = new Set();
     let myStats = new Set();
-    const myRegions = Object.keys(Template.instance().myScorecard.get()['results']['rows'][rowName]['data']);
+    const myRegions = Object.keys(Template.instance().myScorecard.get()['scorecard']['results']['rows'][rowName]['data']);
     myRegions.forEach(function(r){
-        const rStats = Object.keys(Template.instance().myScorecard.get()['results']['rows'][rowName]['data'][r]);
+        const rStats = Object.keys(Template.instance().myScorecard.get()['scorecard']['results']['rows'][rowName]['data'][r]);
         rStats.forEach(function (s){
-            const rVars = Object.keys(Template.instance().myScorecard.get()['results']['rows'][rowName]['data'][r][s]);
+            const rVars = Object.keys(Template.instance().myScorecard.get()['scorecard']['results']['rows'][rowName]['data'][r][s]);
             rVars.forEach(function(v){
                 myVars.add(v);
             });
@@ -43,12 +43,25 @@ const getAllVariables = function (rowName) {
 Template.ScorecardDisplay.created = function (){
     var self = this;
     self.myScorecard = new ReactiveVar();
-    matsMethods.getScorecardData.call({userName:this.data.userName,name:this.data.name,submitTime:this.data.submitTime,runTime:this.data.runTime}, function (error, ret) {
+
+    // matsMethods.getScorecardData.call({userName:this.data.userName,name:this.data.name,submitTime:this.data.submitTime,runTime:this.data.runTime}, function (error, ret) {
+    //     if (error !== undefined) {
+    //         setError(error);
+    //         self.myScorecard.set({"error":error.message});
+    //     } else {
+    //         self.myScorecard.set(ret[0]);
+    //     }
+    // });
+
+    // retrieve scorecard from couchbase and make sure the mongo Scorecard collection has this one
+    // in it and that it is updated from couchbase.
+    // Then set it as the reactive var for the template
+    matsMethods.getScorecardData.call({userName:this.data.userName,name:this.data.name,submitTime:this.data.submitTime,runTime:this.data.runTime}, function (error, scorecard_identifiers) {
         if (error !== undefined) {
             setError(error);
-            self.myScorecard.set({"error":error.message});
+                self.myScorecard.set({"error":error.message});
         } else {
-            self.myScorecard.set(ret[0]);
+            self.myScorecard.set(matsCollections.Scorecard.findOne({'scorecard.userName':scorecard_identifiers.userName,'scorecard.name':scorecard_identifiers.name,'scorecard.submitted':scorecard_identifiers.submitted,'scorecard.processedAt':scorecard_identifiers.processedAt}));
         }
     });
 };
@@ -63,20 +76,20 @@ Template.ScorecardDisplay.helpers({
         //           scrollY: true,
         //           scrollX: true,
         //         });
-        const rowTitle = Template.instance().myScorecard.get()['results']['rows'][rowName]['rowTitle'];
+        const rowTitle = Template.instance().myScorecard.get()['scorecard']['results']['rows'][rowName]['rowTitle'];
         return "Scorecard Row: " + rowName + " Datasource: " + rowTitle['datasource'] + " ValidationDatasource: " + rowTitle['validationDatasource'];
     },
     scorecardRows: function() {
         if (Template.instance().myScorecard.get() == undefined) {return [];}
-        return Object.keys(Template.instance().myScorecard.get()['results']['rows']).sort();
+        return Object.keys(Template.instance().myScorecard.get()['scorecard']['results']['rows']).sort();
     },
     regions: function(rowName) {
         if (Template.instance().myScorecard.get() == undefined) {return [];}
-        return Template.instance().myScorecard.get()['results']['rows'][rowName]['regions'].sort();
+        return Template.instance().myScorecard.get()['scorecard']['results']['rows'][rowName]['regions'].sort();
     },
     fcstlens: function(rowName) {
         if (Template.instance().myScorecard.get() == undefined) {return [];}
-        let myFcstlenStrs = Template.instance().myScorecard.get()['results']['rows'][rowName]['fcstlens'];
+        let myFcstlenStrs = Template.instance().myScorecard.get()['scorecard']['results']['rows'][rowName]['fcstlens'];
         let myFcstLengths = [];
         let fcstLength = myFcstlenStrs.length;
         // padd the fcst lengths with leading '0' for single digit fcsts
@@ -87,7 +100,7 @@ Template.ScorecardDisplay.helpers({
     },
     numFcsts: function(rowName) {
         if (Template.instance().myScorecard.get() == undefined) {return [];}
-        return Template.instance().myScorecard.get()['results']['rows'][rowName]['fcstlens'].length;
+        return Template.instance().myScorecard.get()['scorecard']['results']['rows'][rowName]['fcstlens'].length;
     },
     sigIconId: function(rowName, region, stat, variable, fcstlen) {
         if (Template.instance().myScorecard.get() == undefined) {return "";}
@@ -100,7 +113,7 @@ Template.ScorecardDisplay.helpers({
         if (Template.instance().myScorecard.get() == undefined) {return "";}
         //un padd the possibly padded fcstlen
         let fcstlenStr = Number(fcstlen) + "";
-        const sigVal = Template.instance().myScorecard.get()['results']['rows'][rowName]['data'][region][stat][variable][fcstlenStr];
+        const sigVal = Template.instance().myScorecard.get()['scorecard']['results']['rows'][rowName]['data'][region][stat][variable][fcstlenStr];
         const majorTruthIcon = "fa fa-caret-down fa-lg";
         const minorTruthIcon = "fa fa-caret-down fa-sm";
         const majorSourceIcon = "fa fa-caret-up fa-lg";
@@ -126,42 +139,42 @@ Template.ScorecardDisplay.helpers({
         if (Template.instance().myScorecard.get() == undefined) {return "";}
         //un padd the possibly padded fcstlen
         let fcstlenStr = Number(fcstlen) + "";
-        const sigVal = Template.instance().myScorecard.get()['results']['rows'][rowName]['data'][region][stat][variable][fcstlenStr];
+        const sigVal = Template.instance().myScorecard.get()['scorecard']['results']['rows'][rowName]['data'][region][stat][variable][fcstlenStr];
         if (sigVal == -2) {
-            return Template.instance().myScorecard.get()['significanceColors']['major-truth-color'];
+            return Template.instance().myScorecard.get()['scorecard']['significanceColors']['major-truth-color'];
         }
         if (sigVal == -1) {
-            return Template.instance().myScorecard.get()['significanceColors']['minor-truth-color'];
+            return Template.instance().myScorecard.get()['scorecard']['significanceColors']['minor-truth-color'];
         }
         if (sigVal == 0) {
             return 'lightgrey ';
         }
         if (sigVal == 2) {
-            return Template.instance().myScorecard.get()['significanceColors']['major-source-color'];
+            return Template.instance().myScorecard.get()['scorecard']['significanceColors']['major-source-color'];
         }
         if (sigVal == 1) {
-            return Template.instance().myScorecard.get()['significanceColors']['minor-source-color'];
+            return Template.instance().myScorecard.get()['scorecard']['significanceColors']['minor-source-color'];
         }
     },
     significanceBackgroundColor:  function(rowName, region, stat, variable, fcstlen) {
         if (Template.instance().myScorecard.get() == undefined) {return "";}
         //un padd the possibly padded fcstlen
         let fcstlenStr = Number(fcstlen) + "";
-        const sigVal = Template.instance().myScorecard.get()['results']['rows'][rowName]['data'][region][stat][variable][fcstlenStr];
+        const sigVal = Template.instance().myScorecard.get()['scorecard']['results']['rows'][rowName]['data'][region][stat][variable][fcstlenStr];
         if (sigVal == -2) {
-            return LightenDarkenColor(Template.instance().myScorecard.get()['significanceColors']['major-truth-color'], 100);
+            return LightenDarkenColor(Template.instance().myScorecard.get()['scorecard']['significanceColors']['major-truth-color'], 220);
         }
         if (sigVal == -1) {
-            return LightenDarkenColor(Template.instance().myScorecard.get()['significanceColors']['minor-truth-color'], 180);
+            return LightenDarkenColor(Template.instance().myScorecard.get()['scorecard']['significanceColors']['minor-truth-color'], 250);
         }
         if (sigVal == 0) {
-            return 'lightgrey ';
+            return 'white';
         }
         if (sigVal == 2) {
-            return LightenDarkenColor(Template.instance().myScorecard.get()['significanceColors']['major-source-color'], 100);
+            return LightenDarkenColor(Template.instance().myScorecard.get()['scorecard']['significanceColors']['major-source-color'], 250);
         }
         if (sigVal == 1) {
-            return LightenDarkenColor(Template.instance().myScorecard.get()['significanceColors']['minor-source-color'], 180);
+            return LightenDarkenColor(Template.instance().myScorecard.get()['scorecard']['significanceColors']['minor-source-color'], 220);
         }
     },
     stats: function(rowName) {
@@ -196,7 +209,7 @@ Template.ScorecardDisplay.helpers({
 
     plotParams: function() {
         if (Template.instance().myScorecard.get() == undefined) {return [];}
-        return JSON.stringify(Template.instance().myScorecard.get()['results']['plotParams']);
+        return JSON.stringify(Template.instance().myScorecard.get()['scorecard']['results']['plotParams']);
     },
 
     Title: function () {
@@ -277,7 +290,7 @@ Template.ScorecardDisplay.events({
         const fcstlen=e.currentTarget.dataset.fcstlen;
         const plotParams = Template.instance().myScorecard.get().plotParams;
         const plotParamsJSON=JSON.stringify(plotParams);
-        const application = Template.instance().myScorecard.get().plotParams.curves.find(r=>r['label'] == row)['application'].toLowerCase();
+        const application = Template.instance().myScorecard.get()['scorecard'].plotParams.curves.find(r=>r['label'] == row)['application'].toLowerCase();
         e.view.window.open("https://www.esrl.noaa.gov/gsd/mats/" + application, "_blank");
     }
 });

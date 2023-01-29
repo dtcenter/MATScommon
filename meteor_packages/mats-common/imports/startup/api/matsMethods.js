@@ -1773,7 +1773,12 @@ const _getScorecardData = async function (userName,name,submitTime,runTime) {
                 AND sc.processedAt=` + runTime + `
                 AND sc.submitted=` + submitTime + `;`
         const result = await cbScorecardPool.queryCB(statement);
-        return result;
+        // insert this result into the mongo Scorecard collection - createdAt is used for TTL
+        // created at gets updated each display even if it already existed.
+        // TTL is 24 hours
+        matsCollections.Scorecard.upsert({'scorecard.userName':result[0].userName, 'scorecard.name':result[0].name, 'scorecard.submitted':result[0].submitted, 'scorecard.processedAt':result[0].processedAt},{createdAt: new Date(), scorecard:result[0]});
+        // no need to return the whole thing, just the identifying fields. The app will find the whole thing in the mongo collection
+        return {'userName':result[0].userName, 'name':result[0].name, 'submitted':result[0].submitted, 'processedAt':result[0].processedAt};
     } catch (err) {
         console.log("_getScorecardData error : " + err.message);
         return {

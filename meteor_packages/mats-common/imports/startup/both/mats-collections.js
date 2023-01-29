@@ -42,11 +42,18 @@ var StationMap = new Mongo.Collection("StationMap");
 var appName = new Mongo.Collection("appName");
 var Scorecard = new Mongo.Collection("Scorecard");
 
+// expire after 24 hours from when the scorecard is last upserted
+if (Meteor.isServer) {
+    Scorecard._dropIndex( { "createdAt": 1 } );
+    Scorecard.createIndex( { "createdAt": 1 }, { expireAfterSeconds: 24 * 60 * 60 } );
+}
+
+
 const explicitCollections = {
     CurveParamsInfo:CurveParamsInfo,
     AppsToScore: AppsToScore,
     Scatter2dParams:Scatter2dParams,
-    CurveTextPatterns:CurveTextPatterns,
+    CurveTextPatterns:CurveTextPatterns, 
     ScatterAxisTextPattern:ScatterAxisTextPattern,
     SavedCurveParams:SavedCurveParams,
     PlotParams:PlotParams,
