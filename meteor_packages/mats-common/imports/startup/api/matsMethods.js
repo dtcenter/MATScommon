@@ -1763,6 +1763,9 @@ const _write_settings = function (settings, appName) {
 //return the scorecard for the provided selectors
 const _getScorecardData = async function (userName,name,submitTime,runTime) {
     try {
+        if (cbScorecardPool == undefined) {
+            return {};
+        }
         const statement = `SELECT sc.*
             From
                 vxdata._default.SCORECARD sc
@@ -1790,6 +1793,10 @@ const _getScorecardData = async function (userName,name,submitTime,runTime) {
 // return the scorecard status information from the couchbase database
 const _getScorecardInfo = async function () {
     try {
+        if (cbScorecardPool == undefined) {
+            return {};
+        }
+
         const statement = `SELECT
             sc.id,
             sc.userName,
