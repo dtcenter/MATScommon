@@ -8,8 +8,8 @@ import {matsMethods, matsCollections} from 'meteor/randyp:mats-common';
 import {Template} from 'meteor/templating';
 import {LightenDarkenColor} from 'lighten-darken-color';
 import './scorecardDisplay.html';
-import 'datatables.net-bs';
-import 'datatables.net-dt';
+//import 'datatables.net-bs';
+//import 'datatables.net-dt';
 
 
 const getAllStats = function(rowName) {
