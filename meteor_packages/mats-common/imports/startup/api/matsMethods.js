@@ -508,6 +508,32 @@ const _clearCache = function (params, req, res, next) {
     }
 };
 
+// private middleware for dropping a distinct instance (a single run) of a scorecard
+const _dropScorecardInstance = async function (userName,name,submitTime,runTime) {
+try {
+    if (cbScorecardPool == undefined) {
+        return {};
+    }
+    const statement = `DELETE
+        From
+            vxdata._default.SCORECARD sc
+        WHERE
+            sc.type='SC'
+            AND sc.userName='` + userName + `'
+            AND sc.name='` + name + `'
+            AND sc.processedAt=` + runTime + `
+            AND sc.submitted=` + submitTime + `;`
+    const result = await cbScorecardPool.queryCB(statement);
+    // delete this result from the mongo Scorecard collection
+    return;
+} catch (err) {
+    console.log("_getScorecardData error : " + err.message);
+    return {
+        "error": err.message
+    };
+};
+};
+
 // helper function to map a results array to specific apps
 function _mapArrayToApps(result) {
     // put results in a map keyed by app
@@ -2034,6 +2060,30 @@ const deleteSettings = new ValidatedMethod({
     }
 });
 
+// drop a single instance of a scorecard
+const dropScorecardInstance = new ValidatedMethod({
+    name: 'matsMethods.dropScorecardInstance',
+    validate: new SimpleSchema({
+        userName: {
+            type: String
+        },
+        name: {
+            type: String
+        },
+        submitTime: {
+            type: String
+        },
+        runTime: {
+            type: String
+        }
+    }).validator(),
+    run(params) {
+        if (Meteor.isServer) {
+            return _dropScorecardInstance(params.userName,params.name,params.submitTime,params.runTime);
+        }
+    }
+});
+
 //administration tools
 const emailImage = new ValidatedMethod({
     name: 'matsMethods.emailImage',
@@ -3035,6 +3085,7 @@ export default matsMethods = {
     applyDatabaseSettings: applyDatabaseSettings,
     applySettingsData: applySettingsData,
     deleteSettings: deleteSettings,
+    dropScorecardInstance:dropScorecardInstance,
     emailImage: emailImage,
     getAuthorizations: getAuthorizations,
     getRunEnvironment: getRunEnvironment,

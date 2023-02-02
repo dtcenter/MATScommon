@@ -399,6 +399,7 @@ const setScorecardDisplayView = function () {
     document.getElementById('refresh-plot').style.display = "none";
     document.getElementById('spinner').style.display = "none";
     document.getElementById('scorecardStatus').style.display = "block";
+    Session.set("updateStatusPage", new Date().getTime());
     // Enable navigation prompt
     window.onbeforeunload = function() {
         return true;

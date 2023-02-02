@@ -49,19 +49,27 @@ function getRunTimesForUserName(userName, name){
 
 
 Template.scorecardStatusPage.created = function (){
-    var self = this;
-    self.myScorecardInfo = new ReactiveVar();
     matsMethods.getScorecardInfo.call(function (error, ret) {
         if (error !== undefined) {
             setError(error);
-            myScorecardInfo.set({"error":error.message});
         } else {
-            self.myScorecardInfo.set(ret);
+            Session.set("updateStatusPage", ret);
         }
     });
 };
 
 Template.scorecardStatusPage.helpers({
+    refresh: function(){
+        if (Session.get("updateStatusPage") === undefined){
+            matsMethods.getScorecardInfo.call(function (error, ret) {
+                if (error !== undefined) {
+                    setError(error);
+                } else {
+                    Session.set("updateStatusPage", ret);
+                }
+            });
+        }
+    },
     image: function () {
         var img = "underConstruction.jpg";
         return img;
@@ -69,37 +77,39 @@ Template.scorecardStatusPage.helpers({
     userNames: function() {
         // uses reactive var
         // myScorecardInfo is keyed by userNames
-        return Object.keys(Template.instance().myScorecardInfo.get()).sort();
+        return Session.get("updateStatusPage") === undefined? [] : Object.keys(Session.get("updateStatusPage")).sort();
     },
     names: function(userName) {
         // uses reactive var
         // myScorecardInfo[userName] is keyed by scorecard names
-        return Object.keys(Template.instance().myScorecardInfo.get()[userName]).sort();
+            return Session.get("updateStatusPage") === undefined? [] : Object.keys(Session.get("updateStatusPage")[userName]).sort();
     },
     submitTimes: function(userName, name) {
         // uses reactive var
         // myScorecardInfo[userName][name] is keyed by scorecard runtimes
-        return Object.keys(Template.instance().myScorecardInfo.get()[userName][name]).sort();
+            return Session.get("updateStatusPage") === undefined? [] : Object.keys(Session.get("updateStatusPage")[userName][name]).sort();
     },
 
     runTimes: function(userName, name, submitTime) {
         // uses reactive var
         // myScorecardInfo[userName][name] is keyed by scorecard runtimes
-        return Object.keys(Template.instance().myScorecardInfo.get()[userName][name][submitTime]).sort();
+            return Session.get("updateStatusPage") === undefined? [] : Object.keys(Session.get("updateStatusPage")[userName][name][submitTime]).sort();
     },
     status: function(userName, name, submitTime, runTime) {
-        return Template.instance().myScorecardInfo.get()[userName][name][submitTime][runTime]['status']
+            return Session.get("updateStatusPage")[userName][name][submitTime][runTime]['status']
     },
     statusType: function(userName, name, submitTime, runTime) {
-        if (Template.instance().myScorecardInfo.get()[userName][name][submitTime][runTime]['status'] === "Pending") {
-            return "danger";
-        } else {
-            return 'Success';
-        }
+            if (Session.get("updateStatusPage") !== undfined && Session.get("updateStatusPage")[userName][name][submitTime][runTime]['status'] === "Pending") {
+                return "danger";
+            } else {
+                return 'Success';
+            }
     },
     visitLink: function(userName, name, submitTime, runTime) {
-        const id = Template.instance().myScorecardInfo.get()[userName][name][submitTime][runTime];
-        return '/scorecard_display/' + userName + '/' + name + '/' + submitTime + '/' + runTime
+            return '/scorecard_display/' + userName + '/' + name + '/' + submitTime + '/' + runTime
+    },
+    scid:  function(userName, name, submitTime, runTime) {
+        return userName + '_' + name + '_' + submitTime + '_' + runTime;
     },
     timeStr: function (epoch) {
         if (Number(epoch) === 0) {
@@ -120,12 +130,39 @@ Template.scorecardStatusPage.events({
         return false;
     },
     'click .refresh-scorecard': function(event) {
-        return false;
+        matsMethods.getScorecardInfo.call(function (error, ret) {
+            if (error !== undefined) {
+                setError(error);
+            } else {
+                Session.set("updateStatusPage", ret);
+            }
+        });
     },
     'click .userName-control': function(event) {
         toggleDisplay(event.currentTarget.attributes['data-target'].value);
     },
     'click .userName-name-control': function(event) {
         toggleDisplay(event.currentTarget.attributes['data-target'].value);
-    }
+    },
+    'click .drop-sc-instance': function(e) {
+        const userName=e.currentTarget.dataset.user_name;
+        const name=e.currentTarget.dataset.name;
+        const submitTime=e.currentTarget.dataset.submit_time;
+        const runTime=e.currentTarget.dataset.run_time;
+
+        matsMethods.dropScorecardInstance.call({userName:userName,name:name,submitTime:submitTime,runTime}, function (error) {
+            if (error !== undefined) {
+                setError(error);
+            } else {
+                // refresh the list
+                matsMethods.getScorecardInfo.call(function (error, ret) {
+                    if (error !== undefined) {
+                        setError(error);
+                    } else {
+                        Session.set("updateStatusPage", ret);
+                    }
+                });
+            }
+        });
+    },
 });

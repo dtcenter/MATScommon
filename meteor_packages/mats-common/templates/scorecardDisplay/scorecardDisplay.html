@@ -19,24 +19,24 @@
             <table id="scOuterTable-{{scorecardRow}}" class="display nowrap">
                 <thead>
                     <!--empty placeholder for stat-->
-                    <th></th>
+                    <th>Application: {{application scorecardRow}}</th>
                     <!--empty placeholder for variable-->
                     <th></th>
                     {{#each region in regions scorecardRow}}
-                    <th class="scOuterHeaderRegion" style="width:{{numFcsts scorecardRow}}em;">
+                    <th class="scOuterHeaderRegion" style="width:{{numFcsts scorecardRow}}em; background-color:LightCyan;">
                         {{region}}</th>
                     {{/each}}
                 </thead>
                 <tbody>
                     <tr>
-                        <td>stat</td>
-                        <td>variable</td>
+                        <td style="background-color:LightCyan;">stat</td>
+                        <td style="background-color:LightCyan;">variable</td>
                         {{#each region in regions scorecardRow}}
                         <td class="scRegionTd" style="max-width: {{numFcsts scorecardRow}}em;">
                             <table class="scInnerTable" style="max-width:{{numFcsts scorecardRow}}em;">
                                 <tr>
                                     {{#each fcstlen in fcstlens scorecardRow}}
-                                    <td class="scInnerTd">{{fcstlen}}</td>
+                                    <td style="background-color:LightCyan;" class="scInnerTd">{{fcstlen}}</td>
                                     {{/each}}
                                 </tr>
                             </table>
@@ -46,8 +46,8 @@
                     {{#each stat in stats scorecardRow}}
                     {{#each variable in variables scorecardRow}}
                     <tr>
-                        <td class="scStatVarTd">{{stat}}</td>
-                        <td class="scStatVarTd">{{variable}}</td>
+                        <td style="background-color:LightCyan;" class="scStatVarTd">{{stat}}</td>
+                        <td style="background-color:LightCyan;" class="scStatVarTd">{{variable}}</td>
                         {{#each region in regions scorecardRow}}
                         <td class="scTableTd">
                             <table class="scTableSig" style="max-width:{{numFcsts scorecardRow}}em;">

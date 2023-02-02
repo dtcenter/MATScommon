@@ -1,4 +1,5 @@
 <template name="scorecardStatusPage">
+    {{refresh}}
     <div id="scorecardStatus" class="container-fluid pull-left"
         style="margin-top: 0.5em; padding-left: 5%; display:none;">
         <div id="scorecardStatusPage-control" class="row">
@@ -7,7 +8,7 @@
                     <i class="fa-solid fa-arrow-left-long"></i>&nbsp;&nbsp;<strong>Back</strong>
                 </button>
                 <button id="gc-spacer" type="button" class="btn spacebutton"></button>
-                <button id="refresh-scorecard" type="button" class="btn btn-info"
+                <button id="refresh-scorecard" type="button" class="refresh-scorecard btn btn-info"
                     style="border-radius: 15px; background-color: #00badb;">
                     <i class="fa-solid fa-arrows-rotate"></i>
                 </button>
@@ -50,6 +51,7 @@
                                                                 <th>runTime</th>
                                                                 <th>status</th>
                                                                 <th>visit link</th>
+                                                                <th></th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
@@ -61,6 +63,9 @@
                                                                     <td>{{status userName name submitTime runTime}}</td>
                                                                     <td><a href="{{visitLink userName name submitTime runTime}}"
                                                                             target="_blank">visit</a></td>
+                                                                    <td><button type="button" class="btn btn-danger btn-xs drop-sc-instance" id="{{scid userName name submitTime runTime}}"
+                                                                        data-user_name="{{userName}}" data-name="{{name}}" data-submit_time="{{submitTime}}"
+                                                                        data-run_time="{{runTime}}">Drop</button></td>
                                                                 </tr>
                                                                 {{/each}}
                                                             {{/each}}

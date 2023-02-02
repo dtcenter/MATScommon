@@ -22,8 +22,10 @@ Template.scorecardParamList.helpers({
         var params = matsCollections.CurveParamsInfo.find({"curve_params": {"$exists": true}}).fetch()[0]["curve_params"];
         var param;
         for (var i = 0; i < params.length; i++) {
-            param = matsCollections[params[i]].find({}).fetch()[0];
-            groupNums.push(param.displayGroup);
+            if (matsCollections[params[i]].find({}).fetch() !== undefined && matsCollections[params[i]].find({}).fetch().length !== 0) {
+                param = matsCollections[params[i]].find({}).fetch()[0];
+                groupNums.push(param.displayGroup);
+            }
         }
         var res = _.uniq(groupNums).sort();
         return res;

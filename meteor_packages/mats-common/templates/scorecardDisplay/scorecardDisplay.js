@@ -8,8 +8,6 @@ import {matsMethods, matsCollections} from 'meteor/randyp:mats-common';
 import {Template} from 'meteor/templating';
 import {LightenDarkenColor} from 'lighten-darken-color';
 import './scorecardDisplay.html';
-//import 'datatables.net-bs';
-//import 'datatables.net-dt';
 
 
 const getAllStats = function(rowName) {
@@ -43,16 +41,6 @@ const getAllVariables = function (rowName) {
 Template.ScorecardDisplay.created = function (){
     var self = this;
     self.myScorecard = new ReactiveVar();
-
-    // matsMethods.getScorecardData.call({userName:this.data.userName,name:this.data.name,submitTime:this.data.submitTime,runTime:this.data.runTime}, function (error, ret) {
-    //     if (error !== undefined) {
-    //         setError(error);
-    //         self.myScorecard.set({"error":error.message});
-    //     } else {
-    //         self.myScorecard.set(ret[0]);
-    //     }
-    // });
-
     // retrieve scorecard from couchbase and make sure the mongo Scorecard collection has this one
     // in it and that it is updated from couchbase.
     // Then set it as the reactive var for the template
@@ -69,6 +57,9 @@ Template.ScorecardDisplay.created = function (){
 
 Template.ScorecardDisplay.helpers({
 
+    application: function(rowName) {
+        return Template.instance().myScorecard.get()['scorecard'].plotParams.curves.find(r=>r['label'] == rowName)['application'].toLowerCase();
+    },
     rowTitle: function(rowName) {
         if (Template.instance().myScorecard.get() == undefined) {return "";}
         // haven't gotten datatable to work yet, but it seems that this way of initializing is better than in created
@@ -162,16 +153,16 @@ Template.ScorecardDisplay.helpers({
         let fcstlenStr = Number(fcstlen) + "";
         const sigVal = Template.instance().myScorecard.get()['scorecard']['results']['rows'][rowName]['data'][region][stat][variable][fcstlenStr];
         if (sigVal == -2) {
-            return LightenDarkenColor(Template.instance().myScorecard.get()['scorecard']['significanceColors']['major-truth-color'], 220);
+            return LightenDarkenColor(Template.instance().myScorecard.get()['scorecard']['significanceColors']['major-truth-color'], 180);
         }
         if (sigVal == -1) {
-            return LightenDarkenColor(Template.instance().myScorecard.get()['scorecard']['significanceColors']['minor-truth-color'], 250);
+            return LightenDarkenColor(Template.instance().myScorecard.get()['scorecard']['significanceColors']['minor-truth-color'], 220);
         }
         if (sigVal == 0) {
-            return 'white';
+            return 'lightgrey';
         }
         if (sigVal == 2) {
-            return LightenDarkenColor(Template.instance().myScorecard.get()['scorecard']['significanceColors']['major-source-color'], 250);
+            return LightenDarkenColor(Template.instance().myScorecard.get()['scorecard']['significanceColors']['major-source-color'], 180);
         }
         if (sigVal == 1) {
             return LightenDarkenColor(Template.instance().myScorecard.get()['scorecard']['significanceColors']['minor-source-color'], 220);

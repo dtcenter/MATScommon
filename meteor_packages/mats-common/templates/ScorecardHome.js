@@ -8,7 +8,7 @@ import {
     matsParamUtils,
     matsMethods,
 } from 'meteor/randyp:mats-common';
-
+import { Template } from 'meteor/templating';
 import {
     Datepicker
 } from 'vanillajs-datepicker';
@@ -76,6 +76,13 @@ Template.ScorecardHome.events({
         datepicker.show();
     },
     'click #display-status'(event){
+        matsMethods.getScorecardInfo.call(function (error, ret) {
+            if (error !== undefined) {
+                setError(error);
+            } else {
+                Session.set("updateStatusPage", ret);
+            }
+        });
         matsGraphUtils.setScorecardDisplayView();
     },
     'click #scorecard-schedule-mode-radioGroup-recurring'(event) {
