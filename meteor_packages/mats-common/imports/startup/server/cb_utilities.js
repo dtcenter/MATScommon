@@ -16,14 +16,15 @@ class CBUtilities {
       if (this.conn == undefined || this.conn.cluster == undefined) {
         // set query timeout to 10 minutes -- we have some long data ones
         // const cluster = await couchbase.connect("couchbase://" + this.host, {
-        const cluster = await couchbase.connect(this.host, {
-          username: this.user,
-          password: this.pwd,
-          timeouts: {
-            kvTimeout: 3600000, // this will kill queries after an hour
-          },
+          const cluster = await couchbase.connect(this.host, {
+            username: this.user,
+            password: this.pwd,
+            timeouts: {
+                kvTimeout: 3600000, // this will kill queries after an hour
+                queryTimeout: 3600000
+            }
         });
-        const bucket = cluster.bucket(this.bucketName);
+      const bucket = cluster.bucket(this.bucketName);
         const collection = bucket.scope(this.scope).collection(this.collection);
         this.conn = {
           cluster: cluster,
