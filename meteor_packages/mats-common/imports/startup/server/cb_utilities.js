@@ -26,7 +26,7 @@ class CBUtilities
                     password: this.pwd,
                     timeouts: {
                         kvTimeout: 3600000, // this will kill queries after an hour
-                        queryTimeout: 3600000 
+                        queryTimeout: 3600000
                     }
                 });
                 const bucket = cluster.bucket(this.bucketName);
@@ -139,9 +139,44 @@ class CBUtilities
         val = val.replace(/vxDBTARGET/g, this.bucketName + "." + this.scope + "." + this.collection);
         return val;
     };
+
+    trfmListToCSVString = (listVals, prefix, doQuotes) =>
+    {
+        var newArr = listVals;
+        if (prefix)
+        {
+            newArr = listVals.map(i => prefix + i);
+        }
+        var rv = "";
+        if (doQuotes)
+        {
+            rv = "'" + newArr.join("','") + + "'";
+        }
+        else
+        {
+            rv = newArr;
+        }
+        return rv;
+    };
+
+    // Gopa - this is a trivial implenentation that asssumes that the clause in
+    // question is all in a single line, could use improvement
+    trfmSQLRemoveClause = (sqlstr, clauseFragment) =>
+    {
+        var lines = sqlstr.split('\n');
+        var rv = "";
+        for (var i = 0; i < lines.length; i++)
+        {
+            if(false == lines[i].includes(clauseFragment))
+            {
+                rv = rv + lines[i] + "\n";
+            }
+        }
+        return rv;
+    }
 }
 
-const test = async () =>
+test = async () =>
 {
     const host = "adb-cb2.gsd.esrl.noaa.gov,adb-cb3.gsd.esrl.noaa.gov,adb-cb4.gsd.esrl.noaa.gov";
     //const host = "adb-cb1.gsd.esrl.noaa.gov";
