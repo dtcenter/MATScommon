@@ -135,4 +135,6 @@ class CBUtilities
     };
 }
 
-
+export default matsCouchbaseUtils = {
+  CBUtilities: CBUtilities,
+};
