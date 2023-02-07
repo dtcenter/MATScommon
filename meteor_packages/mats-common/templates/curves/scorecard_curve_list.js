@@ -19,7 +19,15 @@ Template.scorecardCurveList.helpers({
             return "none";
         }
     },
-
+    displaySaveSettings: function() {
+        // don't allow saving settings when editing
+        const mode = Session.get("editMode");
+        if (mode === undefined || mode === "") {
+            return "block";
+        } else {
+            return "none";
+        }
+    },
     curves: function () {
         return Session.get('Curves');
     },
@@ -85,6 +93,10 @@ Template.scorecardCurveList.events({
         Session.set('plotParameter', matsTypes.PlotActions.scorecard);
         document.getElementById("plot-curves").click();
         return false;
-
+    },
+    'click .save-settings': function (event) {
+        event.preventDefault();
+        document.getElementById("save-settings").click();
+        return false;
     }
 });
