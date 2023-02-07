@@ -51,23 +51,17 @@ class CBUtilities
         }
     }
 
-    upsertCB = async (key, doc) =>
-    {
+    upsertCB = async (key, doc) => {
         const couchbase = require("couchbase");
-        try
-        {
-            const conn = await this.getConnection();
-            const result = await conn.collection.upsert(key, doc, {
-                expiry: 60,
-                persist_to: 1
-            });
-            return result;
-        } catch (err)
-        {
-            console.log("upsertCB ERROR: ", err);
-            throw new Error("upsertCB ERROR: " + err);
+        try {
+          const conn = await this.getConnection();
+          const result = await conn.collection.upsert(key, doc);
+          return result;
+        } catch (err) {
+          console.log("upsertCB ERROR: ", err);
+          throw new Error("upsertCB ERROR: " + err);
         }
-    };
+      };
 
     removeCB = async (key) =>
     {
