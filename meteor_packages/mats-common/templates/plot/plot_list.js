@@ -464,6 +464,26 @@ Template.plotList.events({
                 console.log("prior to getGraphData call time:", new Date() );
                 // the following line converts a null expireKey to false.
                 var expireKey = Session.get('expireKey') === true ? true : false;
+                // add user and name to the plotparams
+                if (Meteor.user() === null) {
+                    p['userName'] = "anonymous";
+                } else {
+                    p['userName'] = Meteor.user().emails[0].address;
+                }
+                let x = new Date();
+                let y = x.getUTCFullYear().toString();
+                let m = (x.getUTCMonth() + 1).toString();
+                let d = x.getUTCDate().toString();
+                let h = x.getUTCHours().toString();
+                let min = x.getUTCMinutes().toString();
+                (d.length == 1) && (d = '0' + d);
+                (m.length == 1) && (m = '0' + m);
+                (h.length == 1) && (h = '0' + h);
+                (min.length == 1) && (min = '0' + min);
+                let submitTime = y + m + d + h + min;
+                // stash the submit epoch in the params
+                p['submitEpoch'] = Math.floor(x.getTime() / 1000);
+                p['scorecard-name'] = p['userName'] + '--' + p['curves'].length + 'row-at-' + submitTime;
                 matsMethods.getGraphData.call({plotParams: p, plotType: pt, expireKey: expireKey}, function (error, ret) {
                     if (error !== undefined) {
                         //setError(new Error("matsMethods.getGraphData from plot_list.js : error: " + error ));
@@ -473,6 +493,7 @@ Template.plotList.events({
                         Session.set('expireKey', false);
                         return false;
                     }
+                    Session.set('ret', ret);
                     Session.set('expireKey', false);
                     Session.set('graphFunction', graphFunction);
                     console.log("after successful getGraphData call time:", new Date(), ":Session key: ",  ret.key, " graphFunction:", graphFunction);

@@ -110,32 +110,6 @@ if (Meteor.isServer) {
         }
         return this.ready();
     });
-// do not publish roles
-// Meteor.publish("Roles", function () {
-//     var data = matsCollections.Roles.find({});
-//     if (data) {
-//         return data;
-//     }
-//     return this.ready();
-// });
-
-// do not publish Authorization
-// Meteor.publish("Authorization", function () {
-//     var data = matsCollections.Authorization.find({});
-//     if (data) {
-//         return data;
-//     }
-//     return this.ready();
-// });
-
-// do not publish credentials
-// Meteor.publish("Credentials", function () {
-//     var data = matsCollections.Credentials.find({});
-//     if (data) {
-//         return data;
-//     }
-//     return this.ready();
-// });
 
 //do not publish databases
 // Meteor.publish("Databases", function () {
@@ -161,6 +135,13 @@ if (Meteor.isServer) {
     });
     Meteor.publish("appName", function () {
         var data = matsCollections.appName.find({});
+        if (data) {
+            return data;
+        }
+        return this.ready();
+    });
+    Meteor.publish("Scorecard", function () {
+        var data = matsCollections.Scorecard.find({});
         if (data) {
             return data;
         }

@@ -23,7 +23,9 @@ Template.paramList.helpers({
         var param;
         for (var i = 0; i < params.length; i++) {
             param = matsCollections[params[i]].find({}).fetch()[0];
-            groupNums.push(param.displayGroup);
+            if (param !== undefined) {
+                groupNums.push(param.displayGroup);
+            }
         }
         var res = _.uniq(groupNums).sort();
         return res;
