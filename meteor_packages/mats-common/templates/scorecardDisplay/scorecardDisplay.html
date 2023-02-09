@@ -1,9 +1,11 @@
 <template name="ScorecardDisplay">
+    {{scorecardRefresh}}
     <div id="graph-container">
         <div id="scorecard-display-header">
             <div id="header">
                 <h2><span>{{Title}}</span></h2>
             </div>
+            <!--div id="scorecardDisplayLoading" class="blink" style="display:block; color:red;">Loading...</div-->
             <div>
                 <label class="input-sm" for="exportFileName">FileName</label>
                 <input style="width:50em;" class="input-sm" id="exportFileName" value="{{fileNamePlaceholder}}">
