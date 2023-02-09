@@ -32,11 +32,7 @@ class CBUtilities
         const bucket = cluster.bucket(this.bucketName);
         // const collection = bucket.defaultCollection();
         const collection = bucket.scope(this.scope).collection(this.collection);
-        this.conn = {
-          cluster: cluster,
-          bucket: bucket,
-          collection: collection
-        };
+        this.conn = { cluster: cluster, bucket: bucket, collection: collection };
       }
       return this.conn;
     } catch (err)
@@ -53,7 +49,7 @@ class CBUtilities
     {
       this.conn.cluster.close();
     }
-  };
+  }
 
   upsertCB = async (key, doc) =>
   {
@@ -103,7 +99,7 @@ class CBUtilities
   queryCB = async (statement) =>
   {
     const couchbase = require("couchbase");
-    // console.log("queryCB()" + statement);
+    console.log("queryCB()" + statement);
     try
     {
       const conn = await this.getConnection();
@@ -123,10 +119,7 @@ class CBUtilities
     {
       const conn = await this.getConnection();
       var geoBoundingBoxQuery = couchbase.SearchQuery.geoBoundingBox(topleft_lon, topleft_lat, bottomright_lon, bottomright_lat);
-      var results = await conn.cluster.searchQuery(index, geoBoundingBoxQuery, {
-        fields: ["*"],
-        limit: 10000
-      });
+      var results = await conn.cluster.searchQuery(index, geoBoundingBoxQuery, { fields: ["*"], limit: 10000 });
       return results.rows;
     } catch (err)
     {
@@ -143,8 +136,46 @@ class CBUtilities
     val = val.replace(/vxDBTARGET/g, this.bucketName + "." + this.scope + "." + this.collection);
     return val;
   };
+
+  trfmListToCSVString = (listVals, prefix, doQuotes) =>
+  {
+    var newArr = listVals;
+    if (prefix)
+    {
+      newArr = listVals.map(i => prefix + i);
+    }
+    var rv = "";
+    if (doQuotes)
+    {
+      rv = "'" + newArr.join("','") + + "'";
+    }
+    else
+    {
+      rv = newArr;
+    }
+    return rv;
+  };
+
+  // Gopa - this is a trivial implenentation that asssumes that the clause in
+  // question is all in a single line, could use improvement
+  trfmSQLRemoveClause = (sqlstr, clauseFragment) =>
+  {
+    var lines = sqlstr.split('\n');
+    var rv = "";
+    for (var i = 0; i < lines.length; i++)
+    {
+      if (false == lines[i].includes(clauseFragment))
+      {
+        rv = rv + lines[i] + "\n";
+      }
+    }
+    return rv;
+  }
 }
+
 
 export default matsCouchbaseUtils = {
   CBUtilities: CBUtilities,
-};
+  test: test
+}
+
