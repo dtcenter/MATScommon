@@ -365,6 +365,9 @@ const typeSort = function (arr) {
 };
 
 const setDefaultForParamName = function (param) {
+    if (param === undefined) {
+        return;
+    }
     const paramName = param.name;
     const type = param.type;
     const defaultValue = param.default;
@@ -428,10 +431,10 @@ const setAllParamsToDefault = function () {
     for (var pidx = 0; pidx < paramNames.length; pidx++) {
         const param = matsCollections[paramNames[pidx]].find({}).fetch()[0];
         // superiors
-        if (param.dependentNames !== undefined) {
+        if (param !== undefined && param.dependentNames !== undefined) {
             superiors.push(param);
         // dependents
-        } else if (param.superiorNames !== undefined) {
+        } else if (param !== undefined && param.superiorNames !== undefined) {
             dependents.push(param);
         // everything else
         } else {
@@ -463,10 +466,10 @@ const setAllParamsToDefault = function () {
     });
     // reset everything else
     params.forEach(function (param) {
-        if (param.type === matsTypes.InputTypes.dateRange) {
+        if (param !== undefined && param.type === matsTypes.InputTypes.dateRange) {
             const dstr = getDefaultDateRange(param.name).dstr;
             setValueTextForParamName(param.name, dstr);
-        } else if (param.type === matsTypes.InputTypes.selectMap) {
+        } else if (param !== undefined && param.type === matsTypes.InputTypes.selectMap) {
             const targetId = param.name + '-' + param.type;
             const targetElem = document.getElementById(targetId);
             const resetMapEvent = new CustomEvent("reset", {
@@ -480,7 +483,7 @@ const setAllParamsToDefault = function () {
         }
     });
     matsCollections.PlotParams.find({}).fetch().forEach(function (param) {
-        if (param.type === matsTypes.InputTypes.dateRange) {
+        if (param !== undefined && param.type === matsTypes.InputTypes.dateRange) {
             const dstr = getDefaultDateRange(param.name).dstr;
             setValueTextForParamName(param.name, dstr);
         } else {

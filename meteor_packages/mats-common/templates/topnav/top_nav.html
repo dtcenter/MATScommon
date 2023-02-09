@@ -26,8 +26,6 @@
                         </li>
                         {{/unless}}
                     </ul>
-                    <span class="navbar-right" style="font-size: small; display: none;">{{>loginButtons}}</span>
-
                 </div><!-- /.navbar-collapse -->
             </div><!-- /.container-fluid -->
         </nav>
@@ -65,6 +63,7 @@
                         <li><a href="" class="about"><span style="color:white;font-size: medium;">About</span></a></li>
                         <li><a style="font-size: medium" href="mailto:mats.gsl@noaa.gov?Subject=Feedback from {{emailText}}"><span
                                 style="color:white">Contact Us</span></a></li>
+                        <li><span style="color:white; background-color: cyan;">{{> loginButtons align="right"}}</span></li>
                     </ul>
                 </div><!-- /.navbar-collapse -->
             </div><!-- /.container-fluid -->
