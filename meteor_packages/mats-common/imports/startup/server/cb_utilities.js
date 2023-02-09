@@ -16,21 +16,21 @@ class CBUtilities {
       if (this.conn == undefined || this.conn.cluster == undefined) {
         // set query timeout to 10 minutes -- we have some long data ones
         // const cluster = await couchbase.connect("couchbase://" + this.host, {
-          const cluster = await couchbase.connect(this.host, {
-            username: this.user,
-            password: this.pwd,
-            timeouts: {
-                kvTimeout: 3600000, // this will kill queries after an hour
-                queryTimeout: 3600000
-            }
+        const cluster = await couchbase.connect(this.host, {
+          username: this.user,
+          password: this.pwd,
+          timeouts: {
+            kvTimeout: 3600000, // this will kill queries after an hour
+            queryTimeout: 3600000
+          }
         });
-      const bucket = cluster.bucket(this.bucketName);
+        const bucket = cluster.bucket(this.bucketName);
+        // const collection = bucket.defaultCollection();
         const collection = bucket.scope(this.scope).collection(this.collection);
         this.conn = {
           cluster: cluster,
           bucket: bucket,
-          collection: collection,
-          scope: this.scope,
+          collection: collection
         };
       }
       return this.conn;
@@ -85,6 +85,7 @@ class CBUtilities {
 
   queryCB = async (statement) => {
     const couchbase = require("couchbase");
+    // console.log("queryCB()" + statement);
     try {
       const conn = await this.getConnection();
       const result = await conn.cluster.query(statement);
@@ -94,25 +95,15 @@ class CBUtilities {
     }
   };
 
-  searchStationsByBoundingBox = async (
-    topleft_lon,
-    topleft_lat,
-    bottomright_lon,
-    bottomright_lat
-  ) => {
+  searchStationsByBoundingBox = async (topleft_lon, topleft_lat, bottomright_lon, bottomright_lat) => {
     const couchbase = require("couchbase");
-    const index = "station_geo";
+    const index = 'station_geo';
     try {
       const conn = await this.getConnection();
-      var geoBoundingBoxQuery = couchbase.SearchQuery.geoBoundingBox(
-        topleft_lon,
-        topleft_lat,
-        bottomright_lon,
-        bottomright_lat
-      );
+      var geoBoundingBoxQuery = couchbase.SearchQuery.geoBoundingBox(topleft_lon, topleft_lat, bottomright_lon, bottomright_lat);
       var results = await conn.cluster.searchQuery(index, geoBoundingBoxQuery, {
         fields: ["*"],
-        limit: 10000,
+        limit: 10000
       });
       return results.rows;
     } catch (err) {
@@ -125,10 +116,7 @@ class CBUtilities {
     var val = sqlstr.replace(/vxBUCKET/g, this.bucket);
     val = val.replace(/vxSCOPE/g, this.scope);
     val = val.replace(/vxCOLLECTION/g, this.collection);
-    val = val.replace(
-      /vxDBTARGET/g,
-      this.bucketName + "." + this.scope + "." + this.collection
-    );
+    val = val.replace(/vxDBTARGET/g, this.bucketName + "." + this.scope + "." + this.collection);
     return val;
   };
 }
