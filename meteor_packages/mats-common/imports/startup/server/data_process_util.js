@@ -179,10 +179,10 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
                 };
                 data.text[di] = data.text[di] +
                     "<br>" + statisticSelect + ": " + (data.y[di] === null ? null : data.y[di].toPrecision(4)) +
-                    "<br>Forecast objects: " + data.n_forecast[di].toString() +
-                    "<br>Matched objects: " + data.n_matched[di].toString() +
-                    "<br>Simple objects: " + data.n_simple[di].toString() +
-                    "<br>Total objects: " + data.n_total[di].toString();
+                    "<br>Forecast objects: " + (data.n_forecast[di] === null ? null : data.n_forecast[di].toString()) +
+                    "<br>Matched objects: " + (data.n_matched[di] === null ? null : data.n_matched[di].toString()) +
+                    "<br>Simple objects: " + (data.n_simple[di] === null ? null : data.n_simple[di].toString()) +
+                    "<br>Total objects: " + (data.n_total[di] === null ? null : data.n_total[di].toString());
             } else {
                 data.stats[di] = {
                     stat: data.y[di],
@@ -466,18 +466,18 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
                     "<br>Average Interest: " + (Array.isArray(data.subInterest[di]) || !isNaN(data.subInterest[di]) ? matsDataUtils.average(data.subInterest[di]).toPrecision(4) : null);
             } else if (statType === 'met-mode_single') {
                 data.stats[di] = {
-                    stat: data.y[di],
+                    stat: data.x[di],
                     n_forecast: data.n_forecast[di],
                     n_matched: data.n_matched[di],
                     n_simple: data.n_simple[di],
                     n_total: data.n_total[di]
                 };
                 data.text[di] = data.text[di] +
-                    "<br>" + statisticSelect + ": " + (data.y[di] === null ? null : data.y[di].toPrecision(4)) +
-                    "<br>Forecast objects: " + data.n_forecast[di].toString() +
-                    "<br>Matched objects: " + data.n_matched[di].toString() +
-                    "<br>Simple objects: " + data.n_simple[di].toString() +
-                    "<br>Total objects: " + data.n_total[di].toString();
+                    "<br>" + statisticSelect + ": " + (data.x[di] === null ? null : data.x[di].toPrecision(4)) +
+                    "<br>Forecast objects: " + (data.n_forecast[di] === null ? null : data.n_forecast[di].toString()) +
+                    "<br>Matched objects: " + (data.n_matched[di] === null ? null : data.n_matched[di].toString()) +
+                    "<br>Simple objects: " + (data.n_simple[di] === null ? null : data.n_simple[di].toString()) +
+                    "<br>Total objects: " + (data.n_total[di] === null ? null : data.n_total[di].toString());
             } else {
                 data.stats[di] = {
                     stat: data.x[di],
