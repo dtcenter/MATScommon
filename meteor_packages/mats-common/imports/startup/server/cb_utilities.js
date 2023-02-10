@@ -173,6 +173,9 @@ class CBUtilities
   }
 }
 
+test = async () =>
+{
+}
 
 export default matsCouchbaseUtils = {
   CBUtilities: CBUtilities,
