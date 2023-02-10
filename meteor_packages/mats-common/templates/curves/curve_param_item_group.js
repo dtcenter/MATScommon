@@ -249,4 +249,3 @@ Template.curveParamItemGroup.helpers({
         return "block";
     }
 });
-
