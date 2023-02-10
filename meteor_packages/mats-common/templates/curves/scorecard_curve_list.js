@@ -28,6 +28,7 @@ Template.scorecardCurveList.helpers({
             return "none";
         }
     },
+
     curves: function () {
         return Session.get('Curves');
     },
