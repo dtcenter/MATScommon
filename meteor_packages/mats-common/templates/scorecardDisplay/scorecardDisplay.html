@@ -1,9 +1,14 @@
 <template name="ScorecardDisplay">
-    {{scorecardRefresh}}
     <div id="graph-container">
         <div id="scorecard-display-header">
             <div id="header">
-                <h2><span>{{Title}}</span></h2>
+                <h2><span>
+                    {{Title}}
+                    <button id="refresh-scorecard" type="button" class="refresh-scorecard btn btn-info"
+                    style="border-radius: 15px; background-color: #00badb;">
+                    <i class="fa-solid fa-arrows-rotate"></i>
+                    </button>
+                </span></h2>
             </div>
             <!--div id="scorecardDisplayLoading" class="blink" style="display:block; color:red;">Loading...</div-->
             <div>

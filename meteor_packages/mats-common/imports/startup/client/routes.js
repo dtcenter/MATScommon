@@ -40,7 +40,7 @@ FlowRouter.route('/JSON/:graphFunction/:key/:matching/:appName', {
     }
 });
 
-FlowRouter.route('/scorecard_display/:userName/:name/:submitTime/:runTime', {
+FlowRouter.route('/scorecard_display/:userName/:name/:submitted/:processedAt', {
     name: 'scorecard_display',
     action(params) {
         this.render('ScorecardDisplay', params);
@@ -91,7 +91,7 @@ FlowRouter.route(Meteor.settings.public.proxy_prefix_path + '/preview/:graphFunc
 });
 
 
-FlowRouter.route(Meteor.settings.public.proxy_prefix_path + '/scorecard_display/:userName/:name/:submitTime/:runTime', {
+FlowRouter.route(Meteor.settings.public.proxy_prefix_path + '/scorecard_display/:userName/:name/:submitted/:processedAt', {
         name: 'scorecard_display',
     action(params) {
         this.render('ScorecardDisplay', params);
@@ -134,7 +134,7 @@ FlowRouter.route(Meteor.settings.public.proxy_prefix_path + '/*/preview/:graphFu
 });
 
 
-FlowRouter.route(Meteor.settings.public.proxy_prefix_path + '/*/scorecard_display/:userName/:name/:submitTime/:runTime', {
+FlowRouter.route(Meteor.settings.public.proxy_prefix_path + '/*/scorecard_display/:userName/:name/:submitted/:processedAt', {
         name: 'scorecard_display',
     action(params) {
         this.render('ScorecardDisplay', params);

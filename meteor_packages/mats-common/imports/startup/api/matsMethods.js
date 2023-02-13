@@ -509,10 +509,10 @@ const _clearCache = function (params, req, res, next) {
 };
 
 // private middleware for dropping a distinct instance (a single run) of a scorecard
-const _dropScorecardInstance = async function (userName,name,submitTime,runTime) {
+const _dropScorecardInstance = async function (userName,name,submittedTime,processedAt) {
 try {
     if (cbScorecardPool == undefined) {
-        return {};
+        throw new Meteor.Error("_dropScorecardInstance: No cbScorecardPool defined");
     }
     const statement = `DELETE
         From
@@ -521,13 +521,13 @@ try {
             sc.type='SC'
             AND sc.userName='` + userName + `'
             AND sc.name='` + name + `'
-            AND sc.processedAt=` + runTime + `
-            AND sc.submitted=` + submitTime + `;`
+            AND sc.processedAt=` + processedAt + `
+            AND sc.submitted=` + submittedTime + `;`
     const result = await cbScorecardPool.queryCB(statement);
     // delete this result from the mongo Scorecard collection
     return;
 } catch (err) {
-    console.log("_getScorecardData error : " + err.message);
+    console.log("_dropScorecardInstance error : " + err.message);
     return {
         "error": err.message
     };
@@ -1787,10 +1787,10 @@ const _write_settings = function (settings, appName) {
     });
 }
 //return the scorecard for the provided selectors
-const _getScorecardData = async function (userName,name,submitTime,runTime) {
+const _getScorecardData = async function (userName,name,submitted,processedAt) {
     try {
         if (cbScorecardPool == undefined) {
-            return {};
+            throw new Meteor.Error("_getScorecardData: No cbScorecardPool defined");
         }
         const statement = `SELECT sc.*
             From
@@ -1799,9 +1799,12 @@ const _getScorecardData = async function (userName,name,submitTime,runTime) {
                 sc.type='SC'
                 AND sc.userName='` + userName + `'
                 AND sc.name='` + name + `'
-                AND sc.processedAt=` + runTime + `
-                AND sc.submitted=` + submitTime + `;`
+                AND sc.processedAt=` + processedAt + `
+                AND sc.submitted=` + submitted + `;`
         const result = await cbScorecardPool.queryCB(statement);
+        if (typeof (result) === 'string' && result.indexOf('ERROR')) {
+            throw new Meteor.Error(result);
+        }
         // insert this result into the mongo Scorecard collection - createdAt is used for TTL
         // created at gets updated each display even if it already existed.
         // TTL is 24 hours
@@ -1817,7 +1820,7 @@ const _getScorecardData = async function (userName,name,submitTime,runTime) {
             }
         });
         // no need to return the whole thing, just the identifying fields. The app will find the whole thing in the mongo collection
-        return {'userName':result[0].userName, 'name':result[0].name, 'submitted':result[0].submitted, 'processedAt':result[0].processedAt};
+        return { 'scorecard': result[0] };
     } catch (err) {
         console.log("_getScorecardData error : " + err.message);
         return {
@@ -1830,7 +1833,7 @@ const _getScorecardData = async function (userName,name,submitTime,runTime) {
 const _getScorecardInfo = async function () {
     try {
         if (cbScorecardPool == undefined) {
-            return {};
+            throw new Meteor.Error("_getScorecardInfo: No cbScorecardPool defined");
         }
 
         const statement = `SELECT
@@ -1838,7 +1841,7 @@ const _getScorecardInfo = async function () {
             sc.userName,
             sc.name,
             sc.status,
-            sc.processedAt as runtime,
+            sc.processedAt as processedAt,
             sc.submitted,
             sc.dateRange
             From
@@ -1860,7 +1863,7 @@ const _getScorecardInfo = async function () {
                 nameElem[elem.submitted] = {};
             }
             submittedElem = nameElem[elem.submitted];
-            submittedElem[elem.runtime] = {
+            submittedElem[elem.processedAt] = {
                 'id': elem.id,
                 'status': elem.status,
                 'submitted': elem.submitted,
@@ -2080,16 +2083,16 @@ const dropScorecardInstance = new ValidatedMethod({
         name: {
             type: String
         },
-        submitTime: {
+        submittedTime: {
             type: String
         },
-        runTime: {
+        processedAt: {
             type: String
         }
     }).validator(),
     run(params) {
         if (Meteor.isServer) {
-            return _dropScorecardInstance(params.userName,params.name,params.submitTime,params.runTime);
+            return _dropScorecardInstance(params.userName,params.name,params.submittedTime,params.processedAt);
         }
     }
 });
@@ -2434,16 +2437,16 @@ const getScorecardData = new ValidatedMethod({
         name: {
             type: String
         },
-        submitTime: {
+        submitted: {
             type: String
         },
-        runTime: {
+        processedAt: {
             type: String
         }
     }).validator(),
     run(params) {
         if (Meteor.isServer) {
-            return _getScorecardData(params.userName,params.name,params.submitTime,params.runTime);
+            return _getScorecardData(params.userName,params.name,params.submitted,params.processedAt);
         }
     }
 });
