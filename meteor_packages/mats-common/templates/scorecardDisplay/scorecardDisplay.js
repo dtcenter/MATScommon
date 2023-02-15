@@ -7,28 +7,23 @@ which is a route to this template (ScorecardDisplay). The userName, name, submit
 That makes them available in "this" at the top level of the template.
 */
 
-
-import { Meteor } from "meteor/meteor";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
-import { matsMethods, matsCollections } from "meteor/randyp:mats-common";
-import { Template } from "meteor/templating";
-import { LightenDarkenColor } from "lighten-darken-color";
-import "./scorecardDisplay.html";
+import { Meteor } from 'meteor/meteor';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import { matsMethods, matsCollections } from 'meteor/randyp:mats-common';
+import { Template } from 'meteor/templating';
+import { LightenDarkenColor } from 'lighten-darken-color';
+import './scorecardDisplay.html';
 
 const getAllStats = function (rowName) {
-  let myScorecard = Session.get("myScorecard");
+  let myScorecard = Session.get('myScorecard');
   if (myScorecard === undefined) {
     return;
   }
-  const myRegions = Object.keys(
-    myScorecard["scorecard"]["results"]["rows"][rowName]["data"]
-  );
+  const myRegions = Object.keys(myScorecard['scorecard']['results']['rows'][rowName]['data']);
   let myStats = new Set();
   myRegions.forEach(function (r) {
-    const rStats = Object.keys(
-      myScorecard["scorecard"]["results"]["rows"][rowName]["data"][r]
-    );
+    const rStats = Object.keys(myScorecard['scorecard']['results']['rows'][rowName]['data'][r]);
     rStats.forEach(function (s) {
       myStats.add(s);
     });
@@ -37,24 +32,18 @@ const getAllStats = function (rowName) {
 };
 
 const getAllVariables = function (rowName) {
-  let myScorecard = Session.get("myScorecard");
+  let myScorecard = Session.get('myScorecard');
   if (myScorecard === undefined) {
     return;
   }
 
   let myVars = new Set();
   let myStats = new Set();
-  const myRegions = Object.keys(
-    myScorecard["scorecard"]["results"]["rows"][rowName]["data"]
-  );
+  const myRegions = Object.keys(myScorecard['scorecard']['results']['rows'][rowName]['data']);
   myRegions.forEach(function (r) {
-    const rStats = Object.keys(
-      myScorecard["scorecard"]["results"]["rows"][rowName]["data"][r]
-    );
+    const rStats = Object.keys(myScorecard['scorecard']['results']['rows'][rowName]['data'][r]);
     rStats.forEach(function (s) {
-      const rVars = Object.keys(
-        myScorecard["scorecard"]["results"]["rows"][rowName]["data"][r][s]
-      );
+      const rVars = Object.keys(myScorecard['scorecard']['results']['rows'][rowName]['data'][r][s]);
       rVars.forEach(function (v) {
         myVars.add(v);
       });
@@ -71,30 +60,57 @@ const getAllVariables = function (rowName) {
 // The insertCBscorecard needs to be synchronous because the page needs the data from the mongo scorecard
 const getScorecard = function (userName, name, submitted, processedAt) {
   matsMethods.getScorecardData.call(
-      {
-        userName: userName,
-        name: name,
-        submitted: submitted,
-        processedAt: processedAt,
-      },
-      function (error, scorecard) {
-        if (error !== undefined) {
-          setError(error);
-          return;
-        }
-        var myScorecard = scorecard;
-        Session.set("myScorecard", myScorecard);
+    {
+      userName: userName,
+      name: name,
+      submitted: submitted,
+      processedAt: processedAt,
+    },
+    function (error, scorecard) {
+      if (error !== undefined) {
+        setError(error);
         return;
       }
+      var myScorecard = scorecard;
+      Session.set('myScorecard', myScorecard);
+      return;
+    }
   );
 };
 
 const refreshScorecard = function (userName, name, submitted, processedAt) {
-  myScorecard = matsCollections.Scorecard.findOne({"scorecard.name":name, "scorecard.userName":userName, "scorecard.submitted": Number(submitted), "scorecard.processedAt":Number(processedAt)},{fields:{scorecard:1}});
-  Session.set("myScorecard", myScorecard);
-}
+  myScorecard = matsCollections.Scorecard.findOne(
+    {
+      'scorecard.name': name,
+      'scorecard.userName': userName,
+      'scorecard.submitted': Number(submitted),
+      'scorecard.processedAt': Number(processedAt),
+    },
+    { fields: { scorecard: 1 } }
+  );
+  Session.set('myScorecard', myScorecard);
+  hideLoading();
+};
+
+// const onVisible = function(element, callback) {
+//   new IntersectionObserver((entries, observer) => {
+//     entries.forEach(entry => {
+//       if(entry.intersectionRatio > 0) {
+//         callback(element);
+//         observer.disconnect();
+//       }
+//     });
+//   }).observe(element);
+// }
+
+// currently not really sure where(when?) to call this. The page takes a long time to render but I cannot
+// get a handle on how to detect that the rendering is finished.
+const hideLoading = function () {
+  document.querySelector('#scorecardDisplayLoading').style.display = 'none';
+};
 
 Template.ScorecardDisplay.onRendered(function () {
+  //  onVisible(document.querySelector("#scorecard-display-container"), hideLoading());
   refreshScorecard(this.data.userName, this.data.name, this.data.submitted, this.data.processedAt);
 });
 
@@ -104,92 +120,86 @@ Template.ScorecardDisplay.onCreated(function () {
 
 Template.ScorecardDisplay.helpers({
   application: function (rowName) {
-    let myScorecard = Session.get("myScorecard");
+    let myScorecard = Session.get('myScorecard');
     if (myScorecard === undefined) {
       return;
     }
-    const application = myScorecard["scorecard"].plotParams.curves
-      .find((r) => r["label"] == rowName)
-      ["application"].toLowerCase();
+    const application = myScorecard['scorecard'].plotParams.curves
+      .find((r) => r['label'] == rowName)
+      ['application'].toLowerCase();
     return application;
   },
   rowTitle: function (rowName) {
-    let myScorecard = Session.get("myScorecard");
+    let myScorecard = Session.get('myScorecard');
     if (myScorecard === undefined) {
       return;
     }
-    const rowTitle =
-      myScorecard["scorecard"]["results"]["rows"][rowName]["rowTitle"];
+    const rowTitle = myScorecard['scorecard']['results']['rows'][rowName]['rowTitle'];
     return (
-      "Scorecard Row: " +
+      'Scorecard Row: ' +
       rowName +
-      " Datasource: " +
-      rowTitle["datasource"] +
-      " ValidationDatasource: " +
-      rowTitle["validationDatasource"]
+      ' Datasource: ' +
+      rowTitle['datasource'] +
+      ' ValidationDatasource: ' +
+      rowTitle['validationDatasource']
     );
   },
   scorecardRows: function () {
-    let myScorecard = Session.get("myScorecard");
+    let myScorecard = Session.get('myScorecard');
     if (myScorecard === undefined) {
       return;
     }
-    return Object.keys(myScorecard["scorecard"]["results"]["rows"]).sort();
+    return Object.keys(myScorecard['scorecard']['results']['rows']).sort();
   },
   regions: function (rowName) {
-    let myScorecard = Session.get("myScorecard");
+    let myScorecard = Session.get('myScorecard');
     if (myScorecard === undefined) {
       return;
     }
-    return myScorecard["scorecard"]["results"]["rows"][rowName][
-      "regions"
-    ].sort();
+    return myScorecard['scorecard']['results']['rows'][rowName]['regions'].sort();
   },
   fcstlens: function (rowName) {
-    let myScorecard = Session.get("myScorecard");
+    let myScorecard = Session.get('myScorecard');
     if (myScorecard === undefined) {
       return;
     }
-    let myFcstlenStrs =
-      myScorecard["scorecard"]["results"]["rows"][rowName]["fcstlens"];
+    let myFcstlenStrs = myScorecard['scorecard']['results']['rows'][rowName]['fcstlens'];
     let myFcstLengths = [];
     let fcstLength = myFcstlenStrs.length;
     // padd the fcst lengths with leading '0' for single digit fcsts
     for (let i = 0; i < fcstLength; i++) {
-      myFcstLengths[i] =
-        (Number(myFcstlenStrs[i]) < 10 ? "0" : "") + myFcstlenStrs[i];
+      myFcstLengths[i] = (Number(myFcstlenStrs[i]) < 10 ? '0' : '') + myFcstlenStrs[i];
     }
     return myFcstLengths.sort();
   },
   numFcsts: function (rowName) {
-    let myScorecard = Session.get("myScorecard");
+    let myScorecard = Session.get('myScorecard');
     if (myScorecard === undefined) {
       return;
     }
-    return myScorecard["scorecard"]["results"]["rows"][rowName]["fcstlens"]
-      .length;
+    return myScorecard['scorecard']['results']['rows'][rowName]['fcstlens'].length;
   },
   sigIconId: function (rowName, region, stat, variable, fcstlen) {
     //un padd the possibly padded fcstlen
-    let fcstlenStr = Number(fcstlen) + "";
-    return rowName + "-" + region + "-" + stat + "-" + variable + "-" + fcstlenStr;
+    let fcstlenStr = Number(fcstlen) + '';
+    return rowName + '-' + region + '-' + stat + '-' + variable + '-' + fcstlenStr;
   },
   significanceClass: function (rowName, region, stat, variable, fcstlen) {
-    let myScorecard = Session.get("myScorecard");
+    let myScorecard = Session.get('myScorecard');
     if (myScorecard === undefined) {
       return;
     }
     //un padd the possibly padded fcstlen
-    let fcstlenStr = Number(fcstlen) + "";
+    let fcstlenStr = Number(fcstlen) + '';
     const sigVal =
-      myScorecard["scorecard"]["results"]["rows"][rowName]["data"][region][
-        stat
-      ][variable][fcstlenStr];
-    const majorTruthIcon = "fa fa-caret-down fa-lg";
-    const minorTruthIcon = "fa fa-caret-down fa-sm";
-    const majorSourceIcon = "fa fa-caret-up fa-lg";
-    const minorSourceIcon = "fa fa-caret-up fa-sm";
-    const neutralIcon = "fa icon-check-empty fa-sm";
+      myScorecard['scorecard']['results']['rows'][rowName]['data'][region][stat][variable][
+        fcstlenStr
+      ];
+    const majorTruthIcon = 'fa fa-caret-down fa-lg';
+    const minorTruthIcon = 'fa fa-caret-down fa-sm';
+    const majorSourceIcon = 'fa fa-caret-up fa-lg';
+    const minorSourceIcon = 'fa fa-caret-up fa-sm';
+    const neutralIcon = 'fa icon-check-empty fa-sm';
     if (sigVal == -2) {
       return majorSourceIcon;
     }
@@ -207,81 +217,67 @@ Template.ScorecardDisplay.helpers({
     }
   },
   significanceColor: function (rowName, region, stat, variable, fcstlen) {
-    let myScorecard = Session.get("myScorecard");
+    let myScorecard = Session.get('myScorecard');
     if (myScorecard === undefined) {
       return;
     }
     //un padd the possibly padded fcstlen
-    let fcstlenStr = Number(fcstlen) + "";
+    let fcstlenStr = Number(fcstlen) + '';
     const sigVal =
-      myScorecard["scorecard"]["results"]["rows"][rowName]["data"][region][
-        stat
-      ][variable][fcstlenStr];
-    if (sigVal == -2) {
-      return myScorecard["scorecard"]["significanceColors"][
-        "major-truth-color"
+      myScorecard['scorecard']['results']['rows'][rowName]['data'][region][stat][variable][
+        fcstlenStr
       ];
+    if (sigVal == -2) {
+      return myScorecard['scorecard']['significanceColors']['major-truth-color'];
     }
     if (sigVal == -1) {
-      return myScorecard["scorecard"]["significanceColors"][
-        "minor-truth-color"
-      ];
+      return myScorecard['scorecard']['significanceColors']['minor-truth-color'];
     }
     if (sigVal == 0) {
-      return "lightgrey ";
+      return 'lightgrey ';
     }
     if (sigVal == 2) {
-      return myScorecard["scorecard"]["significanceColors"][
-        "major-source-color"
-      ];
+      return myScorecard['scorecard']['significanceColors']['major-source-color'];
     }
     if (sigVal == 1) {
-      return myScorecard["scorecard"]["significanceColors"][
-        "minor-source-color"
-      ];
+      return myScorecard['scorecard']['significanceColors']['minor-source-color'];
     }
   },
-  significanceBackgroundColor: function (
-    rowName,
-    region,
-    stat,
-    variable,
-    fcstlen
-  ) {
-    let myScorecard = Session.get("myScorecard");
+  significanceBackgroundColor: function (rowName, region, stat, variable, fcstlen) {
+    let myScorecard = Session.get('myScorecard');
     if (myScorecard === undefined) {
       return;
     }
     //un padd the possibly padded fcstlen
-    let fcstlenStr = Number(fcstlen) + "";
+    let fcstlenStr = Number(fcstlen) + '';
     const sigVal =
-      myScorecard["scorecard"]["results"]["rows"][rowName]["data"][region][
-        stat
-      ][variable][fcstlenStr];
+      myScorecard['scorecard']['results']['rows'][rowName]['data'][region][stat][variable][
+        fcstlenStr
+      ];
     if (sigVal == -2) {
       return LightenDarkenColor(
-        myScorecard["scorecard"]["significanceColors"]["major-truth-color"],
+        myScorecard['scorecard']['significanceColors']['major-truth-color'],
         180
       );
     }
     if (sigVal == -1) {
       return LightenDarkenColor(
-        myScorecard["scorecard"]["significanceColors"]["minor-truth-color"],
+        myScorecard['scorecard']['significanceColors']['minor-truth-color'],
         220
       );
     }
     if (sigVal == 0) {
-      return "lightgrey";
+      return 'lightgrey';
     }
     if (sigVal == 2) {
       return LightenDarkenColor(
-        myScorecard["scorecard"]["significanceColors"]["major-source-color"],
+        myScorecard['scorecard']['significanceColors']['major-source-color'],
         180
       );
     }
     if (sigVal == 1) {
       return LightenDarkenColor(
-        myScorecard["scorecard"]["significanceColors"]["minor-source-color"],
+        myScorecard['scorecard']['significanceColors']['minor-source-color'],
         220
       );
     }
@@ -315,29 +311,29 @@ Template.ScorecardDisplay.helpers({
   },
 
   plotParams: function () {
-    let myScorecard = Session.get("myScorecard");
+    let myScorecard = Session.get('myScorecard');
     if (myScorecard === undefined) {
       return;
     }
-    return JSON.stringify(myScorecard["scorecard"]["results"]["plotParams"]);
+    return JSON.stringify(myScorecard['scorecard']['results']['plotParams']);
   },
 
   Title: function () {
-    let processedAtstamp = "unprocessed";
+    let processedAtstamp = 'unprocessed';
     if (this.processedAt != 0) {
       processedAtstamp = new Date(this.processedAt * 1000).toUTCString();
     }
-    return this.userName + " : " + this.name + " : " + processedAtstamp;
+    return this.userName + ' : ' + this.name + ' : ' + processedAtstamp;
   },
   fileNamePlaceholder: function () {
     let x = new Date(this.submitted * 1000);
     let y = x.getFullYear().toString();
     let m = (x.getMonth() + 1).toString();
     let d = x.getDate().toString();
-    d.length == 1 && (d = "0" + d);
-    m.length == 1 && (m = "0" + m);
+    d.length == 1 && (d = '0' + d);
+    m.length == 1 && (m = '0' + m);
     let yyyymmdd = y + m + d;
-    return this.name + "-" + yyyymmdd;
+    return this.name + '-' + yyyymmdd;
   },
 });
 
@@ -345,43 +341,43 @@ Template.ScorecardDisplay.events({
   'click .refresh-scorecard': function (event) {
     refreshScorecard(this.userName, this.name, this.submitted, this.processedAt);
   },
-  "click .exportpdf": function (e) {
-    $(".previewCurveButtons").each(function (i, obj) {
-      obj.style.display = "none";
+  'click .exportpdf': function (e) {
+    $('.previewCurveButtons').each(function (i, obj) {
+      obj.style.display = 'none';
     });
-    html2canvas(document.querySelector("#graph-container"), {
+    html2canvas(document.querySelector('#graph-container'), {
       scale: 3.0,
     }).then((canvas) => {
       var h = 419.53;
       var w = 595.28;
-      var filename = document.getElementById("exportFileName").value;
-      let pdf = new jsPDF("letter", "pt", "a5");
-      pdf.addImage(canvas.toDataURL("image/jpeg"), "JPEG", 0, 0, w, h);
+      var filename = document.getElementById('exportFileName').value;
+      let pdf = new jsPDF('letter', 'pt', 'a5');
+      pdf.addImage(canvas.toDataURL('image/jpeg'), 'JPEG', 0, 0, w, h);
       pdf.save(filename);
-      $(".previewCurveButtons").each(function (i, obj) {
-        obj.style.display = "block";
+      $('.previewCurveButtons').each(function (i, obj) {
+        obj.style.display = 'block';
       });
     });
   },
-  "click .exportpng": function (e) {
-    $(".previewCurveButtons").each(function (i, obj) {
-      obj.style.display = "none";
+  'click .exportpng': function (e) {
+    $('.previewCurveButtons').each(function (i, obj) {
+      obj.style.display = 'none';
     });
-    html2canvas(document.querySelector("#graph-container"), {
+    html2canvas(document.querySelector('#graph-container'), {
       scale: 3.0,
     }).then((canvas) => {
       var h = 419.53;
       var w = 595.28;
-      var filename = document.getElementById("exportFileName").value;
-      saveAs(canvas.toDataURL(), filename + ".png");
-      $(".previewCurveButtons").each(function (i, obj) {
-        obj.style.display = "block";
+      var filename = document.getElementById('exportFileName').value;
+      saveAs(canvas.toDataURL(), filename + '.png');
+      $('.previewCurveButtons').each(function (i, obj) {
+        obj.style.display = 'block';
       });
     });
 
     function saveAs(uri, filename) {
-      var link = document.createElement("a");
-      if (typeof link.download === "string") {
+      var link = document.createElement('a');
+      if (typeof link.download === 'string') {
         link.href = uri;
         link.download = filename;
 
@@ -398,9 +394,9 @@ Template.ScorecardDisplay.events({
       }
     }
   },
-  "click .scTableSigTd": function (e) {
+  'click .scTableSigTd': function (e) {
     // this needs to be a lot more intelligent
-    let myScorecard = Session.get("myScorecard");
+    let myScorecard = Session.get('myScorecard');
     if (myScorecard === undefined) {
       return;
     }
@@ -411,12 +407,9 @@ Template.ScorecardDisplay.events({
     const fcstlen = e.currentTarget.dataset.fcstlen;
     const plotParams = myScorecard.plotParams;
     const plotParamsJSON = JSON.stringify(plotParams);
-    const application = myScorecard["scorecard"].plotParams.curves
-      .find((r) => r["label"] == row)
-      ["application"].toLowerCase();
-    e.view.window.open(
-      "https://www.esrl.noaa.gov/gsd/mats/" + application,
-      "_blank"
-    );
+    const application = myScorecard['scorecard'].plotParams.curves
+      .find((r) => r['label'] == row)
+      ['application'].toLowerCase();
+    e.view.window.open('https://www.esrl.noaa.gov/gsd/mats/' + application, '_blank');
   },
 });

@@ -1,5 +1,7 @@
 <template name="ScorecardDisplay">
     <div id="graph-container">
+        {{>topNav}}
+        <h1>Scorecard</h1>
         <div id="scorecard-display-header">
             <div id="header">
                 <h2><span>
@@ -10,18 +12,19 @@
                     </button>
                 </span></h2>
             </div>
-            <!--div id="scorecardDisplayLoading" class="blink" style="display:block; color:red;">Loading...</div-->
+            <div id="scorecardDisplayLoading" class="blink" style="display:block; color:rgb(21, 255, 0);">Loading...</div>
             <div>
-                <label class="input-sm" for="exportFileName">FileName</label>
-                <input style="width:50em;" class="input-sm" id="exportFileName" value="{{fileNamePlaceholder}}">
-                <button type="button" class="btn-primary btn-xs pull-right btn-outline-primary exportpdf"
+                <label class="input-sm pull-left" for="exportFileName">FileName</label>
+                <input style="width:50em;" class="input-sm pull-left" id="exportFileName" value="{{fileNamePlaceholder}}">
+                <button type="button" class="btn-primary btn-xs pull-left btn-outline-primary exportpdf"
                     id="exportpdf">save pdf</button>
-                <button type="button" class="btn-primary btn-xs pull-right btn-outline-primary exportpng"
+                <button type="button" class="btn-primary btn-xs pull-left btn-outline-primary exportpng"
                     id="exportpng">save png</button>
             </div>
         </div>
         {{#each scorecardRow in scorecardRows}}
-        <h3>{{rowTitle scorecardRow}}</h3>
+        <br/>
+        <h3 style="text-align:left;">{{rowTitle scorecardRow}}</h3>
         <div id="scorecard-display-container" style="width:100%;">
             <table id="scOuterTable-{{scorecardRow}}" class="display nowrap">
                 <thead>
@@ -80,4 +83,5 @@
         </div>
         {{/each}}
     </div>
+    {{>footer}}
 </template>
