@@ -106,7 +106,7 @@ Template.scorecardStatusPage.helpers({
             }
     },
     visitLink: function(userName, name, submitted, processedAt) {
-            return '/scorecard_display/' + userName + '/' + name + '/' + submitted + '/' + processedAt
+            return '/scorecard/scorecard_display/' + userName + '/' + name + '/' + submitted + '/' + processedAt
     },
     scid:  function(userName, name, submitted, processedAt) {
         return userName + '_' + name + '_' + submitted + '_' + processedAt;
