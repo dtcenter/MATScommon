@@ -89,23 +89,10 @@ const refreshScorecard = function (userName, name, submitted, processedAt) {
     { fields: { scorecard: 1 } }
   );
   Session.set('myScorecard', myScorecard);
-  hideLoading();
 };
 
-// const onVisible = function(element, callback) {
-//   new IntersectionObserver((entries, observer) => {
-//     entries.forEach(entry => {
-//       if(entry.intersectionRatio > 0) {
-//         callback(element);
-//         observer.disconnect();
-//       }
-//     });
-//   }).observe(element);
-// }
-
-// currently not really sure where(when?) to call this. The page takes a long time to render but I cannot
-// get a handle on how to detect that the rendering is finished.
 const hideLoading = function () {
+  // hide the little green loading indicator (called as the last {{hideLoading}} in the html)
   document.querySelector('#scorecardDisplayLoading').style.display = 'none';
 };
 
@@ -334,6 +321,9 @@ Template.ScorecardDisplay.helpers({
     m.length == 1 && (m = '0' + m);
     let yyyymmdd = y + m + d;
     return this.name + '-' + yyyymmdd;
+  },
+  hideLoading: function () {
+    hideLoading();
   },
 });
 
