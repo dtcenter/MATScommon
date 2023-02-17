@@ -19,28 +19,7 @@ const getAppSourceByApplication = function (application) {
   if (matsCollections["application"].findOne({ name: "application" }).sourceMap !== undefined) {
     return matsCollections["application"].findOne({ name: "application" }).sourceMap[application];
   } else {
-    // THIS IS JUST A PLACEHOLDER DICTIONARY UNTIL 
-    // MY API CHANGES ARE MERGED TO ALL SERVERS.
-    // THEN IT WILL BE DELETED, AND THE FIRST PART 
-    // OF THIS IF STATEMENT WILL BE THE ONLY THING NEEDED.
-    const apps = {
-      "Surface": "surface",
-      "RAOBs (Traditional)": "upperair",
-      "RAOBs (GDAS)": "upperair",
-      "AMDAR": "upperair",
-      "Anomaly Correlation": "anomalycor",
-      "Ceiling": "ceil-vis",
-      "Visibility": "ceil-vis",
-      "Composite Reflectivity": "radar",
-      "Echo Top": "radar",
-      "Vertically Integrated Liquid": "radar",
-      "24 Hour Precipitation": "precipAccum",
-      "Sub 24 Hour Precipitation": "precipAccum",
-      "Gauge Precipitation": "precipGauge",
-      "1 Hour Precipitation": "precipitation1hr",
-      "Precipitation Type": "ptype"
-    };
-    return apps[application];
+    return application.toLowerCase();
   }
 }
 
