@@ -32,8 +32,12 @@ import {
 
 // local collection used to keep the table update times for refresh - won't ever be synchronized or persisted.
 const metaDataTableUpdates = new Mongo.Collection(null);
-const LayoutStoreCollection = new Mongo.Collection("LayoutStoreCollection"); // initialize collection used for pop-out window functionality
+// initialize collection used for pop-out window functionality
+const LayoutStoreCollection = new Mongo.Collection("LayoutStoreCollection");
+// initialize collection used to cache previously downsampled plots
 const DownSampleResults = new Mongo.Collection("DownSampleResults");
+// initialize collection for passing params from a scorecard cell to new app window
+const ScorecardSettingsCollection = new Mongo.Collection("ScorecardSettingsCollection");
 
 // utility to check for empty object
 const isEmpty = function (map) {
@@ -57,6 +61,12 @@ if (Meteor.isServer) {
     }, {
         expireAfterSeconds: 900
     }); // 15 min expiration
+    ScorecardSettingsCollection.rawCollection().createIndex({
+        "createdAt": 1
+    }, {
+        expireAfterSeconds: 3600 * 8
+    }); // 8 hour expiration
+
     // set the default proxy prefix path to ""
     // If the settings are not complete, they will be set by the configuration and written out, which will cause the app to reset
     if (Meteor.settings.public != null && Meteor.settings.public.proxy_prefix_path == null) {
@@ -2352,6 +2362,30 @@ const getLayout = new ValidatedMethod({
     }
 });
 
+const getScorecardSettings = new ValidatedMethod({
+    name: 'matsMethods.getScorecardSettings',
+    validate: new SimpleSchema({
+        settingsKey: {
+            type: String
+        }
+    }).validator(),
+    run(params) {
+        if (Meteor.isServer) {
+            var ret;
+            var key = params.settingsKey;
+            try {
+                ret = ScorecardSettingsCollection.rawCollection().findOne({
+                    key: key
+                });
+                return ret;
+            } catch (error) {
+                throw new Meteor.Error("Error in getScorecardSettings function:" + key + " : " + error.message);
+            }
+            return undefined;
+        }
+    }
+});
+
 
 /*
 getPlotResult is used by the graph/text_*_output templates which are used to display textual results.
@@ -2910,6 +2944,7 @@ const resetApp = async function (appRef) {
         matsCache.clear();
     }
 };
+
 const saveLayout = new ValidatedMethod({
     name: 'matsMethods.saveLayout',
     validate: new SimpleSchema({
@@ -2947,6 +2982,36 @@ const saveLayout = new ValidatedMethod({
                 });
             } catch (error) {
                 throw new Meteor.Error("Error in saveLayout function:" + key + " : " + error.message);
+            }
+        }
+    }
+});
+
+const saveScorecardSettings = new ValidatedMethod({
+    name: 'matsMethods.saveScorecardSettings',
+    validate: new SimpleSchema({
+        settingsKey: {
+            type: String
+        },
+        scorecardSettings: {
+            type: String
+        }
+    }).validator(),
+    run(params) {
+        if (Meteor.isServer) {
+            var key = params.settingsKey;
+            var scorecardSettings = params.scorecardSettings;
+            try {
+                ScorecardSettingsCollection.upsert({
+                    key: key
+                }, {
+                    $set: {
+                        "createdAt": new Date(),
+                        scorecardSettings: scorecardSettings
+                    }
+                });
+            } catch (error) {
+                throw new Meteor.Error("Error in saveScorecardSettings function:" + key + " : " + error.message);
             }
         }
     }
@@ -3089,6 +3154,7 @@ export default matsMethods = {
     getGraphData: getGraphData,
     getGraphDataByKey: getGraphDataByKey,
     getLayout: getLayout,
+    getScorecardSettings: getScorecardSettings,
     getPlotResult: getPlotResult,
     getReleaseNotes: getReleaseNotes,
     getScorecardInfo: getScorecardInfo,
@@ -3102,6 +3168,7 @@ export default matsMethods = {
     removeDatabase: removeDatabase,
     resetApp: resetApp,
     saveLayout: saveLayout,
+    saveScorecardSettings: saveScorecardSettings,
     saveSettings: saveSettings,
     testGetMetaDataTableUpdates: testGetMetaDataTableUpdates,
     testGetTables: testGetTables,

@@ -29,6 +29,7 @@ if (Meteor.isClient) {
     Meteor.subscribe("SiteMap");
     Meteor.subscribe("StationMap");
     Meteor.subscribe("LayoutStoreCollection");
+    Meteor.subscribe("ScorecardSettingsCollection");
     Meteor.subscribe("Scorecard");
     Session.set('Curves', []);
     Session.set('PlotParams', []);

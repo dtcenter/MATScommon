@@ -443,7 +443,6 @@ Template.plotList.events({
                         Session.set('Curves', ret.result.basis.plotParams.curves);
                     }
                     Session.set("plotResultKey", ret.key);
-                    delete ret;
                     Session.set('graphFunction', graphFunction);
                     Session.set('graphPlotType', JSON.parse(JSON.stringify(plotType)));
                     Session.set ('PlotResultsUpDated', new Date());

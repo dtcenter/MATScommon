@@ -425,14 +425,24 @@ Template.ScorecardDisplay.events({
       }
     };
     const baseURL = Meteor.settings.public.home === undefined ? "https://" + document.location.href.split('/')[2] : Meteor.settings.public.home;
-    const proxyPerfixPath = Meteor.settings.public.proxy_prefix_path === undefined ? "" : Meteor.settings.public.proxy_prefix_path;
     const appSource = getAppSourceByApplication(application);
-    // const settingsJSON = JSON.stringify(scorecardSettings);
+    
+    const settingsJSON = JSON.stringify(scorecardSettings);
+    const hash = require('object-hash');
+    const key = hash(settingsJSON);
+    matsMethods.saveScorecardSettings.call({
+      settingsKey: key,
+      scorecardSettings: settingsJSON,
+    }, function (error) {
+        if (error !== undefined) {
+            setError(error);
+        }
+    });
 
     if (baseURL.includes("localhost")) {
-      e.view.window.open(baseURL, '_blank');
+      e.view.window.open(baseURL + "/scorecardTimeseries/" + key, '_blank');
     } else {
-      e.view.window.open(baseURL + proxyPerfixPath + appSource, '_blank');
+      e.view.window.open(baseURL + "/" + appSource + "/scorecardTimeseries/" + key, '_blank');
     }
   },
 });
