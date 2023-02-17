@@ -15,6 +15,35 @@ import { Template } from 'meteor/templating';
 import { LightenDarkenColor } from 'lighten-darken-color';
 import './scorecardDisplay.html';
 
+const getAppSourceByApplication = function (application) {
+  if (matsCollections["application"].findOne({ name: "application" }).sourceMap !== undefined) {
+    return matsCollections["application"].findOne({ name: "application" }).sourceMap[application];
+  } else {
+    // THIS IS JUST A PLACEHOLDER DICTIONARY UNTIL 
+    // MY API CHANGES ARE MERGED TO ALL SERVERS.
+    // THEN IT WILL BE DELETED, AND THE FIRST PART 
+    // OF THIS IF STATEMENT WILL BE THE ONLY THING NEEDED.
+    const apps = {
+      "Surface": "surface",
+      "RAOBs (Traditional)": "upperair",
+      "RAOBs (GDAS)": "upperair",
+      "AMDAR": "upperair",
+      "Anomaly Correlation": "anomalycor",
+      "Ceiling": "ceil-vis",
+      "Visibility": "ceil-vis",
+      "Composite Reflectivity": "radar",
+      "Echo Top": "radar",
+      "Vertically Integrated Liquid": "radar",
+      "24 Hour Precipitation": "precipAccum",
+      "Sub 24 Hour Precipitation": "precipAccum",
+      "Gauge Precipitation": "precipGauge",
+      "1 Hour Precipitation": "precipitation1hr",
+      "Precipitation Type": "ptype"
+    };
+    return apps[application];
+  }
+}
+
 const getAllStats = function (rowName) {
   let myScorecard = Session.get('myScorecard');
   if (myScorecard === undefined) {
@@ -385,21 +414,46 @@ Template.ScorecardDisplay.events({
     }
   },
   'click .scTableSigTd': function (e) {
-    // this needs to be a lot more intelligent
     let myScorecard = Session.get('myScorecard');
     if (myScorecard === undefined) {
       return;
     }
     const row = e.currentTarget.dataset.scorecardrow;
-    const region = e.currentTarget.dataset.region;
-    const stat = e.currentTarget.dataset.stat;
-    const variable = e.currentTarget.dataset.variable;
-    const fcstlen = e.currentTarget.dataset.fcstlen;
-    const plotParams = myScorecard.plotParams;
-    const plotParamsJSON = JSON.stringify(plotParams);
-    const application = myScorecard['scorecard'].plotParams.curves
-      .find((r) => r['label'] == row)
-      ['application'].toLowerCase();
-    e.view.window.open('https://www.esrl.noaa.gov/gsd/mats/' + application, '_blank');
+    const rowData = myScorecard['scorecard'].plotParams.curves.find((r) => r['label'] == row);
+    const application = rowData['application'];
+    // When comparing models, you want forecast minus truth.
+    // MATS differences are calculated by Curve1 - Curve0, 
+    // so Curve1 is the data-source and Curve0 is the validation-data-source
+    const curve0Model = rowData['validation-data-source'];
+    const curve1Model = rowData['data-source'];
+    const scorecardSettings = {
+      "appName": application,
+      "dateRange": myScorecard['scorecard'].plotParams.dates,
+      "curve0dataSource": curve0Model,
+      "curve1DataSource": curve1Model,
+      "commonCurveParams": 
+      {
+        "region": e.currentTarget.dataset.region === undefined ? "undefined" : e.currentTarget.dataset.region,
+        "statistic": e.currentTarget.dataset.stat === undefined ? "undefined" : e.currentTarget.dataset.stat,
+        "variable": e.currentTarget.dataset.variable === undefined ? "undefined" : e.currentTarget.dataset.variable,
+        "threshold": e.currentTarget.dataset.threshold === undefined ? "undefined" : e.currentTarget.dataset.threshold,
+        "scale": e.currentTarget.dataset.scale === undefined ? "undefined" : e.currentTarget.dataset.scale,
+        "truth": e.currentTarget.dataset.truth === undefined ? "undefined" : e.currentTarget.dataset.truth,
+        "forecast-length": e.currentTarget.dataset.fcstlen === undefined ? "undefined" : e.currentTarget.dataset.fcstlen,
+        "forecast-type": e.currentTarget.dataset.fcsttype === undefined ? "undefined" : e.currentTarget.dataset.fcsttype,
+        "valid-time": e.currentTarget.dataset.validtime === undefined ? "undefined" : e.currentTarget.dataset.validtime,
+        "level": e.currentTarget.dataset.level === undefined ? "undefined" : e.currentTarget.dataset.level,
+      }
+    };
+    const baseURL = Meteor.settings.public.home === undefined ? "https://" + document.location.href.split('/')[2] : Meteor.settings.public.home;
+    const proxyPerfixPath = Meteor.settings.public.proxy_prefix_path === undefined ? "" : Meteor.settings.public.proxy_prefix_path;
+    const appSource = getAppSourceByApplication(application);
+    // const settingsJSON = JSON.stringify(scorecardSettings);
+
+    if (baseURL.includes("localhost")) {
+      e.view.window.open(baseURL, '_blank');
+    } else {
+      e.view.window.open(baseURL + proxyPerfixPath + appSource, '_blank');
+    }
   },
 });
