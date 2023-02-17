@@ -133,13 +133,6 @@ if (Meteor.isServer) {
         }
         return this.ready();
     });
-    Meteor.publish("appName", function () {
-        var data = matsCollections.appName.find({});
-        if (data) {
-            return data;
-        }
-        return this.ready();
-    });
     Meteor.publish("Scorecard", function () {
         var data = matsCollections.Scorecard.find({});
         if (data) {

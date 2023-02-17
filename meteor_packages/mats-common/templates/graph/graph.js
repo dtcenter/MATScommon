@@ -786,7 +786,7 @@ Template.graph.helpers({
     },
     heatMapButtonText: function () {
         var sval = this.label + "heatMapButtonText";
-        const appName = matsCollections.appName.findOne({}).app;
+        const appName = matsCollections.Settings.findOne({}).appName;
         if (Session.get(sval) === undefined) {
             if (appName !== undefined && (appName.includes("ceiling") || appName.includes("visibility"))) {
                 Session.set(sval, 'hide heat map');

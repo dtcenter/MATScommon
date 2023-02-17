@@ -89,7 +89,7 @@ Template.curveList.helpers({
         console.log(this);
     },
     metarMismatchHidden: function () {
-        const appName = matsCollections.appName.findOne({}).app;
+        const appName = matsCollections.Settings.findOne({}).appName;
         var curves = Session.get('Curves');
         if (curves === undefined || curves.length === 0 || (appName !== "surface")) {
             return "none";

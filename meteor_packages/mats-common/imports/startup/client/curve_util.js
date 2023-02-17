@@ -986,7 +986,7 @@ const showPerformanceDiagramFace = function () {
 
 // method to display the appropriate selectors for a map
 const showMapFace = function () {
-    const appName = matsCollections.appName.findOne({}).app;
+    const appName = matsCollections.Settings.findOne({}).appName;
     const plotType = matsTypes.PlotTypes.map;
     var faceOptions = {
         'curve-dates': 'none',

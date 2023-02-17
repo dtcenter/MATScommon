@@ -668,7 +668,7 @@ const generateGridScalePlotOptions = function (axisMap, errorMax) {
     var xmax = axisMap[Object.keys(axisMap)[0]].xmax;
     const yAxisNumber = Object.keys(axisMap).length;
 
-    const appName = matsCollections.appName.findOne({}).app;
+    const appName = matsCollections.Settings.findOne({}).appName;
     var xLabel;
     if (appName.includes("met-")) {
         xLabel = "Interpolation Points";

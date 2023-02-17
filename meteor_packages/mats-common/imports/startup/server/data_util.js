@@ -293,7 +293,7 @@ const doRoles = function () {
 };
 
 // for use in matsMethods.resetApp() to establish default settings
-const doSettings = function (title, dbType, version, commit, appType, mapboxKey, appDefaultGroup, appDefaultDB, appDefaultModel, thresholdUnits, appMessage, scorecard) {
+const doSettings = function (title, dbType, version, commit, appName, appType, mapboxKey, appDefaultGroup, appDefaultDB, appDefaultModel, thresholdUnits, appMessage, scorecard) {
     if (matsCollections.Settings.findOne({}) === undefined || matsCollections.Settings.findOne({}).resetFromCode === undefined || matsCollections.Settings.findOne({}).resetFromCode == true) {
         matsCollections.Settings.remove({});
     }
@@ -304,6 +304,7 @@ const doSettings = function (title, dbType, version, commit, appType, mapboxKey,
             dbType: dbType,
             appVersion: version,
             commit: commit,
+            appName: appName,
             appType: appType,
             LineWidth: 3.5,
             NullFillString: "---",
@@ -322,6 +323,7 @@ const doSettings = function (title, dbType, version, commit, appType, mapboxKey,
     const deploymentRoles = {
         "mats-docker-dev": "development",
         "mats-docker-preint": "integration",
+        "gsl": "production",
         "esrl": "production",
         "metexpress": "production"
     };

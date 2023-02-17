@@ -2660,7 +2660,7 @@ const applySettingsData = new ValidatedMethod({
             // Read the existing settings file
             const settings = settingsParam.settings;
             console.log("applySettingsData - matsCollections.appName.findOne({}) is ", matsCollections.appName.findOne({}));
-            const appName = matsCollections.appName.findOne({}).app;
+            const appName = matsCollections.Settings.findOne({}).appName;
             _write_settings(settings, appName);
             // in development - when being run by meteor, this should force a restart of the app.
             //in case I am in a container - exit and force a reload
@@ -2718,17 +2718,6 @@ const resetApp = async function (appRef) {
         // see if there's any messages to display to the users
         const appMessage = Meteor.settings.public.alert_message ? Meteor.settings.public.alert_message : undefined;
 
-        // if there isn't an app listing in matsCollections create one here so that the configuration-> applySettingsData won't fail
-        if (matsCollections.appName.findOne({}) == undefined) {
-            matsCollections.appName.upsert({
-                app: appName
-            }, {
-                $set: {
-                    app: appName
-                }
-            });
-        }
-
         // set meteor settings defaults if they do not exist
         if (isEmpty(Meteor.settings.private) || isEmpty(Meteor.settings.public)) {
             // create some default meteor settings and write them out
@@ -2755,6 +2744,7 @@ const resetApp = async function (appRef) {
                     "default_model": appDefaultModel,
                     "proxy_prefix_path": "",
                     "home": homeUrl,
+                    "appName": appName,
                     "mysql_wait_timeout": appTimeOut,
                     "group": appGroup,
                     "app_order": 1,
@@ -2841,13 +2831,6 @@ const resetApp = async function (appRef) {
             commit = "HEAD";
         }
         const appType = type ? type : matsTypes.AppTypes.mats;
-        matsCollections.appName.upsert({
-            app: appName
-        }, {
-            $set: {
-                app: appName
-            }
-        });
 
         // remember that we updated the metadata tables just now - create metaDataTableUpdates
         /*
@@ -2888,7 +2871,7 @@ const resetApp = async function (appRef) {
         matsCollections.ColorScheme.remove({});
         matsDataUtils.doColorScheme();
         matsCollections.Settings.remove({});
-        matsDataUtils.doSettings(appTitle, dbType, appVersion, commit, appType, mapboxKey, appDefaultGroup, appDefaultDB, appDefaultModel, thresholdUnits, appMessage, scorecard);
+        matsDataUtils.doSettings(appTitle, dbType, appVersion, commit, appName, appType, mapboxKey, appDefaultGroup, appDefaultDB, appDefaultModel, thresholdUnits, appMessage, scorecard);
         matsCollections.PlotParams.remove({});
         matsCollections.CurveTextPatterns.remove({});
         // get the curve params for this app out of the settings file

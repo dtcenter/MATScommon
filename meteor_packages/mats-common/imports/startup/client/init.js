@@ -28,7 +28,6 @@ if (Meteor.isClient) {
     Meteor.subscribe("RangePerDescriptor");
     Meteor.subscribe("SiteMap");
     Meteor.subscribe("StationMap");
-    Meteor.subscribe("appName");
     Meteor.subscribe("LayoutStoreCollection");
     Meteor.subscribe("Scorecard");
     Session.set('Curves', []);

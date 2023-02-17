@@ -548,7 +548,7 @@ const getOptionsForParam = function (paramName) {
 };
 
 const getAppName = function () {
-    const app = matsCollections.appName.findOne({}).app;
+    const app = matsCollections.Settings.findOne({}).appName;
     return app;
 };
 

@@ -39,7 +39,6 @@ var Credentials = new Mongo.Collection("Credentials");
 var SavedCredentials = new Mongo.Collection("SavedCredentials");
 var SiteMap = new Mongo.Collection("SiteMap");
 var StationMap = new Mongo.Collection("StationMap");
-var appName = new Mongo.Collection("appName");
 var Scorecard = new Mongo.Collection("Scorecard");
 
 // expire after 24 hours from when the scorecard is last upserted
@@ -77,7 +76,6 @@ const explicitCollections = {
     SavedCredentials:SavedCredentials,
     SiteMap:SiteMap,
     StationMap:StationMap,
-    appName:appName,
     Scorecard:Scorecard,
 };
 
