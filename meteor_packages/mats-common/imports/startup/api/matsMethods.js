@@ -146,6 +146,18 @@ if (Meteor.isServer) {
         Picker.middleware(_clearCache(params, req, res, next));
     });
 
+    Picker.route('/scorecardTimeseries/:key', function (params, req, res, next) {
+        Picker.middleware(_restoreScorecardSettings(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/scorecardTimeseries/:key', function (params, req, res, next) {
+        Picker.middleware(_restoreScorecardSettings(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/scorecardTimeseries/:key', function (params, req, res, next) {
+        Picker.middleware(_restoreScorecardSettings(params, req, res, next));
+    });
+
     Picker.route('/getApps', function (params, req, res, next) {
         Picker.middleware(_getApps(params, req, res, next));
     });
@@ -515,6 +527,21 @@ const _clearCache = function (params, req, res, next) {
     if (Meteor.isServer) {
         matsCache.clear();
         res.end("<body><h1>clearCache Done!</h1></body>");
+    }
+};
+
+// private middleware for plotting a timeseries derived from a scorecard
+const _restoreScorecardSettings = function (params, req, res, next) {
+    if (Meteor.isServer) {
+        matsMethods.getScorecardSettings.call({settingsKey: params.key,}, function (error, ret) {
+            if (error !== undefined) {
+                setError(error);
+                return false;
+            }
+            debugger;
+            const settingsJSON = ret.scorecardSettings;
+            console.log(settingsJSON);
+        });
     }
 };
 
@@ -2371,13 +2398,15 @@ const getScorecardSettings = new ValidatedMethod({
     }).validator(),
     run(params) {
         if (Meteor.isServer) {
-            var ret;
-            var key = params.settingsKey;
+            let ret;
+            let key = params.settingsKey;
             try {
-                ret = ScorecardSettingsCollection.rawCollection().findOne({
-                    key: key
-                });
-                return ret;
+                // this does not work because apps don't share mongo instances
+                // ret = ScorecardSettingsCollection.rawCollection().findOne({
+                //     key: key
+                // });
+                // return ret;
+                return {scorecardSettings: '{"appName":"Surface","dateRange":"01/14/2023 20:00 - 02/13/2023 20:00","curve0dataSource":"RAP_OPS","curve1DataSource":"RAP_OPS_130","commonCurveParams":{"region":"Eastern RUC domain","statistic":"Bias (Model - Obs)","variable":"10m wind","threshold":"undefined","scale":"undefined","truth":"undefined","forecast-length":"00","forecast-type":"undefined","valid-time":"undefined","level":"undefined"}}'};
             } catch (error) {
                 throw new Meteor.Error("Error in getScorecardSettings function:" + key + " : " + error.message);
             }
