@@ -36,8 +36,6 @@ const metaDataTableUpdates = new Mongo.Collection(null);
 const LayoutStoreCollection = new Mongo.Collection("LayoutStoreCollection");
 // initialize collection used to cache previously downsampled plots
 const DownSampleResults = new Mongo.Collection("DownSampleResults");
-// initialize collection for passing params from a scorecard cell to new app window
-const ScorecardSettingsCollection = new Mongo.Collection("ScorecardSettingsCollection");
 
 // utility to check for empty object
 const isEmpty = function (map) {
@@ -61,11 +59,6 @@ if (Meteor.isServer) {
     }, {
         expireAfterSeconds: 900
     }); // 15 min expiration
-    ScorecardSettingsCollection.rawCollection().createIndex({
-        "createdAt": 1
-    }, {
-        expireAfterSeconds: 3600 * 8
-    }); // 8 hour expiration
 
     // set the default proxy prefix path to ""
     // If the settings are not complete, they will be set by the configuration and written out, which will cause the app to reset
@@ -144,18 +137,6 @@ if (Meteor.isServer) {
 
     Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/clearCache', function (params, req, res, next) {
         Picker.middleware(_clearCache(params, req, res, next));
-    });
-
-    Picker.route('/scorecardTimeseries/:key', function (params, req, res, next) {
-        Picker.middleware(_restoreScorecardSettings(params, req, res, next));
-    });
-
-    Picker.route(Meteor.settings.public.proxy_prefix_path + '/scorecardTimeseries/:key', function (params, req, res, next) {
-        Picker.middleware(_restoreScorecardSettings(params, req, res, next));
-    });
-
-    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/scorecardTimeseries/:key', function (params, req, res, next) {
-        Picker.middleware(_restoreScorecardSettings(params, req, res, next));
     });
 
     Picker.route('/getApps', function (params, req, res, next) {
@@ -527,21 +508,6 @@ const _clearCache = function (params, req, res, next) {
     if (Meteor.isServer) {
         matsCache.clear();
         res.end("<body><h1>clearCache Done!</h1></body>");
-    }
-};
-
-// private middleware for plotting a timeseries derived from a scorecard
-const _restoreScorecardSettings = function (params, req, res, next) {
-    if (Meteor.isServer) {
-        matsMethods.getScorecardSettings.call({settingsKey: params.key,}, function (error, ret) {
-            if (error !== undefined) {
-                setError(error);
-                return false;
-            }
-            debugger;
-            const settingsJSON = ret.scorecardSettings;
-            console.log(settingsJSON);
-        });
     }
 };
 
@@ -2327,7 +2293,6 @@ const getGraphData = new ValidatedMethod({
                     throw new Meteor.Error("Error in getGraphData function:" + dataFunction + " : " + dataFunctionError.message);
                 }
             }
-            return undefined; // probably won't get here
         }
     }
 });
@@ -2361,7 +2326,6 @@ const getGraphDataByKey = new ValidatedMethod({
             } catch (error) {
                 throw new Meteor.Error("Error in getGraphDataByKey function:" + key + " : " + error.message);
             }
-            return undefined;
         }
     }
 });
@@ -2385,7 +2349,6 @@ const getLayout = new ValidatedMethod({
             } catch (error) {
                 throw new Meteor.Error("Error in getLayout function:" + key + " : " + error.message);
             }
-            return undefined;
         }
     }
 });
@@ -2403,6 +2366,7 @@ const getScorecardSettings = new ValidatedMethod({
             let key = params.settingsKey;
             try {
                 // this does not work because apps don't share mongo instances
+                // need to fetch from couchbase instead
                 // ret = ScorecardSettingsCollection.rawCollection().findOne({
                 //     key: key
                 // });
@@ -2411,7 +2375,6 @@ const getScorecardSettings = new ValidatedMethod({
             } catch (error) {
                 throw new Meteor.Error("Error in getScorecardSettings function:" + key + " : " + error.message);
             }
-            return undefined;
         }
     }
 });
@@ -3032,14 +2995,18 @@ const saveScorecardSettings = new ValidatedMethod({
             var key = params.settingsKey;
             var scorecardSettings = params.scorecardSettings;
             try {
-                ScorecardSettingsCollection.upsert({
-                    key: key
-                }, {
-                    $set: {
-                        "createdAt": new Date(),
-                        scorecardSettings: scorecardSettings
-                    }
-                });
+                // INSTEAD OF THIS WE NEED TO SAVE TO COUCHBASE
+                // USING THE VARIABLE "key" AS THE DOCUMENT ID
+                //
+                // ScorecardSettingsCollection.upsert({
+                //     key: key
+                // }, {
+                //     $set: {
+                //         "createdAt": new Date(),
+                //         scorecardSettings: scorecardSettings
+                //     }
+                // });
+                console.log(scorecardSettings); // placeholder -- REMOVE ONCE COUCHBASE DONE
             } catch (error) {
                 throw new Meteor.Error("Error in saveScorecardSettings function:" + key + " : " + error.message);
             }
