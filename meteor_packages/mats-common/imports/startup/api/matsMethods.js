@@ -518,14 +518,14 @@ const _dropScorecardInstance = async function (userName, name, submittedTime, pr
             throw new Meteor.Error("_dropScorecardInstance: No cbScorecardPool defined");
         }
         const statement = `DELETE
-        From
-            vxdata._default.SCORECARD sc
-        WHERE
-            sc.type='SC'
-            AND sc.userName='` + userName + `'
-            AND sc.name='` + name + `'
-            AND sc.processedAt=` + processedAt + `
-            AND sc.submitted=` + submittedTime + `;`
+            From
+                vxdata._default.SCORECARD sc
+            WHERE
+                sc.type='SC'
+                AND sc.userName='` + userName + `'
+                AND sc.name='` + name + `'
+                AND sc.processedAt=` + processedAt + `
+                AND sc.submitted=` + submittedTime + `;`
         const result = await cbScorecardPool.queryCB(statement);
         // delete this result from the mongo Scorecard collection
         return;
@@ -535,7 +535,6 @@ const _dropScorecardInstance = async function (userName, name, submittedTime, pr
             "error": err.message
         };
     }
-    ;
 };
 
 // helper function to map a results array to specific apps
@@ -573,9 +572,7 @@ function _mapMapToApps(result) {
 // helper function for returning an array of database-distinct apps contained within a larger MATS app
 function _getListOfApps() {
     let apps;
-    if (matsCollections['database'] !== undefined && matsCollections['database'].findOne({
-        name: 'database'
-    }) !== undefined) {
+    if (matsCollections['database'] !== undefined && matsCollections['database'].findOne({name: 'database'}) !== undefined) {
         // get list of databases (one per app)
         apps = matsCollections['database'].findOne({
             name: 'database'
@@ -603,9 +600,7 @@ function _getListOfAppDBs() {
     let apps;
     let result = {};
     let aidx;
-    if (matsCollections['database'] !== undefined && matsCollections['database'].findOne({
-        name: 'database'
-    }) !== undefined) {
+    if (matsCollections['database'] !== undefined && matsCollections['database'].findOne({name: 'database'}) !== undefined) {
         // get list of databases (one per app)
         apps = matsCollections['database'].findOne({
             name: 'database'
@@ -647,11 +642,9 @@ function _getMapByAppAndModel(selector, mapType) {
     let flatJSON = "";
     try {
         let result;
-        if (matsCollections[selector] !== undefined && matsCollections[selector].findOne({
-            name: selector
-        }) !== undefined && matsCollections[selector].findOne({
-            name: selector
-        })[mapType] !== undefined) {
+        if (matsCollections[selector] !== undefined
+            && matsCollections[selector].findOne({name: selector}) !== undefined
+            && matsCollections[selector].findOne({name: selector})[mapType] !== undefined) {
             // get map of requested selector's metadata
             result = matsCollections[selector].findOne({
                 name: selector
@@ -740,9 +733,7 @@ function _getMapByApp(selector) {
     let flatJSON = "";
     try {
         let result;
-        if (matsCollections[selector] !== undefined && matsCollections[selector].findOne({
-            name: selector
-        }) !== undefined) {
+        if (matsCollections[selector] !== undefined && matsCollections[selector].findOne({name: selector}) !== undefined) {
             // get array of requested selector's metadata
             result = matsCollections[selector].findOne({
                 name: selector
@@ -779,17 +770,13 @@ function _getlevelsByApp() {
     let flatJSON = "";
     try {
         let result;
-        if (matsCollections['level'] !== undefined && matsCollections['level'].findOne({
-            name: 'level'
-        }) !== undefined) {
+        if (matsCollections['level'] !== undefined && matsCollections['level'].findOne({name: 'level'}) !== undefined) {
             // we have levels already defined
             result = matsCollections['level'].findOne({
                 name: 'level'
             }).options;
             if (!Array.isArray(result)) result = Object.keys(result);
-        } else if (matsCollections['top'] !== undefined && matsCollections['top'].findOne({
-            name: 'top'
-        }) !== undefined) {
+        } else if (matsCollections['top'] !== undefined && matsCollections['top'].findOne({name: 'top'}) !== undefined) {
             // use the MATS mandatory levels
             result = _.range(100, 1050, 50);
             if (!Array.isArray(result)) result = Object.keys(result);
@@ -2367,6 +2354,9 @@ const getScorecardSettings = new ValidatedMethod({
             try {
                 // this does not work because apps don't share mongo instances
                 // need to fetch from couchbase instead
+                // ultimate return should look like dummy data below --
+                // unparsed JSON in an object with the key "scorecardSettings"
+                //
                 // ret = ScorecardSettingsCollection.rawCollection().findOne({
                 //     key: key
                 // });
@@ -2874,9 +2864,7 @@ const resetApp = async function (appRef) {
             for (var mdti = 0; mdti < metaDataTables.length; mdti++) {
                 const metaDataRef = metaDataTables[mdti];
                 metaDataRef.lastRefreshed = moment().format();
-                if (metaDataTableUpdates.find({
-                    name: metaDataRef.name
-                }).count() == 0) {
+                if (metaDataTableUpdates.find({name: metaDataRef.name}).count() == 0) {
                     metaDataTableUpdates.update({
                         name: metaDataRef.name
                     }, metaDataRef, {
