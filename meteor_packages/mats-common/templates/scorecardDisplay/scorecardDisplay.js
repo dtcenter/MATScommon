@@ -398,10 +398,10 @@ Template.ScorecardDisplay.events({
       return;
     }
     const row = e.currentTarget.dataset.scorecardrow;
-    const rowData = myScorecard['scorecard'].plotParams.curves.find((r) => r['label'] == row);
+    const rowData = myScorecard['scorecard'].plotParams.curves.find((r) => r['label'] === row);
     const application = rowData['application'];
     // When comparing models, you want forecast minus truth.
-    // MATS differences are calculated by Curve1 - Curve0, 
+    // MATS differences are calculated by Curve1 - Curve0,
     // so Curve1 is the data-source and Curve0 is the validation-data-source
     const curve0Model = rowData['validation-data-source'];
     const curve1Model = rowData['data-source'];
@@ -410,7 +410,7 @@ Template.ScorecardDisplay.events({
       "dateRange": myScorecard['scorecard'].plotParams.dates,
       "curve0dataSource": curve0Model,
       "curve1DataSource": curve1Model,
-      "commonCurveParams": 
+      "commonCurveParams":
       {
         "region": e.currentTarget.dataset.region === undefined ? "undefined" : e.currentTarget.dataset.region,
         "statistic": e.currentTarget.dataset.stat === undefined ? "undefined" : e.currentTarget.dataset.stat,
@@ -426,7 +426,7 @@ Template.ScorecardDisplay.events({
     };
     const baseURL = Meteor.settings.public.home === undefined ? "https://" + document.location.href.split('/')[2] : Meteor.settings.public.home;
     const appSource = getAppSourceByApplication(application);
-    
+
     const settingsJSON = JSON.stringify(scorecardSettings);
     const hash = require('object-hash');
     const key = hash(settingsJSON);

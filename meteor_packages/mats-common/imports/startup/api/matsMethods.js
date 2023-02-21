@@ -546,12 +546,12 @@ const _restoreScorecardSettings = function (params, req, res, next) {
 };
 
 // private middleware for dropping a distinct instance (a single run) of a scorecard
-const _dropScorecardInstance = async function (userName,name,submittedTime,processedAt) {
-try {
-    if (cbScorecardPool == undefined) {
-        throw new Meteor.Error("_dropScorecardInstance: No cbScorecardPool defined");
-    }
-    const statement = `DELETE
+const _dropScorecardInstance = async function (userName, name, submittedTime, processedAt) {
+    try {
+        if (cbScorecardPool == undefined) {
+            throw new Meteor.Error("_dropScorecardInstance: No cbScorecardPool defined");
+        }
+        const statement = `DELETE
         From
             vxdata._default.SCORECARD sc
         WHERE
@@ -560,15 +560,16 @@ try {
             AND sc.name='` + name + `'
             AND sc.processedAt=` + processedAt + `
             AND sc.submitted=` + submittedTime + `;`
-    const result = await cbScorecardPool.queryCB(statement);
-    // delete this result from the mongo Scorecard collection
-    return;
-} catch (err) {
-    console.log("_dropScorecardInstance error : " + err.message);
-    return {
-        "error": err.message
-    };
-};
+        const result = await cbScorecardPool.queryCB(statement);
+        // delete this result from the mongo Scorecard collection
+        return;
+    } catch (err) {
+        console.log("_dropScorecardInstance error : " + err.message);
+        return {
+            "error": err.message
+        };
+    }
+    ;
 };
 
 // helper function to map a results array to specific apps
@@ -607,8 +608,8 @@ function _mapMapToApps(result) {
 function _getListOfApps() {
     let apps;
     if (matsCollections['database'] !== undefined && matsCollections['database'].findOne({
-            name: 'database'
-        }) !== undefined) {
+        name: 'database'
+    }) !== undefined) {
         // get list of databases (one per app)
         apps = matsCollections['database'].findOne({
             name: 'database'
@@ -637,8 +638,8 @@ function _getListOfAppDBs() {
     let result = {};
     let aidx;
     if (matsCollections['database'] !== undefined && matsCollections['database'].findOne({
-            name: 'database'
-        }) !== undefined) {
+        name: 'database'
+    }) !== undefined) {
         // get list of databases (one per app)
         apps = matsCollections['database'].findOne({
             name: 'database'
@@ -681,10 +682,10 @@ function _getMapByAppAndModel(selector, mapType) {
     try {
         let result;
         if (matsCollections[selector] !== undefined && matsCollections[selector].findOne({
-                name: selector
-            }) !== undefined && matsCollections[selector].findOne({
-                name: selector
-            })[mapType] !== undefined) {
+            name: selector
+        }) !== undefined && matsCollections[selector].findOne({
+            name: selector
+        })[mapType] !== undefined) {
             // get map of requested selector's metadata
             result = matsCollections[selector].findOne({
                 name: selector
@@ -774,8 +775,8 @@ function _getMapByApp(selector) {
     try {
         let result;
         if (matsCollections[selector] !== undefined && matsCollections[selector].findOne({
-                name: selector
-            }) !== undefined) {
+            name: selector
+        }) !== undefined) {
             // get array of requested selector's metadata
             result = matsCollections[selector].findOne({
                 name: selector
@@ -813,16 +814,16 @@ function _getlevelsByApp() {
     try {
         let result;
         if (matsCollections['level'] !== undefined && matsCollections['level'].findOne({
-                name: 'level'
-            }) !== undefined) {
+            name: 'level'
+        }) !== undefined) {
             // we have levels already defined
             result = matsCollections['level'].findOne({
                 name: 'level'
             }).options;
             if (!Array.isArray(result)) result = Object.keys(result);
         } else if (matsCollections['top'] !== undefined && matsCollections['top'].findOne({
-                name: 'top'
-            }) !== undefined) {
+            name: 'top'
+        }) !== undefined) {
             // use the MATS mandatory levels
             result = _.range(100, 1050, 50);
             if (!Array.isArray(result)) result = Object.keys(result);
@@ -1764,7 +1765,7 @@ const _saveResultData = function (result) {
             // save original dataset in the matsCache
             if (result.basis.plotParams.plotTypes.TimeSeries || result.basis.plotParams.plotTypes.DailyModelCycle) {
                 for (var ci = 0; ci < result.data.length; ci++) {
-                    delete(result.data[ci]['x_epoch']); // we only needed this as an index for downsampling
+                    delete (result.data[ci]['x_epoch']); // we only needed this as an index for downsampling
                 }
             }
             matsCache.storeResult(key, {
@@ -1824,7 +1825,7 @@ const _write_settings = function (settings, appName) {
     });
 }
 //return the scorecard for the provided selectors
-const _getScorecardData = async function (userName,name,submitted,processedAt) {
+const _getScorecardData = async function (userName, name, submitted, processedAt) {
     try {
         if (cbScorecardPool == undefined) {
             throw new Meteor.Error("_getScorecardData: No cbScorecardPool defined");
@@ -1857,7 +1858,7 @@ const _getScorecardData = async function (userName,name,submitted,processedAt) {
             }
         });
         // no need to return the whole thing, just the identifying fields. The app will find the whole thing in the mongo collection
-        return { 'scorecard': result[0] };
+        return {'scorecard': result[0]};
     } catch (err) {
         console.log("_getScorecardData error : " + err.message);
         return {
@@ -2129,7 +2130,7 @@ const dropScorecardInstance = new ValidatedMethod({
     }).validator(),
     run(params) {
         if (Meteor.isServer) {
-            return _dropScorecardInstance(params.userName,params.name,params.submittedTime,params.processedAt);
+            return _dropScorecardInstance(params.userName, params.name, params.submittedTime, params.processedAt);
         }
     }
 });
@@ -2509,7 +2510,7 @@ const getScorecardData = new ValidatedMethod({
     }).validator(),
     run(params) {
         if (Meteor.isServer) {
-            return _getScorecardData(params.userName,params.name,params.submitted,params.processedAt);
+            return _getScorecardData(params.userName, params.name, params.submitted, params.processedAt);
         }
     }
 });
@@ -2911,8 +2912,8 @@ const resetApp = async function (appRef) {
                 const metaDataRef = metaDataTables[mdti];
                 metaDataRef.lastRefreshed = moment().format();
                 if (metaDataTableUpdates.find({
-                        name: metaDataRef.name
-                    }).count() == 0) {
+                    name: metaDataRef.name
+                }).count() == 0) {
                     metaDataTableUpdates.update({
                         name: metaDataRef.name
                     }, metaDataRef, {
@@ -3175,7 +3176,7 @@ export default matsMethods = {
     applyDatabaseSettings: applyDatabaseSettings,
     applySettingsData: applySettingsData,
     deleteSettings: deleteSettings,
-    dropScorecardInstance:dropScorecardInstance,
+    dropScorecardInstance: dropScorecardInstance,
     emailImage: emailImage,
     getAuthorizations: getAuthorizations,
     getRunEnvironment: getRunEnvironment,
@@ -3187,7 +3188,7 @@ export default matsMethods = {
     getPlotResult: getPlotResult,
     getReleaseNotes: getReleaseNotes,
     getScorecardInfo: getScorecardInfo,
-    getScorecardData:getScorecardData,
+    getScorecardData: getScorecardData,
     getUserAddress: getUserAddress,
     insertColor: insertColor,
     readFunctionFile: readFunctionFile,
