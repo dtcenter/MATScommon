@@ -538,14 +538,14 @@ Template.plotList.onRendered( function() {
                     matsParamUtils.setValueTextForParamName(thisKey, thisValue);
                 }
             }
-            $('#add').click()
+            setTimeout(() => {matsParamUtils.addImportedCurve();}, 500);
             // curve1
-            matsParamUtils.setValueTextForParamName('data-source', parsedSettings.curve1DataSource);
-            $('#add').click()
+            setTimeout(() => {matsParamUtils.setValueTextForParamName('data-source', parsedSettings.curve1DataSource);}, 1000);
+            setTimeout(() => {matsParamUtils.addImportedCurve();}, 1500);
             // dates
-            matsParamUtils.setValueTextForParamName('dates', parsedSettings.dateRange);
+            setTimeout(() => {matsParamUtils.setValueTextForParamName('dates', parsedSettings.dateRange);}, 2000);
             // plot
-            $('#plotMatched').click()
+            setTimeout(() => {$('#plotMatched').click();}, 2500);
         });
 
     } else {

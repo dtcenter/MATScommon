@@ -5,6 +5,7 @@
 import {matsTypes} from 'meteor/randyp:mats-common';
 import {matsCollections} from 'meteor/randyp:mats-common';
 import {matsPlotUtils} from 'meteor/randyp:mats-common';
+import {matsCurveUtils} from 'meteor/randyp:mats-common';
 import {moment} from 'meteor/momentjs:moment'
 
 // get the document id for the control button element that corresponds to the param name
@@ -81,7 +82,7 @@ const setValueTextForParamName = function (paramName, text) {
         }
         const elem = getValueElementForParamName(paramName);
         if (elem != null && elem.textContent !== text) {
-            delete(elem.textContent);
+            delete (elem.textContent);
             elem.textContent = text;
         }
         if (paramName.includes('dates')
@@ -114,7 +115,7 @@ const getInputIdForParamName = function (paramName) {
     if (param.type === matsTypes.InputTypes.dateRange) {
         return ("element-" + param.name).replace(/ /g, '-');
     } else {
-    return (param.name + "-" + param.type).replace(/ /g, '-');
+        return (param.name + "-" + param.type).replace(/ /g, '-');
     }
 };
 
@@ -433,10 +434,10 @@ const setAllParamsToDefault = function () {
         // superiors
         if (param !== undefined && param.dependentNames !== undefined) {
             superiors.push(param);
-        // dependents
+            // dependents
         } else if (param !== undefined && param.superiorNames !== undefined) {
             dependents.push(param);
-        // everything else
+            // everything else
         } else {
             params.push(param);
         }
@@ -544,7 +545,8 @@ const getOptionsForParam = function (paramName) {
     }
     if (param === undefined) {
         return;
-    }    return param.options;
+    }
+    return param.options;
 };
 
 const getAppName = function () {
@@ -584,19 +586,19 @@ const visibilityControllerForParam = function (paramName) {
     return found;
 };
 
-const getSingleSelectCurveParamNames = function() {
-    let curveParamNames = matsCollections.CurveParamsInfo.find({},{"curve_params":1}).fetch()[0]["curve_params"];
+const getSingleSelectCurveParamNames = function () {
+    let curveParamNames = matsCollections.CurveParamsInfo.find({}, {"curve_params": 1}).fetch()[0]["curve_params"];
     let multiParamNames = getMultiSelectCurveParamNames();
-    let singleParamNames = curveParamNames.filter(function(n) {
-        return ! multiParamNames.includes(n);
+    let singleParamNames = curveParamNames.filter(function (n) {
+        return !multiParamNames.includes(n);
     });
     return singleParamNames;
 };
 
-const getMultiSelectCurveParamNames = function() {
-    let curveParamNames = matsCollections.CurveParamsInfo.find({},{"curve_params":1}).fetch()[0]["curve_params"];
+const getMultiSelectCurveParamNames = function () {
+    let curveParamNames = matsCollections.CurveParamsInfo.find({}, {"curve_params": 1}).fetch()[0]["curve_params"];
     let multiParamNames = [];
-    curveParamNames.forEach (function(paramName){
+    curveParamNames.forEach(function (paramName) {
         if (matsParamUtils.getParameterForName(paramName)['multiple'] !== undefined) {
             multiParamNames.push(paramName);
         }
@@ -604,12 +606,37 @@ const getMultiSelectCurveParamNames = function() {
     return multiParamNames;
 };
 
-const getPlotParamNames = function() {
-    let paramNames = matsCollections.PlotParams.find({},{_id:0,name:1}).fetch();
+const getPlotParamNames = function () {
+    let paramNames = matsCollections.PlotParams.find({}, {_id: 0, name: 1}).fetch();
     return paramNames;
 }
 
+const addImportedCurve = function () {
+    let curves = Session.get('Curves');
+    let p = {};
+    const curveParamNames = matsCollections.CurveParamsInfo.find({"curve_params": {"$exists": true}}).fetch()[0]["curve_params"];
+    for (let i = 0; i < curveParamNames.length; i++) {
+        let currentParam = matsCollections[curveParamNames[i]].find({}).fetch()[0];
+        if (currentParam.multiple && getValueForParamName(currentParam.name) === matsTypes.InputTypes.unused) {
+            // sometimes multi-selects will have "unused" as a value. This is fine, the data routines are set up to handle it.
+            p[currentParam.name] = matsTypes.InputTypes.unused;
+        } else {
+            p[currentParam.name] = getValueForParamName(currentParam.name)
+        }
+    }
+    p.color = matsCurveUtils.getNextCurveColor();
+    curves.push(p);
+    var elem = document.getElementById("curveList");
+    elem.style.display = "block";
+
+    Session.set('Curves', curves);
+    matsCurveUtils.setUsedColorsAndLabels(); // we have used a color and label so we have to set the next one
+    collapseParams();
+    setInputForParamName('label', matsCurveUtils.getNextCurveLabel());
+}
+
 export default matsParamUtils = {
+    addImportedCurve: addImportedCurve,
     getDisabledOptionsForParamName: getDisabledOptionsForParamName,
     getControlButtonIdForParamName: getControlButtonIdForParamName,
     getControlElementForParamName: getControlElementForParamName,
@@ -640,7 +667,7 @@ export default matsParamUtils = {
     getDefaultDateRange: getDefaultDateRange,
     getMinMaxDates: getMinMaxDates,
     getMinMaxDatesTC: getMinMaxDatesTC,
-    getSingleSelectCurveParamNames:getSingleSelectCurveParamNames,
-    getMultiSelectCurveParamNames:getMultiSelectCurveParamNames,
-    getPlotParamNames:getPlotParamNames
+    getSingleSelectCurveParamNames: getSingleSelectCurveParamNames,
+    getMultiSelectCurveParamNames: getMultiSelectCurveParamNames,
+    getPlotParamNames: getPlotParamNames
 };
