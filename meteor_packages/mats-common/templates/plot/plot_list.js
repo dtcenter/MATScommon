@@ -28,6 +28,37 @@ import { matsSelectUtils } from 'meteor/randyp:mats-common';
     is what sets up the graph page.
 */
 
+const _changeParameter = async(parameter, newValue) => {
+    matsParamUtils.setValueTextForParamName(parameter, newValue);
+};
+
+const _setCommonParams = async(commonParamKeys, commonParams) => {
+    for (let kidx = 0; kidx < commonParamKeys.length; kidx++) {
+        const thisKey = commonParamKeys[kidx];
+        const thisValue = commonParams[commonParamKeys[kidx]];
+        if (thisValue !== "undefined") {
+            matsParamUtils.setValueTextForParamName(thisKey, thisValue);
+        }
+    }
+};
+
+const _addCurve = async() => {
+    matsParamUtils.addImportedCurve();
+};
+
+const _plotGraph = async() => {
+    $('#plotMatched').click()
+};
+
+const addCurvesAndPlot = async(parsedSettings, commonParamKeys, commonParams) => {
+    await _changeParameter('data-source', parsedSettings.curve0DataSource);
+    await _setCommonParams(commonParamKeys, commonParams);
+    await _addCurve();
+    await _changeParameter('data-source', parsedSettings.curve1DataSource);
+    await _addCurve();
+    await _changeParameter('dates', parsedSettings.dateRange);
+    await _plotGraph();
+};
 
 Template.plotList.helpers({
     Title: function() {
@@ -528,24 +559,8 @@ Template.plotList.onRendered( function() {
             const commonParams = parsedSettings.commonCurveParams;
             const commonParamKeys = Object.keys(commonParams);
 
-            // add the curves from the scorecard settings
-            // curve0
-            matsParamUtils.setValueTextForParamName('data-source', parsedSettings.curve0DataSource);
-            for (let kidx = 0; kidx < commonParamKeys.length; kidx++) {
-                const thisKey = commonParamKeys[kidx];
-                const thisValue = commonParams[commonParamKeys[kidx]];
-                if (thisValue !== "undefined") {
-                    matsParamUtils.setValueTextForParamName(thisKey, thisValue);
-                }
-            }
-            setTimeout(() => {matsParamUtils.addImportedCurve();}, 500);
-            // curve1
-            setTimeout(() => {matsParamUtils.setValueTextForParamName('data-source', parsedSettings.curve1DataSource);}, 1000);
-            setTimeout(() => {matsParamUtils.addImportedCurve();}, 1500);
-            // dates
-            setTimeout(() => {matsParamUtils.setValueTextForParamName('dates', parsedSettings.dateRange);}, 2000);
-            // plot
-            setTimeout(() => {$('#plotMatched').click();}, 2500);
+            // add the curves from the scorecard settings and then plot
+            addCurvesAndPlot(parsedSettings, commonParamKeys, commonParams).then();
         });
 
     } else {

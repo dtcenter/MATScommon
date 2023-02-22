@@ -436,12 +436,13 @@ Template.ScorecardDisplay.events({
     }, function (error) {
       if (error !== undefined) {
         setError(error);
-      }
-      // now that the settings are saved, open a new window and pass the key to it.
-      if (baseURL.includes("localhost")) {
-        e.view.window.open(baseURL + "/scorecardTimeseries/" + key, '_blank');
       } else {
-        e.view.window.open(baseURL + "/" + appSource + "/scorecardTimeseries/" + key, '_blank');
+        // now that the settings are saved, open a new window and pass the key to it.
+        if (baseURL.includes("localhost")) {
+          e.view.window.open(baseURL + "/scorecardTimeseries/" + key, '_blank');
+        } else {
+          e.view.window.open(baseURL + "/" + appSource + "/scorecardTimeseries/" + key, '_blank');
+        }
       }
     });
   },
