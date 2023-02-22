@@ -40,17 +40,17 @@ FlowRouter.route('/JSON/:graphFunction/:key/:matching/:appName', {
     }
 });
 
-FlowRouter.route('/scorecard/scorecard_display/:userName/:name/:submitted/:processedAt', {
-    name: 'scorecard/scorecard_display',
-    action(params) {
-        this.render('ScorecardDisplay', params);
-    }
-});
-
 FlowRouter.route('/preview/:graphFunction/:key/:matching/:appName', {
     name: 'preview',
     action(params) {
         this.render('GraphStandAlone', params);
+    }
+});
+
+FlowRouter.route('/scorecardDisplay/:userName/:name/:submitted/:processedAt', {
+    name: 'scorecardDisplay',
+    action(params) {
+        this.render('ScorecardDisplay', params);
     }
 });
 
@@ -107,8 +107,8 @@ FlowRouter.route(Meteor.settings.public.proxy_prefix_path + '/preview/:graphFunc
     }
 });
 
-FlowRouter.route(Meteor.settings.public.proxy_prefix_path + '/scorecard/scorecard_display/:userName/:name/:submitted/:processedAt', {
-    name: 'scorecard/scorecard_display',
+FlowRouter.route(Meteor.settings.public.proxy_prefix_path + '/scorecardDisplay/:userName/:name/:submitted/:processedAt', {
+    name: 'scorecardDisplay',
     action(params) {
         this.render('ScorecardDisplay', params);
     }
@@ -169,8 +169,8 @@ FlowRouter.route(Meteor.settings.public.proxy_prefix_path + '/*/preview/:graphFu
     }
 });
 
-FlowRouter.route(Meteor.settings.public.proxy_prefix_path + '/*/scorecard/scorecard_display/:userName/:name/:submitted/:processedAt', {
-    name: 'scorecard_display',
+FlowRouter.route(Meteor.settings.public.proxy_prefix_path + '/*/scorecardDisplay/:userName/:name/:submitted/:processedAt', {
+    name: 'scorecardDisplay',
     action(params) {
         this.render('ScorecardDisplay', params);
     }

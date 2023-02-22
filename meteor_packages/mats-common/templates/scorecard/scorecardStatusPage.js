@@ -106,7 +106,12 @@ Template.scorecardStatusPage.helpers({
             }
     },
     visitLink: function(userName, name, submitted, processedAt) {
-            return '/scorecard/scorecard_display/' + userName + '/' + name + '/' + submitted + '/' + processedAt
+        const baseURL = Meteor.settings.public.home === undefined ? "https://" + document.location.href.split('/')[2] : Meteor.settings.public.home;
+        if (baseURL.includes("localhost")) {
+            return baseURL + "/scorecardDisplay/" + userName + '/' + name + '/' + submitted + '/' + processedAt
+        } else {
+            return baseURL + "/scorecard/scorecardDisplay/" + userName + '/' + name + '/' + submitted + '/' + processedAt
+        }
     },
     scid:  function(userName, name, submitted, processedAt) {
         return userName + '_' + name + '_' + submitted + '_' + processedAt;
