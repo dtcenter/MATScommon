@@ -524,11 +524,29 @@ Template.plotList.onRendered( function() {
                 return false;
             }
             const settingsJSON = ret.scorecardSettings;
-            console.log(settingsJSON);
+            const parsedSettings = JSON.parse(settingsJSON);
+            const commonParams = parsedSettings.commonCurveParams;
+            const commonParamKeys = Object.keys(commonParams);
 
             // add the curves from the scorecard settings
+            // curve0
+            matsParamUtils.setValueTextForParamName('data-source', parsedSettings.curve0DataSource);
+            for (let kidx = 0; kidx < commonParamKeys.length; kidx++) {
+                const thisKey = commonParamKeys[kidx];
+                const thisValue = commonParams[commonParamKeys[kidx]];
+                if (thisValue !== "undefined") {
+                    matsParamUtils.setValueTextForParamName(thisKey, thisValue);
+                }
+            }
+            $('#add').click()
+            // curve1
+            matsParamUtils.setValueTextForParamName('data-source', parsedSettings.curve1DataSource);
+            $('#add').click()
+            // dates
+            matsParamUtils.setValueTextForParamName('dates', parsedSettings.dateRange);
+            // plot
+            $('#plotMatched').click()
         });
-
 
     } else {
         // need to display correct selectors on page load if default plot type is not timeseries

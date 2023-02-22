@@ -408,7 +408,7 @@ Template.ScorecardDisplay.events({
     const scorecardSettings = {
       "appName": application,
       "dateRange": myScorecard['scorecard'].plotParams.dates,
-      "curve0dataSource": curve0Model,
+      "curve0DataSource": curve0Model,
       "curve1DataSource": curve1Model,
       "commonCurveParams":
       {
@@ -418,7 +418,7 @@ Template.ScorecardDisplay.events({
         "threshold": e.currentTarget.dataset.threshold === undefined ? "undefined" : e.currentTarget.dataset.threshold,
         "scale": e.currentTarget.dataset.scale === undefined ? "undefined" : e.currentTarget.dataset.scale,
         "truth": e.currentTarget.dataset.truth === undefined ? "undefined" : e.currentTarget.dataset.truth,
-        "forecast-length": e.currentTarget.dataset.fcstlen === undefined ? "undefined" : e.currentTarget.dataset.fcstlen,
+        "forecast-length": e.currentTarget.dataset.fcstlen === undefined ? "undefined" : parseInt(e.currentTarget.dataset.fcstlen).toString(),
         "forecast-type": e.currentTarget.dataset.fcsttype === undefined ? "undefined" : e.currentTarget.dataset.fcsttype,
         "valid-time": e.currentTarget.dataset.validtime === undefined ? "undefined" : e.currentTarget.dataset.validtime,
         "level": e.currentTarget.dataset.level === undefined ? "undefined" : e.currentTarget.dataset.level,
