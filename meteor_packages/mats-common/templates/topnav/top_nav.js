@@ -22,9 +22,9 @@ Template.topNav.helpers({
     transparentGif: function() {
         const baseURL = Meteor.settings.public.home === undefined ? "https://" + document.location.href.split('/')[2] : Meteor.settings.public.home;
         if (baseURL.includes("localhost")) {
-            return baseURL + "/packages/randyp_mats-common/public/img/noaa_transparent.gif";
+            return baseURL + "/packages/randyp_mats-common/public/img/noaa_transparent.svg";
         } else {
-            return baseURL + "/" + matsCollections.Settings.findOne({}).appName + "/packages/randyp_mats-common/public/img/noaa_transparent.gif";
+            return baseURL + "/" + matsCollections.Settings.findOne({}).appName + "/packages/randyp_mats-common/public/img/noaa_transparent.svg";
         }
     },
     emailText: function () {

@@ -270,7 +270,7 @@ Package.onUse(function (api) {
     api.addAssets('public/img/arrow-right.gif', "client");
     api.addAssets('public/img/arrow-up.gif', "client");
     api.addAssets('public/img/bg.png', "client");
-    api.addAssets('public/img/noaa_transparent.gif', "client");
+    api.addAssets('public/img/noaa_transparent.svg', "client");
     api.addAssets('public/img/spinner.gif', "client");
     api.addAssets('public/img/building_spinner.gif', "client");
     api.addAssets('public/img/drawing_spinner.gif', "client");
