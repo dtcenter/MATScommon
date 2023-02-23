@@ -2340,37 +2340,25 @@ const getLayout = new ValidatedMethod({
     }
 });
 
-const getScorecardSettings = async function (settingsKey) {
-    // TODO - remove after tests
-    console.log("getScorecardSettings(" + settingsKey + ")"); 
-    // global cbScorecardSettingsPool
-    const rv = await cbScorecardSettingsPool.getCB(settingsKey);
-    console.log(JSON.stringify(rv,null, 2));
-    return rv;
-}
-
-const getScorecardSettingsOrg = new ValidatedMethod({
+const getScorecardSettings = new ValidatedMethod({
     name: 'matsMethods.getScorecardSettings',
     validate: new SimpleSchema({
         settingsKey: {
             type: String
         }
     }).validator(),
-    run(params) {
+    async run(params) {
         if (Meteor.isServer) {
             let ret;
             let key = params.settingsKey;
             try {
-                // this does not work because apps don't share mongo instances
-                // need to fetch from couchbase instead
-                // ultimate return should look like dummy data below --
-                // unparsed JSON in an object with the key "scorecardSettings"
-                //
-                // ret = ScorecardSettingsCollection.rawCollection().findOne({
-                //     key: key
-                // });
-                // return ret;
-                return {scorecardSettings: '{"appName":"Surface","dateRange":"01/14/2023 20:00 - 02/13/2023 20:00","curve0DataSource":"RAP_OPS","curve1DataSource":"RAP_OPS_130","commonCurveParams":{"region":"Eastern RUC domain","statistic":"Bias (Model - Obs)","variable":"10m wind","threshold":"undefined","scale":"undefined","truth":"undefined","forecast-length":"6","forecast-type":"undefined","valid-time":"undefined","level":"undefined"}}'};
+                // TODO - remove after tests
+                console.log("getScorecardSettings(" + key + ")"); 
+                // global cbScorecardSettingsPool
+                const rv = await cbScorecardSettingsPool.getCB(key);
+                console.log(JSON.stringify(rv,null, 2));
+                return rv;
+                // return {scorecardSettings: '{"appName":"Surface","dateRange":"01/14/2023 20:00 - 02/13/2023 20:00","curve0DataSource":"RAP_OPS","curve1DataSource":"RAP_OPS_130","commonCurveParams":{"region":"Eastern RUC domain","statistic":"Bias (Model - Obs)","variable":"10m wind","threshold":"undefined","scale":"undefined","truth":"undefined","forecast-length":"6","forecast-type":"undefined","valid-time":"undefined","level":"undefined"}}'};
             } catch (error) {
                 throw new Meteor.Error("Error in getScorecardSettings function:" + key + " : " + error.message);
             }
@@ -2977,15 +2965,7 @@ const saveLayout = new ValidatedMethod({
     }
 });
 
-const saveScorecardSettings = async function (settingsKey, scorecardSettings) {
-    // TODO - remove after tests
-    console.log("saveScorecardSettings():\n" + JSON.stringify(scorecardSettings, null, 2)); 
-    // global cbScorecardSettingsPool
-    const rv = await cbScorecardSettingsPool.upsertCB(settingsKey, scorecardSettings);
-    console.log(JSON.stringify(rv, null, 2)); 
-}
-
-const saveScorecardSettingsOrg = new ValidatedMethod({
+const saveScorecardSettings = new ValidatedMethod({
     name: 'matsMethods.saveScorecardSettings',
     validate: new SimpleSchema({
         settingsKey: {
@@ -3000,23 +2980,20 @@ const saveScorecardSettingsOrg = new ValidatedMethod({
             var key = params.settingsKey;
             var scorecardSettings = params.scorecardSettings;
             try {
-                // INSTEAD OF THIS WE NEED TO SAVE TO COUCHBASE
-                // USING THE VARIABLE "key" AS THE DOCUMENT ID
-                //
-                // ScorecardSettingsCollection.upsert({
-                //     key: key
-                // }, {
-                //     $set: {
-                //         "createdAt": new Date(),
-                //         scorecardSettings: scorecardSettings
-                //     }
-                // });
-                console.log(scorecardSettings); // placeholder -- REMOVE ONCE COUCHBASE DONE
-            } catch (error) {
-                throw new Meteor.Error("Error in saveScorecardSettings function:" + key + " : " + error.message);
+                // TODO - remove after tests
+                console.log("saveScorecardSettings(" + key + "):\n" + JSON.stringify(scorecardSettings, null, 2)); 
+                // global cbScorecardSettingsPool
+                (async function (id, doc) {
+                    cbScorecardSettingsPool.upsertCB(id, doc);
+                  })(key, scorecardSettings).then(() => {
+                    console.log("upserted doc with id", key);
+                  });
+                  // await cbScorecardSettingsPool.upsertCB(settingsKey, scorecardSettings);
+                } catch (err) {
+                  console.log(`error writing scorecard to database: ${err.message}`);
+                }
             }
         }
-    }
 });
 
 //administration tools
