@@ -11,7 +11,12 @@ Template.spinner.helpers({
             img = "spinner.gif";
             Session.set("spinner_img", "spinner.gif");
         }
-        return document.location.href + "/packages/randyp_mats-common/public/img/spinner.gif"
+        const baseURL = Meteor.settings.public.home === undefined ? "https://" + document.location.href.split('/')[2] : Meteor.settings.public.home;
+        if (baseURL.includes("localhost")) {
+            return baseURL + "/packages/randyp_mats-common/public/img/spinner.gif";
+        } else {
+            return baseURL + "/" + matsCollections.Settings.findOne({}).appName + "/packages/randyp_mats-common/public/img/spinner.gif";
+        }
     }
 });
 

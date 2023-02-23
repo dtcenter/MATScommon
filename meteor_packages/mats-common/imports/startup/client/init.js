@@ -44,9 +44,13 @@ if (Meteor.isClient) {
     const protocol = pathArray[0];
     const hostport = pathArray[2];
     const hostName = hostport.split(':')[0];
-    const app = pathArray[3] == "" ? "/" : pathArray[3];
+    const app = pathArray[3] === "" ? "/" : pathArray[3];
     const matsRef = protocol + "//" + hostport;
-    const helpRef = ref.endsWith('/') ? ref + "packages/randyp_mats-common/public/help" : ref + "/packages/randyp_mats-common/public/help";
+    const baseURL = Meteor.settings.public.home === undefined ? "https://" + hostport : Meteor.settings.public.home;
+    let helpRef = baseURL + "/" + app + "/packages/randyp_mats-common/public/public/help";
+    if (baseURL.includes("localhost")) {
+        helpRef =  baseURL + "/packages/randyp_mats-common/public/help";
+    }
     Session.set("app", {appName: app, matsref: matsRef, appref: ref, helpref: helpRef, hostName: hostName});
     var collections = Object.keys(matsCollections).map(key => matsCollections[key]);
     Session.set("Mongol", {
