@@ -2340,7 +2340,15 @@ const getLayout = new ValidatedMethod({
     }
 });
 
-const getScorecardSettings = new ValidatedMethod({
+const getScorecardSettings = async function (settingsKey, cbScorecardPool) {
+    // TODO - remove after tests
+    console.log("getScorecardSettings(" + settingsKey + ")"); 
+    const rv = await cbScorecardPool.getCB(settingsKey);
+    console.log(JSON.stringify(rv,null, 2));
+    return rv;
+}
+
+const getScorecardSettingsOrg = new ValidatedMethod({
     name: 'matsMethods.getScorecardSettings',
     validate: new SimpleSchema({
         settingsKey: {
@@ -2968,7 +2976,14 @@ const saveLayout = new ValidatedMethod({
     }
 });
 
-const saveScorecardSettings = new ValidatedMethod({
+const saveScorecardSettings = async function (settingsKey, scorecardSettings, cbScorecardPool) {
+    // TODO - remove after tests
+    console.log("saveScorecardSettings():\n" + JSON.stringify(scorecardSettings, null, 2)); 
+    const rv = await cbScorecardPool.upsertCB(settingsKey, scorecardSettings);
+    console.log(JSON.stringify(rv, null, 2)); 
+}
+
+const saveScorecardSettingsOrg = new ValidatedMethod({
     name: 'matsMethods.saveScorecardSettings',
     validate: new SimpleSchema({
         settingsKey: {
