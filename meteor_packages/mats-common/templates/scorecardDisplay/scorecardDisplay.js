@@ -123,10 +123,9 @@ Template.ScorecardDisplay.helpers({
     if (myScorecard === undefined) {
       return;
     }
-    const application = myScorecard['scorecard'].plotParams.curves
-      .find((r) => r['label'] == rowName)
+    return myScorecard['scorecard'].plotParams.curves
+      .find((r) => r['label'] === rowName)
       ['application'];
-    return application;
   },
   rowTitle: function (rowName) {
     let myScorecard = Session.get('myScorecard');
@@ -148,9 +147,20 @@ Template.ScorecardDisplay.helpers({
     if (myScorecard === undefined) {
       return;
     }
-    const rowTitle = myScorecard['scorecard']['results']['rows'][rowName]['rowTitle'];
+    const rowConstantFields = myScorecard['scorecard']['results']['rows'][rowName]['rowParameters'];
+    const actuallyAddedFields = myScorecard['scorecard'].plotParams.curves.find((r) => r['label'] === rowName);
+    let CFString = "";
+    for (let fidx = 0; fidx < rowConstantFields.length; fidx++) {
+      const currentField = rowConstantFields[fidx];
+      if (currentField !== "application" && actuallyAddedFields[currentField] !== undefined) {
+        if (CFString.length > 0) CFString = CFString + "; ";
+        CFString = CFString + currentField + " = " + actuallyAddedFields[currentField];
+      }
+    }
+    if (CFString.length > 0) CFString = CFString + "; ";
+    CFString = CFString + "dates = " + myScorecard['scorecard'].plotParams.dates;
     return (
-        'Constant Fields: TBD'
+        'Constant Fields: ' + CFString
     );
   },
   scorecardRows: function () {
