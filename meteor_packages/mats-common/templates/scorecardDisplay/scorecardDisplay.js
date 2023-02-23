@@ -121,7 +121,7 @@ Template.ScorecardDisplay.helpers({
     }
     const application = myScorecard['scorecard'].plotParams.curves
       .find((r) => r['label'] == rowName)
-      ['application'].toLowerCase();
+      ['application'];
     return application;
   },
   rowTitle: function (rowName) {
@@ -131,11 +131,11 @@ Template.ScorecardDisplay.helpers({
     }
     const rowTitle = myScorecard['scorecard']['results']['rows'][rowName]['rowTitle'];
     return (
-      'Scorecard Row: ' +
+      'Scorecard ' +
       rowName +
-      ' Datasource: ' +
+      ': Data Source: ' +
       rowTitle['datasource'] +
-      ' ValidationDatasource: ' +
+      ', Validation Data Source: ' +
       rowTitle['validationDatasource']
     );
   },
@@ -196,19 +196,19 @@ Template.ScorecardDisplay.helpers({
     const minorSourceIcon = 'fa fa-caret-up fa-sm';
     const neutralIcon = 'fa icon-check-empty fa-sm';
     if (sigVal == -2) {
-      return majorSourceIcon;
+      return majorTruthIcon;
     }
     if (sigVal == -1) {
-      return minorSourceIcon;
+      return minorTruthIcon;
     }
     if (sigVal == 0) {
       return neutralIcon;
     }
     if (sigVal == 2) {
-      return majorTruthIcon;
+      return majorSourceIcon;
     }
     if (sigVal == 1) {
-      return minorTruthIcon;
+      return minorSourceIcon;
     }
   },
   significanceColor: function (rowName, region, stat, variable, fcstlen) {
