@@ -2352,11 +2352,8 @@ const getScorecardSettings = new ValidatedMethod({
             let ret;
             let key = params.settingsKey;
             try {
-                // TODO - remove after tests
-                console.log("getScorecardSettings(" + key + ")"); 
                 // global cbScorecardSettingsPool
                 const rv = await cbScorecardSettingsPool.getCB(key);
-                console.log(JSON.stringify(rv,null, 2));
                 return { scorecardSettings: rv.content } ;
                 // return {scorecardSettings: '{"appName":"Surface","dateRange":"01/14/2023 20:00 - 02/13/2023 20:00","curve0DataSource":"RAP_OPS","curve1DataSource":"RAP_OPS_130","commonCurveParams":{"region":"Eastern RUC domain","statistic":"Bias (Model - Obs)","variable":"10m wind","threshold":"undefined","scale":"undefined","truth":"undefined","forecast-length":"6","forecast-type":"undefined","valid-time":"undefined","level":"undefined"}}'};
             } catch (error) {
