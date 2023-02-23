@@ -101,7 +101,11 @@ const refreshScorecard = function (userName, name, submitted, processedAt) {
 
 const hideLoading = function () {
   // hide the little green loading indicator (called as the last {{hideLoading}} in the html)
-  document.querySelector('#scorecardDisplayLoading').style.display = 'none';
+  if (document.querySelector('#scorecardDisplayLoading')
+      && document.querySelector('#scorecardDisplayLoading').style
+      && document.querySelector('#scorecardDisplayLoading').style.display) {
+    document.querySelector('#scorecardDisplayLoading').style.display = 'none';
+  }
 };
 
 Template.ScorecardDisplay.onRendered(function () {
@@ -131,12 +135,22 @@ Template.ScorecardDisplay.helpers({
     }
     const rowTitle = myScorecard['scorecard']['results']['rows'][rowName]['rowTitle'];
     return (
-      'Scorecard ' +
-      rowName +
-      ': Data Source: ' +
-      rowTitle['datasource'] +
-      ', Validation Data Source: ' +
-      rowTitle['validationDatasource']
+        'Scorecard ' +
+        rowName +
+        ': Data Source: ' +
+        rowTitle['datasource'] +
+        ', Validation Data Source: ' +
+        rowTitle['validationDatasource']
+    );
+  },
+  constantFields: function (rowName) {
+    let myScorecard = Session.get('myScorecard');
+    if (myScorecard === undefined) {
+      return;
+    }
+    const rowTitle = myScorecard['scorecard']['results']['rows'][rowName]['rowTitle'];
+    return (
+        'Constant Fields: TBD'
     );
   },
   scorecardRows: function () {

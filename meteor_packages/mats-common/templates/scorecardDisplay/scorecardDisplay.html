@@ -7,7 +7,7 @@
                 <h4 style="text-align: center;"><span>
                     {{Title}}
                     <button id="refresh-scorecard" type="button" class="refresh-scorecard btn btn-info"
-                    style="border-radius: 15px; background-color: #00badb;">
+                            style="border-radius: 15px; background-color: #00badb;">
                     <i class="fa-solid fa-arrows-rotate"></i>
                     </button>
                 </span></h4>
@@ -16,72 +16,78 @@
                 <label class="input-md" for="exportFileName">File Name:</label>
                 <input style="width:50em;" class="input-sm" id="exportFileName" value="{{fileNamePlaceholder}}">
                 <button type="button" class="btn-primary btn-xs btn-outline-primary exportpdf"
-                    id="exportpdf">save pdf</button>
+                        id="exportpdf">save pdf</button>
                 <button type="button" class="btn-primary btn-xs btn-outline-primary exportpng"
-                    id="exportpng">save png</button>
+                        id="exportpng">save png</button>
             </div>
             <div id="scorecardDisplayLoading" class="blink" style="display:block; color:rgb(21, 255, 0); margin-left: 1em;">Loading...</div>
         </div>
         {{#each scorecardRow in scorecardRows}}
-        <br/>
-        <h4 style="text-align:left; margin-left: 1em; margin-bottom: 1em;">{{rowTitle scorecardRow}}</h4>
-        <div id="scorecard-display-container" style="width:100%; margin-left: 1em;">
-            <table id="scOuterTable-{{scorecardRow}}" class="display nowrap">
-                <thead>
+            <br/>
+            <h4 style="text-align:left; margin-left: 1em; margin-bottom: 1em; font-weight: bold;">{{rowTitle scorecardRow}}</h4>
+            <h4 style="text-align:left; margin-left: 1em; margin-bottom: 1em; color: #000099">{{constantFields scorecardRow}}</h4>
+            <div id="scorecard-display-container" style="width:100%; margin-left: 1em;">
+                <table id="scOuterTable-{{scorecardRow}}" class="display nowrap">
+                    <thead>
                     <!--empty placeholder for stat-->
                     <th>Application: {{application scorecardRow}}</th>
                     <!--empty placeholder for variable-->
                     <th></th>
                     {{#each region in regions scorecardRow}}
-                    <th class="scOuterHeaderRegion" style="width:{{numFcsts scorecardRow}}em; background-color:LightCyan;">
-                        {{region}}</th>
+                        <th class="scOuterHeaderRegion" style="width:{{numFcsts scorecardRow}}em; background-color:LightCyan;">
+                            {{region}}</th>
                     {{/each}}
-                </thead>
-                <tbody>
+                    </thead>
+                    <tbody>
                     <tr>
                         <td class="scOuterHeaderRegion" style="background-color:LightCyan;">stat</td>
                         <td class="scOuterHeaderRegion" style="background-color:LightCyan;">variable</td>
                         {{#each region in regions scorecardRow}}
-                        <td class="scRegionTd" style="max-width: {{numFcsts scorecardRow}}em;">
-                            <table class="scInnerTable" style="max-width:{{numFcsts scorecardRow}}em;">
-                                <tr>
-                                    {{#each fcstlen in fcstlens scorecardRow}}
-                                    <td style="background-color:LightCyan;" class="scInnerTd">{{fcstlen}}</td>
-                                    {{/each}}
-                                </tr>
-                            </table>
-                        </td>
+                            <td class="scRegionTd" style="max-width: {{numFcsts scorecardRow}}em;">
+                                <table class="scInnerTable" style="max-width:{{numFcsts scorecardRow}}em;">
+                                    <tr>
+                                        {{#each fcstlen in fcstlens scorecardRow}}
+                                            <td style="background-color:LightCyan;" class="scInnerTd">{{fcstlen}}</td>
+                                        {{/each}}
+                                    </tr>
+                                </table>
+                            </td>
                         {{/each}}
                     </tr>
                     {{#each stat in stats scorecardRow}}
-                    {{#each variable in variables scorecardRow}}
-                    <tr>
-                        <td style="background-color:LightCyan;" class="scStatVarTd">{{stat}}</td>
-                        <td style="background-color:LightCyan;" class="scStatVarTd">{{variable}}</td>
-                        {{#each region in regions scorecardRow}}
-                        <td class="scTableTd">
-                            <table class="scTableSig" style="max-width:{{numFcsts scorecardRow}}em;">
-                                <tr>
-                                    {{#each fcstlen in fcstlens scorecardRow}}
-                                    <td class="scTableSigTd" id="{{sigIconId scorecardRow region stat variable fcstlen}}"
-                                        data-scorecardRow="{{scorecardRow}}" data-region="{{region}}" data-stat="{{stat}}"
-                                        data-variable="{{variable}}" data-fcstlen="{{fcstlen}}"
-                                        style="background-color: {{significanceBackgroundColor scorecardRow region stat variable fcstlen}}">
-                                        <i style="color:{{significanceColor scorecardRow region stat variable fcstlen}}"
-                                            class="{{significanceClass scorecardRow region stat variable fcstlen}}"></i>
+                        {{#each variable in variables scorecardRow}}
+                            <tr>
+                                <td style="background-color:LightCyan;" class="scStatVarTd">{{stat}}</td>
+                                <td style="background-color:LightCyan;" class="scStatVarTd">{{variable}}</td>
+                                {{#each region in regions scorecardRow}}
+                                    <td class="scTableTd">
+                                        <table class="scTableSig" style="max-width:{{numFcsts scorecardRow}}em;">
+                                            <tr>
+                                                {{#each fcstlen in fcstlens scorecardRow}}
+                                                    <td class="scTableSigTd"
+                                                        id="{{sigIconId scorecardRow region stat variable fcstlen}}"
+                                                        data-scorecardRow="{{scorecardRow}}" data-region="{{region}}"
+                                                        data-stat="{{stat}}"
+                                                        data-variable="{{variable}}" data-fcstlen="{{fcstlen}}"
+                                                        style="background-color: {{significanceBackgroundColor
+                                                                scorecardRow region stat variable fcstlen}}">
+                                                        <i style="color:{{significanceColor scorecardRow region stat
+                                                                                            variable fcstlen}}"
+                                                           class="{{significanceClass scorecardRow region stat variable
+                                                                                      fcstlen}}"></i>
+                                                    </td>
+                                                {{/each}}
+                                            </tr>
+                                        </table>
                                     </td>
-                                    {{/each}}
-                                </tr>
-                            </table>
-                        </td>
+                                {{/each}}
+                            </tr>
                         {{/each}}
-                    </tr>
-                    {{/each}}
                     {{/each}}
                     {{hideLoading}}
-                </tbody>
-            </table>
-        </div>
+                    </tbody>
+                </table>
+            </div>
         {{/each}}
     </div>
     {{>footer}}
