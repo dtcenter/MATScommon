@@ -2349,7 +2349,6 @@ const getScorecardSettings = new ValidatedMethod({
     }).validator(),
     async run(params) {
         if (Meteor.isServer) {
-            let ret;
             let key = params.settingsKey;
             try {
                 // global cbScorecardSettingsPool
