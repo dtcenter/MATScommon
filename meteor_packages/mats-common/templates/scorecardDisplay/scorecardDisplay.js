@@ -456,7 +456,7 @@ Template.ScorecardDisplay.events({
     const key = hash(settingsJSON);
     matsMethods.saveScorecardSettings.call({
       settingsKey: key,
-      scorecardSettings: settingsJSON,
+      scorecardSettings: settingsJSON
     }, function (error) {
       if (error !== undefined) {
         setError(error);
