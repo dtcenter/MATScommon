@@ -93,7 +93,7 @@ const checkDisableOther = function (param, firstRender) {
                 }
                 const selectedOptions = elem.selectedOptions;
                 const selectedText = selectedOptions && selectedOptions.length > 0 ? selectedOptions[0].text : "";
-                if ((firstRender === true && param.default === param.hideOtherFor[controlledSelectors[i]]) ||
+                if ((firstRender && param.default.toString() === param.hideOtherFor[controlledSelectors[i]].toString()) ||
                     (param.disableOtherFor[controlledSelectors[i]] === matsTypes.InputTypes.unused && selectedText === "") ||
                     $.inArray(selectedText, param.disableOtherFor[controlledSelectors[i]]) !== -1) {
                     matsParamUtils.getInputElementForParamName(controlledSelectors[i]).disabled = true;
@@ -158,7 +158,7 @@ const checkHideOther = function (param, firstRender) {
 
                 let otherInputElement = matsParamUtils.getInputElementForParamName(controlledSelectors[i]);
                 var selectorControlElem;
-                if ((firstRender === true && param.default === param.hideOtherFor[controlledSelectors[i]]) ||
+                if ((firstRender && param.default.toString() === param.hideOtherFor[controlledSelectors[i]].toString()) ||
                     (param.hideOtherFor[controlledSelectors[i]] === matsTypes.InputTypes.unused && selectedText === "") ||
                     $.inArray(selectedText, param.hideOtherFor[controlledSelectors[i]]) !== -1) {
                     selectorControlElem = document.getElementById(controlledSelectors[i] + '-item');
