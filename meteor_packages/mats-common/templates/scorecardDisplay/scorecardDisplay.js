@@ -219,19 +219,19 @@ Template.ScorecardDisplay.helpers({
     const majorSourceIcon = 'fa fa-caret-up fa-lg';
     const minorSourceIcon = 'fa fa-caret-up fa-sm';
     const neutralIcon = 'fa icon-check-empty fa-sm';
-    if (sigVal == -2) {
+    if (sigVal === -2) {
       return majorTruthIcon;
     }
-    if (sigVal == -1) {
+    if (sigVal === -1) {
       return minorTruthIcon;
     }
-    if (sigVal == 0) {
+    if (sigVal === 0) {
       return neutralIcon;
     }
-    if (sigVal == 2) {
+    if (sigVal === 2) {
       return majorSourceIcon;
     }
-    if (sigVal == 1) {
+    if (sigVal === 1) {
       return minorSourceIcon;
     }
   },
@@ -246,19 +246,19 @@ Template.ScorecardDisplay.helpers({
       myScorecard['scorecard']['results']['rows'][rowName]['data'][region][stat][variable][
         fcstlenStr
       ];
-    if (sigVal == -2) {
+    if (sigVal === -2) {
       return myScorecard['scorecard']['significanceColors']['major-truth-color'];
     }
-    if (sigVal == -1) {
+    if (sigVal === -1) {
       return myScorecard['scorecard']['significanceColors']['minor-truth-color'];
     }
-    if (sigVal == 0) {
+    if (sigVal === 0) {
       return 'lightgrey ';
     }
-    if (sigVal == 2) {
+    if (sigVal === 2) {
       return myScorecard['scorecard']['significanceColors']['major-source-color'];
     }
-    if (sigVal == 1) {
+    if (sigVal === 1) {
       return myScorecard['scorecard']['significanceColors']['minor-source-color'];
     }
   },
@@ -273,28 +273,28 @@ Template.ScorecardDisplay.helpers({
       myScorecard['scorecard']['results']['rows'][rowName]['data'][region][stat][variable][
         fcstlenStr
       ];
-    if (sigVal == -2) {
+    if (sigVal === -2) {
       return LightenDarkenColor(
         myScorecard['scorecard']['significanceColors']['major-truth-color'],
         180
       );
     }
-    if (sigVal == -1) {
+    if (sigVal === -1) {
       return LightenDarkenColor(
         myScorecard['scorecard']['significanceColors']['minor-truth-color'],
         220
       );
     }
-    if (sigVal == 0) {
+    if (sigVal === 0) {
       return 'lightgrey';
     }
-    if (sigVal == 2) {
+    if (sigVal === 2) {
       return LightenDarkenColor(
         myScorecard['scorecard']['significanceColors']['major-source-color'],
         180
       );
     }
-    if (sigVal == 1) {
+    if (sigVal === 1) {
       return LightenDarkenColor(
         myScorecard['scorecard']['significanceColors']['minor-source-color'],
         220
@@ -339,7 +339,7 @@ Template.ScorecardDisplay.helpers({
 
   Title: function () {
     let processedAtstamp = 'unprocessed';
-    if (this.processedAt != 0) {
+    if (Number(this.processedAt) !== 0) {
       processedAtstamp = new Date(this.processedAt * 1000).toUTCString();
     }
     return this.userName + ' : ' + this.name + ' : ' + processedAtstamp;
@@ -349,8 +349,8 @@ Template.ScorecardDisplay.helpers({
     let y = x.getFullYear().toString();
     let m = (x.getMonth() + 1).toString();
     let d = x.getDate().toString();
-    d.length == 1 && (d = '0' + d);
-    m.length == 1 && (m = '0' + m);
+    d.length === 1 && (d = '0' + d);
+    m.length === 1 && (m = '0' + m);
     let yyyymmdd = y + m + d;
     return this.name + '-' + yyyymmdd;
   },

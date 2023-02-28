@@ -79,7 +79,7 @@ Template.select.helpers({
     },
 
     isSelectedByDefault: function (p) {
-        if (p.default == this) {
+        if (p.default === this) {
             return "selected";   // the selected option
         } else {
             return ""; // not the selected option
@@ -196,7 +196,7 @@ Template.select.events({
     'change, blur .item' : function (event) {
         try {
             var text = "";
-            if (this.type == matsTypes.InputTypes.selectOrderEnforced) {
+            if (this.type === matsTypes.InputTypes.selectOrderEnforced) {
                 /* check the validity of the order enforcement.
                    The requirement for order enforced selectors is that
                    some curve must have previously selected the earlier (lower ordered)
@@ -223,7 +223,7 @@ Template.select.events({
                     for (var oi = 0; oi < options.length; oi++) {
                         var option = options[oi];
                         // We reached the selected option
-                        if (option == selection) {
+                        if (option === selection) {
                             break;
                         }
                         if (!priorSelected.includes(option)) {
@@ -256,7 +256,7 @@ Template.select.events({
                 text = $(event.target).val();
             }
             if (this.type === matsTypes.InputTypes.select && (text === "" || text === undefined || text === null) &&
-                (this.default === -1 || this.default === undefined || this.default === null || event.currentTarget.selectedIndex == -1)) {
+                (this.default === -1 || this.default === undefined || this.default === null || event.currentTarget.selectedIndex === -1)) {
                 text = matsTypes.InputTypes.unused;
                 //$('#' + this.name + "-" + this.type).select2().val(null).trigger('change');
             }

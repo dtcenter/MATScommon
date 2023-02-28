@@ -62,7 +62,7 @@ if (Meteor.isServer) {
 
     // set the default proxy prefix path to ""
     // If the settings are not complete, they will be set by the configuration and written out, which will cause the app to reset
-    if (Meteor.settings.public != null && Meteor.settings.public.proxy_prefix_path == null) {
+    if (Meteor.settings.public && !Meteor.settings.public.proxy_prefix_path) {
         Meteor.settings.public.proxy_prefix_path = "";
     }
 
@@ -465,7 +465,7 @@ const _checkMetaDataRefresh = async function () {
             const updatedEpochMoment = moment.utc(updatedEpoch).valueOf();
             //console.log("Epoch of when this app last refreshed metadata for table " + dbName + "." + tName + " is " + lastRefreshedEpoch);
             //console.log("Epoch of when the DB says table " + dbName + "." + tName + " was last updated is " + updatedEpochMoment);
-            if (lastRefreshedEpoch < updatedEpochMoment || updatedEpochMoment == 0) {
+            if (lastRefreshedEpoch < updatedEpochMoment || updatedEpochMoment === 0) {
                 // Aurora DB sometimes returns a 0 for last updated. In that case, do refresh the metadata.
                 refresh = true;
                 //console.log("Refreshing the metadata in the app selectors because table " + dbName + "." + tName + " was updated at " + moment.utc(updatedEpoch * 1000).format("YYYY-MM-DD HH:mm:ss") + " while the metadata was last refreshed at " + moment.utc(lastRefreshedEpoch * 1000).format("YYYY-MM-DD HH:mm:ss"));
@@ -514,7 +514,7 @@ const _clearCache = function (params, req, res, next) {
 // private middleware for dropping a distinct instance (a single run) of a scorecard
 const _dropScorecardInstance = async function (userName, name, submittedTime, processedAt) {
     try {
-        if (cbScorecardPool == undefined) {
+        if (cbScorecardPool === undefined) {
             throw new Meteor.Error("_dropScorecardInstance: No cbScorecardPool defined");
         }
         const statement = `DELETE
@@ -1068,7 +1068,7 @@ const _getCSV = function (params, req, res, next) {
                 var dataSubArray = Object.values(dataArray[di]);
                 var dataHeader = dataSubArray[0] === undefined ? statArray[di].label : Object.keys(dataSubArray[0]);
                 //dataHeader[0] = 'label';
-                dataHeader[0] = dataSubArray[0] === undefined ? "NO DATA" : Object.keys(dataSubArray[0]).filter(key => key.indexOf('Curve') != -1)[0];
+                dataHeader[0] = dataSubArray[0] === undefined ? "NO DATA" : Object.keys(dataSubArray[0]).filter(key => key.indexOf('Curve') !== -1)[0];
                 dataResultArray.push(dataHeader); // push this curve data header (keys)
                 if (dataSubArray[0] === undefined) {
                     continue;
@@ -1474,16 +1474,16 @@ const _getFlattenedResultData = function (rk, p, np) {
                     var firstBestFitIndex = -1;
                     var bestFitIndexes = {};
                     for (var ci = 0; ci < data.length; ci++) {
-                        if (ci == firstBestFitIndex) {
+                        if (ci === firstBestFitIndex) {
                             break; // best fit curves are at the end so do not do further processing
                         }
                         var curveData = data[ci];
                         // look for a best fit curve - only have to look at curves with higher index than this one
                         var bestFitIndex = -1;
                         for (var cbi = ci + 1; cbi < data.length; cbi++) {
-                            if (((data[cbi].label).indexOf(curveData.label) !== -1) && ((data[cbi].label).indexOf("-best fit") != -1)) {
+                            if (((data[cbi].label).indexOf(curveData.label) !== -1) && ((data[cbi].label).indexOf("-best fit") !== -1)) {
                                 bestFitIndexes[ci] = cbi;
-                                if (firstBestFitIndex == -1) {
+                                if (firstBestFitIndex === -1) {
                                     firstBestFitIndex = cbi;
                                 }
                                 break;
@@ -1560,7 +1560,7 @@ const _getPagenatedData = function (rky, p, np) {
         var dsiStart;
         var dsiEnd;
         for (var csi = 0; csi < ret.data.length; csi++) {
-            if (ret.data[csi].x == null || ret.data[csi].x.length <= 100) {
+            if (!ret.data[csi].x || ret.data[csi].x.length <= 100) {
                 continue; // don't bother pagenating datasets less than or equal to a page - ret is rawReturn
             }
             dsiStart = start;
@@ -1726,7 +1726,7 @@ const _saveResultData = function (result) {
                 result: result
             }); // lifespan is handled by lowDb (internally) in matscache
         } catch (error) {
-            if (error.toLocaleString().indexOf("larger than the maximum size") != -1) {
+            if (error.toLocaleString().indexOf("larger than the maximum size") !== -1) {
                 throw new Meteor.Error(": Requesting too much data... try averaging");
             }
         }
@@ -1739,7 +1739,7 @@ const _write_settings = function (settings, appName) {
 
     const fs = require('fs');
     var settingsPath = process.env.METEOR_SETTINGS_DIR;
-    if (settingsPath == null) {
+    if (!settingsPath) {
         console.log("environment var METEOR_SETTINGS_DIR is undefined: setting it to /usr/app/settings");
         settingsPath = "/usr/app/settings";
     }
@@ -1780,7 +1780,7 @@ const _write_settings = function (settings, appName) {
 //return the scorecard for the provided selectors
 const _getScorecardData = async function (userName, name, submitted, processedAt) {
     try {
-        if (cbScorecardPool == undefined) {
+        if (cbScorecardPool === undefined) {
             throw new Meteor.Error("_getScorecardData: No cbScorecardPool defined");
         }
         const statement = `SELECT sc.*
@@ -1823,7 +1823,7 @@ const _getScorecardData = async function (userName, name, submitted, processedAt
 // return the scorecard status information from the couchbase database
 const _getScorecardInfo = async function () {
     try {
-        if (cbScorecardPool == undefined) {
+        if (cbScorecardPool === undefined) {
             throw new Meteor.Error("_getScorecardInfo: No cbScorecardPool defined");
         }
 
@@ -1936,7 +1936,7 @@ const applyAuthorization = new ValidatedMethod({
                     // see if the description matches...
                     roleName = role.name;
                     var description = role.description;
-                    if (description != userRoleDescription) {
+                    if (description !== userRoleDescription) {
                         // have to update the description
                         matsCollections.Roles.upsert({
                             name: userRoleName
@@ -1956,7 +1956,7 @@ const applyAuthorization = new ValidatedMethod({
                     email: existingUserEmail
                 });
                 roles = authorization.roles;
-                if (roles.indexOf(roleName) == -1) {
+                if (roles.indexOf(roleName) === -1) {
                     // have to add the role
                     if (roleName) {
                         roles.push(roleName);
@@ -1977,7 +1977,7 @@ const applyAuthorization = new ValidatedMethod({
                 if (authorization !== undefined) {
                     // authorization exists - add role to roles if necessary
                     roles = authorization.roles;
-                    if (roles.indexOf(roleName) == -1) {
+                    if (roles.indexOf(roleName) === -1) {
                         // have to add the role
                         if (roleName) {
                             roles.push(roleName);
@@ -2494,7 +2494,7 @@ const insertColor = new ValidatedMethod({
         }
     }).validator(),
     run(params) {
-        if (params.newColor == "rgb(255,255,255)") {
+        if (params.newColor === "rgb(255,255,255)") {
             return false;
         }
         var colorScheme = matsCollections.ColorScheme.findOne({});
@@ -2515,10 +2515,10 @@ const readFunctionFile = new ValidatedMethod({
             var fse = require('fs-extra');
             var path = "";
             var fData;
-            if (type == "data") {
+            if (type === "data") {
                 path = "/web/static/dataFunctions/" + file;
                 console.log('exporting data file: ' + path);
-            } else if (type == "graph") {
+            } else if (type === "graph") {
                 path = "/web/static/displayFunctions/" + file;
                 console.log('exporting graph file: ' + path);
             } else {
@@ -2675,7 +2675,7 @@ const applySettingsData = new ValidatedMethod({
             // in development - when being run by meteor, this should force a restart of the app.
             //in case I am in a container - exit and force a reload
             console.log('applySettingsData - process.env.NODE_ENV is: ' + process.env.NODE_ENV);
-            if (process.env.NODE_ENV != "development") {
+            if (process.env.NODE_ENV !== "development") {
                 console.log("applySettingsData - exiting after writing new Settings");
                 process.exit(0);
             }
@@ -2732,7 +2732,7 @@ const resetApp = async function (appRef) {
         if (isEmpty(Meteor.settings.private) || isEmpty(Meteor.settings.public)) {
             // create some default meteor settings and write them out
             var homeUrl = "";
-            if (process.env.ROOT_URL == undefined) {
+            if (!process.env.ROOT_URL) {
                 homeUrl = "https://localhost/home";
             } else {
                 var homeUrlArr = process.env.ROOT_URL.split('/');
@@ -2792,10 +2792,10 @@ const resetApp = async function (appRef) {
             // If it is undefined (requiring configuration) we will skip it but add
             // the corresponding role to Meteor.settings.public.undefinedRoles -
             // which will cause the app to route to the configuration page.
-            if (global[poolName] == undefined) {
+            if (!global[poolName]) {
                 console.log("resetApp adding " + global[poolName] + "to undefined roles");
                 // There was no pool defined for this poolName - probably needs to be configured so stash the role in the public settings
-                if (Meteor.settings.public.undefinedRoles == undefined) {
+                if (!Meteor.settings.public.undefinedRoles) {
                     Meteor.settings.public.undefinedRoles = [];
                 }
                 Meteor.settings.public.undefinedRoles.push(record.role);
@@ -2816,7 +2816,7 @@ const resetApp = async function (appRef) {
                 }
             } catch (e) {
                 console.log(poolName + ":  not initialized-- could not open connection: Error:" + e.message);
-                Meteor.settings.public.undefinedRoles = Meteor.settings.public.undefinedRoles == undefined ? [] : Meteor.settings.public.undefinedRoles == undefined;
+                Meteor.settings.public.undefinedRoles = Meteor.settings.public.undefinedRoles === undefined ? [] : Meteor.settings.public.undefinedRoles === undefined;
                 Meteor.settings.public.undefinedRoles.push(record.role);
                 continue
             }
@@ -2857,7 +2857,7 @@ const resetApp = async function (appRef) {
             for (var mdti = 0; mdti < metaDataTables.length; mdti++) {
                 const metaDataRef = metaDataTables[mdti];
                 metaDataRef.lastRefreshed = moment().format();
-                if (metaDataTableUpdates.find({name: metaDataRef.name}).count() == 0) {
+                if (metaDataTableUpdates.find({name: metaDataRef.name}).count() === 0) {
                     metaDataTableUpdates.update({
                         name: metaDataRef.name
                     }, metaDataRef, {
@@ -3015,10 +3015,10 @@ const saveSettings = new ValidatedMethod({
             created: moment().format("MM/DD/YYYY HH:mm:ss"),
             name: params.saveAs,
             data: params.p,
-            owner: Meteor.userId() == null ? "anonymous" : Meteor.userId(),
+            owner: !Meteor.userId() ? "anonymous" : Meteor.userId(),
             permission: params.permission,
             savedAt: new Date(),
-            savedBy: Meteor.user() == null ? "anonymous" : user
+            savedBy: !Meteor.user() ? "anonymous" : user
         });
     }
 });

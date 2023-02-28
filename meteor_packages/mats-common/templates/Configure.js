@@ -43,7 +43,7 @@ Template.Configure.helpers({
     },
     show_copy_icon: function() {
         const roles =  Meteor.settings.public.undefinedRoles;
-        if (this == roles[0]) {
+        if (this === roles[0]) {
             return "none";
         } else {
             return "block";
@@ -53,7 +53,7 @@ Template.Configure.helpers({
         return Meteor.settings.public.color;
     },
     groups: function() {
-        if (Session.get('defaultGroups') == undefined) {
+        if (Session.get('defaultGroups') === undefined) {
             matsMethods.getDefaultGroupList.call({}, function (error, result) {
                 if (error !== undefined) {
                     setError(error);
@@ -62,7 +62,7 @@ Template.Configure.helpers({
                 Session.set('defaultGroups', result);
             });
         }
-        if (Session.get('selectedGroup') == undefined && Session.get('defaultGroups') != undefined) {
+        if (Session.get('selectedGroup') === undefined && Session.get('defaultGroups') !== undefined) {
             Session.set('selectedGroup', Session.get('defaultGroups')[0]);
         }
         return Session.get('defaultGroups')
@@ -85,7 +85,7 @@ Template.Configure.events({
         // Get value from form element
         const target = event.target;
         const inputs = target.getElementsByTagName("input");
-        data = {'private':{'databases':[]},'public':{}};
+        let data = {'private':{'databases':[]},'public':{}};
         const roles = Meteor.settings.public.undefinedRoles;
         // private database values
         for (var ri=0; ri < roles.length; ri++) {
@@ -95,9 +95,9 @@ Template.Configure.events({
             roleData['status'] = "active";   // default to active
             for (var i = 0; i < inputs.length; i++) {
                 const input = inputs[i];
-                name = input.id;
-                value = input.value;
-                if (name.indexOf(roles[ri]) != -1){
+                let name = input.id;
+                let value = input.value;
+                if (name.indexOf(roles[ri]) !== -1){
                     name = name.replace(roles[ri] + "-",'');
                     roleData[name] = value;
                 }
@@ -107,11 +107,11 @@ Template.Configure.events({
         // public values
         for (var i = 0; i < inputs.length; i++) {
             const input = inputs[i];
-            name = input.id;
+            let name = input.id;
             if (name === "colorValue") {
                 continue;
             }
-            value = input.value;
+            let value = input.value;
             var roleVal = false;
             for (ri =0; ri < roles.length; ri++) {
                 if (name.indexOf(roles[ri]) !== -1){

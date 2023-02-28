@@ -1133,7 +1133,7 @@ const processDataHistogram = function (allReturnedSubStats, allReturnedSubSecs, 
             sum: 0
         };
 
-        if (diffFrom == null) {
+        if (!diffFrom) {
             if (curveInfoParams.dataFoundForCurve[curveIndex]) {
                 // sort queried data into the full set of histogram bins
                 sortedData = matsDataUtils.sortHistogramBins(allReturnedSubStats[curveIndex], allReturnedSubSecs[curveIndex], allReturnedSubLevs[curveIndex], binParams.binNum, binStats, appParams, d);

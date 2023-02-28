@@ -59,7 +59,7 @@ const arrayContainsSubArray = function (superArray, subArray) {
 // this function checks if two arrays are identical
 const arraysEqual = function (a, b) {
     if (a === b) return true;
-    if (a == null || b == null) return false;
+    if (!a || !b) return false;
     if (a.length !== b.length) return false;
     for (var i = 0; i < a.length; ++i) {
         if (a[i] !== b[i]) return false;
@@ -109,7 +109,7 @@ const objectContainsObject = function (superObject, subObject) {
 const sum = function (data) {
     if (data.length === 0) return null;
     return data.reduce(function (sum, value) {
-        return value == null ? sum : sum + value;
+        return !value ? sum : sum + value;
     }, 0);
 };
 
@@ -217,10 +217,10 @@ const secsConvert = function (dStr) {
 
 // function to manage authorized logins for MATS
 const doAuthorization = function () {
-    if (matsCollections.Settings.findOne({}) === undefined || matsCollections.Settings.findOne({}).resetFromCode === undefined || matsCollections.Settings.findOne({}).resetFromCode == true) {
+    if (matsCollections.Settings.findOne({}) === undefined || matsCollections.Settings.findOne({}).resetFromCode === undefined || matsCollections.Settings.findOne({}).resetFromCode === true) {
         matsCollections.Authorization.remove({});
     }
-    if (matsCollections.Authorization.find().count() == 0) {
+    if (matsCollections.Authorization.find().count() === 0) {
         matsCollections.Authorization.insert({email: "randy.pierce@noaa.gov", roles: ["administrator"]});
         matsCollections.Authorization.insert({email: "kirk.l.holub@noaa.gov", roles: ["administrator"]});
         matsCollections.Authorization.insert({email: "jeffrey.a.hamilton@noaa.gov", roles: ["administrator"]});
@@ -232,10 +232,10 @@ const doAuthorization = function () {
 
 // master list of colors for MATS curves
 const doColorScheme = function () {
-    if (matsCollections.Settings.findOne({}) === undefined || matsCollections.Settings.findOne({}).resetFromCode === undefined || matsCollections.Settings.findOne({}).resetFromCode == true) {
+    if (matsCollections.Settings.findOne({}) === undefined || matsCollections.Settings.findOne({}).resetFromCode === undefined || matsCollections.Settings.findOne({}).resetFromCode === true) {
         matsCollections.ColorScheme.remove({});
     }
-    if (matsCollections.ColorScheme.find().count() == 0) {
+    if (matsCollections.ColorScheme.find().count() === 0) {
         matsCollections.ColorScheme.insert({
             colors: [
                 "rgb(255,0,0)",
@@ -269,10 +269,10 @@ const doColorScheme = function () {
 // utility for google login capabilities in MATS -- broken for esrl.noaa.gov/gsd/mats?
 const doCredentials = function () {
 // the gmail account for the credentials is mats.mail.daemon@gmail.com - pwd mats2015!
-    if (matsCollections.Settings.findOne({}) === undefined || matsCollections.Settings.findOne({}).resetFromCode === undefined || matsCollections.Settings.findOne({}).resetFromCode == true) {
+    if (matsCollections.Settings.findOne({}) === undefined || matsCollections.Settings.findOne({}).resetFromCode === undefined || matsCollections.Settings.findOne({}).resetFromCode === true) {
         matsCollections.Credentials.remove({});
     }
-    if (matsCollections.Credentials.find().count() == 0) {
+    if (matsCollections.Credentials.find().count() === 0) {
         matsCollections.Credentials.insert({
             name: "oauth_google",
             clientId: "499180266722-aai2tddo8s9edv4km1pst88vebpf9hec.apps.googleusercontent.com",
@@ -284,20 +284,20 @@ const doCredentials = function () {
 
 // another utility to assist at logging into MATS
 const doRoles = function () {
-    if (matsCollections.Settings.findOne({}) === undefined || matsCollections.Settings.findOne({}).resetFromCode === undefined || matsCollections.Settings.findOne({}).resetFromCode == true) {
+    if (matsCollections.Settings.findOne({}) === undefined || matsCollections.Settings.findOne({}).resetFromCode === undefined || matsCollections.Settings.findOne({}).resetFromCode === true) {
         matsCollections.Roles.remove({});
     }
-    if (matsCollections.Roles.find().count() == 0) {
+    if (matsCollections.Roles.find().count() === 0) {
         matsCollections.Roles.insert({name: "administrator", description: "administrator privileges"});
     }
 };
 
 // for use in matsMethods.resetApp() to establish default settings
 const doSettings = function (title, dbType, version, commit, appName, appType, mapboxKey, appDefaultGroup, appDefaultDB, appDefaultModel, thresholdUnits, appMessage, scorecard) {
-    if (matsCollections.Settings.findOne({}) === undefined || matsCollections.Settings.findOne({}).resetFromCode === undefined || matsCollections.Settings.findOne({}).resetFromCode == true) {
+    if (matsCollections.Settings.findOne({}) === undefined || matsCollections.Settings.findOne({}).resetFromCode === undefined || matsCollections.Settings.findOne({}).resetFromCode === true) {
         matsCollections.Settings.remove({});
     }
-    if (matsCollections.Settings.find().count() == 0) {
+    if (matsCollections.Settings.find().count() === 0) {
         matsCollections.Settings.insert({
             LabelPrefix: scorecard ? "Row" : "Curve",
             Title: title,
@@ -635,7 +635,7 @@ const get_err = function (sVals, sSecs, sLevs, appParams) {
         r[lag] = 0;
         n_in_lag = 0;
         for (t = 0; t < ((n + n_gaps) - lag); t++) {
-            if (data_wg[t] != null && data_wg[t + lag] != null) {
+            if (data_wg[t] && data_wg[t + lag]) {
                 r[lag] += +(data_wg[t] - d_mean) * (data_wg[t + lag] - d_mean);
                 n_in_lag++;
             }

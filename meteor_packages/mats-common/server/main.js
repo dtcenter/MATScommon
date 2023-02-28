@@ -51,7 +51,7 @@ var setGoogleCred = function () {
                 gSecret = "oVViBi9TgLrLPWt6ZTv7M95k";
                 break;
         }
-        if (gid != cid || gSecret != cSecret) {
+        if (gid !== cid || gSecret !== cSecret) {
             // reset gid and gSecret
             if (cred) {
                 ServiceConfiguration.configurations.update(_id, {$set: {secret: gSecret, clientId: gid}});

@@ -8,15 +8,15 @@ generic Math Functions
  */
 var isNum = function (args)
 {
-    if (args == null || args == undefined) {
+    if (args === null || args === undefined) {
         return false;
     }
     args = args.toString();
-    if (args.length == 0) return false;
+    if (args.length === 0) return false;
 
     for (var i = 0;  i<args.length;  i++)
     {
-        if ((args.substring(i,i+1) < "0" || args.substring(i, i+1) > "9") && args.substring(i, i+1) != "."&& args.substring(i, i+1) != "-")
+        if ((args.substring(i,i+1) < "0" || args.substring(i, i+1) > "9") && args.substring(i, i+1) !== "."&& args.substring(i, i+1) !== "-")
         {
             return false;
         }
@@ -32,7 +32,7 @@ var mean = function (arr)
 
     for(var i=0;i<arr.length;i++)
     {
-        if (arr[i] == ""){}
+        if (arr[i] === ""){}
         else if (!isNum(arr[i]))
         {
             //alert(arr[i] + " is not number!");
@@ -54,7 +54,7 @@ var variance = function (arr)
     var sum=0;
     for(var i=0;i<arr.length;i++)
     {
-        if (arr[i] == ""){}
+        if (arr[i] === ""){}
         else if (!isNum(arr[i]))
         {
             //alert(arr[i] + " is not number, Variance Calculation failed!");
@@ -74,7 +74,7 @@ var variance = function (arr)
         var mean = sum / len;
         for(var i=0;i<arr.length;i++)
         {
-            if (arr[i] == ""){}
+            if (arr[i] === ""){}
             else
             {
                 v = v + (arr[i] - mean) * (arr[i] - mean);
@@ -96,7 +96,7 @@ var median = function (arr)
 
     var median = 0;
 
-    if (arr.length % 2 == 1)
+    if (arr.length % 2 === 1)
     {
         median = arr[(arr.length+1)/2 - 1];
     }

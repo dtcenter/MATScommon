@@ -102,7 +102,7 @@ Template.curveParamItemGroup.helpers({
         var groupParams = [];
         var pvi = 0;
         while (pvi < pValues.length) {
-            if (pValues[pvi] && (pValues[pvi].name == 'xaxis' || pValues[pvi].name == 'yaxis')) {
+            if (pValues[pvi] && (pValues[pvi].name === 'xaxis' || pValues[pvi].name === 'yaxis')) {
                 if (groupParams.length > 0) {
                     // finish the old group and make a new group for 'xaxis' or 'yaxis'
                     pGroups.push(groupParams);

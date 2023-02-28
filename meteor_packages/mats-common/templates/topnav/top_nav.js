@@ -4,7 +4,7 @@
 import matsMethods from "../../imports/startup/api/matsMethods";
 
 const getRunEnvironment = function () {
-    if (Session.get('deployment_environment') == undefined) {
+    if (Session.get('deployment_environment') === undefined) {
         matsMethods.getRunEnvironment.call({}, function (error, result) {
             if (error !== undefined) {
                 setError(error);

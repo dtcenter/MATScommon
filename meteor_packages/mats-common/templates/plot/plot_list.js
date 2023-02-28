@@ -156,7 +156,7 @@ Template.plotList.events({
             p.plotTypes[ptElem.value] = ptElem.value === plotTypeElems.value;
         }
         var curves = Session.get('Curves');
-        if (curves == 0 && action !== "restore") {
+        if (curves === 0 && action !== "restore") {
             //alert ("No Curves To plot");
             setError(new Error("There are no curves to plot!"));
             Session.set("spinner_img", "spinner.gif");
@@ -171,29 +171,29 @@ Template.plotList.events({
             var type = plotParam.type;
             var options = plotParam.options;
 
-            if (type == matsTypes.InputTypes.radioGroup) {
+            if (type === matsTypes.InputTypes.radioGroup) {
                 for (var i=0; i<options.length; i++) {
-                    if (document.getElementById(name+"-" + type + "-" + options[i]).checked == true) {
+                    if (document.getElementById(name+"-" + type + "-" + options[i]).checked === true) {
                         p[name] = options[i];
                         break;
                     }
                 }
-            } else if (type == matsTypes.InputTypes.checkBoxGroup) {
+            } else if (type === matsTypes.InputTypes.checkBoxGroup) {
                 p[name] = [];
                 for (var i = 0; i < options.length; i++) {
                     if (document.getElementById(name + "-" + type + "-" + options[i]).checked) {
                         p[name].push(options[i]);
                     }
                 }
-            } else if (type == matsTypes.InputTypes.dateRange) {
+            } else if (type === matsTypes.InputTypes.dateRange) {
                 p[name] = matsParamUtils.getValueForParamName(name);
-            } else if (type == matsTypes.InputTypes.numberSpinner) {
+            } else if (type === matsTypes.InputTypes.numberSpinner) {
                 p[name] = document.getElementById(name + '-' + type).value;
-            } else if (type == matsTypes.InputTypes.select) {
+            } else if (type === matsTypes.InputTypes.select) {
                 p[name] = document.getElementById(name + '-' + type).value;
-            } else if (type == matsTypes.InputTypes.textInput) {
+            } else if (type === matsTypes.InputTypes.textInput) {
                 p[name] = document.getElementById(name + '-' + type).value;
-            } else if (type == matsTypes.InputTypes.color) {
+            } else if (type === matsTypes.InputTypes.color) {
                 p[name] = document.getElementById(name + '-' + type).value;
             }
         });
@@ -221,7 +221,7 @@ Template.plotList.events({
                 } else {
                     saveAs = document.getElementById('save_to').value;
                 }
-                var permission = document.getElementById("save-public").checked == true?"public":"private";
+                var permission = document.getElementById("save-public").checked === true?"public":"private";
                 //console.log("saving settings to " + saveAs);
                 Session.set('plotName', saveAs);
                 // get the settings to save out of the session
@@ -506,10 +506,10 @@ Template.plotList.events({
                 let d = x.getUTCDate().toString();
                 let h = x.getUTCHours().toString();
                 let min = x.getUTCMinutes().toString();
-                (d.length == 1) && (d = '0' + d);
-                (m.length == 1) && (m = '0' + m);
-                (h.length == 1) && (h = '0' + h);
-                (min.length == 1) && (min = '0' + min);
+                (d.length === 1) && (d = '0' + d);
+                (m.length === 1) && (m = '0' + m);
+                (h.length === 1) && (h = '0' + h);
+                (min.length === 1) && (min = '0' + min);
                 let submitTime = y + m + d + h + min;
                 // stash the submit epoch in the params
                 p['submitEpoch'] = Math.floor(x.getTime() / 1000);

@@ -13,7 +13,7 @@ class CBUtilities {
     // DO NOT require couchbase at the top of the file, the client breaks if it gets couchbase included into it.
     const couchbase = require("couchbase");
     try {
-      if (this.conn == undefined || this.conn.cluster == undefined) {
+      if (!this.conn || !this.conn.cluster) {
         // set query timeout to 10 minutes -- we have some long data ones
         // const cluster = await couchbase.connect("couchbase://" + this.host, {
         const cluster = await couchbase.connect(this.host, {

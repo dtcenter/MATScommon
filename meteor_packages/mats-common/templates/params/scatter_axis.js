@@ -152,14 +152,14 @@ Template.scatter2d.helpers({
     },
     isDefault: function (param) {
         const def = param.default;
-        if (def == this) {
+        if (def === this) {
             return "checked";
         } else {
             return "";
         }
     },
     displayScatter2d: function() {
-        if (matsPlotUtils.getPlotType() == matsTypes.PlotTypes.scatter2d) {
+        if (matsPlotUtils.getPlotType() === matsTypes.PlotTypes.scatter2d) {
             return "block";
         } else {
             return "none";

@@ -71,9 +71,9 @@ const setValueTextForParamName = function (paramName, text) {
             if (param.multiple) {
                 // .... if multi selected  get the first .. last
                 const selection = getInputElementForParamName(paramName).selectedOptions;
-                if (selection.length == 0) {
+                if (selection.length === 0) {
                     text = "";
-                } else if (selection.length == 1) {
+                } else if (selection.length === 1) {
                     text = selection[0].textContent;
                 } else {
                     text = selection[0].textContent + " .. " + selection[selection.length - 1].textContent;
@@ -81,7 +81,7 @@ const setValueTextForParamName = function (paramName, text) {
             }
         }
         const elem = getValueElementForParamName(paramName);
-        if (elem != null && elem.textContent !== text) {
+        if (elem && elem.textContent !== text) {
             delete (elem.textContent);
             elem.textContent = text;
         }
@@ -209,7 +209,7 @@ const getElementValues = function () {
             val = $(idSelect).val();
         }
         data.curveParams[param.name] = val;
-        if (matsPlotUtils.getPlotType() == matsTypes.PlotTypes.scatter2d) {
+        if (matsPlotUtils.getPlotType() === matsTypes.PlotTypes.scatter2d) {
             for (var a = 0; a < axis.length; a++) {
                 const axisStr = axis[a];
                 const name = axisStr + param.name;
@@ -265,7 +265,7 @@ const getElementValues = function () {
             val = $(idSelect).val();
         }
         data.scatterParams[param.name] = val;
-        if (matsPlotUtils.getPlotType() == matsTypes.PlotTypes.scatter2d) {
+        if (matsPlotUtils.getPlotType() === matsTypes.PlotTypes.scatter2d) {
             for (var a = 0; a < axis.length; a++) {
                 var axisStr = axis[a];
                 var name = axisStr + param.name;
@@ -372,10 +372,10 @@ const setDefaultForParamName = function (param) {
     const paramName = param.name;
     const type = param.type;
     const defaultValue = param.default;
-    if (paramName == 'label') {
+    if (paramName === 'label') {
         setInputForParamName(paramName, Session.get('NextCurveLabel'));
     } else {
-        if (defaultValue != "undefined") {
+        if (defaultValue !== "undefined") {
             if (type === matsTypes.InputTypes.select && (defaultValue === -1 || defaultValue === undefined || defaultValue === matsTypes.InputTypes.unused)) {
                 setInputForParamName(paramName, matsTypes.InputTypes.unused);
             } else {

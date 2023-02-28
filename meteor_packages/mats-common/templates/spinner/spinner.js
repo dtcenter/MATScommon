@@ -7,7 +7,7 @@ import {matsCurveUtils,matsPlotUtils} from 'meteor/randyp:mats-common';
 Template.spinner.helpers({
     spinnerUrl: function() {
         var img = Session.get("spinner_img");
-        if (img == undefined) {
+        if (img === undefined) {
             img = "spinner.gif";
             Session.set("spinner_img", "spinner.gif");
         }

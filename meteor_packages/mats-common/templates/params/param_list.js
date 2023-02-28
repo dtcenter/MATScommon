@@ -31,7 +31,7 @@ Template.paramList.helpers({
         return res;
     },
     isEdit: function () {
-        return Session.get('editMode') != '';
+        return Session.get('editMode') !== '';
     },
     log: function () {
         console.log(this);
@@ -42,7 +42,7 @@ Template.paramList.helpers({
         }
         if (Session.get("editMode") !== "") {
             const curveBeingEdited = $.grep(Session.get("Curves"), function (c) {
-                return c.label == Session.get("editMode");
+                return c.label === Session.get("editMode");
             });
             if (curveBeingEdited === undefined || curveBeingEdited[0] === undefined) {
                 Session.set("paramWellColor", "rgb(245,245,245)");
@@ -169,7 +169,7 @@ Template.paramList.events({
             label.disabled = false;
 
             for (var i = 0; i < l; i++) {
-                if (paramElems[i].name == "label") {
+                if (paramElems[i].name === "label") {
                     p[paramElems[i].name] = changingCurveLabel;  // don't change the label when editing a curve
                     continue;
                 }
@@ -209,7 +209,7 @@ Template.paramList.events({
                     p.color = curves[i].color;
                 }
             }
-            if (index != -1) {
+            if (index !== -1) {
                 if (isScatter) {
                     // copy the params to the current axis paremeters
                     var axis = Session.get('axis');
@@ -276,7 +276,7 @@ Template.paramList.events({
                         }
                     }
                     if (paramElems[i].name && paramElems[i].name === 'label') {
-                        if (_.indexOf(matsCurveUtils.getUsedLabels(), (paramElems[i]).value) != -1) {
+                        if (_.indexOf(matsCurveUtils.getUsedLabels(), (paramElems[i]).value) !== -1) {
                             setError(new Error('labels need to be unique - change ' + (paramElems[i]).value + " to something else"));
                             return false;
                         }
