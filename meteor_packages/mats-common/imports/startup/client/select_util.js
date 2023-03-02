@@ -130,6 +130,8 @@ const checkHideOther = function (param, firstRender) {
                             break;
                         }
                     }
+                    selectedOptions = selectedOptions ? selectedOptions : [];
+                    selectedText = selectedText ? selectedText : "";
                 } else {
                     selectedOptions = elem.selectedOptions;
                     selectedText = selectedOptions && selectedOptions.length > 0 ? selectedOptions[0].text : "";
