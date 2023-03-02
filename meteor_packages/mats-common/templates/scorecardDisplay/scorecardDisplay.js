@@ -426,8 +426,8 @@ Template.ScorecardDisplay.events({
     const application = rowData['application'];
     // When comparing models, you want forecast minus truth.
     // MATS differences are calculated by Curve1 - Curve0,
-    // so Curve1 is the data-source and Curve0 is the validation-data-source
-    const curve0Model = rowData['validation-data-source'];
+    // so Curve1 is the data-source and Curve0 is the control-data-source
+    const curve0Model = rowData['control-data-source'];
     const curve1Model = rowData['data-source'];
     const scorecardSettings = {
       "appName": application,
