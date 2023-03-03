@@ -233,6 +233,9 @@ const queryDBTimeSeries = function (pool, statement, dataSource, forecastOffset,
         // upper air is only verified at 00Z and 12Z, so you need to force irregular models to verify at that regular cadence
         var cycles = getModelCadence(pool, dataSource, startDate, endDate); // if irregular model cadence, get cycle times. If regular, get empty array.
         if (validTimes.length > 0 && validTimes !== matsTypes.InputTypes.unused) {
+            if (typeof validTimes === 'string' || validTimes instanceof String) {
+                validTimes = validTimes.split(',');
+            }
             var vtCycles = validTimes.map(function (x) {
                 return (Number(x) - forecastOffset) * 3600 * 1000;
             }); // selecting validTimes makes the cadence irregular

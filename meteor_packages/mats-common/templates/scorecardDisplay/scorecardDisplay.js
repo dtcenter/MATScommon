@@ -223,7 +223,8 @@ Template.ScorecardDisplay.helpers({
     if (CFString.length > 0) CFString = CFString + "; ";
     CFString = CFString + "dates = " + myScorecard['scorecard'].plotParams.dates;
     return (
-        'Constant Fields: ' + CFString
+        'Constant fields: exp. data source = ' + actuallyAddedFields["data-source"]
+        + "; control data source = " + actuallyAddedFields["data-source"] + "; " + CFString
     );
   },
   scorecardRows: function () {
@@ -429,7 +430,7 @@ Template.ScorecardDisplay.helpers({
   },
   trimmedText: function (text) {
     if (typeof text === 'string' || text instanceof String) {
-      text = text.replace("__DOT__", ".");
+      text = text.replace(/__DOT__/g, ".");
       text = text.split(" (")[0];
     }
       return text
@@ -521,16 +522,22 @@ Template.ScorecardDisplay.events({
       "curve1DataSource": curve1Model,
       "commonCurveParams":
       {
-        "region": e.currentTarget.dataset.region === undefined ? "undefined" : e.currentTarget.dataset.region,
-        "statistic": e.currentTarget.dataset.stat === undefined ? "undefined" : e.currentTarget.dataset.stat,
-        "variable": e.currentTarget.dataset.variable === undefined ? "undefined" : e.currentTarget.dataset.variable,
-        "threshold": e.currentTarget.dataset.threshold === undefined ? "undefined" : e.currentTarget.dataset.threshold,
-        "scale": e.currentTarget.dataset.scale === undefined ? "undefined" : e.currentTarget.dataset.scale,
-        "truth": e.currentTarget.dataset.truth === undefined ? "undefined" : e.currentTarget.dataset.truth,
-        "forecast-length": e.currentTarget.dataset.fcstlen === undefined ? "undefined" : parseInt(e.currentTarget.dataset.fcstlen).toString(),
-        "forecast-type": e.currentTarget.dataset.fcsttype === undefined ? "undefined" : e.currentTarget.dataset.fcsttype,
-        "valid-time": e.currentTarget.dataset.validtime === undefined ? "undefined" : e.currentTarget.dataset.validtime,
-        "level": e.currentTarget.dataset.level === undefined ? "undefined" : e.currentTarget.dataset.level,
+        "region": e.currentTarget.dataset.region
+            ? e.currentTarget.dataset.region.replace(/__DOT__/g, ".") : "undefined",
+        "forecast-length": e.currentTarget.dataset.fcstlen && !rowData['forecast-type']
+            ? parseInt(e.currentTarget.dataset.fcstlen).toString().replace(/__DOT__/g, ".") : "undefined",
+        "statistic": e.currentTarget.dataset.stat
+            ? e.currentTarget.dataset.stat.replace(/__DOT__/g, ".") : "undefined",
+        "variable": e.currentTarget.dataset.variable
+            ? e.currentTarget.dataset.variable.replace(/__DOT__/g, ".") : "undefined",
+        "threshold": e.currentTarget.dataset.threshold && e.currentTarget.dataset.threshold !== "threshold_NA"
+            ? e.currentTarget.dataset.threshold.replace(/__DOT__/g, ".") : "undefined",
+        "level": e.currentTarget.dataset.level && e.currentTarget.dataset.level !== "level_NA"
+            ? e.currentTarget.dataset.level.replace(/__DOT__/g, ".") : "undefined",
+        "scale": rowData['scale'] ? rowData['scale'] : "undefined",
+        "truth": rowData['truth'] ? rowData['truth'] : "undefined",
+        "forecast-type": rowData['forecast-type'] ? rowData['forecast-type'] : "undefined",
+        "valid-time": rowData['valid-time'] ? rowData['valid-time'] : "undefined",
       }
     };
     const baseURL = Meteor.settings.public.home === undefined ? "https://" + document.location.href.split('/')[2] : Meteor.settings.public.home;
