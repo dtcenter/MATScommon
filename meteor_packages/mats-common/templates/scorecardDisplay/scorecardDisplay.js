@@ -44,9 +44,7 @@ const getAllVariables = function (rowName) {
   if (myScorecard === undefined) {
     return;
   }
-
   let myVars = new Set();
-  let myStats = new Set();
   const myRegions = Object.keys(myScorecard['scorecard']['results']['rows'][rowName]['data']);
   myRegions.forEach(function (r) {
     const rStats = Object.keys(myScorecard['scorecard']['results']['rows'][rowName]['data'][r]);
@@ -58,6 +56,65 @@ const getAllVariables = function (rowName) {
     });
   });
   return Array.from(myVars).sort();
+};
+
+const getAllThresholds = function (rowName) {
+  let myScorecard = Session.get('myScorecard');
+  if (myScorecard === undefined) {
+    return;
+  }
+  let myThreshs = new Set();
+  const myRegions = Object.keys(myScorecard['scorecard']['results']['rows'][rowName]['data']);
+  myRegions.forEach(function (r) {
+    const rStats = Object.keys(myScorecard['scorecard']['results']['rows'][rowName]['data'][r]);
+    rStats.forEach(function (s) {
+      const rVars = Object.keys(myScorecard['scorecard']['results']['rows'][rowName]['data'][r][s]);
+      rVars.forEach(function (v) {
+        const rThreshs = Object.keys(myScorecard['scorecard']['results']['rows'][rowName]['data'][r][s][v]);
+        rThreshs.forEach(function (t) {
+          myThreshs.add(t);
+        });
+      });
+    });
+  });
+  if (Array.from(myThreshs).length > 1) {
+    return Array.from(myThreshs).sort(function (a, b) {
+      a = Number(a.split(" (")[0]);
+      b = Number(b.split(" (")[0]);
+      return a - b;
+    });
+  } else {
+    return Array.from(myThreshs).sort();
+  }
+};
+
+const getAllLevels = function (rowName) {
+  let myScorecard = Session.get('myScorecard');
+  if (myScorecard === undefined) {
+    return;
+  }
+  let myLevs = new Set();
+  const myRegions = Object.keys(myScorecard['scorecard']['results']['rows'][rowName]['data']);
+  myRegions.forEach(function (r) {
+    const rStats = Object.keys(myScorecard['scorecard']['results']['rows'][rowName]['data'][r]);
+    rStats.forEach(function (s) {
+      const rVars = Object.keys(myScorecard['scorecard']['results']['rows'][rowName]['data'][r][s]);
+      rVars.forEach(function (v) {
+        const rThreshs = Object.keys(myScorecard['scorecard']['results']['rows'][rowName]['data'][r][s][v]);
+        rThreshs.forEach(function (t) {
+          const rLevs = Object.keys(myScorecard['scorecard']['results']['rows'][rowName]['data'][r][s][v][t]);
+          rLevs.forEach(function (l) {
+            if (isNaN(Number(l))) {
+              myLevs.add(l);
+            } else {
+              myLevs.add(Number(l));
+            }
+          });
+        });
+      });
+    });
+  });
+  return Array.from(myLevs).sort();
 };
 
 // retrieves the Scorecard from Couchbase
@@ -198,12 +255,12 @@ Template.ScorecardDisplay.helpers({
     }
     return myScorecard['scorecard']['results']['rows'][rowName]['fcstlens'].length;
   },
-  sigIconId: function (rowName, region, stat, variable, fcstlen) {
+  sigIconId: function (rowName, region, stat, variable, threshold, level, fcstlen) {
     //un padd the possibly padded fcstlen
     let fcstlenStr = Number(fcstlen) + '';
-    return rowName + '-' + region + '-' + stat + '-' + variable + '-' + fcstlenStr;
+    return rowName + '-' + region + '-' + stat + '-' + variable + '-' + threshold + '-' + level + '-' + fcstlenStr;
   },
-  significanceClass: function (rowName, region, stat, variable, fcstlen) {
+  significanceClass: function (rowName, region, stat, variable, threshold, level, fcstlen) {
     let myScorecard = Session.get('myScorecard');
     if (myScorecard === undefined) {
       return;
@@ -211,9 +268,8 @@ Template.ScorecardDisplay.helpers({
     //un padd the possibly padded fcstlen
     let fcstlenStr = Number(fcstlen) + '';
     const sigVal =
-      myScorecard['scorecard']['results']['rows'][rowName]['data'][region][stat][variable][
-        fcstlenStr
-      ];
+      myScorecard['scorecard']['results']['rows'][rowName]['data'][region][stat][variable]
+          [threshold][level][fcstlenStr];
     const majorTruthIcon = 'fa fa-caret-down fa-lg';
     const minorTruthIcon = 'fa fa-caret-down fa-sm';
     const majorSourceIcon = 'fa fa-caret-up fa-lg';
@@ -235,7 +291,7 @@ Template.ScorecardDisplay.helpers({
       return minorSourceIcon;
     }
   },
-  significanceColor: function (rowName, region, stat, variable, fcstlen) {
+  significanceColor: function (rowName, region, stat, variable, threshold, level, fcstlen) {
     let myScorecard = Session.get('myScorecard');
     if (myScorecard === undefined) {
       return;
@@ -243,9 +299,8 @@ Template.ScorecardDisplay.helpers({
     //un padd the possibly padded fcstlen
     let fcstlenStr = Number(fcstlen) + '';
     const sigVal =
-      myScorecard['scorecard']['results']['rows'][rowName]['data'][region][stat][variable][
-        fcstlenStr
-      ];
+        myScorecard['scorecard']['results']['rows'][rowName]['data'][region][stat][variable]
+            [threshold][level][fcstlenStr];
     if (sigVal === -2) {
       return myScorecard['scorecard']['significanceColors']['major-truth-color'];
     }
@@ -262,7 +317,7 @@ Template.ScorecardDisplay.helpers({
       return myScorecard['scorecard']['significanceColors']['minor-source-color'];
     }
   },
-  significanceBackgroundColor: function (rowName, region, stat, variable, fcstlen) {
+  significanceBackgroundColor: function (rowName, region, stat, variable, threshold, level, fcstlen) {
     let myScorecard = Session.get('myScorecard');
     if (myScorecard === undefined) {
       return;
@@ -270,9 +325,8 @@ Template.ScorecardDisplay.helpers({
     //un padd the possibly padded fcstlen
     let fcstlenStr = Number(fcstlen) + '';
     const sigVal =
-      myScorecard['scorecard']['results']['rows'][rowName]['data'][region][stat][variable][
-        fcstlenStr
-      ];
+        myScorecard['scorecard']['results']['rows'][rowName]['data'][region][stat][variable]
+            [threshold][level][fcstlenStr];
     if (sigVal === -2) {
       return LightenDarkenColor(
         myScorecard['scorecard']['significanceColors']['major-truth-color'],
@@ -309,6 +363,16 @@ Template.ScorecardDisplay.helpers({
   variables: function (rowName) {
     // return the distinct list of all the possible variables for this stat
     return getAllVariables(rowName);
+  },
+
+  thresholds: function (rowName) {
+    // return the distinct list of all the possible variables for this stat
+    return getAllThresholds(rowName);
+  },
+
+  levels: function (rowName) {
+    // return the distinct list of all the possible variables for this stat
+    return getAllLevels(rowName);
   },
 
   varsLength: function (rowName) {
@@ -356,6 +420,28 @@ Template.ScorecardDisplay.helpers({
   },
   hideLoading: function () {
     hideLoading();
+  },
+  statText: function (stat) {
+    if (stat.includes(" (")) {
+      return stat.split(" (")[0]
+    } else {
+      return stat
+    }
+  },
+  thresholdText: function (threshold) {
+    if (threshold.includes(" (")) {
+      return threshold.split(" (")[0]
+    } else {
+      return threshold
+    }
+  },
+  thresholdHider: function (rowName) {
+    const thresholds = getAllThresholds(rowName);
+    return thresholds[0] === "threshold_NA" ? "display: none;" : "";
+  },
+  levelHider: function (rowName) {
+    const levels = getAllLevels(rowName);
+    return levels[0] === "level_NA" ? "display: none;" : "";
   },
 });
 
