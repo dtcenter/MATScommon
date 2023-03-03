@@ -39,7 +39,7 @@
                     <th style="{{levelHider scorecardRow}}"></th>
                     {{#each region in regions scorecardRow}}
                         <th class="scOuterHeaderRegion" style="width:{{numFcsts scorecardRow}}em; background-color:LightCyan;">
-                            {{region}}</th>
+                            {{trimmedText region}}</th>
                     {{/each}}
                     </thead>
                     <tbody>
@@ -53,7 +53,7 @@
                                 <table class="scInnerTable" style="max-width:{{numFcsts scorecardRow}}em;">
                                     <tr>
                                         {{#each fcstlen in fcstlens scorecardRow}}
-                                            <td style="background-color:LightCyan;" class="scInnerTd">{{fcstlen}}</td>
+                                            <td style="background-color:LightCyan;" class="scInnerTd">{{trimmedText fcstlen}}</td>
                                         {{/each}}
                                     </tr>
                                 </table>
@@ -65,10 +65,10 @@
                             {{#each threshold in thresholds scorecardRow}}
                                 {{#each level in levels scorecardRow}}
                                     <tr>
-                                        <td class="scStatVarTd" style="background-color: LightCyan;">{{statText stat}}</td>
-                                        <td class="scStatVarTd" style="background-color: LightCyan;">{{variable}}</td>
-                                        <td class="scStatVarTd" style="background-color: LightCyan;{{thresholdHider scorecardRow}}">{{thresholdText threshold}}</td>
-                                        <td class="scStatVarTd" style="background-color: LightCyan;{{levelHider scorecardRow}}">{{level}}</td>
+                                        <td class="scStatVarTd" style="background-color: LightCyan;">{{trimmedText stat}}</td>
+                                        <td class="scStatVarTd" style="background-color: LightCyan;">{{trimmedText variable}}</td>
+                                        <td class="scStatVarTd" style="background-color: LightCyan;{{thresholdHider scorecardRow}}">{{trimmedText threshold}}</td>
+                                        <td class="scStatVarTd" style="background-color: LightCyan;{{levelHider scorecardRow}}">{{trimmedText level}}</td>
                                         {{#each region in regions scorecardRow}}
                                             <td class="scTableTd">
                                                 <table class="scTableSig" style="max-width:{{numFcsts scorecardRow}}em;">

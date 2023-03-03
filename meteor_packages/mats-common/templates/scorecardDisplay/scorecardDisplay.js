@@ -93,6 +93,7 @@ const getAllLevels = function (rowName) {
   if (myScorecard === undefined) {
     return;
   }
+  let allNumbers = true;
   let myLevs = new Set();
   const myRegions = Object.keys(myScorecard['scorecard']['results']['rows'][rowName]['data']);
   myRegions.forEach(function (r) {
@@ -105,16 +106,21 @@ const getAllLevels = function (rowName) {
           const rLevs = Object.keys(myScorecard['scorecard']['results']['rows'][rowName]['data'][r][s][v][t]);
           rLevs.forEach(function (l) {
             if (isNaN(Number(l))) {
-              myLevs.add(l);
-            } else {
-              myLevs.add(Number(l));
+              allNumbers = false;
             }
+            myLevs.add(l);
           });
         });
       });
     });
   });
-  return Array.from(myLevs).sort();
+  if (allNumbers) {
+    return Array.from(myLevs).sort(function (a, b) {
+      return Number(a) - Number(b);
+    });
+  } else {
+    return Array.from(myLevs).sort();
+  }
 };
 
 // retrieves the Scorecard from Couchbase
@@ -421,19 +427,12 @@ Template.ScorecardDisplay.helpers({
   hideLoading: function () {
     hideLoading();
   },
-  statText: function (stat) {
-    if (stat.includes(" (")) {
-      return stat.split(" (")[0]
-    } else {
-      return stat
+  trimmedText: function (text) {
+    if (typeof text === 'string' || text instanceof String) {
+      text = text.replace("__DOT__", ".");
+      text = text.split(" (")[0];
     }
-  },
-  thresholdText: function (threshold) {
-    if (threshold.includes(" (")) {
-      return threshold.split(" (")[0]
-    } else {
-      return threshold
-    }
+      return text
   },
   thresholdHider: function (rowName) {
     const thresholds = getAllThresholds(rowName);
