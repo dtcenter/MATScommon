@@ -23,15 +23,15 @@ const getAppSourceByApplication = function (application) {
   }
 }
 
-const getAllStats = function (rowName) {
+const getAllStats = function (blockName) {
   let myScorecard = Session.get('myScorecard');
   if (myScorecard === undefined) {
     return;
   }
-  const myRegions = Object.keys(myScorecard['scorecard']['results']['rows'][rowName]['data']);
+  const myRegions = Object.keys(myScorecard['scorecard']['results']['blocks'][blockName]['data']);
   let myStats = new Set();
   myRegions.forEach(function (r) {
-    const rStats = Object.keys(myScorecard['scorecard']['results']['rows'][rowName]['data'][r]);
+    const rStats = Object.keys(myScorecard['scorecard']['results']['blocks'][blockName]['data'][r]);
     rStats.forEach(function (s) {
       myStats.add(s);
     });
@@ -39,17 +39,17 @@ const getAllStats = function (rowName) {
   return Array.from(myStats).sort();
 };
 
-const getAllVariables = function (rowName) {
+const getAllVariables = function (blockName) {
   let myScorecard = Session.get('myScorecard');
   if (myScorecard === undefined) {
     return;
   }
   let myVars = new Set();
-  const myRegions = Object.keys(myScorecard['scorecard']['results']['rows'][rowName]['data']);
+  const myRegions = Object.keys(myScorecard['scorecard']['results']['blocks'][blockName]['data']);
   myRegions.forEach(function (r) {
-    const rStats = Object.keys(myScorecard['scorecard']['results']['rows'][rowName]['data'][r]);
+    const rStats = Object.keys(myScorecard['scorecard']['results']['blocks'][blockName]['data'][r]);
     rStats.forEach(function (s) {
-      const rVars = Object.keys(myScorecard['scorecard']['results']['rows'][rowName]['data'][r][s]);
+      const rVars = Object.keys(myScorecard['scorecard']['results']['blocks'][blockName]['data'][r][s]);
       rVars.forEach(function (v) {
         myVars.add(v);
       });
@@ -58,19 +58,19 @@ const getAllVariables = function (rowName) {
   return Array.from(myVars).sort();
 };
 
-const getAllThresholds = function (rowName) {
+const getAllThresholds = function (blockName) {
   let myScorecard = Session.get('myScorecard');
   if (myScorecard === undefined) {
     return;
   }
   let myThreshs = new Set();
-  const myRegions = Object.keys(myScorecard['scorecard']['results']['rows'][rowName]['data']);
+  const myRegions = Object.keys(myScorecard['scorecard']['results']['blocks'][blockName]['data']);
   myRegions.forEach(function (r) {
-    const rStats = Object.keys(myScorecard['scorecard']['results']['rows'][rowName]['data'][r]);
+    const rStats = Object.keys(myScorecard['scorecard']['results']['blocks'][blockName]['data'][r]);
     rStats.forEach(function (s) {
-      const rVars = Object.keys(myScorecard['scorecard']['results']['rows'][rowName]['data'][r][s]);
+      const rVars = Object.keys(myScorecard['scorecard']['results']['blocks'][blockName]['data'][r][s]);
       rVars.forEach(function (v) {
-        const rThreshs = Object.keys(myScorecard['scorecard']['results']['rows'][rowName]['data'][r][s][v]);
+        const rThreshs = Object.keys(myScorecard['scorecard']['results']['blocks'][blockName]['data'][r][s][v]);
         rThreshs.forEach(function (t) {
           myThreshs.add(t);
         });
@@ -88,22 +88,22 @@ const getAllThresholds = function (rowName) {
   }
 };
 
-const getAllLevels = function (rowName) {
+const getAllLevels = function (blockName) {
   let myScorecard = Session.get('myScorecard');
   if (myScorecard === undefined) {
     return;
   }
   let allNumbers = true;
   let myLevs = new Set();
-  const myRegions = Object.keys(myScorecard['scorecard']['results']['rows'][rowName]['data']);
+  const myRegions = Object.keys(myScorecard['scorecard']['results']['blocks'][blockName]['data']);
   myRegions.forEach(function (r) {
-    const rStats = Object.keys(myScorecard['scorecard']['results']['rows'][rowName]['data'][r]);
+    const rStats = Object.keys(myScorecard['scorecard']['results']['blocks'][blockName]['data'][r]);
     rStats.forEach(function (s) {
-      const rVars = Object.keys(myScorecard['scorecard']['results']['rows'][rowName]['data'][r][s]);
+      const rVars = Object.keys(myScorecard['scorecard']['results']['blocks'][blockName]['data'][r][s]);
       rVars.forEach(function (v) {
-        const rThreshs = Object.keys(myScorecard['scorecard']['results']['rows'][rowName]['data'][r][s][v]);
+        const rThreshs = Object.keys(myScorecard['scorecard']['results']['blocks'][blockName]['data'][r][s][v]);
         rThreshs.forEach(function (t) {
-          const rLevs = Object.keys(myScorecard['scorecard']['results']['rows'][rowName]['data'][r][s][v][t]);
+          const rLevs = Object.keys(myScorecard['scorecard']['results']['blocks'][blockName]['data'][r][s][v][t]);
           rLevs.forEach(function (l) {
             if (isNaN(Number(l))) {
               allNumbers = false;
@@ -181,40 +181,40 @@ Template.ScorecardDisplay.onCreated(function () {
 });
 
 Template.ScorecardDisplay.helpers({
-  application: function (rowName) {
+  application: function (blockName) {
     let myScorecard = Session.get('myScorecard');
     if (myScorecard === undefined) {
       return;
     }
     return myScorecard['scorecard'].plotParams.curves
-      .find((r) => r['label'] === rowName)
+      .find((r) => r['label'] === blockName)
       ['application'];
   },
-  rowTitle: function (rowName) {
+  blockTitle: function (blockName) {
     let myScorecard = Session.get('myScorecard');
     if (myScorecard === undefined) {
       return;
     }
-    const rowTitle = myScorecard['scorecard']['results']['rows'][rowName]['rowTitle'];
+    const blockTitle = myScorecard['scorecard']['results']['blocks'][blockName]['blockTitle'];
     return (
         'Scorecard ' +
-        rowName +
-        ': Data Source: ' +
-        rowTitle['datasource'] +
-        ', Validation Data Source: ' +
-        rowTitle['validationDatasource']
+        blockName +
+        ': Experimental Data Source = ' +
+        blockTitle['dataSource'] +
+        ', Control Data Source = ' +
+        blockTitle['controlDataSource']
     );
   },
-  constantFields: function (rowName) {
+  constantFields: function (blockName) {
     let myScorecard = Session.get('myScorecard');
     if (myScorecard === undefined) {
       return;
     }
-    const rowConstantFields = myScorecard['scorecard']['results']['rows'][rowName]['rowParameters'];
-    const actuallyAddedFields = myScorecard['scorecard'].plotParams.curves.find((r) => r['label'] === rowName);
+    const blockConstantFields = myScorecard['scorecard']['results']['blocks'][blockName]['blockParameters'];
+    const actuallyAddedFields = myScorecard['scorecard'].plotParams.curves.find((r) => r['label'] === blockName);
     let CFString = "";
-    for (let fidx = 0; fidx < rowConstantFields.length; fidx++) {
-      const currentField = rowConstantFields[fidx];
+    for (let fidx = 0; fidx < blockConstantFields.length; fidx++) {
+      const currentField = blockConstantFields[fidx];
       if (currentField !== "application" && actuallyAddedFields[currentField] !== undefined) {
         if (CFString.length > 0) CFString = CFString + "; ";
         CFString = CFString + currentField + " = " + actuallyAddedFields[currentField];
@@ -223,30 +223,29 @@ Template.ScorecardDisplay.helpers({
     if (CFString.length > 0) CFString = CFString + "; ";
     CFString = CFString + "dates = " + myScorecard['scorecard'].plotParams.dates;
     return (
-        'Constant fields: exp. data source = ' + actuallyAddedFields["data-source"]
-        + "; control data source = " + actuallyAddedFields["data-source"] + "; " + CFString
+        'Constant fields: ' + CFString
     );
   },
-  scorecardRows: function () {
+  scorecardBlocks: function () {
     let myScorecard = Session.get('myScorecard');
     if (myScorecard === undefined) {
       return;
     }
-    return Object.keys(myScorecard['scorecard']['results']['rows']).sort();
+    return Object.keys(myScorecard['scorecard']['results']['blocks']).sort();
   },
-  regions: function (rowName) {
+  regions: function (blockName) {
     let myScorecard = Session.get('myScorecard');
     if (myScorecard === undefined) {
       return;
     }
-    return myScorecard['scorecard']['results']['rows'][rowName]['regions'].sort();
+    return myScorecard['scorecard']['results']['blocks'][blockName]['regions'].sort();
   },
-  fcstlens: function (rowName) {
+  fcstlens: function (blockName) {
     let myScorecard = Session.get('myScorecard');
     if (myScorecard === undefined) {
       return;
     }
-    let myFcstlenStrs = myScorecard['scorecard']['results']['rows'][rowName]['fcstlens'];
+    let myFcstlenStrs = myScorecard['scorecard']['results']['blocks'][blockName]['fcstlens'];
     let myFcstLengths = [];
     let fcstLength = myFcstlenStrs.length;
     // padd the fcst lengths with leading '0' for single digit fcsts
@@ -255,19 +254,19 @@ Template.ScorecardDisplay.helpers({
     }
     return myFcstLengths.sort();
   },
-  numFcsts: function (rowName) {
+  numFcsts: function (blockName) {
     let myScorecard = Session.get('myScorecard');
     if (myScorecard === undefined) {
       return;
     }
-    return myScorecard['scorecard']['results']['rows'][rowName]['fcstlens'].length;
+    return myScorecard['scorecard']['results']['blocks'][blockName]['fcstlens'].length;
   },
-  sigIconId: function (rowName, region, stat, variable, threshold, level, fcstlen) {
+  sigIconId: function (blockName, region, stat, variable, threshold, level, fcstlen) {
     //un padd the possibly padded fcstlen
     let fcstlenStr = Number(fcstlen) + '';
-    return rowName + '-' + region + '-' + stat + '-' + variable + '-' + threshold + '-' + level + '-' + fcstlenStr;
+    return blockName + '-' + region + '-' + stat + '-' + variable + '-' + threshold + '-' + level + '-' + fcstlenStr;
   },
-  significanceClass: function (rowName, region, stat, variable, threshold, level, fcstlen) {
+  significanceClass: function (blockName, region, stat, variable, threshold, level, fcstlen) {
     let myScorecard = Session.get('myScorecard');
     if (myScorecard === undefined) {
       return;
@@ -275,7 +274,7 @@ Template.ScorecardDisplay.helpers({
     //un padd the possibly padded fcstlen
     let fcstlenStr = Number(fcstlen) + '';
     const sigVal =
-      myScorecard['scorecard']['results']['rows'][rowName]['data'][region][stat][variable]
+      myScorecard['scorecard']['results']['blocks'][blockName]['data'][region][stat][variable]
           [threshold][level][fcstlenStr];
     const majorTruthIcon = 'fa fa-caret-down fa-lg';
     const minorTruthIcon = 'fa fa-caret-down fa-sm';
@@ -298,7 +297,7 @@ Template.ScorecardDisplay.helpers({
       return minorSourceIcon;
     }
   },
-  significanceColor: function (rowName, region, stat, variable, threshold, level, fcstlen) {
+  significanceColor: function (blockName, region, stat, variable, threshold, level, fcstlen) {
     let myScorecard = Session.get('myScorecard');
     if (myScorecard === undefined) {
       return;
@@ -306,7 +305,7 @@ Template.ScorecardDisplay.helpers({
     //un padd the possibly padded fcstlen
     let fcstlenStr = Number(fcstlen) + '';
     const sigVal =
-        myScorecard['scorecard']['results']['rows'][rowName]['data'][region][stat][variable]
+        myScorecard['scorecard']['results']['blocks'][blockName]['data'][region][stat][variable]
             [threshold][level][fcstlenStr];
     if (sigVal === -2) {
       return myScorecard['scorecard']['significanceColors']['major-truth-color'];
@@ -324,7 +323,7 @@ Template.ScorecardDisplay.helpers({
       return myScorecard['scorecard']['significanceColors']['minor-source-color'];
     }
   },
-  significanceBackgroundColor: function (rowName, region, stat, variable, threshold, level, fcstlen) {
+  significanceBackgroundColor: function (blockName, region, stat, variable, threshold, level, fcstlen) {
     let myScorecard = Session.get('myScorecard');
     if (myScorecard === undefined) {
       return;
@@ -332,7 +331,7 @@ Template.ScorecardDisplay.helpers({
     //un padd the possibly padded fcstlen
     let fcstlenStr = Number(fcstlen) + '';
     const sigVal =
-        myScorecard['scorecard']['results']['rows'][rowName]['data'][region][stat][variable]
+        myScorecard['scorecard']['results']['blocks'][blockName]['data'][region][stat][variable]
             [threshold][level][fcstlenStr];
     if (sigVal === -2) {
       return LightenDarkenColor(
@@ -362,38 +361,38 @@ Template.ScorecardDisplay.helpers({
       );
     }
   },
-  stats: function (rowName) {
+  stats: function (blockName) {
     // return a distinct list of all the possible stats
-    return getAllStats(rowName);
+    return getAllStats(blockName);
   },
 
-  variables: function (rowName) {
+  variables: function (blockName) {
     // return the distinct list of all the possible variables for this stat
-    return getAllVariables(rowName);
+    return getAllVariables(blockName);
   },
 
-  thresholds: function (rowName) {
+  thresholds: function (blockName) {
     // return the distinct list of all the possible variables for this stat
-    return getAllThresholds(rowName);
+    return getAllThresholds(blockName);
   },
 
-  levels: function (rowName) {
+  levels: function (blockName) {
     // return the distinct list of all the possible variables for this stat
-    return getAllLevels(rowName);
+    return getAllLevels(blockName);
   },
 
-  varsLength: function (rowName) {
+  varsLength: function (blockName) {
     let maxLength = 0;
-    const varList = getAllVariables(rowName);
+    const varList = getAllVariables(blockName);
     varList.forEach(function (aVar) {
       maxLength = aVar.length > maxLength ? aVar.length : maxLength;
     });
     return maxLength;
   },
 
-  statsLength: function (rowName) {
+  statsLength: function (blockName) {
     let maxLength = 0;
-    const statList = getAllStats(rowName);
+    const statList = getAllStats(blockName);
     statList.forEach(function (aStat) {
       maxLength = aStat.length > maxLength ? aStat.length : maxLength;
     });
@@ -435,12 +434,12 @@ Template.ScorecardDisplay.helpers({
     }
       return text
   },
-  thresholdHider: function (rowName) {
-    const thresholds = getAllThresholds(rowName);
+  thresholdHider: function (blockName) {
+    const thresholds = getAllThresholds(blockName);
     return thresholds[0] === "threshold_NA" ? "display: none;" : "";
   },
-  levelHider: function (rowName) {
-    const levels = getAllLevels(rowName);
+  levelHider: function (blockName) {
+    const levels = getAllLevels(blockName);
     return levels[0] === "level_NA" ? "display: none;" : "";
   },
 });
@@ -507,14 +506,14 @@ Template.ScorecardDisplay.events({
     if (myScorecard === undefined) {
       return;
     }
-    const row = e.currentTarget.dataset.scorecardrow;
-    const rowData = myScorecard['scorecard'].plotParams.curves.find((r) => r['label'] === row);
-    const application = rowData['application'];
+    const block = e.currentTarget.dataset.scorecardblock;
+    const blockData = myScorecard['scorecard'].plotParams.curves.find((r) => r['label'] === block);
+    const application = blockData['application'];
     // When comparing models, you want forecast minus truth.
     // MATS differences are calculated by Curve1 - Curve0,
     // so Curve1 is the data-source and Curve0 is the control-data-source
-    const curve0Model = rowData['control-data-source'];
-    const curve1Model = rowData['data-source'];
+    const curve0Model = blockData['control-data-source'];
+    const curve1Model = blockData['data-source'];
     const scorecardSettings = {
       "appName": application,
       "dateRange": myScorecard['scorecard'].plotParams.dates,
@@ -524,7 +523,7 @@ Template.ScorecardDisplay.events({
       {
         "region": e.currentTarget.dataset.region
             ? e.currentTarget.dataset.region.replace(/__DOT__/g, ".") : "undefined",
-        "forecast-length": e.currentTarget.dataset.fcstlen && !rowData['forecast-type']
+        "forecast-length": e.currentTarget.dataset.fcstlen && !blockData['forecast-type']
             ? parseInt(e.currentTarget.dataset.fcstlen).toString().replace(/__DOT__/g, ".") : "undefined",
         "statistic": e.currentTarget.dataset.stat
             ? e.currentTarget.dataset.stat.replace(/__DOT__/g, ".") : "undefined",
@@ -534,10 +533,10 @@ Template.ScorecardDisplay.events({
             ? e.currentTarget.dataset.threshold.replace(/__DOT__/g, ".") : "undefined",
         "level": e.currentTarget.dataset.level && e.currentTarget.dataset.level !== "level_NA"
             ? e.currentTarget.dataset.level.replace(/__DOT__/g, ".") : "undefined",
-        "scale": rowData['scale'] ? rowData['scale'] : "undefined",
-        "truth": rowData['truth'] ? rowData['truth'] : "undefined",
-        "forecast-type": rowData['forecast-type'] ? rowData['forecast-type'] : "undefined",
-        "valid-time": rowData['valid-time'] ? rowData['valid-time'] : "undefined",
+        "scale": blockData['scale'] ? blockData['scale'] : "undefined",
+        "truth": blockData['truth'] ? blockData['truth'] : "undefined",
+        "forecast-type": blockData['forecast-type'] ? blockData['forecast-type'] : "undefined",
+        "valid-time": blockData['valid-time'] ? blockData['valid-time'] : "undefined",
       }
     };
     const baseURL = Meteor.settings.public.home === undefined ? "https://" + document.location.href.split('/')[2] : Meteor.settings.public.home;

@@ -299,7 +299,7 @@ const doSettings = function (title, dbType, version, commit, appName, appType, m
     }
     if (matsCollections.Settings.find().count() === 0) {
         matsCollections.Settings.insert({
-            LabelPrefix: scorecard ? "Row" : "Curve",
+            LabelPrefix: scorecard ? "Block" : "Curve",
             Title: title,
             dbType: dbType,
             appVersion: version,

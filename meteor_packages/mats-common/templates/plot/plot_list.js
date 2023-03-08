@@ -515,7 +515,7 @@ Template.plotList.events({
                 let submitTime = y + m + d + h + min + sec;
                 // stash the submit epoch in the params
                 p['submitEpoch'] = Math.floor(x.getTime() / 1000);
-                p['scorecard-name'] = p['userName'] + '--submitted:' + submitTime + '--' + p['curves'].length + 'row' ;
+                p['scorecard-name'] = p['userName'] + '--submitted:' + submitTime + '--' + p['curves'].length + 'block' ;
                 matsMethods.getGraphData.call({plotParams: p, plotType: pt, expireKey: expireKey}, function (error, ret) {
                     if (error !== undefined) {
                         //setError(new Error("matsMethods.getGraphData from plot_list.js : error: " + error ));
