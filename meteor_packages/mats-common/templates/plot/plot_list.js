@@ -36,8 +36,13 @@ const _setCommonParams = async(commonParamKeys, commonParams) => {
     for (let kidx = 0; kidx < commonParamKeys.length; kidx++) {
         const thisKey = commonParamKeys[kidx];
         const thisValue = commonParams[commonParamKeys[kidx]];
-        if (thisValue !== "undefined" && document.getElementById(thisKey + "-item")) {
-            matsParamUtils.setValueTextForParamName(thisKey, thisValue);
+        if (thisValue !== "undefined") {
+            if (document.getElementById(thisKey + "-item")) {
+                matsParamUtils.setValueTextForParamName(thisKey, thisValue);
+            } else if (thisKey === "region" && document.getElementById("vgtyp-item")) {
+                // landuse regions go in the vgtyp selector
+                matsParamUtils.setValueTextForParamName("vgtyp", thisValue);
+            }
         }
     }
 };
