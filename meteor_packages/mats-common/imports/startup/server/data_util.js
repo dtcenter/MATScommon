@@ -484,6 +484,31 @@ const calculateStatScalar = function (squareDiffSum, NSum, obsModelDiffSum, mode
     return queryVal;
 };
 
+// which statistics are excluded from scorecards?
+const excludeStatFromScorecard = function(stat) {
+    const statsToExclude = [
+        'Bias (forecast/actual)',
+        'Nlow (Number of obs < threshold (hits + misses))',
+        'Nhigh (Number of obs > threshold (hits + misses))',
+        'All observed yes',
+        'Nlow (Number of obs < threshold (false alarms + correct nulls))',
+        'Nhigh (Number of obs > threshold (false alarms + correct nulls))',
+        'All observed no',
+        'Ntot (Total number of obs, (Nlow + Nhigh))',
+        'Ratio Nlow / Ntot ((hit + miss)/(hit + miss + fa + cn))',
+        'Ratio Nhigh / Ntot ((hit + miss)/(hit + miss + fa + cn))',
+        'Ratio Nlow / Ntot ((fa + cn)/(hit + miss + fa + cn))',
+        'Ratio Nhigh / Ntot ((fa + cn)/(hit + miss + fa + cn))',
+        'N times*levels(*stations if station plot) per graph point',
+        'N',
+        'Model average',
+        'Obs average',
+        'Std deviation',
+        'MAE (station plots only)'
+    ];
+    return statsToExclude.indexOf(stat) !== -1;
+};
+
 // calculates mean, stdev, and other statistics for curve data points in all apps and plot types
 const get_err = function (sVals, sSecs, sLevs, appParams) {
     /* refer to perl error_library.pl sub  get_stats
@@ -1413,6 +1438,7 @@ export default matsDataUtils = {
     callMetadataAPI: callMetadataAPI,
     calculateStatCTC: calculateStatCTC,
     calculateStatScalar: calculateStatScalar,
+    excludeStatFromScorecard: excludeStatFromScorecard,
     get_err: get_err,
     ctcErrorPython: ctcErrorPython,
     checkDiffContourSignificance: checkDiffContourSignificance,
