@@ -2360,7 +2360,6 @@ const getScorecardSettings = new ValidatedMethod({
                 // global cbScorecardSettingsPool
                 const rv = await cbScorecardSettingsPool.getCB(key);
                 return { scorecardSettings: rv.content } ;
-                // return {scorecardSettings: '{"appName":"Surface","dateRange":"01/14/2023 20:00 - 02/13/2023 20:00","curve0DataSource":"RAP_OPS","curve1DataSource":"RAP_OPS_130","commonCurveParams":{"region":"Eastern RUC domain","statistic":"Bias (Model - Obs)","variable":"10m wind","threshold":"undefined","scale":"undefined","truth":"undefined","forecast-length":"6","forecast-type":"undefined","valid-time":"undefined","level":"undefined"}}'};
             } catch (error) {
                 throw new Meteor.Error("Error in getScorecardSettings function:" + key + " : " + error.message);
             }

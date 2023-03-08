@@ -558,7 +558,13 @@ Template.plotList.onRendered( function() {
         // get the params from the scorecard settings
         matsMethods.getScorecardSettings.call({settingsKey: Session.get("scorecardTimeseriesKey"),}, function (error, ret) {
             if (error !== undefined) {
-                setError(error);
+                if (error.message.includes("DocumentNotFoundError")) {
+                    setInfo( "INFO: No scorecard parameters found for this ID. " +
+                    "Your URL may have expired. " +
+                    "They only last for eight hours after a scorecard cell is clicked.")
+                } else {
+                    setError(error)
+                }
                 return false;
             }
             const settingsJSON = ret.scorecardSettings;
