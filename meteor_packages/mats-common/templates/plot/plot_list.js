@@ -506,14 +506,16 @@ Template.plotList.events({
                 let d = x.getUTCDate().toString();
                 let h = x.getUTCHours().toString();
                 let min = x.getUTCMinutes().toString();
+                let sec = x.getUTCSeconds().toString();
                 (d.length === 1) && (d = '0' + d);
                 (m.length === 1) && (m = '0' + m);
                 (h.length === 1) && (h = '0' + h);
                 (min.length === 1) && (min = '0' + min);
-                let submitTime = y + m + d + h + min;
+                (sec.length === 1) && (sec = '0' + sec);
+                let submitTime = y + m + d + h + min + sec;
                 // stash the submit epoch in the params
                 p['submitEpoch'] = Math.floor(x.getTime() / 1000);
-                p['scorecard-name'] = p['userName'] + '--' + p['curves'].length + 'row-at-' + submitTime;
+                p['scorecard-name'] = p['userName'] + '--submitted:' + submitTime + '--' + p['curves'].length + 'row' ;
                 matsMethods.getGraphData.call({plotParams: p, plotType: pt, expireKey: expireKey}, function (error, ret) {
                     if (error !== undefined) {
                         //setError(new Error("matsMethods.getGraphData from plot_list.js : error: " + error ));
