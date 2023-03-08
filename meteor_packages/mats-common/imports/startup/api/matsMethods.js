@@ -855,6 +855,9 @@ const _getRegions = function (params, req, res, next) {
     // this function returns a map of regions keyed by app title and model display text
     if (Meteor.isServer) {
         let flatJSON = _getMapByAppAndModel('region', 'optionsMap');
+        if (flatJSON === '{}') {
+            flatJSON = _getMapByAppAndModel('vgtyp', 'optionsMap');
+        }
         res.setHeader('Content-Type', 'application/json');
         res.write(flatJSON);
         res.end();
@@ -866,6 +869,9 @@ const _getRegionsValuesMap = function (params, req, res, next) {
     // this function returns a map of regions values keyed by app title
     if (Meteor.isServer) {
         let flatJSON = _getMapByAppAndModel('region', 'valuesMap');
+        if (flatJSON === '{}') {
+            flatJSON = _getMapByAppAndModel('vgtyp', 'valuesMap');
+        }
         res.setHeader('Content-Type', 'application/json');
         res.write(flatJSON);
         res.end();
