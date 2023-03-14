@@ -909,27 +909,27 @@ const getDataForDiffContour = function (dataset, appParams, showSignificance, si
     const filteredy = diffDataset.y.filter(y => y);
     const filteredz = diffDataset.zTextOutput.filter(z => z);
     diffDataset.xmin = Math.min(...filteredx);
-    if (diffDataset.xmin === "-Infinity" || (diffDataset.x.indexOf(0) !== -1 && 0 < diffDataset.xmin)) {
+    if (!isFinite(diffDataset.xmin) || (diffDataset.x.indexOf(0) !== -1 && 0 < diffDataset.xmin)) {
         diffDataset.xmin = 0;
     }
     diffDataset.xmax = Math.max(...filteredx);
-    if (diffDataset.xmax === "Infinity" || (diffDataset.x.indexOf(0) !== -1 && 0 > diffDataset.xmax)) {
+    if (!isFinite(diffDataset.xmax) || (diffDataset.x.indexOf(0) !== -1 && 0 > diffDataset.xmax)) {
         diffDataset.xmax = 0;
     }
     diffDataset.ymin = Math.min(...filteredy);
-    if (diffDataset.ymin === "-Infinity" || (diffDataset.y.indexOf(0) !== -1 && 0 < diffDataset.ymin)) {
+    if (!isFinite(diffDataset.ymin) || (diffDataset.y.indexOf(0) !== -1 && 0 < diffDataset.ymin)) {
         diffDataset.ymin = 0;
     }
     diffDataset.ymax = Math.max(...filteredy);
-    if (diffDataset.ymax === "Infinity" || (diffDataset.y.indexOf(0) !== -1 && 0 > diffDataset.ymax)) {
+    if (!isFinite(diffDataset.ymax) || (diffDataset.y.indexOf(0) !== -1 && 0 > diffDataset.ymax)) {
         diffDataset.ymax = 0;
     }
     diffDataset.zmin = Math.min(...filteredz);
-    if (diffDataset.zmin === "-Infinity" || (diffDataset.z.indexOf(0) !== -1 && 0 < diffDataset.zmin)) {
+    if (!isFinite(diffDataset.zmin) || (diffDataset.z.indexOf(0) !== -1 && 0 < diffDataset.zmin)) {
         diffDataset.zmin = 0;
     }
     diffDataset.zmax = Math.max(...filteredz);
-    if (diffDataset.zmax === "Infinity" || (diffDataset.z.indexOf(0) !== -1 && 0 > diffDataset.zmax)) {
+    if (!isFinite(diffDataset.zmax) || (diffDataset.z.indexOf(0) !== -1 && 0 > diffDataset.zmax)) {
         diffDataset.zmax = 0;
     }
 
