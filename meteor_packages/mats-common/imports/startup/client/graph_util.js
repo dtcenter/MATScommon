@@ -305,7 +305,6 @@ const setTextView = function (plotType) {
     document.getElementById('placeholder').style.width = width(plotType);
     document.getElementById('placeholder').style.height = height(plotType);
     document.getElementById('graph-container').style.display = 'block';
-    document.getElementById('plotType').style.display = 'none';
     document.getElementById('paramList').style.display = 'none';
     document.getElementById('plotList').style.display = 'none';
     document.getElementById('curveList').style.display = 'none';
@@ -323,11 +322,12 @@ const setTextView = function (plotType) {
     document.getElementById("textButton").style.display = "none";
     document.getElementById("text-page-button-group").style.display = "block";
     document.getElementById("plot-page-button-group").style.display = "none";
+    document.getElementById('plot-control-button-group').style.display = "none";
     document.getElementById("curves").style.display = "none";
     document.getElementById("graphView").style.display = "none";
     document.getElementById("textView").style.display = "block";
-    document.getElementById('plot-control-button-group').style.display = "none";
     document.getElementById('refresh-plot').style.display = "none";
+    document.getElementById('plotType').style.display = 'none';
     // Enable navigation prompt
     window.onbeforeunload = function() {
         return true;
@@ -341,7 +341,6 @@ const setGraphView = function (plotType) {
     document.getElementById('placeholder').style.width = width(plotType);
     document.getElementById('placeholder').style.height = height(plotType);
     document.getElementById('graph-container').style.display = 'block';
-    document.getElementById('plotType').style.display = 'none';
     document.getElementById('paramList').style.display = 'none';
     document.getElementById('plotList').style.display = 'none';
     document.getElementById('curveList').style.display = 'none';
@@ -359,11 +358,12 @@ const setGraphView = function (plotType) {
     document.getElementById("textButton").style.display = "block";
     document.getElementById("text-page-button-group").style.display = "none";
     document.getElementById("plot-page-button-group").style.display = "block";
+    document.getElementById('plot-control-button-group').style.display = "block";
     document.getElementById("curves").style.display = "block";
     document.getElementById("graphView").style.display = "block";
     document.getElementById("textView").style.display = "none";
-    document.getElementById('plot-control-button-group').style.display = "block";
     document.getElementById('refresh-plot').style.display = "block";
+    document.getElementById('plotType').style.display = 'none';
     // Enable navigation prompt
     window.onbeforeunload = function() {
         return true;
@@ -374,7 +374,6 @@ const setScorecardDisplayView = function () {
     //shows scorecardStatusPage template, hides everything else
     document.getElementById('appTitleText').style.display = 'none';
     document.getElementById('graph-container').style.display = 'none';
-    document.getElementById('plotType').style.display = 'none';
     document.getElementById('paramList').style.display = 'none';
     document.getElementById('plotList').style.display = 'none';
     document.getElementById('curveList').style.display = 'none';
@@ -399,7 +398,8 @@ const setScorecardDisplayView = function () {
     document.getElementById('refresh-plot').style.display = "none";
     document.getElementById('spinner').style.display = "none";
     document.getElementById('scorecardStatus').style.display = "block";
-    Session.set("updateStatusPage", new Date().getTime());
+    document.getElementById('plotType').style.display = 'none';
+    $('#refresh-scorecard').trigger("click");
     // Enable navigation prompt
     window.onbeforeunload = function() {
         return true;
@@ -456,7 +456,6 @@ const setDefaultView = function () {
     // Remove navigation prompt
     window.onbeforeunload = null;
 };
-
 
 const downloadFile = function (fileURL, fileName) {
     // for non-IE

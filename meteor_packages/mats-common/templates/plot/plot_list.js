@@ -52,7 +52,7 @@ const _addCurve = async() => {
 };
 
 const _plotGraph = async() => {
-    $('#plotMatched').click()
+    $('#plotMatched').trigger("click");
 };
 
 const addCurvesAndPlot = async(parsedSettings, commonParamKeys, commonParams) => {

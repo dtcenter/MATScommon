@@ -41,7 +41,7 @@ Template.graph.helpers({
         // causes graph display routine to be processed
         Session.get('PlotResultsUpDated');
         var graphFunction = Session.get('graphFunction');
-        if (graphFunction) {
+        if (graphFunction && !graphFunction.toLowerCase().includes("scorecard")) {
             eval(graphFunction)(Session.get('plotResultKey'));
             var plotType = Session.get('graphPlotType');
             var dataset = matsCurveUtils.getGraphResult().data;
