@@ -85,13 +85,25 @@ class CBUtilities {
 
   queryCB = async (statement) => {
     const couchbase = require("couchbase");
-    // console.log("queryCB()" + statement);
     try {
       const conn = await this.getConnection();
       const result = await conn.cluster.query(statement);
       return result.rows;
     } catch (err) {
       return "queryCB ERROR: " + err;
+    }
+  };
+
+  queryCBWithConsistency = async (statement) => {
+    const couchbase = require("couchbase");
+    try {
+      const conn = await this.getConnection();
+      const result = await conn.cluster.query(statement, {
+        scanConsistency: couchbase.QueryScanConsistency.RequestPlus,
+      });
+      return result.rows;
+    } catch (err) {
+      return "queryCBWithConsistency ERROR: " + err;
     }
   };
 

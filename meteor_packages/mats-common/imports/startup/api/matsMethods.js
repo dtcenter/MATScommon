@@ -1845,7 +1845,7 @@ const _getScorecardInfo = async function () {
             vxdata._default.SCORECARD sc
             WHERE
             sc.type='SC';`
-        const result = await cbScorecardPool.queryCB(statement);
+        const result = await cbScorecardPool.queryCBWithConsistency(statement);
         scMap = {};
         result.forEach(function (elem) {
             if (!Object.keys(scMap).includes(elem.userName)) {
