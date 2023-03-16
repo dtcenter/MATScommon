@@ -1816,8 +1816,15 @@ const _getScorecardData = async function (userName, name, submitted, processedAt
                 scorecard: result[0]
             }
         });
-        // no need to return the whole thing, just the identifying fields. The app will find the whole thing in the mongo collection
-        return {'scorecard': result[0]};
+        const docID = matsCollections.Scorecard.findOne({
+            'scorecard.userName': result[0].userName,
+            'scorecard.name': result[0].name,
+            'scorecard.submitted': result[0].submitted,
+            'scorecard.processedAt': result[0].processedAt
+        }, {_id: 1})._id;
+        // no need to return the whole thing, just the identifying fields 
+        // and the ID. The app will find the whole thing in the mongo collection.
+        return {'scorecard': result[0], docID: docID};
     } catch (err) {
         console.log("_getScorecardData error : " + err.message);
         return {

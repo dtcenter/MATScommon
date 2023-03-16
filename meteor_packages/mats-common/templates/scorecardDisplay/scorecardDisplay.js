@@ -15,6 +15,12 @@ import { Template } from 'meteor/templating';
 import { LightenDarkenColor } from 'lighten-darken-color';
 import './scorecardDisplay.html';
 
+const getTableCellId = function(fcstlen, blockName, region, stat, variable, threshold, level) {
+  // un-pad the possibly padded fcstlen
+  let fcstlenStr = Number(fcstlen) + '';
+  return blockName + '-' + region + '-' + stat + '-' + variable + '-' + threshold + '-' + level + '-' + fcstlenStr;
+}
+
 const getAppSourceByApplication = function (application) {
   if (matsCollections["application"].findOne({ name: "application" }).sourceMap !== undefined) {
     return matsCollections["application"].findOne({ name: "application" }).sourceMap[application];
@@ -142,8 +148,13 @@ const getScorecard = function (userName, name, submitted, processedAt) {
         setError(error);
         return;
       }
-      var myScorecard = scorecard;
-      Session.set('myScorecard', myScorecard);
+      Session.set('myScorecard', scorecard);
+      const cursor = matsCollections.Scorecard.find({"_id": scorecard.docID});
+      const handle = cursor.observeChanges({
+        changed(id, fields) {
+          refreshScorecard(userName, name, submitted, processedAt)
+        }
+      });
       return;
     }
   );
@@ -262,11 +273,9 @@ Template.ScorecardDisplay.helpers({
     return myScorecard['scorecard']['results']['blocks'][blockName]['fcstlens'].length;
   },
   sigIconId: function (blockName, region, stat, variable, threshold, level, fcstlen) {
-    //un padd the possibly padded fcstlen
-    let fcstlenStr = Number(fcstlen) + '';
-    return blockName + '-' + region + '-' + stat + '-' + variable + '-' + threshold + '-' + level + '-' + fcstlenStr;
+    return getTableCellId(fcstlen, blockName, region, stat, variable, threshold, level);
   },
-  significanceClass: function (blockName, region, stat, variable, threshold, level, fcstlen) {
+  significanceIconHTML: function (blockName, region, stat, variable, threshold, level, fcstlen) {
     let myScorecard = Session.get('myScorecard');
     if (myScorecard === undefined) {
       return;
@@ -276,52 +285,38 @@ Template.ScorecardDisplay.helpers({
     const sigVal =
       myScorecard['scorecard']['results']['blocks'][blockName]['data'][region][stat][variable]
           [threshold][level][fcstlenStr];
-    const majorTruthIcon = 'fa fa-caret-down fa-lg';
-    const minorTruthIcon = 'fa fa-caret-down fa-sm';
-    const majorSourceIcon = 'fa fa-caret-up fa-lg';
-    const minorSourceIcon = 'fa fa-caret-up fa-sm';
-    const neutralIcon = 'fa icon-check-empty fa-sm';
-    if (sigVal === -2) {
-      return majorTruthIcon;
+    let icon;
+    let color;
+    switch(sigVal) {
+      case -2:
+        icon = 'fa fa-caret-down fa-lg';
+        color = myScorecard['scorecard']['significanceColors']['major-truth-color'];
+        break;
+      case -1:
+        icon = 'fa fa-caret-down fa-sm';
+        color = myScorecard['scorecard']['significanceColors']['minor-truth-color'];
+        break;
+      case 2:
+        icon = 'fa fa-caret-up fa-lg';
+        color = myScorecard['scorecard']['significanceColors']['major-source-color'];
+        break;
+      case 1:
+        icon = 'fa fa-caret-up fa-sm';
+        color = myScorecard['scorecard']['significanceColors']['minor-source-color'];
+        break;
+      case 0:
+      default:
+        icon = 'fa icon-check-empty fa-sm';
+        color = 'lightgrey';
+        break;
     }
-    if (sigVal === -1) {
-      return minorTruthIcon;
+    // clear previous icon
+    const outerTableCellId = getTableCellId(fcstlen, blockName, region, stat, variable, threshold, level);
+    const outerTableCellElement = document.getElementById(outerTableCellId);
+    if (outerTableCellElement && !outerTableCellElement.children[0].className.baseVal.includes(icon)) {
+      outerTableCellElement.innerHTML = "";
     }
-    if (sigVal === 0) {
-      return neutralIcon;
-    }
-    if (sigVal === 2) {
-      return majorSourceIcon;
-    }
-    if (sigVal === 1) {
-      return minorSourceIcon;
-    }
-  },
-  significanceColor: function (blockName, region, stat, variable, threshold, level, fcstlen) {
-    let myScorecard = Session.get('myScorecard');
-    if (myScorecard === undefined) {
-      return;
-    }
-    //un padd the possibly padded fcstlen
-    let fcstlenStr = Number(fcstlen) + '';
-    const sigVal =
-        myScorecard['scorecard']['results']['blocks'][blockName]['data'][region][stat][variable]
-            [threshold][level][fcstlenStr];
-    if (sigVal === -2) {
-      return myScorecard['scorecard']['significanceColors']['major-truth-color'];
-    }
-    if (sigVal === -1) {
-      return myScorecard['scorecard']['significanceColors']['minor-truth-color'];
-    }
-    if (sigVal === 0) {
-      return 'lightgrey ';
-    }
-    if (sigVal === 2) {
-      return myScorecard['scorecard']['significanceColors']['major-source-color'];
-    }
-    if (sigVal === 1) {
-      return myScorecard['scorecard']['significanceColors']['minor-source-color'];
-    }
+    return "<i style='color:" + color + "' class='" + icon + "'></i>"
   },
   significanceBackgroundColor: function (blockName, region, stat, variable, threshold, level, fcstlen) {
     let myScorecard = Session.get('myScorecard');
@@ -333,32 +328,30 @@ Template.ScorecardDisplay.helpers({
     const sigVal =
         myScorecard['scorecard']['results']['blocks'][blockName]['data'][region][stat][variable]
             [threshold][level][fcstlenStr];
-    if (sigVal === -2) {
-      return LightenDarkenColor(
-        myScorecard['scorecard']['significanceColors']['major-truth-color'],
-        180
-      );
-    }
-    if (sigVal === -1) {
-      return LightenDarkenColor(
-        myScorecard['scorecard']['significanceColors']['minor-truth-color'],
-        220
-      );
-    }
-    if (sigVal === 0) {
-      return 'lightgrey';
-    }
-    if (sigVal === 2) {
-      return LightenDarkenColor(
-        myScorecard['scorecard']['significanceColors']['major-source-color'],
-        180
-      );
-    }
-    if (sigVal === 1) {
-      return LightenDarkenColor(
-        myScorecard['scorecard']['significanceColors']['minor-source-color'],
-        220
-      );
+    switch(sigVal) {
+      case -2:
+        return LightenDarkenColor(
+          myScorecard['scorecard']['significanceColors']['major-truth-color'],
+          180
+        );
+      case -1:
+        return LightenDarkenColor(
+          myScorecard['scorecard']['significanceColors']['minor-truth-color'],
+          220
+        );
+      case 2:
+        return LightenDarkenColor(
+          myScorecard['scorecard']['significanceColors']['major-source-color'],
+          180
+        );
+      case 1:
+        return LightenDarkenColor(
+          myScorecard['scorecard']['significanceColors']['minor-source-color'],
+          220
+        );
+      case 0:
+      default:
+        return 'lightgrey';
     }
   },
   stats: function (blockName) {

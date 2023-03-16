@@ -44,7 +44,6 @@ var Scorecard = new Mongo.Collection("Scorecard");
 // expire after 24 hours from when the scorecard is last upserted
 if (Meteor.isServer) {
     try {
-        Scorecard._dropIndex( { "createdAt": 1 } );
         Scorecard.createIndex( { "createdAt": 1 }, { expireAfterSeconds: 24 * 60 * 60 } );
     } catch (e) {
         // ignore this - this isn't a scorecard
