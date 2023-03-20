@@ -10,6 +10,10 @@ import { Meteor } from "meteor/meteor";
 import { curveParamsByApp } from './mats-curve-params';
 
 const params = curveParamsByApp[Meteor.settings.public.app];
+if (!params) {
+    console.log("curveParams are not defined in imports/startup/both/mats-curve-params.js. Please define some curveParams for this app.");
+    throw new Meteor.Error("curveParams are not defined in imports/startup/both/mats-curve-params.js. Please define some curveParams for this app.");
+}
 var paramCollections = {};
 var currParam;
 for (var i = 0; i < params.length; i++) {

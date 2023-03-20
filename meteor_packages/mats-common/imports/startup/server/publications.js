@@ -19,8 +19,8 @@ const _publishField = function(field) {
 if (Meteor.isServer) {
     const params = curveParamsByApp[Meteor.settings.public.app];
     if (!params) {
-        console.log("Curve_params are not defined in the settings. Did you forget the settings parameter?");
-        throw new Meteor.Error("Curve_params are not defined in the settings. Did you forget the settings parameter?");
+        console.log("curveParams are not defined in imports/startup/both/mats-curve-params.js. Please define some curveParams for this app.");
+        throw new Meteor.Error("curveParams are not defined in imports/startup/both/mats-curve-params.js. Please define some curveParams for this app.");
     }
     var currParam;
     for (var i = 0; i < params.length; i++) {
