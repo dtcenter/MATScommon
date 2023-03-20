@@ -3,7 +3,8 @@
  */
 
 import { Meteor } from 'meteor/meteor';
-import {matsCollections} from 'meteor/randyp:mats-common';
+import { matsCollections } from 'meteor/randyp:mats-common';
+import { curveParamsByApp } from '../both/mats-curve-params';
 
 const _publishField = function(field) {
     Meteor.publish(field, function () {
@@ -16,7 +17,7 @@ const _publishField = function(field) {
 }
 
 if (Meteor.isServer) {
-    const params = Meteor.settings.public.curve_params;
+    const params = curveParamsByApp[Meteor.settings.public.app];
     if (!params) {
         console.log("Curve_params are not defined in the settings. Did you forget the settings parameter?");
         throw new Meteor.Error("Curve_params are not defined in the settings. Did you forget the settings parameter?");

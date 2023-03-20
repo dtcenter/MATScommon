@@ -6,7 +6,7 @@
  * Created by pierce on 8/31/16.
  */
 
-var DEFAULT_GROUP_LIST = ["Upper Air","Ceiling and Visibility","Surface","Precipitation,Radar","METexpress"];
+var DEFAULT_GROUP_LIST = ["Upper Air","Ceiling and Visibility","Surface","Precipitation","Radar","METexpress"];
 
 var DatabaseRoles = {
     MODEL_DATA: 'model_data',

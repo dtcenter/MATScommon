@@ -4,8 +4,10 @@
 
 import { Meteor } from 'meteor/meteor';
 import matsCollections from 'meteor/randyp:mats-common';
+import { curveParamsByApp } from '../both/mats-curve-params';
+
 if (Meteor.isClient) {
-    const params = Meteor.settings.public.curve_params;
+    const params = curveParamsByApp[Meteor.settings.public.app];
     for (var i = 0; i < params.length; i++) {
         Meteor.subscribe(params[i]);
     }

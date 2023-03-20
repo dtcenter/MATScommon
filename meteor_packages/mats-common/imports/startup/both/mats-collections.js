@@ -6,9 +6,10 @@
  * Created by pierce on 8/31/16.
  */
 import { Mongo } from 'meteor/mongo';
-import {Meteor} from "meteor/meteor";
+import { Meteor } from "meteor/meteor";
+import { curveParamsByApp } from './mats-curve-params';
 
-const params = Meteor.settings.public.curve_params;
+const params = curveParamsByApp[Meteor.settings.public.app];
 var paramCollections = {};
 var currParam;
 for (var i = 0; i < params.length; i++) {

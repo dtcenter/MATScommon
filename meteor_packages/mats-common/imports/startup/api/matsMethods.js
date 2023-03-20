@@ -27,6 +27,7 @@ import {
 import {
     Mongo
 } from 'meteor/mongo';
+import { curveParamsByApp } from '../both/mats-curve-params';
 
 // PRIVATE
 
@@ -2730,7 +2731,7 @@ const resetApp = async function (appRef) {
         }
         const appTimeOut = Meteor.settings.public.mysql_wait_timeout ? Meteor.settings.public.mysql_wait_timeout : 300;
         var dep_env = process.env.NODE_ENV;
-        var curve_params = Meteor.settings.public.curve_params ? Meteor.settings.public.curve_params : [];
+        var curve_params = curveParamsByApp[Meteor.settings.public.app];
         var apps_to_score;
         if (Meteor.settings.public.scorecard) {
             apps_to_score = Meteor.settings.public.apps_to_score ? Meteor.settings.public.apps_to_score : [];
@@ -2759,7 +2760,6 @@ const resetApp = async function (appRef) {
                 },
                 "public": {
                     "run_environment": dep_env,
-                    "curve_params": curve_params,
                     "apps_to_score": apps_to_score,
                     "default_group": appDefaultGroup,
                     "default_db": appDefaultDB,
@@ -2894,20 +2894,15 @@ const resetApp = async function (appRef) {
         matsDataUtils.doSettings(appTitle, dbType, appVersion, commit, appName, appType, mapboxKey, appDefaultGroup, appDefaultDB, appDefaultModel, thresholdUnits, appMessage, scorecard);
         matsCollections.PlotParams.remove({});
         matsCollections.CurveTextPatterns.remove({});
-        // get the curve params for this app out of the settings file
-        if (Meteor.settings.public && Meteor.settings.public.curve_params) {
-            curve_params = Meteor.settings.public.curve_params;
-            matsCollections.CurveParamsInfo.remove({});
-            matsCollections.CurveParamsInfo.insert({
-                "curve_params": curve_params
-            });
-            for (var cp = 0; cp < curve_params.length; cp++) {
-                if (matsCollections[curve_params[cp]] !== undefined) {
-                    matsCollections[curve_params[cp]].remove({});
-                }
+        // get the curve params for this app into their collections
+        matsCollections.CurveParamsInfo.remove({});
+        matsCollections.CurveParamsInfo.insert({
+            "curve_params": curve_params
+        });
+        for (var cp = 0; cp < curve_params.length; cp++) {
+            if (matsCollections[curve_params[cp]] !== undefined) {
+                matsCollections[curve_params[cp]].remove({});
             }
-        } else {
-            throw new Meteor.Error("curve_params are not initialized in app settings--cannot build selectors");
         }
         // if this is a scorecard also get the apps to score out of the settings file
         if (Meteor.settings.public && Meteor.settings.public.scorecard) {
