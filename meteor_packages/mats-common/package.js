@@ -4,9 +4,9 @@
 
 Package.describe({
     name: 'randyp:mats-common',
-    version: '2.1.0',
+    version: '5.1.0',
     // Brief, one-line summary of the package.
-    summary: 'MATS common files provides common functionality for mats apps',
+    summary: 'MATScommon files provides common functionality for MATS/METexpress apps',
     // URL to the Git repository containing the source code for this package.
     git: '',
     // By default, Meteor will default to using README.md for documentation.
@@ -15,7 +15,7 @@ Package.describe({
 });
 
 Package.onUse(function (api) {
-    api.versionsFrom('2.7');
+    api.versionsFrom('2.11.0');
     Npm.depends({
         "@fortawesome/fontawesome-free": "6.3.0",
         "fs-extra": "7.0.1",
