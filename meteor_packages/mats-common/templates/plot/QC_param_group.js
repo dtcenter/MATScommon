@@ -14,16 +14,12 @@ Template.QCParamGroup.helpers({
     noQC: function () {
         return true;
     },
-    isMetexpress: function () {
+    isMetexpressMode: function () {
         if (matsCollections.Settings.findOne({}) !== undefined && matsCollections.Settings.findOne({}).appType !== undefined) {
-            const appType = matsCollections.Settings.findOne({}).appType;
-            return appType === matsTypes.AppTypes.metexpress;
+            const appName = matsCollections.Settings.findOne({}).appName;
+            return appName.toLowerCase().includes("mode") || appName.toLowerCase().includes("object");
         } else {
             return false;
         }
     }
-});
-
-Template.QCParamGroup.events({
-
 });

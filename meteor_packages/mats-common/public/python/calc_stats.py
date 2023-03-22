@@ -163,7 +163,7 @@ def _mode_pair_stat_switch():
     }
 
 
-def calculate_stat(statistic, stat_line_type, agg_method, numpy_data, column_headers):
+def calculate_stat(statistic, stat_line_type, agg_method, outlier_qc_param, numpy_data, column_headers, sub_secs, sub_levs):
     """function for determining and calling the appropriate statistical calculation function"""
     if stat_line_type == 'scalar':
         stat_switch = _scalar_stat_switch()
@@ -201,6 +201,22 @@ def calculate_stat(statistic, stat_line_type, agg_method, numpy_data, column_hea
                 sub_stats[idx] = 1
             else:
                 sub_stats[idx] = stat_switch[statistic](numpy_data[[idx], :], column_headers)
+
+        # now that we have all the sub-stats, we can get the standard deviation 
+        # and remove the rows that exceed it. This should only ever trigger for 
+        # scalar stats, everything else will have outlier_qc_param = 100
+        if outlier_qc_param != "all":
+            sub_stdev = np.nanstd(sub_stats)
+            sub_mean = np.nanmean(sub_stats)
+            sd_limit = outlier_qc_param * sub_stdev
+            for idx in reversed(range(data_length)):
+                if abs(sub_stats[idx] - sub_mean) > sd_limit:
+                    sub_stats = np.delete(sub_stats, idx, 0)
+                    sub_secs = np.delete(sub_secs, idx, 0)
+                    sub_levs = np.delete(sub_levs, idx, 0) if len(sub_levs) > 0 else sub_levs
+                    numpy_data = np.delete(numpy_data, idx, 0)
+
+        # calculate the overall statistic
         if agg_method == "Mean statistic":
             stat = np.nanmean(sub_stats)  # calculate stat as mean of sub_values
         elif agg_method == "Median statistic":
@@ -224,7 +240,7 @@ def calculate_stat(statistic, stat_line_type, agg_method, numpy_data, column_hea
         error = "Error calculating statistic: " + str(e)
         sub_stats = np.nan
         stat = 'null'
-    return sub_stats, stat, error
+    return sub_stats, sub_secs, sub_levs, numpy_data, stat, error
 
 
 def get_stat(row, statistic, stat_line_type, app_params):
@@ -232,13 +248,13 @@ def get_stat(row, statistic, stat_line_type, app_params):
 
     has_levels = app_params["hasLevels"]
     agg_method = app_params["aggMethod"]
+    outlier_qc_param = "all" if app_params["outliers"] == "all" else int(app_params["outliers"])
 
     # these are the sub-fields that are returned in the end
     stat = "null"
     sub_levs = []
     sub_secs = []
     sub_values = np.empty(0)
-    individual_obj_lookup = {}
     error = ""
 
     try:
@@ -270,9 +286,6 @@ def get_stat(row, statistic, stat_line_type, app_params):
                 column_headers = np.asarray(['fbar', 'obar', 'ffbar', 'oobar', 'fobar', 'total'])
             else:
                 column_headers = np.asarray(['fabar', 'oabar', 'ffabar', 'ooabar', 'foabar', 'total'])
-            sub_values, stat, stat_error = calculate_stat(statistic, stat_line_type, agg_method, numpy_data, column_headers)
-            if stat_error != '':
-                error = stat_error
 
         elif stat_line_type == 'vector':
             sub_data = str(row['sub_data']).split(',')
@@ -322,9 +335,6 @@ def get_stat(row, statistic, stat_line_type, app_params):
                     [sub_ufbar, sub_vfbar, sub_uobar, sub_vobar, sub_uvfobar, sub_uvffbar, sub_uvoobar, sub_total])
                 column_headers = np.asarray(
                     ['ufabar', 'vfabar', 'uoabar', 'voabar', 'uvfoabar', 'uvffabar', 'uvooabar', 'total'])
-            sub_values, stat, stat_error = calculate_stat(statistic, stat_line_type, agg_method, numpy_data, column_headers)
-            if stat_error != '':
-                error = stat_error
 
         elif stat_line_type == 'ctc':
             sub_data = str(row['sub_data']).split(',')
@@ -348,9 +358,6 @@ def get_stat(row, statistic, stat_line_type, app_params):
             # calculate the ctc statistic
             numpy_data = np.column_stack([sub_fy_oy, sub_fy_on, sub_fn_oy, sub_fn_on, sub_total])
             column_headers = np.asarray(['fy_oy', 'fy_on', 'fn_oy', 'fn_on', 'total'])
-            sub_values, stat, stat_error = calculate_stat(statistic, stat_line_type, agg_method, numpy_data, column_headers)
-            if stat_error != '':
-                error = stat_error
 
         elif stat_line_type == 'nbrcnt':
             sub_data = str(row['sub_data']).split(',')
@@ -370,9 +377,6 @@ def get_stat(row, statistic, stat_line_type, app_params):
             # calculate the nbrcnt statistic
             numpy_data = np.column_stack([sub_fss, sub_fbs, sub_total])
             column_headers = np.asarray(['fss', 'fbs', 'total'])
-            sub_values, stat, stat_error = calculate_stat(statistic, stat_line_type, agg_method, numpy_data, column_headers)
-            if stat_error != '':
-                error = stat_error
 
         elif stat_line_type == 'mode_single':
             sub_data = str(row['sub_data']).split(',')
@@ -404,9 +408,6 @@ def get_stat(row, statistic, stat_line_type, app_params):
                                           sub_fcst_flag, sub_simple_flag, sub_matched_flag])
             column_headers = np.asarray(['object_id', 'object_cat', 'object_type', 'area', 'total',
                                          'fcst_flag', 'simple_flag', 'matched_flag'])
-            sub_values, stat, stat_error = calculate_stat(statistic, stat_line_type, agg_method, numpy_data, column_headers)
-            if stat_error != '':
-                error = stat_error
 
         elif 'mode_pair' in stat_line_type:
             sub_data = str(row['sub_data']).split(',')
@@ -473,9 +474,6 @@ def get_stat(row, statistic, stat_line_type, app_params):
                                          'object_o_cat', 'object_type', 'interest', 'centroid_dist', 'f_area', 'o_area',
                                          'f_intensity_nn', 'o_intensity_nn', 'f_centroid_lat', 'o_centroid_lat',
                                          'f_centroid_lon', 'o_centroid_lon', 'total'])
-            sub_values, stat, stat_error = calculate_stat(statistic, stat_line_type, agg_method, numpy_data, column_headers)
-            if stat_error != '':
-                error = stat_error
 
         else:
             sub_data = str(row['sub_data']).split(',')
@@ -491,9 +489,11 @@ def get_stat(row, statistic, stat_line_type, app_params):
                     sub_levs.append(sub_datum[3])
             numpy_data = np.column_stack([sub_values, sub_total])
             column_headers = np.asarray(['precalc', 'total'])
-            sub_values, stat, stat_error = calculate_stat(statistic, stat_line_type, agg_method, numpy_data, column_headers)
-            if stat_error != '':
-                error = stat_error
+
+        sub_values, sub_secs, sub_levs, numpy_data, stat, stat_error = calculate_stat(statistic, stat_line_type, 
+                agg_method, outlier_qc_param, numpy_data, column_headers, sub_secs, sub_levs)
+        if stat_error != '':
+            error = stat_error
 
     except KeyError as e:
         error = "Error parsing query data. The expected fields don't seem to be present " \

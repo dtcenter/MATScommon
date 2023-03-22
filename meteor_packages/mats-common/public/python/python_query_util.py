@@ -421,12 +421,22 @@ class QueryUtil:
             else:
                 # put the data in our final data dictionary, converting the numpy arrays to lists so we can jsonify
                 loop_sum += curve_stats[d_idx]
-                list_data = sub_data_all[d_idx].tolist()
-                list_headers = sub_headers_all[d_idx].tolist()
-                list_vals = sub_vals_all[d_idx].tolist()
-                list_secs = sub_secs_all[d_idx]
+                list_data = sub_data_all[d_idx].tolist() \
+                    if not isinstance(sub_data_all[d_idx], list) \
+                    else sub_data_all[d_idx]
+                list_headers = sub_headers_all[d_idx].tolist() \
+                    if not isinstance(sub_headers_all[d_idx], list) \
+                    else sub_headers_all[d_idx]
+                list_vals = sub_vals_all[d_idx].tolist() \
+                    if not isinstance(sub_vals_all[d_idx], list) \
+                    else sub_vals_all[d_idx]
+                list_secs = sub_secs_all[d_idx].tolist() \
+                    if not isinstance(sub_secs_all[d_idx], list) \
+                    else sub_secs_all[d_idx]
                 if has_levels:
-                    list_levs = sub_levs_all[d_idx]
+                    list_levs = sub_levs_all[d_idx].tolist() \
+                        if not isinstance(sub_levs_all[d_idx], list) \
+                        else sub_levs_all[d_idx]
                 else:
                     list_levs = []
 
@@ -547,16 +557,16 @@ class QueryUtil:
                         sub_levs = np.delete(sub_levs, bad_value_indices)
 
                 # store parsed data for later
-                list_data = sub_data.tolist()
+                list_data = sub_data.tolist() if not isinstance(sub_data, list) else sub_data
                 sub_data_all.append(list_data)
-                list_headers = sub_headers.tolist()
+                list_headers = sub_headers.tolist() if not isinstance(sub_headers, list) else sub_headers
                 sub_headers_all.append(list_headers)
-                list_vals = sub_values.tolist()
+                list_vals = sub_values.tolist() if not isinstance(sub_values, list) else sub_values
                 sub_vals_all.append(list_vals)
-                list_secs = sub_secs
+                list_secs = sub_secs.tolist() if not isinstance(sub_secs, list) else sub_secs
                 sub_secs_all.append(list_secs)
                 if has_levels:
-                    list_levs = sub_levs
+                    list_levs = sub_levs.tolist() if not isinstance(sub_levs, list) else sub_levs
                     sub_levs_all.append(list_levs)
 
             # we successfully processed a cycle, so increment both indices
@@ -613,12 +623,12 @@ class QueryUtil:
                         sub_levs_all.append([])
 
                 else:
-                    list_data = sub_data.tolist()
-                    list_headers = sub_headers.tolist()
-                    list_vals = sub_values.tolist()
-                    list_secs = sub_secs
+                    list_data = sub_data.tolist() if not isinstance(sub_data, list) else sub_data
+                    list_headers = sub_headers.tolist() if not isinstance(sub_headers, list) else sub_headers
+                    list_vals = sub_values.tolist() if not isinstance(sub_values, list) else sub_values
+                    list_secs = sub_secs.tolist() if not isinstance(sub_secs, list) else sub_secs
                     if has_levels:
-                        list_levs = sub_levs
+                        list_levs = sub_levs.tolist() if not isinstance(sub_levs, list) else sub_levs
 
                     # JSON can't deal with numpy nans in subarrays for some reason, so we remove them
                     # Don 't need them for matching because histograms don't do Overall Statistic
@@ -1075,8 +1085,10 @@ class QueryUtil:
                     stat_line_type = options["query_array"][curve_index]["statLineType"]
                     agg_method = options["query_array"][curve_index]["appParams"]["aggMethod"]
 
-                    sub_stats, stat, stat_error = calculate_stat(statistic, stat_line_type, agg_method,
-                        np.asarray(data["subData"][di]), np.asarray(data["subHeaders"][di]))
+                    sub_stats, sub_secs, sub_levs, numpy_data, stat, stat_error = calculate_stat(
+                        statistic, stat_line_type, agg_method, "all", 
+                        np.asarray(data["subData"][di]), np.asarray(data["subHeaders"][di]), 
+                        np.asarray(data["subSecs"][di]), np.asarray(data["subLevs"][di]))
                     data[stat_var_name][di] = stat
                     if stat_error != '':
                         self.error[curve_index] = stat_error

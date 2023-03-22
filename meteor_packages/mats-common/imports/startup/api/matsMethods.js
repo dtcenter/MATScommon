@@ -2427,7 +2427,7 @@ const getReleaseNotes = new ValidatedMethod({
             var fData;
             var file;
             if (process.env.NODE_ENV === "development") {
-                file = process.env.PWD + "/../../MATScommon/meteor_packages/mats-common/public/MATSReleaseNotes.html";
+                file = process.env.PWD + "/.meteor/local/build/programs/server/assets/packages/randyp_mats-common/public/MATSReleaseNotes.html";
             } else {
                 file = process.env.PWD + "/programs/server/assets/packages/randyp_mats-common/public/MATSReleaseNotes.html";
             }
