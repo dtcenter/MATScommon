@@ -17,21 +17,21 @@ Package.describe({
 Package.onUse(function (api) {
     api.versionsFrom('2.7');
     Npm.depends({
-        "@fortawesome/fontawesome-free": "6.2.0",
-        'fs-extra': '7.0.0',
-        "@babel/runtime": "7.10.4",
-        "meteor-node-stubs": "0.4.1",
+        "@fortawesome/fontawesome-free": "6.3.0",
+        "fs-extra": "7.0.1",
+        "@babel/runtime": "7.21.0",
+        "meteor-node-stubs": "1.2.5",
         "url": "0.11.0",
         "jquery": "3.6.3",
-        "datatables.net-bs": '1.13.1',
-        "datatables.net-dt": '1.13.1',
-        "jquery-ui": "1.12.1",
+        "datatables.net-bs": '1.13.4',
+        "datatables.net-dt": '1.13.4',
+        "jquery-ui": "1.13.2",
         "csv-stringify": "4.3.1",
         "node-file-cache" : "1.0.2",
         "python-shell": "1.0.8",
         "couchbase": "3.2.3",
-        "simpl-schema": "1.12.0",
-        "vanillajs-datepicker":"1.2.0",
+        "simpl-schema": "3.4.1",
+        "vanillajs-datepicker":"1.3.1",
         "daterangepicker": "3.1.0",
         "lighten-darken-color": "1.0.0"
     });
