@@ -151,8 +151,8 @@ Package.onUse(function (api) {
     api.addFiles("templates/spinner/spinner.html", "client");
     api.addFiles("templates/spinner/spinner.js", "client");
 
-    api.addFiles('templates/footer.html', "client");
-    api.addFiles('templates/footer.js', "client");
+    api.addFiles('templates/footer/footer.html', "client");
+    api.addFiles('templates/footer/footer.js', "client");
     api.addFiles('templates/Home.html', "client");
     api.addFiles('templates/Home.js', "client");
     api.addFiles('templates/ScorecardHome.html', "client");
@@ -163,8 +163,8 @@ Package.onUse(function (api) {
     api.addFiles('templates/CustomHome.js', "client");
     api.addFiles('templates/underConstruction/underConstruction.html', "client");
     api.addFiles('templates/underConstruction/underConstruction.js', "client");
-    api.addFiles('templates/about.html', "client");
-    api.addFiles('templates/about.js', "client");
+    api.addFiles('templates/about/about.html', "client");
+    api.addFiles('templates/about/about.js', "client");
     api.addFiles('templates/version/version.html', "client");
     api.addFiles('templates/version/version.js', "client");
 
@@ -176,11 +176,11 @@ Package.onUse(function (api) {
 
     api.addFiles('templates/help/help.html', "client");
 
-    api.addFiles("templates/plot/plot_param_group.html", "client");
-    api.addFiles("templates/plot/plot_param_group.js", "client");
+    api.addFiles("templates/params/plot_param_group.html", "client");
+    api.addFiles("templates/params/plot_param_group.js", "client");
 
-    api.addFiles("templates/plot/QC_param_group.html", "client");
-    api.addFiles("templates/plot/QC_param_group.js", "client");
+    api.addFiles("templates/QCParamGroup/QC_param_group.html", "client");
+    api.addFiles("templates/QCParamGroup/QC_param_group.js", "client");
 
     api.addFiles("templates/error/error.html", "client");
     api.addFiles("templates/error/error.js", "client");
@@ -205,35 +205,35 @@ Package.onUse(function (api) {
 
     api.addFiles("templates/graph/displayFunctions/graph_plotly.js", "client");
 
-    api.addFiles("templates/common/text_input.html", "client");
-    api.addFiles("templates/common/text_input.js", "client");
+    api.addFiles("templates/selectorItems/text_input.html", "client");
+    api.addFiles("templates/selectorItems/text_input.js", "client");
 
-    api.addFiles("templates/common/color.html", "client");
-    api.addFiles("templates/common/color.js", "client");
+    api.addFiles("templates/selectorItems/color.html", "client");
+    api.addFiles("templates/selectorItems/color.js", "client");
 
-    api.addFiles("templates/graph/text_output.html", "client");
-    api.addFiles("templates/graph/text_output.js", "client");
+    api.addFiles("templates/textOutput/textOutput.html", "client");
+    api.addFiles("templates/textOutput/textOutput.js", "client");
 
-    api.addFiles("templates/common/select.html", "client");
-    api.addFiles("templates/common/select.js", "client");
+    api.addFiles("templates/selectorItems/select.html", "client");
+    api.addFiles("templates/selectorItems/select.js", "client");
 
-    api.addFiles("templates/common/map.html", "client");
-    api.addFiles("templates/common/map.js", "client");
+    api.addFiles("templates/selectorItems/map.html", "client");
+    api.addFiles("templates/selectorItems/map.js", "client");
 
-    api.addFiles("templates/common/date_range.html", "client");
-    api.addFiles("templates/common/date_range.js", "client");
+    api.addFiles("templates/selectorItems/date_range.html", "client");
+    api.addFiles("templates/selectorItems/date_range.js", "client");
 
-    api.addFiles("templates/common/checkbox_group.html", "client");
-    api.addFiles("templates/common/checkbox_group.js", "client");
+    api.addFiles("templates/selectorItems/checkbox_group.html", "client");
+    api.addFiles("templates/selectorItems/checkbox_group.js", "client");
 
-    api.addFiles("templates/common/number_spinner.html", "client");
-    api.addFiles("templates/common/number_spinner.js", "client");
+    api.addFiles("templates/selectorItems/number_spinner.html", "client");
+    api.addFiles("templates/selectorItems/number_spinner.js", "client");
 
-    api.addFiles("templates/common/radio_group_option.html", "client");
-    api.addFiles("templates/common/radio_group_option.js", "client");
+    api.addFiles("templates/selectorItems/radio_group_option.html", "client");
+    api.addFiles("templates/selectorItems/radio_group_option.js", "client");
 
-    api.addFiles("templates/common/item.html", "client");
-    api.addFiles("templates/common/item.js", "client");
+    api.addFiles("templates/selectorItems/item.html", "client");
+    api.addFiles("templates/selectorItems/item.js", "client");
 
     api.addFiles("templates/curves/curve_item.html", "client");
     api.addFiles("templates/curves/curve_item.js", "client");
