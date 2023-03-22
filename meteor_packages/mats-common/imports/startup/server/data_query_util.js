@@ -1053,8 +1053,8 @@ const parseQueryDataXYCurve = function (rows, d, appParams, statisticStr, foreca
     const completenessQCParam = Number(appParams.completeness) / 100;
     const outlierQCParam = appParams.outliers !== "all" ? Number(appParams.outliers) : appParams.outliers;
 
-    const isCTC = false;
-    const isScalar = false;
+    let isCTC = false;
+    let isScalar = false;
     const hideGaps = appParams.hideGaps;
 
     // initialize local variables
