@@ -142,11 +142,11 @@ const queryDBPython = function (pool, queryArray) {
         const pyShell = require('python-shell');
         const Future = require('fibers/future');
 
-        var future = new Future();
-        var d = {};
-        var error = "";
-        var N0 = [];
-        var N_times = [];
+        let future = new Future();
+        let d = [];
+        let error = "";
+        let N0 = [];
+        let N_times = [];
 
         pyShell.PythonShell.run('python_query_util.py', pyOptions).then(results=>{
             // query callback - build the curve data from the results - or set an error
@@ -161,6 +161,9 @@ const queryDBPython = function (pool, queryArray) {
                 error = parsedData.error;
             }
             // done waiting - have results
+            future['return']();
+        }).catch(err => {
+            error = err.message;
             future['return']();
         });
 
