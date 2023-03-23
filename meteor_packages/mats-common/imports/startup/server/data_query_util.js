@@ -148,11 +148,9 @@ const queryDBPython = function (pool, queryArray) {
         var N0 = [];
         var N_times = [];
 
-        pyShell.PythonShell.run('python_query_util.py', pyOptions, function (err, results) {
+        pyShell.PythonShell.run('python_query_util.py', pyOptions).then(results=>{
             // query callback - build the curve data from the results - or set an error
-            if (err !== undefined && err !== null) {
-                error = err.message === undefined ? err : err.message;
-            } else if (results === undefined || results === "undefined") {
+            if (results === undefined || results === "undefined") {
                 error = "Error thrown by python_query_util.py. Please write down exactly how you produced this error, and submit a ticket at mats.gsl@noaa.gov."
             } else {
                 // get the data back from the query
