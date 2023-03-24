@@ -393,6 +393,26 @@ const checkDiffs = function () {
     }
 };
 
+
+const checkIfDisplayAllQCParams = function(faceOptions) {
+    // we only want to allow people to filter sub-values for apps with scalar or precalculated stats
+    if (matsCollections && matsCollections.statistic) {
+        const thisAppsStatistics = matsCollections.statistic.findOne({});
+        if (thisAppsStatistics && thisAppsStatistics.options.indexOf("RMSE") === -1
+            && thisAppsStatistics.options.indexOf("Number of stations") === -1) {
+            if (faceOptions['QCParamGroup'] === 'block') {
+                // not a map plot, display only the gaps selector
+                faceOptions['QCParamGroup'] = 'none';
+                faceOptions['QCParamGroup-gaps'] = 'block';
+            } else if (faceOptions['QCParamGroup-lite'] === 'block') {
+                // map plot, display nothing
+                faceOptions['QCParamGroup-lite'] = 'none';
+            }
+        }
+    }
+    return faceOptions;
+};
+
 const setSelectorVisibility = function(plotType, faceOptions, selectorsToReset) {
     if (document.getElementById('plotTypes-selector') !== undefined && document.getElementById('plotTypes-selector') !== null && document.getElementById('plotTypes-selector').value === plotType) {
         // reset selectors that may have been set to something invalid for the new plot type
@@ -427,7 +447,7 @@ const setSelectorVisibility = function(plotType, faceOptions, selectorsToReset) 
 // method to display the appropriate selectors for a timeseries curve
 const showTimeseriesFace = function () {
     const plotType = matsTypes.PlotTypes.timeSeries;
-    const faceOptions = {
+    let faceOptions = {
         'curve-dates': 'none',
         'dates': 'block',
         'statistic': 'block',
@@ -463,12 +483,14 @@ const showTimeseriesFace = function () {
         'significance': 'none',
         'plotFormat': 'block',
         'QCParamGroup': 'block',
+        'QCParamGroup-gaps': 'none',
         'QCParamGroup-lite': 'none'
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
         'bin-parameter': 'Valid Date'
     };
+    faceOptions = checkIfDisplayAllQCParams(faceOptions);
     setSelectorVisibility(plotType, faceOptions, selectorsToReset);
     return selectorsToReset;
 };
@@ -476,7 +498,7 @@ const showTimeseriesFace = function () {
 // method to display the appropriate selectors for a profile curve
 const showProfileFace = function () {
     const plotType = matsTypes.PlotTypes.profile;
-    var faceOptions = {
+    let faceOptions = {
         'curve-dates': 'block',
         'dates': 'none',
         'statistic': 'block',
@@ -512,12 +534,14 @@ const showProfileFace = function () {
         'significance': 'none',
         'plotFormat': 'block',
         'QCParamGroup': 'block',
+        'QCParamGroup-gaps': 'none',
         'QCParamGroup-lite': 'none'
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
         'bin-parameter': 'Valid Date'
     };
+    faceOptions = checkIfDisplayAllQCParams(faceOptions);
     setSelectorVisibility(plotType, faceOptions, selectorsToReset);
     return selectorsToReset;
 };
@@ -525,7 +549,7 @@ const showProfileFace = function () {
 // method to display the appropriate selectors for a dieoff curve
 const showDieOffFace = function () {
     const plotType = matsTypes.PlotTypes.dieoff;
-    var faceOptions = {
+    let faceOptions = {
         'curve-dates': 'block',
         'dates': 'none',
         'statistic': 'block',
@@ -561,12 +585,14 @@ const showDieOffFace = function () {
         'significance': 'none',
         'plotFormat': 'block',
         'QCParamGroup': 'block',
+        'QCParamGroup-gaps': 'none',
         'QCParamGroup-lite': 'none'
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
         'bin-parameter': 'Valid Date'
     };
+    faceOptions = checkIfDisplayAllQCParams(faceOptions);
     setSelectorVisibility(plotType, faceOptions, selectorsToReset);
     return selectorsToReset;
 };
@@ -574,7 +600,7 @@ const showDieOffFace = function () {
 // method to display the appropriate selectors for a threshold curve
 const showThresholdFace = function () {
     const plotType = matsTypes.PlotTypes.threshold;
-    var faceOptions = {
+    let faceOptions = {
         'curve-dates': 'block',
         'dates': 'none',
         'statistic': 'block',
@@ -610,6 +636,7 @@ const showThresholdFace = function () {
         'significance': 'none',
         'plotFormat': 'block',
         'QCParamGroup': 'block',
+        'QCParamGroup-gaps': 'none',
         'QCParamGroup-lite': 'none'
     };
     const selectorsToReset = {
@@ -620,6 +647,7 @@ const showThresholdFace = function () {
     if (matsParamUtils.getParameterForName('region-type') !== undefined) {
         selectorsToReset['region-type'] = 'Predefined region';
     }
+    faceOptions = checkIfDisplayAllQCParams(faceOptions);
     setSelectorVisibility(plotType, faceOptions, selectorsToReset);
     return selectorsToReset;
 };
@@ -627,7 +655,7 @@ const showThresholdFace = function () {
 // method to display the appropriate selectors for a valid time curve
 const showValidTimeFace = function () {
     const plotType = matsTypes.PlotTypes.validtime;
-    var faceOptions = {
+    let faceOptions = {
         'curve-dates': 'block',
         'dates': 'none',
         'statistic': 'block',
@@ -663,12 +691,14 @@ const showValidTimeFace = function () {
         'significance': 'none',
         'plotFormat': 'block',
         'QCParamGroup': 'block',
+        'QCParamGroup-gaps': 'none',
         'QCParamGroup-lite': 'none'
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
         'bin-parameter': 'Valid Date'
     };
+    faceOptions = checkIfDisplayAllQCParams(faceOptions);
     setSelectorVisibility(plotType, faceOptions, selectorsToReset);
     return selectorsToReset;
 };
@@ -676,7 +706,7 @@ const showValidTimeFace = function () {
 // method to display the appropriate selectors for a grid scale curve
 const showGridScaleFace = function () {
     const plotType = matsTypes.PlotTypes.gridscale;
-    var faceOptions = {
+    let faceOptions = {
         'curve-dates': 'block',
         'dates': 'none',
         'statistic': 'block',
@@ -712,12 +742,14 @@ const showGridScaleFace = function () {
         'significance': 'none',
         'plotFormat': 'block',
         'QCParamGroup': 'block',
+        'QCParamGroup-gaps': 'none',
         'QCParamGroup-lite': 'none'
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
         'bin-parameter': 'Valid Date'
     };
+    faceOptions = checkIfDisplayAllQCParams(faceOptions);
     setSelectorVisibility(plotType, faceOptions, selectorsToReset);
     return selectorsToReset;
 };
@@ -725,7 +757,7 @@ const showGridScaleFace = function () {
 // method to display the appropriate selectors for a daily model cycle curve
 const showDailyModelCycleFace = function () {
     const plotType = matsTypes.PlotTypes.dailyModelCycle;
-    var faceOptions = {
+    let faceOptions = {
         'curve-dates': 'none',
         'dates': 'block',
         'statistic': 'block',
@@ -761,12 +793,14 @@ const showDailyModelCycleFace = function () {
         'significance': 'none',
         'plotFormat': 'block',
         'QCParamGroup': 'block',
+        'QCParamGroup-gaps': 'none',
         'QCParamGroup-lite': 'none'
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff for a specified UTC cycle init hour',
         'bin-parameter': 'Valid Date'
     };
+    faceOptions = checkIfDisplayAllQCParams(faceOptions);
     setSelectorVisibility(plotType, faceOptions, selectorsToReset);
     return selectorsToReset;
 };
@@ -774,7 +808,7 @@ const showDailyModelCycleFace = function () {
 // method to display the appropriate selectors for a year to year curve
 const showYearToYearFace = function () {
     const plotType = matsTypes.PlotTypes.yearToYear;
-    var faceOptions = {
+    let faceOptions = {
         'curve-dates': 'none',
         'dates': 'none',
         'statistic': 'block',
@@ -810,12 +844,14 @@ const showYearToYearFace = function () {
         'significance': 'none',
         'plotFormat': 'block',
         'QCParamGroup': 'block',
+        'QCParamGroup-gaps': 'none',
         'QCParamGroup-lite': 'none'
     };
     const selectorsToReset = {
         'dieoff-type': 'Dieoff',
         'bin-parameter': 'Valid Date'
     };
+    faceOptions = checkIfDisplayAllQCParams(faceOptions);
     setSelectorVisibility(plotType, faceOptions, selectorsToReset);
     return selectorsToReset;
 };
@@ -823,7 +859,7 @@ const showYearToYearFace = function () {
 // method to display the appropriate selectors for a reliability curve
 const showReliabilityFace = function () {
     const plotType = matsTypes.PlotTypes.reliability;
-    var faceOptions = {
+    let faceOptions = {
         'curve-dates': 'none',
         'dates': 'block',
         'statistic': 'none',
@@ -859,6 +895,7 @@ const showReliabilityFace = function () {
         'significance': 'none',
         'plotFormat': 'none',
         'QCParamGroup': 'none',
+        'QCParamGroup-gaps': 'none',
         'QCParamGroup-lite': 'none'
     };
     const selectorsToReset = {
@@ -874,7 +911,7 @@ const showReliabilityFace = function () {
 const showROCFace = function () {
     const isMetexpress = matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
     const plotType = matsTypes.PlotTypes.roc;
-    var faceOptions = {
+    let faceOptions = {
         'curve-dates': 'block',
         'dates': 'none',
         'statistic': 'none',
@@ -910,6 +947,7 @@ const showROCFace = function () {
         'significance': 'none',
         'plotFormat': 'none',
         'QCParamGroup': 'none',
+        'QCParamGroup-gaps': 'none',
         'QCParamGroup-lite': 'none'
     };
     const selectorsToReset = {
@@ -929,7 +967,7 @@ const showROCFace = function () {
 const showPerformanceDiagramFace = function () {
     const isMetexpress = matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
     const plotType = matsTypes.PlotTypes.performanceDiagram;
-    var faceOptions = {
+    let faceOptions = {
         'curve-dates': 'block',
         'dates': 'none',
         'statistic': 'none',
@@ -965,6 +1003,7 @@ const showPerformanceDiagramFace = function () {
         'significance': 'none',
         'plotFormat': 'none',
         'QCParamGroup': 'none',
+        'QCParamGroup-gaps': 'none',
         'QCParamGroup-lite': 'none'
     };
     const selectorsToReset = {
@@ -988,7 +1027,7 @@ const showPerformanceDiagramFace = function () {
 const showMapFace = function () {
     const appName = matsCollections.Settings.findOne({}).appName;
     const plotType = matsTypes.PlotTypes.map;
-    var faceOptions = {
+    let faceOptions = {
         'curve-dates': 'none',
         'dates': 'block',
         'statistic': 'block',
@@ -1024,6 +1063,7 @@ const showMapFace = function () {
         'significance': 'none',
         'plotFormat': 'none',
         'QCParamGroup': 'none',
+        'QCParamGroup-gaps': 'none',
         'QCParamGroup-lite': 'block'
     };
     const selectorsToReset = {
@@ -1039,6 +1079,7 @@ const showMapFace = function () {
     if (appName !== undefined && appName === "visibility15") {
         faceOptions['truth'] = 'block';
     }
+    faceOptions = checkIfDisplayAllQCParams(faceOptions);
     setSelectorVisibility(plotType, faceOptions, selectorsToReset);
     return selectorsToReset;
 };
@@ -1046,7 +1087,7 @@ const showMapFace = function () {
 // method to display the appropriate selectors for a histogram
 const showHistogramFace = function () {
     const plotType = matsTypes.PlotTypes.histogram;
-    var faceOptions = {
+    let faceOptions = {
         'curve-dates': 'block',
         'dates': 'none',
         'statistic': 'block',
@@ -1082,6 +1123,7 @@ const showHistogramFace = function () {
         'significance': 'none',
         'plotFormat': 'block',
         'QCParamGroup': 'none',
+        'QCParamGroup-gaps': 'none',
         'QCParamGroup-lite': 'none'
     };
     const selectorsToReset = {
@@ -1102,7 +1144,7 @@ const showHistogramFace = function () {
 // method to display the appropriate selectors for a histogram
 const showEnsembleHistogramFace = function () {
     const plotType = matsTypes.PlotTypes.ensembleHistogram;
-    var faceOptions = {
+    let faceOptions = {
         'curve-dates': 'block',
         'dates': 'none',
         'statistic': 'none',
@@ -1138,6 +1180,7 @@ const showEnsembleHistogramFace = function () {
         'significance': 'none',
         'plotFormat': 'block',
         'QCParamGroup': 'none',
+        'QCParamGroup-gaps': 'none',
         'QCParamGroup-lite': 'none'
     };
     const selectorsToReset = {
@@ -1151,7 +1194,7 @@ const showEnsembleHistogramFace = function () {
 // method to display the appropriate selectors for a contour plot
 const showContourFace = function () {
     const plotType = document.getElementById('plotTypes-selector').value === matsTypes.PlotTypes.contour ? matsTypes.PlotTypes.contour : matsTypes.PlotTypes.contourDiff;
-    var faceOptions = {
+    let faceOptions = {
         'curve-dates': 'none',
         'dates': 'block',
         'statistic': 'block',
@@ -1187,6 +1230,7 @@ const showContourFace = function () {
         'significance': plotType === matsTypes.PlotTypes.contourDiff ? 'block' : 'none',
         'plotFormat': 'none',
         'QCParamGroup': 'none',
+        'QCParamGroup-gaps': 'none',
         'QCParamGroup-lite': 'none'
     };
     const selectorsToReset = {
@@ -1242,6 +1286,7 @@ const showSimpleScatterFace = function () {
         'significance': 'none',
         'plotFormat': 'none',
         'QCParamGroup': 'none',
+        'QCParamGroup-gaps': 'none',
         'QCParamGroup-lite': 'none'
     };
     const selectorsToReset = {
@@ -1264,7 +1309,7 @@ const showSimpleScatterFace = function () {
 // method to display the appropriate selectors for a scatter plot
 const showScatterFace = function () {
     const plotType = matsTypes.PlotTypes.scatter2d;
-    var faceOptions = {
+    let faceOptions = {
         'curve-dates': 'none',
         'dates': 'block',
         'statistic': 'block',
@@ -1300,6 +1345,7 @@ const showScatterFace = function () {
         'significance': 'none',
         'plotFormat': 'none',
         'QCParamGroup': 'none',
+        'QCParamGroup-gaps': 'none',
         'QCParamGroup-lite': 'none'
     };
     const selectorsToReset = {
@@ -1360,5 +1406,4 @@ export default matsCurveUtils = {
     showSimpleScatterFace: showSimpleScatterFace,
     showScatterFace: showScatterFace,
 };
-
             

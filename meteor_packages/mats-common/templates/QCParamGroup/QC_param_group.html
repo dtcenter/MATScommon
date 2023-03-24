@@ -46,5 +46,12 @@
                 {{/if}}
             </span>
         </div>
+        <div id="QCParamGroup-gaps-item" style="background-color:lightcyan;margin-top: 1.5em;float:left;display:none;">
+            <label style="padding-left:1em;font-size:large;font-weight: normal;">QC parameters: </label>
+            <span style="font-size:large;font-weight: normal;">
+                <label style="padding-left:1em;font-size:large;font-weight: normal;">Data completeness percentage: </label>
+                <input type="number" name="quantity" id="completeness-gaps" min="0" max="100" value="{{completenessNumber}}">
+            </span>
+        </div>
     {{/unless}}
 </template>

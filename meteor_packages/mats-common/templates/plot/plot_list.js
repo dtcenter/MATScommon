@@ -202,9 +202,20 @@ Template.plotList.events({
                 p[name] = document.getElementById(name + '-' + type).value;
             }
         });
-        p['completeness'] = document.getElementById("completeness") ? document.getElementById("completeness").value : 0;
-        p['outliers'] = document.getElementById("outliers") ? document.getElementById("outliers").value : "all";
-        p['outliers-lite'] = document.getElementById("outliers-lite") ? document.getElementById("outliers-lite").value : "all";
+        if (document.getElementById("QCParamGroup-item") && document.getElementById("QCParamGroup-item").style.display === "block") {
+            p['completeness'] = document.getElementById("completeness").value;
+        } else if (document.getElementById("QCParamGroup-gaps-item") && document.getElementById("QCParamGroup-gaps-item").style.display === "block") {
+            p['completeness'] = document.getElementById("completeness-gaps").value;
+        } else {
+            p['completeness'] = 0;
+        }
+        if (document.getElementById("QCParamGroup-item") && document.getElementById("QCParamGroup-item").style.display === "block") {
+            p['outliers'] = document.getElementById("outliers").value;
+        } else if (document.getElementById("QCParamGroup-lite-item") && document.getElementById("QCParamGroup-lite-item").style.display === "block") {
+            p['outliers'] = document.getElementById("outliers-lite").value;
+        } else {
+            p['outliers'] = "all";
+        }
         p['noGapsCheck'] = document.getElementById("noGapsCheck") ? document.getElementById("noGapsCheck").checked : false;
         Session.set("PlotParams", p);
 
