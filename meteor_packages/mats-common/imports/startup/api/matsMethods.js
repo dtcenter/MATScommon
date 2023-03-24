@@ -2451,6 +2451,23 @@ const getReleaseNotes = new ValidatedMethod({
     }
 });
 
+const setCurveParamDisplayText = new ValidatedMethod({
+    name: 'matsMethods.setCurveParamDisplayText',
+    validate: new SimpleSchema({
+        paramName: {
+            type: String
+        },
+        newText: {
+            type: String
+        }
+    }).validator(),
+    run(params) {
+        if (Meteor.isServer) {
+            return matsCollections[params.paramName].update({name: params.paramName}, {$set : {controlButtonText: params.newText}});
+        }
+    }
+});
+
 const getScorecardData = new ValidatedMethod({
     name: 'matsMethods.getScorecardData',
     validate: new SimpleSchema({
@@ -3152,6 +3169,7 @@ export default matsMethods = {
     saveLayout: saveLayout,
     saveScorecardSettings: saveScorecardSettings,
     saveSettings: saveSettings,
+    setCurveParamDisplayText: setCurveParamDisplayText,
     testGetMetaDataTableUpdates: testGetMetaDataTableUpdates,
     testGetTables: testGetTables,
     testSetMetaDataTableUpdatesLastRefreshedBack: testSetMetaDataTableUpdatesLastRefreshedBack
