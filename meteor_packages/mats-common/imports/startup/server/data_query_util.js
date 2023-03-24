@@ -2124,7 +2124,7 @@ const parseQueryDataMapScalar = function (rows, d, dLowest, dLow, dModerate, dHi
 
     for (var didx = d.queryVal.length - 1; didx >= 0; didx--) {
         queryVal = d.queryVal[didx];
-        if (outlierQCParam !== "all" &&Math.abs(queryVal - all_mean) > all_sd_limit) {
+        if (outlierQCParam !== "all" && Math.abs(queryVal - all_mean) > all_sd_limit) {
             // this point is too far from the mean. Exclude it.
             d.queryVal.splice(didx, 1);
             d.stats.splice(didx, 1);
