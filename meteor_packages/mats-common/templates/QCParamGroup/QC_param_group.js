@@ -13,13 +13,5 @@ Template.QCParamGroup.helpers({
     },
     noQC: function () {
         return true;
-    },
-    isMetexpressMode: function () {
-        if (matsCollections.Settings.findOne({}) !== undefined && matsCollections.Settings.findOne({}).appType !== undefined) {
-            const appName = matsCollections.Settings.findOne({}).appName;
-            return appName.toLowerCase().includes("mode") || appName.toLowerCase().includes("object");
-        } else {
-            return false;
-        }
     }
 });
