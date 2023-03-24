@@ -394,19 +394,19 @@ const checkDiffs = function () {
 };
 
 const checkIfDisplayAllQCParams = function(faceOptions) {
-    // we only want to allow people to filter sub-values for apps with scalar or precalculated stats
-    const isMetexpress = matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
+    // we only want to allow people to filter sub-values for apps with scalar or precalculated stats.
+    // the stats in the list below are representative of these apps.
+    const subValueFilterableStats = ["RMSE", "ACC", "Track error (nm)", "Number of stations"];
+    const doNotFilterStats = ["Spread"];
     if (matsCollections && matsCollections.statistic) {
         // scalar apps will have RMSE/ACC in their list of statistics,
         // and precalculated apps will have Number of stations or Track error (nm). 
         // If neither of those are present, we don't want to allow people to filter their sub-values.
         // Also if Spread is present, don't allow filtering because ensembles are weird.
         const thisAppsStatistics = matsCollections.statistic.findOne({});
-        if ((thisAppsStatistics && thisAppsStatistics.options.indexOf("RMSE") === -1
-            && thisAppsStatistics.options.indexOf("ACC") === -1
-            && thisAppsStatistics.options.indexOf("Track error (nm)") === -1
-            && thisAppsStatistics.options.indexOf("Number of stations") === -1)
-            || thisAppsStatistics.options.indexOf("Spread") !== -1) {
+        if (thisAppsStatistics 
+            && (_.intersection(thisAppsStatistics.options, subValueFilterableStats).length === 0
+            || _.intersection(thisAppsStatistics.options, doNotFilterStats).length > 0)) {
             if (faceOptions['QCParamGroup'] === 'block') {
                 // not a map plot, display only the gaps selector
                 faceOptions['QCParamGroup'] = 'none';
