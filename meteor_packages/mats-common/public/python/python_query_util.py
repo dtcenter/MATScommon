@@ -104,6 +104,7 @@ class QueryUtil:
                 "y": [],
                 "z": [],
                 "n": [],
+                "binVals": [],
                 "error_x": [],
                 "error_y": [],
                 "subData": [],
@@ -111,6 +112,16 @@ class QueryUtil:
                 "subVals": [],
                 "subSecs": [],
                 "subLevs": [],
+                "subDataX": [],
+                "subHeadersX": [],
+                "subValsX": [],
+                "subSecsX": [],
+                "subLevsX": [],
+                "subDataY": [],
+                "subHeadersY": [],
+                "subValsY": [],
+                "subSecsY": [],
+                "subLevsY": [],
                 "subInterest": [],
                 "subHit": [],
                 "subFa": [],
@@ -144,7 +155,6 @@ class QueryUtil:
                     "n": 0
                 },
                 "bin_stats": [],
-                "individualObjLookup": [],
                 "xmin": sys.float_info.max,
                 "xmax": -1 * sys.float_info.max,
                 "ymin": sys.float_info.max,
@@ -859,6 +869,78 @@ class QueryUtil:
         self.data[idx]['glob_stats']['maxDate'] = max(m for m in self.data[idx]['maxDateTextOutput'] if m != 'null')
         self.data[idx]['glob_stats']['n'] = n_points
 
+    def parse_query_data_simple_scatter(self, idx, cursor, stat_line_type, statistic, app_params):
+        """function for parsing the data returned by a contour query"""
+        # initialize local variables
+        statistic = statistic.split('__vs__')
+        statistic_x = statistic[0]
+        statistic_y = statistic[1]
+        has_levels = app_params["hasLevels"]
+
+        # get query data
+        query_data = cursor.fetchall()
+
+        # loop through the query results and store the returned values
+        for row in query_data:
+            # get rid of any non-numeric characters
+            non_float = re.compile(r'[^\d.]+')
+            bin_val = float(non_float.sub('', str(row['binVal']))) if str(row['binVal']) != 'NA' else 0.
+            if stat_line_type == 'scalar':
+                data_exists = row['fbarX'] != "null" and row['fbarX'] != "NULL"
+            else:
+                data_exists = row['stat'] != "null" and row['stat'] != "NULL"
+
+            if data_exists:
+                # get the x-stat first
+                row_data = {"sub_data": row["sub_dataX"]}
+                stat_x, sub_levs_x, sub_secs_x, sub_values_x, sub_data_x, sub_headers_x, self.error[idx] \
+                    = get_stat(row_data, statistic_x, stat_line_type, app_params)
+                # then get the y-stat
+                row_data = {"sub_data": row["sub_dataY"]}
+                stat_y, sub_levs_y, sub_secs_y, sub_values_y, sub_data_y, sub_headers_y, self.error[idx] \
+                    = get_stat(row_data, statistic_y, stat_line_type, app_params)
+                if stat_x == 'null' or not _is_number(stat_x) or stat_y == 'null' or not _is_number(stat_y):
+                    # there's bad data at this point
+                    continue
+                n = row['nX']
+            else:
+                # there's no data at this point
+                stat_x = 'null'
+                stat_y = 'null'
+                n = 0
+                sub_headers_x = []
+                sub_data_x = []
+                sub_values_x = []
+                sub_secs_x = []
+                sub_levs_x = []
+                sub_headers_y = []
+                sub_data_y = []
+                sub_values_y = []
+                sub_secs_y = []
+                sub_levs_y = []
+
+            self.data[idx]['x'].append(stat_x)
+            self.data[idx]['y'].append(stat_y)
+            self.data[idx]['n'].append(n)
+            self.data[idx]['binVals'].append(float(bin_val))
+            self.data[idx]['subDataX'].append(sub_data_x.tolist() if not isinstance(sub_data_x, list) else sub_data_x)
+            self.data[idx]['subHeadersX'].append(sub_headers_x.tolist() if not isinstance(sub_headers_x, list) else sub_headers_x)
+            self.data[idx]['subValsX'].append(sub_values_x.tolist() if not isinstance(sub_values_x, list) else sub_values_x)
+            self.data[idx]['subSecsX'].append(sub_secs_x.tolist() if not isinstance(sub_secs_x, list) else sub_secs_x)
+            self.data[idx]['subLevsX'].append(sub_levs_x.tolist() if not isinstance(sub_levs_x, list) else sub_levs_x)
+            self.data[idx]['subDataY'].append(sub_data_y.tolist() if not isinstance(sub_data_y, list) else sub_data_y)
+            self.data[idx]['subHeadersY'].append(sub_headers_y.tolist() if not isinstance(sub_headers_y, list) else sub_headers_y)
+            self.data[idx]['subValsY'].append(sub_values_y.tolist() if not isinstance(sub_values_y, list) else sub_values_y)
+            self.data[idx]['subSecsY'].append(sub_secs_y.tolist() if not isinstance(sub_secs_y, list) else sub_secs_y)
+            self.data[idx]['subLevsY'].append(sub_levs_y.tolist() if not isinstance(sub_levs_y, list) else sub_levs_y)
+
+        # calculate statistics
+        self.data[idx]['xmin'] = min(self.data[idx]['x'])
+        self.data[idx]['xmax'] = max(self.data[idx]['x'])
+        self.data[idx]['ymin'] = min(self.data[idx]['y'])
+        self.data[idx]['ymax'] = max(self.data[idx]['y'])
+        self.data[idx]['sum'] = sum(self.data[idx]['n'])
+
     def do_matching(self, options):
         """function for matching data in the output object"""
         sub_secs_raw = {}
@@ -1123,6 +1205,9 @@ class QueryUtil:
                     elif query["appParams"]["plotType"] == 'Contour':
                         self.parse_query_data_contour(idx, cursor, query["statLineType"], query["statistic"],
                                                       query["appParams"])
+                    elif query["appParams"]["plotType"] == 'SimpleScatter':
+                        self.parse_query_data_simple_scatter(idx, cursor, query["statLineType"], query["statistic"],
+                                                             query["appParams"])
                     elif query["appParams"]["plotType"] == 'Reliability' or query["appParams"]["plotType"] == 'ROC' or \
                             query["appParams"]["plotType"] == 'PerformanceDiagram':
                         self.parse_query_data_ensemble(idx, cursor, query["appParams"])
