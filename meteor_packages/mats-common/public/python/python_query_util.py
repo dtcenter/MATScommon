@@ -1167,10 +1167,15 @@ class QueryUtil:
                     stat_line_type = options["query_array"][curve_index]["statLineType"]
                     agg_method = options["query_array"][curve_index]["appParams"]["aggMethod"]
 
+                    if has_levels:
+                        sub_lev_arg = np.asarray(data["subLevs"][di])
+                    else:
+                        sub_lev_arg = np.asarray([])
+
                     sub_stats, sub_secs, sub_levs, numpy_data, stat, stat_error = calculate_stat(
                         statistic, stat_line_type, agg_method, "all", 
                         np.asarray(data["subData"][di]), np.asarray(data["subHeaders"][di]), 
-                        np.asarray(data["subSecs"][di]), np.asarray(data["subLevs"][di]))
+                        np.asarray(data["subSecs"][di]), sub_lev_arg)
                     data[stat_var_name][di] = stat
                     if stat_error != '':
                         self.error[curve_index] = stat_error
