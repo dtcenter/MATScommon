@@ -6,6 +6,7 @@ import math
 import numpy as np
 import re
 import json
+import copy
 from contextlib import closing
 from calc_stats import get_stat, calculate_stat
 from calc_ens_stats import get_ens_stat
@@ -869,19 +870,18 @@ class QueryUtil:
         self.data[idx]['glob_stats']['maxDate'] = max(m for m in self.data[idx]['maxDateTextOutput'] if m != 'null')
         self.data[idx]['glob_stats']['n'] = n_points
 
-    def parse_query_data_simple_scatter(self, idx, cursor, stat_line_type, statistic, app_params):
+    def parse_query_data_simple_scatter(self, idx, results, stat_line_type, statistic, app_params):
         """function for parsing the data returned by a contour query"""
         # initialize local variables
         statistic = statistic.split('__vs__')
         statistic_x = statistic[0]
         statistic_y = statistic[1]
         has_levels = app_params["hasLevels"]
-
-        # get query data
-        query_data = cursor.fetchall()
+        agg_method = app_params["aggMethod"]
+        outlier_qc_param = "all" if app_params["outliers"] == "all" else int(app_params["outliers"])
 
         # loop through the query results and store the returned values
-        for row in query_data:
+        for row in results:
             # get rid of any non-numeric characters
             non_float = re.compile(r'[^\d.]+')
             bin_val = float(non_float.sub('', str(row['binVal']))) if str(row['binVal']) != 'NA' else 0.
@@ -902,7 +902,38 @@ class QueryUtil:
                 if stat_x == 'null' or not _is_number(stat_x) or stat_y == 'null' or not _is_number(stat_y):
                     # there's bad data at this point
                     continue
-                n = row['nX']
+                else:
+                    # make sure all the sub-values match and then re-calculate the stat if necessary
+                    if has_levels:
+                        sub_sec_lev_x = list(zip(sub_secs_x, sub_levs_x))
+                        sub_sec_lev_y = list(zip(sub_secs_y, sub_levs_y))
+                    else:
+                        sub_sec_lev_x = list(sub_secs_x)
+                        sub_sec_lev_y = list(sub_secs_y)
+                    matched_sec_levs = set(sub_sec_lev_x) & set(sub_sec_lev_y)
+                    unmatched_sec_levs_x = list(set(sub_sec_lev_x) - matched_sec_levs)
+                    unmatched_sec_levs_y = list(set(sub_sec_lev_y) - matched_sec_levs)
+                    if len(unmatched_sec_levs_x) > 0 or len(unmatched_sec_levs_y) > 0:
+                        unmatched_x_indices = [i for i, e in enumerate(sub_sec_lev_x) if e in unmatched_sec_levs_x]
+                        unmatched_y_indices = [i for i, e in enumerate(sub_sec_lev_y) if e in unmatched_sec_levs_y]
+                        sub_data_x = np.delete(sub_data_x, unmatched_x_indices, axis=0)
+                        sub_data_y = np.delete(sub_data_y, unmatched_y_indices, axis=0)
+                        sub_secs_x = np.delete(sub_secs_x, unmatched_x_indices)
+                        sub_secs_y = np.delete(sub_secs_y, unmatched_y_indices)
+                        if has_levels:
+                            sub_levs_x = np.delete(sub_levs_x, unmatched_y_indices)
+                            sub_levs_y = np.delete(sub_levs_y, unmatched_x_indices)
+
+                        sub_values_x, sub_secs_x, sub_levs_x, sub_data_x, stat_x, error = calculate_stat(statistic_x,
+                             stat_line_type, agg_method, outlier_qc_param, sub_data_x, sub_headers_x, sub_secs_x, sub_levs_x)
+
+                        sub_values_y, sub_secs_y, sub_levs_y, sub_data_y, stat_y, error = calculate_stat(statistic_y,
+                             stat_line_type, agg_method, outlier_qc_param, sub_data_y, sub_headers_y, sub_secs_y, sub_levs_y)
+
+                        if stat_x == 'null' or not _is_number(stat_x) or stat_y == 'null' or not _is_number(stat_y):
+                            # there's bad data at this point
+                            continue
+                n = len(sub_values_x)
             else:
                 # there's no data at this point
                 stat_x = 'null'
@@ -1196,8 +1227,32 @@ class QueryUtil:
         idx = 0
         for query in query_array:
             statement = query["statement"]
+            results_full = []
             try:
-                cursor.execute(statement)
+                if query["appParams"]["plotType"] == 'SimpleScatter':
+                    # there are two queries
+                    cursor.execute(statement[0])
+                    results_x = cursor.fetchall()
+                    cursor.execute(statement[1])
+                    results_y = cursor.fetchall()
+
+                    #combine the results
+                    current_y = 0
+                    for result_x in results_x:
+                        bin_val = result_x["binVal"]
+                        for idx_y in range(current_y, len(results_y)):
+                            result_y = results_y[idx_y]
+                            if bin_val == result_y["binVal"]:
+                                result_full = copy.deepcopy(result_x)
+                                result_full["nY"] = result_y["nY"]
+                                result_full["fbarY"] = result_y["fbarY"]
+                                result_full["obarY"] = result_y["obarY"]
+                                result_full["sub_dataY"] = result_y["sub_dataY"]
+                                results_full.append(result_full)
+                                current_y = idx_y + 1
+                                break
+                else:
+                    cursor.execute(statement)
             except pymysql.Error as e:
                 self.error[idx] = "Error executing query: " + str(e)
             else:
@@ -1211,7 +1266,7 @@ class QueryUtil:
                         self.parse_query_data_contour(idx, cursor, query["statLineType"], query["statistic"],
                                                       query["appParams"])
                     elif query["appParams"]["plotType"] == 'SimpleScatter':
-                        self.parse_query_data_simple_scatter(idx, cursor, query["statLineType"], query["statistic"],
+                        self.parse_query_data_simple_scatter(idx, results_full, query["statLineType"], query["statistic"],
                                                              query["appParams"])
                     elif query["appParams"]["plotType"] == 'Reliability' or query["appParams"]["plotType"] == 'ROC' or \
                             query["appParams"]["plotType"] == 'PerformanceDiagram':
