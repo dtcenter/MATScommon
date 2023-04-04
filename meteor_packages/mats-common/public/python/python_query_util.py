@@ -21,12 +21,26 @@ def _null_point(data, di, plot_type, stat_var_name, has_levels):
         data["on_all"][di] = 'NaN'
     if len(data['error_' + stat_var_name]) > 0:
         data['error_' + stat_var_name][di] = 'null'
-    data["subData"][di] = 'NaN'
-    data["subHeaders"][di] = 'NaN'
-    data["subVals"][di] = 'NaN'
-    data["subSecs"][di] = 'NaN'
-    if has_levels:
-        data["subLevs"][di] = 'NaN'
+    if plot_type == "SimpleScatter":
+        data["y"][di] = 'null'
+        data["subDataX"][di] = 'NaN'
+        data["subDataY"][di] = 'NaN'
+        data["subHeadersX"][di] = 'NaN'
+        data["subHeadersY"][di] = 'NaN'
+        data["subValsX"][di] = 'NaN'
+        data["subValsY"][di] = 'NaN'
+        data["subSecsX"][di] = 'NaN'
+        data["subSecsY"][di] = 'NaN'
+        if has_levels:
+            data["subLevsX"][di] = 'NaN'
+            data["subLevsY"][di] = 'NaN'
+    else:
+        data["subData"][di] = 'NaN'
+        data["subHeaders"][di] = 'NaN'
+        data["subVals"][di] = 'NaN'
+        data["subSecs"][di] = 'NaN'
+        if has_levels:
+            data["subLevs"][di] = 'NaN'
 
 
 def _add_null_point(data, di, plot_type, ind_var_name, new_ind_var, stat_var_name, has_levels):
@@ -39,12 +53,26 @@ def _add_null_point(data, di, plot_type, ind_var_name, new_ind_var, stat_var_nam
         data["on_all"].insert(di, [])
     if len(data['error_' + stat_var_name]) > 0:
         data['error_' + stat_var_name].insert(di, 'null')
-    data['subData'].insert(di, [])
-    data['subHeaders'].insert(di, [])
-    data['subVals'].insert(di, [])
-    data['subSecs'].insert(di, [])
-    if has_levels:
-        data['subLevs'].insert(di, [])
+    if plot_type == "SimpleScatter":
+        data["y"][di].insert(di, 'null')
+        data["subDataX"][di].insert(di, [])
+        data["subDataY"][di].insert(di, [])
+        data["subHeadersX"][di].insert(di, [])
+        data["subHeadersY"][di].insert(di, [])
+        data["subValsX"][di].insert(di, [])
+        data["subValsY"][di].insert(di, [])
+        data["subSecsX"][di].insert(di, [])
+        data["subSecsY"][di].insert(di, [])
+        if has_levels:
+            data["subLevsX"][di].insert(di, [])
+            data["subLevsY"][di].insert(di, [])
+    else:
+        data['subData'].insert(di, [])
+        data['subHeaders'].insert(di, [])
+        data['subVals'].insert(di, [])
+        data['subSecs'].insert(di, [])
+        if has_levels:
+            data['subLevs'].insert(di, [])
 
 
 def _remove_point(data, di, plot_type, stat_var_name, has_levels):
@@ -57,12 +85,26 @@ def _remove_point(data, di, plot_type, stat_var_name, has_levels):
         del (data["on_all"][di])
     if len(data['error_' + stat_var_name]) > 0:
         del (data['error_' + stat_var_name][di])
-    del (data["subData"][di])
-    del (data["subHeaders"][di])
-    del (data["subVals"][di])
-    del (data["subSecs"][di])
-    if has_levels:
-        del (data["subLevs"][di])
+    if plot_type == "SimpleScatter":
+        del (data["binVals"][di])
+        del (data["subDataX"][di])
+        del (data["subDataY"][di])
+        del (data["subHeadersX"][di])
+        del (data["subHeadersY"][di])
+        del (data["subValsX"][di])
+        del (data["subValsY"][di])
+        del (data["subSecsX"][di])
+        del (data["subSecsY"][di])
+        if has_levels:
+            del (data["subLevsX"][di])
+            del (data["subLevsY"][di])
+    else:
+        del (data["subData"][di])
+        del (data["subHeaders"][di])
+        del (data["subVals"][di])
+        del (data["subSecs"][di])
+        if has_levels:
+            del (data["subLevs"][di])
 
 
 def _is_number(s):
@@ -992,7 +1034,7 @@ class QueryUtil:
         if plot_type in ["EnsembleHistogram"]:
             remove_non_matching_ind_vars = False
         elif plot_type in ["TimeSeries", "Profile", "DieOff", "Threshold", "ValidTime", "GridScale", "DailyModelCycle",
-                           "YearToYear", "Scatter2d", "Contour", "ContourDiff"]:
+                           "YearToYear", "SimpleScatter", "Scatter2d", "Contour", "ContourDiff"]:
             remove_non_matching_ind_vars = True
         else:
             # Either matching is not supported for this pot type, or it's a histogram and we do the matching later
@@ -1005,15 +1047,24 @@ class QueryUtil:
         # across all of the curves, and then the common sub times / levels / values for those independentVar values.
 
         # determine whether data.x or data.y is the independent variable, and which is the stat value
-        if plot_type != "Profile":
+        if plot_type == "SimpleScatter":
+            independent_var_name = 'binVals'
+            stat_var_name = 'x'
+            sub_secs_name = "subSecsX"
+            sub_levs_name = "subLevsX"
+        elif plot_type != "Profile":
             independent_var_name = 'x'
             stat_var_name = 'y'
+            sub_secs_name = "subSecs"
+            sub_levs_name = "subLevs"
         else:
             independent_var_name = 'y'
             stat_var_name = 'x'
+            sub_secs_name = "subSecs"
+            sub_levs_name = "subLevs"
 
         # find the matching independentVars shared across all curves
-        for curve_index in range(0, curves_length):
+        for curve_index in range(curves_length):
             independent_var_groups.append([])  # array for the independentVars for each curve that are not null
             independent_var_has_point.append([])  # array for the * all * of the independentVars for each curve
             sub_secs.append(
@@ -1028,19 +1079,22 @@ class QueryUtil:
                 curr_independent_var = data[independent_var_name][di]
                 if data[stat_var_name][di] != 'null':
                     # store raw secs for this independentVar value, since it's not a null point
-                    sub_secs[curve_index][curr_independent_var] = data["subSecs"][di]
+                    sub_secs[curve_index][curr_independent_var] = data[sub_secs_name][di]
                     if has_levels:
                         # store raw levs for this independentVar value, since it's not a null point
-                        sub_levs[curve_index][curr_independent_var] = data["subLevs"][di]
+                        sub_levs[curve_index][curr_independent_var] = data[sub_levs_name][di]
                     # store this independentVar value, since it's not a null point
                     independent_var_groups[curve_index].append(curr_independent_var)
                 # store all the independentVar values, regardless of whether they're null
                 independent_var_has_point[curve_index].append(curr_independent_var)
 
-        matching_independent_vars = list(set.intersection(*map(set,
-                                                               independent_var_groups)))  # all of the non-null independentVar values common across all the curves
-        matching_independent_has_point = list(set.intersection(*map(set,
-                                                                    independent_var_has_point)))  # all of the independentVar values common across all the curves, regardless of whether or not they're null
+        matching_independent_vars = set(independent_var_groups[0])
+        matching_independent_has_point = set(independent_var_has_point[0])
+        for curve_index in range(1, curves_length):
+            matching_independent_vars = matching_independent_vars & set(independent_var_groups[curve_index])
+            matching_independent_has_point = matching_independent_has_point & set(independent_var_has_point[curve_index])
+        matching_independent_vars = list(matching_independent_vars)
+        matching_independent_has_point = list(matching_independent_has_point)
 
         if remove_non_matching_ind_vars:
             if has_levels:
@@ -1091,10 +1145,10 @@ class QueryUtil:
                 if has_levels:
                     sub_levs_raw[curve_index] = []
                     sub_levs[curve_index] = []
-                for di in range(0, len(data["x"])):
-                    sub_secs_raw[curve_index].append(data["subSecs"][di])
+                for di in range(0, len(data[independent_var_name])):
+                    sub_secs_raw[curve_index].append(data[sub_secs_name][di])
                     if has_levels:
-                        sub_levs_raw[curve_index].append(data["subLevs"][di])
+                        sub_levs_raw[curve_index].append(data[sub_levs_name][di])
                 sub_secs[curve_index] = [item for sublist in sub_secs_raw[curve_index] for item in sublist]
                 if has_levels:
                     sub_levs[curve_index] = [item for sublist in sub_levs_raw[curve_index] for item in sublist]
@@ -1144,19 +1198,58 @@ class QueryUtil:
                             _null_point(data, di, plot_type, stat_var_name, has_levels)
                         # then move on to the next independentVar. There's no need to mess with the subSecs or subLevs
                         continue
-                sub_data = data["subData"][di]
-                sub_headers = data["subHeaders"][di]
-                sub_values = data["subVals"][di]
-                sub_secs = data["subSecs"][di]
-                if has_levels:
-                    sub_levs = data["subLevs"][di]
+                if plot_type != "SimpleScatter":
+                    sub_data = data["subData"][di]
+                    sub_data_x = []
+                    sub_data_y = []
+                    sub_headers = data["subHeaders"][di]
+                    sub_headers_x = []
+                    sub_headers_y = []
+                    sub_values = data["subVals"][di]
+                    sub_values_x = []
+                    sub_values_y = []
+                    sub_secs = data["subSecs"][di]
+                    sub_secs_x = []
+                    sub_secs_y = []
+                    if has_levels:
+                        sub_levs = data["subLevs"][di]
+                        sub_levs_x = []
+                        sub_levs_y = []
+                else:
+                    sub_data = []
+                    sub_data_x = data["subDataX"][di]
+                    sub_data_y = data["subDataY"][di]
+                    sub_headers = []
+                    sub_headers_x = data["subHeadersX"][di]
+                    sub_headers_y = data["subHeadersY"][di]
+                    sub_values = []
+                    sub_values_x = data["subValsX"][di]
+                    sub_values_y = data["subValsY"][di]
+                    sub_secs = []
+                    sub_secs_x = data["subSecsX"][di]
+                    sub_secs_y = data["subSecsY"][di]
+                    if has_levels:
+                        sub_levs = []
+                        sub_levs_x = data["subLevsX"][di]
+                        sub_levs_y = data["subLevsY"][di]
 
-                if (not has_levels and len(sub_secs) > 0) or (has_levels and len(sub_secs) > 0 and len(sub_levs) > 0):
+                if (not has_levels and (len(sub_secs) > 0 or len(sub_secs_x) > 0 or len(sub_secs_y) > 0)) \
+                        or (has_levels and ((len(sub_secs) > 0 and len(sub_levs) > 0) or (len(sub_secs_x) > 0
+                        and len(sub_levs_x) > 0) or (len(sub_secs_y) > 0 and len(sub_levs_y) > 0))):
+
                     curr_independent_var = data[independent_var_name][di]
                     new_sub_data = []
+                    new_sub_data_x = []
+                    new_sub_data_y = []
                     new_sub_values = []
+                    new_sub_values_x = []
+                    new_sub_values_y = []
                     new_sub_secs = []
+                    new_sub_secs_x = []
+                    new_sub_secs_y = []
                     new_sub_levs = []
+                    new_sub_levs_x = []
+                    new_sub_levs_y = []
 
                     # loop over all subSecs for this independentVar
                     for si in range(0, len(sub_secs)):
@@ -1176,17 +1269,56 @@ class QueryUtil:
                             if has_levels:
                                 new_sub_levs.append(sub_levs[si])
 
-                    if len(new_sub_secs) == 0:
+                    # if we have x-related sub_secs, loop over those
+                    for si in range(0, len(sub_secs_x)):
+                        if has_levels:
+                            # create sec-lev pair for each x-sub value
+                            temp_pair_x = [sub_secs_x[si], sub_levs_x[si]]
+                        if (not has_levels and sub_secs_x[si] in sub_sec_intersection_object[curr_independent_var]) \
+                                or (has_levels and temp_pair_x in sub_intersections_object[curr_independent_var]):
+                            new_sub_data_x.append(sub_data_x[si])
+                            new_sub_values_x.append(sub_values_x[si])
+                            new_sub_secs_x.append(sub_secs_x[si])
+                            if has_levels:
+                                new_sub_levs_x.append(sub_levs_x[si])
+
+                    # if we have y-related sub_secs, loop over those
+                    for si in range(0, len(sub_secs_y)):
+                        if has_levels:
+                            # create sec-lev pair for each y-sub value
+                            temp_pair_y = [sub_secs_y[si], sub_levs_y[si]]
+                        if (not has_levels and sub_secs_y[si] in sub_sec_intersection_object[curr_independent_var]) \
+                                or (has_levels and temp_pair_y in sub_intersections_object[curr_independent_var]):
+                            new_sub_data_y.append(sub_data_y[si])
+                            new_sub_values_y.append(sub_values_y[si])
+                            new_sub_secs_y.append(sub_secs_y[si])
+                            if has_levels:
+                                new_sub_levs_y.append(sub_levs_y[si])
+
+                    if len(new_sub_secs) == 0 and len(new_sub_secs_x) == 0 and len(new_sub_secs_y) == 0:
                         # no matching sub-values, so null the point
                         _null_point(data, di, plot_type, stat_var_name, has_levels)
                     else:
                         # store the filtered data
-                        data["subData"][di] = new_sub_data
-                        data["subHeaders"][di] = sub_headers
-                        data["subVals"][di] = new_sub_values
-                        data["subSecs"][di] = new_sub_secs
-                        if has_levels:
-                            data["subLevs"][di] = new_sub_levs
+                        if plot_type != "SimpleScatter":
+                            data["subData"][di] = new_sub_data
+                            data["subHeaders"][di] = sub_headers
+                            data["subVals"][di] = new_sub_values
+                            data["subSecs"][di] = new_sub_secs
+                            if has_levels:
+                                data["subLevs"][di] = new_sub_levs
+                        else:
+                            data["subDataX"][di] = new_sub_data_x
+                            data["subDataY"][di] = new_sub_data_y
+                            data["subHeadersX"][di] = sub_headers_x
+                            data["subHeadersY"][di] = sub_headers_y
+                            data["subValsX"][di] = new_sub_values_x
+                            data["subValsY"][di] = new_sub_values_y
+                            data["subSecsX"][di] = new_sub_secs_x
+                            data["subSecsY"][di] = new_sub_secs_y
+                            if has_levels:
+                                data["subLevsX"][di] = new_sub_levs_x
+                                data["subLevsY"][di] = new_sub_levs_y
                 else:
                     # no sub-values to begin with, so null the point
                     _null_point(data, di, plot_type, stat_var_name, has_levels)
@@ -1198,18 +1330,42 @@ class QueryUtil:
                     stat_line_type = options["query_array"][curve_index]["statLineType"]
                     agg_method = options["query_array"][curve_index]["appParams"]["aggMethod"]
 
-                    if has_levels:
-                        sub_lev_arg = np.asarray(data["subLevs"][di])
-                    else:
-                        sub_lev_arg = np.asarray([])
+                    if plot_type == "SimpleScatter":
+                        statistic = statistic.split('__vs__')
+                        statistic_x = statistic[0]
+                        statistic_y = statistic[1]
+                        if has_levels:
+                            sub_lev_arg_x = np.asarray(data["subLevsX"][di])
+                            sub_lev_arg_y = np.asarray(data["subLevsY"][di])
+                        else:
+                            sub_lev_arg_x = np.asarray([])
+                            sub_lev_arg_y = np.asarray([])
 
-                    sub_stats, sub_secs, sub_levs, numpy_data, stat, stat_error = calculate_stat(
-                        statistic, stat_line_type, agg_method, "all", 
-                        np.asarray(data["subData"][di]), np.asarray(data["subHeaders"][di]), 
-                        np.asarray(data["subSecs"][di]), sub_lev_arg)
-                    data[stat_var_name][di] = stat
-                    if stat_error != '':
-                        self.error[curve_index] = stat_error
+                        sub_stats_x, sub_secs_x, sub_levs_x, numpy_data_x, stat_x, stat_error = calculate_stat(
+                            statistic_x, stat_line_type, agg_method, "all",
+                            np.asarray(data["subDataX"][di]), np.asarray(data["subHeadersX"][di]),
+                            np.asarray(data["subSecsX"][di]), sub_lev_arg_x)
+                        data["x"][di] = stat_x
+                        sub_stats_y, sub_secs_y, sub_levs_y, numpy_data_y, stat_y, stat_error = calculate_stat(
+                            statistic_y, stat_line_type, agg_method, "all",
+                            np.asarray(data["subDataY"][di]), np.asarray(data["subHeadersY"][di]),
+                            np.asarray(data["subSecsY"][di]), sub_lev_arg_y)
+                        data["y"][di] = stat_y
+                        if stat_error != '':
+                            self.error[curve_index] = stat_error
+                    else:
+                        if has_levels:
+                            sub_lev_arg = np.asarray(data["subLevs"][di])
+                        else:
+                            sub_lev_arg = np.asarray([])
+
+                        sub_stats, sub_secs, sub_levs, numpy_data, stat, stat_error = calculate_stat(
+                            statistic, stat_line_type, agg_method, "all",
+                            np.asarray(data["subData"][di]), np.asarray(data["subHeaders"][di]),
+                            np.asarray(data["subSecs"][di]), sub_lev_arg)
+                        data[stat_var_name][di] = stat
+                        if stat_error != '':
+                            self.error[curve_index] = stat_error
 
                     if _is_number(data["x"][di]) and data["x"][di] < data["xmin"]:
                         data["xmin"] = data["x"][di]
