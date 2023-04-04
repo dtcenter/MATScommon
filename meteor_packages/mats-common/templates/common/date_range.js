@@ -28,7 +28,7 @@ Template.dateRange.onRendered(function () {
     const stopInit = defaultDateRange.stopDate;
     const dstr = defaultDateRange.dstr;
     const isMetexpress = matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
-    const appName = matsCollections.appName.findOne({}).app;
+    const appName = matsCollections.Settings.findOne({}).appName;
     var statisticTranslations = {};
     if (isMetexpress) {
         statisticTranslations = matsCollections["statistic"].findOne({name: "statistic"}).valuesMap;

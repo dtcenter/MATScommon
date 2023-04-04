@@ -28,6 +28,42 @@ import { matsSelectUtils } from 'meteor/randyp:mats-common';
     is what sets up the graph page.
 */
 
+const _changeParameter = async(parameter, newValue) => {
+    matsParamUtils.setValueTextForParamName(parameter, newValue);
+};
+
+const _setCommonParams = async(commonParamKeys, commonParams) => {
+    for (let kidx = 0; kidx < commonParamKeys.length; kidx++) {
+        const thisKey = commonParamKeys[kidx];
+        const thisValue = commonParams[commonParamKeys[kidx]];
+        if (thisValue !== "undefined") {
+            if (document.getElementById(thisKey + "-item")) {
+                matsParamUtils.setValueTextForParamName(thisKey, thisValue);
+            } else if (thisKey === "region" && document.getElementById("vgtyp-item")) {
+                // landuse regions go in the vgtyp selector
+                matsParamUtils.setValueTextForParamName("vgtyp", thisValue);
+            }
+        }
+    }
+};
+
+const _addCurve = async() => {
+    matsParamUtils.addImportedCurve();
+};
+
+const _plotGraph = async() => {
+    $('#plotMatched').trigger("click");
+};
+
+const addCurvesAndPlot = async(parsedSettings, commonParamKeys, commonParams) => {
+    await _changeParameter('data-source', parsedSettings.curve0DataSource);
+    await _setCommonParams(commonParamKeys, commonParams);
+    await _addCurve();
+    await _changeParameter('data-source', parsedSettings.curve1DataSource);
+    await _addCurve();
+    await _changeParameter('dates', parsedSettings.dateRange);
+    await _plotGraph();
+};
 
 Template.plotList.helpers({
     Title: function() {
@@ -125,7 +161,7 @@ Template.plotList.events({
             p.plotTypes[ptElem.value] = ptElem.value === plotTypeElems.value;
         }
         var curves = Session.get('Curves');
-        if (curves == 0 && action !== "restore") {
+        if (curves === 0 && action !== "restore") {
             //alert ("No Curves To plot");
             setError(new Error("There are no curves to plot!"));
             Session.set("spinner_img", "spinner.gif");
@@ -140,29 +176,29 @@ Template.plotList.events({
             var type = plotParam.type;
             var options = plotParam.options;
 
-            if (type == matsTypes.InputTypes.radioGroup) {
+            if (type === matsTypes.InputTypes.radioGroup) {
                 for (var i=0; i<options.length; i++) {
-                    if (document.getElementById(name+"-" + type + "-" + options[i]).checked == true) {
+                    if (document.getElementById(name+"-" + type + "-" + options[i]).checked === true) {
                         p[name] = options[i];
                         break;
                     }
                 }
-            } else if (type == matsTypes.InputTypes.checkBoxGroup) {
+            } else if (type === matsTypes.InputTypes.checkBoxGroup) {
                 p[name] = [];
                 for (var i = 0; i < options.length; i++) {
                     if (document.getElementById(name + "-" + type + "-" + options[i]).checked) {
                         p[name].push(options[i]);
                     }
                 }
-            } else if (type == matsTypes.InputTypes.dateRange) {
+            } else if (type === matsTypes.InputTypes.dateRange) {
                 p[name] = matsParamUtils.getValueForParamName(name);
-            } else if (type == matsTypes.InputTypes.numberSpinner) {
+            } else if (type === matsTypes.InputTypes.numberSpinner) {
                 p[name] = document.getElementById(name + '-' + type).value;
-            } else if (type == matsTypes.InputTypes.select) {
+            } else if (type === matsTypes.InputTypes.select) {
                 p[name] = document.getElementById(name + '-' + type).value;
-            } else if (type == matsTypes.InputTypes.textInput) {
+            } else if (type === matsTypes.InputTypes.textInput) {
                 p[name] = document.getElementById(name + '-' + type).value;
-            } else if (type == matsTypes.InputTypes.color) {
+            } else if (type === matsTypes.InputTypes.color) {
                 p[name] = document.getElementById(name + '-' + type).value;
             }
         });
@@ -190,7 +226,7 @@ Template.plotList.events({
                 } else {
                     saveAs = document.getElementById('save_to').value;
                 }
-                var permission = document.getElementById("save-public").checked == true?"public":"private";
+                var permission = document.getElementById("save-public").checked === true?"public":"private";
                 //console.log("saving settings to " + saveAs);
                 Session.set('plotName', saveAs);
                 // get the settings to save out of the session
@@ -443,7 +479,6 @@ Template.plotList.events({
                         Session.set('Curves', ret.result.basis.plotParams.curves);
                     }
                     Session.set("plotResultKey", ret.key);
-                    delete ret;
                     Session.set('graphFunction', graphFunction);
                     Session.set('graphPlotType', JSON.parse(JSON.stringify(plotType)));
                     Session.set ('PlotResultsUpDated', new Date());
@@ -476,14 +511,16 @@ Template.plotList.events({
                 let d = x.getUTCDate().toString();
                 let h = x.getUTCHours().toString();
                 let min = x.getUTCMinutes().toString();
-                (d.length == 1) && (d = '0' + d);
-                (m.length == 1) && (m = '0' + m);
-                (h.length == 1) && (h = '0' + h);
-                (min.length == 1) && (min = '0' + min);
-                let submitTime = y + m + d + h + min;
+                let sec = x.getUTCSeconds().toString();
+                (d.length === 1) && (d = '0' + d);
+                (m.length === 1) && (m = '0' + m);
+                (h.length === 1) && (h = '0' + h);
+                (min.length === 1) && (min = '0' + min);
+                (sec.length === 1) && (sec = '0' + sec);
+                let submitTime = y + m + d + h + min + sec;
                 // stash the submit epoch in the params
                 p['submitEpoch'] = Math.floor(x.getTime() / 1000);
-                p['scorecard-name'] = p['userName'] + '--' + p['curves'].length + 'row-at-' + submitTime;
+                p['scorecard-name'] = p['userName'] + '--submitted:' + submitTime + '--' + p['curves'].length + 'block' ;
                 matsMethods.getGraphData.call({plotParams: p, plotType: pt, expireKey: expireKey}, function (error, ret) {
                     if (error !== undefined) {
                         //setError(new Error("matsMethods.getGraphData from plot_list.js : error: " + error ));
@@ -506,67 +543,100 @@ Template.plotList.events({
         return false;
     }
 });
-Template.plotList.onRendered( function() {
-    // last bit of stuff that needs to be done when the page finally renders
-    // need to display correct selectors on page load if default plot type is not timeseries
-    const plotType = matsPlotUtils.getPlotType();
-    Session.set('plotType', plotType);  // need to make sure plotType is in the Session this early
-    switch (plotType) {
-        case matsTypes.PlotTypes.profile:
-            matsCurveUtils.showProfileFace();
-            break;
-        case matsTypes.PlotTypes.dieoff:
-            matsCurveUtils.showDieOffFace();
-            break;
-        case matsTypes.PlotTypes.threshold:
-            matsCurveUtils.showThresholdFace();
-            break;
-        case matsTypes.PlotTypes.validtime:
-            matsCurveUtils.showValidTimeFace();
-            break;
-        case matsTypes.PlotTypes.gridscale:
-            matsCurveUtils.showGridScaleFace();
-            break;
-        case matsTypes.PlotTypes.dailyModelCycle:
-            matsCurveUtils.showDailyModelCycleFace();
-            break;
-        case matsTypes.PlotTypes.yearToYear:
-            matsCurveUtils.showYearToYearFace();
-            break;
-        case matsTypes.PlotTypes.reliability:
-            matsCurveUtils.showReliabilityFace();
-            break;
-        case matsTypes.PlotTypes.roc:
-            matsCurveUtils.showROCFace();
-            break;
-        case matsTypes.PlotTypes.performanceDiagram:
-            matsCurveUtils.showPerformanceDiagramFace();
-            break;
-        case matsTypes.PlotTypes.map:
-            matsCurveUtils.showMapFace();
-            break;
-        case matsTypes.PlotTypes.histogram:
-            matsCurveUtils.showHistogramFace();
-            break;
-        case matsTypes.PlotTypes.ensembleHistogram:
-            matsCurveUtils.showEnsembleHistogramFace();
-            break;
-        case matsTypes.PlotTypes.contour:
-        case matsTypes.PlotTypes.contourDiff:
-            matsCurveUtils.showContourFace();
-            break;
-        case matsTypes.PlotTypes.simpleScatter:
-            matsCurveUtils.showSimpleScatterFace();
-            break;
-        case matsTypes.PlotTypes.scatter2d:
-            matsCurveUtils.showScatterFace();
-            break;
-        case matsTypes.PlotTypes.timeSeries:
-        default:
-            matsCurveUtils.showTimeseriesFace();
-            break;
-    }
 
-    // make sure everything is at default
-    matsParamUtils.setAllParamsToDefault();
+Template.plotList.onRendered( function() {
+    if (Session.get("scorecardTimeseriesKey")) {
+
+        // we are plotting a timeseries, make sure MATS is set to that plot type
+        Session.set('plotType', matsTypes.PlotTypes.timeSeries);
+        document.getElementById("plotTypes-selector").value = matsTypes.PlotTypes.timeSeries;
+        matsCurveUtils.showTimeseriesFace();
+
+        // make sure everything is at default
+        matsParamUtils.setAllParamsToDefault();
+
+        // get the params from the scorecard settings
+        matsMethods.getScorecardSettings.call({settingsKey: Session.get("scorecardTimeseriesKey"),}, function (error, ret) {
+            if (error !== undefined) {
+                if (error.message.includes("DocumentNotFoundError")) {
+                    setInfo( "INFO: No scorecard parameters found for this ID. " +
+                    "Your URL may have expired. " +
+                    "They only last for eight hours after a scorecard cell is clicked.")
+                } else {
+                    setError(error)
+                }
+                return false;
+            }
+            const settingsJSON = ret.scorecardSettings;
+            const parsedSettings = JSON.parse(settingsJSON);
+            const commonParams = parsedSettings.commonCurveParams;
+            const commonParamKeys = Object.keys(commonParams);
+
+            // add the curves from the scorecard settings and then plot
+            addCurvesAndPlot(parsedSettings, commonParamKeys, commonParams).then();
+        });
+
+    } else {
+        // need to display correct selectors on page load if default plot type is not timeseries
+        const plotType = matsPlotUtils.getPlotType();
+        Session.set('plotType', plotType);  // need to make sure plotType is in the Session this early
+        switch (plotType) {
+            case matsTypes.PlotTypes.profile:
+                matsCurveUtils.showProfileFace();
+                break;
+            case matsTypes.PlotTypes.dieoff:
+                matsCurveUtils.showDieOffFace();
+                break;
+            case matsTypes.PlotTypes.threshold:
+                matsCurveUtils.showThresholdFace();
+                break;
+            case matsTypes.PlotTypes.validtime:
+                matsCurveUtils.showValidTimeFace();
+                break;
+            case matsTypes.PlotTypes.gridscale:
+                matsCurveUtils.showGridScaleFace();
+                break;
+            case matsTypes.PlotTypes.dailyModelCycle:
+                matsCurveUtils.showDailyModelCycleFace();
+                break;
+            case matsTypes.PlotTypes.yearToYear:
+                matsCurveUtils.showYearToYearFace();
+                break;
+            case matsTypes.PlotTypes.reliability:
+                matsCurveUtils.showReliabilityFace();
+                break;
+            case matsTypes.PlotTypes.roc:
+                matsCurveUtils.showROCFace();
+                break;
+            case matsTypes.PlotTypes.performanceDiagram:
+                matsCurveUtils.showPerformanceDiagramFace();
+                break;
+            case matsTypes.PlotTypes.map:
+                matsCurveUtils.showMapFace();
+                break;
+            case matsTypes.PlotTypes.histogram:
+                matsCurveUtils.showHistogramFace();
+                break;
+            case matsTypes.PlotTypes.ensembleHistogram:
+                matsCurveUtils.showEnsembleHistogramFace();
+                break;
+            case matsTypes.PlotTypes.contour:
+            case matsTypes.PlotTypes.contourDiff:
+                matsCurveUtils.showContourFace();
+                break;
+            case matsTypes.PlotTypes.simpleScatter:
+                matsCurveUtils.showSimpleScatterFace();
+                break;
+            case matsTypes.PlotTypes.scatter2d:
+                matsCurveUtils.showScatterFace();
+                break;
+            case matsTypes.PlotTypes.timeSeries:
+            default:
+                matsCurveUtils.showTimeseriesFace();
+                break;
+        }
+
+        // make sure everything is at default
+        matsParamUtils.setAllParamsToDefault();
+    }
 });

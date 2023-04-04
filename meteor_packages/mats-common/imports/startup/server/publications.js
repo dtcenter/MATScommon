@@ -3,7 +3,8 @@
  */
 
 import { Meteor } from 'meteor/meteor';
-import {matsCollections} from 'meteor/randyp:mats-common';
+import { matsCollections } from 'meteor/randyp:mats-common';
+import { curveParamsByApp } from '../both/mats-curve-params';
 
 const _publishField = function(field) {
     Meteor.publish(field, function () {
@@ -16,10 +17,10 @@ const _publishField = function(field) {
 }
 
 if (Meteor.isServer) {
-    const params = Meteor.settings.public.curve_params;
+    const params = curveParamsByApp[Meteor.settings.public.app];
     if (!params) {
-        console.log("Curve_params are not defined in the settings. Did you forget the settings parameter?");
-        throw new Meteor.Error("Curve_params are not defined in the settings. Did you forget the settings parameter?");
+        console.log("curveParams are not defined in imports/startup/both/mats-curve-params.js. Please define some curveParams for this app.");
+        throw new Meteor.Error("curveParams are not defined in imports/startup/both/mats-curve-params.js. Please define some curveParams for this app.");
     }
     var currParam;
     for (var i = 0; i < params.length; i++) {
@@ -128,13 +129,6 @@ if (Meteor.isServer) {
     });
     Meteor.publish("StationMap", function () {
         var data = matsCollections.StationMap.find({});
-        if (data) {
-            return data;
-        }
-        return this.ready();
-    });
-    Meteor.publish("appName", function () {
-        var data = matsCollections.appName.find({});
         if (data) {
             return data;
         }

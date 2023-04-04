@@ -4,8 +4,14 @@
 
 import { Meteor } from 'meteor/meteor';
 import matsCollections from 'meteor/randyp:mats-common';
+import { curveParamsByApp } from '../both/mats-curve-params';
+
 if (Meteor.isClient) {
-    const params = Meteor.settings.public.curve_params;
+    const params = curveParamsByApp[Meteor.settings.public.app];
+    if (!params) {
+        console.log("curveParams are not defined in imports/startup/both/mats-curve-params.js. Please define some curveParams for this app.");
+        throw new Meteor.Error("curveParams are not defined in imports/startup/both/mats-curve-params.js. Please define some curveParams for this app.");
+    }
     for (var i = 0; i < params.length; i++) {
         Meteor.subscribe(params[i]);
     }
@@ -28,7 +34,6 @@ if (Meteor.isClient) {
     Meteor.subscribe("RangePerDescriptor");
     Meteor.subscribe("SiteMap");
     Meteor.subscribe("StationMap");
-    Meteor.subscribe("appName");
     Meteor.subscribe("LayoutStoreCollection");
     Meteor.subscribe("Scorecard");
     Session.set('Curves', []);
@@ -45,9 +50,13 @@ if (Meteor.isClient) {
     const protocol = pathArray[0];
     const hostport = pathArray[2];
     const hostName = hostport.split(':')[0];
-    const app = pathArray[3] == "" ? "/" : pathArray[3];
+    const app = pathArray[3] === "" ? "/" : pathArray[3];
     const matsRef = protocol + "//" + hostport;
-    const helpRef = ref.endsWith('/') ? ref + "packages/randyp_mats-common/public/help" : ref + "/packages/randyp_mats-common/public/help";
+    const baseURL = Meteor.settings.public.home === undefined ? "https://" + hostport : Meteor.settings.public.home;
+    let helpRef = baseURL + "/" + app + "/packages/randyp_mats-common/public/public/help";
+    if (baseURL.includes("localhost")) {
+        helpRef =  baseURL + "/packages/randyp_mats-common/public/help";
+    }
     Session.set("app", {appName: app, matsref: matsRef, appref: ref, helpref: helpRef, hostName: hostName});
     var collections = Object.keys(matsCollections).map(key => matsCollections[key]);
     Session.set("Mongol", {

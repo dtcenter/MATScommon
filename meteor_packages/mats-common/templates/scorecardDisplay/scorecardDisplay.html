@@ -1,78 +1,107 @@
 <template name="ScorecardDisplay">
-    {{scorecardRefresh}}
-    <div id="graph-container">
+    <div id="graph-container" style="background-color: #FFFFFF; padding-bottom: 1em;">
+        {{>topNav}}
+        <h1 style="text-align: center; margin-bottom: 1em;">Scorecard</h1>
         <div id="scorecard-display-header">
             <div id="header">
-                <h2><span>{{Title}}</span></h2>
+                <h4 style="text-align: center;"><span>
+                    {{Title}}
+                    <button id="refresh-scorecard" type="button" class="refresh-scorecard btn btn-info"
+                            style="border-radius: 15px; background-color: #00badb;">
+                    <i class="fa-solid fa-arrows-rotate"></i>
+                    </button>
+                </span></h4>
             </div>
-            <!--div id="scorecardDisplayLoading" class="blink" style="display:block; color:red;">Loading...</div-->
-            <div>
-                <label class="input-sm" for="exportFileName">FileName</label>
+            <div class="text-center" style="padding-bottom: 0.5em; background-color: #FFFFFF">
+                <label class="input-md" for="exportFileName">File Name:</label>
                 <input style="width:50em;" class="input-sm" id="exportFileName" value="{{fileNamePlaceholder}}">
-                <button type="button" class="btn-primary btn-xs pull-right btn-outline-primary exportpdf"
-                    id="exportpdf">save pdf</button>
-                <button type="button" class="btn-primary btn-xs pull-right btn-outline-primary exportpng"
-                    id="exportpng">save png</button>
+                <button type="button" class="btn-primary btn-xs btn-outline-primary exportpdf"
+                        id="exportpdf">save pdf</button>
+                <button type="button" class="btn-primary btn-xs btn-outline-primary exportpng"
+                        id="exportpng">save png</button>
             </div>
+            <div id="scorecardDisplayLoading" class="blink" style="display:block; color:rgb(21, 255, 0); margin-left: 1em;">Loading...</div>
         </div>
-        {{#each scorecardRow in scorecardRows}}
-        <h3>{{rowTitle scorecardRow}}</h3>
-        <div id="scorecard-display-container" style="width:100%;">
-            <table id="scOuterTable-{{scorecardRow}}" class="display nowrap">
-                <thead>
+        {{#each scorecardBlock in scorecardBlocks}}
+            <br/>
+            <h4 style="text-align:left; margin-left: 0.9em; margin-bottom: 1em;">{{blockTitle scorecardBlock}}</h4>
+            <span style="text-align:left; margin-left: 1em; color: #000099">{{constantFields scorecardBlock}}</span>
+            <div id="scorecard-display-container" style="width:100%; padding-left: 1em; padding-right: 1em; margin-top: 1em; overflow-x: scroll;">
+                <table id="scOuterTable-{{scorecardBlock}}" class="display nowrap">
+                    <thead>
                     <!--empty placeholder for stat-->
-                    <th>Application: {{application scorecardRow}}</th>
+                    <th>Application: {{application scorecardBlock}}</th>
                     <!--empty placeholder for variable-->
                     <th></th>
-                    {{#each region in regions scorecardRow}}
-                    <th class="scOuterHeaderRegion" style="width:{{numFcsts scorecardRow}}em; background-color:LightCyan;">
-                        {{region}}</th>
+                    <!--empty placeholder for threshold-->
+                    <th style="{{thresholdHider scorecardBlock}}"></th>
+                    <!--empty placeholder for level-->
+                    <th style="{{levelHider scorecardBlock}}"></th>
+                    {{#each region in regions scorecardBlock}}
+                        <th class="scOuterHeaderRegion" style="width:{{numFcsts scorecardBlock}}em; background-color:LightCyan;">
+                            {{trimmedText region}}</th>
                     {{/each}}
-                </thead>
-                <tbody>
+                    </thead>
+                    <tbody>
                     <tr>
-                        <td style="background-color:LightCyan;">stat</td>
-                        <td style="background-color:LightCyan;">variable</td>
-                        {{#each region in regions scorecardRow}}
-                        <td class="scRegionTd" style="max-width: {{numFcsts scorecardRow}}em;">
-                            <table class="scInnerTable" style="max-width:{{numFcsts scorecardRow}}em;">
-                                <tr>
-                                    {{#each fcstlen in fcstlens scorecardRow}}
-                                    <td style="background-color:LightCyan;" class="scInnerTd">{{fcstlen}}</td>
-                                    {{/each}}
-                                </tr>
-                            </table>
-                        </td>
+                        <td class="scOuterHeaderRegion" style="background-color:LightCyan;">stat</td>
+                        <td class="scOuterHeaderRegion" style="background-color:LightCyan;">variable</td>
+                        <td class="scOuterHeaderRegion" style="background-color:LightCyan;{{thresholdHider scorecardBlock}}">threshold</td>
+                        <td class="scOuterHeaderRegion" style="background-color:LightCyan;{{levelHider scorecardBlock}}">level</td>
+                        {{#each region in regions scorecardBlock}}
+                            <td class="scRegionTd" style="max-width: {{numFcsts scorecardBlock}}em;">
+                                <table class="scInnerTable" style="max-width:{{numFcsts scorecardBlock}}em;">
+                                    <tr>
+                                        {{#each fcstlen in fcstlens scorecardBlock}}
+                                            <td style="background-color:LightCyan;" class="scInnerTd">{{trimmedText fcstlen}}</td>
+                                        {{/each}}
+                                    </tr>
+                                </table>
+                            </td>
                         {{/each}}
                     </tr>
-                    {{#each stat in stats scorecardRow}}
-                    {{#each variable in variables scorecardRow}}
-                    <tr>
-                        <td style="background-color:LightCyan;" class="scStatVarTd">{{stat}}</td>
-                        <td style="background-color:LightCyan;" class="scStatVarTd">{{variable}}</td>
-                        {{#each region in regions scorecardRow}}
-                        <td class="scTableTd">
-                            <table class="scTableSig" style="max-width:{{numFcsts scorecardRow}}em;">
-                                <tr>
-                                    {{#each fcstlen in fcstlens scorecardRow}}
-                                    <td class="scTableSigTd" id="{{sigIconId scorecardRow region stat variable fcstlen}}"
-                                        data-scorecardRow="{{scorecardRow}}" data-region="{{region}}" data-stat="{{stat}}"
-                                        data-variable="{{variable}}" data-fcstlen="{{fcstlen}}"
-                                        style="background-color: {{significanceBackgroundColor scorecardRow region stat variable fcstlen}}">
-                                        <i style="color:{{significanceColor scorecardRow region stat variable fcstlen}}"
-                                            class="{{significanceClass scorecardRow region stat variable fcstlen}}"></i>
-                                    </td>
-                                    {{/each}}
-                                </tr>
-                            </table>
-                        </td>
+                    {{#each stat in stats scorecardBlock}}
+                        {{#each variable in variables scorecardBlock}}
+                            {{#each threshold in thresholds scorecardBlock}}
+                                {{#each level in levels scorecardBlock}}
+                                    <tr>
+                                        <td class="scStatVarTd" style="background-color: LightCyan;">{{trimmedText stat}}</td>
+                                        <td class="scStatVarTd" style="background-color: LightCyan;">{{trimmedText variable}}</td>
+                                        <td class="scStatVarTd" style="background-color: LightCyan;{{thresholdHider scorecardBlock}}">{{trimmedText threshold}}</td>
+                                        <td class="scStatVarTd" style="background-color: LightCyan;{{levelHider scorecardBlock}}">{{trimmedText level}}</td>
+                                        {{#each region in regions scorecardBlock}}
+                                            <td class="scTableTd">
+                                                <table class="scTableSig" style="max-width:{{numFcsts scorecardBlock}}em;">
+                                                    <tr>
+                                                        {{#each fcstlen in fcstlens scorecardBlock}}
+                                                            <td class="scTableSigTd"
+                                                                id="{{sigIconId scorecardBlock region stat variable threshold level fcstlen}}"
+                                                                data-scorecardBlock="{{scorecardBlock}}" data-region="{{region}}"
+                                                                data-stat="{{stat}}"
+                                                                data-variable="{{variable}}"
+                                                                data-threshold="{{threshold}}"
+                                                                data-level="{{level}}"
+                                                                data-fcstlen="{{fcstlen}}"
+                                                                style="background-color: {{significanceBackgroundColor
+                                                                        scorecardBlock region stat variable threshold level fcstlen}}">
+                                                                {{{significanceIconHTML scorecardBlock region stat variable
+                                                                    threshold level fcstlen}}}
+                                                            </td>
+                                                        {{/each}}
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        {{/each}}
+                                    </tr>
+                                {{/each}}
+                            {{/each}}
                         {{/each}}
-                    </tr>
                     {{/each}}
-                    {{/each}}
-                </tbody>
-            </table>
-        </div>
+                    {{hideLoading}}
+                    </tbody>
+                </table>
+            </div>
         {{/each}}
     </div>
+    {{>footer}}
 </template>

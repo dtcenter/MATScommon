@@ -62,7 +62,7 @@ const matchPlotTypeSelector = function (plotType) {
 const setDatesAndShowFace = function (plotType, dateSelector) {
     // display appropriate selectors for each plot type, and make sure the previous dates or curve-dates values
     // carry across to the appropriate new selector
-    const appName = matsCollections.appName.findOne({}).app;
+    const appName = matsCollections.Settings.findOne({}).appName;
     var oldDatesExist;
     if (dateSelector === 'dates') {
         oldDatesExist = matsParamUtils.isParamVisible('dates');

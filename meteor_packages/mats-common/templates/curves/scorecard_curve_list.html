@@ -2,15 +2,15 @@
     <div class="modal modal-dialog fade" id="modal-confirm-remove-all" tabindex="-1" role="dialog" aria-labelledby="confirmRemoveAll" aria-hidden="true" style="background-color: cornflowerblue">
         <div class="modal-dialog">
             <div class="modal-content" style="padding-top: 2em;">
-                <h2 class="modal-title" style="text-align: center; color: red;">Remove All Rows?</h2>
+                <h2 class="modal-title" style="text-align: center; color: red;">Remove All Blocks?</h2>
                 <div class="modal-body">
                     <h4 style="color:cornflowerblue">
-                        Are you sure you want to remove all the rows?
+                        Are you sure you want to remove all the blocks?
                     </h4>
                 </div>
                 <div class="modal-footer">
                     <button id="cancle-remove-all" class="cancle-remove-all btn btn-success" data-dismiss="modal">Cancel the Remove</button>
-                    <button id="confirm-remove-all" class="btn btn-danger confirm-remove-all" data-dismiss="modal">Remove all the rows</button>
+                    <button id="confirm-remove-all" class="btn btn-danger confirm-remove-all" data-dismiss="modal">Remove all the blocks</button>
                 </div>
             </div>
         </div>
@@ -21,7 +21,7 @@
             {{> curveItem this}}
         {{/each}}
         <div class="clearfix btn-toolbar  well well-sm pull-left" role="toolbar">
-            <button id='remove-all' class="remove-all btn btn-danger"><i class="fa-solid fa-xmark"></i>&nbsp;&nbsp;Remove All Rows</button>
+            <button id='remove-all' class="remove-all btn btn-danger"><i class="fa-solid fa-xmark"></i>&nbsp;&nbsp;Remove All Blocks</button>
             <button type="button" name="save" id="save " class="save-settings btn btn-success" style="display:{{displaySaveSettings}};"><i class="fa-solid fa-cloud-arrow-up"></i>&nbsp;&nbsp;Save All Curve Settings</button>
             <button type="button" class="btn spacebutton" id="cl-spacer"></button>
             <button type="button" name="submitScorecard" id="submitScorecard"  class="submitScorecard btn btn-success" style="display:{{displaySubmitScorecard}};"><i class="fa-solid fa-diagram-project"></i>  Submit Scorecard</button>

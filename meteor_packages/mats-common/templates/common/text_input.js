@@ -7,12 +7,12 @@ import { matsParamUtils } from 'meteor/randyp:mats-common'
 import { matsTypes } from 'meteor/randyp:mats-common'
 Template.textInput.helpers({
     defaultTextInput: function() {
-        if (this.name == 'label') {   // labels are handled specially
+        if (this.name === 'label') {   // labels are handled specially
             var label;
             var input = document.getElementById('label-textInput');
             var value = document.getElementById('controlButton-label-value');
             if (input && value) {
-                if (label !== input.value || label != value.textContent) {
+                if (label !== input.value || label !== value.textContent) {
                     if (!Session.get('NextCurveLabel')) {
                         label = matsCurveUtils.getNextCurveLabel();
                     } else {
@@ -38,7 +38,7 @@ Template.textInput.events({
         try {
             // label is handled differently - special case because of NextCurveLabel stored in Session
             const text = event.currentTarget.value;
-            if (!(event.target.name == "label" && Session.get('NextCurveLabel') == text)) {
+            if (!(event.target.name === "label" && Session.get('NextCurveLabel') === text)) {
                 matsParamUtils.setValueTextForParamName(event.target.name, text);
             }
         } catch (error){
@@ -49,7 +49,7 @@ Template.textInput.events({
         try {
             // label is handled differently - special case because of NextCurveLabel stored in Session
             const text = event.currentTarget.value;
-            if (event.target.name == "label" && Session.get('NextCurveLabel') == text) {
+            if (event.target.name === "label" && Session.get('NextCurveLabel') === text) {
                 if (Object.values(matsTypes.ReservedWords).indexOf(text) === -1) {
                     matsParamUtils.setValueTextForParamName(event.target.name, text);
                     Session.set("NextCurveLabel", text);

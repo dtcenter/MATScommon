@@ -37,7 +37,7 @@ const sizeof = function (_1) {
                 _3 += 2 * _2[_4].length;
                 break;
             case "object":
-                if (Object.prototype.toString.call(_2[_4]) != "[object Array]") {
+                if (Object.prototype.toString.call(_2[_4]) !== "[object Array]") {
                     for (var _5 in _2[_4]) {
                         _3 += 2 * _5.length;
                     }
@@ -86,7 +86,7 @@ const setPlotResultData = function () {
                 setError(new Error("matsMethods.getPlotResult failed : error: " + error));
                 Session.set('textRefreshNeeded', false);
             }
-            if (result == undefined) {
+            if (!result) {
                 plotResultData = undefined;
                 Session.set('textRefreshNeeded', false);
                 hideSpinner();
@@ -158,7 +158,7 @@ const setNextCurveLabel = function () {
     const labelPrefix = settings.LabelPrefix;
     // find all the labels that start with our prefix (some could be custom)
     const prefixLabels = _.filter(usedLabels, function (l) {
-        return (l && (l.lastIndexOf(labelPrefix, 0) === 0) && (l.match(new RegExp(labelPrefix, 'g')).length) == 1);
+        return (l && (l.lastIndexOf(labelPrefix, 0) === 0) && (l.match(new RegExp(labelPrefix, 'g')).length) === 1);
     });
     const lastUsedLabel = _.last(prefixLabels);
     var lastLabelNumber = -1;
@@ -173,7 +173,7 @@ const setNextCurveLabel = function () {
     var newLabelNumber = lastLabelNumber + 1;
     var nextCurveLabel = labelPrefix + newLabelNumber;
     // the label might be one from a removed curve so the next ones might be used
-    while (_.indexOf(usedLabels, nextCurveLabel) != -1) {
+    while (_.indexOf(usedLabels, nextCurveLabel) !== -1) {
         newLabelNumber++;
         nextCurveLabel = labelPrefix + newLabelNumber;
     }
@@ -190,12 +190,12 @@ const setNextCurveColor = function () {
         lastUsedIndex = _.indexOf(colors, _.last(usedColors));
     }
     var nextCurveColor;
-    if (lastUsedIndex !== undefined && lastUsedIndex != -1) {
+    if (lastUsedIndex !== undefined && lastUsedIndex !== -1) {
         if (lastUsedIndex < colors.length - 1) {
             var newIndex = lastUsedIndex + 1;
             nextCurveColor = colors[newIndex];
             // the color might be one from a removed curve so the next ones might be used
-            while (_.indexOf(usedColors, nextCurveColor) != -1) {
+            while (_.indexOf(usedColors, nextCurveColor) !== -1) {
                 newIndex++;
                 nextCurveColor = colors[newIndex];
             }
@@ -223,7 +223,7 @@ const getNextCurveColor = function () {
 const clearUsedLabel = function (label) {
     var usedLabels = Session.get('UsedLabels');
     var newUsedLabels = _.reject(usedLabels, function (l) {
-        return l == label;
+        return l === label;
     });
     Session.set('UsedLabels', newUsedLabels);
     Session.set('NextCurveLabel', label);
@@ -233,7 +233,7 @@ const clearUsedLabel = function (label) {
 const clearUsedColor = function (color) {
     var usedColors = Session.get('UsedColors');
     var newUsedColors = _.reject(usedColors, function (c) {
-        return c == color;
+        return c === color;
     });
     Session.set('UsedColors', newUsedColors);
     Session.set('NextCurveColor', color);
@@ -286,7 +286,7 @@ const setUsedColorsAndLabels = function () {
 };
 
 const resetScatterApply = function () {
-    if (matsPlotUtils.getPlotType() == matsTypes.PlotTypes.scatter2d) {
+    if (matsPlotUtils.getPlotType() === matsTypes.PlotTypes.scatter2d) {
         Session.set('axisCurveIcon', 'fa-solid fa-asterisk');
         Session.set('xaxisCurveText', 'XAXIS NOT YET APPLIED');
         Session.set('yaxisCurveText', 'YAXIS NOT YET APPLIED');
@@ -329,7 +329,7 @@ const addDiffs = function () {
         case matsTypes.PlotFormats.pairwise:
             var baseIndex = 0; // This will probably not default to curve 0 in the future
             for (var ci = 1; ci < curves.length; ci++) {
-                if (ci % 2 != 0) {  // only diff on odd curves against previous curve
+                if (ci % 2 !== 0) {  // only diff on odd curves against previous curve
                     baseIndex = ci - 1;
                     var newCurve = $.extend(true, {}, curves[ci]);
                     newCurve.label = curves[ci].label + "-" + curves[baseIndex].label;
@@ -368,7 +368,7 @@ const addDiffs = function () {
 const removeDiffs = function () {
     var curves = Session.get('Curves');
     var newCurves = _.reject(curves, function (curve) {
-        return curve.diffFrom != null
+        return curve.diffFrom !== undefined && curve.diffFrom !== null
     });
     Session.set('Curves', newCurves);
     setUsedColorsAndLabels();
@@ -378,7 +378,7 @@ const removeDiffs = function () {
 // (used after adding or removing a curve while the show diffs box is checked)
 const checkDiffs = function () {
     var curves = Session.get('Curves');
-    if (matsPlotUtils.getPlotType() == matsTypes.PlotTypes.scatter2d) {
+    if (matsPlotUtils.getPlotType() === matsTypes.PlotTypes.scatter2d) {
         // scatter plots have no concept of difference curves.
         return;
     }
@@ -986,7 +986,7 @@ const showPerformanceDiagramFace = function () {
 
 // method to display the appropriate selectors for a map
 const showMapFace = function () {
-    const appName = matsCollections.appName.findOne({}).app;
+    const appName = matsCollections.Settings.findOne({}).appName;
     const plotType = matsTypes.PlotTypes.map;
     var faceOptions = {
         'curve-dates': 'none',

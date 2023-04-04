@@ -41,7 +41,7 @@ Template.graph.helpers({
         // causes graph display routine to be processed
         Session.get('PlotResultsUpDated');
         var graphFunction = Session.get('graphFunction');
-        if (graphFunction) {
+        if (graphFunction && !graphFunction.toLowerCase().includes("scorecard")) {
             eval(graphFunction)(Session.get('plotResultKey'));
             var plotType = Session.get('graphPlotType');
             var dataset = matsCurveUtils.getGraphResult().data;
@@ -786,7 +786,7 @@ Template.graph.helpers({
     },
     heatMapButtonText: function () {
         var sval = this.label + "heatMapButtonText";
-        const appName = matsCollections.appName.findOne({}).app;
+        const appName = matsCollections.Settings.findOne({}).appName;
         if (Session.get(sval) === undefined) {
             if (appName !== undefined && (appName.includes("ceiling") || appName.includes("visibility"))) {
                 Session.set(sval, 'hide heat map');
@@ -1011,7 +1011,7 @@ Template.graph.helpers({
     metApp: function () {
         Session.get("PlotParams");
         Session.get('PlotResultsUpDated');
-        if (matsCollections.Settings.findOne({}) && matsCollections.Settings.findOne({}).appType && matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress && Session.get('PlotParams')['metexpress-mode'] == "matsmv") {
+        if (matsCollections.Settings.findOne({}) && matsCollections.Settings.findOne({}).appType && matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress && Session.get('PlotParams')['metexpress-mode'] === "matsmv") {
             return "block";
         } else {
             return "none";

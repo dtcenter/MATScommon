@@ -16,7 +16,7 @@ const processDataXYCurve = function (dataset, appParams, curveInfoParams, plotPa
     var errorMax = Number.MIN_VALUE;
     var error = "";
 
-    const appName = matsCollections.appName.findOne({}).app;
+    const appName = matsCollections.Settings.findOne({}).appName;
     const isMetexpress = matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
 
     // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
@@ -348,7 +348,7 @@ const processDataProfile = function (dataset, appParams, curveInfoParams, plotPa
     var errorMax = Number.MIN_VALUE;
     var error = "";
 
-    const appName = matsCollections.appName.findOne({}).app;
+    const appName = matsCollections.Settings.findOne({}).appName;
     const isMetexpress = matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
 
     // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
@@ -1133,7 +1133,7 @@ const processDataHistogram = function (allReturnedSubStats, allReturnedSubSecs, 
             sum: 0
         };
 
-        if (diffFrom == null) {
+        if (!diffFrom) {
             if (curveInfoParams.dataFoundForCurve[curveIndex]) {
                 // sort queried data into the full set of histogram bins
                 sortedData = matsDataUtils.sortHistogramBins(allReturnedSubStats[curveIndex], allReturnedSubSecs[curveIndex], allReturnedSubLevs[curveIndex], binParams.binNum, binStats, appParams, d);
@@ -1265,7 +1265,7 @@ const processDataHistogram = function (allReturnedSubStats, allReturnedSubSecs, 
 
 const processDataContour = function (dataset, curveInfoParams, plotParams, bookkeepingParams) {
     var error = "";
-    const appName = matsCollections.appName.findOne({}).app;
+    const appName = matsCollections.Settings.findOne({}).appName;
     var statisticSelect = appName.indexOf("anomalycor") !== -1 ? "ACC" : curveInfoParams.curve[0]['statistic'];
     var data = dataset[0];
     const label = dataset[0].label;

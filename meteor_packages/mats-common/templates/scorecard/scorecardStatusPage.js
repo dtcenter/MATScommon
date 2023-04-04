@@ -36,15 +36,15 @@ function getNamesForUser(userName) {
     return Object.keys(myScorecardInfo);
 };
 
-function getRunTimesForUserName(userName, name){
-    let runtimes=[];
+function getprocessedAtsForUserName(userName, name){
+    let processedAts=[];
     let dt = new Date('07/1/2022');
     let end = new Date('08/1/2022');
     while (dt <= end) {
-        runtimes.push(new Date(dt));
+        processedAts.push(new Date(dt));
         dt.setDate(dt.getDate() + 1);
     }
-    return runtimes;
+    return processedAts;
 }
 
 
@@ -60,7 +60,7 @@ Template.scorecardStatusPage.created = function (){
 
 Template.scorecardStatusPage.helpers({
     refresh: function(){
-        if (Session.get("updateStatusPage") === undefined){
+        if (Session.get("updateStatusPage") === undefined || typeof Session.get("updateStatusPage") === "number"){
             matsMethods.getScorecardInfo.call(function (error, ret) {
                 if (error !== undefined) {
                     setError(error);
@@ -77,39 +77,44 @@ Template.scorecardStatusPage.helpers({
     userNames: function() {
         // uses reactive var
         // myScorecardInfo is keyed by userNames
-        return Session.get("updateStatusPage") === undefined? [] : Object.keys(Session.get("updateStatusPage")).sort();
+        return Session.get("updateStatusPage") === undefined || typeof Session.get("updateStatusPage") === "number" ? [] : Object.keys(Session.get("updateStatusPage")).sort();
     },
     names: function(userName) {
         // uses reactive var
         // myScorecardInfo[userName] is keyed by scorecard names
-            return Session.get("updateStatusPage") === undefined? [] : Object.keys(Session.get("updateStatusPage")[userName]).sort();
+            return Session.get("updateStatusPage") === undefined || typeof Session.get("updateStatusPage") === "number" ? [] : Object.keys(Session.get("updateStatusPage")[userName]).sort();
     },
-    submitTimes: function(userName, name) {
+    submittedTimes: function(userName, name) {
         // uses reactive var
-        // myScorecardInfo[userName][name] is keyed by scorecard runtimes
-            return Session.get("updateStatusPage") === undefined? [] : Object.keys(Session.get("updateStatusPage")[userName][name]).sort();
+        // myScorecardInfo[userName][name] is keyed by scorecard processedAts
+            return Session.get("updateStatusPage") === undefined || typeof Session.get("updateStatusPage") === "number" ? [] : Object.keys(Session.get("updateStatusPage")[userName][name]).sort();
     },
 
-    runTimes: function(userName, name, submitTime) {
+    processedAtTimes: function(userName, name, submitted) {
         // uses reactive var
-        // myScorecardInfo[userName][name] is keyed by scorecard runtimes
-            return Session.get("updateStatusPage") === undefined? [] : Object.keys(Session.get("updateStatusPage")[userName][name][submitTime]).sort();
+        // myScorecardInfo[userName][name] is keyed by scorecard processedAts
+            return Session.get("updateStatusPage") === undefined || typeof Session.get("updateStatusPage") === "number" ? [] : Object.keys(Session.get("updateStatusPage")[userName][name][submitted]).sort();
     },
-    status: function(userName, name, submitTime, runTime) {
-            return Session.get("updateStatusPage")[userName][name][submitTime][runTime]['status']
+    status: function(userName, name, submitted, processedAt) {
+            return Session.get("updateStatusPage") === undefined || typeof Session.get("updateStatusPage") === "number" ? "" : Session.get("updateStatusPage")[userName][name][submitted][processedAt]['status']
     },
-    statusType: function(userName, name, submitTime, runTime) {
-            if (Session.get("updateStatusPage") !== undfined && Session.get("updateStatusPage")[userName][name][submitTime][runTime]['status'] === "Pending") {
+    statusType: function(userName, name, submitted, processedAt) {
+            if (Session.get("updateStatusPage") !== undefined && typeof Session.get("updateStatusPage") !== "number" && Session.get("updateStatusPage")[userName][name][submitted][processedAt]['status'] === "Pending") {
                 return "danger";
             } else {
                 return 'Success';
             }
     },
-    visitLink: function(userName, name, submitTime, runTime) {
-            return '/scorecard_display/' + userName + '/' + name + '/' + submitTime + '/' + runTime
+    visitLink: function(userName, name, submitted, processedAt) {
+        const baseURL = Meteor.settings.public.home === undefined ? "https://" + document.location.href.split('/')[2] : Meteor.settings.public.home;
+        if (baseURL.includes("localhost")) {
+            return baseURL + "/scorecardDisplay/" + userName + '/' + name + '/' + submitted + '/' + processedAt
+        } else {
+            return baseURL + "/scorecard/scorecardDisplay/" + userName + '/' + name + '/' + submitted + '/' + processedAt
+        }
     },
-    scid:  function(userName, name, submitTime, runTime) {
-        return userName + '_' + name + '_' + submitTime + '_' + runTime;
+    scid:  function(userName, name, submitted, processedAt) {
+        return userName + '_' + name + '_' + submitted + '_' + processedAt;
     },
     timeStr: function (epoch) {
         if (Number(epoch) === 0) {
@@ -147,10 +152,10 @@ Template.scorecardStatusPage.events({
     'click .drop-sc-instance': function(e) {
         const userName=e.currentTarget.dataset.user_name;
         const name=e.currentTarget.dataset.name;
-        const submitTime=e.currentTarget.dataset.submit_time;
-        const runTime=e.currentTarget.dataset.run_time;
+        const submitted=e.currentTarget.dataset.submit_time;
+        const processedAt=e.currentTarget.dataset.processedAt;
 
-        matsMethods.dropScorecardInstance.call({userName:userName,name:name,submitTime:submitTime,runTime}, function (error) {
+        matsMethods.dropScorecardInstance.call({userName:userName,name:name,submitted:submitted,processedAt:processedAt}, function (error) {
             if (error !== undefined) {
                 setError(error);
             } else {

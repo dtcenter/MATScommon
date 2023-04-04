@@ -6,9 +6,14 @@
  * Created by pierce on 8/31/16.
  */
 import { Mongo } from 'meteor/mongo';
-import {Meteor} from "meteor/meteor";
+import { Meteor } from "meteor/meteor";
+import { curveParamsByApp } from './mats-curve-params';
 
-const params = Meteor.settings.public.curve_params;
+const params = curveParamsByApp[Meteor.settings.public.app];
+if (!params) {
+    console.log("curveParams are not defined in imports/startup/both/mats-curve-params.js. Please define some curveParams for this app.");
+    throw new Meteor.Error("curveParams are not defined in imports/startup/both/mats-curve-params.js. Please define some curveParams for this app.");
+}
 var paramCollections = {};
 var currParam;
 for (var i = 0; i < params.length; i++) {
@@ -39,13 +44,11 @@ var Credentials = new Mongo.Collection("Credentials");
 var SavedCredentials = new Mongo.Collection("SavedCredentials");
 var SiteMap = new Mongo.Collection("SiteMap");
 var StationMap = new Mongo.Collection("StationMap");
-var appName = new Mongo.Collection("appName");
 var Scorecard = new Mongo.Collection("Scorecard");
 
 // expire after 24 hours from when the scorecard is last upserted
 if (Meteor.isServer) {
     try {
-        Scorecard._dropIndex( { "createdAt": 1 } );
         Scorecard.createIndex( { "createdAt": 1 }, { expireAfterSeconds: 24 * 60 * 60 } );
     } catch (e) {
         // ignore this - this isn't a scorecard
@@ -77,7 +80,6 @@ const explicitCollections = {
     SavedCredentials:SavedCredentials,
     SiteMap:SiteMap,
     StationMap:StationMap,
-    appName:appName,
     Scorecard:Scorecard,
 };
 

@@ -27,12 +27,15 @@ import {
 import {
     Mongo
 } from 'meteor/mongo';
+import { curveParamsByApp } from '../both/mats-curve-params';
 
 // PRIVATE
 
 // local collection used to keep the table update times for refresh - won't ever be synchronized or persisted.
 const metaDataTableUpdates = new Mongo.Collection(null);
-const LayoutStoreCollection = new Mongo.Collection("LayoutStoreCollection"); // initialize collection used for pop-out window functionality
+// initialize collection used for pop-out window functionality
+const LayoutStoreCollection = new Mongo.Collection("LayoutStoreCollection");
+// initialize collection used to cache previously downsampled plots
 const DownSampleResults = new Mongo.Collection("DownSampleResults");
 
 // utility to check for empty object
@@ -57,9 +60,10 @@ if (Meteor.isServer) {
     }, {
         expireAfterSeconds: 900
     }); // 15 min expiration
+
     // set the default proxy prefix path to ""
     // If the settings are not complete, they will be set by the configuration and written out, which will cause the app to reset
-    if (Meteor.settings.public != null && Meteor.settings.public.proxy_prefix_path == null) {
+    if (Meteor.settings.public && !Meteor.settings.public.proxy_prefix_path) {
         Meteor.settings.public.proxy_prefix_path = "";
     }
 
@@ -462,7 +466,7 @@ const _checkMetaDataRefresh = async function () {
             const updatedEpochMoment = moment.utc(updatedEpoch).valueOf();
             //console.log("Epoch of when this app last refreshed metadata for table " + dbName + "." + tName + " is " + lastRefreshedEpoch);
             //console.log("Epoch of when the DB says table " + dbName + "." + tName + " was last updated is " + updatedEpochMoment);
-            if (lastRefreshedEpoch < updatedEpochMoment || updatedEpochMoment == 0) {
+            if (lastRefreshedEpoch < updatedEpochMoment || updatedEpochMoment === 0) {
                 // Aurora DB sometimes returns a 0 for last updated. In that case, do refresh the metadata.
                 refresh = true;
                 //console.log("Refreshing the metadata in the app selectors because table " + dbName + "." + tName + " was updated at " + moment.utc(updatedEpoch * 1000).format("YYYY-MM-DD HH:mm:ss") + " while the metadata was last refreshed at " + moment.utc(lastRefreshedEpoch * 1000).format("YYYY-MM-DD HH:mm:ss"));
@@ -509,29 +513,29 @@ const _clearCache = function (params, req, res, next) {
 };
 
 // private middleware for dropping a distinct instance (a single run) of a scorecard
-const _dropScorecardInstance = async function (userName,name,submitTime,runTime) {
-try {
-    if (cbScorecardPool == undefined) {
-        return {};
+const _dropScorecardInstance = async function (userName, name, submittedTime, processedAt) {
+    try {
+        if (cbScorecardPool === undefined) {
+            throw new Meteor.Error("_dropScorecardInstance: No cbScorecardPool defined");
+        }
+        const statement = `DELETE
+            From
+                vxdata._default.SCORECARD sc
+            WHERE
+                sc.type='SC'
+                AND sc.userName='` + userName + `'
+                AND sc.name='` + name + `'
+                AND sc.processedAt=` + processedAt + `
+                AND sc.submitted=` + submittedTime + `;`
+        const result = await cbScorecardPool.queryCB(statement);
+        // delete this result from the mongo Scorecard collection
+        return;
+    } catch (err) {
+        console.log("_dropScorecardInstance error : " + err.message);
+        return {
+            "error": err.message
+        };
     }
-    const statement = `DELETE
-        From
-            vxdata._default.SCORECARD sc
-        WHERE
-            sc.type='SC'
-            AND sc.userName='` + userName + `'
-            AND sc.name='` + name + `'
-            AND sc.processedAt=` + runTime + `
-            AND sc.submitted=` + submitTime + `;`
-    const result = await cbScorecardPool.queryCB(statement);
-    // delete this result from the mongo Scorecard collection
-    return;
-} catch (err) {
-    console.log("_getScorecardData error : " + err.message);
-    return {
-        "error": err.message
-    };
-};
 };
 
 // helper function to map a results array to specific apps
@@ -569,9 +573,7 @@ function _mapMapToApps(result) {
 // helper function for returning an array of database-distinct apps contained within a larger MATS app
 function _getListOfApps() {
     let apps;
-    if (matsCollections['database'] !== undefined && matsCollections['database'].findOne({
-            name: 'database'
-        }) !== undefined) {
+    if (matsCollections['database'] !== undefined && matsCollections['database'].findOne({name: 'database'}) !== undefined) {
         // get list of databases (one per app)
         apps = matsCollections['database'].findOne({
             name: 'database'
@@ -599,9 +601,7 @@ function _getListOfAppDBs() {
     let apps;
     let result = {};
     let aidx;
-    if (matsCollections['database'] !== undefined && matsCollections['database'].findOne({
-            name: 'database'
-        }) !== undefined) {
+    if (matsCollections['database'] !== undefined && matsCollections['database'].findOne({name: 'database'}) !== undefined) {
         // get list of databases (one per app)
         apps = matsCollections['database'].findOne({
             name: 'database'
@@ -643,11 +643,9 @@ function _getMapByAppAndModel(selector, mapType) {
     let flatJSON = "";
     try {
         let result;
-        if (matsCollections[selector] !== undefined && matsCollections[selector].findOne({
-                name: selector
-            }) !== undefined && matsCollections[selector].findOne({
-                name: selector
-            })[mapType] !== undefined) {
+        if (matsCollections[selector] !== undefined
+            && matsCollections[selector].findOne({name: selector}) !== undefined
+            && matsCollections[selector].findOne({name: selector})[mapType] !== undefined) {
             // get map of requested selector's metadata
             result = matsCollections[selector].findOne({
                 name: selector
@@ -736,9 +734,7 @@ function _getMapByApp(selector) {
     let flatJSON = "";
     try {
         let result;
-        if (matsCollections[selector] !== undefined && matsCollections[selector].findOne({
-                name: selector
-            }) !== undefined) {
+        if (matsCollections[selector] !== undefined && matsCollections[selector].findOne({name: selector}) !== undefined) {
             // get array of requested selector's metadata
             result = matsCollections[selector].findOne({
                 name: selector
@@ -775,17 +771,13 @@ function _getlevelsByApp() {
     let flatJSON = "";
     try {
         let result;
-        if (matsCollections['level'] !== undefined && matsCollections['level'].findOne({
-                name: 'level'
-            }) !== undefined) {
+        if (matsCollections['level'] !== undefined && matsCollections['level'].findOne({name: 'level'}) !== undefined) {
             // we have levels already defined
             result = matsCollections['level'].findOne({
                 name: 'level'
             }).options;
             if (!Array.isArray(result)) result = Object.keys(result);
-        } else if (matsCollections['top'] !== undefined && matsCollections['top'].findOne({
-                name: 'top'
-            }) !== undefined) {
+        } else if (matsCollections['top'] !== undefined && matsCollections['top'].findOne({name: 'top'}) !== undefined) {
             // use the MATS mandatory levels
             result = _.range(100, 1050, 50);
             if (!Array.isArray(result)) result = Object.keys(result);
@@ -864,6 +856,9 @@ const _getRegions = function (params, req, res, next) {
     // this function returns a map of regions keyed by app title and model display text
     if (Meteor.isServer) {
         let flatJSON = _getMapByAppAndModel('region', 'optionsMap');
+        if (flatJSON === '{}') {
+            flatJSON = _getMapByAppAndModel('vgtyp', 'optionsMap');
+        }
         res.setHeader('Content-Type', 'application/json');
         res.write(flatJSON);
         res.end();
@@ -875,6 +870,9 @@ const _getRegionsValuesMap = function (params, req, res, next) {
     // this function returns a map of regions values keyed by app title
     if (Meteor.isServer) {
         let flatJSON = _getMapByAppAndModel('region', 'valuesMap');
+        if (flatJSON === '{}') {
+            flatJSON = _getMapByAppAndModel('vgtyp', 'valuesMap');
+        }
         res.setHeader('Content-Type', 'application/json');
         res.write(flatJSON);
         res.end();
@@ -1077,7 +1075,7 @@ const _getCSV = function (params, req, res, next) {
                 var dataSubArray = Object.values(dataArray[di]);
                 var dataHeader = dataSubArray[0] === undefined ? statArray[di].label : Object.keys(dataSubArray[0]);
                 //dataHeader[0] = 'label';
-                dataHeader[0] = dataSubArray[0] === undefined ? "NO DATA" : Object.keys(dataSubArray[0]).filter(key => key.indexOf('Curve') != -1)[0];
+                dataHeader[0] = dataSubArray[0] === undefined ? "NO DATA" : Object.keys(dataSubArray[0]).filter(key => key.indexOf('Curve') !== -1)[0];
                 dataResultArray.push(dataHeader); // push this curve data header (keys)
                 if (dataSubArray[0] === undefined) {
                     continue;
@@ -1483,16 +1481,16 @@ const _getFlattenedResultData = function (rk, p, np) {
                     var firstBestFitIndex = -1;
                     var bestFitIndexes = {};
                     for (var ci = 0; ci < data.length; ci++) {
-                        if (ci == firstBestFitIndex) {
+                        if (ci === firstBestFitIndex) {
                             break; // best fit curves are at the end so do not do further processing
                         }
                         var curveData = data[ci];
                         // look for a best fit curve - only have to look at curves with higher index than this one
                         var bestFitIndex = -1;
                         for (var cbi = ci + 1; cbi < data.length; cbi++) {
-                            if (((data[cbi].label).indexOf(curveData.label) !== -1) && ((data[cbi].label).indexOf("-best fit") != -1)) {
+                            if (((data[cbi].label).indexOf(curveData.label) !== -1) && ((data[cbi].label).indexOf("-best fit") !== -1)) {
                                 bestFitIndexes[ci] = cbi;
-                                if (firstBestFitIndex == -1) {
+                                if (firstBestFitIndex === -1) {
                                     firstBestFitIndex = cbi;
                                 }
                                 break;
@@ -1569,7 +1567,7 @@ const _getPagenatedData = function (rky, p, np) {
         var dsiStart;
         var dsiEnd;
         for (var csi = 0; csi < ret.data.length; csi++) {
-            if (ret.data[csi].x == null || ret.data[csi].x.length <= 100) {
+            if (!ret.data[csi].x || ret.data[csi].x.length <= 100) {
                 continue; // don't bother pagenating datasets less than or equal to a page - ret is rawReturn
             }
             dsiStart = start;
@@ -1727,7 +1725,7 @@ const _saveResultData = function (result) {
             // save original dataset in the matsCache
             if (result.basis.plotParams.plotTypes.TimeSeries || result.basis.plotParams.plotTypes.DailyModelCycle) {
                 for (var ci = 0; ci < result.data.length; ci++) {
-                    delete(result.data[ci]['x_epoch']); // we only needed this as an index for downsampling
+                    delete (result.data[ci]['x_epoch']); // we only needed this as an index for downsampling
                 }
             }
             matsCache.storeResult(key, {
@@ -1735,7 +1733,7 @@ const _saveResultData = function (result) {
                 result: result
             }); // lifespan is handled by lowDb (internally) in matscache
         } catch (error) {
-            if (error.toLocaleString().indexOf("larger than the maximum size") != -1) {
+            if (error.toLocaleString().indexOf("larger than the maximum size") !== -1) {
                 throw new Meteor.Error(": Requesting too much data... try averaging");
             }
         }
@@ -1748,7 +1746,7 @@ const _write_settings = function (settings, appName) {
 
     const fs = require('fs');
     var settingsPath = process.env.METEOR_SETTINGS_DIR;
-    if (settingsPath == null) {
+    if (!settingsPath) {
         console.log("environment var METEOR_SETTINGS_DIR is undefined: setting it to /usr/app/settings");
         settingsPath = "/usr/app/settings";
     }
@@ -1787,10 +1785,10 @@ const _write_settings = function (settings, appName) {
     });
 }
 //return the scorecard for the provided selectors
-const _getScorecardData = async function (userName,name,submitTime,runTime) {
+const _getScorecardData = async function (userName, name, submitted, processedAt) {
     try {
-        if (cbScorecardPool == undefined) {
-            return {};
+        if (cbScorecardPool === undefined) {
+            throw new Meteor.Error("_getScorecardData: No cbScorecardPool defined");
         }
         const statement = `SELECT sc.*
             From
@@ -1799,9 +1797,12 @@ const _getScorecardData = async function (userName,name,submitTime,runTime) {
                 sc.type='SC'
                 AND sc.userName='` + userName + `'
                 AND sc.name='` + name + `'
-                AND sc.processedAt=` + runTime + `
-                AND sc.submitted=` + submitTime + `;`
+                AND sc.processedAt=` + processedAt + `
+                AND sc.submitted=` + submitted + `;`
         const result = await cbScorecardPool.queryCB(statement);
+        if (typeof (result) === 'string' && result.indexOf('ERROR')) {
+            throw new Meteor.Error(result);
+        }
         // insert this result into the mongo Scorecard collection - createdAt is used for TTL
         // created at gets updated each display even if it already existed.
         // TTL is 24 hours
@@ -1816,8 +1817,15 @@ const _getScorecardData = async function (userName,name,submitTime,runTime) {
                 scorecard: result[0]
             }
         });
-        // no need to return the whole thing, just the identifying fields. The app will find the whole thing in the mongo collection
-        return {'userName':result[0].userName, 'name':result[0].name, 'submitted':result[0].submitted, 'processedAt':result[0].processedAt};
+        const docID = matsCollections.Scorecard.findOne({
+            'scorecard.userName': result[0].userName,
+            'scorecard.name': result[0].name,
+            'scorecard.submitted': result[0].submitted,
+            'scorecard.processedAt': result[0].processedAt
+        }, {_id: 1})._id;
+        // no need to return the whole thing, just the identifying fields 
+        // and the ID. The app will find the whole thing in the mongo collection.
+        return {'scorecard': result[0], docID: docID};
     } catch (err) {
         console.log("_getScorecardData error : " + err.message);
         return {
@@ -1829,8 +1837,8 @@ const _getScorecardData = async function (userName,name,submitTime,runTime) {
 // return the scorecard status information from the couchbase database
 const _getScorecardInfo = async function () {
     try {
-        if (cbScorecardPool == undefined) {
-            return {};
+        if (cbScorecardPool === undefined) {
+            throw new Meteor.Error("_getScorecardInfo: No cbScorecardPool defined");
         }
 
         const statement = `SELECT
@@ -1838,14 +1846,14 @@ const _getScorecardInfo = async function () {
             sc.userName,
             sc.name,
             sc.status,
-            sc.processedAt as runtime,
+            sc.processedAt as processedAt,
             sc.submitted,
             sc.dateRange
             From
             vxdata._default.SCORECARD sc
             WHERE
             sc.type='SC';`
-        const result = await cbScorecardPool.queryCB(statement);
+        const result = await cbScorecardPool.queryCBWithConsistency(statement);
         scMap = {};
         result.forEach(function (elem) {
             if (!Object.keys(scMap).includes(elem.userName)) {
@@ -1860,7 +1868,7 @@ const _getScorecardInfo = async function () {
                 nameElem[elem.submitted] = {};
             }
             submittedElem = nameElem[elem.submitted];
-            submittedElem[elem.runtime] = {
+            submittedElem[elem.processedAt] = {
                 'id': elem.id,
                 'status': elem.status,
                 'submitted': elem.submitted,
@@ -1942,7 +1950,7 @@ const applyAuthorization = new ValidatedMethod({
                     // see if the description matches...
                     roleName = role.name;
                     var description = role.description;
-                    if (description != userRoleDescription) {
+                    if (description !== userRoleDescription) {
                         // have to update the description
                         matsCollections.Roles.upsert({
                             name: userRoleName
@@ -1962,7 +1970,7 @@ const applyAuthorization = new ValidatedMethod({
                     email: existingUserEmail
                 });
                 roles = authorization.roles;
-                if (roles.indexOf(roleName) == -1) {
+                if (roles.indexOf(roleName) === -1) {
                     // have to add the role
                     if (roleName) {
                         roles.push(roleName);
@@ -1983,7 +1991,7 @@ const applyAuthorization = new ValidatedMethod({
                 if (authorization !== undefined) {
                     // authorization exists - add role to roles if necessary
                     roles = authorization.roles;
-                    if (roles.indexOf(roleName) == -1) {
+                    if (roles.indexOf(roleName) === -1) {
                         // have to add the role
                         if (roleName) {
                             roles.push(roleName);
@@ -2080,16 +2088,16 @@ const dropScorecardInstance = new ValidatedMethod({
         name: {
             type: String
         },
-        submitTime: {
+        submittedTime: {
             type: String
         },
-        runTime: {
+        processedAt: {
             type: String
         }
     }).validator(),
     run(params) {
         if (Meteor.isServer) {
-            return _dropScorecardInstance(params.userName,params.name,params.submitTime,params.runTime);
+            return _dropScorecardInstance(params.userName, params.name, params.submittedTime, params.processedAt);
         }
     }
 });
@@ -2286,7 +2294,6 @@ const getGraphData = new ValidatedMethod({
                     throw new Meteor.Error("Error in getGraphData function:" + dataFunction + " : " + dataFunctionError.message);
                 }
             }
-            return undefined; // probably won't get here
         }
     }
 });
@@ -2320,7 +2327,6 @@ const getGraphDataByKey = new ValidatedMethod({
             } catch (error) {
                 throw new Meteor.Error("Error in getGraphDataByKey function:" + key + " : " + error.message);
             }
-            return undefined;
         }
     }
 });
@@ -2344,7 +2350,27 @@ const getLayout = new ValidatedMethod({
             } catch (error) {
                 throw new Meteor.Error("Error in getLayout function:" + key + " : " + error.message);
             }
-            return undefined;
+        }
+    }
+});
+
+const getScorecardSettings = new ValidatedMethod({
+    name: 'matsMethods.getScorecardSettings',
+    validate: new SimpleSchema({
+        settingsKey: {
+            type: String
+        }
+    }).validator(),
+    async run(params) {
+        if (Meteor.isServer) {
+            let key = params.settingsKey;
+            try {
+                // global cbScorecardSettingsPool
+                const rv = await cbScorecardSettingsPool.getCB(key);
+                return { scorecardSettings: rv.content } ;
+            } catch (error) {
+                throw new Meteor.Error("Error in getScorecardSettings function:" + key + " : " + error.message);
+            }
         }
     }
 });
@@ -2434,16 +2460,16 @@ const getScorecardData = new ValidatedMethod({
         name: {
             type: String
         },
-        submitTime: {
+        submitted: {
             type: String
         },
-        runTime: {
+        processedAt: {
             type: String
         }
     }).validator(),
     run(params) {
         if (Meteor.isServer) {
-            return _getScorecardData(params.userName,params.name,params.submitTime,params.runTime);
+            return _getScorecardData(params.userName, params.name, params.submitted, params.processedAt);
         }
     }
 });
@@ -2481,7 +2507,7 @@ const insertColor = new ValidatedMethod({
         }
     }).validator(),
     run(params) {
-        if (params.newColor == "rgb(255,255,255)") {
+        if (params.newColor === "rgb(255,255,255)") {
             return false;
         }
         var colorScheme = matsCollections.ColorScheme.findOne({});
@@ -2502,10 +2528,10 @@ const readFunctionFile = new ValidatedMethod({
             var fse = require('fs-extra');
             var path = "";
             var fData;
-            if (type == "data") {
+            if (type === "data") {
                 path = "/web/static/dataFunctions/" + file;
                 console.log('exporting data file: ' + path);
-            } else if (type == "graph") {
+            } else if (type === "graph") {
                 path = "/web/static/displayFunctions/" + file;
                 console.log('exporting graph file: ' + path);
             } else {
@@ -2657,12 +2683,12 @@ const applySettingsData = new ValidatedMethod({
             // Read the existing settings file
             const settings = settingsParam.settings;
             console.log("applySettingsData - matsCollections.appName.findOne({}) is ", matsCollections.appName.findOne({}));
-            const appName = matsCollections.appName.findOne({}).app;
+            const appName = matsCollections.Settings.findOne({}).appName;
             _write_settings(settings, appName);
             // in development - when being run by meteor, this should force a restart of the app.
             //in case I am in a container - exit and force a reload
             console.log('applySettingsData - process.env.NODE_ENV is: ' + process.env.NODE_ENV);
-            if (process.env.NODE_ENV != "development") {
+            if (process.env.NODE_ENV !== "development") {
                 console.log("applySettingsData - exiting after writing new Settings");
                 process.exit(0);
             }
@@ -2705,7 +2731,7 @@ const resetApp = async function (appRef) {
         }
         const appTimeOut = Meteor.settings.public.mysql_wait_timeout ? Meteor.settings.public.mysql_wait_timeout : 300;
         var dep_env = process.env.NODE_ENV;
-        var curve_params = Meteor.settings.public.curve_params ? Meteor.settings.public.curve_params : [];
+        var curve_params = curveParamsByApp[Meteor.settings.public.app];
         var apps_to_score;
         if (Meteor.settings.public.scorecard) {
             apps_to_score = Meteor.settings.public.apps_to_score ? Meteor.settings.public.apps_to_score : [];
@@ -2715,22 +2741,11 @@ const resetApp = async function (appRef) {
         // see if there's any messages to display to the users
         const appMessage = Meteor.settings.public.alert_message ? Meteor.settings.public.alert_message : undefined;
 
-        // if there isn't an app listing in matsCollections create one here so that the configuration-> applySettingsData won't fail
-        if (matsCollections.appName.findOne({}) == undefined) {
-            matsCollections.appName.upsert({
-                app: appName
-            }, {
-                $set: {
-                    app: appName
-                }
-            });
-        }
-
         // set meteor settings defaults if they do not exist
         if (isEmpty(Meteor.settings.private) || isEmpty(Meteor.settings.public)) {
             // create some default meteor settings and write them out
             var homeUrl = "";
-            if (process.env.ROOT_URL == undefined) {
+            if (!process.env.ROOT_URL) {
                 homeUrl = "https://localhost/home";
             } else {
                 var homeUrlArr = process.env.ROOT_URL.split('/');
@@ -2745,13 +2760,13 @@ const resetApp = async function (appRef) {
                 },
                 "public": {
                     "run_environment": dep_env,
-                    "curve_params": curve_params,
                     "apps_to_score": apps_to_score,
                     "default_group": appDefaultGroup,
                     "default_db": appDefaultDB,
                     "default_model": appDefaultModel,
                     "proxy_prefix_path": "",
                     "home": homeUrl,
+                    "appName": appName,
                     "mysql_wait_timeout": appTimeOut,
                     "group": appGroup,
                     "app_order": 1,
@@ -2789,10 +2804,10 @@ const resetApp = async function (appRef) {
             // If it is undefined (requiring configuration) we will skip it but add
             // the corresponding role to Meteor.settings.public.undefinedRoles -
             // which will cause the app to route to the configuration page.
-            if (global[poolName] == undefined) {
+            if (!global[poolName]) {
                 console.log("resetApp adding " + global[poolName] + "to undefined roles");
                 // There was no pool defined for this poolName - probably needs to be configured so stash the role in the public settings
-                if (Meteor.settings.public.undefinedRoles == undefined) {
+                if (!Meteor.settings.public.undefinedRoles) {
                     Meteor.settings.public.undefinedRoles = [];
                 }
                 Meteor.settings.public.undefinedRoles.push(record.role);
@@ -2813,7 +2828,7 @@ const resetApp = async function (appRef) {
                 }
             } catch (e) {
                 console.log(poolName + ":  not initialized-- could not open connection: Error:" + e.message);
-                Meteor.settings.public.undefinedRoles = Meteor.settings.public.undefinedRoles == undefined ? [] : Meteor.settings.public.undefinedRoles == undefined;
+                Meteor.settings.public.undefinedRoles = Meteor.settings.public.undefinedRoles === undefined ? [] : Meteor.settings.public.undefinedRoles === undefined;
                 Meteor.settings.public.undefinedRoles.push(record.role);
                 continue
             }
@@ -2838,13 +2853,6 @@ const resetApp = async function (appRef) {
             commit = "HEAD";
         }
         const appType = type ? type : matsTypes.AppTypes.mats;
-        matsCollections.appName.upsert({
-            app: appName
-        }, {
-            $set: {
-                app: appName
-            }
-        });
 
         // remember that we updated the metadata tables just now - create metaDataTableUpdates
         /*
@@ -2861,9 +2869,7 @@ const resetApp = async function (appRef) {
             for (var mdti = 0; mdti < metaDataTables.length; mdti++) {
                 const metaDataRef = metaDataTables[mdti];
                 metaDataRef.lastRefreshed = moment().format();
-                if (metaDataTableUpdates.find({
-                        name: metaDataRef.name
-                    }).count() == 0) {
+                if (metaDataTableUpdates.find({name: metaDataRef.name}).count() === 0) {
                     metaDataTableUpdates.update({
                         name: metaDataRef.name
                     }, metaDataRef, {
@@ -2885,23 +2891,18 @@ const resetApp = async function (appRef) {
         matsCollections.ColorScheme.remove({});
         matsDataUtils.doColorScheme();
         matsCollections.Settings.remove({});
-        matsDataUtils.doSettings(appTitle, dbType, appVersion, commit, appType, mapboxKey, appDefaultGroup, appDefaultDB, appDefaultModel, thresholdUnits, appMessage, scorecard);
+        matsDataUtils.doSettings(appTitle, dbType, appVersion, commit, appName, appType, mapboxKey, appDefaultGroup, appDefaultDB, appDefaultModel, thresholdUnits, appMessage, scorecard);
         matsCollections.PlotParams.remove({});
         matsCollections.CurveTextPatterns.remove({});
-        // get the curve params for this app out of the settings file
-        if (Meteor.settings.public && Meteor.settings.public.curve_params) {
-            curve_params = Meteor.settings.public.curve_params;
-            matsCollections.CurveParamsInfo.remove({});
-            matsCollections.CurveParamsInfo.insert({
-                "curve_params": curve_params
-            });
-            for (var cp = 0; cp < curve_params.length; cp++) {
-                if (matsCollections[curve_params[cp]] !== undefined) {
-                    matsCollections[curve_params[cp]].remove({});
-                }
+        // get the curve params for this app into their collections
+        matsCollections.CurveParamsInfo.remove({});
+        matsCollections.CurveParamsInfo.insert({
+            "curve_params": curve_params
+        });
+        for (var cp = 0; cp < curve_params.length; cp++) {
+            if (matsCollections[curve_params[cp]] !== undefined) {
+                matsCollections[curve_params[cp]].remove({});
             }
-        } else {
-            throw new Meteor.Error("curve_params are not initialized in app settings--cannot build selectors");
         }
         // if this is a scorecard also get the apps to score out of the settings file
         if (Meteor.settings.public && Meteor.settings.public.scorecard) {
@@ -2924,6 +2925,7 @@ const resetApp = async function (appRef) {
         matsCache.clear();
     }
 };
+
 const saveLayout = new ValidatedMethod({
     name: 'matsMethods.saveLayout',
     validate: new SimpleSchema({
@@ -2966,6 +2968,37 @@ const saveLayout = new ValidatedMethod({
     }
 });
 
+const saveScorecardSettings = new ValidatedMethod({
+    name: 'matsMethods.saveScorecardSettings',
+    validate: new SimpleSchema({
+        settingsKey: {
+            type: String
+        },
+        scorecardSettings: {
+            type: String
+        }
+    }).validator(),
+    run(params) {
+        if (Meteor.isServer) {
+            var key = params.settingsKey;
+            var scorecardSettings = params.scorecardSettings;
+            try {
+                // TODO - remove after tests
+                console.log("saveScorecardSettings(" + key + "):\n" + JSON.stringify(scorecardSettings, null, 2)); 
+                // global cbScorecardSettingsPool
+                (async function (id, doc) {
+                    cbScorecardSettingsPool.upsertCB(id, doc);
+                  })(key, scorecardSettings).then(() => {
+                    console.log("upserted doc with id", key);
+                  });
+                  // await cbScorecardSettingsPool.upsertCB(settingsKey, scorecardSettings);
+                } catch (err) {
+                  console.log(`error writing scorecard to database: ${err.message}`);
+                }
+            }
+        }
+});
+
 //administration tools
 const saveSettings = new ValidatedMethod({
     name: 'matsMethods.saveSettings',
@@ -2989,10 +3022,10 @@ const saveSettings = new ValidatedMethod({
             created: moment().format("MM/DD/YYYY HH:mm:ss"),
             name: params.saveAs,
             data: params.p,
-            owner: Meteor.userId() == null ? "anonymous" : Meteor.userId(),
+            owner: !Meteor.userId() ? "anonymous" : Meteor.userId(),
             permission: params.permission,
             savedAt: new Date(),
-            savedBy: Meteor.user() == null ? "anonymous" : user
+            savedBy: !Meteor.user() ? "anonymous" : user
         });
     }
 });
@@ -3095,7 +3128,7 @@ export default matsMethods = {
     applyDatabaseSettings: applyDatabaseSettings,
     applySettingsData: applySettingsData,
     deleteSettings: deleteSettings,
-    dropScorecardInstance:dropScorecardInstance,
+    dropScorecardInstance: dropScorecardInstance,
     emailImage: emailImage,
     getAuthorizations: getAuthorizations,
     getRunEnvironment: getRunEnvironment,
@@ -3103,10 +3136,11 @@ export default matsMethods = {
     getGraphData: getGraphData,
     getGraphDataByKey: getGraphDataByKey,
     getLayout: getLayout,
+    getScorecardSettings: getScorecardSettings,
     getPlotResult: getPlotResult,
     getReleaseNotes: getReleaseNotes,
     getScorecardInfo: getScorecardInfo,
-    getScorecardData:getScorecardData,
+    getScorecardData: getScorecardData,
     getUserAddress: getUserAddress,
     insertColor: insertColor,
     readFunctionFile: readFunctionFile,
@@ -3116,6 +3150,7 @@ export default matsMethods = {
     removeDatabase: removeDatabase,
     resetApp: resetApp,
     saveLayout: saveLayout,
+    saveScorecardSettings: saveScorecardSettings,
     saveSettings: saveSettings,
     testGetMetaDataTableUpdates: testGetMetaDataTableUpdates,
     testGetTables: testGetTables,

@@ -104,28 +104,28 @@ Template.item.helpers({
             the second option prior to selecting the first option a validation error occurs.
          */
         return ((typeof this.type !== 'undefined') &&
-            ((this.type == matsTypes.InputTypes.select) ||(this.type == matsTypes.InputTypes.selectOrderEnforced)));
+            ((this.type === matsTypes.InputTypes.select) || (this.type === matsTypes.InputTypes.selectOrderEnforced)));
     },
     isSelectMap: function () {
-        return ((typeof this.type !== 'undefined') && (this.type == matsTypes.InputTypes.selectMap));
+        return ((typeof this.type !== 'undefined') && (this.type === matsTypes.InputTypes.selectMap));
     },
     isInput: function () {
-        return ((typeof this.type !== 'undefined')  && (this.type == matsTypes.InputTypes.textInput));
+        return ((typeof this.type !== 'undefined')  && (this.type === matsTypes.InputTypes.textInput));
     },
     isColor: function () {
-        return ((typeof this.type !== 'undefined')  && (this.type == matsTypes.InputTypes.color));
+        return ((typeof this.type !== 'undefined')  && (this.type === matsTypes.InputTypes.color));
     },
     isSpinner: function () {
-        return ((typeof this.type !== 'undefined') && (this.type == matsTypes.InputTypes.numberSpinner));
+        return ((typeof this.type !== 'undefined') && (this.type === matsTypes.InputTypes.numberSpinner));
     },
     isDateRange: function () {
-        return ((typeof this.type !== 'undefined') && (this.type == matsTypes.InputTypes.dateRange));
+        return ((typeof this.type !== 'undefined') && (this.type === matsTypes.InputTypes.dateRange));
     },
     isCheckBoxGroup: function () {
-        return ((typeof this.type !== 'undefined') && (this.type == matsTypes.InputTypes.checkBoxGroup));
+        return ((typeof this.type !== 'undefined') && (this.type === matsTypes.InputTypes.checkBoxGroup));
     },
     isRadioGroup: function () {
-        return ((typeof this.type !== 'undefined') && (this.type == matsTypes.InputTypes.radioGroup));
+        return ((typeof this.type !== 'undefined') && (this.type === matsTypes.InputTypes.radioGroup));
     },
     controlButton: function() {
         return matsTypes.InputTypes.controlButton + "-" + this.name;
@@ -165,7 +165,7 @@ Template.item.helpers({
         }
     },
     position: function() {
-        if ((typeof this.type !== 'undefined') && (this.type == matsTypes.InputTypes.radioGroup)){
+        if ((typeof this.type !== 'undefined') && (this.type === matsTypes.InputTypes.radioGroup)){
             return "";
         } else {
             return "position:absolute";
@@ -173,9 +173,9 @@ Template.item.helpers({
     },
     zIndexVal: function() {
         // the difference selector keeps trying to cover the map modal, so increase the map's z-index, and decrease the difference selector's.
-        if ((typeof this.type !== 'undefined') && (this.type == matsTypes.InputTypes.selectMap)) {
+        if ((typeof this.type !== 'undefined') && (this.type === matsTypes.InputTypes.selectMap)) {
             return "10";
-        } else if ((typeof this.type !== 'undefined') && (this.type == matsTypes.InputTypes.radioGroup)){
+        } else if ((typeof this.type !== 'undefined') && (this.type === matsTypes.InputTypes.radioGroup)){
             return "4";
         } else {
             return "5";
@@ -205,12 +205,12 @@ Template.item.events({
             matsParamUtils.collapseParams();
             if (elem !== null) {
                 elem.style.display = "block";
-                if (this.type == matsTypes.InputTypes.select) {
+                if (this.type === matsTypes.InputTypes.select) {
                     var s = document.getElementById(this.name + '-' + this.type);
                     const ref = "#" + this.name + "-" + this.type;
                     $(ref).select2("open");   // need to foricibly open the selector for the select2
                 }
-                if (this.type == matsTypes.InputTypes.selectMap) {
+                if (this.type === matsTypes.InputTypes.selectMap) {
                     $("#mapModal").modal('show');
                     window.dispatchEvent(new Event('resize'));
                 }

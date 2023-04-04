@@ -15,12 +15,12 @@
             </span>
         </div>
         <h1>
-            Scorecard Status panel
+            Scorecard Status Panel
         </h1>
         <div id="statusPanel" class="row">
             <table id="userTable" class="table table-condensed table-responsive table-sm" cellspacing="0">
                 <thead>
-                    <th>userName</th>
+                    <th>User Name</th>
                 </thead>
                 <tbody>
                     {{#each userName in userNames}}
@@ -47,25 +47,25 @@
                                                         class="table table-condensed table-responsive table-stripedtable-bordered">
                                                         <thead>
                                                             <tr class="info">
-                                                                <th>submitTime</th>
-                                                                <th>runTime</th>
+                                                                <th>submitted</th>
+                                                                <th>processedAt</th>
                                                                 <th>status</th>
                                                                 <th>visit link</th>
                                                                 <th></th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
-                                                            {{#each submitTime in submitTimes userName name}}
-                                                                {{#each runTime in runTimes userName name submitTime}}
-                                                                <tr class={{statusType userName name submitTime runTime}}>
-                                                                    <td>{{timeStr submitTime}}</td>
-                                                                    <td>{{timeStr runTime}}</td>
-                                                                    <td>{{status userName name submitTime runTime}}</td>
-                                                                    <td><a href="{{visitLink userName name submitTime runTime}}"
+                                                            {{#each submitted in submittedTimes userName name}}
+                                                                {{#each processedAt in processedAtTimes userName name submitted}}
+                                                                <tr class={{statusType userName name submitted processedAt}}>
+                                                                    <td>{{timeStr submitted}}</td>
+                                                                    <td>{{timeStr processedAt}}</td>
+                                                                    <td>{{status userName name submitted processedAt}}</td>
+                                                                    <td><a href="{{visitLink userName name submitted processedAt}}"
                                                                             target="_blank">display</a></td>
-                                                                    <td><button type="button" class="btn btn-danger btn-xs drop-sc-instance" id="{{scid userName name submitTime runTime}}"
-                                                                        data-user_name="{{userName}}" data-name="{{name}}" data-submit_time="{{submitTime}}"
-                                                                        data-run_time="{{runTime}}">Drop</button></td>
+                                                                    <td><button type="button" class="btn btn-danger btn-xs drop-sc-instance" id="{{scid userName name submitted processedAt}}"
+                                                                        data-user_name="{{userName}}" data-name="{{name}}" data-submit_time="{{submitted}}"
+                                                                        data-run_time="{{processedAt}}">Drop</button></td>
                                                                 </tr>
                                                                 {{/each}}
                                                             {{/each}}

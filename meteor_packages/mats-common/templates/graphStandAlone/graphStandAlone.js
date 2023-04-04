@@ -68,7 +68,6 @@ Template.GraphStandAlone.helpers({
                     break;
                 }
             }
-            delete ret;
             if (graphFunction) {
                 eval(graphFunction)(key);
                 var plotType = Session.get('plotType');

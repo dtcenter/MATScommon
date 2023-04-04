@@ -65,7 +65,7 @@ const refreshDependents = function (event, param) {
                     } else {
                         const previously_selected = Session.get('selected');
                         for (var i2 = 0; i2 < elements.length; i2++) {
-                            if (_.indexOf(previously_selected, elements[i2].text) != -1) {
+                            if (_.indexOf(previously_selected, elements[i2].text) !== -1) {
                                 elements[i2].selected = select;
                             }
                         }
@@ -93,7 +93,7 @@ const checkDisableOther = function (param, firstRender) {
                 }
                 const selectedOptions = elem.selectedOptions;
                 const selectedText = selectedOptions && selectedOptions.length > 0 ? selectedOptions[0].text : "";
-                if ((firstRender == true && param.default == param.hideOtherFor[controlledSelectors[i]]) ||
+                if ((firstRender && param.default.toString() === param.hideOtherFor[controlledSelectors[i]].toString()) ||
                     (param.disableOtherFor[controlledSelectors[i]] === matsTypes.InputTypes.unused && selectedText === "") ||
                     $.inArray(selectedText, param.disableOtherFor[controlledSelectors[i]]) !== -1) {
                     matsParamUtils.getInputElementForParamName(controlledSelectors[i]).disabled = true;
@@ -130,6 +130,8 @@ const checkHideOther = function (param, firstRender) {
                             break;
                         }
                     }
+                    selectedOptions = selectedOptions ? selectedOptions : [];
+                    selectedText = selectedText ? selectedText : "";
                 } else {
                     selectedOptions = elem.selectedOptions;
                     selectedText = selectedOptions && selectedOptions.length > 0 ? selectedOptions[0].text : "";
@@ -158,7 +160,7 @@ const checkHideOther = function (param, firstRender) {
 
                 let otherInputElement = matsParamUtils.getInputElementForParamName(controlledSelectors[i]);
                 var selectorControlElem;
-                if ((firstRender == true && param.default == param.hideOtherFor[controlledSelectors[i]]) ||
+                if ((firstRender && param.default.toString() === param.hideOtherFor[controlledSelectors[i]].toString()) ||
                     (param.hideOtherFor[controlledSelectors[i]] === matsTypes.InputTypes.unused && selectedText === "") ||
                     $.inArray(selectedText, param.hideOtherFor[controlledSelectors[i]]) !== -1) {
                     selectorControlElem = document.getElementById(controlledSelectors[i] + '-item');
@@ -394,7 +396,7 @@ const refresh = function (event, paramName) {
             // if the options are null it might be that this is the initial setup.
             // so use the optionsmap and the default options for the map
             // it might also mean that there are no superiors for this param
-            if (myOptions == null) {
+            if (!myOptions) {
                 // get the default options
                 if (optionsGroups) {
                     // optionGroups are an ordered map. It probably has options that are in the disabledOption list
@@ -415,7 +417,7 @@ const refresh = function (event, paramName) {
                 }
             }
             var optionsAsString = "";
-            if (myOptions === undefined || myOptions == null) {
+            if (myOptions === undefined || myOptions === null) {
                 return;
             }
             var firstGroup = true;
@@ -492,7 +494,7 @@ const refresh = function (event, paramName) {
                 if (belemSelectedOptions === undefined || belemSelectedOptions.length === 0) {
                     belem.options = [];
                     for (var i1 = 0; i1 < myOptions.length; i1++) {
-                        belem.options[belem.options.length] = new Option(myOptions[i1], myOptions[i1], i1 == 0, i1 == 0);
+                        belem.options[belem.options.length] = new Option(myOptions[i1], myOptions[i1], i1 === 0, i1 === 0);
                     }
                 }
             }

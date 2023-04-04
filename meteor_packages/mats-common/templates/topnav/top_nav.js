@@ -4,7 +4,7 @@
 import matsMethods from "../../imports/startup/api/matsMethods";
 
 const getRunEnvironment = function () {
-    if (Session.get('deployment_environment') == undefined) {
+    if (Session.get('deployment_environment') === undefined) {
         matsMethods.getRunEnvironment.call({}, function (error, result) {
             if (error !== undefined) {
                 setError(error);
@@ -20,7 +20,12 @@ const getRunEnvironment = function () {
 
 Template.topNav.helpers({
     transparentGif: function() {
-        return  document.location.href + "/packages/randyp_mats-common/public/img/noaa_transparent.gif";
+        const baseURL = Meteor.settings.public.home === undefined ? "https://" + document.location.href.split('/')[2] : Meteor.settings.public.home;
+        if (baseURL.includes("localhost")) {
+            return baseURL + "/packages/randyp_mats-common/public/img/noaa_transparent.png";
+        } else {
+            return baseURL + "/" + matsCollections.Settings.findOne({}).appName + "/packages/randyp_mats-common/public/img/noaa_transparent.png";
+        }
     },
     emailText: function () {
         switch (getRunEnvironment()) {
