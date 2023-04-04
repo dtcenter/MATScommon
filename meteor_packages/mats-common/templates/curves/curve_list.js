@@ -41,7 +41,6 @@ Template.curveList.helpers({
                         && matsCollections.Settings.findOne({}).appType !== undefined
                         && matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress)
                         || (plotType !== matsTypes.PlotTypes.performanceDiagram
-                            && plotType !== matsTypes.PlotTypes.simpleScatter
                             && plotType !== matsTypes.PlotTypes.roc)) {
                         return "none";
                     } else {
