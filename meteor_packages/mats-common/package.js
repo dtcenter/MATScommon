@@ -29,7 +29,7 @@ Package.onUse(function (api) {
         "csv-stringify": "4.3.1",
         "node-file-cache" : "1.0.2",
         "python-shell": "5.0.0",
-        "couchbase": "3.2.3",
+        "couchbase": "4.1.3",
         "simpl-schema": "3.4.1",
         "vanillajs-datepicker":"1.3.1",
         "daterangepicker": "3.1.0",
