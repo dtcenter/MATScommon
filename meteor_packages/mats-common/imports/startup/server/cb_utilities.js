@@ -15,8 +15,10 @@ class CBUtilities
   {
     // DO NOT require couchbase at the top of the file, the client breaks if it gets couchbase included into it.
     const couchbase = require("couchbase");
-    try {
-      if (!this.conn || !this.conn.cluster) {
+    try
+    {
+      if (!this.conn || !this.conn.cluster)
+      {
         // set query timeout to 10 minutes -- we have some long data ones
         // const cluster = await couchbase.connect("couchbase://" + this.host, {
         const cluster = await couchbase.connect(this.host, {
@@ -97,7 +99,8 @@ class CBUtilities
   queryCB = async (statement) =>
   {
     const couchbase = require("couchbase");
-    try {
+    try
+    {
       const conn = await this.getConnection();
       const result = await conn.cluster.query(statement);
       return result.rows;
@@ -107,20 +110,24 @@ class CBUtilities
     }
   };
 
-  queryCBWithConsistency = async (statement) => {
+  queryCBWithConsistency = async (statement) =>
+  {
     const couchbase = require("couchbase");
-    try {
+    try
+    {
       const conn = await this.getConnection();
       const result = await conn.cluster.query(statement, {
         scanConsistency: couchbase.QueryScanConsistency.RequestPlus,
       });
       return result.rows;
-    } catch (err) {
+    } catch (err)
+    {
       return "queryCBWithConsistency ERROR: " + err;
     }
   };
 
-  searchStationsByBoundingBox = async (topleft_lon, topleft_lat, bottomright_lon, bottomright_lat) => {
+  searchStationsByBoundingBox = async (topleft_lon, topleft_lat, bottomright_lon, bottomright_lat) =>
+  {
     const couchbase = require("couchbase");
     const index = 'station_geo';
     try
