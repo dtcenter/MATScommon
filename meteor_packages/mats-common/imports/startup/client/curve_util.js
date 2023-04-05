@@ -471,7 +471,6 @@ const setSelectorVisibility = function(plotType, faceOptions, selectorsToReset) 
 // method to display the appropriate selectors for a timeseries curve
 const showTimeseriesFace = function () {
     const plotType = matsTypes.PlotTypes.timeSeries;
-    const isMetexpress = matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
     let faceOptions = {
         'curve-dates': 'none',
         'dates': 'block',
@@ -515,11 +514,6 @@ const showTimeseriesFace = function () {
         'dieoff-type': 'Dieoff',
         'bin-parameter': 'Valid Date'
     };
-    if (isMetexpress) {
-        // put the statistic and variable names back if they were changed
-        setCurveParamDisplayText("statistic", "statistic");
-        setCurveParamDisplayText("variable", "variable");
-    }
     faceOptions = checkIfDisplayAllQCParams(faceOptions);
     setSelectorVisibility(plotType, faceOptions, selectorsToReset);
     return selectorsToReset;
@@ -528,7 +522,6 @@ const showTimeseriesFace = function () {
 // method to display the appropriate selectors for a profile curve
 const showProfileFace = function () {
     const plotType = matsTypes.PlotTypes.profile;
-    const isMetexpress = matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
     let faceOptions = {
         'curve-dates': 'block',
         'dates': 'none',
@@ -580,7 +573,6 @@ const showProfileFace = function () {
 // method to display the appropriate selectors for a dieoff curve
 const showDieOffFace = function () {
     const plotType = matsTypes.PlotTypes.dieoff;
-    const isMetexpress = matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
     let faceOptions = {
         'curve-dates': 'block',
         'dates': 'none',
@@ -632,7 +624,6 @@ const showDieOffFace = function () {
 // method to display the appropriate selectors for a threshold curve
 const showThresholdFace = function () {
     const plotType = matsTypes.PlotTypes.threshold;
-    const isMetexpress = matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
     let faceOptions = {
         'curve-dates': 'block',
         'dates': 'none',
@@ -688,7 +679,6 @@ const showThresholdFace = function () {
 // method to display the appropriate selectors for a valid time curve
 const showValidTimeFace = function () {
     const plotType = matsTypes.PlotTypes.validtime;
-    const isMetexpress = matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
     let faceOptions = {
         'curve-dates': 'block',
         'dates': 'none',
@@ -740,7 +730,6 @@ const showValidTimeFace = function () {
 // method to display the appropriate selectors for a grid scale curve
 const showGridScaleFace = function () {
     const plotType = matsTypes.PlotTypes.gridscale;
-    const isMetexpress = matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
     let faceOptions = {
         'curve-dates': 'block',
         'dates': 'none',
@@ -792,7 +781,6 @@ const showGridScaleFace = function () {
 // method to display the appropriate selectors for a daily model cycle curve
 const showDailyModelCycleFace = function () {
     const plotType = matsTypes.PlotTypes.dailyModelCycle;
-    const isMetexpress = matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
     let faceOptions = {
         'curve-dates': 'none',
         'dates': 'block',
@@ -844,7 +832,6 @@ const showDailyModelCycleFace = function () {
 // method to display the appropriate selectors for a year to year curve
 const showYearToYearFace = function () {
     const plotType = matsTypes.PlotTypes.yearToYear;
-    const isMetexpress = matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
     let faceOptions = {
         'curve-dates': 'none',
         'dates': 'none',
@@ -896,7 +883,6 @@ const showYearToYearFace = function () {
 // method to display the appropriate selectors for a reliability curve
 const showReliabilityFace = function () {
     const plotType = matsTypes.PlotTypes.reliability;
-    const isMetexpress = matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
     let faceOptions = {
         'curve-dates': 'none',
         'dates': 'block',
@@ -948,7 +934,6 @@ const showReliabilityFace = function () {
 // method to display the appropriate selectors for a ROC curve
 const showROCFace = function () {
     const plotType = matsTypes.PlotTypes.roc;
-    const isMetexpress = matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
     let faceOptions = {
         'curve-dates': 'block',
         'dates': 'none',
@@ -1061,7 +1046,6 @@ const showPerformanceDiagramFace = function () {
 const showMapFace = function () {
     const plotType = matsTypes.PlotTypes.map;
     const appName = matsCollections.Settings.findOne({}).appName;
-    const isMetexpress = matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
     let faceOptions = {
         'curve-dates': 'none',
         'dates': 'block',
@@ -1122,7 +1106,6 @@ const showMapFace = function () {
 // method to display the appropriate selectors for a histogram
 const showHistogramFace = function () {
     const plotType = matsTypes.PlotTypes.histogram;
-    const isMetexpress = matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
     let faceOptions = {
         'curve-dates': 'block',
         'dates': 'none',
@@ -1180,7 +1163,6 @@ const showHistogramFace = function () {
 // method to display the appropriate selectors for a histogram
 const showEnsembleHistogramFace = function () {
     const plotType = matsTypes.PlotTypes.ensembleHistogram;
-    const isMetexpress = matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
     let faceOptions = {
         'curve-dates': 'block',
         'dates': 'none',
@@ -1231,7 +1213,6 @@ const showEnsembleHistogramFace = function () {
 // method to display the appropriate selectors for a contour plot
 const showContourFace = function () {
     const plotType = document.getElementById('plotTypes-selector').value === matsTypes.PlotTypes.contour ? matsTypes.PlotTypes.contour : matsTypes.PlotTypes.contourDiff;
-    const isMetexpress = matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
     let faceOptions = {
         'curve-dates': 'none',
         'dates': 'block',
@@ -1336,8 +1317,6 @@ const showSimpleScatterFace = function () {
         // in metexpress, scatter plots use the original statistic selector (to handle dependencies)
         faceOptions['statistic'] = 'block';
         faceOptions['variable'] = 'block';
-        setCurveParamDisplayText("statistic", "x-statistic");
-        setCurveParamDisplayText("variable", "x-variable");
     }
     // performance diagrams need to have the region be in predefined mode
     if (matsParamUtils.getParameterForName('region-type') !== undefined) {
@@ -1350,7 +1329,6 @@ const showSimpleScatterFace = function () {
 // method to display the appropriate selectors for a scatter plot
 const showScatterFace = function () {
     const plotType = matsTypes.PlotTypes.scatter2d;
-    const isMetexpress = matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
     let faceOptions = {
         'curve-dates': 'none',
         'dates': 'block',
