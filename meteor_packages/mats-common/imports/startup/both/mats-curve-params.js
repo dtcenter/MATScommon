@@ -93,7 +93,9 @@ export const curveParamsByApp = {
         "plot-type",
         "region",
         "statistic",
+        "y-statistic",
         "variable",
+        "y-variable",
         "threshold",
         "interp-method",
         "scale",
@@ -105,6 +107,7 @@ export const curveParamsByApp = {
         "level",
         "description",
         "aggregation-method",
+        "bin-parameter",
         "curve-dates"
     ],
     "met-anomalycor": [
@@ -115,7 +118,9 @@ export const curveParamsByApp = {
         "plot-type",
         "region",
         "statistic",
+        "y-statistic",
         "variable",
+        "y-variable",
         "interp-method",
         "scale",
         "forecast-length",
@@ -126,6 +131,7 @@ export const curveParamsByApp = {
         "level",
         "description",
         "aggregation-method",
+        "bin-parameter",
         "curve-dates"
     ],
     "met-cyclone": [
@@ -222,7 +228,9 @@ export const curveParamsByApp = {
         "plot-type",
         "region",
         "statistic",
+        "y-statistic",
         "variable",
+        "y-variable",
         "interp-method",
         "scale",
         "forecast-length",
@@ -233,6 +241,7 @@ export const curveParamsByApp = {
         "level",
         "description",
         "aggregation-method",
+        "bin-parameter",
         "curve-dates"
     ],
     "met-upperair": [
@@ -243,7 +252,9 @@ export const curveParamsByApp = {
         "plot-type",
         "region",
         "statistic",
+        "y-statistic",
         "variable",
+        "y-variable",
         "interp-method",
         "scale",
         "forecast-length",
@@ -254,6 +265,7 @@ export const curveParamsByApp = {
         "level",
         "description",
         "aggregation-method",
+        "bin-parameter",
         "curve-dates"
     ],
     "precipAccum": [

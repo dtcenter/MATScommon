@@ -2427,7 +2427,7 @@ const getReleaseNotes = new ValidatedMethod({
             var fData;
             var file;
             if (process.env.NODE_ENV === "development") {
-                file = process.env.PWD + "/../../MATScommon/meteor_packages/mats-common/public/MATSReleaseNotes.html";
+                file = process.env.PWD + "/.meteor/local/build/programs/server/assets/packages/randyp_mats-common/public/MATSReleaseNotes.html";
             } else {
                 file = process.env.PWD + "/programs/server/assets/packages/randyp_mats-common/public/MATSReleaseNotes.html";
             }
@@ -2447,6 +2447,23 @@ const getReleaseNotes = new ValidatedMethod({
             }
             dFuture.wait();
             return fData;
+        }
+    }
+});
+
+const setCurveParamDisplayText = new ValidatedMethod({
+    name: 'matsMethods.setCurveParamDisplayText',
+    validate: new SimpleSchema({
+        paramName: {
+            type: String
+        },
+        newText: {
+            type: String
+        }
+    }).validator(),
+    run(params) {
+        if (Meteor.isServer) {
+            return matsCollections[params.paramName].update({name: params.paramName}, {$set : {controlButtonText: params.newText}});
         }
     }
 });
@@ -3152,6 +3169,7 @@ export default matsMethods = {
     saveLayout: saveLayout,
     saveScorecardSettings: saveScorecardSettings,
     saveSettings: saveSettings,
+    setCurveParamDisplayText: setCurveParamDisplayText,
     testGetMetaDataTableUpdates: testGetMetaDataTableUpdates,
     testGetTables: testGetTables,
     testSetMetaDataTableUpdatesLastRefreshedBack: testSetMetaDataTableUpdatesLastRefreshedBack

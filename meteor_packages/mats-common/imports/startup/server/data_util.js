@@ -1224,7 +1224,7 @@ const ctcErrorPython = function (statistic, minuendData, subtrahendData) {
             pythonPath: Meteor.settings.private.PYTHON_PATH,
             pythonOptions: ['-u'], // get print results in real-time
             scriptPath: process.env.NODE_ENV === "development" ?
-                process.env.PWD + "/../../MATScommon/meteor_packages/mats-common/public/python/" :
+                process.env.PWD + "/.meteor/local/build/programs/server/assets/packages/randyp_mats-common/public/python/" :
                 process.env.PWD + "/programs/server/assets/packages/randyp_mats-common/public/python/",
             args: [
                 "-S", statistic,
@@ -1235,13 +1235,12 @@ const ctcErrorPython = function (statistic, minuendData, subtrahendData) {
         const pyShell = require('python-shell');
         const Future = require('fibers/future');
 
-        var future = new Future();
-        var errorLength = 0;
-        pyShell.PythonShell.run('python_ctc_error.py', pyOptions, function (err, results) {
+        let future = new Future();
+        let error;
+        let errorLength = 0;
+        pyShell.PythonShell.run('python_ctc_error.py', pyOptions).then(results=>{
             // parse the results or set an error
-            if (err !== undefined && err !== null) {
-                error = err.message === undefined ? err : err.message;
-            } else if (results === undefined || results === "undefined") {
+            if (results === undefined || results === "undefined") {
                 error = "Error thrown by python_ctc_error.py. Please write down exactly how you produced this error, and submit a ticket at mats.gsl@noaa.gov."
             } else {
                 // get the data back from the query
@@ -1250,10 +1249,16 @@ const ctcErrorPython = function (statistic, minuendData, subtrahendData) {
             }
             // done waiting - have results
             future['return']();
+        }).catch(err => {
+            error = err.message;
+            future['return']();
         });
 
         // wait for future to finish
         future.wait();
+        if (error) {
+            throw new Error("Error when calculating CTC errorbars: " + error);
+        }
         return errorLength;
     }
 };

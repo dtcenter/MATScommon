@@ -1380,9 +1380,9 @@ const processDataSimpleScatter = function (dataset, appParams, curveInfoParams, 
         }
         const label = dataset[curveIndex].label;
 
-        const statisticXSelect = curveInfoParams.curves[curveIndex]['x-statistic'];
+        const statisticXSelect = curveInfoParams.curves[curveIndex]['x-statistic'] === undefined ? curveInfoParams.curves[curveIndex]['statistic'] : curveInfoParams.curves[curveIndex]['x-statistic'];
         const statisticYSelect = curveInfoParams.curves[curveIndex]['y-statistic'];
-        const variableXSelect = curveInfoParams.curves[curveIndex]['x-variable'];
+        const variableXSelect = curveInfoParams.curves[curveIndex]['x-variable'] === undefined ? curveInfoParams.curves[curveIndex]['variable'] : curveInfoParams.curves[curveIndex]['x-variable'];
         const variableYSelect = curveInfoParams.curves[curveIndex]['y-variable'];
 
         var di = 0;
@@ -1418,6 +1418,8 @@ const processDataSimpleScatter = function (dataset, appParams, curveInfoParams, 
         data.subObsSumX = [];
         data.subAbsSumX = [];
         data.subValsX = [];
+        data.subSecsX = [];
+        data.subLevsX = [];
         data.subSquareDiffSumY = [];
         data.subNSumY = [];
         data.subObsModelDiffSumY = [];
@@ -1425,6 +1427,10 @@ const processDataSimpleScatter = function (dataset, appParams, curveInfoParams, 
         data.subObsSumY = [];
         data.subAbsSumY = [];
         data.subValsY = [];
+        data.subSecsY = [];
+        data.subLevsY = [];
+        data.subData = [];
+        data.subHeaders = [];
         data.subSecs = [];
         data.subLevs = [];
     }

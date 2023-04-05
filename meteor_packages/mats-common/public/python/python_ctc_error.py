@@ -262,59 +262,64 @@ class CTCErrorUtil:
 
     def test_null_hypothesis(self, statistic, minuend_data, subtrahend_data):
         """function for determining the length of error bars on ctc difference curves"""
-        # pre-calculate random indices
-        max_tries = 1000
-        max_length = len(minuend_data["hit"]) if len(minuend_data["hit"]) > len(subtrahend_data["hit"]) else len(subtrahend_data["hit"])
-        length_indices = range(max_length)
-        rand_indices = np.random.randint(2, size=(max_tries, max_length))
-        other_indices = 1-rand_indices
+        try:
+            # pre-calculate random indices
+            max_tries = 1000
+            max_length = len(minuend_data["hit"]) if len(minuend_data["hit"]) > len(subtrahend_data["hit"]) else len(subtrahend_data["hit"])
+            length_indices = range(max_length)
+            rand_indices = np.random.randint(2, size=(max_tries, max_length))
+            other_indices = 1-rand_indices
 
-        # make sure input data arrays are the same length
-        if len(minuend_data["hit"]) < max_length:
-            length_needed = max_length - len(minuend_data["hit"])
-            for k in range(0, length_needed):
-                minuend_data["hit"].append(0)
-                minuend_data["fa"].append(0)
-                minuend_data["miss"].append(0)
-                minuend_data["cn"].append(0)
+            # make sure input data arrays are the same length
+            if len(minuend_data["hit"]) < max_length:
+                length_needed = max_length - len(minuend_data["hit"])
+                for k in range(0, length_needed):
+                    minuend_data["hit"].append(0)
+                    minuend_data["fa"].append(0)
+                    minuend_data["miss"].append(0)
+                    minuend_data["cn"].append(0)
 
-        if len(subtrahend_data["hit"]) < max_length:
-            length_needed = max_length - len(subtrahend_data["hit"])
-            for k in range(0, length_needed):
-                subtrahend_data["hit"].append(0)
-                subtrahend_data["fa"].append(0)
-                subtrahend_data["miss"].append(0)
-                subtrahend_data["cn"].append(0)
+            if len(subtrahend_data["hit"]) < max_length:
+                length_needed = max_length - len(subtrahend_data["hit"])
+                for k in range(0, length_needed):
+                    subtrahend_data["hit"].append(0)
+                    subtrahend_data["fa"].append(0)
+                    subtrahend_data["miss"].append(0)
+                    subtrahend_data["cn"].append(0)
 
-        # store input data in easy-access numpy arrays to eliminate the need to loop over length
-        all_hits = np.transpose(np.asarray([minuend_data["hit"], subtrahend_data["hit"]]))
-        all_fas = np.transpose(np.asarray([minuend_data["fa"], subtrahend_data["fa"]]))
-        all_misses = np.transpose(np.asarray([minuend_data["miss"], subtrahend_data["miss"]]))
-        all_cns = np.transpose(np.asarray([minuend_data["cn"], subtrahend_data["cn"]]))
-        all_diffs = []
+            # store input data in easy-access numpy arrays to eliminate the need to loop over length
+            all_hits = np.transpose(np.asarray([minuend_data["hit"], subtrahend_data["hit"]]))
+            all_fas = np.transpose(np.asarray([minuend_data["fa"], subtrahend_data["fa"]]))
+            all_misses = np.transpose(np.asarray([minuend_data["miss"], subtrahend_data["miss"]]))
+            all_cns = np.transpose(np.asarray([minuend_data["cn"], subtrahend_data["cn"]]))
+            all_diffs = []
 
-        for j in range(0, max_tries):
-            perm_m_hit = all_hits[length_indices, rand_indices[j, :]]
-            perm_m_fa = all_fas[length_indices, rand_indices[j, :]]
-            perm_m_miss = all_misses[length_indices, rand_indices[j, :]]
-            perm_m_cn = all_cns[length_indices, rand_indices[j, :]]
-            perm_s_hit = all_hits[length_indices, other_indices[j, :]]
-            perm_s_fa = all_fas[length_indices, other_indices[j, :]]
-            perm_s_miss = all_misses[length_indices, other_indices[j, :]]
-            perm_s_cn = all_cns[length_indices, other_indices[j, :]]
+            for j in range(0, max_tries):
+                perm_m_hit = all_hits[length_indices, rand_indices[j, :]]
+                perm_m_fa = all_fas[length_indices, rand_indices[j, :]]
+                perm_m_miss = all_misses[length_indices, rand_indices[j, :]]
+                perm_m_cn = all_cns[length_indices, rand_indices[j, :]]
+                perm_s_hit = all_hits[length_indices, other_indices[j, :]]
+                perm_s_fa = all_fas[length_indices, other_indices[j, :]]
+                perm_s_miss = all_misses[length_indices, other_indices[j, :]]
+                perm_s_cn = all_cns[length_indices, other_indices[j, :]]
 
-            perm_m_stat = self.calculate_ctc_stat(statistic, int(np.sum(perm_m_hit)), int(np.sum(perm_m_fa)), int(np.sum(perm_m_miss)), int(np.sum(perm_m_cn)), len(perm_m_hit))
-            perm_s_stat = self.calculate_ctc_stat(statistic, int(np.sum(perm_s_hit)), int(np.sum(perm_s_fa)), int(np.sum(perm_s_miss)), int(np.sum(perm_s_cn)), len(perm_s_hit))
-            perm_diff = perm_m_stat - perm_s_stat
-            all_diffs.append(perm_diff)
+                perm_m_stat = self.calculate_ctc_stat(statistic, int(np.sum(perm_m_hit)), int(np.sum(perm_m_fa)), int(np.sum(perm_m_miss)), int(np.sum(perm_m_cn)), len(perm_m_hit))
+                perm_s_stat = self.calculate_ctc_stat(statistic, int(np.sum(perm_s_hit)), int(np.sum(perm_s_fa)), int(np.sum(perm_s_miss)), int(np.sum(perm_s_cn)), len(perm_s_hit))
+                perm_diff = perm_m_stat - perm_s_stat
+                all_diffs.append(perm_diff)
 
-        all_diffs.sort()
-        i_min = int(max_tries * 0.025)
-        i_max = int(max_tries * 0.975)
-        bot_95 = all_diffs[i_min]
-        top_95 = all_diffs[i_max]
-        ci_length = (top_95-bot_95)/2  # length of 95th percentile confidence interval. Divide by 1.96 for standard error.
-        return ci_length
+            all_diffs.sort()
+            i_min = int(max_tries * 0.025)
+            i_max = int(max_tries * 0.975)
+            bot_95 = all_diffs[i_min]
+            top_95 = all_diffs[i_max]
+            ci_length = (top_95-bot_95)/2  # length of 95th percentile confidence interval. Divide by 1.96 for standard error.
+            return ci_length
+        except:
+            # if we have a null point on the graph with no sub-values, 
+            # it will error out. In that case, return a 0 for error length.
+            return 0
 
     def validate_options(self, options):
         """makes sure all expected options were indeed passed in"""

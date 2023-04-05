@@ -127,7 +127,7 @@ const queryDBPython = function (pool, queryArray) {
             pythonPath: Meteor.settings.private.PYTHON_PATH,
             pythonOptions: ['-u'], // get print results in real-time
             scriptPath: process.env.NODE_ENV === "development" ?
-                process.env.PWD + "/../../MATScommon/meteor_packages/mats-common/public/python/" :
+                process.env.PWD + "/.meteor/local/build/programs/server/assets/packages/randyp_mats-common/public/python/" :
                 process.env.PWD + "/programs/server/assets/packages/randyp_mats-common/public/python/",
             args: [
                 "-h", pool.config.connectionConfig.host,
@@ -142,17 +142,15 @@ const queryDBPython = function (pool, queryArray) {
         const pyShell = require('python-shell');
         const Future = require('fibers/future');
 
-        var future = new Future();
-        var d = {};
-        var error = "";
-        var N0 = [];
-        var N_times = [];
+        let future = new Future();
+        let d = [];
+        let error = "";
+        let N0 = [];
+        let N_times = [];
 
-        pyShell.PythonShell.run('python_query_util.py', pyOptions, function (err, results) {
+        pyShell.PythonShell.run('python_query_util.py', pyOptions).then(results=>{
             // query callback - build the curve data from the results - or set an error
-            if (err !== undefined && err !== null) {
-                error = err.message === undefined ? err : err.message;
-            } else if (results === undefined || results === "undefined") {
+            if (results === undefined || results === "undefined") {
                 error = "Error thrown by python_query_util.py. Please write down exactly how you produced this error, and submit a ticket at mats.gsl@noaa.gov."
             } else {
                 // get the data back from the query
@@ -163,6 +161,9 @@ const queryDBPython = function (pool, queryArray) {
                 error = parsedData.error;
             }
             // done waiting - have results
+            future['return']();
+        }).catch(err => {
+            error = err.message;
             future['return']();
         });
 
@@ -549,7 +550,11 @@ const queryDBSimpleScatter = function (pool, statement, appParams, statisticXStr
             subAbsSumY: [],
             subValsX: [],
             subValsY: [],
+            subSecsX: [],
+            subSecsY: [],
             subSecs: [],
+            subLevsX: [],
+            subLevsY: [],
             subLevs: [],
             stats: [],
             text: [],
@@ -1051,14 +1056,10 @@ const parseQueryDataXYCurve = function (rows, d, appParams, statisticStr, foreca
     const plotType = appParams.plotType;
     const hasLevels = appParams.hasLevels;
     const completenessQCParam = Number(appParams.completeness) / 100;
-    var outlierQCParam;
-    if (appParams.outliers !== "all") {
-        outlierQCParam = Number(appParams.outliers);
-    } else {
-        outlierQCParam = 100;
-    }
-    var isCTC = false;
-    var isScalar = false;
+    const outlierQCParam = appParams.outliers !== "all" ? Number(appParams.outliers) : appParams.outliers;
+
+    let isCTC = false;
+    let isScalar = false;
     const hideGaps = appParams.hideGaps;
 
     // initialize local variables
@@ -1240,28 +1241,30 @@ const parseQueryDataXYCurve = function (rows, d, appParams, statisticStr, foreca
                     }
                 }
                 // Now that we have all the sub-values, we can get the standard deviation and remove the ones that exceed it
-                sub_stdev = matsDataUtils.stdev(sub_values);
-                sub_mean = matsDataUtils.average(sub_values);
-                sd_limit = outlierQCParam * sub_stdev;
-                for (var svIdx = sub_values.length - 1; svIdx >= 0; svIdx--) {
-                    if (Math.abs(sub_values[svIdx] - sub_mean) > sd_limit) {
-                        if (isCTC) {
-                            sub_hit.splice(svIdx, 1);
-                            sub_fa.splice(svIdx, 1);
-                            sub_miss.splice(svIdx, 1);
-                            sub_cn.splice(svIdx, 1);
-                        } else if (isScalar) {
-                            sub_square_diff_sum.splice(svIdx, 1);
-                            sub_N_sum.splice(svIdx, 1);
-                            sub_obs_model_diff_sum.splice(svIdx, 1);
-                            sub_model_sum.splice(svIdx, 1);
-                            sub_obs_sum.splice(svIdx, 1);
-                            sub_abs_sum.splice(svIdx, 1);
-                        }
-                        sub_values.splice(svIdx, 1);
-                        sub_secs.splice(svIdx, 1);
-                        if (hasLevels) {
-                            sub_levs.splice(svIdx, 1);
+                if (outlierQCParam !== "all") {
+                    sub_stdev = matsDataUtils.stdev(sub_values);
+                    sub_mean = matsDataUtils.average(sub_values);
+                    sd_limit = outlierQCParam * sub_stdev;
+                    for (var svIdx = sub_values.length - 1; svIdx >= 0; svIdx--) {
+                        if (Math.abs(sub_values[svIdx] - sub_mean) > sd_limit) {
+                            if (isCTC) {
+                                sub_hit.splice(svIdx, 1);
+                                sub_fa.splice(svIdx, 1);
+                                sub_miss.splice(svIdx, 1);
+                                sub_cn.splice(svIdx, 1);
+                            } else if (isScalar) {
+                                sub_square_diff_sum.splice(svIdx, 1);
+                                sub_N_sum.splice(svIdx, 1);
+                                sub_obs_model_diff_sum.splice(svIdx, 1);
+                                sub_model_sum.splice(svIdx, 1);
+                                sub_obs_sum.splice(svIdx, 1);
+                                sub_abs_sum.splice(svIdx, 1);
+                            }
+                            sub_values.splice(svIdx, 1);
+                            sub_secs.splice(svIdx, 1);
+                            if (hasLevels) {
+                                sub_levs.splice(svIdx, 1);
+                            }
                         }
                     }
                 }
@@ -1942,12 +1945,7 @@ const parseQueryDataMapScalar = function (rows, d, dLowest, dLow, dModerate, dHi
     const hasLevels = appParams.hasLevels;
     var highLimit = 10;
     var lowLimit = -10
-    var outlierQCParam;
-    if (appParams.outliers !== "all") {
-        outlierQCParam = Number(appParams.outliers);
-    } else {
-        outlierQCParam = 100;
-    }
+    const outlierQCParam = appParams.outliers !== "all" ? Number(appParams.outliers) : appParams.outliers;
 
     // determine which colormap will be used for this plot
     let colorLowest = "";
@@ -2048,21 +2046,23 @@ const parseQueryDataMapScalar = function (rows, d, dLowest, dLow, dModerate, dHi
                     }
                 }
                 // Now that we have all the sub-values, we can get the standard deviation and remove the ones that exceed it
-                sub_stdev = matsDataUtils.stdev(sub_values);
-                sub_mean = matsDataUtils.average(sub_values);
-                sd_limit = outlierQCParam * sub_stdev;
-                for (var svIdx = sub_values.length - 1; svIdx >= 0; svIdx--) {
-                    if (Math.abs(sub_values[svIdx] - sub_mean) > sd_limit) {
-                        sub_square_diff_sum.splice(svIdx, 1);
-                        sub_N_sum.splice(svIdx, 1);
-                        sub_obs_model_diff_sum.splice(svIdx, 1);
-                        sub_model_sum.splice(svIdx, 1);
-                        sub_obs_sum.splice(svIdx, 1);
-                        sub_abs_sum.splice(svIdx, 1);
-                        sub_values.splice(svIdx, 1);
-                        sub_secs.splice(svIdx, 1);
-                        if (hasLevels) {
-                            sub_levs.splice(svIdx, 1);
+                if (outlierQCParam !== "all") {
+                    sub_stdev = matsDataUtils.stdev(sub_values);
+                    sub_mean = matsDataUtils.average(sub_values);
+                    sd_limit = outlierQCParam * sub_stdev;
+                    for (var svIdx = sub_values.length - 1; svIdx >= 0; svIdx--) {
+                        if (Math.abs(sub_values[svIdx] - sub_mean) > sd_limit) {
+                            sub_square_diff_sum.splice(svIdx, 1);
+                            sub_N_sum.splice(svIdx, 1);
+                            sub_obs_model_diff_sum.splice(svIdx, 1);
+                            sub_model_sum.splice(svIdx, 1);
+                            sub_obs_sum.splice(svIdx, 1);
+                            sub_abs_sum.splice(svIdx, 1);
+                            sub_values.splice(svIdx, 1);
+                            sub_secs.splice(svIdx, 1);
+                            if (hasLevels) {
+                                sub_levs.splice(svIdx, 1);
+                            }
                         }
                     }
                 }
@@ -2121,11 +2121,14 @@ const parseQueryDataMapScalar = function (rows, d, dLowest, dLow, dModerate, dHi
     // get stdev threshold at which to exclude entire points
     const all_mean = matsDataUtils.average(filteredValues);
     const all_stdev = matsDataUtils.stdev(filteredValues);
-    const all_sd_limit = outlierQCParam * all_stdev;
+    let all_sd_limit;
+    if (outlierQCParam !== "all") {
+        all_sd_limit = outlierQCParam * all_stdev;
+    }
 
     for (var didx = d.queryVal.length - 1; didx >= 0; didx--) {
         queryVal = d.queryVal[didx];
-        if (Math.abs(queryVal - all_mean) > all_sd_limit) {
+        if (outlierQCParam !== "all" && Math.abs(queryVal - all_mean) > all_sd_limit) {
             // this point is too far from the mean. Exclude it.
             d.queryVal.splice(didx, 1);
             d.stats.splice(didx, 1);
@@ -2200,12 +2203,7 @@ const parseQueryDataMapCTC = function (rows, d, dPurple, dPurpleBlue, dBlue, dBl
     const hasLevels = appParams.hasLevels;
     var highLimit = 100;
     var lowLimit = -100
-    var outlierQCParam;
-    if (appParams.outliers !== "all") {
-        outlierQCParam = Number(appParams.outliers);
-    } else {
-        outlierQCParam = 100;
-    }
+    const outlierQCParam = appParams.outliers !== "all" ? Number(appParams.outliers) : appParams.outliers;
 
     var queryVal;
     for (var rowIndex = 0; rowIndex < rows.length; rowIndex++) {
@@ -2292,19 +2290,21 @@ const parseQueryDataMapCTC = function (rows, d, dPurple, dPurpleBlue, dBlue, dBl
                     }
                 }
                 // Now that we have all the sub-values, we can get the standard deviation and remove the ones that exceed it
-                sub_stdev = matsDataUtils.stdev(sub_values);
-                sub_mean = matsDataUtils.average(sub_values);
-                sd_limit = outlierQCParam * sub_stdev;
-                for (var svIdx = sub_values.length - 1; svIdx >= 0; svIdx--) {
-                    if (Math.abs(sub_values[svIdx] - sub_mean) > sd_limit) {
-                        sub_hit.splice(svIdx, 1);
-                        sub_fa.splice(svIdx, 1);
-                        sub_miss.splice(svIdx, 1);
-                        sub_cn.splice(svIdx, 1);
-                        sub_values.splice(svIdx, 1);
-                        sub_secs.splice(svIdx, 1);
-                        if (hasLevels) {
-                            sub_levs.splice(svIdx, 1);
+                if (outlierQCParam !== "all") {
+                    sub_stdev = matsDataUtils.stdev(sub_values);
+                    sub_mean = matsDataUtils.average(sub_values);
+                    sd_limit = outlierQCParam * sub_stdev;
+                    for (var svIdx = sub_values.length - 1; svIdx >= 0; svIdx--) {
+                        if (Math.abs(sub_values[svIdx] - sub_mean) > sd_limit) {
+                            sub_hit.splice(svIdx, 1);
+                            sub_fa.splice(svIdx, 1);
+                            sub_miss.splice(svIdx, 1);
+                            sub_cn.splice(svIdx, 1);
+                            sub_values.splice(svIdx, 1);
+                            sub_secs.splice(svIdx, 1);
+                            if (hasLevels) {
+                                sub_levs.splice(svIdx, 1);
+                            }
                         }
                     }
                 }

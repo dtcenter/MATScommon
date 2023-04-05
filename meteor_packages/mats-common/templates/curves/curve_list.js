@@ -33,7 +33,6 @@ Template.curveList.helpers({
                 case matsTypes.PlotTypes.reliability:
                 case matsTypes.PlotTypes.roc:
                 case matsTypes.PlotTypes.performanceDiagram:
-                case matsTypes.PlotTypes.simpleScatter:
                 case matsTypes.PlotTypes.contour:
                 case matsTypes.PlotTypes.scorecard:
                     // allow matching for non-metexpress ROCs and performance diagrams
@@ -41,7 +40,6 @@ Template.curveList.helpers({
                         && matsCollections.Settings.findOne({}).appType !== undefined
                         && matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress)
                         || (plotType !== matsTypes.PlotTypes.performanceDiagram
-                            && plotType !== matsTypes.PlotTypes.simpleScatter
                             && plotType !== matsTypes.PlotTypes.roc)) {
                         return "none";
                     } else {
@@ -58,6 +56,7 @@ Template.curveList.helpers({
                 case matsTypes.PlotTypes.histogram:
                 case matsTypes.PlotTypes.ensembleHistogram:
                 case matsTypes.PlotTypes.contourDiff:
+                case matsTypes.PlotTypes.simpleScatter:
                 case matsTypes.PlotTypes.scatter2d:
                 default:
                     return "block";
