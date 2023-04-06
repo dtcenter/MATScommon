@@ -404,6 +404,17 @@ if (Meteor.isServer) {
     Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/refreshMetadata', function (params, req, res, next) {
         Picker.middleware(_refreshMetadataMWltData(params, req, res, next));
     });
+    Picker.route('/refreshScorecard/:docId', function (params, req, res, next) {
+        Picker.middleware(_refreshScorecard(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/refreshScorecard/:docId', function (params, req, res, next) {
+        Picker.middleware(_refreshScorecard(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/refreshScorecard/:docId', function (params, req, res, next) {
+        Picker.middleware(_refreshScorecard(params, req, res, next));
+    });
 }
 
 // private - used to see if the main page needs to update its selectors
@@ -495,6 +506,7 @@ const _checkMetaDataRefresh = async function () {
     }
     return true;
 };
+
 
 // private middleware for getting the status - think health check
 const _status = function (params, req, res, next) {
@@ -1631,6 +1643,54 @@ const _refreshMetadataMWltData = function (params, req, res, next) {
     }
 };
 
+// private middleware for causing the scorecard to refresh its mongo collection for a given document
+const _refreshScorecard = function(params, req, res, next) {
+    if (Meteor.isServer) {
+        let docId = decodeURIComponent(params.docId)
+            // get userName, name, submitted, processedAt from id
+            // SC:anonymous--submitted:20230322230435--1block:0:02/19/2023_20_00_-_03/21/2023_20_00
+            if (cbScorecardPool === undefined) {
+                throw new Meteor.Error("_getScorecardData: No cbScorecardPool defined");
+            }
+            const statement = `SELECT sc.*
+                From
+                    vxdata._default.SCORECARD sc
+                WHERE
+                    sc.id='` + docId + `';`
+            let error = ""
+            cbScorecardPool.queryCB(statement).then(result => {
+                // insert this result into the mongo Scorecard collection - createdAt is used for TTL
+                // created at gets updated each display even if it already existed.
+                // TTL is 24 hours
+                if (typeof (result) === 'string') {
+                    throw new Error(`Error from couchbase query - ${result}`);
+                } else {
+                    if (result[0] === undefined) {
+                        throw new Error("Error from couchbase query - document not found");
+                    } else {
+                        matsCollections.Scorecard.upsert({
+                            'scorecard.userName': result[0].userName,
+                            'scorecard.name': result[0].name,
+                            'scorecard.submitted': result[0].submitted,
+                            'scorecard.processedAt': result[0].processedAt
+                        }, {
+                            $set: {
+                                createdAt: new Date(),
+                                scorecard: result[0]
+                            }
+                        });
+                    }
+                };
+                res.end("<body><h1>refreshScorecard Done!</h1></body>");
+            }).catch(err => {
+                res.end("<body>" +
+                "<h1>refreshScorecard Failed!</h1>" +
+                "<p>" + err.message + "</p>" +
+                "</body>");
+            });
+    }
+};
+
 // private save the result from the query into mongo and downsample if that result's size is greater than 1.2Mb
 const _saveResultData = function (result) {
     if (Meteor.isServer) {
@@ -1823,7 +1883,7 @@ const _getScorecardData = async function (userName, name, submitted, processedAt
             'scorecard.submitted': result[0].submitted,
             'scorecard.processedAt': result[0].processedAt
         }, {_id: 1})._id;
-        // no need to return the whole thing, just the identifying fields 
+        // no need to return the whole thing, just the identifying fields
         // and the ID. The app will find the whole thing in the mongo collection.
         return {'scorecard': result[0], docID: docID};
     } catch (err) {
