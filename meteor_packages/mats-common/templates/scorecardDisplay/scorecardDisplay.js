@@ -305,11 +305,15 @@ Template.ScorecardDisplay.helpers({
         color = myScorecard['scorecard']['significanceColors']['minor-source-color'];
         break;
       case 0:
-      default:
         icon = 'fa icon-check-empty fa-sm';
         color = 'lightgrey';
         break;
-    }
+      case -9999:
+      default:
+        icon = 'fa icon-check-empty fa-sm';
+        color = 'white';
+        break;
+      }
     // clear previous icon
     const outerTableCellId = getTableCellId(fcstlen, blockName, region, stat, variable, threshold, level);
     const outerTableCellElement = document.getElementById(outerTableCellId);
@@ -350,8 +354,10 @@ Template.ScorecardDisplay.helpers({
           220
         );
       case 0:
-      default:
         return 'lightgrey';
+      case -9999:
+      default:
+        return 'white';
     }
   },
   stats: function (blockName) {
