@@ -1657,7 +1657,6 @@ const _refreshScorecard = function(params, req, res, next) {
                     vxdata._default.SCORECARD sc
                 WHERE
                     sc.id='` + docId + `';`
-            let error = ""
             cbScorecardPool.queryCB(statement).then(result => {
                 // insert this result into the mongo Scorecard collection - createdAt is used for TTL
                 // created at gets updated each display even if it already existed.
