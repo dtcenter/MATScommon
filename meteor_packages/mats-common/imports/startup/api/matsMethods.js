@@ -415,6 +415,18 @@ if (Meteor.isServer) {
     Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/refreshScorecard/:docId', function (params, req, res, next) {
         Picker.middleware(_refreshScorecard(params, req, res, next));
     });
+
+    Picker.route('/setStatusScorecard/:docId', function (params, req, res, next) {
+        Picker.middleware(_setStatusScorecard(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/setStatusScorecard/:docId', function (params, req, res, next) {
+        Picker.middleware(_setStatusScorecard(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/setStatusScorecard/:docId', function (params, req, res, next) {
+        Picker.middleware(_setStatusScorecard(params, req, res, next));
+    });
 }
 
 // private - used to see if the main page needs to update its selectors
@@ -1688,6 +1700,44 @@ const _refreshScorecard = function(params, req, res, next) {
                 "</body>");
             });
     }
+};
+
+const _setStatusScorecard = function(params, req, res, next) {
+    if (Meteor.isServer) {
+        let docId = decodeURIComponent(params.docId)
+        var body = "";
+        req.on('data', Meteor.bindEnvironment(function (data) {
+            body += data;
+        }));
+
+        req.on('end', Meteor.bindEnvironment(function () {
+            //console.log(body);
+            try {
+                let doc = JSON.parse(body);
+                let status = doc.status;
+                let error = doc.error;
+                let found = matsCollections.Scorecard.find({ id: docId }).fetch();
+                if (found.length === 0) {
+                    throw new Error("Error from scorecard lookup - document not found");
+                }
+                matsCollections.Scorecard.upsert({
+                    'id': docId,
+                }, {
+                    $set: {
+                        status: status
+                    }
+                });
+                // set error if there is one somehow. (use the session?)
+                res.end("<body><h1>setScorecardStatus Done!</h1></body>");
+            } catch (err) {
+                res.statusCode = 400;
+                res.end("<body>" +
+                "<h1>setScorecardStatus Failed!</h1>" +
+                "<p>" + err.message + "</p>" +
+                "</body>");
+            }
+        }));
+     }
 };
 
 // private save the result from the query into mongo and downsample if that result's size is greater than 1.2Mb
