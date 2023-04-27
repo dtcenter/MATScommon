@@ -47,8 +47,8 @@ function getprocessedAtsForUserName(userName, name){
     return processedAts;
 }
 
-
-Template.scorecardStatusPage.created = function (){
+function refreshPage() {
+    // refresh the page
     matsMethods.getScorecardInfo.call(function (error, ret) {
         if (error !== undefined) {
             setError(error);
@@ -56,18 +56,24 @@ Template.scorecardStatusPage.created = function (){
             Session.set("updateStatusPage", ret);
         }
     });
+}
+
+Template.scorecardStatusPage.created = function (){
+    refreshPage();
+    const cursor = matsCollections.Scorecard.find({}).observeChanges({
+        added(id, fields) {
+            refreshPage();
+        },
+        changed(id, fields) {
+            refreshPage();
+        }
+    });
 };
 
 Template.scorecardStatusPage.helpers({
     refresh: function(){
         if (Session.get("updateStatusPage") === undefined || typeof Session.get("updateStatusPage") === "number"){
-            matsMethods.getScorecardInfo.call(function (error, ret) {
-                if (error !== undefined) {
-                    setError(error);
-                } else {
-                    Session.set("updateStatusPage", ret);
-                }
-            });
+            refreshPage();
         }
     },
     image: function () {
@@ -135,13 +141,7 @@ Template.scorecardStatusPage.events({
         return false;
     },
     'click .refresh-scorecard': function(event) {
-        matsMethods.getScorecardInfo.call(function (error, ret) {
-            if (error !== undefined) {
-                setError(error);
-            } else {
-                Session.set("updateStatusPage", ret);
-            }
-        });
+        refreshPage();
     },
     'click .userName-control': function(event) {
         toggleDisplay(event.currentTarget.attributes['data-target'].value);
@@ -159,14 +159,8 @@ Template.scorecardStatusPage.events({
             if (error !== undefined) {
                 setError(error);
             } else {
-                // refresh the list
-                matsMethods.getScorecardInfo.call(function (error, ret) {
-                    if (error !== undefined) {
-                        setError(error);
-                    } else {
-                        Session.set("updateStatusPage", ret);
-                    }
-                });
+                // refresh the page
+                refreshPage();
             }
         });
     },
