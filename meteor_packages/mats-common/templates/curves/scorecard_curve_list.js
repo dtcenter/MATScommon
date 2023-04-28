@@ -94,10 +94,5 @@ Template.scorecardCurveList.events({
         Session.set('plotParameter', matsTypes.PlotActions.scorecard);
         document.getElementById("plot-curves").click();
         return false;
-    },
-    'click .save-settings': function (event) {
-        event.preventDefault();
-        document.getElementById("save-settings").click();
-        return false;
     }
 });

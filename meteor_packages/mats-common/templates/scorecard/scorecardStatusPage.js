@@ -164,4 +164,28 @@ Template.scorecardStatusPage.events({
             }
         });
     },
+    'click .restore-sc-instance': function(e) {
+        const userName=e.currentTarget.dataset.user_name;
+        const name=e.currentTarget.dataset.name;
+        const submitted=e.currentTarget.dataset.submit_time;
+        const processedAt=e.currentTarget.dataset.run_time;
+
+        matsMethods.getPlotParamsFromScorecardInstance.call({userName:userName,name:name,submitted:submitted,processedAt:processedAt}, function (error, ret) {
+            if (error !== undefined) {
+                setError(error);
+            } else {
+                plotParams = ret
+                matsPlotUtils.enableActionButtons();
+                matsGraphUtils.setDefaultView();
+                matsCurveUtils.resetPlotResultData();
+                let p = { data: {} };
+                p.data = plotParams.plotParams;
+                p.data['paramData'] = {};
+                p.data['paramData']["curveParams"] = plotParams.plotParams.curves;
+                p.data['paramData']["plotParams"] = plotParams.plotParams;
+                matsPlotUtils.restoreSettings(p);
+            }
+        });
+        return false;
+    },
 });

@@ -1992,6 +1992,34 @@ const _getScorecardInfo = async function () {
     }
 };
 
+const _getPlotParamsFromScorecardInstance = async function (userName, name, submitted, processedAt) {
+    try {
+        if (cbScorecardPool === undefined) {
+            throw new Meteor.Error("_getScorecardInfo: No cbScorecardPool defined");
+        }
+        const statement = `SELECT sc.plotParams
+            From
+                vxdata._default.SCORECARD sc
+            WHERE
+                sc.type='SC'
+                AND sc.userName='` + userName + `'
+                AND sc.name='` + name + `'
+                AND sc.processedAt=` + processedAt + `
+                AND sc.submitted=` + submitted + `;`
+        const result = await cbScorecardPool.queryCB(statement);
+        if (typeof (result) === 'string' && result.indexOf('ERROR')) {
+            throw new Meteor.Error(result);
+        }
+        return result[0];
+    } catch (err) {
+        console.log("_getPlotParamsFromScorecardInstance error : " + err.message);
+        return {
+            "error": err.message
+        }
+    }
+};
+
+
 // PUBLIC METHODS
 //administration tools
 const addSentAddress = new ValidatedMethod({
@@ -2484,6 +2512,32 @@ const getScorecardSettings = new ValidatedMethod({
     }
 });
 
+const getPlotParamsFromScorecardInstance = new ValidatedMethod({
+    name: 'matsMethods.getPlotParamsFromScorecardInstance',
+    validate: new SimpleSchema({
+        userName: {
+            type: String
+        },
+        name: {
+            type: String
+        },
+        submitted: {
+            type: String
+        },
+        processedAt: {
+            type: String
+        }
+    }).validator(),
+    run(params) {
+        try {
+            if (Meteor.isServer) {
+                return _getPlotParamsFromScorecardInstance(params.userName, params.name, params.submitted, params.processedAt);
+            }
+        } catch (error) {
+            throw new Meteor.Error("Error in getPlotParamsFromScorecardInstance function:" + error.message);
+        }
+    }
+});
 
 /*
 getPlotResult is used by the graph/text_*_output templates which are used to display textual results.
@@ -3262,11 +3316,12 @@ export default matsMethods = {
     getGraphData: getGraphData,
     getGraphDataByKey: getGraphDataByKey,
     getLayout: getLayout,
-    getScorecardSettings: getScorecardSettings,
+    getPlotParamsFromScorecardInstance: getPlotParamsFromScorecardInstance,
     getPlotResult: getPlotResult,
     getReleaseNotes: getReleaseNotes,
     getScorecardInfo: getScorecardInfo,
     getScorecardData: getScorecardData,
+    getScorecardSettings: getScorecardSettings,
     getUserAddress: getUserAddress,
     insertColor: insertColor,
     readFunctionFile: readFunctionFile,
