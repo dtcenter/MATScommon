@@ -11,6 +11,25 @@ class CBUtilities
     this.conn = undefined;
   }
 
+  // The app doesn't directly require couchbase, but it does need to know about the DurabilityLevel enum
+  // Follow the pattern below to define other enums that are needed by the app.
+  // see https://docs.couchbase.com/sdk-api/couchbase-node-client/enums/DurabilityLevel.html
+  getDurabilityOption = (durability) => {
+    const couchbase = require("couchbase");
+    switch (durability) {
+      case "MAJORITY":
+        return couchbase.DurabilityLevel.Majority;
+      case "MAJORITY_AND_PERSIST_TO_ACTIVE":
+        return couchbase.DurabilityLevel.MajorityAndPersistToActive;
+      case "MAJORITY_AND_PERSIST_TO_ACTIVE_AND_REPLICATE_TO":
+        return couchbase.DurabilityLevel.MajorityAndPersistToActiveAndReplica;
+      case "PERSIST_TO_MAJORITY":
+        return couchbase.DurabilityLevel.PersistToMajority;
+      default:
+        return couchbase.DurabilityLevel.None;
+    }
+  }
+
   getConnection = async () =>
   {
     // DO NOT require couchbase at the top of the file, the client breaks if it gets couchbase included into it.
@@ -51,13 +70,14 @@ class CBUtilities
     }
   }
 
-  upsertCB = async (key, doc) =>
+  upsertCB = async (key, doc, options = {}) =>
   {
     const couchbase = require("couchbase");
     try
     {
       const conn = await this.getConnection();
-      const result = await conn.collection.upsert(key, doc);
+      var result
+      result = await conn.collection.upsert(key, doc, options);
       return result;
     } catch (err)
     {
@@ -109,7 +129,6 @@ class CBUtilities
       return "queryCB ERROR: " + err;
     }
   };
-
   queryCBWithConsistency = async (statement) =>
   {
     const couchbase = require("couchbase");

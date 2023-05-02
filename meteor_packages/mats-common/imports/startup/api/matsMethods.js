@@ -1908,7 +1908,7 @@ const _getScorecardData = async function (userName, name, submitted, processedAt
                 AND sc.name='` + name + `'
                 AND sc.processedAt=` + processedAt + `
                 AND sc.submitted=` + submitted + `;`
-        const result = await cbScorecardPool.queryCB(statement);
+        const result = await cbScorecardPool.queryCBWithConsistency(statement);
         if (typeof (result) === 'string' && result.indexOf('ERROR')) {
             throw new Meteor.Error(result);
         }
@@ -2006,7 +2006,7 @@ const _getPlotParamsFromScorecardInstance = async function (userName, name, subm
                 AND sc.name='` + name + `'
                 AND sc.processedAt=` + processedAt + `
                 AND sc.submitted=` + submitted + `;`
-        const result = await cbScorecardPool.queryCB(statement);
+        const result = await cbScorecardPool.queryCBWithConsistency(statement);
         if (typeof (result) === 'string' && result.indexOf('ERROR')) {
             throw new Meteor.Error(result);
         }
