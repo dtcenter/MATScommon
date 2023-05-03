@@ -229,6 +229,116 @@ const queryDBPython = function (pool, queryArray) {
 };
 
 // this method queries the database for timeseries plots
+const queryDBTimeSeriesMT = function (pool, rows, dataSource, forecastOffset, startDate, endDate, averageStr, statisticStr, validTimes, appParams, forceRegularCadence) {
+    if (Meteor.isServer) {
+        // upper air is only verified at 00Z and 12Z, so you need to force irregular models to verify at that regular cadence
+        var cycles = getModelCadence(pool, dataSource, startDate, endDate); // if irregular model cadence, get cycle times. If regular, get empty array.
+        if (validTimes.length > 0 && validTimes !== matsTypes.InputTypes.unused) {
+            if (typeof validTimes === 'string' || validTimes instanceof String) {
+                validTimes = validTimes.split(',');
+            }
+            var vtCycles = validTimes.map(function (x) {
+                return (Number(x) - forecastOffset) * 3600 * 1000;
+            }); // selecting validTimes makes the cadence irregular
+            vtCycles = vtCycles.map(function (x) {
+                return x < 0 ? (x + 24 * 3600 * 1000) : x;
+            }); // make sure no cycles are negative
+            vtCycles = vtCycles.sort(function (a, b) {
+                return Number(a) - Number(b);
+            }); // sort 'em
+            cycles = cycles.length > 0 ? _.intersection(cycles, vtCycles) : vtCycles; // if we already had cycles get the ones that correspond to valid times
+        }
+        const regular = (forceRegularCadence || averageStr !== "None" || !(cycles !== null && cycles.length > 0)); // If curves have averaging, the cadence is always regular, i.e. it's the cadence of the average
+
+        var d = {   // d will contain the curve data
+            x: [],
+            y: [],
+            error_x: [],
+            error_y: [],
+            subHit: [],
+            subFa: [],
+            subMiss: [],
+            subCn: [],
+            subSquareDiffSum: [],
+            subNSum: [],
+            subObsModelDiffSum: [],
+            subModelSum: [],
+            subObsSum: [],
+            subAbsSum: [],
+            subData: [],
+            subHeaders: [],
+            subVals: [],
+            subSecs: [],
+            subLevs: [],
+            stats: [],
+            text: [],
+            n_forecast: [],
+            n_matched: [],
+            n_simple: [],
+            n_total: [],
+            glob_stats: {},
+            xmin: Number.MAX_VALUE,
+            xmax: Number.MIN_VALUE,
+            ymin: Number.MAX_VALUE,
+            ymax: Number.MIN_VALUE,
+            sum: 0
+        };
+        var error = "";
+        var N0 = [];
+        var N_times = [];
+        var parsedData;
+        const Future = require('fibers/future');
+        var dFuture = new Future();
+
+        if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
+            /*
+            we have to call the couchbase utilities as async functions but this
+            routine 'queryDBTimeSeries' cannot itself be async because the graph page needs to wait
+            for its result, so we use an anonymous async() function here to wrap the queryCB call
+            */
+            (async () => {
+                //const rows = await pool.queryCB(statement);
+                if (rows === undefined || rows === null || rows.length === 0) {
+                    error = matsTypes.Messages.NO_DATA_FOUND;
+                } else {
+                    parsedData = parseQueryDataXYCurve(rows, d, appParams, statisticStr, forecastOffset, cycles, regular);
+                    d = parsedData.d;
+                    N0 = parsedData.N0;
+                    N_times = parsedData.N_times;
+                }
+                dFuture.return();
+            })();
+        } else {
+            // if this app isn't couchbase, use mysql
+            pool.query(statement, function (err, rows) {
+                // query callback - build the curve data from the results - or set an error
+                if (err !== undefined && err !== null) {
+                    error = err.message;
+                } else if (rows === undefined || rows === null || rows.length === 0) {
+                    error = matsTypes.Messages.NO_DATA_FOUND;
+                } else {
+                    parsedData = parseQueryDataXYCurve(rows, d, appParams, statisticStr, forecastOffset, cycles, regular);
+                    d = parsedData.d;
+                    N0 = parsedData.N0;
+                    N_times = parsedData.N_times;
+                }
+                // done waiting - have results
+                dFuture.return();
+            });
+        }
+        // wait for the future to finish - sort of like 'back to the future' ;)
+        dFuture.wait();
+
+        return {
+            data: d,
+            error: error,
+            N0: N0,
+            N_times: N_times
+        };
+    }
+};
+
+// this method queries the database for timeseries plots
 const queryDBTimeSeries = function (pool, statement, dataSource, forecastOffset, startDate, endDate, averageStr, statisticStr, validTimes, appParams, forceRegularCadence) {
     if (Meteor.isServer) {
         // upper air is only verified at 00Z and 12Z, so you need to force irregular models to verify at that regular cadence
@@ -3079,6 +3189,7 @@ export default matsDataQueryUtils = {
 
     simplePoolQueryWrapSynchronous: simplePoolQueryWrapSynchronous,
     queryDBPython: queryDBPython,
+    queryDBTimeSeriesMT: queryDBTimeSeriesMT,
     queryDBTimeSeries: queryDBTimeSeries,
     queryDBSpecialtyCurve: queryDBSpecialtyCurve,
     queryDBPerformanceDiagram: queryDBPerformanceDiagram,
