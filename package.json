@@ -1,0 +1,35 @@
+{
+  "name": "matscommon",
+  "private": true,
+  "version": "0.0.1",
+  "description": "A library of common code shared between MATS and METexpress",
+  "scripts": {
+    "lint": "prettier --ignore-path .prettierignore --check . && eslint --ignore-path .gitignore .",
+    "format": "prettier --ignore-path .prettierignore --write . && eslint --ignore-path .gitignore --fix ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dtcenter/MATScommon.git"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/dtcenter/MATScommon/issues"
+  },
+  "homepage": "https://github.com/dtcenter/MATScommon#readme",
+  "devDependencies": {
+    "@babel/core": "^7.21.3",
+    "@babel/eslint-parser": "^7.21.3",
+    "eslint": "^8.36.0",
+    "eslint-config-airbnb": "^19.0.4",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-import-resolver-meteor": "^0.4.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-jsx-a11y": "^6.7.1",
+    "eslint-plugin-meteor": "^7.3.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-react": "^7.32.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "prettier": "^2.8.5"
+  }
+}
