@@ -4,9 +4,9 @@ node_modules
 .npm
 
 # Meteor recommends we track these files
-!./meteor_packages/mats-common/.npm/package/.gitignore
-!./meteor_packages/mats-common/.npm/package/README
-!./meteor_packages/mats-common/.npm/package/npm-shrinkwrap.json
+!.npm/package/.gitignore
+!.npm/package/README
+!.npm/package/npm-shrinkwrap.json
 
 # IDEs
 .idea
