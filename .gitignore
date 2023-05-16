@@ -1,4 +1,20 @@
-.DS_Store
+# Meteor recommendations
+node_modules
+.meteor
+.npm
+
+# Meteor recommends we track these files
+!./meteor_packages/mats-common/.npm/package/.gitignore
+!./meteor_packages/mats-common/.npm/package/README
+!./meteor_packages/mats-common/.npm/package/npm-shrinkwrap.json
+
+# IDEs
 .idea
-meteor_packages/.idea
-meteor_packages/mats-common/.npm/package/npm-shrinkwrap.json
+.vscode
+
+# Python
+__pycache__/
+*.pyc
+
+# OS Cruft
+.DS_Store
