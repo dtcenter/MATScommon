@@ -5,6 +5,6 @@
 export default (plotType) => {
   $("#plotTypes-selector").scrollIntoView();
   $("#plotTypes-selector").click();
-  $("#plot-type-" + plotType).scrollIntoView();
-  $("#plot-type-" + plotType).click();
+  $(`#plot-type-${plotType}`).scrollIntoView();
+  $(`#plot-type-${plotType}`).click();
 };

@@ -5,14 +5,14 @@
 /*
 generic Math Functions
  */
-var isNum = function (args) {
+const isNum = function (args) {
   if (args === null || args === undefined) {
     return false;
   }
   args = args.toString();
   if (args.length === 0) return false;
 
-  for (var i = 0; i < args.length; i++) {
+  for (let i = 0; i < args.length; i++) {
     if (
       (args.substring(i, i + 1) < "0" || args.substring(i, i + 1) > "9") &&
       args.substring(i, i + 1) !== "." &&
@@ -25,65 +25,62 @@ var isNum = function (args) {
   return true;
 };
 
-var mean = function (arr) {
-  var len = 0;
-  var sum = 0;
+const mean = function (arr) {
+  let len = 0;
+  let sum = 0;
 
-  for (var i = 0; i < arr.length; i++) {
+  for (let i = 0; i < arr.length; i++) {
     if (arr[i] === "") {
     } else if (!isNum(arr[i])) {
-      //alert(arr[i] + " is not number!");
+      // alert(arr[i] + " is not number!");
       console.log(
-        "Error: value at position: " + i + " is not number! Mean Calculation failed!"
+        `Error: value at position: ${i} is not number! Mean Calculation failed!`
       );
       return 0;
     } else {
-      len = len + 1;
-      sum = sum + parseFloat(arr[i]);
+      len += 1;
+      sum += parseFloat(arr[i]);
     }
   }
   return sum / len;
 };
 
-var variance = function (arr) {
-  var len = 0;
-  var sum = 0;
+const variance = function (arr) {
+  let len = 0;
+  let sum = 0;
   for (var i = 0; i < arr.length; i++) {
     if (arr[i] === "") {
     } else if (!isNum(arr[i])) {
-      //alert(arr[i] + " is not number, Variance Calculation failed!");
-      console.log(
-        "value at position " + i + " is not number, Variance Calculation failed!"
-      );
+      // alert(arr[i] + " is not number, Variance Calculation failed!");
+      console.log(`value at position ${i} is not number, Variance Calculation failed!`);
       return 0;
     } else {
-      len = len + 1;
-      sum = sum + parseFloat(arr[i]);
+      len += 1;
+      sum += parseFloat(arr[i]);
     }
   }
 
-  var v = 0;
+  let v = 0;
   if (len > 1) {
-    var mean = sum / len;
+    const mean = sum / len;
     for (var i = 0; i < arr.length; i++) {
       if (arr[i] === "") {
       } else {
-        v = v + (arr[i] - mean) * (arr[i] - mean);
+        v += (arr[i] - mean) * (arr[i] - mean);
       }
     }
 
     return v / len;
-  } else {
-    return 0;
   }
+  return 0;
 };
 
-var median = function (arr) {
+const median = function (arr) {
   arr.sort(function (a, b) {
     return a - b;
   });
 
-  var median = 0;
+  let median = 0;
 
   if (arr.length % 2 === 1) {
     median = arr[(arr.length + 1) / 2 - 1];
@@ -95,8 +92,8 @@ var median = function (arr) {
 };
 
 export default matsMathUtils = {
-  isNum: isNum,
-  mean: mean,
-  variance: variance,
-  median: median,
+  isNum,
+  mean,
+  variance,
+  median,
 };

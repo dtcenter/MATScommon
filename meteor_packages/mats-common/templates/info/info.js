@@ -5,13 +5,13 @@
 import { matsPlotUtils } from "meteor/randyp:mats-common";
 
 Template.info.helpers({
-  infoMessage: function () {
+  infoMessage() {
     return getInfo();
   },
 });
 
 Template.info.events({
-  "click .clear-info": function () {
+  "click .clear-info"() {
     clearInfo();
     matsPlotUtils.enableActionButtons();
     return false;

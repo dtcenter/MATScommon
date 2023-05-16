@@ -21,5 +21,5 @@ function getVersionsFromEnv() {
 }
 
 export default versionInfo = {
-  getVersionsFromEnv: getVersionsFromEnv,
+  getVersionsFromEnv,
 };

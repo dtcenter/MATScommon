@@ -6,41 +6,41 @@ import { matsCollections, matsParamUtils, matsTypes } from "meteor/randyp:mats-c
 import daterangepicker from "daterangepicker";
 
 Template.dateRange.helpers({
-  defaultDate: function () {
+  defaultDate() {
     const defaultDateRange = matsParamUtils.getDefaultDateRange(this.name);
     return defaultDateRange.dstr;
   },
 });
 
 Template.dateRange.onRendered(function () {
-  //NOTE: Date fields are special in that they are qualified by plotType.
-  //TimeSeries and Scatter plots have a common date range
+  // NOTE: Date fields are special in that they are qualified by plotType.
+  // TimeSeries and Scatter plots have a common date range
   // but profile plots have a date range for each curve.
   // The decision to hide or show a dataRange is made here in the dateRange template
 
-  const name = this.data.name;
-  const idref = name + "-" + this.data.type;
-  const controlButtonRef = "controlButton-" + name + "-value";
-  const elem = document.getElementById("element-" + name);
-  const superiorNames = this.data.superiorNames;
+  const { name } = this.data;
+  const idref = `${name}-${this.data.type}`;
+  const controlButtonRef = `controlButton-${name}-value`;
+  const elem = document.getElementById(`element-${name}`);
+  const { superiorNames } = this.data;
   const defaultDateRange = matsParamUtils.getDefaultDateRange(name);
   const startInit = defaultDateRange.startDate;
   const stopInit = defaultDateRange.stopDate;
-  const dstr = defaultDateRange.dstr;
+  const { dstr } = defaultDateRange;
   const isMetexpress =
     matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
-  const appName = matsCollections.Settings.findOne({}).appName;
-  var statisticTranslations = {};
+  const { appName } = matsCollections.Settings.findOne({});
+  let statisticTranslations = {};
   if (isMetexpress) {
-    statisticTranslations = matsCollections["statistic"].findOne({
+    statisticTranslations = matsCollections.statistic.findOne({
       name: "statistic",
     }).valuesMap;
   }
 
   $(function () {
-    $("#" + idref).daterangepicker({
+    $(`#${idref}`).daterangepicker({
       autoApply: true,
-      parentEL: $("#" + idref),
+      parentEL: $(`#${idref}`),
       timePicker: true,
       timePicker24Hour: true,
       timePickerIncrement: 1,
@@ -83,7 +83,7 @@ Template.dateRange.onRendered(function () {
     matsParamUtils.setValueTextForParamName(name, dstr);
   });
 
-  $("#" + idref).on("apply.daterangepicker", function (ev, picker) {
+  $(`#${idref}`).on("apply.daterangepicker", function (ev, picker) {
     if (picker.startDate.toString() === picker.endDate.toString()) {
       setError(
         new Error(
@@ -96,22 +96,23 @@ Template.dateRange.onRendered(function () {
       );
       return false;
     }
-    const valStr =
-      picker.startDate.locale("en").format("MM/DD/YYYY HH:mm") +
-      " - " +
-      picker.endDate.locale("en").format("MM/DD/YYYY HH:mm");
+    const valStr = `${picker.startDate
+      .locale("en")
+      .format("MM/DD/YYYY HH:mm")} - ${picker.endDate
+      .locale("en")
+      .format("MM/DD/YYYY HH:mm")}`;
     matsParamUtils.setValueTextForParamName(name, valStr);
     elem.style.display = "none";
     const curveItem =
       Session.get("editMode") === undefined && Session.get("editMode") === ""
         ? undefined
-        : document.getElementById("curveItem-" + Session.get("editMode"));
+        : document.getElementById(`curveItem-${Session.get("editMode")}`);
     if (curveItem) {
       $("#save").trigger("click");
     }
   });
 
-  $("#" + idref).on("cancel.daterangepicker", function () {
+  $(`#${idref}`).on("cancel.daterangepicker", function () {
     elem.style.display = "none";
   });
 
@@ -122,9 +123,7 @@ Template.dateRange.onRendered(function () {
       $(this).prepend(
         "<span class='newRangeLabel' style='text-align: right; font-size: 16px;'>Apply this range?&nbsp;&nbsp;</span>"
       );
-      $(this)
-        .find("button.applyBtn")
-        .attr("id", name + "-applyBtn");
+      $(this).find("button.applyBtn").attr("id", `${name}-applyBtn`);
     }
   });
 
@@ -132,10 +131,10 @@ Template.dateRange.onRendered(function () {
     try {
       // get the current values from the element and check for invalid
       const curVals = matsParamUtils.getValueForParamName(name).split(" - "); // it is a date object values are "someFromDate - someToDate"
-      var startDsr = moment.utc(curVals[0], "MM/DD/YYYY HH:mm");
-      var endDsr = moment.utc(curVals[1], "MM/DD/YYYY HH:mm");
+      let startDsr = moment.utc(curVals[0], "MM/DD/YYYY HH:mm");
+      let endDsr = moment.utc(curVals[1], "MM/DD/YYYY HH:mm");
       // get superior values and check for errors
-      var superiorVals = [];
+      const superiorVals = [];
       if (superiorNames !== undefined) {
         const superiorDimensionality =
           superiorNames !== null &&
@@ -144,14 +143,14 @@ Template.dateRange.onRendered(function () {
             ? superiorNames.length
             : 1;
         for (var si = 0; si < superiorDimensionality; si++) {
-          var superiors = [];
+          let superiors = [];
           if (superiorDimensionality === 1) {
             superiors = superiorNames;
           } else {
             superiors = superiorNames[si];
           }
-          var datesMap = undefined;
-          for (var si2 = 0; si2 < superiors.length; si2++) {
+          let datesMap;
+          for (let si2 = 0; si2 < superiors.length; si2++) {
             const thisSuperior = superiors[si2];
             if (matsCollections[thisSuperior] !== undefined) {
               datesMap =
@@ -159,7 +158,7 @@ Template.dateRange.onRendered(function () {
                   ? matsCollections[thisSuperior].findOne({ name: thisSuperior }).dates
                   : datesMap;
             }
-            var sval =
+            let sval =
               matsParamUtils.getInputElementForParamName(thisSuperior).options[
                 matsParamUtils.getInputElementForParamName(thisSuperior).selectedIndex
               ].text;
@@ -192,10 +191,7 @@ Template.dateRange.onRendered(function () {
             superiorVals[si].min = superiorMinimumMoment;
           } else {
             setError(
-              "date_range refresh error: The end date for the superiors: " +
-                superiors +
-                " is invalid: " +
-                superiorMinimumDateStr
+              `date_range refresh error: The end date for the superiors: ${superiors} is invalid: ${superiorMinimumDateStr}`
             );
             return false;
           }
@@ -209,22 +205,16 @@ Template.dateRange.onRendered(function () {
             superiorVals[si].max = superiorMaximumMoment;
           } else {
             setError(
-              "date_range refresh error: The end date for the superiors: " +
-                superiors +
-                " is invalid: " +
-                superiorMaximumDateStr
+              `date_range refresh error: The end date for the superiors: ${superiors} is invalid: ${superiorMaximumDateStr}`
             );
             return false;
           }
           if (superiorVals[si].min.isAfter(superiorVals[si].max)) {
             // error
             setError(
-              "date_range refresh error: The date range for the superiors: " +
-                superiors +
-                " is invalid. It has a start date/time that is later than the end date/time - " +
-                superiorVals[si].min.toString() +
-                " is after " +
-                superiorVals[si].max.toString()
+              `date_range refresh error: The date range for the superiors: ${superiors} is invalid. It has a start date/time that is later than the end date/time - ${superiorVals[
+                si
+              ].min.toString()} is after ${superiorVals[si].max.toString()}`
             );
             return false;
           }
@@ -237,8 +227,8 @@ Template.dateRange.onRendered(function () {
       }
 
       // these need to be the values for the superiors as they will be not as they are
-      var dataStart = superiorVals[0].min;
-      var dataEnd = superiorVals[0].max;
+      let dataStart = superiorVals[0].min;
+      let dataEnd = superiorVals[0].max;
 
       if (superiorVals.length > 1) {
         for (si = 1; si < superiorVals.length; si++) {
@@ -247,37 +237,23 @@ Template.dateRange.onRendered(function () {
           if (dataEnd.isBefore(tStart)) {
             // NCD not coincidental data?
             setInfo(
-              "You do not have any coincidental data with these two selections: The valid date ranges do not overlap - " +
-                dataStart.toString() +
-                " to " +
-                dataEnd.toString() +
-                " and " +
-                tStart.toString() +
-                " to " +
-                tEnd.toString()
+              `You do not have any coincidental data with these two selections: The valid date ranges do not overlap - ${dataStart.toString()} to ${dataEnd.toString()} and ${tStart.toString()} to ${tEnd.toString()}`
             );
             return false;
-          } else if (tEnd.isBefore(dataStart)) {
+          }
+          if (tEnd.isBefore(dataStart)) {
             // NCD not coincidental data?
             setInfo(
-              "You do not have any coincidental data with these two selections: The valid date ranges do not overlap - " +
-                dataStart.toString() +
-                " to " +
-                dataEnd.toString() +
-                " and " +
-                tStart.toString() +
-                " to " +
-                tEnd.toString()
+              `You do not have any coincidental data with these two selections: The valid date ranges do not overlap - ${dataStart.toString()} to ${dataEnd.toString()} and ${tStart.toString()} to ${tEnd.toString()}`
             );
             return false;
-          } else {
-            // overlapping data
-            if (tStart.isAfter(dataStart)) {
-              dataStart = tStart;
-            }
-            if (tEnd.isBefore(dataEnd)) {
-              dataEnd = tEnd;
-            }
+          }
+          // overlapping data
+          if (tStart.isAfter(dataStart)) {
+            dataStart = tStart;
+          }
+          if (tEnd.isBefore(dataEnd)) {
+            dataEnd = tEnd;
           }
         }
       }
@@ -289,7 +265,7 @@ Template.dateRange.onRendered(function () {
           // the current user setting and the valid range do not overlap so just set the DSR to the most recent 30 days of the valid range
           endDsr = dataEnd;
           // set startDsr to the endDsr less 30 days or less the startDsr whichever is later
-          var endDsrLess30 = moment.utc(endDsr).subtract(30, "days");
+          const endDsrLess30 = moment.utc(endDsr).subtract(30, "days");
           if (endDsrLess30.isAfter(dataStart)) {
             startDsr = endDsrLess30;
           } else {
@@ -309,19 +285,22 @@ Template.dateRange.onRendered(function () {
         endDsr = dataEnd;
       }
       // now reset the DSR with the evaluated date range
-      const jqIdRef = "#" + idref;
+      const jqIdRef = `#${idref}`;
       $(jqIdRef).data("daterangepicker").setStartDate(startDsr);
       $(jqIdRef).data("daterangepicker").setEndDate(endDsr);
-      const newDateStr =
-        moment.utc(startDsr).locale("en").format("MM/DD/YYYY HH:mm") +
-        " - " +
-        moment.utc(endDsr).locale("en").format("MM/DD/YYYY HH:mm");
+      const newDateStr = `${moment
+        .utc(startDsr)
+        .locale("en")
+        .format("MM/DD/YYYY HH:mm")} - ${moment
+        .utc(endDsr)
+        .locale("en")
+        .format("MM/DD/YYYY HH:mm")}`;
       matsParamUtils.setValueTextForParamName(name, newDateStr);
       if (elem && elem.style && elem.style.display === "block") {
         elem.style.display = "none";
       }
     } catch (error) {
-      console.log("Error in date_range.js.refresh : " + error.message);
+      console.log(`Error in date_range.js.refresh : ${error.message}`);
     }
   };
 
@@ -332,7 +311,7 @@ Template.dateRange.onRendered(function () {
 });
 
 Template.dateRange.events({
-  "click, blur": function (event) {
+  "click, blur"(event) {
     try {
       const text = event.currentTarget.value;
       matsParamUtils.setValueTextForParamName(event.target.name, text);
@@ -340,7 +319,7 @@ Template.dateRange.events({
       matsParamUtils.setValueTextForParamName(event.target.name, "");
     }
   },
-  change: function (event) {
+  change(event) {
     try {
       const text = event.currentTarget.value;
       matsParamUtils.setValueTextForParamName(event.target.name, text);

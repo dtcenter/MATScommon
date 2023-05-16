@@ -5,13 +5,12 @@
 import { matsCollections } from "meteor/randyp:mats-common";
 
 Template.version.helpers({
-  version: function () {
+  version() {
     if (matsCollections.Settings.findOne()) {
-      var settings = matsCollections.Settings.findOne({});
-      var version = settings.appVersion;
+      const settings = matsCollections.Settings.findOne({});
+      const version = settings.appVersion;
       return version;
-    } else {
-      return "unknown";
     }
+    return "unknown";
   },
 });

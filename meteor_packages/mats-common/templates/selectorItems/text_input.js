@@ -2,16 +2,15 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import { matsCurveUtils } from "meteor/randyp:mats-common";
-import { matsParamUtils } from "meteor/randyp:mats-common";
-import { matsTypes } from "meteor/randyp:mats-common";
+import { matsCurveUtils, matsParamUtils, matsTypes } from "meteor/randyp:mats-common";
+
 Template.textInput.helpers({
-  defaultTextInput: function () {
+  defaultTextInput() {
     if (this.name === "label") {
       // labels are handled specially
-      var label;
-      var input = document.getElementById("label-textInput");
-      var value = document.getElementById("controlButton-label-value");
+      let label;
+      const input = document.getElementById("label-textInput");
+      const value = document.getElementById("controlButton-label-value");
       if (input && value) {
         if (label !== input.value || label !== value.textContent) {
           if (!Session.get("NextCurveLabel")) {
@@ -35,7 +34,7 @@ Template.textInput.helpers({
 });
 
 Template.textInput.events({
-  "click, blur": function (event) {
+  "click, blur"(event) {
     try {
       // label is handled differently - special case because of NextCurveLabel stored in Session
       const text = event.currentTarget.value;
@@ -46,7 +45,7 @@ Template.textInput.events({
       matsParamUtils.setValueTextForParamName(event.target.name, "");
     }
   },
-  change: function (event) {
+  change(event) {
     try {
       // label is handled differently - special case because of NextCurveLabel stored in Session
       const text = event.currentTarget.value;

@@ -2,15 +2,17 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import { matsTypes } from "meteor/randyp:mats-common";
-import { matsCollections } from "meteor/randyp:mats-common";
-import { matsPlotUtils } from "meteor/randyp:mats-common";
-import { matsParamUtils } from "meteor/randyp:mats-common";
+import {
+  matsTypes,
+  matsCollections,
+  matsPlotUtils,
+  matsParamUtils,
+} from "meteor/randyp:mats-common";
 
-var allGroups = {};
+const allGroups = {};
 Template.curveParamItemGroup.helpers({
-  curveParamGroups: function (c) {
-    const label = c.label;
+  curveParamGroups(c) {
+    const { label } = c;
     const curves = Session.get("Curves");
     const index = curves.findIndex(function (obj) {
       return obj.label === label;
@@ -19,10 +21,10 @@ Template.curveParamItemGroup.helpers({
     // create a set of groups each with an array of 6 params for display
     const lastUpdate = Session.get("lastUpdate");
     const plotType = matsPlotUtils.getPlotType();
-    var elmementValues = matsParamUtils.getElementValues().curveParams;
+    const elmementValues = matsParamUtils.getElementValues().curveParams;
     // derive the sorted pValues, xpValues, and ypValues from the sorted params and the elementValues
-    var pValues = [];
-    var pattern;
+    const pValues = [];
+    let pattern;
     switch (plotType) {
       case matsTypes.PlotTypes.profile:
         pattern = matsCollections.CurveTextPatterns.findOne({
@@ -121,22 +123,22 @@ Template.curveParamItemGroup.helpers({
         });
         break;
     }
-    const groupSize = pattern.groupSize;
-    const displayParams = pattern.displayParams;
-    for (var di = 0; di < displayParams.length; di++) {
+    const { groupSize } = pattern;
+    const { displayParams } = pattern;
+    for (let di = 0; di < displayParams.length; di++) {
       pValues.push({
         name: displayParams[di],
         value: c[displayParams[di]],
         color: c.color,
         curve: c.label,
-        index: index,
+        index,
       });
     }
 
     // create array of parameter value display groups each of groupSize
-    var pGroups = [];
-    var groupParams = [];
-    var pvi = 0;
+    const pGroups = [];
+    let groupParams = [];
+    let pvi = 0;
     while (pvi < pValues.length) {
       if (
         pValues[pvi] &&
@@ -162,14 +164,14 @@ Template.curveParamItemGroup.helpers({
     allGroups[c.label] = pGroups;
     return pGroups;
   },
-  curveNumber: function (elem) {
+  curveNumber(elem) {
     return elem.index;
   },
-  curveParams: function (paramGroup) {
+  curveParams(paramGroup) {
     return paramGroup;
   },
-  label: function (elem) {
-    var pLabel = "";
+  label(elem) {
+    let pLabel = "";
     if (matsPlotUtils.getPlotType() === matsTypes.PlotTypes.scatter2d) {
       const pNameArr = elem.name.match(/([xy]axis-)(.*)/);
       if (pNameArr === null) {
@@ -185,14 +187,12 @@ Template.curveParamItemGroup.helpers({
           pLabel = elem.name;
         }
       }
-    } else {
-      if (matsCollections[elem.name] !== undefined) {
-        const p = matsCollections[elem.name].findOne({ name: elem.name });
-        if (p.controlButtonText) {
-          pLabel = p.controlButtonText;
-        } else {
-          pLabel = elem.name;
-        }
+    } else if (matsCollections[elem.name] !== undefined) {
+      const p = matsCollections[elem.name].findOne({ name: elem.name });
+      if (p.controlButtonText) {
+        pLabel = p.controlButtonText;
+      } else {
+        pLabel = elem.name;
       }
     }
     // Make everything title case
@@ -207,52 +207,52 @@ Template.curveParamItemGroup.helpers({
     }
     return pLabel.join(" ");
   },
-  name: function (elem) {
+  name(elem) {
     return elem.name;
   },
-  id: function (elem) {
+  id(elem) {
     return elem.name;
   },
-  buttonId: function (elem) {
+  buttonId(elem) {
     const name = new String(elem.name);
     const upperName = name.toUpperCase();
     const curveNumber = elem.index;
-    const spanId = upperName + "-curve-" + curveNumber + "-Button";
+    const spanId = `${upperName}-curve-${curveNumber}-Button`;
     return spanId;
   },
-  spanId: function (elem) {
+  spanId(elem) {
     const name = new String(elem.name);
     const upperName = name.toUpperCase();
     const curveNumber = elem.index;
-    const spanId = upperName + "-curve-" + curveNumber + "-Item";
+    const spanId = `${upperName}-curve-${curveNumber}-Item`;
     return spanId;
   },
-  value: function (elem) {
+  value(elem) {
     // have to get this from the session
     const curve = Session.get("Curves")[elem.index];
     if (curve === undefined) {
       return "";
     }
-    var value = curve[elem.name];
-    var text = "";
+    const value = curve[elem.name];
+    let text = "";
     if (Object.prototype.toString.call(value) === "[object Array]") {
       if (value.length === 1) {
         text = value[0];
       } else if (value.length > 1) {
-        text = value[0] + " .. " + value[value.length - 1];
+        text = `${value[0]} .. ${value[value.length - 1]}`;
       }
     } else {
       text = value;
     }
     return text;
   },
-  defaultColor: function (elem) {
+  defaultColor(elem) {
     return elem.color;
   },
-  border: function (elem) {
-    var elementChanged = Session.get("elementChanged");
-    const name = elem.name; // for xaxis params
-    const curve = elem.curve;
+  border(elem) {
+    const elementChanged = Session.get("elementChanged");
+    const { name } = elem; // for xaxis params
+    const { curve } = elem;
     const adb = name === Session.get("activeDisplayButton");
     const isEditMode = curve === Session.get("editMode");
     const inputElemIsVisible = matsParamUtils.isInputElementVisible(name);
@@ -261,13 +261,13 @@ Template.curveParamItemGroup.helpers({
     }
     return "";
   },
-  editCurve: function () {
+  editCurve() {
     return Session.get("editMode");
   },
-  editTarget: function () {
+  editTarget() {
     return Session.get("eventTargetCurve");
   },
-  displayParam: function (elem) {
+  displayParam(elem) {
     if (elem.name === "label") {
       return "none";
     }

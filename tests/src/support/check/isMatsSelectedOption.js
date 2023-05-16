@@ -16,7 +16,7 @@ export default (parameter, value) => {
       if (text.includes(" .. ") && !value.includes(" .. ")) {
         // this is a multiselect, which have different display formats than regular selectors.
         // we need to reformat our expected value to match.
-        value = value + " .. " + value;
+        value = `${value} .. ${value}`;
       }
       pause(1000);
     }

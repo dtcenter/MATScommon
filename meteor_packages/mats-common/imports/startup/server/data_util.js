@@ -2,9 +2,7 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import { matsTypes } from "meteor/randyp:mats-common";
-import { matsCollections } from "meteor/randyp:mats-common";
-import { matsPlotUtils } from "meteor/randyp:mats-common";
+import { matsTypes, matsCollections, matsPlotUtils } from "meteor/randyp:mats-common";
 
 // this function checks if two JSON objects are identical
 const areObjectsEqual = function (o, p) {
@@ -13,9 +11,8 @@ const areObjectsEqual = function (o, p) {
   }
   if (JSON.stringify(o) === JSON.stringify(p)) {
     return true;
-  } else {
-    return false;
   }
+  return false;
 };
 
 // this function checks if values of subArray are also in superArray
@@ -26,7 +23,8 @@ const arrayContainsArray = function (superArray, subArray) {
   subArray.sort(function (a, b) {
     return Number(a) - Number(b);
   });
-  var i, j;
+  let i;
+  let j;
   for (i = 0, j = 0; i < superArray.length && j < subArray.length; ) {
     if (superArray[i] < subArray[j]) {
       ++i;
@@ -44,7 +42,9 @@ const arrayContainsArray = function (superArray, subArray) {
 
 // this function checks if the entire array subArray is contained in superArray
 const arrayContainsSubArray = function (superArray, subArray) {
-  var i, j, current;
+  let i;
+  let j;
+  let current;
   for (i = 0; i < superArray.length; ++i) {
     if (subArray.length === superArray[i].length) {
       current = superArray[i];
@@ -60,15 +60,15 @@ const arraysEqual = function (a, b) {
   if (a === b) return true;
   if (!a || !b) return false;
   if (a.length !== b.length) return false;
-  for (var i = 0; i < a.length; ++i) {
+  for (let i = 0; i < a.length; ++i) {
     if (a[i] !== b[i]) return false;
   }
   return true;
 };
 
 const arrayUnique = function (a) {
-  var arr = [];
-  for (var i = 0; i < a.length; i++) {
+  const arr = [];
+  for (let i = 0; i < a.length; i++) {
     if (!arr.includes(a[i])) {
       arr.push(a[i]);
     }
@@ -78,7 +78,9 @@ const arrayUnique = function (a) {
 
 // this function finds the position of the array subArray in superArray
 const findArrayInSubArray = function (superArray, subArray) {
-  var i, j, current;
+  let i;
+  let j;
+  let current;
   for (i = 0; i < superArray.length; ++i) {
     if (subArray.length === superArray[i].length) {
       current = superArray[i];
@@ -92,8 +94,8 @@ const findArrayInSubArray = function (superArray, subArray) {
 // this function checks if an object is a value in another object
 const objectContainsObject = function (superObject, subObject) {
   const superObjectKeys = Object.keys(superObject);
-  var currentObject;
-  for (var i = 0; i < superObjectKeys.length; i++) {
+  let currentObject;
+  for (let i = 0; i < superObjectKeys.length; i++) {
     currentObject = superObject[superObjectKeys[i]];
     if (areObjectsEqual(subObject, currentObject)) {
       return true;
@@ -123,7 +125,7 @@ const median = function (data) {
   data.sort(function (a, b) {
     return a - b;
   });
-  var half = Math.floor(data.length / 2);
+  const half = Math.floor(data.length / 2);
   if (data.length % 2) return data[half];
   return (data[half - 1] + data[half]) / 2.0;
 };
@@ -131,20 +133,20 @@ const median = function (data) {
 // utility for calculating the stdev of an array
 const stdev = function (data) {
   if (data.length === 0) return 0;
-  var avg = average(data);
-  var squareDiffs = data.map(function (value) {
-    var diff = value - avg;
+  const avg = average(data);
+  const squareDiffs = data.map(function (value) {
+    const diff = value - avg;
     return diff * diff;
   });
-  var avgSquareDiff = average(squareDiffs);
+  const avgSquareDiff = average(squareDiffs);
   return Math.sqrt(avgSquareDiff);
 };
 
 // this function makes sure date strings are in the correct format
 const dateConvert = function (dStr) {
   if (dStr === undefined || dStr === " ") {
-    var now = new Date();
-    var date = new Date(
+    const now = new Date();
+    const date = new Date(
       now.getUTCFullYear(),
       now.getUTCMonth(),
       now.getUTCDate(),
@@ -157,36 +159,36 @@ const dateConvert = function (dStr) {
     var month = date.getUTCMonth();
     var hour = date.getUTCHours();
     var minute = date.getUTCMinutes();
-    return month + "/" + day + "/" + yr + " " + hour + ":" + minute;
+    return `${month}/${day}/${yr} ${hour}:${minute}`;
   }
-  var dateParts = dStr.split(" ");
-  var dateArray = dateParts[0].split(/[\-\/]/); // split on - or /    01-01-2017 OR 01/01/2017
+  const dateParts = dStr.split(" ");
+  const dateArray = dateParts[0].split(/[\-\/]/); // split on - or /    01-01-2017 OR 01/01/2017
   var month = dateArray[0];
   var day = dateArray[1];
   var yr = dateArray[2];
   var hour = 0;
   var minute = 0;
   if (dateParts[1]) {
-    var timeArray = dateParts[1].split(":");
+    const timeArray = dateParts[1].split(":");
     hour = timeArray[0];
     minute = timeArray[1];
   }
-  return month + "/" + day + "/" + yr + " " + hour + ":" + minute;
+  return `${month}/${day}/${yr} ${hour}:${minute}`;
 };
 
 // splits the date range string from the date selector into standardized fromDate/toDate strings,
 //  plus the epochs for the fromDate and toDate
 const getDateRange = function (dateRange) {
-  var dates = dateRange.split(" - ");
-  var fromDateStr = dates[0];
-  var fromDate = dateConvert(fromDateStr);
-  var toDateStr = dates[1];
-  var toDate = dateConvert(toDateStr);
-  var fromSecs = secsConvert(fromDateStr);
-  var toSecs = secsConvert(toDateStr);
+  const dates = dateRange.split(" - ");
+  const fromDateStr = dates[0];
+  const fromDate = dateConvert(fromDateStr);
+  const toDateStr = dates[1];
+  const toDate = dateConvert(toDateStr);
+  const fromSecs = secsConvert(fromDateStr);
+  const toSecs = secsConvert(toDateStr);
   return {
-    fromDate: fromDate,
-    toDate: toDate,
+    fromDate,
+    toDate,
     fromSeconds: fromSecs,
     toSeconds: toSecs,
   };
@@ -195,25 +197,25 @@ const getDateRange = function (dateRange) {
 // this function converts a date string into an epoch
 const secsConvert = function (dStr) {
   if (dStr === undefined || dStr === " ") {
-    var now = new Date();
+    const now = new Date();
     return now.getTime() / 1000;
-  } else {
-    var dateParts = dStr.split(" ");
-    var dateArray = dateParts[0].split(/[\-\/]/); // split on - or /    01-01-2017 OR 01/01/2017
-    var month = dateArray[0];
-    var day = dateArray[1];
-    var yr = dateArray[2];
-    var hour = 0;
-    var minute = 0;
-    if (dateParts[1]) {
-      var timeArray = dateParts[1].split(":");
-      hour = timeArray[0];
-      minute = timeArray[1];
-    }
-    var my_date = new Date(Date.UTC(yr, month - 1, day, hour, minute, 0));
-    // to UTC time, not local time
-    var date_in_secs = my_date.getTime();
   }
+  const dateParts = dStr.split(" ");
+  const dateArray = dateParts[0].split(/[\-\/]/); // split on - or /    01-01-2017 OR 01/01/2017
+  const month = dateArray[0];
+  const day = dateArray[1];
+  const yr = dateArray[2];
+  let hour = 0;
+  let minute = 0;
+  if (dateParts[1]) {
+    const timeArray = dateParts[1].split(":");
+    hour = timeArray[0];
+    minute = timeArray[1];
+  }
+  const my_date = new Date(Date.UTC(yr, month - 1, day, hour, minute, 0));
+  // to UTC time, not local time
+  const date_in_secs = my_date.getTime();
+
   // to UTC time, not local time
   // return date_in_secs/1000 -3600*6;
   return date_in_secs / 1000;
@@ -362,25 +364,25 @@ const doSettings = function (
     matsCollections.Settings.insert({
       LabelPrefix: scorecard ? "Block" : "Curve",
       Title: title,
-      dbType: dbType,
+      dbType,
       appVersion: version,
-      commit: commit,
-      appName: appName,
-      appType: appType,
+      commit,
+      appName,
+      appType,
       LineWidth: 3.5,
       NullFillString: "---",
       resetFromCode: false,
-      mapboxKey: mapboxKey,
-      appDefaultGroup: appDefaultGroup,
-      appDefaultDB: appDefaultDB,
-      appDefaultModel: appDefaultModel,
-      thresholdUnits: thresholdUnits,
-      appMessage: appMessage,
-      scorecard: scorecard,
+      mapboxKey,
+      appDefaultGroup,
+      appDefaultDB,
+      appDefaultModel,
+      thresholdUnits,
+      appMessage,
+      scorecard,
     });
   }
   // always update the version, roles, and the hostname, not just if it doesn't exist...
-  var settings = matsCollections.Settings.findOne({});
+  const settings = matsCollections.Settings.findOne({});
   const deploymentRoles = {
     "mats-docker-dev": "development",
     "mats-docker-preint": "integration",
@@ -388,12 +390,12 @@ const doSettings = function (
     esrl: "production",
     metexpress: "production",
   };
-  var settingsId = settings._id;
-  var os = Npm.require("os");
-  var hostname = os.hostname().split(".")[0];
-  settings["appVersion"] = version;
-  settings["hostname"] = hostname;
-  settings["deploymentRoles"] = JSON.stringify(deploymentRoles);
+  const settingsId = settings._id;
+  const os = Npm.require("os");
+  const hostname = os.hostname().split(".")[0];
+  settings.appVersion = version;
+  settings.hostname = hostname;
+  settings.deploymentRoles = JSON.stringify(deploymentRoles);
   matsCollections.Settings.update(settingsId, { $set: settings });
 };
 
@@ -406,7 +408,7 @@ const callMetadataAPI = function (
   hideOtherFor
 ) {
   const Future = require("fibers/future");
-  let pFuture = new Future();
+  const pFuture = new Future();
   HTTP.get(queryURL, {}, function (error, response) {
     if (error) {
       console.log(error);
@@ -416,27 +418,25 @@ const callMetadataAPI = function (
         // this is the list of apps. It's the only array in the API.
         destinationStructure = [...destinationStructure, ...metadata];
         expectedApps = metadata;
-      } else {
-        if (Object.keys(metadata).length === 0) {
-          // this metadata type (e.g. 'threshold') is not valid for this app
-          // we need to add placeholder metadata to the destination structure
-          // and add the selector in question to the hideOtherFor map.
-          let dummyMetadata = {};
-          if (!selector.includes("values")) {
-            hideOtherFor[selector] =
-              hideOtherFor[selector] === undefined ? [] : hideOtherFor[selector];
-            for (let eidx = 0; eidx < expectedApps.length; eidx++) {
-              dummyMetadata[expectedApps[eidx]] = fakeMetadata;
-              hideOtherFor[selector].push(expectedApps[eidx]);
-            }
+      } else if (Object.keys(metadata).length === 0) {
+        // this metadata type (e.g. 'threshold') is not valid for this app
+        // we need to add placeholder metadata to the destination structure
+        // and add the selector in question to the hideOtherFor map.
+        const dummyMetadata = {};
+        if (!selector.includes("values")) {
+          hideOtherFor[selector] =
+            hideOtherFor[selector] === undefined ? [] : hideOtherFor[selector];
+          for (let eidx = 0; eidx < expectedApps.length; eidx++) {
+            dummyMetadata[expectedApps[eidx]] = fakeMetadata;
+            hideOtherFor[selector].push(expectedApps[eidx]);
           }
-          destinationStructure = { ...destinationStructure, ...dummyMetadata };
-        } else {
-          destinationStructure = { ...destinationStructure, ...metadata };
         }
+        destinationStructure = { ...destinationStructure, ...dummyMetadata };
+      } else {
+        destinationStructure = { ...destinationStructure, ...metadata };
       }
     }
-    pFuture["return"]();
+    pFuture.return();
   });
   pFuture.wait();
   return [destinationStructure, expectedApps, hideOtherFor];
@@ -445,7 +445,7 @@ const callMetadataAPI = function (
 // calculates the statistic for ctc plots
 const calculateStatCTC = function (hit, fa, miss, cn, n, statistic) {
   if (isNaN(hit) || isNaN(fa) || isNaN(miss) || isNaN(cn)) return null;
-  var queryVal;
+  let queryVal;
   switch (statistic) {
     case "TSS (True Skill Score)":
       queryVal = ((hit * cn - fa * miss) / ((hit + miss) * (fa + cn))) * 100;
@@ -531,8 +531,8 @@ const calculateStatScalar = function (
     isNaN(absSum)
   )
     return null;
-  var queryVal;
-  var variable = statistic.split("_")[1];
+  let queryVal;
+  const variable = statistic.split("_")[1];
   statistic = statistic.split("_")[0];
   switch (statistic) {
     case "RMSE":
@@ -551,7 +551,7 @@ const calculateStatScalar = function (
       queryVal = obsSum / NSum;
       break;
     case "Std deviation":
-      queryVal = Math.sqrt(squareDiffSum / NSum - Math.pow(obsModelDiffSum / NSum, 2));
+      queryVal = Math.sqrt(squareDiffSum / NSum - (obsModelDiffSum / NSum) ** 2);
       break;
     case "MAE (temp and dewpoint only)":
     case "MAE (station plots only)":
@@ -565,11 +565,11 @@ const calculateStatScalar = function (
   if (statistic !== "N") {
     if (variable.includes("temperature") || variable.includes("dewpoint")) {
       if (statistic.includes("average")) {
-        queryVal = queryVal - 32;
+        queryVal -= 32;
       }
-      queryVal = queryVal / 1.8;
+      queryVal /= 1.8;
     } else if (variable.includes("wind")) {
-      queryVal = queryVal / 2.23693629;
+      queryVal /= 2.23693629;
     }
   }
   return queryVal;
@@ -607,18 +607,18 @@ const get_err = function (sVals, sSecs, sLevs, appParams) {
      These should match exactly those, except that they are processed in reverse order.
      */
   const autocorr_limit = 0.95;
-  const hasLevels = appParams.hasLevels;
+  const { hasLevels } = appParams;
 
-  var n = sVals.length;
-  var data_wg = [];
-  var n_gaps = 0;
-  var sum = 0;
-  var sum2 = 0;
-  var d_mean = 0;
-  var sd2 = 0;
-  var sd = 0;
-  var error;
-  var i;
+  let n = sVals.length;
+  const data_wg = [];
+  let n_gaps = 0;
+  let sum = 0;
+  let sum2 = 0;
+  let d_mean = 0;
+  let sd2 = 0;
+  let sd = 0;
+  let error;
+  let i;
 
   if (n < 1) {
     return {
@@ -634,17 +634,17 @@ const get_err = function (sVals, sSecs, sLevs, appParams) {
   }
 
   // find minimum delta_time, if any value missing, set null
-  var last_secs = 0;
-  var minDelta = Number.MAX_VALUE;
-  var minSecs = Number.MAX_VALUE;
-  var max_secs = Number.MIN_VALUE;
-  var minVal = Number.MAX_VALUE;
-  var maxVal = -1 * Number.MAX_VALUE;
-  var secs;
-  var delta;
+  let last_secs = 0;
+  let minDelta = Number.MAX_VALUE;
+  let minSecs = Number.MAX_VALUE;
+  let max_secs = Number.MIN_VALUE;
+  let minVal = Number.MAX_VALUE;
+  let maxVal = -1 * Number.MAX_VALUE;
+  let secs;
+  let delta;
   for (i = 0; i < sSecs.length; i++) {
     if (isNaN(sVals[i])) {
-      n = n - 1;
+      n -= 1;
       continue;
     }
     secs = sSecs[i];
@@ -662,8 +662,8 @@ const get_err = function (sVals, sSecs, sLevs, appParams) {
   }
 
   if (minDelta < 0) {
-    error = "Invalid time interval - minDelta: " + minDelta;
-    console.log("matsDataUtil.getErr: " + error);
+    error = `Invalid time interval - minDelta: ${minDelta}`;
+    console.log(`matsDataUtil.getErr: ${error}`);
   }
   for (i = 0; i < sVals.length; i++) {
     if (isNaN(sVals[i])) continue;
@@ -680,9 +680,9 @@ const get_err = function (sVals, sSecs, sLevs, appParams) {
   }
 
   // look for gaps
-  var lastSecond = -1 * Number.MAX_VALUE;
-  var lastPressure = -1 * Number.MAX_VALUE;
-  var n_pressures;
+  let lastSecond = -1 * Number.MAX_VALUE;
+  let lastPressure = -1 * Number.MAX_VALUE;
+  let n_pressures;
   if (hasLevels) {
     n_pressures = arrayUnique(sLevs).length;
   } else {
@@ -690,16 +690,16 @@ const get_err = function (sVals, sSecs, sLevs, appParams) {
   }
   // set lag1_t to the first time the time changes from its initial value + 1 (data zero based)
   // set lag1_p to the first time the pressure changes from its initial value + 1 (data zero based)
-  var lag1_t = 0;
-  var lag1_p = 0;
-  var r1_t = 0; // autocorrelation for time
-  var r1_p = 0; // autocorrelation for pressure
-  var j = 0; // i is loop index without gaps; j is loop index with gaps
-  var n_deltas = 0;
+  let lag1_t = 0;
+  let lag1_p = 0;
+  let r1_t = 0; // autocorrelation for time
+  let r1_p = 0; // autocorrelation for pressure
+  let j = 0; // i is loop index without gaps; j is loop index with gaps
+  let n_deltas = 0;
 
   for (i = 0; i < sSecs.length; i++) {
     if (isNaN(sVals[i])) continue;
-    var sec = sSecs[i];
+    let sec = sSecs[i];
     if (typeof sec === "string" || sec instanceof String) sec = Number(sec);
     var lev;
     if (hasLevels) {
@@ -732,7 +732,7 @@ const get_err = function (sVals, sSecs, sLevs, appParams) {
         // but if we're using a different lag, which could happen, we'll need
         // to insert all the missing data in each gap. WRM 2/22/2019
         // $n_deltas=1;
-        for (var count = 0; count < n_deltas; count++) {
+        for (let count = 0; count < n_deltas; count++) {
           data_wg.push(null);
           n_gaps++;
           j++;
@@ -748,14 +748,14 @@ const get_err = function (sVals, sSecs, sLevs, appParams) {
   }
 
   // from http://www.itl.nist.gov/div898/handbook/eda/section3/eda35c.htm
-  var r = [];
-  var lag_by_r = {};
-  var lag1_max = lag1_p > lag1_t ? lag1_p : lag1_t;
-  var r_sum = 0;
-  var n_r = 0;
-  var n_in_lag;
-  var lag;
-  var t;
+  const r = [];
+  const lag_by_r = {};
+  const lag1_max = lag1_p > lag1_t ? lag1_p : lag1_t;
+  let r_sum = 0;
+  let n_r = 0;
+  let n_in_lag;
+  let lag;
+  let t;
   for (lag = 0; lag <= lag1_max; lag++) {
     r[lag] = 0;
     n_in_lag = 0;
@@ -793,23 +793,23 @@ const get_err = function (sVals, sSecs, sLevs, appParams) {
   }
 
   const betsy = Math.sqrt((n - 1) * (1 - r1_p) * (1 - r1_t));
-  var stde_betsy;
+  let stde_betsy;
   if (betsy !== 0) {
     stde_betsy = sd / betsy;
   } else {
     stde_betsy = null;
   }
   const stats = {
-    d_mean: d_mean,
-    stde_betsy: stde_betsy,
-    sd: sd,
+    d_mean,
+    stde_betsy,
+    sd,
     n_good: n,
     lag1: r[1],
     min: minSecs,
     max: max_secs,
-    minVal: minVal,
-    maxVal: maxVal,
-    sum: sum,
+    minVal,
+    maxVal,
+    sum,
   };
   // console.log("stats are " + JSON.stringify(stats));
   // stde_betsy is standard error with auto correlation
@@ -858,15 +858,14 @@ const checkDiffContourSignificance = function (x1, x2, s1, s2, n1, n2, sigType) 
 
 // calculate the t value for a student's t-test
 const getTValue = function (x1, x2, s1, s2, n1, n2) {
-  return Math.abs(x1 - x2) / Math.sqrt(Math.pow(s1, 2) / n1 + Math.pow(s2, 2) / n2);
+  return Math.abs(x1 - x2) / Math.sqrt(s1 ** 2 / n1 + s2 ** 2 / n2);
 };
 
 // calculate the degrees of freedom for a student's t-test
 const getDfValue = function (x1, x2, s1, s2, n1, n2) {
   return (
-    Math.pow(Math.pow(s1, 2) / n1 + Math.pow(s2, 2) / n2, 2) /
-    ((1 / (n1 - 1)) * Math.pow(Math.pow(s1, 2) / n1, 2) +
-      (1 / (n2 - 1)) * Math.pow(Math.pow(s2, 2) / n2, 2))
+    (s1 ** 2 / n1 + s2 ** 2 / n2) ** 2 /
+    ((1 / (n1 - 1)) * (s1 ** 2 / n1) ** 2 + (1 / (n2 - 1)) * (s2 ** 2 / n2) ** 2)
   );
 };
 
@@ -905,7 +904,7 @@ const isStudentTTestValueSignificant = function (t, df, sigType) {
     30: 2.042,
   };
 
-  var sigThresh;
+  let sigThresh;
   if (sigType === "standard") {
     if (df <= 30) {
       sigThresh = sigThreshs[df];
@@ -927,13 +926,13 @@ const isStudentTTestValueSignificant = function (t, df, sigType) {
 
 // utility to process the user-input histogram customization controls
 const setHistogramParameters = function (plotParams) {
-  var yAxisFormat = plotParams["histogram-yaxis-controls"];
-  var binType = plotParams["histogram-bin-controls"];
-  var binNum = 12; // default bin number
-  var binStart = undefined; // default is no mandated bin start
-  var binStride = undefined; // default is no mandated stride
-  var pivotVal = undefined; // default is not to shift the bins over to a pivot
-  var binBounds = []; // default is no specified bin bounds -- our algorithm will figure them out if this array stays empty
+  const yAxisFormat = plotParams["histogram-yaxis-controls"];
+  const binType = plotParams["histogram-bin-controls"];
+  let binNum = 12; // default bin number
+  let binStart; // default is no mandated bin start
+  let binStride; // default is no mandated stride
+  let pivotVal; // default is not to shift the bins over to a pivot
+  let binBounds = []; // default is no specified bin bounds -- our algorithm will figure them out if this array stays empty
 
   switch (binType) {
     case "Set number of bins":
@@ -992,11 +991,10 @@ const setHistogramParameters = function (plotParams) {
           item = Number(item);
           if (!isNaN(item)) {
             return item;
-          } else {
-            throw new Error(
-              "Error parsing bin bounds: please enter  at least two numbers delimited by commas."
-            );
           }
+          throw new Error(
+            "Error parsing bin bounds: please enter  at least two numbers delimited by commas."
+          );
         });
         binNum = binBounds.length + 1; // add 1 because these are inner bin bounds
       } catch (e) {
@@ -1037,12 +1035,12 @@ const setHistogramParameters = function (plotParams) {
       break;
   }
   return {
-    yAxisFormat: yAxisFormat,
-    binNum: binNum,
-    binStart: binStart,
-    binStride: binStride,
-    pivotVal: pivotVal,
-    binBounds: binBounds,
+    yAxisFormat,
+    binNum,
+    binStart,
+    binStride,
+    pivotVal,
+    binBounds,
   };
 };
 
@@ -1059,10 +1057,10 @@ const calculateHistogramBins = function (
   // pivotVal will only be defined if the user wants to shift the bin limits to align with a certain value.
   // otherwise, we'll keep everything aligned with the data mean.
 
-  var binStats = {};
-  var binUpBounds = [];
-  var binLowBounds = [];
-  var binMeans = [];
+  const binStats = {};
+  let binUpBounds = [];
+  let binLowBounds = [];
+  let binMeans = [];
 
   // calculate the global stats across all of the data
   const globalStats = get_err(curveSubStats, curveSubSecs, [], {
@@ -1072,10 +1070,10 @@ const calculateHistogramBins = function (
   const glob_mean = globalStats.d_mean;
   const glob_sd = globalStats.sd;
 
-  var fullLowBound;
-  var fullUpBound;
-  var fullRange;
-  var binInterval;
+  let fullLowBound;
+  let fullUpBound;
+  let fullRange;
+  let binInterval;
 
   if (binParams.binStart === undefined || binParams.binStride === undefined) {
     // use the global stats to determine the bin bounds -- should be based on dividing up +/- 3*sd from the mean into requested number of bins
@@ -1106,7 +1104,7 @@ const calculateHistogramBins = function (
 
   if (binParams.pivotVal !== undefined && !isNaN(binParams.pivotVal)) {
     // need to shift the bounds and means over so that one of the bounds is on the chosen pivot
-    var closestBoundToPivot = binLowBounds.reduce(function (prev, curr) {
+    const closestBoundToPivot = binLowBounds.reduce(function (prev, curr) {
       return Math.abs(curr - binParams.pivotVal) < Math.abs(prev - binParams.pivotVal)
         ? curr
         : prev;
@@ -1123,29 +1121,29 @@ const calculateHistogramBins = function (
   }
 
   // calculate the labels for each bin, based on the data bounding range, for the graph x-axis later
-  var binLabels = [];
-  var lowSdFromMean;
-  var upSdFromMean;
+  const binLabels = [];
+  let lowSdFromMean;
+  let upSdFromMean;
   for (b_idx = 0; b_idx < binParams.binNum; b_idx++) {
     lowSdFromMean = binLowBounds[b_idx].toFixed(2);
     upSdFromMean = binUpBounds[b_idx].toFixed(2);
     if (b_idx === 0) {
-      binLabels[b_idx] = "< " + upSdFromMean;
+      binLabels[b_idx] = `< ${upSdFromMean}`;
     } else if (b_idx === binParams.binNum - 1) {
-      binLabels[b_idx] = "> " + lowSdFromMean;
+      binLabels[b_idx] = `> ${lowSdFromMean}`;
     } else {
-      binLabels[b_idx] = lowSdFromMean + "-" + upSdFromMean;
+      binLabels[b_idx] = `${lowSdFromMean}-${upSdFromMean}`;
     }
   }
 
-  binStats["glob_mean"] = glob_mean;
-  binStats["glob_sd"] = glob_sd;
-  binStats["binUpBounds"] = binUpBounds;
-  binStats["binLowBounds"] = binLowBounds;
-  binStats["binMeans"] = binMeans;
-  binStats["binLabels"] = binLabels;
+  binStats.glob_mean = glob_mean;
+  binStats.glob_sd = glob_sd;
+  binStats.binUpBounds = binUpBounds;
+  binStats.binLowBounds = binLowBounds;
+  binStats.binMeans = binMeans;
+  binStats.binLabels = binLabels;
 
-  return { binStats: binStats };
+  return { binStats };
 };
 
 // utility that takes an array of user-defined bin bounds and produces a data structure containing bin information for histogram plotting
@@ -1155,7 +1153,7 @@ const prescribeHistogramBins = function (
   binParams,
   appParams
 ) {
-  var binStats = {};
+  const binStats = {};
 
   // calculate the global stats across all of the data
   const globalStats = get_err(curveSubStats, curveSubSecs, [], {
@@ -1171,15 +1169,15 @@ const prescribeHistogramBins = function (
   });
 
   // store an array of the upper and lower bounding values for each bin.
-  var binUpBounds = [];
-  var binLowBounds = [];
-  var binMeans = [];
-  var binIntervalSum = 0;
+  const binUpBounds = [];
+  const binLowBounds = [];
+  const binMeans = [];
+  let binIntervalSum = 0;
   for (var b_idx = 1; b_idx < binParams.binNum - 1; b_idx++) {
     binUpBounds[b_idx] = binParams.binBounds[b_idx];
     binLowBounds[b_idx] = binParams.binBounds[b_idx - 1];
     binMeans[b_idx] = (binUpBounds[b_idx] + binLowBounds[b_idx]) / 2;
-    binIntervalSum = binIntervalSum + (binUpBounds[b_idx] - binLowBounds[b_idx]);
+    binIntervalSum += binUpBounds[b_idx] - binLowBounds[b_idx];
   }
   const binIntervalAverage = binIntervalSum / (binParams.binNum - 2);
   binUpBounds[0] = binLowBounds[1];
@@ -1191,29 +1189,29 @@ const prescribeHistogramBins = function (
     binUpBounds[binParams.binNum - 2] + binIntervalAverage / 2; // the bin means for the edge bins is a little arbitrary, so base it on the average bin width
 
   // calculate the labels for each bin, based on the data bounding range, for the graph x-axis later
-  var binLabels = [];
-  var lowSdFromMean;
-  var upSdFromMean;
+  const binLabels = [];
+  let lowSdFromMean;
+  let upSdFromMean;
   for (b_idx = 0; b_idx < binParams.binNum; b_idx++) {
     lowSdFromMean = binLowBounds[b_idx].toFixed(2);
     upSdFromMean = binUpBounds[b_idx].toFixed(2);
     if (b_idx === 0) {
-      binLabels[b_idx] = "< " + upSdFromMean;
+      binLabels[b_idx] = `< ${upSdFromMean}`;
     } else if (b_idx === binParams.binNum - 1) {
-      binLabels[b_idx] = "> " + lowSdFromMean;
+      binLabels[b_idx] = `> ${lowSdFromMean}`;
     } else {
-      binLabels[b_idx] = lowSdFromMean + "-" + upSdFromMean;
+      binLabels[b_idx] = `${lowSdFromMean}-${upSdFromMean}`;
     }
   }
 
-  binStats["glob_mean"] = glob_mean;
-  binStats["glob_sd"] = glob_sd;
-  binStats["binUpBounds"] = binUpBounds;
-  binStats["binLowBounds"] = binLowBounds;
-  binStats["binMeans"] = binMeans;
-  binStats["binLabels"] = binLabels;
+  binStats.glob_mean = glob_mean;
+  binStats.glob_sd = glob_sd;
+  binStats.binUpBounds = binUpBounds;
+  binStats.binLowBounds = binLowBounds;
+  binStats.binMeans = binMeans;
+  binStats.binLabels = binLabels;
 
-  return { binStats: binStats };
+  return { binStats };
 };
 
 // utility that takes arrays of seconds, values, and optionally levels, and produces a data structure for histogram data
@@ -1228,9 +1226,9 @@ const sortHistogramBins = function (
   d
 ) {
   // need maps to hold the sub values and seconds (and levels) for each bin, after the bin bounds are calculated.
-  var binSubStats = {};
-  var binSubSecs = {};
-  var binSubLevs = {};
+  const binSubStats = {};
+  const binSubSecs = {};
+  const binSubLevs = {};
 
   for (var b_idx = 0; b_idx < binNum; b_idx++) {
     binSubStats[b_idx] = [];
@@ -1239,7 +1237,7 @@ const sortHistogramBins = function (
   }
 
   // calculate the global stats across all of the data
-  var globalStats;
+  let globalStats;
   globalStats = get_err(curveSubStats, curveSubSecs, curveSubLevs, appParams);
   const glob_mean = globalStats.d_mean;
   const glob_sd = globalStats.sd;
@@ -1248,12 +1246,12 @@ const sortHistogramBins = function (
   const glob_min = globalStats.minVal;
 
   // sort data into bins
-  const binUpBounds = masterBinStats.binUpBounds;
-  const binLowBounds = masterBinStats.binLowBounds;
-  const binMeans = masterBinStats.binMeans;
-  const binLabels = masterBinStats.binLabels;
+  const { binUpBounds } = masterBinStats;
+  const { binLowBounds } = masterBinStats;
+  const { binMeans } = masterBinStats;
+  const { binLabels } = masterBinStats;
 
-  for (var d_idx = 0; d_idx < curveSubStats.length; d_idx++) {
+  for (let d_idx = 0; d_idx < curveSubStats.length; d_idx++) {
     // iterate through all of the bins until we find one where the upper limit is greater than our datum.
     for (b_idx = 0; b_idx < binNum; b_idx++) {
       if (curveSubStats[d_idx] <= binUpBounds[b_idx]) {
@@ -1269,14 +1267,14 @@ const sortHistogramBins = function (
 
   // calculate the statistics for each bin
   // we are especially interested in the number of values in each bin, as that is the plotted stat in a histogram
-  var binStats;
-  var bin_mean;
-  var bin_sd;
-  var bin_n;
-  var bin_rf;
+  let binStats;
+  let bin_mean;
+  let bin_sd;
+  let bin_n;
+  let bin_rf;
 
-  var sum = 0;
-  var count = 0;
+  let sum = 0;
+  let count = 0;
   for (b_idx = 0; b_idx < binNum; b_idx++) {
     binStats = get_err(
       binSubStats[b_idx],
@@ -1321,10 +1319,10 @@ const sortHistogramBins = function (
     d.subVals.push(binSubStats[b_idx]);
     d.subSecs.push(binSubSecs[b_idx]);
     d.bin_stats.push({
-      bin_mean: bin_mean,
-      bin_sd: bin_sd,
-      bin_n: bin_n,
-      bin_rf: bin_rf,
+      bin_mean,
+      bin_sd,
+      bin_n,
+      bin_rf,
       binLowBound: binLowBounds[b_idx],
       binUpBound: binUpBounds[b_idx],
       binLabel: binLabels[b_idx],
@@ -1337,38 +1335,38 @@ const sortHistogramBins = function (
 
     // set axis limits based on returned data
     if (d.y[b_idx] !== null) {
-      sum = sum + d.y[b_idx];
+      sum += d.y[b_idx];
       count++;
       d.ymin = d.ymin < d.y[b_idx] ? d.ymin : d.y[b_idx];
       d.ymax = d.ymax > d.y[b_idx] ? d.ymax : d.y[b_idx];
     }
   }
   d.glob_stats = {
-    glob_mean: glob_mean,
-    glob_sd: glob_sd,
-    glob_n: glob_n,
-    glob_max: glob_max,
-    glob_min: glob_min,
+    glob_mean,
+    glob_sd,
+    glob_n,
+    glob_max,
+    glob_min,
   };
   d.xmin = d.x[0];
   d.xmax = d.x[binNum - 1];
 
-  return { d: d };
+  return { d };
 };
 
 // utility that takes the curve params for two contour plots and collapses them into the curve params for one diff contour.
 const getDiffContourCurveParams = function (curves) {
-  var newCurve = {};
+  const newCurve = {};
   const curveKeys = Object.keys(curves[0]);
-  var currKey;
-  for (var ckidx = 0; ckidx < curveKeys.length; ckidx++) {
+  let currKey;
+  for (let ckidx = 0; ckidx < curveKeys.length; ckidx++) {
     currKey = curveKeys[ckidx];
     if (currKey === "color") {
-      newCurve["color"] = "rgb(255,165,0)";
+      newCurve.color = "rgb(255,165,0)";
     } else if (curves[0][currKey] === curves[1][currKey]) {
       newCurve[currKey] = curves[0][currKey];
     } else {
-      newCurve[currKey] = curves[1][currKey] + "-" + curves[0][currKey];
+      newCurve[currKey] = `${curves[1][currKey]}-${curves[0][currKey]}`;
     }
   }
   return [newCurve];
@@ -1384,10 +1382,8 @@ const ctcErrorPython = function (statistic, minuendData, subtrahendData) {
       pythonOptions: ["-u"], // get print results in real-time
       scriptPath:
         process.env.NODE_ENV === "development"
-          ? process.env.PWD +
-            "/.meteor/local/build/programs/server/assets/packages/randyp_mats-common/public/python/"
-          : process.env.PWD +
-            "/programs/server/assets/packages/randyp_mats-common/public/python/",
+          ? `${process.env.PWD}/.meteor/local/build/programs/server/assets/packages/randyp_mats-common/public/python/`
+          : `${process.env.PWD}/programs/server/assets/packages/randyp_mats-common/public/python/`,
       args: [
         "-S",
         statistic,
@@ -1400,7 +1396,7 @@ const ctcErrorPython = function (statistic, minuendData, subtrahendData) {
     const pyShell = require("python-shell");
     const Future = require("fibers/future");
 
-    let future = new Future();
+    const future = new Future();
     let error;
     let errorLength = 0;
     pyShell.PythonShell.run("python_ctc_error.py", pyOptions)
@@ -1415,17 +1411,17 @@ const ctcErrorPython = function (statistic, minuendData, subtrahendData) {
           errorLength = Number(parsedData.error_length);
         }
         // done waiting - have results
-        future["return"]();
+        future.return();
       })
       .catch((err) => {
         error = err.message;
-        future["return"]();
+        future.return();
       });
 
     // wait for future to finish
     future.wait();
     if (error) {
-      throw new Error("Error when calculating CTC errorbars: " + error);
+      throw new Error(`Error when calculating CTC errorbars: ${error}`);
     }
     return errorLength;
   }
@@ -1450,8 +1446,8 @@ const removePoint = function (
     data.oy_all.splice(di, 1);
     data.on_all.splice(di, 1);
   }
-  if (data["error_" + statVarName].array !== undefined) {
-    data["error_" + statVarName].array.splice(di, 1);
+  if (data[`error_${statVarName}`].array !== undefined) {
+    data[`error_${statVarName}`].array.splice(di, 1);
   }
   if (isCTC) {
     data.subHit.splice(di, 1);
@@ -1516,7 +1512,7 @@ const addNullPoint = function (
     data.oy_all.splice(di, 0, null);
     data.on_all.splice(di, 0, null);
   }
-  data["error_" + statVarName].splice(di, 0, null);
+  data[`error_${statVarName}`].splice(di, 0, null);
   if (isCTC) {
     data.subHit.splice(di, 0, []);
     data.subFa.splice(di, 0, []);
@@ -1606,46 +1602,45 @@ const nullPoint = function (data, di, statVarName, isCTC, isScalar, hasLevels) {
 const sortFunction = function (a, b) {
   if (a[0] === b[0]) {
     return 0;
-  } else {
-    return a[0] < b[0] ? -1 : 1;
   }
+  return a[0] < b[0] ? -1 : 1;
 };
 
 export default matsDataUtils = {
-  areObjectsEqual: areObjectsEqual,
-  arrayContainsArray: arrayContainsArray,
-  arrayContainsSubArray: arrayContainsSubArray,
-  arraysEqual: arraysEqual,
-  arrayUnique: arrayUnique,
-  findArrayInSubArray: findArrayInSubArray,
-  objectContainsObject: objectContainsObject,
-  sum: sum,
-  average: average,
-  median: median,
-  stdev: stdev,
-  dateConvert: dateConvert,
-  getDateRange: getDateRange,
-  secsConvert: secsConvert,
-  doAuthorization: doAuthorization,
-  doColorScheme: doColorScheme,
-  doCredentials: doCredentials,
-  doRoles: doRoles,
-  doSettings: doSettings,
-  callMetadataAPI: callMetadataAPI,
-  calculateStatCTC: calculateStatCTC,
-  calculateStatScalar: calculateStatScalar,
-  excludeStatFromScorecard: excludeStatFromScorecard,
-  get_err: get_err,
-  ctcErrorPython: ctcErrorPython,
-  checkDiffContourSignificance: checkDiffContourSignificance,
-  checkDiffContourSignificanceCTC: checkDiffContourSignificanceCTC,
-  setHistogramParameters: setHistogramParameters,
-  calculateHistogramBins: calculateHistogramBins,
-  prescribeHistogramBins: prescribeHistogramBins,
-  sortHistogramBins: sortHistogramBins,
-  getDiffContourCurveParams: getDiffContourCurveParams,
-  sortFunction: sortFunction,
-  removePoint: removePoint,
-  nullPoint: nullPoint,
-  addNullPoint: addNullPoint,
+  areObjectsEqual,
+  arrayContainsArray,
+  arrayContainsSubArray,
+  arraysEqual,
+  arrayUnique,
+  findArrayInSubArray,
+  objectContainsObject,
+  sum,
+  average,
+  median,
+  stdev,
+  dateConvert,
+  getDateRange,
+  secsConvert,
+  doAuthorization,
+  doColorScheme,
+  doCredentials,
+  doRoles,
+  doSettings,
+  callMetadataAPI,
+  calculateStatCTC,
+  calculateStatScalar,
+  excludeStatFromScorecard,
+  get_err,
+  ctcErrorPython,
+  checkDiffContourSignificance,
+  checkDiffContourSignificanceCTC,
+  setHistogramParameters,
+  calculateHistogramBins,
+  prescribeHistogramBins,
+  sortHistogramBins,
+  getDiffContourCurveParams,
+  sortFunction,
+  removePoint,
+  nullPoint,
+  addNullPoint,
 };

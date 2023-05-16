@@ -2,52 +2,50 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import { matsTypes } from "meteor/randyp:mats-common";
-import { matsCollections } from "meteor/randyp:mats-common";
-import { matsMethods } from "meteor/randyp:mats-common";
-import { matsCurveUtils } from "meteor/randyp:mats-common";
-import { matsPlotUtils } from "meteor/randyp:mats-common";
-import { matsParamUtils } from "meteor/randyp:mats-common";
+import {
+  matsTypes,
+  matsCollections,
+  matsMethods,
+  matsCurveUtils,
+  matsPlotUtils,
+  matsParamUtils,
+} from "meteor/randyp:mats-common";
 
 Template.scorecardCurveList.helpers({
-  displayScorecardStatus: function () {
+  displayScorecardStatus() {
     // don't allow plotting when editing
     const mode = Session.get("editMode");
     if (mode === undefined || mode === "") {
       return "block";
-    } else {
-      return "none";
     }
+    return "none";
   },
-  displaySaveSettings: function () {
+  displaySaveSettings() {
     // don't allow saving settings when editing
     const mode = Session.get("editMode");
     if (mode === undefined || mode === "") {
       return "block";
-    } else {
-      return "none";
     }
+    return "none";
   },
 
-  curves: function () {
+  curves() {
     return Session.get("Curves");
   },
-  displayCurves: function () {
+  displayCurves() {
     if (Session.get("Curves") === undefined || Session.get("Curves").length === 0) {
       return "none";
-    } else {
-      return "block";
     }
+    return "block";
   },
-  log: function () {
+  log() {
     console.log(this);
   },
-  editMode: function () {
+  editMode() {
     if (Session.get("editMode") === "") {
       return "";
-    } else {
-      return "Changing " + Session.get("editMode");
     }
+    return `Changing ${Session.get("editMode")}`;
   },
 });
 /*
@@ -67,7 +65,7 @@ Template.scorecardCurveList.helpers({
     is what sets up the graph page.
     */
 Template.scorecardCurveList.events({
-  "click .remove-all": function () {
+  "click .remove-all"() {
     if (Session.get("confirmRemoveAll")) {
       matsCurveUtils.clearAllUsed();
       matsParamUtils.setAllParamsToDefault();
@@ -76,17 +74,16 @@ Template.scorecardCurveList.events({
       Session.set("lastUpdate", Date.now());
       Session.set("confirmRemoveAll", "");
       return false;
-    } else {
-      if (Session.get("Curves").length > 0) {
-        $("#modal-confirm-remove-all").modal();
-      }
+    }
+    if (Session.get("Curves").length > 0) {
+      $("#modal-confirm-remove-all").modal();
     }
   },
-  "click .confirm-remove-all": function () {
+  "click .confirm-remove-all"() {
     Session.set("confirmRemoveAll", Date.now());
     $("#remove-all").trigger("click");
   },
-  "click .submitScorecard": function (event) {
+  "click .submitScorecard"(event) {
     document.getElementById("spinner").style.display = "block";
     matsPlotUtils.disableActionButtons();
     event.preventDefault();
@@ -95,7 +92,7 @@ Template.scorecardCurveList.events({
     document.getElementById("plot-curves").click();
     return false;
   },
-  "click .save-settings": function (event) {
+  "click .save-settings"(event) {
     event.preventDefault();
     document.getElementById("save-settings").click();
     return false;

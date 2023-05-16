@@ -3,8 +3,8 @@
  */
 
 setError = function (error) {
-  var myError = "";
-  var myStackTrace = "";
+  let myError = "";
+  let myStackTrace = "";
   if (typeof error === "string" || error instanceof String) {
     myError = new Error(error);
   } else {

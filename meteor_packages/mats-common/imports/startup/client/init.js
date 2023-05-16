@@ -16,7 +16,7 @@ if (Meteor.isClient) {
       "curveParams are not defined in imports/startup/both/mats-curve-params.js. Please define some curveParams for this app."
     );
   }
-  for (var i = 0; i < params.length; i++) {
+  for (let i = 0; i < params.length; i++) {
     Meteor.subscribe(params[i]);
   }
   Meteor.subscribe("Scatter2dParams");
@@ -55,25 +55,25 @@ if (Meteor.isClient) {
   const hostport = pathArray[2];
   const hostName = hostport.split(":")[0];
   const app = pathArray[3] === "" ? "/" : pathArray[3];
-  const matsRef = protocol + "//" + hostport;
+  const matsRef = `${protocol}//${hostport}`;
   const baseURL =
     Meteor.settings.public.home === undefined
-      ? "https://" + hostport
+      ? `https://${hostport}`
       : Meteor.settings.public.home;
-  let helpRef = baseURL + "/" + app + "/packages/randyp_mats-common/public/public/help";
+  let helpRef = `${baseURL}/${app}/packages/randyp_mats-common/public/public/help`;
   if (baseURL.includes("localhost")) {
-    helpRef = baseURL + "/packages/randyp_mats-common/public/help";
+    helpRef = `${baseURL}/packages/randyp_mats-common/public/help`;
   }
   Session.set("app", {
     appName: app,
     matsref: matsRef,
     appref: ref,
     helpref: helpRef,
-    hostName: hostName,
+    hostName,
   });
-  var collections = Object.keys(matsCollections).map((key) => matsCollections[key]);
+  const collections = Object.keys(matsCollections).map((key) => matsCollections[key]);
   Session.set("Mongol", {
-    collections: collections,
+    collections,
     display: false,
     opacity_normal: ".7",
     opacity_expand: ".9",

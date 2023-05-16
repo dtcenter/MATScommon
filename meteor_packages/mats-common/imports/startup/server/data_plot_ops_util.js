@@ -2,18 +2,17 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import { matsCollections } from "meteor/randyp:mats-common";
-import { matsTypes } from "meteor/randyp:mats-common";
+import { matsCollections, matsTypes } from "meteor/randyp:mats-common";
 import { moment } from "meteor/momentjs:moment";
 
 // sets plot options for timeseries plots
 const generateSeriesPlotOptions = function (axisMap, errorMax) {
-  var xmin = axisMap[Object.keys(axisMap)[0]].xmin;
-  var xmax = axisMap[Object.keys(axisMap)[0]].xmax;
+  let { xmin } = axisMap[Object.keys(axisMap)[0]];
+  let { xmax } = axisMap[Object.keys(axisMap)[0]];
   const yAxisNumber = Object.keys(axisMap).length;
 
   // overall plot options
-  var layout = {
+  const layout = {
     margin: {
       l: 80,
       r: 80,
@@ -41,7 +40,7 @@ const generateSeriesPlotOptions = function (axisMap, errorMax) {
   };
 
   // x-axis options
-  layout["xaxis"] = {
+  layout.xaxis = {
     title: "Time",
     titlefont: {
       size: 24,
@@ -84,22 +83,22 @@ const generateSeriesPlotOptions = function (axisMap, errorMax) {
   const axisPosition = { 0: 0, 1: 1, 2: 0.1, 3: 0.9, 4: 0.2, 5: 0.8, 6: 0.3, 7: 0.7 };
 
   // loop over all y-axes
-  var axisKey;
-  var axisIdx;
-  var axisLabel;
+  let axisKey;
+  let axisIdx;
+  let axisLabel;
   for (axisIdx = 0; axisIdx < yAxisNumber; axisIdx++) {
     // get max and min values and label for curves on this y-axis
     axisKey = Object.keys(axisMap)[axisIdx];
-    var ymin = axisMap[axisKey].ymin;
-    var ymax = axisMap[axisKey].ymax;
-    ymax = ymax + errorMax;
-    ymin = ymin - errorMax;
+    let { ymin } = axisMap[axisKey];
+    let { ymax } = axisMap[axisKey];
+    ymax += errorMax;
+    ymin -= errorMax;
     const yPad = (ymax - ymin) * 0.025 !== 0 ? (ymax - ymin) * 0.025 : 0.025;
     xmin = axisMap[axisKey].xmin < xmin ? axisMap[axisKey].xmin : xmin;
     xmax = axisMap[axisKey].xmax > xmax ? axisMap[axisKey].xmax : xmax;
     axisLabel = axisMap[axisKey].axisLabel;
     var axisObjectKey;
-    var axisObjectBegin = {
+    const axisObjectBegin = {
       title: axisLabel,
       titlefont: {
         size: 24,
@@ -125,7 +124,7 @@ const generateSeriesPlotOptions = function (axisMap, errorMax) {
       layout[axisObjectKey] = axisObjectBegin;
     } else if (axisIdx < Object.keys(axisPosition).length) {
       // subsequent y-axes, up to the 8 we support
-      axisObjectKey = "yaxis" + (axisIdx + 1);
+      axisObjectKey = `yaxis${axisIdx + 1}`;
       layout[axisObjectKey] = axisObjectBegin;
       layout[axisObjectKey].anchor = axisAnchor[axisIdx];
       layout[axisObjectKey].overlaying = "y";
@@ -133,7 +132,7 @@ const generateSeriesPlotOptions = function (axisMap, errorMax) {
       layout[axisObjectKey].position = axisPosition[axisIdx];
     } else {
       // if the user by some miracle wants more than 8 y-axes, just shove them all into the position of the 8th
-      axisObjectKey = "yaxis" + (axisIdx + 1);
+      axisObjectKey = `yaxis${axisIdx + 1}`;
       layout[axisObjectKey] = axisObjectBegin;
       layout[axisObjectKey].anchor = axisAnchor[Object.keys(axisPosition).length - 1];
       layout[axisObjectKey].overlaying = "y";
@@ -149,18 +148,18 @@ const generateSeriesPlotOptions = function (axisMap, errorMax) {
   xmin = moment
     .utc(xmin - xPad * Math.ceil(yAxisNumber / 2))
     .format("YYYY-MM-DD HH:mm");
-  layout["xaxis"]["range"] = [xmin, xmax];
+  layout.xaxis.range = [xmin, xmax];
   return layout;
 };
 
 // sets plot options for profile plots
 const generateProfilePlotOptions = function (axisMap, errorMax) {
-  var ymin = axisMap[Object.keys(axisMap)[0]].ymin;
-  var ymax = axisMap[Object.keys(axisMap)[0]].ymax;
+  let { ymin } = axisMap[Object.keys(axisMap)[0]];
+  let { ymax } = axisMap[Object.keys(axisMap)[0]];
   const xAxisNumber = Object.keys(axisMap).length;
 
   // overall plot options
-  var layout = {
+  const layout = {
     margin: {
       l: 80,
       r: 80,
@@ -188,14 +187,14 @@ const generateProfilePlotOptions = function (axisMap, errorMax) {
   };
 
   // y-axis options
-  var tickVals;
+  let tickVals;
   if (matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress) {
     tickVals = [1000, 850, 700, 600, 500, 400, 300, 250, 200, 150, 100, 50, 10];
   } else {
     tickVals = [1000, 900, 800, 700, 600, 500, 400, 300, 200, 100];
   }
-  var tickText = tickVals.map(String);
-  layout["yaxis"] = {
+  const tickText = tickVals.map(String);
+  layout.yaxis = {
     title: "Pressure Level (hPa)",
     titlefont: {
       size: 24,
@@ -250,20 +249,20 @@ const generateProfilePlotOptions = function (axisMap, errorMax) {
   };
 
   // loop over all x-axes
-  var axisKey;
-  var axisIdx;
-  var axisLabel;
+  let axisKey;
+  let axisIdx;
+  let axisLabel;
   for (axisIdx = 0; axisIdx < xAxisNumber; axisIdx++) {
     // get max and min values and label for curves on this x-axis
     axisKey = Object.keys(axisMap)[axisIdx];
-    var xmin = axisMap[axisKey].xmin;
-    var xmax = axisMap[axisKey].xmax;
-    xmax = xmax + errorMax;
-    xmin = xmin - errorMax;
+    let { xmin } = axisMap[axisKey];
+    let { xmax } = axisMap[axisKey];
+    xmax += errorMax;
+    xmin -= errorMax;
     const xPad = (xmax - xmin) * 0.025 !== 0 ? (xmax - xmin) * 0.025 : 0.025;
     axisLabel = axisMap[axisKey].axisLabel;
     var axisObjectKey;
-    var axisObjectBegin = {
+    const axisObjectBegin = {
       title: axisLabel,
       titlefont: {
         size: 24,
@@ -288,7 +287,7 @@ const generateProfilePlotOptions = function (axisMap, errorMax) {
       layout[axisObjectKey] = axisObjectBegin;
     } else if (axisIdx < Object.keys(axisPosition).length) {
       // subsequent x-axes, up to the 8 we support
-      axisObjectKey = "xaxis" + (axisIdx + 1);
+      axisObjectKey = `xaxis${axisIdx + 1}`;
       layout[axisObjectKey] = axisObjectBegin;
       layout[axisObjectKey].anchor = axisAnchor[axisIdx];
       layout[axisObjectKey].overlaying = "x";
@@ -296,7 +295,7 @@ const generateProfilePlotOptions = function (axisMap, errorMax) {
       layout[axisObjectKey].position = axisPosition[axisIdx];
     } else {
       // if the user by some miracle wants more than 8 x-axes, just shove them all into the position of the 8th
-      axisObjectKey = "xaxis" + (axisIdx + 1);
+      axisObjectKey = `xaxis${axisIdx + 1}`;
       layout[axisObjectKey] = axisObjectBegin;
       layout[axisObjectKey].anchor = axisAnchor[Object.keys(axisPosition).length - 1];
       layout[axisObjectKey].overlaying = "x";
@@ -306,20 +305,20 @@ const generateProfilePlotOptions = function (axisMap, errorMax) {
     }
   }
   const yPad = (ymax - ymin) * 0.025 !== 0 ? (ymax - ymin) * 0.025 : 0.025;
-  ymax = ymax + yPad * Math.ceil(xAxisNumber / 2);
-  ymin = ymin - yPad * Math.ceil(xAxisNumber / 2) * 0.05;
-  layout["yaxis"]["range"] = [ymax, ymin];
+  ymax += yPad * Math.ceil(xAxisNumber / 2);
+  ymin -= yPad * Math.ceil(xAxisNumber / 2) * 0.05;
+  layout.yaxis.range = [ymax, ymin];
   return layout;
 };
 
 // sets plot options for dieoff plots
 const generateDieoffPlotOptions = function (axisMap, errorMax) {
-  var xmin = axisMap[Object.keys(axisMap)[0]].xmin;
-  var xmax = axisMap[Object.keys(axisMap)[0]].xmax;
+  let { xmin } = axisMap[Object.keys(axisMap)[0]];
+  let { xmax } = axisMap[Object.keys(axisMap)[0]];
   const yAxisNumber = Object.keys(axisMap).length;
 
   // overall plot options
-  var layout = {
+  const layout = {
     margin: {
       l: 80,
       r: 80,
@@ -347,7 +346,7 @@ const generateDieoffPlotOptions = function (axisMap, errorMax) {
   };
 
   // people want the axis tick for fhr to be displayed in multiples of three
-  var dtick;
+  let dtick;
   if (xmax < 50) {
     dtick = 3;
   } else if (xmax < 122) {
@@ -359,7 +358,7 @@ const generateDieoffPlotOptions = function (axisMap, errorMax) {
   }
 
   // x-axis options
-  layout["xaxis"] = {
+  layout.xaxis = {
     title: "Forecast Hour",
     titlefont: {
       size: 24,
@@ -369,7 +368,7 @@ const generateDieoffPlotOptions = function (axisMap, errorMax) {
       size: 18,
       color: "#000000",
     },
-    dtick: dtick,
+    dtick,
     linecolor: "black",
     linewidth: 2,
     mirror: true,
@@ -403,22 +402,22 @@ const generateDieoffPlotOptions = function (axisMap, errorMax) {
   const axisPosition = { 0: 0, 1: 1, 2: 0.1, 3: 0.9, 4: 0.2, 5: 0.8, 6: 0.3, 7: 0.7 };
 
   // loop over all y-axes
-  var axisKey;
-  var axisIdx;
-  var axisLabel;
+  let axisKey;
+  let axisIdx;
+  let axisLabel;
   for (axisIdx = 0; axisIdx < yAxisNumber; axisIdx++) {
     // get max and min values and label for curves on this y-axis
     axisKey = Object.keys(axisMap)[axisIdx];
-    var ymin = axisMap[axisKey].ymin;
-    var ymax = axisMap[axisKey].ymax;
-    ymax = ymax + errorMax;
-    ymin = ymin - errorMax;
+    let { ymin } = axisMap[axisKey];
+    let { ymax } = axisMap[axisKey];
+    ymax += errorMax;
+    ymin -= errorMax;
     const yPad = (ymax - ymin) * 0.025 !== 0 ? (ymax - ymin) * 0.025 : 0.025;
     xmin = axisMap[axisKey].xmin < xmin ? axisMap[axisKey].xmin : xmin;
     xmax = axisMap[axisKey].xmax > xmax ? axisMap[axisKey].xmax : xmax;
     axisLabel = axisMap[axisKey].axisLabel;
     var axisObjectKey;
-    var axisObjectBegin = {
+    const axisObjectBegin = {
       title: axisLabel,
       titlefont: {
         size: 24,
@@ -443,7 +442,7 @@ const generateDieoffPlotOptions = function (axisMap, errorMax) {
       layout[axisObjectKey] = axisObjectBegin;
     } else if (axisIdx < Object.keys(axisPosition).length) {
       // subsequent y-axes, up to the 8 we support
-      axisObjectKey = "yaxis" + (axisIdx + 1);
+      axisObjectKey = `yaxis${axisIdx + 1}`;
       layout[axisObjectKey] = axisObjectBegin;
       layout[axisObjectKey].anchor = axisAnchor[axisIdx];
       layout[axisObjectKey].overlaying = "y";
@@ -451,7 +450,7 @@ const generateDieoffPlotOptions = function (axisMap, errorMax) {
       layout[axisObjectKey].position = axisPosition[axisIdx];
     } else {
       // if the user by some miracle wants more than 8 y-axes, just shove them all into the position of the 8th
-      axisObjectKey = "yaxis" + (axisIdx + 1);
+      axisObjectKey = `yaxis${axisIdx + 1}`;
       layout[axisObjectKey] = axisObjectBegin;
       layout[axisObjectKey].anchor = axisAnchor[Object.keys(axisPosition).length - 1];
       layout[axisObjectKey].overlaying = "y";
@@ -461,37 +460,37 @@ const generateDieoffPlotOptions = function (axisMap, errorMax) {
     }
   }
   const xPad = (xmax - xmin) * 0.025 !== 0 ? (xmax - xmin) * 0.025 : 0.025;
-  xmax = xmax + xPad * Math.ceil(yAxisNumber / 2);
-  xmin = xmin - xPad * Math.ceil(yAxisNumber / 2);
-  layout["xaxis"]["range"] = [xmin, xmax];
+  xmax += xPad * Math.ceil(yAxisNumber / 2);
+  xmin -= xPad * Math.ceil(yAxisNumber / 2);
+  layout.xaxis.range = [xmin, xmax];
   return layout;
 };
 
 // sets plot options for threshold plots
 const generateThresholdPlotOptions = function (dataset, axisMap, errorMax) {
-  var xmin = axisMap[Object.keys(axisMap)[0]].xmin;
-  var xmax = axisMap[Object.keys(axisMap)[0]].xmax;
+  let { xmin } = axisMap[Object.keys(axisMap)[0]];
+  let { xmax } = axisMap[Object.keys(axisMap)[0]];
   const yAxisNumber = Object.keys(axisMap).length;
 
   // get actual thresholds from the query to place on the x-axis.
   // also deal with x-axis labels
-  var xLabel = "";
-  var xUnits;
-  var tickvals = [];
-  for (var didx = 0; didx < dataset.length; didx++) {
+  let xLabel = "";
+  let xUnits;
+  let tickvals = [];
+  for (let didx = 0; didx < dataset.length; didx++) {
     xUnits = dataset[didx].thresholdAxisLabel;
     if (!xLabel.includes(xUnits) && xUnits !== undefined) {
-      xLabel = xLabel.length === 0 ? xUnits : xLabel + "," + xUnits;
+      xLabel = xLabel.length === 0 ? xUnits : `${xLabel},${xUnits}`;
     }
     tickvals = _.union(tickvals, dataset[didx].x);
   }
-  xLabel = xLabel.length === 0 ? "Threshold" : "Threshold (" + xLabel + ")";
+  xLabel = xLabel.length === 0 ? "Threshold" : `Threshold (${xLabel})`;
   tickvals = tickvals.sort(function (a, b) {
     return a - b;
   });
 
   // overall plot options
-  var layout = {
+  const layout = {
     margin: {
       l: 80,
       r: 80,
@@ -519,7 +518,7 @@ const generateThresholdPlotOptions = function (dataset, axisMap, errorMax) {
   };
 
   // x-axis options
-  layout["xaxis"] = {
+  layout.xaxis = {
     title: xLabel,
     titlefont: {
       size: 24,
@@ -529,7 +528,7 @@ const generateThresholdPlotOptions = function (dataset, axisMap, errorMax) {
       size: 18,
       color: "#000000",
     },
-    tickvals: tickvals,
+    tickvals,
     ticktext: tickvals.map(String),
     linecolor: "black",
     linewidth: 2,
@@ -564,22 +563,22 @@ const generateThresholdPlotOptions = function (dataset, axisMap, errorMax) {
   const axisPosition = { 0: 0, 1: 1, 2: 0.1, 3: 0.9, 4: 0.2, 5: 0.8, 6: 0.3, 7: 0.7 };
 
   // loop over all y-axes
-  var axisKey;
-  var axisIdx;
-  var axisLabel;
+  let axisKey;
+  let axisIdx;
+  let axisLabel;
   for (axisIdx = 0; axisIdx < yAxisNumber; axisIdx++) {
     // get max and min values and label for curves on this y-axis
     axisKey = Object.keys(axisMap)[axisIdx];
-    var ymin = axisMap[axisKey].ymin;
-    var ymax = axisMap[axisKey].ymax;
-    ymax = ymax + errorMax;
-    ymin = ymin - errorMax;
+    let { ymin } = axisMap[axisKey];
+    let { ymax } = axisMap[axisKey];
+    ymax += errorMax;
+    ymin -= errorMax;
     const yPad = (ymax - ymin) * 0.025 !== 0 ? (ymax - ymin) * 0.025 : 0.025;
     xmin = axisMap[axisKey].xmin < xmin ? axisMap[axisKey].xmin : xmin;
     xmax = axisMap[axisKey].xmax > xmax ? axisMap[axisKey].xmax : xmax;
     axisLabel = axisMap[axisKey].axisLabel;
     var axisObjectKey;
-    var axisObjectBegin = {
+    const axisObjectBegin = {
       title: axisLabel,
       titlefont: {
         size: 24,
@@ -604,7 +603,7 @@ const generateThresholdPlotOptions = function (dataset, axisMap, errorMax) {
       layout[axisObjectKey] = axisObjectBegin;
     } else if (axisIdx < Object.keys(axisPosition).length) {
       // subsequent y-axes, up to the 8 we support
-      axisObjectKey = "yaxis" + (axisIdx + 1);
+      axisObjectKey = `yaxis${axisIdx + 1}`;
       layout[axisObjectKey] = axisObjectBegin;
       layout[axisObjectKey].anchor = axisAnchor[axisIdx];
       layout[axisObjectKey].overlaying = "y";
@@ -612,7 +611,7 @@ const generateThresholdPlotOptions = function (dataset, axisMap, errorMax) {
       layout[axisObjectKey].position = axisPosition[axisIdx];
     } else {
       // if the user by some miracle wants more than 8 y-axes, just shove them all into the position of the 8th
-      axisObjectKey = "yaxis" + (axisIdx + 1);
+      axisObjectKey = `yaxis${axisIdx + 1}`;
       layout[axisObjectKey] = axisObjectBegin;
       layout[axisObjectKey].anchor = axisAnchor[Object.keys(axisPosition).length - 1];
       layout[axisObjectKey].overlaying = "y";
@@ -622,20 +621,20 @@ const generateThresholdPlotOptions = function (dataset, axisMap, errorMax) {
     }
   }
   const xPad = (xmax - xmin) * 0.025 !== 0 ? (xmax - xmin) * 0.025 : 0.025;
-  xmax = xmax + xPad * Math.ceil(yAxisNumber / 2);
-  xmin = xmin - xPad * Math.ceil(yAxisNumber / 2);
-  layout["xaxis"]["range"] = [xmin, xmax];
+  xmax += xPad * Math.ceil(yAxisNumber / 2);
+  xmin -= xPad * Math.ceil(yAxisNumber / 2);
+  layout.xaxis.range = [xmin, xmax];
   return layout;
 };
 
 // sets plot options for valid time plots
 const generateValidTimePlotOptions = function (axisMap, errorMax) {
-  var xmin = 0;
-  var xmax = 23;
+  let xmin = 0;
+  let xmax = 23;
   const yAxisNumber = Object.keys(axisMap).length;
 
   // overall plot options
-  var layout = {
+  const layout = {
     margin: {
       l: 80,
       r: 80,
@@ -663,7 +662,7 @@ const generateValidTimePlotOptions = function (axisMap, errorMax) {
   };
 
   // x-axis options
-  layout["xaxis"] = {
+  layout.xaxis = {
     title: "Hour of Day",
     titlefont: {
       size: 24,
@@ -736,20 +735,20 @@ const generateValidTimePlotOptions = function (axisMap, errorMax) {
   const axisPosition = { 0: 0, 1: 1, 2: 0.1, 3: 0.9, 4: 0.2, 5: 0.8, 6: 0.3, 7: 0.7 };
 
   // loop over all y-axes
-  var axisKey;
-  var axisIdx;
-  var axisLabel;
+  let axisKey;
+  let axisIdx;
+  let axisLabel;
   for (axisIdx = 0; axisIdx < yAxisNumber; axisIdx++) {
     // get max and min values and label for curves on this y-axis
     axisKey = Object.keys(axisMap)[axisIdx];
-    var ymin = axisMap[axisKey].ymin;
-    var ymax = axisMap[axisKey].ymax;
-    ymax = ymax + errorMax;
-    ymin = ymin - errorMax;
+    let { ymin } = axisMap[axisKey];
+    let { ymax } = axisMap[axisKey];
+    ymax += errorMax;
+    ymin -= errorMax;
     const yPad = (ymax - ymin) * 0.025 !== 0 ? (ymax - ymin) * 0.025 : 0.025;
     axisLabel = axisMap[axisKey].axisLabel;
     var axisObjectKey;
-    var axisObjectBegin = {
+    const axisObjectBegin = {
       title: axisLabel,
       titlefont: {
         size: 24,
@@ -774,7 +773,7 @@ const generateValidTimePlotOptions = function (axisMap, errorMax) {
       layout[axisObjectKey] = axisObjectBegin;
     } else if (axisIdx < Object.keys(axisPosition).length) {
       // subsequent y-axes, up to the 8 we support
-      axisObjectKey = "yaxis" + (axisIdx + 1);
+      axisObjectKey = `yaxis${axisIdx + 1}`;
       layout[axisObjectKey] = axisObjectBegin;
       layout[axisObjectKey].anchor = axisAnchor[axisIdx];
       layout[axisObjectKey].overlaying = "y";
@@ -782,7 +781,7 @@ const generateValidTimePlotOptions = function (axisMap, errorMax) {
       layout[axisObjectKey].position = axisPosition[axisIdx];
     } else {
       // if the user by some miracle wants more than 8 y-axes, just shove them all into the position of the 8th
-      axisObjectKey = "yaxis" + (axisIdx + 1);
+      axisObjectKey = `yaxis${axisIdx + 1}`;
       layout[axisObjectKey] = axisObjectBegin;
       layout[axisObjectKey].anchor = axisAnchor[Object.keys(axisPosition).length - 1];
       layout[axisObjectKey].overlaying = "y";
@@ -792,20 +791,20 @@ const generateValidTimePlotOptions = function (axisMap, errorMax) {
     }
   }
   const xPad = (xmax - xmin) * 0.025 !== 0 ? (xmax - xmin) * 0.025 : 0.025;
-  xmax = xmax + xPad * Math.ceil(yAxisNumber / 2);
-  xmin = xmin - xPad * Math.ceil(yAxisNumber / 2);
-  layout["xaxis"]["range"] = [xmin, xmax];
+  xmax += xPad * Math.ceil(yAxisNumber / 2);
+  xmin -= xPad * Math.ceil(yAxisNumber / 2);
+  layout.xaxis.range = [xmin, xmax];
   return layout;
 };
 
 // sets plot options for grid scale plots
 const generateGridScalePlotOptions = function (axisMap, errorMax) {
-  var xmin = axisMap[Object.keys(axisMap)[0]].xmin;
-  var xmax = axisMap[Object.keys(axisMap)[0]].xmax;
+  let { xmin } = axisMap[Object.keys(axisMap)[0]];
+  let { xmax } = axisMap[Object.keys(axisMap)[0]];
   const yAxisNumber = Object.keys(axisMap).length;
 
-  const appName = matsCollections.Settings.findOne({}).appName;
-  var xLabel;
+  const { appName } = matsCollections.Settings.findOne({});
+  let xLabel;
   if (appName.includes("met-")) {
     xLabel = "Interpolation Points";
   } else {
@@ -813,7 +812,7 @@ const generateGridScalePlotOptions = function (axisMap, errorMax) {
   }
 
   // overall plot options
-  var layout = {
+  const layout = {
     margin: {
       l: 80,
       r: 80,
@@ -841,7 +840,7 @@ const generateGridScalePlotOptions = function (axisMap, errorMax) {
   };
 
   // x-axis options
-  layout["xaxis"] = {
+  layout.xaxis = {
     title: xLabel,
     titlefont: {
       size: 24,
@@ -884,22 +883,22 @@ const generateGridScalePlotOptions = function (axisMap, errorMax) {
   const axisPosition = { 0: 0, 1: 1, 2: 0.1, 3: 0.9, 4: 0.2, 5: 0.8, 6: 0.3, 7: 0.7 };
 
   // loop over all y-axes
-  var axisKey;
-  var axisIdx;
-  var axisLabel;
+  let axisKey;
+  let axisIdx;
+  let axisLabel;
   for (axisIdx = 0; axisIdx < yAxisNumber; axisIdx++) {
     // get max and min values and label for curves on this y-axis
     axisKey = Object.keys(axisMap)[axisIdx];
-    var ymin = axisMap[axisKey].ymin;
-    var ymax = axisMap[axisKey].ymax;
-    ymax = ymax + errorMax;
-    ymin = ymin - errorMax;
+    let { ymin } = axisMap[axisKey];
+    let { ymax } = axisMap[axisKey];
+    ymax += errorMax;
+    ymin -= errorMax;
     const yPad = (ymax - ymin) * 0.025 !== 0 ? (ymax - ymin) * 0.025 : 0.025;
     xmin = axisMap[axisKey].xmin < xmin ? axisMap[axisKey].xmin : xmin;
     xmax = axisMap[axisKey].xmax > xmax ? axisMap[axisKey].xmax : xmax;
     axisLabel = axisMap[axisKey].axisLabel;
     var axisObjectKey;
-    var axisObjectBegin = {
+    const axisObjectBegin = {
       title: axisLabel,
       titlefont: {
         size: 24,
@@ -924,7 +923,7 @@ const generateGridScalePlotOptions = function (axisMap, errorMax) {
       layout[axisObjectKey] = axisObjectBegin;
     } else if (axisIdx < Object.keys(axisPosition).length) {
       // subsequent y-axes, up to the 8 we support
-      axisObjectKey = "yaxis" + (axisIdx + 1);
+      axisObjectKey = `yaxis${axisIdx + 1}`;
       layout[axisObjectKey] = axisObjectBegin;
       layout[axisObjectKey].anchor = axisAnchor[axisIdx];
       layout[axisObjectKey].overlaying = "y";
@@ -932,7 +931,7 @@ const generateGridScalePlotOptions = function (axisMap, errorMax) {
       layout[axisObjectKey].position = axisPosition[axisIdx];
     } else {
       // if the user by some miracle wants more than 8 y-axes, just shove them all into the position of the 8th
-      axisObjectKey = "yaxis" + (axisIdx + 1);
+      axisObjectKey = `yaxis${axisIdx + 1}`;
       layout[axisObjectKey] = axisObjectBegin;
       layout[axisObjectKey].anchor = axisAnchor[Object.keys(axisPosition).length - 1];
       layout[axisObjectKey].overlaying = "y";
@@ -942,20 +941,20 @@ const generateGridScalePlotOptions = function (axisMap, errorMax) {
     }
   }
   const xPad = (xmax - xmin) * 0.025 !== 0 ? (xmax - xmin) * 0.025 : 0.025;
-  xmax = xmax + xPad * Math.ceil(yAxisNumber / 2);
-  xmin = xmin - xPad * Math.ceil(yAxisNumber / 2);
-  layout["xaxis"]["range"] = [xmin, xmax];
+  xmax += xPad * Math.ceil(yAxisNumber / 2);
+  xmin -= xPad * Math.ceil(yAxisNumber / 2);
+  layout.xaxis.range = [xmin, xmax];
   return layout;
 };
 
 // sets plot options for grid scale plots
 const generateYearToYearPlotOptions = function (axisMap, errorMax) {
-  var xmin = axisMap[Object.keys(axisMap)[0]].xmin;
-  var xmax = axisMap[Object.keys(axisMap)[0]].xmax;
+  let { xmin } = axisMap[Object.keys(axisMap)[0]];
+  let { xmax } = axisMap[Object.keys(axisMap)[0]];
   const yAxisNumber = Object.keys(axisMap).length;
 
   // overall plot options
-  var layout = {
+  const layout = {
     margin: {
       l: 80,
       r: 80,
@@ -983,9 +982,9 @@ const generateYearToYearPlotOptions = function (axisMap, errorMax) {
   };
 
   // x-axis options
-  var tickVals = _.range(xmin, xmax + 1, 1);
-  var tickText = tickVals.map(String);
-  layout["xaxis"] = {
+  const tickVals = _.range(xmin, xmax + 1, 1);
+  const tickText = tickVals.map(String);
+  layout.xaxis = {
     title: "Year",
     titlefont: {
       size: 24,
@@ -1030,22 +1029,22 @@ const generateYearToYearPlotOptions = function (axisMap, errorMax) {
   const axisPosition = { 0: 0, 1: 1, 2: 0.1, 3: 0.9, 4: 0.2, 5: 0.8, 6: 0.3, 7: 0.7 };
 
   // loop over all y-axes
-  var axisKey;
-  var axisIdx;
-  var axisLabel;
+  let axisKey;
+  let axisIdx;
+  let axisLabel;
   for (axisIdx = 0; axisIdx < yAxisNumber; axisIdx++) {
     // get max and min values and label for curves on this y-axis
     axisKey = Object.keys(axisMap)[axisIdx];
-    var ymin = axisMap[axisKey].ymin;
-    var ymax = axisMap[axisKey].ymax;
-    ymax = ymax + errorMax;
-    ymin = ymin - errorMax;
+    let { ymin } = axisMap[axisKey];
+    let { ymax } = axisMap[axisKey];
+    ymax += errorMax;
+    ymin -= errorMax;
     const yPad = (ymax - ymin) * 0.025 !== 0 ? (ymax - ymin) * 0.025 : 0.025;
     xmin = axisMap[axisKey].xmin < xmin ? axisMap[axisKey].xmin : xmin;
     xmax = axisMap[axisKey].xmax > xmax ? axisMap[axisKey].xmax : xmax;
     axisLabel = axisMap[axisKey].axisLabel;
     var axisObjectKey;
-    var axisObjectBegin = {
+    const axisObjectBegin = {
       title: axisLabel,
       titlefont: {
         size: 24,
@@ -1070,7 +1069,7 @@ const generateYearToYearPlotOptions = function (axisMap, errorMax) {
       layout[axisObjectKey] = axisObjectBegin;
     } else if (axisIdx < Object.keys(axisPosition).length) {
       // subsequent y-axes, up to the 8 we support
-      axisObjectKey = "yaxis" + (axisIdx + 1);
+      axisObjectKey = `yaxis${axisIdx + 1}`;
       layout[axisObjectKey] = axisObjectBegin;
       layout[axisObjectKey].anchor = axisAnchor[axisIdx];
       layout[axisObjectKey].overlaying = "y";
@@ -1078,7 +1077,7 @@ const generateYearToYearPlotOptions = function (axisMap, errorMax) {
       layout[axisObjectKey].position = axisPosition[axisIdx];
     } else {
       // if the user by some miracle wants more than 8 y-axes, just shove them all into the position of the 8th
-      axisObjectKey = "yaxis" + (axisIdx + 1);
+      axisObjectKey = `yaxis${axisIdx + 1}`;
       layout[axisObjectKey] = axisObjectBegin;
       layout[axisObjectKey].anchor = axisAnchor[Object.keys(axisPosition).length - 1];
       layout[axisObjectKey].overlaying = "y";
@@ -1088,21 +1087,21 @@ const generateYearToYearPlotOptions = function (axisMap, errorMax) {
     }
   }
   const xPad = (xmax - xmin) * 0.025 !== 0 ? (xmax - xmin) * 0.025 : 0.025;
-  xmax = xmax + xPad * Math.ceil(yAxisNumber / 2);
-  xmin = xmin - xPad * Math.ceil(yAxisNumber / 2);
-  layout["xaxis"]["range"] = [xmin, xmax];
+  xmax += xPad * Math.ceil(yAxisNumber / 2);
+  xmin -= xPad * Math.ceil(yAxisNumber / 2);
+  layout.xaxis.range = [xmin, xmax];
   return layout;
 };
 
 // sets plot options for reliability plots
 const generateReliabilityPlotOptions = function () {
-  var xmin = 0;
-  var xmax = 1;
-  var ymin = 0;
-  var ymax = 1;
+  const xmin = 0;
+  const xmax = 1;
+  const ymin = 0;
+  const ymax = 1;
 
   // overall plot options
-  var layout = {
+  const layout = {
     margin: {
       l: 80,
       r: 80,
@@ -1131,7 +1130,7 @@ const generateReliabilityPlotOptions = function () {
   };
 
   // x-axis options
-  layout["xaxis"] = {
+  layout.xaxis = {
     title: "Forecast Probability",
     titlefont: {
       size: 24,
@@ -1165,7 +1164,7 @@ const generateReliabilityPlotOptions = function () {
   };
 
   // y-axis options
-  layout["yaxis"] = {
+  layout.yaxis = {
     title: "Observed Relative Frequency",
     titlefont: {
       size: 24,
@@ -1203,13 +1202,13 @@ const generateReliabilityPlotOptions = function () {
 
 // sets plot options for ROC plots
 const generateROCPlotOptions = function () {
-  var xmin = 0;
-  var xmax = 1;
-  var ymin = 0;
-  var ymax = 1;
+  const xmin = 0;
+  const xmax = 1;
+  const ymin = 0;
+  const ymax = 1;
 
   // overall plot options
-  var layout = {
+  const layout = {
     margin: {
       l: 80,
       r: 80,
@@ -1238,7 +1237,7 @@ const generateROCPlotOptions = function () {
   };
 
   // x-axis options
-  layout["xaxis"] = {
+  layout.xaxis = {
     title: "Probability of False Detection",
     titlefont: {
       size: 24,
@@ -1272,7 +1271,7 @@ const generateROCPlotOptions = function () {
   };
 
   // y-axis options
-  layout["yaxis"] = {
+  layout.yaxis = {
     title: "Probability of Detection",
     titlefont: {
       size: 24,
@@ -1310,13 +1309,13 @@ const generateROCPlotOptions = function () {
 
 // sets plot options for performance diagrams
 const generatePerformanceDiagramPlotOptions = function () {
-  var xmin = 0;
-  var xmax = 1;
-  var ymin = 0;
-  var ymax = 1;
+  const xmin = 0;
+  const xmax = 1;
+  const ymin = 0;
+  const ymax = 1;
 
   // overall plot options
-  var layout = {
+  const layout = {
     margin: {
       l: 80,
       r: 80,
@@ -1345,7 +1344,7 @@ const generatePerformanceDiagramPlotOptions = function () {
   };
 
   // x-axis options
-  layout["xaxis"] = {
+  layout.xaxis = {
     title: "Success Ratio (1-FAR)",
     titlefont: {
       size: 24,
@@ -1379,7 +1378,7 @@ const generatePerformanceDiagramPlotOptions = function () {
   };
 
   // y-axis options
-  layout["yaxis"] = {
+  layout.yaxis = {
     title: "Probability of Detection",
     titlefont: {
       size: 24,
@@ -1464,17 +1463,17 @@ const generateMapPlotOptions = function (extraLegendSpace) {
 
 // sets plot options for histograms
 const generateHistogramPlotOptions = function (curves, axisMap, varUnits, plotBins) {
-  const axisKey = curves[0].axisKey;
-  const axisLabel = axisMap[axisKey].axisLabel;
-  var xmin = axisMap[axisKey].xmin;
-  var xmax = axisMap[axisKey].xmax;
+  const { axisKey } = curves[0];
+  const { axisLabel } = axisMap[axisKey];
+  const { xmin } = axisMap[axisKey];
+  const { xmax } = axisMap[axisKey];
   const xPad = ((xmax - xmin) / plotBins.binMeans.length) * 1.2;
-  var ymin = axisMap[axisKey].ymin;
-  var ymax = axisMap[axisKey].ymax;
+  const { ymin } = axisMap[axisKey];
+  const { ymax } = axisMap[axisKey];
   const yPad = (ymax - ymin) * 0.025 !== 0 ? (ymax - ymin) * 0.025 : 0.025;
 
   // overall plot options
-  var layout = {
+  const layout = {
     margin: {
       l: 80,
       r: 80,
@@ -1504,10 +1503,9 @@ const generateHistogramPlotOptions = function (curves, axisMap, varUnits, plotBi
   };
 
   // x-axis options
-  layout["xaxis"] = {
+  layout.xaxis = {
     // put units on the x-axis if we have them
-    title:
-      varUnits !== undefined && varUnits.length > 0 ? "Bin (" + varUnits + ")" : "Bin",
+    title: varUnits !== undefined && varUnits.length > 0 ? `Bin (${varUnits})` : "Bin",
     titlefont: {
       size: 24,
       color: "#000000",
@@ -1528,7 +1526,7 @@ const generateHistogramPlotOptions = function (curves, axisMap, varUnits, plotBi
   };
 
   // y-axis options
-  layout["yaxis"] = {
+  layout.yaxis = {
     title: axisLabel,
     titlefont: {
       size: 24,
@@ -1552,18 +1550,18 @@ const generateHistogramPlotOptions = function (curves, axisMap, varUnits, plotBi
 
 // sets plot options for histograms
 const generateEnsembleHistogramPlotOptions = function (dataset, curves, axisMap) {
-  const axisKey = curves[0].axisKey;
-  const axisLabel = axisMap[axisKey].axisLabel;
-  var xmin = dataset[0].x[0];
-  var xmax = dataset[0].x[dataset[0].x.length - 1];
+  const { axisKey } = curves[0];
+  const { axisLabel } = axisMap[axisKey];
+  const xmin = dataset[0].x[0];
+  const xmax = dataset[0].x[dataset[0].x.length - 1];
   const xPad = ((xmax - xmin) / dataset[0].x.length) * 0.6;
-  var ymin = axisMap[axisKey].ymin;
-  var ymax = axisMap[axisKey].ymax;
+  const { ymin } = axisMap[axisKey];
+  const { ymax } = axisMap[axisKey];
   const yPad = (ymax - ymin) * 0.025 !== 0 ? (ymax - ymin) * 0.025 : 0.025;
 
   // get actual bins from the query to place on the x-axis
-  var tickvals = [];
-  for (var didx = 0; didx < dataset.length; didx++) {
+  let tickvals = [];
+  for (let didx = 0; didx < dataset.length; didx++) {
     tickvals = _.union(tickvals, dataset[didx].x);
   }
   tickvals = tickvals.sort(function (a, b) {
@@ -1571,7 +1569,7 @@ const generateEnsembleHistogramPlotOptions = function (dataset, curves, axisMap)
   });
 
   // overall plot options
-  var layout = {
+  const layout = {
     margin: {
       l: 80,
       r: 80,
@@ -1601,7 +1599,7 @@ const generateEnsembleHistogramPlotOptions = function (dataset, curves, axisMap)
   };
 
   // x-axis options
-  layout["xaxis"] = {
+  layout.xaxis = {
     title: "Bin",
     titlefont: {
       size: 24,
@@ -1611,7 +1609,7 @@ const generateEnsembleHistogramPlotOptions = function (dataset, curves, axisMap)
       size: 14,
       color: "#000000",
     },
-    tickvals: tickvals,
+    tickvals,
     ticktext: tickvals.map(String),
     linecolor: "black",
     linewidth: 2,
@@ -1623,7 +1621,7 @@ const generateEnsembleHistogramPlotOptions = function (dataset, curves, axisMap)
   };
 
   // y-axis options
-  layout["yaxis"] = {
+  layout.yaxis = {
     title: axisLabel,
     titlefont: {
       size: 24,
@@ -1647,15 +1645,15 @@ const generateEnsembleHistogramPlotOptions = function (dataset, curves, axisMap)
 
 // sets plot options for contour plots
 const generateContourPlotOptions = function (dataset) {
-  const xAxisKey = dataset[0]["xAxisKey"];
-  const yAxisKey = dataset[0]["yAxisKey"];
-  var xmin = dataset[0].xmin;
-  var xmax = dataset[0].xmax;
-  var ymin = dataset[0].ymin;
-  var ymax = dataset[0].ymax;
+  const { xAxisKey } = dataset[0];
+  const { yAxisKey } = dataset[0];
+  const { xmin } = dataset[0];
+  const { xmax } = dataset[0];
+  const { ymin } = dataset[0];
+  const { ymax } = dataset[0];
 
   // overall plot options
-  var layout = {
+  const layout = {
     margin: {
       l: 80,
       r: 80,
@@ -1683,7 +1681,7 @@ const generateContourPlotOptions = function (dataset) {
   };
 
   // x-axis options
-  layout["xaxis"] = {
+  layout.xaxis = {
     title: xAxisKey,
     titlefont: {
       size: 24,
@@ -1699,32 +1697,32 @@ const generateContourPlotOptions = function (dataset) {
   };
 
   if (xAxisKey.indexOf("Date") > -1) {
-    layout["xaxis"]["range"] = [
+    layout.xaxis.range = [
       moment.utc(xmin * 1000).format("YYYY-MM-DD HH:mm"),
       moment.utc(xmax * 1000).format("YYYY-MM-DD HH:mm"),
     ];
   } else if (xAxisKey.indexOf("Fcst lead time") > -1) {
-    layout["xaxis"]["range"] = [
+    layout.xaxis.range = [
       Number(xmin.toString().replace(/0000/g, "")),
       Number(xmax.toString().replace(/0000/g, "")),
     ];
     // people want the axis tick for fhr to be displayed in multiples of three
     if (Number(xmax.toString().replace(/0000/g, "")) < 50) {
-      layout["xaxis"]["dtick"] = 3;
+      layout.xaxis.dtick = 3;
     } else if (Number(xmax.toString().replace(/0000/g, "")) < 122) {
-      layout["xaxis"]["dtick"] = 6;
+      layout.xaxis.dtick = 6;
     } else if (Number(xmax.toString().replace(/0000/g, "")) < 194) {
-      layout["xaxis"]["dtick"] = 12;
+      layout.xaxis.dtick = 12;
     } else {
-      layout["xaxis"]["dtick"] = 24;
+      layout.xaxis.dtick = 24;
     }
   } else {
-    layout["xaxis"]["range"] = [xmin, xmax];
+    layout.xaxis.range = [xmin, xmax];
   }
 
   // y-axis options
   if (yAxisKey === "Pressure level") {
-    layout["yaxis"] = {
+    layout.yaxis = {
       title: yAxisKey,
       titlefont: {
         size: 24,
@@ -1743,7 +1741,7 @@ const generateContourPlotOptions = function (dataset) {
       gridcolor: "rgb(238,238,238)",
     };
   } else {
-    layout["yaxis"] = {
+    layout.yaxis = {
       title: yAxisKey,
       titlefont: {
         size: 24,
@@ -1760,27 +1758,27 @@ const generateContourPlotOptions = function (dataset) {
   }
 
   if (yAxisKey.indexOf("Date") > -1) {
-    layout["yaxis"]["range"] = [
+    layout.yaxis.range = [
       moment.utc(ymin * 1000).format("YYYY-MM-DD HH:mm"),
       moment.utc(ymax * 1000).format("YYYY-MM-DD HH:mm"),
     ];
   } else if (yAxisKey.indexOf("Fcst lead time") > -1) {
-    layout["yaxis"]["range"] = [
+    layout.yaxis.range = [
       Number(ymin.toString().replace(/0000/g, "")),
       Number(ymax.toString().replace(/0000/g, "")),
     ];
     // people want the axis tick for fhr to be displayed in multiples of three
     if (Number(ymax.toString().replace(/0000/g, "")) < 50) {
-      layout["yaxis"]["dtick"] = 3;
+      layout.yaxis.dtick = 3;
     } else if (Number(ymax.toString().replace(/0000/g, "")) < 122) {
-      layout["yaxis"]["dtick"] = 6;
+      layout.yaxis.dtick = 6;
     } else if (Number(ymax.toString().replace(/0000/g, "")) < 194) {
-      layout["yaxis"]["dtick"] = 12;
+      layout.yaxis.dtick = 12;
     } else {
-      layout["yaxis"]["dtick"] = 24;
+      layout.yaxis.dtick = 24;
     }
   } else {
-    layout["yaxis"]["range"] = [ymin, ymax];
+    layout.yaxis.range = [ymin, ymax];
   }
 
   return layout;
@@ -1792,7 +1790,7 @@ const generateScatterPlotOptions = function (axisXMap, axisYMap) {
   const yAxisNumber = Object.keys(axisYMap).length;
 
   // overall plot options
-  var layout = {
+  const layout = {
     margin: {
       l: 80,
       r: 80,
@@ -1843,14 +1841,14 @@ const generateScatterPlotOptions = function (axisXMap, axisYMap) {
   const axisPosition = { 0: 0, 1: 1, 2: 0.1, 3: 0.9, 4: 0.2, 5: 0.8, 6: 0.3, 7: 0.7 };
 
   // loop over all x-axes
-  var axisKey;
-  var axisIdx;
-  var axisLabel;
+  let axisKey;
+  let axisIdx;
+  let axisLabel;
   for (axisIdx = 0; axisIdx < xAxisNumber; axisIdx++) {
     // get max and min values and label for curves on this x-axis
     axisKey = Object.keys(axisXMap)[axisIdx];
-    var xmin = axisXMap[axisKey].xmin;
-    var xmax = axisXMap[axisKey].xmax;
+    const { xmin } = axisXMap[axisKey];
+    const { xmax } = axisXMap[axisKey];
     const xPad = (xmax - xmin) * 0.025 !== 0 ? (xmax - xmin) * 0.025 : 0.025;
     axisLabel = axisXMap[axisKey].axisLabel;
     var axisObjectKey;
@@ -1879,7 +1877,7 @@ const generateScatterPlotOptions = function (axisXMap, axisYMap) {
       layout[axisObjectKey] = axisObjectBegin;
     } else if (axisIdx < Object.keys(axisPosition).length) {
       // subsequent x-axes, up to the 8 we support
-      axisObjectKey = "xaxis" + (axisIdx + 1);
+      axisObjectKey = `xaxis${axisIdx + 1}`;
       layout[axisObjectKey] = axisObjectBegin;
       layout[axisObjectKey].anchor = axisAnchor[axisIdx];
       layout[axisObjectKey].overlaying = "x";
@@ -1887,7 +1885,7 @@ const generateScatterPlotOptions = function (axisXMap, axisYMap) {
       layout[axisObjectKey].position = axisPosition[axisIdx];
     } else {
       // if the user by some miracle wants more than 8 x-axes, just shove them all into the position of the 8th
-      axisObjectKey = "xaxis" + (axisIdx + 1);
+      axisObjectKey = `xaxis${axisIdx + 1}`;
       layout[axisObjectKey] = axisObjectBegin;
       layout[axisObjectKey].anchor = axisAnchor[Object.keys(axisPosition).length - 1];
       layout[axisObjectKey].overlaying = "x";
@@ -1901,8 +1899,8 @@ const generateScatterPlotOptions = function (axisXMap, axisYMap) {
   for (axisIdx = 0; axisIdx < yAxisNumber; axisIdx++) {
     // get max and min values and label for curves on this y-axis
     axisKey = Object.keys(axisYMap)[axisIdx];
-    var ymin = axisYMap[axisKey].ymin;
-    var ymax = axisYMap[axisKey].ymax;
+    const { ymin } = axisYMap[axisKey];
+    const { ymax } = axisYMap[axisKey];
     const yPad = (ymax - ymin) * 0.025 !== 0 ? (ymax - ymin) * 0.025 : 0.025;
     axisLabel = axisYMap[axisKey].axisLabel;
     axisObjectBegin = {
@@ -1930,7 +1928,7 @@ const generateScatterPlotOptions = function (axisXMap, axisYMap) {
       layout[axisObjectKey] = axisObjectBegin;
     } else if (axisIdx < Object.keys(axisPosition).length) {
       // subsequent y-axes, up to the 8 we support
-      axisObjectKey = "yaxis" + (axisIdx + 1);
+      axisObjectKey = `yaxis${axisIdx + 1}`;
       layout[axisObjectKey] = axisObjectBegin;
       layout[axisObjectKey].anchor = axisAnchor[axisIdx];
       layout[axisObjectKey].overlaying = "y";
@@ -1938,7 +1936,7 @@ const generateScatterPlotOptions = function (axisXMap, axisYMap) {
       layout[axisObjectKey].position = axisPosition[axisIdx];
     } else {
       // if the user by some miracle wants more than 8 y-axes, just shove them all into the position of the 8th
-      axisObjectKey = "yaxis" + (axisIdx + 1);
+      axisObjectKey = `yaxis${axisIdx + 1}`;
       layout[axisObjectKey] = axisObjectBegin;
       layout[axisObjectKey].anchor = axisAnchor[Object.keys(axisPosition).length - 1];
       layout[axisObjectKey].overlaying = "y";
@@ -1951,19 +1949,19 @@ const generateScatterPlotOptions = function (axisXMap, axisYMap) {
 };
 
 export default matsDataPlotOpsUtils = {
-  generateSeriesPlotOptions: generateSeriesPlotOptions,
-  generateProfilePlotOptions: generateProfilePlotOptions,
-  generateDieoffPlotOptions: generateDieoffPlotOptions,
-  generateThresholdPlotOptions: generateThresholdPlotOptions,
-  generateValidTimePlotOptions: generateValidTimePlotOptions,
-  generateGridScalePlotOptions: generateGridScalePlotOptions,
-  generateYearToYearPlotOptions: generateYearToYearPlotOptions,
-  generateReliabilityPlotOptions: generateReliabilityPlotOptions,
-  generateROCPlotOptions: generateROCPlotOptions,
-  generatePerformanceDiagramPlotOptions: generatePerformanceDiagramPlotOptions,
-  generateMapPlotOptions: generateMapPlotOptions,
-  generateHistogramPlotOptions: generateHistogramPlotOptions,
-  generateEnsembleHistogramPlotOptions: generateEnsembleHistogramPlotOptions,
-  generateContourPlotOptions: generateContourPlotOptions,
-  generateScatterPlotOptions: generateScatterPlotOptions,
+  generateSeriesPlotOptions,
+  generateProfilePlotOptions,
+  generateDieoffPlotOptions,
+  generateThresholdPlotOptions,
+  generateValidTimePlotOptions,
+  generateGridScalePlotOptions,
+  generateYearToYearPlotOptions,
+  generateReliabilityPlotOptions,
+  generateROCPlotOptions,
+  generatePerformanceDiagramPlotOptions,
+  generateMapPlotOptions,
+  generateHistogramPlotOptions,
+  generateEnsembleHistogramPlotOptions,
+  generateContourPlotOptions,
+  generateScatterPlotOptions,
 };

@@ -12,14 +12,14 @@ const getHorizontalValueLine = function (xmax, xmin, yValue, textPos, cLabel) {
     label: cLabel,
     curveId: cLabel,
     annotation: "",
-    name: "y = " + textLabel,
+    name: `y = ${textLabel}`,
     mode: "lines+text",
     x: [xmin, xmax],
     x_epoch: [xmin, xmax],
     y: [yValue, yValue],
     error_x: [null, null],
     error_y: [null, null],
-    text: ["", "y = " + textLabel],
+    text: ["", `y = ${textLabel}`],
     textposition: textPos,
     subVals: [],
     subSecs: [],
@@ -28,8 +28,8 @@ const getHorizontalValueLine = function (xmax, xmin, yValue, textPos, cLabel) {
       { d_mean: 0, sd: 0, n_good: 0, lag1: 0, stde: 0 },
       { d_mean: 0, sd: 0, n_good: 0, lag1: 0, stde: 0 },
     ],
-    xmin: xmin,
-    xmax: xmax,
+    xmin,
+    xmax,
     ymin: yValue,
     ymax: yValue,
     line: {
@@ -53,13 +53,13 @@ const getVerticalValueLine = function (ymax, ymin, xValue, textPos, cLabel) {
     label: cLabel,
     curveId: cLabel,
     annotation: "",
-    name: "x = " + textLabel,
+    name: `x = ${textLabel}`,
     mode: "lines+text",
     x: [xValue, xValue],
     y: [ymin, ymax],
     error_x: [null, null],
     error_y: [null, null],
-    text: ["", " x = " + textLabel + " "],
+    text: ["", ` x = ${textLabel} `],
     textposition: textPos,
     subVals: [],
     subSecs: [],
@@ -70,8 +70,8 @@ const getVerticalValueLine = function (ymax, ymin, xValue, textPos, cLabel) {
     ],
     xmin: xValue,
     xmax: xValue,
-    ymin: ymin,
-    ymax: ymax,
+    ymin,
+    ymax,
     line: {
       dash: "solid",
       color: "rgb(0,0,0)",
@@ -116,10 +116,10 @@ const getLinearValueLine = function (
       { d_mean: 0, sd: 0, n_good: 0, lag1: 0, stde: 0 },
       { d_mean: 0, sd: 0, n_good: 0, lag1: 0, stde: 0 },
     ],
-    xmin: xmin,
-    xmax: xmax,
-    ymin: ymin,
-    ymax: ymax,
+    xmin,
+    xmax,
+    ymin,
+    ymax,
     line: {
       dash: "solid",
       color: "rgb(0,0,0)",
@@ -163,10 +163,10 @@ const getDashedLinearValueLine = function (
       { d_mean: 0, sd: 0, n_good: 0, lag1: 0, stde: 0 },
       { d_mean: 0, sd: 0, n_good: 0, lag1: 0, stde: 0 },
     ],
-    xmin: xmin,
-    xmax: xmax,
-    ymin: ymin,
-    ymax: ymax,
+    xmin,
+    xmax,
+    ymin,
+    ymax,
     line: {
       dash: "dot",
       color: "rgb(0,0,0)",
@@ -226,16 +226,16 @@ const generateSeriesCurveOptions = function (
   dataSeries,
   appParams
 ) {
-  const label = curve["label"];
+  const { label } = curve;
   const longLabel = matsPlotUtils.getCurveText(appParams.plotType, curve);
-  const annotation = curve["annotation"];
+  const { annotation } = curve;
 
   // adjust axes for later setting of the plot options
-  const ymin = curve["ymin"];
-  const ymax = curve["ymax"];
-  const xmin = curve["xmin"];
-  const xmax = curve["xmax"];
-  const axisKey = curve["axisKey"];
+  const { ymin } = curve;
+  const { ymax } = curve;
+  const { xmin } = curve;
+  const { xmax } = curve;
+  const { axisKey } = curve;
   if (axisKey in axisMap) {
     axisMap[axisKey].axisLabel = axisKey;
     axisMap[axisKey].ymin = ymin < axisMap[axisKey].ymin ? ymin : axisMap[axisKey].ymin;
@@ -245,44 +245,44 @@ const generateSeriesCurveOptions = function (
   } else {
     axisMap[axisKey] = {
       index: Object.keys(axisMap).length + 1,
-      xmin: xmin,
-      xmax: xmax,
-      ymin: ymin,
-      ymax: ymax,
+      xmin,
+      xmax,
+      ymin,
+      ymax,
       axisLabel: axisKey,
     };
   }
 
   const axisNumber = Object.keys(axisMap).indexOf(axisKey);
 
-  var error_y_temp = {
+  const error_y_temp = {
     error_y: {
       array: dataSeries.error_y,
       thickness: 1, // set the thickness of the error bars
-      color: curve["color"],
+      color: curve.color,
       visible: false, // changed later if matching
       // width: 0
     },
   };
 
-  var curveOptions = {
+  const curveOptions = {
     ...{
-      label: label,
+      label,
       curveId: label,
       name: longLabel,
       xaxis: "x1",
-      yaxis: "y" + (axisNumber + 1),
-      annotation: annotation,
-      annotateColor: curve["color"],
+      yaxis: `y${axisNumber + 1}`,
+      annotation,
+      annotateColor: curve.color,
       mode: "lines+markers",
       marker: {
         symbol: "circle",
-        color: curve["color"],
+        color: curve.color,
         size: 8,
       },
       line: {
         dash: "solid",
-        color: curve["color"],
+        color: curve.color,
         width: 2,
       },
       visible: true,
@@ -293,7 +293,7 @@ const generateSeriesCurveOptions = function (
 
   delete curveOptions.error_y;
 
-  curveOptions["error_y"] = error_y_temp.error_y;
+  curveOptions.error_y = error_y_temp.error_y;
 
   // for performance diagram point filtering, need to know what we're plotting
   if (
@@ -301,22 +301,19 @@ const generateSeriesCurveOptions = function (
     appParams.plotType === matsTypes.PlotTypes.simpleScatter ||
     appParams.plotType === matsTypes.PlotTypes.roc
   ) {
-    curveOptions["binParam"] = curve["binParam"];
+    curveOptions.binParam = curve.binParam;
   }
 
   // if threshold, determine x-axis units
   if (appParams.plotType === matsTypes.PlotTypes.threshold) {
-    const database = curve["database"];
-    const thresholdUnits = matsCollections.Settings.findOne({}).thresholdUnits;
+    const { database } = curve;
+    const { thresholdUnits } = matsCollections.Settings.findOne({});
     if (thresholdUnits === undefined || Object.keys(thresholdUnits).length === 0) {
-      curveOptions["thresholdAxisUnits"] = "";
+      curveOptions.thresholdAxisUnits = "";
+    } else if (database === undefined) {
+      curveOptions.thresholdAxisLabel = thresholdUnits[Object.keys(thresholdUnits)[0]];
     } else {
-      if (database === undefined) {
-        curveOptions["thresholdAxisLabel"] =
-          thresholdUnits[Object.keys(thresholdUnits)[0]];
-      } else {
-        curveOptions["thresholdAxisLabel"] = thresholdUnits[database];
-      }
+      curveOptions.thresholdAxisLabel = thresholdUnits[database];
     }
   }
 
@@ -331,16 +328,16 @@ const generateProfileCurveOptions = function (
   dataProfile,
   appParams
 ) {
-  const label = curve["label"];
+  const { label } = curve;
   const longLabel = matsPlotUtils.getCurveText(appParams.plotType, curve);
-  const annotation = curve["annotation"];
+  const { annotation } = curve;
 
   // adjust axes for later setting of the plot options
-  const ymin = curve["ymin"];
-  const ymax = curve["ymax"];
-  const xmin = curve["xmin"];
-  const xmax = curve["xmax"];
-  const axisKey = curve["axisKey"];
+  const { ymin } = curve;
+  const { ymax } = curve;
+  const { xmin } = curve;
+  const { xmax } = curve;
+  const { axisKey } = curve;
   if (axisKey in axisMap) {
     axisMap[axisKey].axisLabel = axisKey;
     axisMap[axisKey].ymin = ymin < axisMap[axisKey].ymin ? ymin : axisMap[axisKey].ymin;
@@ -350,43 +347,43 @@ const generateProfileCurveOptions = function (
   } else {
     axisMap[axisKey] = {
       index: Object.keys(axisMap).length + 1,
-      xmin: xmin,
-      xmax: xmax,
-      ymin: ymin,
-      ymax: ymax,
+      xmin,
+      xmax,
+      ymin,
+      ymax,
       axisLabel: axisKey,
     };
   }
 
   const axisNumber = Object.keys(axisMap).indexOf(axisKey);
 
-  var error_x_temp = {
+  const error_x_temp = {
     error_x: {
       array: dataProfile.error_x,
       thickness: 1, // set the thickness of the error bars
-      color: curve["color"],
+      color: curve.color,
       visible: false, // changed later if matching
       // width: 0
     },
   };
-  var curveOptions = {
+  const curveOptions = {
     ...{
-      label: label,
+      label,
       curveId: label,
       name: longLabel,
-      xaxis: "x" + (axisNumber + 1),
+      xaxis: `x${axisNumber + 1}`,
       yaxis: "y1",
-      annotation: annotation,
-      annotateColor: curve["color"],
+      annotation,
+      annotateColor: curve.color,
       mode: "lines+markers",
       marker: {
         symbol: "circle",
-        color: curve["color"],
+        color: curve.color,
         size: 8,
       },
       line: {
         dash: "solid",
-        color: curve["color"],
+        color: curve.color,
         width: 2,
       },
       visible: true,
@@ -397,7 +394,7 @@ const generateProfileCurveOptions = function (
 
   delete curveOptions.error_x;
 
-  curveOptions["error_x"] = error_x_temp.error_x;
+  curveOptions.error_x = error_x_temp.error_x;
 
   return curveOptions;
 };
@@ -410,16 +407,16 @@ const generateBarChartCurveOptions = function (
   dataBars,
   appParams
 ) {
-  const label = curve["label"];
+  const { label } = curve;
   const longLabel = matsPlotUtils.getCurveText(appParams.plotType, curve);
-  const annotation = curve["annotation"];
+  const { annotation } = curve;
 
   // adjust axes for later setting of the plot options
-  const ymin = dataBars["ymin"];
-  const ymax = dataBars["ymax"];
-  const xmin = dataBars["xmin"];
-  const xmax = dataBars["xmax"];
-  const axisKey = curve["axisKey"];
+  const { ymin } = dataBars;
+  const { ymax } = dataBars;
+  const { xmin } = dataBars;
+  const { xmax } = dataBars;
+  const { axisKey } = curve;
   if (axisKey in axisMap) {
     axisMap[axisKey].axisLabel = axisKey;
     axisMap[axisKey].ymin = ymin < axisMap[axisKey].ymin ? ymin : axisMap[axisKey].ymin;
@@ -429,23 +426,23 @@ const generateBarChartCurveOptions = function (
   } else {
     axisMap[axisKey] = {
       index: Object.keys(axisMap).length + 1,
-      xmin: xmin,
-      xmax: xmax,
-      ymin: ymin,
-      ymax: ymax,
+      xmin,
+      xmax,
+      ymin,
+      ymax,
       axisLabel: axisKey,
     };
   }
 
   const curveOptions = {
     ...{
-      label: label,
+      label,
       curveId: label,
       name: longLabel,
-      annotation: annotation,
-      annotateColor: curve["color"],
+      annotation,
+      annotateColor: curve.color,
       marker: {
-        color: curve["color"],
+        color: curve.color,
         line: {
           color: "rgb(0,0,0)",
         },
@@ -462,18 +459,18 @@ const generateBarChartCurveOptions = function (
 
 const generateMapCurveOptions = function (curve, dataSeries, appParams, maxValue) {
   const markerSizes = dataSeries.queryVal.map(function (val) {
-    var size = 2 + Math.ceil(Math.abs((val * 18) / maxValue));
+    let size = 2 + Math.ceil(Math.abs((val * 18) / maxValue));
     size = size > 20 ? 20 : size; // prevent really massive bad data from obscuring map
-    if (curve["statistic"] === "N" || curve["statistic"].includes("average")) size = 10;
+    if (curve.statistic === "N" || curve.statistic.includes("average")) size = 10;
     return size;
   });
 
-  const label = curve["label"];
+  const { label } = curve;
   const longLabel = matsPlotUtils.getCurveText(appParams.plotType, curve);
 
   const curveOptions = {
     ...{
-      label: label,
+      label,
       curveId: label,
       name: longLabel,
       datatype: "scalar",
@@ -499,12 +496,12 @@ const generateCTCMapCurveOptions = function (curve, dataSeries, appParams) {
     return 10;
   });
 
-  const label = curve["label"];
+  const { label } = curve;
   const longLabel = matsPlotUtils.getCurveText(appParams.plotType, curve);
 
   const curveOptions = {
     ...{
-      label: label,
+      label,
       curveId: label,
       name: longLabel,
       datatype: "ctc",
@@ -555,12 +552,12 @@ const generateMapColorTextOptions = function (label, legendText, dataSeries) {
 };
 
 const generateContourCurveOptions = function (curve, axisMap, dataset, appParams) {
-  const label = curve["label"];
+  const { label } = curve;
   const longLabel = matsPlotUtils.getCurveText(appParams.plotType, curve);
-  const annotation = curve["annotation"];
-  const unitKey = curve["unitKey"];
-  const statistic = curve["statistic"];
-  const variable = curve["variable"] !== undefined ? curve["variable"] : "";
+  const { annotation } = curve;
+  const { unitKey } = curve;
+  const { statistic } = curve;
+  const variable = curve.variable !== undefined ? curve.variable : "";
   const RdWhBu = [
     [0, "rgb(5,10,172)"],
     [0.35, "rgb(106,137,247)"],
@@ -828,7 +825,7 @@ const generateContourCurveOptions = function (curve, axisMap, dataset, appParams
   const symmetricEnd = maxZ - (2 * maxZ) / 16;
   const symmetricSize = (2 * maxZ) / 16;
 
-  var colorscale = "RdBu";
+  let colorscale = "RdBu";
   if (
     variable.includes("RH") ||
     variable.includes("rh") ||
@@ -855,15 +852,15 @@ const generateContourCurveOptions = function (curve, axisMap, dataset, appParams
 
   const curveOptions = {
     ...{
-      label: label,
+      label,
       curveId: label,
       name: longLabel,
-      annotation: annotation,
-      annotateColor: curve["color"],
-      xAxisKey: curve["xAxisKey"],
-      yAxisKey: curve["yAxisKey"],
+      annotation,
+      annotateColor: curve.color,
+      xAxisKey: curve.xAxisKey,
+      yAxisKey: curve.yAxisKey,
       marker: {
-        color: curve["color"],
+        color: curve.color,
       },
       type: "contour",
       autocontour: false,
@@ -875,7 +872,7 @@ const generateContourCurveOptions = function (curve, axisMap, dataset, appParams
         size: statistic !== "Bias (Model - Obs)" ? defaultSize : symmetricSize,
         showlabels: false,
       },
-      colorscale: colorscale, // bias uses the diff colormap
+      colorscale, // bias uses the diff colormap
       reversescale: false,
       colorbar: {
         title: unitKey,
@@ -897,8 +894,8 @@ const generateContourCurveOptions = function (curve, axisMap, dataset, appParams
 
 const getContourSignificanceLayer = function (dataset) {
   const label = matsTypes.ReservedWords.contourSigLabel;
-  var curveOptions = {
-    label: label,
+  const curveOptions = {
+    label,
     curveId: label,
     annotation: "",
     name: label,
@@ -924,10 +921,10 @@ const getContourSignificanceLayer = function (dataset) {
   const ys = dataset[0].y;
   const sigMask = dataset[0].stdev;
 
-  var xidx;
-  var yidx;
-  var currX;
-  var currY;
+  let xidx;
+  let yidx;
+  let currX;
+  let currY;
   for (xidx = 0; xidx < xs.length; xidx++) {
     currX = xs[xidx];
     for (yidx = 0; yidx < ys.length; yidx++) {
@@ -951,17 +948,17 @@ const generateScatterCurveOptions = function (
   dataSeries,
   appParams
 ) {
-  const label = curve["label"];
+  const { label } = curve;
   const longLabel = matsPlotUtils.getCurveText(appParams.plotType, curve);
-  const annotation = curve["annotation"];
+  const { annotation } = curve;
 
   // adjust axes for later setting of the plot options
-  const ymin = curve["ymin"];
-  const ymax = curve["ymax"];
-  const xmin = curve["xmin"];
-  const xmax = curve["xmax"];
-  const axisXKey = curve["axisXKey"];
-  const axisYKey = curve["axisYKey"];
+  const { ymin } = curve;
+  const { ymax } = curve;
+  const { xmin } = curve;
+  const { xmax } = curve;
+  const { axisXKey } = curve;
+  const { axisYKey } = curve;
   if (axisXKey in axisXMap) {
     axisXMap[axisXKey].xmin =
       xmin < axisXMap[axisXKey].xmin ? xmin : axisXMap[axisXKey].xmin;
@@ -970,8 +967,8 @@ const generateScatterCurveOptions = function (
   } else {
     axisXMap[axisXKey] = {
       index: Object.keys(axisXMap).length + 1,
-      xmin: xmin,
-      xmax: xmax,
+      xmin,
+      xmax,
       axisLabel: axisXKey,
     };
   }
@@ -983,8 +980,8 @@ const generateScatterCurveOptions = function (
   } else {
     axisYMap[axisYKey] = {
       index: Object.keys(axisYMap).length + 1,
-      ymin: ymin,
-      ymax: ymax,
+      ymin,
+      ymax,
       axisLabel: axisYKey,
     };
   }
@@ -992,20 +989,20 @@ const generateScatterCurveOptions = function (
   const axisXNumber = Object.keys(axisXMap).indexOf(axisXKey);
   const axisYNumber = Object.keys(axisYMap).indexOf(axisYKey);
 
-  var curveOptions = {
+  const curveOptions = {
     ...{
-      label: label,
+      label,
       curveId: label,
       name: longLabel,
-      binParam: curve["binParam"],
-      xaxis: "x" + (axisXNumber + 1),
-      yaxis: "y" + (axisYNumber + 1),
-      annotation: annotation,
-      annotateColor: curve["color"],
+      binParam: curve.binParam,
+      xaxis: `x${axisXNumber + 1}`,
+      yaxis: `y${axisYNumber + 1}`,
+      annotation,
+      annotateColor: curve.color,
       mode: "markers",
       marker: {
         symbol: "circle",
-        color: curve["color"],
+        color: curve.color,
         size: 8,
       },
       visible: true,
@@ -1018,19 +1015,19 @@ const generateScatterCurveOptions = function (
 };
 
 export default matsDataCurveOpsUtils = {
-  getHorizontalValueLine: getHorizontalValueLine,
-  getVerticalValueLine: getVerticalValueLine,
-  getLinearValueLine: getLinearValueLine,
-  getDashedLinearValueLine: getDashedLinearValueLine,
-  getCurveLine: getCurveLine,
-  getContourSignificanceLayer: getContourSignificanceLayer,
+  getHorizontalValueLine,
+  getVerticalValueLine,
+  getLinearValueLine,
+  getDashedLinearValueLine,
+  getCurveLine,
+  getContourSignificanceLayer,
 
-  generateSeriesCurveOptions: generateSeriesCurveOptions,
-  generateProfileCurveOptions: generateProfileCurveOptions,
-  generateBarChartCurveOptions: generateBarChartCurveOptions,
-  generateMapCurveOptions: generateMapCurveOptions,
-  generateCTCMapCurveOptions: generateCTCMapCurveOptions,
-  generateMapColorTextOptions: generateMapColorTextOptions,
-  generateContourCurveOptions: generateContourCurveOptions,
-  generateScatterCurveOptions: generateScatterCurveOptions,
+  generateSeriesCurveOptions,
+  generateProfileCurveOptions,
+  generateBarChartCurveOptions,
+  generateMapCurveOptions,
+  generateCTCMapCurveOptions,
+  generateMapColorTextOptions,
+  generateContourCurveOptions,
+  generateScatterCurveOptions,
 };

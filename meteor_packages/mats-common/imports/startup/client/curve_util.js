@@ -2,12 +2,14 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import { matsTypes } from "meteor/randyp:mats-common";
-import { matsCollections } from "meteor/randyp:mats-common";
-import { matsPlotUtils } from "meteor/randyp:mats-common";
-import { matsParamUtils } from "meteor/randyp:mats-common";
-import { Info } from "meteor/randyp:mats-common";
-import { matsMethods } from "meteor/randyp:mats-common";
+import {
+  matsTypes,
+  matsCollections,
+  matsPlotUtils,
+  matsParamUtils,
+  Info,
+  matsMethods,
+} from "meteor/randyp:mats-common";
 
 /*
  global dataset variable - container for graph dataset.
@@ -17,14 +19,14 @@ import { matsMethods } from "meteor/randyp:mats-common";
  PlotResult.
  */
 
-//var plotResultData = null; -- this was the global variable for the text output data, but now it is set elsewhere
-var graphResult = null; // this is the global variable for the data on the graph
-var plot;
+// var plotResultData = null; -- this was the global variable for the text output data, but now it is set elsewhere
+let graphResult = null; // this is the global variable for the data on the graph
+let plot;
 
 const sizeof = function (_1) {
-  var _2 = [_1];
-  var _3 = 0;
-  for (var _4 = 0; _4 < _2.length; _4++) {
+  const _2 = [_1];
+  let _3 = 0;
+  for (let _4 = 0; _4 < _2.length; _4++) {
     switch (typeof _2[_4]) {
       case "boolean":
         _3 += 4;
@@ -42,8 +44,8 @@ const sizeof = function (_1) {
           }
         }
         for (var _5 in _2[_4]) {
-          var _6 = false;
-          for (var _7 = 0; _7 < _2.length; _7++) {
+          let _6 = false;
+          for (let _7 = 0; _7 < _2.length; _7++) {
             if (_2[_7] === _2[_4][_5]) {
               _6 = true;
               break;
@@ -61,8 +63,8 @@ const sizeof = function (_1) {
 // Retrieves the globally stored plotResultData for the text output and other things.
 // Re-sets the plotResultData if the requested page range has changed, or if it has not been previously set.
 const getPlotResultData = function () {
-  var pageIndex = Session.get("pageIndex");
-  var newPageIndex = Session.get("newPageIndex");
+  const pageIndex = Session.get("pageIndex");
+  const newPageIndex = Session.get("newPageIndex");
   if (
     plotResultData === undefined ||
     plotResultData === null ||
@@ -75,20 +77,20 @@ const getPlotResultData = function () {
 
 // Sets the global plotResultData variable for the text output to the requested range from the Results data stored in mongo, via a MatsMethod.
 const setPlotResultData = function () {
-  var pageIndex = Session.get("pageIndex");
-  var newPageIndex = Session.get("newPageIndex");
+  const pageIndex = Session.get("pageIndex");
+  const newPageIndex = Session.get("newPageIndex");
 
   if (Session.get("textRefreshNeeded") === true) {
     showSpinner();
     matsMethods.getPlotResult.call(
       {
         resultKey: Session.get("plotResultKey"),
-        pageIndex: pageIndex,
-        newPageIndex: newPageIndex,
+        pageIndex,
+        newPageIndex,
       },
       function (error, result) {
         if (error !== undefined) {
-          setError(new Error("matsMethods.getPlotResult failed : error: " + error));
+          setError(new Error(`matsMethods.getPlotResult failed : error: ${error}`));
           Session.set("textRefreshNeeded", false);
         }
         if (!result) {
@@ -137,17 +139,16 @@ const resetGraphResult = function () {
 };
 
 const setCurveParamDisplayText = function (paramName, newText) {
-  if (document.getElementById(paramName + "-item")) {
+  if (document.getElementById(`${paramName}-item`)) {
     matsMethods.setCurveParamDisplayText.call(
       {
-        paramName: paramName,
-        newText: newText,
+        paramName,
+        newText,
       },
       function (error, res) {
         if (error !== undefined) {
           setError(error);
         }
-        return;
       }
     );
   }
@@ -188,7 +189,7 @@ const setNextCurveLabel = function () {
     );
   });
   const lastUsedLabel = _.last(prefixLabels);
-  var lastLabelNumber = -1;
+  let lastLabelNumber = -1;
 
   if (lastUsedLabel !== undefined) {
     const minusPrefix = lastUsedLabel.replace(labelPrefix, "");
@@ -197,8 +198,8 @@ const setNextCurveLabel = function () {
       lastLabelNumber = tryNum;
     }
   }
-  var newLabelNumber = lastLabelNumber + 1;
-  var nextCurveLabel = labelPrefix + newLabelNumber;
+  let newLabelNumber = lastLabelNumber + 1;
+  let nextCurveLabel = labelPrefix + newLabelNumber;
   // the label might be one from a removed curve so the next ones might be used
   while (_.indexOf(usedLabels, nextCurveLabel) !== -1) {
     newLabelNumber++;
@@ -210,19 +211,16 @@ const setNextCurveLabel = function () {
 // determine the next curve color and set it in the session
 // private - not exported
 const setNextCurveColor = function () {
-  var usedColors = Session.get("UsedColors");
-  var colors = matsCollections.ColorScheme.findOne(
-    {},
-    { fields: { colors: 1 } }
-  ).colors;
-  var lastUsedIndex = -1;
+  const usedColors = Session.get("UsedColors");
+  const { colors } = matsCollections.ColorScheme.findOne({}, { fields: { colors: 1 } });
+  let lastUsedIndex = -1;
   if (usedColors !== undefined) {
     lastUsedIndex = _.indexOf(colors, _.last(usedColors));
   }
-  var nextCurveColor;
+  let nextCurveColor;
   if (lastUsedIndex !== undefined && lastUsedIndex !== -1) {
     if (lastUsedIndex < colors.length - 1) {
-      var newIndex = lastUsedIndex + 1;
+      let newIndex = lastUsedIndex + 1;
       nextCurveColor = colors[newIndex];
       // the color might be one from a removed curve so the next ones might be used
       while (_.indexOf(usedColors, nextCurveColor) !== -1) {
@@ -231,9 +229,8 @@ const setNextCurveColor = function () {
       }
     } else {
       // out of defaults
-      var rint = Math.round(0xffffff * Math.random());
-      nextCurveColor =
-        "rgb(" + (rint >> 16) + "," + ((rint >> 8) & 255) + "," + (rint & 255) + ")";
+      const rint = Math.round(0xffffff * Math.random());
+      nextCurveColor = `rgb(${rint >> 16},${(rint >> 8) & 255},${rint & 255})`;
     }
   } else {
     nextCurveColor = colors[0];
@@ -252,8 +249,8 @@ const getNextCurveColor = function () {
 
 // clear a used label and set the nextCurveLabel to the one just cleared
 const clearUsedLabel = function (label) {
-  var usedLabels = Session.get("UsedLabels");
-  var newUsedLabels = _.reject(usedLabels, function (l) {
+  const usedLabels = Session.get("UsedLabels");
+  const newUsedLabels = _.reject(usedLabels, function (l) {
     return l === label;
   });
   Session.set("UsedLabels", newUsedLabels);
@@ -262,8 +259,8 @@ const clearUsedLabel = function (label) {
 
 // clear a used color and set the nextCurveColor to the one just cleared
 const clearUsedColor = function (color) {
-  var usedColors = Session.get("UsedColors");
-  var newUsedColors = _.reject(usedColors, function (c) {
+  const usedColors = Session.get("UsedColors");
+  const newUsedColors = _.reject(usedColors, function (c) {
     return c === color;
   });
   Session.set("UsedColors", newUsedColors);
@@ -275,13 +272,10 @@ const clearUsedColor = function (color) {
 // This is used by the removeAll
 const clearAllUsed = function () {
   Session.set("UsedColors", undefined);
-  var colors = matsCollections.ColorScheme.findOne(
-    {},
-    { fields: { colors: 1 } }
-  ).colors;
+  const { colors } = matsCollections.ColorScheme.findOne({}, { fields: { colors: 1 } });
   Session.set("NextCurveColor", colors[0]);
   Session.set("UsedLabels", undefined);
-  var labelPrefix = matsCollections.Settings.findOne(
+  const labelPrefix = matsCollections.Settings.findOne(
     {},
     { fields: { LabelPrefix: 1 } }
   ).LabelPrefix;
@@ -293,12 +287,12 @@ const clearAllUsed = function () {
 // and to set the usedColors in the session
 // this is used on restore settings to set up the usedColors
 // private - not exported
-//setUsedDefaults = function() {
+// setUsedDefaults = function() {
 const setUsedColors = function () {
-  var curves = Session.get("Curves");
-  var usedColors = [];
-  for (var i = 0; i < curves.length; i++) {
-    var color = curves[i].color;
+  const curves = Session.get("Curves");
+  const usedColors = [];
+  for (let i = 0; i < curves.length; i++) {
+    const { color } = curves[i];
     usedColors.push(color);
   }
   Session.set("UsedColors", usedColors);
@@ -307,10 +301,10 @@ const setUsedColors = function () {
 
 // private - not exported
 const setUsedLabels = function () {
-  var curves = Session.get("Curves");
-  var usedLabels = [];
-  for (var i = 0; i < curves.length; i++) {
-    var label = curves[i].label;
+  const curves = Session.get("Curves");
+  const usedLabels = [];
+  for (let i = 0; i < curves.length; i++) {
+    const { label } = curves[i];
     usedLabels.push(label);
   }
   Session.set("UsedLabels", usedLabels);
@@ -338,10 +332,10 @@ const resetScatterApply = function () {
 // add the difference curves
 // private - not exported
 const addDiffs = function () {
-  var curves = Session.get("Curves");
-  var newCurves = Session.get("Curves");
+  const curves = Session.get("Curves");
+  const newCurves = Session.get("Curves");
   // diffs is checked -- have to add diff curves
-  var curvesLength = curves.length;
+  const curvesLength = curves.length;
   if (curvesLength <= 1) {
     setInfo("You cannot difference less than two curves!");
     return false;
@@ -352,7 +346,7 @@ const addDiffs = function () {
       var baseIndex = 0; // This will probably not default to curve 0 in the future
       for (var ci = 1; ci < curves.length; ci++) {
         var newCurve = $.extend(true, {}, curves[ci]);
-        newCurve.label = curves[ci].label + "-" + curves[0].label;
+        newCurve.label = `${curves[ci].label}-${curves[0].label}`;
         newCurve.color = getNextCurveColor();
         newCurve.diffFrom = [ci, baseIndex];
         // do not create extra diff if it already exists
@@ -370,7 +364,7 @@ const addDiffs = function () {
           // only diff on odd curves against previous curve
           baseIndex = ci - 1;
           var newCurve = $.extend(true, {}, curves[ci]);
-          newCurve.label = curves[ci].label + "-" + curves[baseIndex].label;
+          newCurve.label = `${curves[ci].label}-${curves[baseIndex].label}`;
           newCurve.color = getNextCurveColor();
           newCurve.diffFrom = [ci, baseIndex];
           // do not create extra diff if it already exists
@@ -386,7 +380,7 @@ const addDiffs = function () {
       var baseIndex = 0; // This will probably not default to curve 0 in the future
       for (var ci = 1; ci < curves.length; ci++) {
         var newCurve = $.extend(true, {}, curves[ci]);
-        newCurve.label = curves[ci].label + "-" + curves[0].label;
+        newCurve.label = `${curves[ci].label}-${curves[0].label}`;
         newCurve.color = getNextCurveColor();
         newCurve.diffFrom = [ci, baseIndex];
         // do not create extra diff if it already exists
@@ -403,8 +397,8 @@ const addDiffs = function () {
 // remove difference curves
 // private - not exported
 const removeDiffs = function () {
-  var curves = Session.get("Curves");
-  var newCurves = _.reject(curves, function (curve) {
+  const curves = Session.get("Curves");
+  const newCurves = _.reject(curves, function (curve) {
     return curve.diffFrom !== undefined && curve.diffFrom !== null;
   });
   Session.set("Curves", newCurves);
@@ -414,12 +408,12 @@ const removeDiffs = function () {
 // resolve the difference curves
 // (used after adding or removing a curve while the show diffs box is checked)
 const checkDiffs = function () {
-  var curves = Session.get("Curves");
+  const curves = Session.get("Curves");
   if (matsPlotUtils.getPlotType() === matsTypes.PlotTypes.scatter2d) {
     // scatter plots have no concept of difference curves.
     return;
   }
-  var plotFormat = matsPlotUtils.getPlotFormat();
+  const plotFormat = matsPlotUtils.getPlotFormat();
   if (curves.length > 1) {
     if (plotFormat !== matsTypes.PlotFormats.none) {
       removeDiffs();
@@ -452,9 +446,9 @@ const checkIfDisplayAllQCParams = function (faceOptions) {
         0 ||
         _.intersection(thisAppsStatistics.options, doNotFilterStats).length > 0)
     ) {
-      if (faceOptions["QCParamGroup"] === "block") {
+      if (faceOptions.QCParamGroup === "block") {
         // not a map plot, display only the gaps selector
-        faceOptions["QCParamGroup"] = "none";
+        faceOptions.QCParamGroup = "none";
         faceOptions["QCParamGroup-gaps"] = "block";
       } else if (faceOptions["QCParamGroup-lite"] === "block") {
         // map plot, display nothing
@@ -473,7 +467,7 @@ const setSelectorVisibility = function (plotType, faceOptions, selectorsToReset)
   ) {
     // reset selectors that may have been set to something invalid for the new plot type
     const resetSelectors = Object.keys(selectorsToReset);
-    for (var ridx = 0; ridx < resetSelectors.length; ridx++) {
+    for (let ridx = 0; ridx < resetSelectors.length; ridx++) {
       if (matsParamUtils.getParameterForName(resetSelectors[ridx]) !== undefined) {
         if (
           matsParamUtils.getParameterForName(resetSelectors[ridx]).type ===
@@ -492,10 +486,10 @@ const setSelectorVisibility = function (plotType, faceOptions, selectorsToReset)
       }
     }
     // show/hide selectors appropriate to this plot type
-    var elem;
+    let elem;
     const faceSelectors = Object.keys(faceOptions);
-    for (var fidx = 0; fidx < faceSelectors.length; fidx++) {
-      elem = document.getElementById(faceSelectors[fidx] + "-item");
+    for (let fidx = 0; fidx < faceSelectors.length; fidx++) {
+      elem = document.getElementById(`${faceSelectors[fidx]}-item`);
       if (
         elem &&
         elem.style &&
@@ -929,7 +923,7 @@ const showYearToYearFace = function () {
 // method to display the appropriate selectors for a reliability curve
 const showReliabilityFace = function () {
   const plotType = matsTypes.PlotTypes.reliability;
-  let faceOptions = {
+  const faceOptions = {
     "curve-dates": "none",
     dates: "block",
     statistic: "none",
@@ -980,7 +974,7 @@ const showReliabilityFace = function () {
 // method to display the appropriate selectors for a ROC curve
 const showROCFace = function () {
   const plotType = matsTypes.PlotTypes.roc;
-  let faceOptions = {
+  const faceOptions = {
     "curve-dates": "block",
     dates: "none",
     statistic: "none",
@@ -1033,7 +1027,7 @@ const showPerformanceDiagramFace = function () {
   const plotType = matsTypes.PlotTypes.performanceDiagram;
   const isMetexpress =
     matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
-  let faceOptions = {
+  const faceOptions = {
     "curve-dates": "block",
     dates: "none",
     statistic: "none",
@@ -1092,7 +1086,7 @@ const showPerformanceDiagramFace = function () {
 // method to display the appropriate selectors for a map
 const showMapFace = function () {
   const plotType = matsTypes.PlotTypes.map;
-  const appName = matsCollections.Settings.findOne({}).appName;
+  const { appName } = matsCollections.Settings.findOne({});
   let faceOptions = {
     "curve-dates": "none",
     dates: "block",
@@ -1143,7 +1137,7 @@ const showMapFace = function () {
   }
   // visibility15 can handle truth selection on maps
   if (appName !== undefined && appName === "visibility15") {
-    faceOptions["truth"] = "block";
+    faceOptions.truth = "block";
   }
   faceOptions = checkIfDisplayAllQCParams(faceOptions);
   setSelectorVisibility(plotType, faceOptions, selectorsToReset);
@@ -1153,7 +1147,7 @@ const showMapFace = function () {
 // method to display the appropriate selectors for a histogram
 const showHistogramFace = function () {
   const plotType = matsTypes.PlotTypes.histogram;
-  let faceOptions = {
+  const faceOptions = {
     "curve-dates": "block",
     dates: "none",
     statistic: "block",
@@ -1213,7 +1207,7 @@ const showHistogramFace = function () {
 // method to display the appropriate selectors for a histogram
 const showEnsembleHistogramFace = function () {
   const plotType = matsTypes.PlotTypes.ensembleHistogram;
-  let faceOptions = {
+  const faceOptions = {
     "curve-dates": "block",
     dates: "none",
     statistic: "none",
@@ -1266,7 +1260,7 @@ const showContourFace = function () {
     document.getElementById("plotTypes-selector").value === matsTypes.PlotTypes.contour
       ? matsTypes.PlotTypes.contour
       : matsTypes.PlotTypes.contourDiff;
-  let faceOptions = {
+  const faceOptions = {
     "curve-dates": "none",
     dates: "block",
     statistic: "block",
@@ -1323,7 +1317,7 @@ const showSimpleScatterFace = function () {
   const plotType = matsTypes.PlotTypes.simpleScatter;
   const isMetexpress =
     matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
-  let faceOptions = {
+  const faceOptions = {
     "curve-dates": "block",
     dates: "none",
     statistic: "none",
@@ -1369,8 +1363,8 @@ const showSimpleScatterFace = function () {
   };
   if (isMetexpress) {
     // in metexpress, scatter plots use the original statistic selector (to handle dependencies)
-    faceOptions["statistic"] = "block";
-    faceOptions["variable"] = "block";
+    faceOptions.statistic = "block";
+    faceOptions.variable = "block";
   }
   // performance diagrams need to have the region be in predefined mode
   if (matsParamUtils.getParameterForName("region-type") !== undefined) {
@@ -1383,7 +1377,7 @@ const showSimpleScatterFace = function () {
 // method to display the appropriate selectors for a scatter plot
 const showScatterFace = function () {
   const plotType = matsTypes.PlotTypes.scatter2d;
-  let faceOptions = {
+  const faceOptions = {
     "curve-dates": "none",
     dates: "block",
     statistic: "block",
@@ -1443,40 +1437,40 @@ const hideSpinner = function () {
 };
 
 export default matsCurveUtils = {
-  addDiffs: addDiffs,
-  checkDiffs: checkDiffs,
-  clearAllUsed: clearAllUsed,
-  clearUsedColor: clearUsedColor,
-  clearUsedLabel: clearUsedLabel,
-  getGraphResult: getGraphResult,
-  getNextCurveColor: getNextCurveColor,
-  getNextCurveLabel: getNextCurveLabel,
-  getPlotResultData: getPlotResultData,
-  getUsedLabels: getUsedLabels,
-  hideSpinner: hideSpinner,
-  removeDiffs: removeDiffs,
-  resetGraphResult: resetGraphResult,
-  resetPlotResultData: resetPlotResultData,
-  resetScatterApply: resetScatterApply,
-  setGraphResult: setGraphResult,
-  setUsedColorsAndLabels: setUsedColorsAndLabels,
-  setUsedLabels: setUsedLabels,
-  showSpinner: showSpinner,
-  showTimeseriesFace: showTimeseriesFace,
-  showProfileFace: showProfileFace,
-  showDieOffFace: showDieOffFace,
-  showThresholdFace: showThresholdFace,
-  showValidTimeFace: showValidTimeFace,
-  showGridScaleFace: showGridScaleFace,
-  showDailyModelCycleFace: showDailyModelCycleFace,
-  showYearToYearFace: showYearToYearFace,
-  showReliabilityFace: showReliabilityFace,
-  showROCFace: showROCFace,
-  showPerformanceDiagramFace: showPerformanceDiagramFace,
-  showMapFace: showMapFace,
-  showHistogramFace: showHistogramFace,
-  showEnsembleHistogramFace: showEnsembleHistogramFace,
-  showContourFace: showContourFace,
-  showSimpleScatterFace: showSimpleScatterFace,
-  showScatterFace: showScatterFace,
+  addDiffs,
+  checkDiffs,
+  clearAllUsed,
+  clearUsedColor,
+  clearUsedLabel,
+  getGraphResult,
+  getNextCurveColor,
+  getNextCurveLabel,
+  getPlotResultData,
+  getUsedLabels,
+  hideSpinner,
+  removeDiffs,
+  resetGraphResult,
+  resetPlotResultData,
+  resetScatterApply,
+  setGraphResult,
+  setUsedColorsAndLabels,
+  setUsedLabels,
+  showSpinner,
+  showTimeseriesFace,
+  showProfileFace,
+  showDieOffFace,
+  showThresholdFace,
+  showValidTimeFace,
+  showGridScaleFace,
+  showDailyModelCycleFace,
+  showYearToYearFace,
+  showReliabilityFace,
+  showROCFace,
+  showPerformanceDiagramFace,
+  showMapFace,
+  showHistogramFace,
+  showEnsembleHistogramFace,
+  showContourFace,
+  showSimpleScatterFace,
+  showScatterFace,
 };

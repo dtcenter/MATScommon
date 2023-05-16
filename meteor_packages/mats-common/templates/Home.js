@@ -2,9 +2,11 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import { matsCollections } from "meteor/randyp:mats-common";
-import { matsParamUtils } from "meteor/randyp:mats-common";
-import { matsMethods } from "meteor/randyp:mats-common";
+import {
+  matsCollections,
+  matsParamUtils,
+  matsMethods,
+} from "meteor/randyp:mats-common";
 
 Template.Home.onCreated(function () {
   this.subscribe("matsPlotUtils").ready();
@@ -16,14 +18,14 @@ Template.Home.onCreated(function () {
 });
 
 Template.Home.helpers({
-  isUnderConstruction: function () {
+  isUnderConstruction() {
     return (
-      matsCollections["underConstruction"] !== undefined &&
-      matsCollections["underConstruction"].findOne({ name: "underConstruction" }) !==
+      matsCollections.underConstruction !== undefined &&
+      matsCollections.underConstruction.findOne({ name: "underConstruction" }) !==
         undefined
     );
   },
-  resetDefaults: function () {
+  resetDefaults() {
     matsMethods.refreshMetaData.call({}, function (error, result) {
       if (error !== undefined) {
         setError(new Error(error.message));
@@ -31,14 +33,13 @@ Template.Home.helpers({
       matsParamUtils.setAllParamsToDefault();
     });
   },
-  title: function () {
+  title() {
     if (
       matsCollections.Settings === undefined ||
       matsCollections.Settings.findOne({}, { fields: { Title: 1 } }) === undefined
     ) {
       return "";
-    } else {
-      return matsCollections.Settings.findOne({}, { fields: { Title: 1 } }).Title;
     }
+    return matsCollections.Settings.findOne({}, { fields: { Title: 1 } }).Title;
   },
 });

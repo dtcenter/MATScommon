@@ -6,7 +6,7 @@
  * Created by pierce on 8/31/16.
  */
 
-var DEFAULT_GROUP_LIST = [
+const DEFAULT_GROUP_LIST = [
   "Upper Air",
   "Ceiling and Visibility",
   "Surface",
@@ -19,7 +19,7 @@ var DEFAULT_GROUP_LIST = [
   "Experimental",
 ];
 
-var DatabaseRoles = {
+const DatabaseRoles = {
   MODEL_DATA: "model_data",
   META_DATA: "meta_data",
   SUMS_DATA: "sums_data",
@@ -27,24 +27,24 @@ var DatabaseRoles = {
   COUCHBASE: "couchbase",
 };
 
-var AppTypes = {
+const AppTypes = {
   mats: "mats",
   metexpress: "metexpress",
   mats4met: "mats4met",
 };
 
-var DbTypes = {
+const DbTypes = {
   couchbase: "couchbase",
   mysql: "mysql",
 };
 
-var ScorecardStatus = {
+const ScorecardStatus = {
   pending: "Pending",
   running: "Running",
   ready: "Ready",
 };
 
-var InputTypes = {
+const InputTypes = {
   textInput: "textInput",
   color: "color",
   select: "select",
@@ -63,7 +63,7 @@ var InputTypes = {
   forecastMultiCycle: "forecasts multi cycle",
 };
 
-var PlotTypes = {
+const PlotTypes = {
   timeSeries: "TimeSeries",
   profile: "Profile",
   dieoff: "DieOff",
@@ -85,26 +85,26 @@ var PlotTypes = {
   scorecard: "Scorecard",
 };
 
-var ForecastTypes = {
+const ForecastTypes = {
   dieoff: "dieoff",
   utcCycle: "utc cycle",
   singleCycle: "single cycle",
 };
 
-var PlotFormats = {
+const PlotFormats = {
   none: "none",
   matching: "matching",
   pairwise: "pairwise",
   absolute: "absolute",
 };
 
-var PlotActions = {
+const PlotActions = {
   matched: "matched",
   unmatched: "unmatched",
   scorecard: "scorecard",
 };
 
-var BestFits = {
+const BestFits = {
   none: "none",
   linear: "linear",
   linearThroughOrigin: "linearThroughOrigin",
@@ -113,25 +113,25 @@ var BestFits = {
   power: "power",
 };
 
-var MatchFormats = {
+const MatchFormats = {
   none: "none",
   time: "time",
   level: "level",
   site: "site",
 };
 
-var PlotAxisFilters = {
+const PlotAxisFilters = {
   none: "none",
   level: "level",
   site: "site",
 };
 
-var PlotView = {
+const PlotView = {
   graph: "graph",
   textSeries: "text",
 };
 
-var ReservedWords = {
+const ReservedWords = {
   Zero: "Zero",
   zero: "zero",
   ideal0: "ideal0",
@@ -171,7 +171,7 @@ var ReservedWords = {
   contourSigLabel: "Curve1-Curve0 Significance",
 };
 
-var Messages = {
+const Messages = {
   NO_DATA_FOUND: "INFO:0 data records found",
 };
 
@@ -193,7 +193,7 @@ class MetaDataDBRecord {
       throw new Error("MetaDataDBRecord.constructor : tables is not an array");
     }
     this._records = [];
-    var record = { pool: poolName, name: dbName, tables: tables };
+    const record = { pool: poolName, name: dbName, tables };
     this._records.push(record);
   }
 
@@ -207,7 +207,7 @@ class MetaDataDBRecord {
     if (!tables instanceof Array) {
       throw new Error("MetaDataDBRecord.constructor : tables is not an array");
     }
-    var record = { pool: poolName, name: dbName, tables: tables };
+    const record = { pool: poolName, name: dbName, tables };
     this._records.push(record);
   }
 
@@ -217,21 +217,21 @@ class MetaDataDBRecord {
 }
 
 export default matsTypes = {
-  InputTypes: InputTypes,
-  ScorecardStatus: ScorecardStatus,
-  PlotTypes: PlotTypes,
-  PlotFormats: PlotFormats,
-  PlotActions: PlotActions,
-  BestFits: BestFits,
-  MatchFormats: MatchFormats,
-  PlotAxisFilters: PlotAxisFilters,
-  PlotView: PlotView,
-  Messages: Messages,
-  ForecastTypes: ForecastTypes,
-  ReservedWords: ReservedWords,
-  MetaDataDBRecord: MetaDataDBRecord,
-  AppTypes: AppTypes,
-  DbTypes: DbTypes,
-  DatabaseRoles: DatabaseRoles,
-  DEFAULT_GROUP_LIST: DEFAULT_GROUP_LIST,
+  InputTypes,
+  ScorecardStatus,
+  PlotTypes,
+  PlotFormats,
+  PlotActions,
+  BestFits,
+  MatchFormats,
+  PlotAxisFilters,
+  PlotView,
+  Messages,
+  ForecastTypes,
+  ReservedWords,
+  MetaDataDBRecord,
+  AppTypes,
+  DbTypes,
+  DatabaseRoles,
+  DEFAULT_GROUP_LIST,
 };

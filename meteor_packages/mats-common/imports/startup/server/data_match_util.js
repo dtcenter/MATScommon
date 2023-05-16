@@ -2,84 +2,83 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import { matsDataUtils } from "meteor/randyp:mats-common";
-import { matsTypes } from "meteor/randyp:mats-common";
+import { matsDataUtils, matsTypes } from "meteor/randyp:mats-common";
 
 // function for removing unmatched data from a dataset containing multiple curves
 const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStats) {
-  var subSecsRaw = [];
-  var subLevsRaw = [];
-  var subValues = [];
-  var subValuesX = [];
-  var subValuesY = [];
-  var subSecs = [];
-  var subLevs = [];
-  var subHit = [];
-  var subFa = [];
-  var subMiss = [];
-  var subCn = [];
-  var subSquareDiffSum = [];
-  var subNSum = [];
-  var subObsModelDiffSum = [];
-  var subModelSum = [];
-  var subObsSum = [];
-  var subAbsSum = [];
-  var subSquareDiffSumX = [];
-  var subNSumX = [];
-  var subObsModelDiffSumX = [];
-  var subModelSumX = [];
-  var subObsSumX = [];
-  var subAbsSumX = [];
-  var subSquareDiffSumY = [];
-  var subNSumY = [];
-  var subObsModelDiffSumY = [];
-  var subModelSumY = [];
-  var subObsSumY = [];
-  var subAbsSumY = [];
-  var newSubSecs = [];
-  var newSubLevs = [];
-  var newSubHit = [];
-  var newSubFa = [];
-  var newSubMiss = [];
-  var newSubCn = [];
-  var newSubSquareDiffSum = [];
-  var newSubNSum = [];
-  var newSubObsModelDiffSum = [];
-  var newSubModelSum = [];
-  var newSubObsSum = [];
-  var newSubAbsSum = [];
-  var newSubValues = [];
-  var newSubSquareDiffSumX = [];
-  var newSubNSumX = [];
-  var newSubObsModelDiffSumX = [];
-  var newSubModelSumX = [];
-  var newSubObsSumX = [];
-  var newSubAbsSumX = [];
-  var newSubValuesX = [];
-  var newSubSquareDiffSumY = [];
-  var newSubNSumY = [];
-  var newSubObsModelDiffSumY = [];
-  var newSubModelSumY = [];
-  var newSubObsSumY = [];
-  var newSubAbsSumY = [];
-  var newSubValuesY = [];
-  var newCurveData = {};
-  var independentVarGroups = [];
-  var independentVarHasPoint = [];
-  var subIntersections = [];
-  var subSecIntersection = [];
-  var currIndependentVar;
-  var tempSubIntersections;
-  var tempPair;
-  var curveIndex;
-  var data;
-  var di;
-  var fi;
-  var si;
+  const subSecsRaw = [];
+  const subLevsRaw = [];
+  let subValues = [];
+  let subValuesX = [];
+  let subValuesY = [];
+  let subSecs = [];
+  let subLevs = [];
+  let subHit = [];
+  let subFa = [];
+  let subMiss = [];
+  let subCn = [];
+  let subSquareDiffSum = [];
+  let subNSum = [];
+  let subObsModelDiffSum = [];
+  let subModelSum = [];
+  let subObsSum = [];
+  let subAbsSum = [];
+  let subSquareDiffSumX = [];
+  let subNSumX = [];
+  let subObsModelDiffSumX = [];
+  let subModelSumX = [];
+  let subObsSumX = [];
+  let subAbsSumX = [];
+  let subSquareDiffSumY = [];
+  let subNSumY = [];
+  let subObsModelDiffSumY = [];
+  let subModelSumY = [];
+  let subObsSumY = [];
+  let subAbsSumY = [];
+  let newSubSecs = [];
+  let newSubLevs = [];
+  let newSubHit = [];
+  let newSubFa = [];
+  let newSubMiss = [];
+  let newSubCn = [];
+  let newSubSquareDiffSum = [];
+  let newSubNSum = [];
+  let newSubObsModelDiffSum = [];
+  let newSubModelSum = [];
+  let newSubObsSum = [];
+  let newSubAbsSum = [];
+  let newSubValues = [];
+  let newSubSquareDiffSumX = [];
+  let newSubNSumX = [];
+  let newSubObsModelDiffSumX = [];
+  let newSubModelSumX = [];
+  let newSubObsSumX = [];
+  let newSubAbsSumX = [];
+  let newSubValuesX = [];
+  let newSubSquareDiffSumY = [];
+  let newSubNSumY = [];
+  let newSubObsModelDiffSumY = [];
+  let newSubModelSumY = [];
+  let newSubObsSumY = [];
+  let newSubAbsSumY = [];
+  let newSubValuesY = [];
+  let newCurveData = {};
+  const independentVarGroups = [];
+  const independentVarHasPoint = [];
+  let subIntersections = [];
+  let subSecIntersection = [];
+  let currIndependentVar;
+  let tempSubIntersections;
+  let tempPair;
+  let curveIndex;
+  let data;
+  let di;
+  let fi;
+  let si;
 
-  const plotType = appParams.plotType;
-  const hasLevels = appParams.hasLevels;
-  const curvesLength = curveInfoParams.curvesLength;
+  const { plotType } = appParams;
+  const { hasLevels } = appParams;
+  const { curvesLength } = curveInfoParams;
   const isCTC =
     !Array.isArray(curveInfoParams.statType) &&
     curveInfoParams.statType === "ctc" &&
@@ -105,7 +104,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
     curveVars = isScalar ? curveInfoParams.curves.map((a) => a.variable) : [];
   }
   const curveDiffs = curveInfoParams.curves.map((a) => a.diffFrom);
-  var removeNonMatchingIndVars;
+  let removeNonMatchingIndVars;
   switch (plotType) {
     case matsTypes.PlotTypes.reliability:
     case matsTypes.PlotTypes.roc:
@@ -137,9 +136,9 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
   // valid time plot, it's hour of day. This function identifies the the independentVar values common across all of
   // the curves, and then the common sub times/levels/values for those independentVar values.
 
-  //determine whether data.x or data.y is the independent variable, and which is the stat value
-  var independentVarName;
-  var statVarName;
+  // determine whether data.x or data.y is the independent variable, and which is the stat value
+  let independentVarName;
+  let statVarName;
   if (plotType !== matsTypes.PlotTypes.profile) {
     independentVarName = "x";
     statVarName = "y";
@@ -175,15 +174,15 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
     }
   }
 
-  var matchingIndependentVars = _.intersection.apply(_, independentVarGroups); // all of the non-null independentVar values common across all the curves
-  var matchingIndependentHasPoint = _.intersection.apply(_, independentVarHasPoint); // all of the independentVar values common across all the curves, regardless of whether or not they're null
+  const matchingIndependentVars = _.intersection.apply(_, independentVarGroups); // all of the non-null independentVar values common across all the curves
+  const matchingIndependentHasPoint = _.intersection.apply(_, independentVarHasPoint); // all of the independentVar values common across all the curves, regardless of whether or not they're null
   if (removeNonMatchingIndVars) {
     if (hasLevels) {
       // loop over each common non-null independentVar value
       for (fi = 0; fi < matchingIndependentVars.length; fi++) {
         currIndependentVar = matchingIndependentVars[fi];
         subIntersections[currIndependentVar] = [];
-        var currSubIntersections = [];
+        let currSubIntersections = [];
         for (si = 0; si < subSecs[0][currIndependentVar].length; si++) {
           // fill current intersection array with sec-lev pairs from the first curve
           currSubIntersections.push([
@@ -217,7 +216,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
       for (fi = 0; fi < matchingIndependentVars.length; fi++) {
         currIndependentVar = matchingIndependentVars[fi];
         // fill current subSecs intersection array with subSecs from the first curve
-        var currSubSecIntersection = subSecs[0][currIndependentVar];
+        let currSubSecIntersection = subSecs[0][currIndependentVar];
         // loop over every curve after the first
         for (curveIndex = 1; curveIndex < curvesLength; curveIndex++) {
           // keep taking the intersection of the current subSecs intersection array with each curve's subSecs array for this independentVar value
@@ -270,7 +269,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
             tempSubIntersections.push(tempPair);
           }
         }
-        //replace current intersection array with array of only pairs that matched from this loop through.
+        // replace current intersection array with array of only pairs that matched from this loop through.
         subIntersections = tempSubIntersections;
       }
     } else {
@@ -291,7 +290,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
     data = dataset[curveIndex];
     // need to loop backwards through the data array so that we can splice non-matching indices
     // while still having the remaining indices in the correct order
-    var dataLength = data[independentVarName].length;
+    let dataLength = data[independentVarName].length;
     for (di = dataLength - 1; di >= 0; di--) {
       if (removeNonMatchingIndVars) {
         if (matchingIndependentVars.indexOf(data[independentVarName][di]) === -1) {
@@ -445,7 +444,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
             } else {
               var newVal = subValues[si];
             }
-            var newSec = subSecs[si];
+            const newSec = subSecs[si];
             if (hasLevels) {
               var newLev = subLevs[si];
             }
@@ -481,28 +480,24 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                   newSubAbsSumY.push(newAbsSumY);
                   newSubValuesY.push(newValY);
                 }
-              } else {
-                if (newSquareDiffSum !== undefined) {
-                  newSubSquareDiffSum.push(newSquareDiffSum);
-                  newSubNSum.push(newNSum);
-                  newSubObsModelDiffSum.push(newObsModelDiffSum);
-                  newSubModelSum.push(newModelSum);
-                  newSubObsSum.push(newObsSum);
-                  newSubAbsSum.push(newAbsSum);
-                  newSubValues.push(newVal);
-                }
+              } else if (newSquareDiffSum !== undefined) {
+                newSubSquareDiffSum.push(newSquareDiffSum);
+                newSubNSum.push(newNSum);
+                newSubObsModelDiffSum.push(newObsModelDiffSum);
+                newSubModelSum.push(newModelSum);
+                newSubObsSum.push(newObsSum);
+                newSubAbsSum.push(newAbsSum);
+                newSubValues.push(newVal);
               }
               newSubSecs.push(newSec);
               if (hasLevels) {
                 newSubLevs.push(newLev);
               }
-            } else {
-              if (newVal !== undefined) {
-                newSubValues.push(newVal);
-                newSubSecs.push(newSec);
-                if (hasLevels) {
-                  newSubLevs.push(newLev);
-                }
+            } else if (newVal !== undefined) {
+              newSubValues.push(newVal);
+              newSubSecs.push(newSec);
+              if (hasLevels) {
+                newSubLevs.push(newLev);
               }
             }
           }
@@ -570,7 +565,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
           const miss = matsDataUtils.sum(data.subMiss[di]);
           const cn = matsDataUtils.sum(data.subCn[di]);
           if (plotType === matsTypes.PlotTypes.performanceDiagram) {
-            data["x"][di] =
+            data.x[di] =
               1 -
               Number(
                 matsDataUtils.calculateStatCTC(
@@ -583,7 +578,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                 )
               ) /
                 100;
-            data["y"][di] =
+            data.y[di] =
               Number(
                 matsDataUtils.calculateStatCTC(
                   hit,
@@ -594,7 +589,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                   "PODy (POD of value < threshold)"
                 )
               ) / 100;
-            data["oy_all"][di] = Number(
+            data.oy_all[di] = Number(
               matsDataUtils.calculateStatCTC(
                 hit,
                 fa,
@@ -604,7 +599,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                 "All observed yes"
               )
             );
-            data["on_all"][di] = Number(
+            data.on_all[di] = Number(
               matsDataUtils.calculateStatCTC(
                 hit,
                 fa,
@@ -615,7 +610,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
               )
             );
           } else if (plotType === matsTypes.PlotTypes.roc) {
-            data["x"][di] =
+            data.x[di] =
               1 -
               Number(
                 matsDataUtils.calculateStatCTC(
@@ -628,7 +623,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                 )
               ) /
                 100;
-            data["y"][di] =
+            data.y[di] =
               Number(
                 matsDataUtils.calculateStatCTC(
                   hit,
@@ -639,7 +634,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                   "PODy (POD of value < threshold)"
                 )
               ) / 100;
-            data["oy_all"][di] = Number(
+            data.oy_all[di] = Number(
               matsDataUtils.calculateStatCTC(
                 hit,
                 fa,
@@ -649,7 +644,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                 "All observed yes"
               )
             );
-            data["on_all"][di] = Number(
+            data.on_all[di] = Number(
               matsDataUtils.calculateStatCTC(
                 hit,
                 fa,
@@ -686,14 +681,14 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
             const modelSumX = matsDataUtils.sum(data.subModelSumX[di]);
             const obsSumX = matsDataUtils.sum(data.subObsSumX[di]);
             const absSumX = matsDataUtils.sum(data.subAbsSumX[di]);
-            data["x"][di] = matsDataUtils.calculateStatScalar(
+            data.x[di] = matsDataUtils.calculateStatScalar(
               squareDiffSumX,
               NSumX,
               obsModelDiffSumX,
               modelSumX,
               obsSumX,
               absSumX,
-              curveXStats[curveIndex] + "_" + curveXVars[curveIndex]
+              `${curveXStats[curveIndex]}_${curveXVars[curveIndex]}`
             );
             const squareDiffSumY = matsDataUtils.sum(data.subSquareDiffSumY[di]);
             const NSumY = matsDataUtils.sum(data.subNSumY[di]);
@@ -701,38 +696,36 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
             const modelSumY = matsDataUtils.sum(data.subModelSumY[di]);
             const obsSumY = matsDataUtils.sum(data.subObsSumY[di]);
             const absSumY = matsDataUtils.sum(data.subAbsSumY[di]);
-            data["y"][di] = matsDataUtils.calculateStatScalar(
+            data.y[di] = matsDataUtils.calculateStatScalar(
               squareDiffSumY,
               NSumY,
               obsModelDiffSumY,
               modelSumY,
               obsSumY,
               absSumY,
-              curveYStats[curveIndex] + "_" + curveYVars[curveIndex]
+              `${curveYStats[curveIndex]}_${curveYVars[curveIndex]}`
             );
           }
-        } else {
-          if (data.subSquareDiffSum[di] instanceof Array) {
-            const squareDiffSum = matsDataUtils.sum(data.subSquareDiffSum[di]);
-            const NSum = matsDataUtils.sum(data.subNSum[di]);
-            const obsModelDiffSum = matsDataUtils.sum(data.subObsModelDiffSum[di]);
-            const modelSum = matsDataUtils.sum(data.subModelSum[di]);
-            const obsSum = matsDataUtils.sum(data.subObsSum[di]);
-            const absSum = matsDataUtils.sum(data.subAbsSum[di]);
-            data[statVarName][di] = matsDataUtils.calculateStatScalar(
-              squareDiffSum,
-              NSum,
-              obsModelDiffSum,
-              modelSum,
-              obsSum,
-              absSum,
-              curveStats[curveIndex] + "_" + curveVars[curveIndex]
-            );
-          }
+        } else if (data.subSquareDiffSum[di] instanceof Array) {
+          const squareDiffSum = matsDataUtils.sum(data.subSquareDiffSum[di]);
+          const NSum = matsDataUtils.sum(data.subNSum[di]);
+          const obsModelDiffSum = matsDataUtils.sum(data.subObsModelDiffSum[di]);
+          const modelSum = matsDataUtils.sum(data.subModelSum[di]);
+          const obsSum = matsDataUtils.sum(data.subObsSum[di]);
+          const absSum = matsDataUtils.sum(data.subAbsSum[di]);
+          data[statVarName][di] = matsDataUtils.calculateStatScalar(
+            squareDiffSum,
+            NSum,
+            obsModelDiffSum,
+            modelSum,
+            obsSum,
+            absSum,
+            `${curveStats[curveIndex]}_${curveVars[curveIndex]}`
+          );
         }
       }
     } else if (plotType === matsTypes.PlotTypes.histogram) {
-      var d = {
+      const d = {
         // relevant fields to recalculate
         x: [],
         y: [],
@@ -751,15 +744,15 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
       };
       if (data.x.length > 0) {
         // need to recalculate bins and stats
-        var curveSubVals = [].concat.apply([], data.subVals);
-        var curveSubSecs = [].concat.apply([], data.subSecs);
+        const curveSubVals = [].concat.apply([], data.subVals);
+        const curveSubSecs = [].concat.apply([], data.subSecs);
         var curveSubLevs;
         if (hasLevels) {
           curveSubLevs = [].concat.apply([], data.subLevs);
         } else {
           curveSubLevs = [];
         }
-        var sortedData = matsDataUtils.sortHistogramBins(
+        const sortedData = matsDataUtils.sortHistogramBins(
           curveSubVals,
           curveSubSecs,
           curveSubLevs,
@@ -773,8 +766,8 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
         // if there are no matching values, set data to an empty dataset
         newCurveData = d;
       }
-      var newCurveDataKeys = Object.keys(newCurveData);
-      for (var didx = 0; didx < newCurveDataKeys.length; didx++) {
+      const newCurveDataKeys = Object.keys(newCurveData);
+      for (let didx = 0; didx < newCurveDataKeys.length; didx++) {
         dataset[curveIndex][newCurveDataKeys[didx]] =
           newCurveData[newCurveDataKeys[didx]];
       }
@@ -784,19 +777,19 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
     const filteredx = data.x.filter((x) => x);
     const filteredy = data.y.filter((y) => y);
     data.xmin = Math.min(...filteredx);
-    if (data.x.indexOf(0) !== -1 && 0 < data.xmin) {
+    if (data.x.indexOf(0) !== -1 && data.xmin > 0) {
       data.xmin = 0;
     }
     data.xmax = Math.max(...filteredx);
-    if (data.x.indexOf(0) !== -1 && 0 > data.xmax) {
+    if (data.x.indexOf(0) !== -1 && data.xmax < 0) {
       data.xmax = 0;
     }
     data.ymin = Math.min(...filteredy);
-    if (data.y.indexOf(0) !== -1 && 0 < data.ymin) {
+    if (data.y.indexOf(0) !== -1 && data.ymin > 0) {
       data.ymin = 0;
     }
     data.ymax = Math.max(...filteredy);
-    if (data.y.indexOf(0) !== -1 && 0 > data.ymax) {
+    if (data.y.indexOf(0) !== -1 && data.ymax < 0) {
       data.ymax = 0;
     }
     dataset[curveIndex] = data;
@@ -806,5 +799,5 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
 };
 
 export default matsDataMatchUtils = {
-  getMatchedDataSet: getMatchedDataSet,
+  getMatchedDataSet,
 };

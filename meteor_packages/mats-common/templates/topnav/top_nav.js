@@ -8,7 +8,7 @@ const getRunEnvironment = function () {
     matsMethods.getRunEnvironment.call({}, function (error, result) {
       if (error !== undefined) {
         setError(error);
-        return "<p>" + error + "</p>";
+        return `<p>${error}</p>`;
       }
       Session.set("deployment_environment", result);
       return result;
@@ -19,23 +19,19 @@ const getRunEnvironment = function () {
 };
 
 Template.topNav.helpers({
-  transparentGif: function () {
+  transparentGif() {
     const baseURL =
       Meteor.settings.public.home === undefined
-        ? "https://" + document.location.href.split("/")[2]
+        ? `https://${document.location.href.split("/")[2]}`
         : Meteor.settings.public.home;
     if (baseURL.includes("localhost")) {
-      return baseURL + "/packages/randyp_mats-common/public/img/noaa_transparent.png";
-    } else {
-      return (
-        baseURL +
-        "/" +
-        matsCollections.Settings.findOne({}).appName +
-        "/packages/randyp_mats-common/public/img/noaa_transparent.png"
-      );
+      return `${baseURL}/packages/randyp_mats-common/public/img/noaa_transparent.png`;
     }
+    return `${baseURL}/${
+      matsCollections.Settings.findOne({}).appName
+    }/packages/randyp_mats-common/public/img/noaa_transparent.png`;
   },
-  emailText: function () {
+  emailText() {
     switch (getRunEnvironment()) {
       case "metexpress":
         return "METexpress";
@@ -45,14 +41,13 @@ Template.topNav.helpers({
           matsCollections.Settings.findOne({}) !== undefined &&
           matsCollections.Settings.findOne({}).appType !== undefined
         ) {
-          const appType = matsCollections.Settings.findOne({}).appType;
+          const { appType } = matsCollections.Settings.findOne({});
           return appType === matsTypes.AppTypes.metexpress ? "METexpress" : "MATS";
-        } else {
-          return "MATS";
         }
+        return "MATS";
     }
   },
-  agencyText: function () {
+  agencyText() {
     switch (getRunEnvironment()) {
       case "metexpress":
         return "National Weather Service";
@@ -61,7 +56,7 @@ Template.topNav.helpers({
         return "Global Systems Laboratory";
     }
   },
-  agencyLink: function () {
+  agencyLink() {
     switch (getRunEnvironment()) {
       case "metexpress":
         return "https://www.weather.gov/";
@@ -70,7 +65,7 @@ Template.topNav.helpers({
         return "http://esrl.noaa.gov/gsd/";
     }
   },
-  productText: function () {
+  productText() {
     switch (getRunEnvironment()) {
       case "metexpress":
         return "METexpress";
@@ -80,25 +75,24 @@ Template.topNav.helpers({
           matsCollections.Settings.findOne({}) !== undefined &&
           matsCollections.Settings.findOne({}).appType !== undefined
         ) {
-          const appType = matsCollections.Settings.findOne({}).appType;
+          const { appType } = matsCollections.Settings.findOne({});
           return appType === matsTypes.AppTypes.metexpress
             ? "METexpress"
             : "Model Analysis Tool Suite (MATS)";
-        } else {
-          return "Model Analysis Tool Suite (MATS)";
         }
+        return "Model Analysis Tool Suite (MATS)";
     }
   },
-  productLink: function () {
+  productLink() {
     const location = document.location.href;
     const locationArr = location.split("/");
     locationArr.pop();
     return locationArr.join("/");
   },
-  bugsText: function () {
+  bugsText() {
     return "Bugs/Issues (GitHub)";
   },
-  bugsLink: function () {
+  bugsLink() {
     switch (getRunEnvironment()) {
       case "metexpress":
         return "https://github.com/dtcenter/METexpress/issues";
@@ -108,30 +102,28 @@ Template.topNav.helpers({
           matsCollections.Settings.findOne({}) !== undefined &&
           matsCollections.Settings.findOne({}).appType !== undefined
         ) {
-          const appType = matsCollections.Settings.findOne({}).appType;
+          const { appType } = matsCollections.Settings.findOne({});
           return appType === matsTypes.AppTypes.metexpress
             ? "https://github.com/dtcenter/METexpress/issues"
             : "https://github.com/NOAA-GSL/MATS/issues";
-        } else {
-          return "https://github.com/NOAA-GSL/MATS/issues";
         }
+        return "https://github.com/NOAA-GSL/MATS/issues";
     }
   },
-  isMetexpress: function () {
+  isMetexpress() {
     if (
       matsCollections.Settings.findOne({}) !== undefined &&
       matsCollections.Settings.findOne({}).appType !== undefined
     ) {
-      const appType = matsCollections.Settings.findOne({}).appType;
+      const { appType } = matsCollections.Settings.findOne({});
       return appType === matsTypes.AppTypes.metexpress;
-    } else {
-      return false;
     }
+    return false;
   },
 });
 
 Template.topNav.events({
-  "click .about": function () {
+  "click .about"() {
     $("#modal-display-about").modal();
     return false;
   },

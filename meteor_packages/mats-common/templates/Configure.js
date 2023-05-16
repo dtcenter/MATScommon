@@ -6,58 +6,56 @@ import { Meteor } from "meteor/meteor";
 import matsMethods from "../imports/startup/api/matsMethods";
 
 Template.Configure.helpers({
-  app: function () {
+  app() {
     return Meteor.settings.public.title;
   },
 
-  title: function () {
+  title() {
     return Meteor.settings.public.title;
   },
-  roles: function () {
+  roles() {
     if (Meteor.settings.public.undefinedRoles) {
       return Meteor.settings.public.undefinedRoles;
-    } else {
-      return [];
     }
+    return [];
   },
-  role: function () {
+  role() {
     return this;
   },
-  status: function () {
+  status() {
     return "active";
   },
-  proxy_prefix_path: function () {
+  proxy_prefix_path() {
     return Meteor.settings.public.proxy_prefix_path;
   },
-  run_environment: function () {
+  run_environment() {
     return Meteor.settings.public.run_environment;
   },
-  home: function () {
+  home() {
     return Meteor.settings.public.home;
   },
-  group: function () {
+  group() {
     return Session.get("selectedGroup");
   },
-  app_order: function () {
+  app_order() {
     document.getElementById("app_order").value;
   },
-  show_copy_icon: function () {
+  show_copy_icon() {
     const roles = Meteor.settings.public.undefinedRoles;
     if (this === roles[0]) {
       return "none";
-    } else {
-      return "block";
     }
+    return "block";
   },
-  color: function () {
+  color() {
     return Meteor.settings.public.color;
   },
-  groups: function () {
+  groups() {
     if (Session.get("defaultGroups") === undefined) {
       matsMethods.getDefaultGroupList.call({}, function (error, result) {
         if (error !== undefined) {
           setError(error);
-          return "<p>" + error + "</p>";
+          return `<p>${error}</p>`;
         }
         Session.set("defaultGroups", result);
       });
@@ -70,13 +68,13 @@ Template.Configure.helpers({
     }
     return Session.get("defaultGroups");
   },
-  group_name: function () {
+  group_name() {
     return this;
   },
-  apps_length: function (group) {
+  apps_length(group) {
     return 10;
   },
-  baseUrl: function () {
+  baseUrl() {
     return document.location.href;
   },
 });
@@ -86,76 +84,76 @@ Template.Configure.events({
     // Prevent default browser form submit
     event.preventDefault();
     // Get value from form element
-    const target = event.target;
+    const { target } = event;
     const inputs = target.getElementsByTagName("input");
-    let data = { private: { databases: [] }, public: {} };
+    const data = { private: { databases: [] }, public: {} };
     const roles = Meteor.settings.public.undefinedRoles;
     // private database values
     for (var ri = 0; ri < roles.length; ri++) {
       // look for all the inputs that go with this role
       const roleData = {};
-      roleData["role"] = roles[ri];
-      roleData["status"] = "active"; // default to active
+      roleData.role = roles[ri];
+      roleData.status = "active"; // default to active
       for (var i = 0; i < inputs.length; i++) {
         const input = inputs[i];
         let name = input.id;
-        let value = input.value;
+        const { value } = input;
         if (name.indexOf(roles[ri]) !== -1) {
-          name = name.replace(roles[ri] + "-", "");
+          name = name.replace(`${roles[ri]}-`, "");
           roleData[name] = value;
         }
       }
-      data["private"]["databases"].push(roleData);
+      data.private.databases.push(roleData);
     }
     // public values
     for (var i = 0; i < inputs.length; i++) {
       const input = inputs[i];
-      let name = input.id;
+      const name = input.id;
       if (name === "colorValue") {
         continue;
       }
-      let value = input.value;
-      var roleVal = false;
+      const { value } = input;
+      let roleVal = false;
       for (ri = 0; ri < roles.length; ri++) {
         if (name.indexOf(roles[ri]) !== -1) {
           roleVal = true;
         }
       }
       if (roleVal === false) {
-        data["public"][name] = value;
+        data.public[name] = value;
       }
     }
     matsMethods.applySettingsData.call({ settings: data }, function (error) {
       if (error) {
-        setError(new Error("matsMethods.applySettingsData error: " + error.message));
+        setError(new Error(`matsMethods.applySettingsData error: ${error.message}`));
       }
     });
   },
-  "change select.groupSelect": function (event) {
+  "change select.groupSelect"(event) {
     document.getElementById("group").value =
       document.getElementById("groupSelect").selectedOptions[0].value;
   },
-  "click .test": function (event) {
+  "click .test"(event) {
     event.preventDefault();
     const role = event.target.id.replace("-test", "");
-    const successButton = document.getElementById(role + "-success");
-    const failButton = document.getElementById(role + "-fail");
+    const successButton = document.getElementById(`${role}-success`);
+    const failButton = document.getElementById(`${role}-fail`);
     const roleIdStr = event.target.id;
     const roleStr = roleIdStr.replace("-test", "");
     failButton.style.display = "none";
     successButton.style.display = "none";
-    document.getElementById(role + "-spinner").style.display = "block";
+    document.getElementById(`${role}-spinner`).style.display = "block";
     matsMethods.testGetTables.call(
       {
-        host: document.getElementById(roleStr + "-host").value,
-        port: document.getElementById(roleStr + "-port").value,
-        user: document.getElementById(roleStr + "-user").value,
-        password: document.getElementById(roleStr + "-password").value,
-        database: document.getElementById(roleStr + "-database").value,
-        database_type: document.getElementById(roleStr + "-database_type").value,
+        host: document.getElementById(`${roleStr}-host`).value,
+        port: document.getElementById(`${roleStr}-port`).value,
+        user: document.getElementById(`${roleStr}-user`).value,
+        password: document.getElementById(`${roleStr}-password`).value,
+        database: document.getElementById(`${roleStr}-database`).value,
+        database_type: document.getElementById(`${roleStr}-database_type`).value,
       },
       function (error, result) {
-        document.getElementById(role + "-spinner").style.display = "none";
+        document.getElementById(`${role}-spinner`).style.display = "none";
         if (error) {
           setError(error);
           failButton.style.display = "block";
@@ -167,28 +165,28 @@ Template.Configure.events({
       }
     );
   },
-  "click .copy": function (event) {
+  "click .copy"(event) {
     console.log(event);
     event.preventDefault();
     const baseHost = document.getElementById(
-      Meteor.settings.public.undefinedRoles[0] + "-host"
+      `${Meteor.settings.public.undefinedRoles[0]}-host`
     ).value;
     const basePort = document.getElementById(
-      Meteor.settings.public.undefinedRoles[0] + "-port"
+      `${Meteor.settings.public.undefinedRoles[0]}-port`
     ).value;
     const baseUser = document.getElementById(
-      Meteor.settings.public.undefinedRoles[0] + "-user"
+      `${Meteor.settings.public.undefinedRoles[0]}-user`
     ).value;
     const basePassword = document.getElementById(
-      Meteor.settings.public.undefinedRoles[0] + "-password"
+      `${Meteor.settings.public.undefinedRoles[0]}-password`
     ).value;
     const thisRole = event.target.id.replace("-copy", "");
-    document.getElementById(thisRole + "-host").value = baseHost;
-    document.getElementById(thisRole + "-port").value = basePort;
-    document.getElementById(thisRole + "-user").value = baseUser;
-    document.getElementById(thisRole + "-password").value = basePassword;
+    document.getElementById(`${thisRole}-host`).value = baseHost;
+    document.getElementById(`${thisRole}-port`).value = basePort;
+    document.getElementById(`${thisRole}-user`).value = baseUser;
+    document.getElementById(`${thisRole}-password`).value = basePassword;
   },
-  "change .color": function (event) {
+  "change .color"(event) {
     document.getElementById("colorValue").value =
       document.getElementById("color").value;
   },

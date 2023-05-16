@@ -2,15 +2,17 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import { matsTypes } from "meteor/randyp:mats-common";
-import { matsCollections } from "meteor/randyp:mats-common";
-import { matsMethods } from "meteor/randyp:mats-common";
-import { matsCurveUtils } from "meteor/randyp:mats-common";
-import { matsPlotUtils } from "meteor/randyp:mats-common";
-import { matsParamUtils } from "meteor/randyp:mats-common";
+import {
+  matsTypes,
+  matsCollections,
+  matsMethods,
+  matsCurveUtils,
+  matsPlotUtils,
+  matsParamUtils,
+} from "meteor/randyp:mats-common";
 
 Template.curveList.helpers({
-  displayPlotUnMatched: function () {
+  displayPlotUnMatched() {
     // scatter plots can't match
     if (Session.get("plotType") === matsTypes.PlotTypes.scatter2d) {
       return "none";
@@ -19,11 +21,10 @@ Template.curveList.helpers({
     const mode = Session.get("editMode");
     if (mode === undefined || mode === "") {
       return "block";
-    } else {
-      return "none";
     }
+    return "none";
   },
-  displayPlotMatched: function () {
+  displayPlotMatched() {
     // don't allow plotting when editing, or for ROC / single contour / reliability curves
     const mode = Session.get("editMode");
     const plotType = Session.get("plotType");
@@ -45,9 +46,9 @@ Template.curveList.helpers({
               plotType !== matsTypes.PlotTypes.roc)
           ) {
             return "none";
-          } else {
-            return "block";
           }
+          return "block";
+
         case matsTypes.PlotTypes.timeSeries:
         case matsTypes.PlotTypes.profile:
         case matsTypes.PlotTypes.dieoff:
@@ -68,37 +69,35 @@ Template.curveList.helpers({
       return "none";
     }
   },
-  displaySaveSettings: function () {
+  displaySaveSettings() {
     // don't allow saving settings when editing
     const mode = Session.get("editMode");
     if (mode === undefined || mode === "") {
       return "block";
-    } else {
-      return "none";
     }
+    return "none";
   },
-  curves: function () {
+  curves() {
     return Session.get("Curves");
   },
-  displayCurves: function () {
+  displayCurves() {
     if (Session.get("Curves") === undefined || Session.get("Curves").length === 0) {
       return "none";
-    } else {
-      return "block";
     }
+    return "block";
   },
-  log: function () {
+  log() {
     console.log(this);
   },
-  metarMismatchHidden: function () {
-    const appName = matsCollections.Settings.findOne({}).appName;
-    var curves = Session.get("Curves");
+  metarMismatchHidden() {
+    const { appName } = matsCollections.Settings.findOne({});
+    const curves = Session.get("Curves");
     if (curves === undefined || curves.length === 0 || appName !== "surface") {
       return "none";
     }
-    var i;
-    var truth;
-    var otherTruth;
+    let i;
+    let truth;
+    let otherTruth;
     for (i = 0; i < curves.length; i++) {
       if (curves[i]["region-type"] === "Predefined region") {
         truth = curves[i].truth;
@@ -119,15 +118,14 @@ Template.curveList.helpers({
     }
     return "none";
   },
-  editMode: function () {
+  editMode() {
     if (Session.get("editMode") === "") {
       return "";
-    } else {
-      return "Changing " + Session.get("editMode");
     }
+    return `Changing ${Session.get("editMode")}`;
   },
-  matchedLabel: function () {
-    if (Session.get("matchName" === undefined)) {
+  matchedLabel() {
+    if (Session.get(undefined === "matchName")) {
       if (setMatchName) {
         setMatchName();
       } else {
@@ -158,7 +156,7 @@ Template.curveList.helpers({
     */
 
 Template.curveList.events({
-  "click .remove-all": function () {
+  "click .remove-all"() {
     if (Session.get("confirmRemoveAll")) {
       matsCurveUtils.clearAllUsed();
       matsParamUtils.setAllParamsToDefault();
@@ -167,17 +165,16 @@ Template.curveList.events({
       Session.set("lastUpdate", Date.now());
       Session.set("confirmRemoveAll", "");
       return false;
-    } else {
-      if (Session.get("Curves").length > 0) {
-        $("#modal-confirm-remove-all").modal();
-      }
+    }
+    if (Session.get("Curves").length > 0) {
+      $("#modal-confirm-remove-all").modal();
     }
   },
-  "click .confirm-remove-all": function () {
+  "click .confirm-remove-all"() {
     Session.set("confirmRemoveAll", Date.now());
     $("#remove-all").trigger("click");
   },
-  "click .plot-curves-unmatched": function (event) {
+  "click .plot-curves-unmatched"(event) {
     document.getElementById("spinner").style.display = "block";
     matsPlotUtils.disableActionButtons();
     event.preventDefault();
@@ -186,7 +183,7 @@ Template.curveList.events({
     document.getElementById("plot-curves").click();
     return false;
   },
-  "click .plot-curves-matched": function (event) {
+  "click .plot-curves-matched"(event) {
     document.getElementById("spinner").style.display = "block";
     matsPlotUtils.disableActionButtons();
     event.preventDefault();
@@ -195,7 +192,7 @@ Template.curveList.events({
     document.getElementById("plot-curves").click();
     return false;
   },
-  "click .no-gaps-check": function (event) {
+  "click .no-gaps-check"(event) {
     // make the Interpolate Over Nulls option on the colorbar modal match up with this.
     if (document.getElementById("nullSmooth")) {
       if (document.getElementById("noGapsCheck").checked) {
@@ -205,7 +202,7 @@ Template.curveList.events({
       }
     }
   },
-  "click .save-settings": function (event) {
+  "click .save-settings"(event) {
     event.preventDefault();
     document.getElementById("save-settings").click();
     return false;

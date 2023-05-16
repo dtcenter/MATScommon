@@ -2,32 +2,32 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import { matsTypes } from "meteor/randyp:mats-common";
-import { matsCollections } from "meteor/randyp:mats-common";
-import { matsCurveUtils } from "meteor/randyp:mats-common";
-import { matsParamUtils } from "meteor/randyp:mats-common";
+import {
+  matsTypes,
+  matsCollections,
+  matsCurveUtils,
+  matsParamUtils,
+} from "meteor/randyp:mats-common";
 
 Template.plotType.helpers({
-  plotTypes: function () {
+  plotTypes() {
     return matsCollections.PlotGraphFunctions.find({}).fetch();
   },
-  display: function () {
+  display() {
     // don't display the choice if there is only one choice
     if (matsCollections.PlotGraphFunctions.find({}).fetch().length === 1) {
       return "hidden";
-    } else {
-      return "";
     }
+    return "";
   },
-  selected: function (plotType) {
+  selected(plotType) {
     // don't display the choice if there is only one choice
     if (matsCollections.PlotGraphFunctions.find({ plotType }).fetch()[0].checked) {
       return (selected = "selected");
-    } else {
-      return "";
     }
+    return "";
   },
-  alertMessageHidden: function () {
+  alertMessageHidden() {
     if (
       matsCollections.Settings === undefined ||
       matsCollections.Settings.findOne({}) === undefined
@@ -36,11 +36,10 @@ Template.plotType.helpers({
     const alertMessage = matsCollections.Settings.findOne({}).appMessage;
     if (alertMessage === undefined || alertMessage === "") {
       return "none";
-    } else {
-      return "block";
     }
+    return "block";
   },
-  alertMessage: function () {
+  alertMessage() {
     if (
       matsCollections.Settings === undefined ||
       matsCollections.Settings.findOne({}) === undefined
@@ -49,9 +48,8 @@ Template.plotType.helpers({
     const alertMessage = matsCollections.Settings.findOne({}).appMessage;
     if (alertMessage === undefined || alertMessage === "") {
       return "";
-    } else {
-      return alertMessage;
     }
+    return alertMessage;
   },
 });
 
@@ -71,13 +69,7 @@ const matchPlotTypeSelector = function (plotType) {
       matsParamUtils.setInputValueForParamAndTriggerChange("plot-type", plotType);
     } else {
       setInfo(
-        "INFO:  Plot type " +
-          plotType +
-          " is not available for the database/model combination " +
-          currentDatabase +
-          " and " +
-          currentDataSource +
-          "."
+        `INFO:  Plot type ${plotType} is not available for the database/model combination ${currentDatabase} and ${currentDataSource}.`
       );
     }
   }
@@ -86,14 +78,14 @@ const matchPlotTypeSelector = function (plotType) {
 const setDatesAndShowFace = function (plotType, dateSelector) {
   // display appropriate selectors for each plot type, and make sure the previous dates or curve-dates values
   // carry across to the appropriate new selector
-  const appName = matsCollections.Settings.findOne({}).appName;
-  var oldDatesExist;
+  const { appName } = matsCollections.Settings.findOne({});
+  let oldDatesExist;
   if (dateSelector === "dates") {
     oldDatesExist = matsParamUtils.isParamVisible("dates");
   } else if (dateSelector === "curve-dates") {
     oldDatesExist = matsParamUtils.isParamVisible("curve-dates");
   }
-  var selectorsToReset = {};
+  let selectorsToReset = {};
   switch (plotType) {
     case matsTypes.PlotTypes.timeSeries:
       selectorsToReset = matsCurveUtils.showTimeseriesFace();
@@ -153,20 +145,18 @@ const setDatesAndShowFace = function (plotType, dateSelector) {
       const curveDate = $("#controlButton-curve-dates-value").text();
       matsParamUtils.setValueTextForParamName("dates", curveDate);
       return [curveDate, selectorsToReset];
-    } else {
-      return [0, selectorsToReset];
     }
-  } else if (dateSelector === "curve-dates") {
+    return [0, selectorsToReset];
+  }
+  if (dateSelector === "curve-dates") {
     if (!oldDatesExist) {
       const tsDate = $("#controlButton-dates-value").text();
       matsParamUtils.setValueTextForParamName("curve-dates", tsDate);
       return [tsDate, selectorsToReset];
-    } else {
-      return [0, selectorsToReset];
     }
-  } else {
     return [0, selectorsToReset];
   }
+  return [0, selectorsToReset];
 };
 
 const changePlotType = function (plotType, selectorsToInitialize, dateSelector) {
@@ -177,13 +167,13 @@ const changePlotType = function (plotType, selectorsToInitialize, dateSelector) 
 
     // display appropriate selectors for this plot type, and make sure the previous dates or curve-dates values
     // carry across to the appropriate new selector
-    var newDate = 0;
-    var selectorsToReset = {};
+    let newDate = 0;
+    let selectorsToReset = {};
     [newDate, selectorsToReset] = setDatesAndShowFace(plotType, dateSelector);
     const resetSelectors = Object.keys(selectorsToReset);
 
     // make sure the curves already added also have the correct parameters displayed
-    var curves = Session.get("Curves");
+    const curves = Session.get("Curves");
     if (curves === undefined) {
       // in a healthy session, there should either be an array of curves or an empty array of no curves
       setError(
@@ -193,9 +183,9 @@ const changePlotType = function (plotType, selectorsToInitialize, dateSelector) 
       );
     }
     if (curves.length > 0) {
-      for (var ci = curves.length - 1; ci >= 0; ci--) {
+      for (let ci = curves.length - 1; ci >= 0; ci--) {
         // remove any difference curves for plot types that don't support them
-        var curveGone = false;
+        let curveGone = false;
         if (curves[ci].diffFrom !== undefined && curves[ci].diffFrom !== null) {
           switch (plotType) {
             case matsTypes.PlotTypes.reliability:
@@ -226,13 +216,13 @@ const changePlotType = function (plotType, selectorsToInitialize, dateSelector) 
         }
         if (!curveGone) {
           // change options that were valid for the plot type where this curve was added but not for this one
-          for (var ri = 0; ri < resetSelectors.length; ri++) {
+          for (let ri = 0; ri < resetSelectors.length; ri++) {
             if (curves[ci][resetSelectors[ri]] !== undefined) {
               curves[ci][resetSelectors[ri]] = selectorsToReset[resetSelectors[ri]];
             }
           }
           // initialize options for parameters not used in the plot type where this curve was added
-          for (var si = 0; si < selectorsToInitialize.length; si++) {
+          for (let si = 0; si < selectorsToInitialize.length; si++) {
             if (dateSelector === "curve-dates" && newDate !== 0) {
               curves[ci]["curve-dates"] = newDate;
             }
@@ -288,10 +278,10 @@ const changePlotType = function (plotType, selectorsToInitialize, dateSelector) 
 };
 
 Template.plotType.events({
-  "change .plotTypes-selector": function (event) {
+  "change .plotTypes-selector"(event) {
     const plotType = document.getElementById("plotTypes-selector").value;
-    var selectorsToInitialize = [];
-    var dateSelector = "dates";
+    let selectorsToInitialize = [];
+    let dateSelector = "dates";
     switch (plotType) {
       case matsTypes.PlotTypes.timeSeries:
         selectorsToInitialize = [

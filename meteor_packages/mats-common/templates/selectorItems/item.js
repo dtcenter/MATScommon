@@ -2,10 +2,12 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import { matsTypes } from "meteor/randyp:mats-common";
-import { matsSelectUtils } from "meteor/randyp:mats-common";
-import { matsParamUtils } from "meteor/randyp:mats-common";
-import { matsCollections } from "meteor/randyp:mats-common";
+import {
+  matsTypes,
+  matsSelectUtils,
+  matsParamUtils,
+  matsCollections,
+} from "meteor/randyp:mats-common";
 
 Template.item.onRendered(function () {
   try {
@@ -19,17 +21,15 @@ Template.item.onRendered(function () {
       $('[data-toggle="tooltip"]').tooltip();
     });
   } catch (e) {
-    e.message =
-      "Error in item.js rendered function checking to hide or disable other elements: " +
-      e.message;
+    e.message = `Error in item.js rendered function checking to hide or disable other elements: ${e.message}`;
     setError(e);
   }
 });
 
 Template.item.helpers({
-  tcname: function () {
+  tcname() {
     // Make everything title case
-    var tcname = "";
+    let tcname = "";
     if (this.controlButtonText !== undefined) {
       tcname = this.controlButtonText;
     } else {
@@ -46,26 +46,19 @@ Template.item.helpers({
     }
     return tcname.join(" ");
   },
-  fa: function () {
+  fa() {
     // font awesome helper
     if (this.controlButtonFA !== undefined) {
       return (
-        '<i name="' +
-        this.name +
-        "-icon" +
-        '" style="color:' +
-        this.default +
-        '"  class="' +
-        this.controlButtonFA +
-        '"></i>'
+        `<i name="${this.name}-icon` +
+        `" style="color:${this.default}"  class="${this.controlButtonFA}"></i>`
       );
-    } else {
-      return "";
     }
+    return "";
   },
-  lcname: function () {
+  lcname() {
     // Make everything lower case except first word
-    var lcname = "";
+    let lcname = "";
     if (this.controlButtonText !== undefined) {
       lcname = this.controlButtonText;
     } else {
@@ -90,7 +83,7 @@ Template.item.helpers({
     }
     return lcname.join(" ");
   },
-  textValue: function () {
+  textValue() {
     Session.get("lastUpdate");
     if (this.name === "label") {
       // label is handled specially
@@ -101,23 +94,21 @@ Template.item.helpers({
     }
     if (this.value) {
       return this.value;
-    } else {
-      if (
-        this.type === matsTypes.InputTypes.select &&
-        (this.default === -1 ||
-          this.default === undefined ||
-          this.default === matsTypes.InputTypes.unused)
-      ) {
-        return matsTypes.InputTypes.unused;
-      } else {
-        return this.default;
-      }
     }
+    if (
+      this.type === matsTypes.InputTypes.select &&
+      (this.default === -1 ||
+        this.default === undefined ||
+        this.default === matsTypes.InputTypes.unused)
+    ) {
+      return matsTypes.InputTypes.unused;
+    }
+    return this.default;
   },
-  hasHelp: function () {
+  hasHelp() {
     return this.help !== undefined;
   },
-  isSelect: function () {
+  isSelect() {
     /* A selectOrderEnforced differs from a select
             only in that the options - other than the default first option -
             must be chosen in order. In other words if the user attempts to select
@@ -129,51 +120,51 @@ Template.item.helpers({
         this.type === matsTypes.InputTypes.selectOrderEnforced)
     );
   },
-  isSelectMap: function () {
+  isSelectMap() {
     return (
       typeof this.type !== "undefined" && this.type === matsTypes.InputTypes.selectMap
     );
   },
-  isInput: function () {
+  isInput() {
     return (
       typeof this.type !== "undefined" && this.type === matsTypes.InputTypes.textInput
     );
   },
-  isColor: function () {
+  isColor() {
     return typeof this.type !== "undefined" && this.type === matsTypes.InputTypes.color;
   },
-  isSpinner: function () {
+  isSpinner() {
     return (
       typeof this.type !== "undefined" &&
       this.type === matsTypes.InputTypes.numberSpinner
     );
   },
-  isDateRange: function () {
+  isDateRange() {
     return (
       typeof this.type !== "undefined" && this.type === matsTypes.InputTypes.dateRange
     );
   },
-  isCheckBoxGroup: function () {
+  isCheckBoxGroup() {
     return (
       typeof this.type !== "undefined" &&
       this.type === matsTypes.InputTypes.checkBoxGroup
     );
   },
-  isRadioGroup: function () {
+  isRadioGroup() {
     return (
       typeof this.type !== "undefined" && this.type === matsTypes.InputTypes.radioGroup
     );
   },
-  controlButton: function () {
-    return matsTypes.InputTypes.controlButton + "-" + this.name;
+  controlButton() {
+    return `${matsTypes.InputTypes.controlButton}-${this.name}`;
   },
-  resetButton: function () {
-    return matsTypes.InputTypes.resetButton + "-" + this.type;
+  resetButton() {
+    return `${matsTypes.InputTypes.resetButton}-${this.type}`;
   },
-  element: function () {
-    return matsTypes.InputTypes.element + "-" + this.name;
+  element() {
+    return `${matsTypes.InputTypes.element}-${this.name}`;
   },
-  display: function () {
+  display() {
     if (this.hidden) {
       return "none;margin-top: 1.5em;";
     }
@@ -188,65 +179,63 @@ Template.item.helpers({
       this.controlButtonVisibility === "none"
     ) {
       return "none;margin-top: 1.5em;";
-    } else {
-      return "block;margin-top: 1.5em;";
     }
+    return "block;margin-top: 1.5em;";
   },
-  controlButtonCovered: function () {
+  controlButtonCovered() {
     if (this.controlButtonCovered) {
       return "block;";
-    } else {
-      return "none";
     }
+    return "none";
   },
-  elementHidden: function () {
+  elementHidden() {
     if (this.controlButtonCovered) {
       return "none";
-    } else {
-      return "block";
     }
+    return "block";
   },
-  position: function () {
+  position() {
     if (
       typeof this.type !== "undefined" &&
       this.type === matsTypes.InputTypes.radioGroup
     ) {
       return "";
-    } else {
-      return "position:absolute";
     }
+    return "position:absolute";
   },
-  zIndexVal: function () {
+  zIndexVal() {
     // the difference selector keeps trying to cover the map modal, so increase the map's z-index, and decrease the difference selector's.
     if (
       typeof this.type !== "undefined" &&
       this.type === matsTypes.InputTypes.selectMap
     ) {
       return "10";
-    } else if (
+    }
+    if (
       typeof this.type !== "undefined" &&
       this.type === matsTypes.InputTypes.radioGroup
     ) {
       return "4";
-    } else {
-      return "5";
     }
+    return "5";
   },
-  defaultColor: function () {
+  defaultColor() {
     return this.default;
   },
-  tooltipPlacement: function () {
+  tooltipPlacement() {
     return this.tooltipPlacement === undefined ? "top" : this.tooltipPlacement;
   },
-  tooltipTitle: function () {
+  tooltipTitle() {
     return this.tooltip === undefined ? "" : this.tooltip;
   },
 });
 
 Template.item.events({
-  "click .control-button": function (event) {
+  "click .control-button"(event) {
     Session.set("elementChanged", Date.now());
-    var elem = document.getElementById(matsTypes.InputTypes.element + "-" + this.name);
+    const elem = document.getElementById(
+      `${matsTypes.InputTypes.element}-${this.name}`
+    );
     if (elem === undefined) {
       return false;
     }
@@ -257,8 +246,8 @@ Template.item.events({
       if (elem !== null) {
         elem.style.display = "block";
         if (this.type === matsTypes.InputTypes.select) {
-          var s = document.getElementById(this.name + "-" + this.type);
-          const ref = "#" + this.name + "-" + this.type;
+          const s = document.getElementById(`${this.name}-${this.type}`);
+          const ref = `#${this.name}-${this.type}`;
           $(ref).select2("open"); // need to foricibly open the selector for the select2
         }
         if (this.type === matsTypes.InputTypes.selectMap) {
@@ -268,12 +257,12 @@ Template.item.events({
       }
     }
   },
-  "click .data-input": function (event) {
+  "click .data-input"(event) {
     Session.set("elementChanged", Date.now());
     if (this.displayPriority !== undefined) {
       Session.set("displayPriority", this.displayPriority + 1);
     }
-    var formats = Object.keys(matsTypes.PlotFormats);
+    const formats = Object.keys(matsTypes.PlotFormats);
     if ($.inArray(this, formats) !== -1) {
       Session.set("diffStatus", this);
     }
@@ -287,47 +276,45 @@ Template.item.events({
       matsParamUtils.collapseParam(this.name);
     }
   },
-  "change .data-input": function (event) {
+  "change .data-input"(event) {
     Session.set("elementChanged", Date.now());
     event.target.checkValidity();
     if (this.type !== matsTypes.InputTypes.numberSpinner) {
       event.target.checkValidity();
-      var elem = document.getElementById(
-        matsTypes.InputTypes.element + "-" + this.name
+      const elem = document.getElementById(
+        `${matsTypes.InputTypes.element}-${this.name}`
       );
       if (elem === undefined) {
         return false;
       }
       if (elem !== null && elem.style.display === "block" && this.multiple !== true) {
         elem.style.display = "none";
-      } else {
-        if (elem !== null) {
-          elem.style.display = "block";
-        }
+      } else if (elem !== null) {
+        elem.style.display = "block";
       }
     }
     const curveItem =
       Session.get("editMode") === undefined && Session.get("editMode") === ""
         ? undefined
-        : document.getElementById("curveItem-" + Session.get("editMode"));
+        : document.getElementById(`curveItem-${Session.get("editMode")}`);
     if (curveItem && this.type !== matsTypes.InputTypes.dateRange) {
       $("#save").trigger("click");
     }
   },
 
-  "click .help": function () {
+  "click .help"() {
     if (this.type === matsTypes.InputTypes.dateRange) {
       // the date range calendar is unfortunately bound to the help button, so we need to click it to re-close it
-      const idref = this.name + "-item";
-      $("#" + idref).click();
+      const idref = `${this.name}-item`;
+      $(`#${idref}`).click();
     }
-    var helpref = Session.get("app").helpref;
-    $("#matshelp").load(helpref + "/" + this.help + " #matshelp");
+    const { helpref } = Session.get("app");
+    $("#matshelp").load(`${helpref}/${this.help} #matshelp`);
     $("#helpModal").modal("show");
   },
-  invalid: function (event) {
+  invalid(event) {
     if (this.type === matsTypes.InputTypes.numberSpinner) {
-      var param;
+      let param;
       if (matsCollections[event.currentTarget.name] !== undefined) {
         param = matsCollections[event.currentTarget.name].findOne({
           name: event.currentTarget.name,
@@ -338,26 +325,13 @@ Template.item.events({
       }
       setError(
         new Error(
-          "invalid value (" +
-            event.currentTarget.value +
-            ") for " +
-            event.currentTarget.name +
-            " it must be between " +
-            event.currentTarget.min +
-            " and " +
-            event.currentTarget.max +
-            " -- resetting to default value: " +
-            default_value
+          `invalid value (${event.currentTarget.value}) for ${event.currentTarget.name} it must be between ${event.currentTarget.min} and ${event.currentTarget.max} -- resetting to default value: ${default_value}`
         )
       );
     } else {
-      var errMsg = Session.get("errorMessage");
+      let errMsg = Session.get("errorMessage");
       if (errMsg === "") {
-        errMsg =
-          "invalid value (" +
-          event.currentTarget.value +
-          ") for " +
-          event.currentTarget.name;
+        errMsg = `invalid value (${event.currentTarget.value}) for ${event.currentTarget.name}`;
       }
       setError(new Error(errMsg));
     }

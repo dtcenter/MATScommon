@@ -8,12 +8,12 @@ import { Meteor } from "meteor/meteor";
 // utility to get the cadence for a particular model, so that the query function
 // knows where to include null points for missing data.
 const getModelCadence = async function (pool, dataSource, startDate, endDate) {
-  var rows = [];
-  var cycles;
+  let rows = [];
+  let cycles;
   try {
     // this query should only return data if the model cadence is irregular.
     // otherwise, the cadence will be calculated later by the query function.
-    var cycles_raw;
+    let cycles_raw;
     if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
       /*
             we have to call the couchbase utilities as async functions but this
@@ -29,29 +29,27 @@ const getModelCadence = async function (pool, dataSource, startDate, endDate) {
       // we will default to mysql so old apps won't break
       rows = simplePoolQueryWrapSynchronous(
         pool,
-        "select cycle_seconds " +
-          "from mats_common.primary_model_orders " +
-          "where model = " +
-          "(select new_model as display_text from mats_common.standardized_model_list where old_model = '" +
-          dataSource +
-          "');"
+        `select cycle_seconds ` +
+          `from mats_common.primary_model_orders ` +
+          `where model = ` +
+          `(select new_model as display_text from mats_common.standardized_model_list where old_model = '${dataSource}');`
       );
       cycles_raw = rows[0].cycle_seconds
         ? JSON.parse(rows[0].cycle_seconds)
         : undefined;
     }
-    var cycles_keys = cycles_raw ? Object.keys(cycles_raw).sort() : undefined;
+    const cycles_keys = cycles_raw ? Object.keys(cycles_raw).sort() : undefined;
     // there can be difference cadences for different time periods (each time period is a key in cycles_keys,
     // with the cadences for that period represented as values in cycles_raw), so this section identifies all
     // time periods relevant to the requested date range, and returns the union of their cadences.
     if (cycles_keys.length !== 0) {
-      var newTime;
-      var chosenStartTime;
-      var chosenEndTime;
-      var chosenStartIdx;
-      var chosenEndIdx;
-      var foundStart = false;
-      var foundEnd = false;
+      let newTime;
+      let chosenStartTime;
+      let chosenEndTime;
+      let chosenStartIdx;
+      let chosenEndIdx;
+      let foundStart = false;
+      let foundEnd = false;
       for (var ti = cycles_keys.length - 1; ti >= 0; ti--) {
         newTime = cycles_keys[ti];
         if (startDate >= Number(newTime) && !foundStart) {
@@ -76,8 +74,8 @@ const getModelCadence = async function (pool, dataSource, startDate, endDate) {
           const endCycles = cycles_raw[chosenEndTime];
           cycles = _.union(startCycles, endCycles);
         } else {
-          var middleCycles = [];
-          var currCycles;
+          let middleCycles = [];
+          let currCycles;
           for (ti = chosenStartIdx + 1; ti < chosenEndIdx; ti++) {
             currCycles = cycles_raw[cycles_keys[ti]];
             middleCycles = _.union(middleCycles, currCycles);
@@ -96,7 +94,7 @@ const getModelCadence = async function (pool, dataSource, startDate, endDate) {
     // if there isn't a cycles_per_model entry, it just means that the model has a regular cadence
   }
   if (cycles !== null && cycles !== undefined && cycles.length > 0) {
-    for (var c = 0; c < cycles.length; c++) {
+    for (let c = 0; c < cycles.length; c++) {
       cycles[c] = cycles[c] * 1000; // convert to milliseconds
     }
   } else {
@@ -137,10 +135,8 @@ const queryDBPython = function (pool, queryArray) {
       pythonOptions: ["-u"], // get print results in real-time
       scriptPath:
         process.env.NODE_ENV === "development"
-          ? process.env.PWD +
-            "/.meteor/local/build/programs/server/assets/packages/randyp_mats-common/public/python/"
-          : process.env.PWD +
-            "/programs/server/assets/packages/randyp_mats-common/public/python/",
+          ? `${process.env.PWD}/.meteor/local/build/programs/server/assets/packages/randyp_mats-common/public/python/`
+          : `${process.env.PWD}/programs/server/assets/packages/randyp_mats-common/public/python/`,
       args: [
         "-h",
         pool.config.connectionConfig.host,
@@ -163,7 +159,7 @@ const queryDBPython = function (pool, queryArray) {
     const pyShell = require("python-shell");
     const Future = require("fibers/future");
 
-    let future = new Future();
+    const future = new Future();
     let d = [];
     let error = "";
     let N0 = [];
@@ -184,32 +180,32 @@ const queryDBPython = function (pool, queryArray) {
           error = parsedData.error;
         }
         // done waiting - have results
-        future["return"]();
+        future.return();
       })
       .catch((err) => {
         error = err.message;
-        future["return"]();
+        future.return();
       });
 
     // wait for future to finish
     future.wait();
     // check for nulls in output, since JSON only passes strings
-    for (var idx = 0; idx < d.length; idx++) {
-      for (var didx = 0; didx < d[idx].y.length; didx++) {
+    for (let idx = 0; idx < d.length; idx++) {
+      for (let didx = 0; didx < d[idx].y.length; didx++) {
         if (d[idx].y[didx] === "null") {
           d[idx].y[didx] = null;
           if (d[idx].subVals.length > 0) {
             d[idx].subData[didx] = NaN;
             d[idx].subHeaders[didx] = NaN;
             d[idx].subVals[didx] = NaN;
-            if (queryArray[idx]["statLineType"] === "ctc") {
+            if (queryArray[idx].statLineType === "ctc") {
               d[idx].subHit[didx] = NaN;
               d[idx].subFa[didx] = NaN;
               d[idx].subMiss[didx] = NaN;
               d[idx].subCn[didx] = NaN;
-            } else if (queryArray[idx]["statLineType"] === "mode_pair") {
+            } else if (queryArray[idx].statLineType === "mode_pair") {
               d[idx].subInterest[didx] = NaN;
-            } else if (queryArray[idx]["statLineType"] === "mode_pair") {
+            } else if (queryArray[idx].statLineType === "mode_pair") {
               d[idx].n_forecast[didx] = 0;
               d[idx].n_matched[didx] = 0;
               d[idx].n_simple[didx] = 0;
@@ -224,14 +220,14 @@ const queryDBPython = function (pool, queryArray) {
             d[idx].subData[didx] = NaN;
             d[idx].subHeaders[didx] = NaN;
             d[idx].subVals[didx] = NaN;
-            if (queryArray[idx]["statLineType"] === "ctc") {
+            if (queryArray[idx].statLineType === "ctc") {
               d[idx].subHit[didx] = NaN;
               d[idx].subFa[didx] = NaN;
               d[idx].subMiss[didx] = NaN;
               d[idx].subCn[didx] = NaN;
-            } else if (queryArray[idx]["statLineType"] === "mode_pair") {
+            } else if (queryArray[idx].statLineType === "mode_pair") {
               d[idx].subInterest[didx] = NaN;
-            } else if (queryArray[idx]["statLineType"] === "mode_pair") {
+            } else if (queryArray[idx].statLineType === "mode_pair") {
               d[idx].n_forecast[didx] = 0;
               d[idx].n_matched[didx] = 0;
               d[idx].n_simple[didx] = 0;
@@ -245,9 +241,9 @@ const queryDBPython = function (pool, queryArray) {
     }
     return {
       data: d,
-      error: error,
-      N0: N0,
-      N_times: N_times,
+      error,
+      N0,
+      N_times,
     };
   }
 };
@@ -268,12 +264,12 @@ const queryDBTimeSeries = function (
 ) {
   if (Meteor.isServer) {
     // upper air is only verified at 00Z and 12Z, so you need to force irregular models to verify at that regular cadence
-    var cycles = getModelCadence(pool, dataSource, startDate, endDate); // if irregular model cadence, get cycle times. If regular, get empty array.
+    let cycles = getModelCadence(pool, dataSource, startDate, endDate); // if irregular model cadence, get cycle times. If regular, get empty array.
     if (validTimes.length > 0 && validTimes !== matsTypes.InputTypes.unused) {
       if (typeof validTimes === "string" || validTimes instanceof String) {
         validTimes = validTimes.split(",");
       }
-      var vtCycles = validTimes.map(function (x) {
+      let vtCycles = validTimes.map(function (x) {
         return (Number(x) - forecastOffset) * 3600 * 1000;
       }); // selecting validTimes makes the cadence irregular
       vtCycles = vtCycles.map(function (x) {
@@ -289,7 +285,7 @@ const queryDBTimeSeries = function (
       averageStr !== "None" ||
       !(cycles !== null && cycles.length > 0); // If curves have averaging, the cadence is always regular, i.e. it's the cadence of the average
 
-    var d = {
+    let d = {
       // d will contain the curve data
       x: [],
       y: [],
@@ -323,12 +319,12 @@ const queryDBTimeSeries = function (
       ymax: Number.MIN_VALUE,
       sum: 0,
     };
-    var error = "";
-    var N0 = [];
-    var N_times = [];
-    var parsedData;
+    let error = "";
+    let N0 = [];
+    let N_times = [];
+    let parsedData;
     const Future = require("fibers/future");
-    var dFuture = new Future();
+    const dFuture = new Future();
 
     if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
       /*
@@ -389,9 +385,9 @@ const queryDBTimeSeries = function (
 
     return {
       data: d,
-      error: error,
-      N0: N0,
-      N_times: N_times,
+      error,
+      N0,
+      N_times,
     };
   }
 };
@@ -399,7 +395,7 @@ const queryDBTimeSeries = function (
 // this method queries the database for specialty curves such as profiles, dieoffs, threshold plots, valid time plots, grid scale plots, and histograms
 const queryDBSpecialtyCurve = function (pool, statement, appParams, statisticStr) {
   if (Meteor.isServer) {
-    var d = {
+    let d = {
       // d will contain the curve data
       x: [],
       y: [],
@@ -434,12 +430,12 @@ const queryDBSpecialtyCurve = function (pool, statement, appParams, statisticStr
       ymax: Number.MIN_VALUE,
       sum: 0,
     };
-    var error = "";
-    var N0 = [];
-    var N_times = [];
-    var parsedData;
+    let error = "";
+    let N0 = [];
+    let N_times = [];
+    let parsedData;
     const Future = require("fibers/future");
-    var dFuture = new Future();
+    const dFuture = new Future();
 
     if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
       /*
@@ -508,9 +504,9 @@ const queryDBSpecialtyCurve = function (pool, statement, appParams, statisticStr
 
     return {
       data: d,
-      error: error,
-      N0: N0,
-      N_times: N_times,
+      error,
+      N0,
+      N_times,
     };
   }
 };
@@ -518,7 +514,7 @@ const queryDBSpecialtyCurve = function (pool, statement, appParams, statisticStr
 // this method queries the database for performance diagrams
 const queryDBPerformanceDiagram = function (pool, statement, appParams) {
   if (Meteor.isServer) {
-    var d = {
+    let d = {
       // d will contain the curve data
       x: [],
       y: [],
@@ -546,12 +542,12 @@ const queryDBPerformanceDiagram = function (pool, statement, appParams) {
       ymin: Number.MAX_VALUE,
       ymax: Number.MIN_VALUE,
     };
-    var error = "";
-    var N0 = [];
-    var N_times = [];
-    var parsedData;
+    let error = "";
+    let N0 = [];
+    let N_times = [];
+    let parsedData;
     const Future = require("fibers/future");
-    var dFuture = new Future();
+    const dFuture = new Future();
 
     if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
       /*
@@ -596,9 +592,9 @@ const queryDBPerformanceDiagram = function (pool, statement, appParams) {
 
     return {
       data: d,
-      error: error,
-      N0: N0,
-      N_times: N_times,
+      error,
+      N0,
+      N_times,
     };
   }
 };
@@ -612,7 +608,7 @@ const queryDBSimpleScatter = function (
   statisticYStr
 ) {
   if (Meteor.isServer) {
-    var d = {
+    let d = {
       // d will contain the curve data
       x: [],
       y: [],
@@ -645,12 +641,12 @@ const queryDBSimpleScatter = function (
       ymax: Number.MIN_VALUE,
       sum: 0,
     };
-    var error = "";
-    var N0 = [];
-    var N_times = [];
-    var parsedData;
+    let error = "";
+    let N0 = [];
+    let N_times = [];
+    let parsedData;
     const Future = require("fibers/future");
-    var dFuture = new Future();
+    const dFuture = new Future();
 
     if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
       /*
@@ -707,9 +703,9 @@ const queryDBSimpleScatter = function (
 
     return {
       data: d,
-      error: error,
-      N0: N0,
-      N_times: N_times,
+      error,
+      N0,
+      N_times,
     };
   }
 };
@@ -727,7 +723,7 @@ const queryDBMapScalar = function (
 ) {
   if (Meteor.isServer) {
     // d will contain the curve data
-    var d = {
+    let d = {
       siteName: [],
       queryVal: [],
       lat: [],
@@ -736,7 +732,7 @@ const queryDBMapScalar = function (
       stats: [],
       text: [],
     };
-    var dLowest = {
+    let dLowest = {
       siteName: [],
       queryVal: [],
       lat: [],
@@ -745,7 +741,7 @@ const queryDBMapScalar = function (
       text: [],
       color: "",
     };
-    var dLow = {
+    let dLow = {
       siteName: [],
       queryVal: [],
       lat: [],
@@ -754,7 +750,7 @@ const queryDBMapScalar = function (
       text: [],
       color: "",
     };
-    var dModerate = {
+    let dModerate = {
       siteName: [],
       queryVal: [],
       lat: [],
@@ -763,7 +759,7 @@ const queryDBMapScalar = function (
       text: [],
       color: "",
     };
-    var dHigh = {
+    let dHigh = {
       siteName: [],
       queryVal: [],
       lat: [],
@@ -772,7 +768,7 @@ const queryDBMapScalar = function (
       text: [],
       color: "",
     };
-    var dHighest = {
+    let dHighest = {
       siteName: [],
       queryVal: [],
       lat: [],
@@ -783,9 +779,9 @@ const queryDBMapScalar = function (
     };
     let valueLimits = {};
 
-    var error = "";
+    let error = "";
     const Future = require("fibers/future");
-    var pFuture = new Future();
+    const pFuture = new Future();
     pool.query(statement, function (err, rows) {
       // query callback - build the curve data from the results - or set an error
       if (err !== undefined && err !== null) {
@@ -793,7 +789,7 @@ const queryDBMapScalar = function (
       } else if (rows === undefined || rows === null || rows.length === 0) {
         error = matsTypes.Messages.NO_DATA_FOUND;
       } else {
-        var parsedData;
+        let parsedData;
         parsedData = parseQueryDataMapScalar(
           rows,
           d,
@@ -818,7 +814,7 @@ const queryDBMapScalar = function (
         valueLimits = parsedData.valueLimits;
       }
       // done waiting - have results
-      pFuture["return"]();
+      pFuture.return();
     });
 
     // wait for future to finish
@@ -830,8 +826,8 @@ const queryDBMapScalar = function (
       dataModerate: dModerate,
       dataHigh: dHigh,
       dataHighest: dHighest,
-      valueLimits: valueLimits,
-      error: error,
+      valueLimits,
+      error,
     };
   }
 };
@@ -847,7 +843,7 @@ const queryDBMapCTC = function (
 ) {
   if (Meteor.isServer) {
     // d will contain the curve data
-    var d = {
+    let d = {
       siteName: [],
       queryVal: [],
       lat: [],
@@ -857,7 +853,7 @@ const queryDBMapCTC = function (
       text: [],
     };
     // for skill scores <= 10%
-    var dPurple = {
+    let dPurple = {
       siteName: [],
       queryVal: [],
       lat: [],
@@ -867,7 +863,7 @@ const queryDBMapCTC = function (
       color: "rgb(128,0,255)",
     };
     // for skill scores <= 20%
-    var dPurpleBlue = {
+    let dPurpleBlue = {
       siteName: [],
       queryVal: [],
       lat: [],
@@ -877,7 +873,7 @@ const queryDBMapCTC = function (
       color: "rgb(64,0,255)",
     };
     // for skill scores <= 30%
-    var dBlue = {
+    let dBlue = {
       siteName: [],
       queryVal: [],
       lat: [],
@@ -887,7 +883,7 @@ const queryDBMapCTC = function (
       color: "rgb(0,0,255)",
     };
     // for skill scores <= 40%
-    var dBlueGreen = {
+    let dBlueGreen = {
       siteName: [],
       queryVal: [],
       lat: [],
@@ -897,7 +893,7 @@ const queryDBMapCTC = function (
       color: "rgb(64,128,128)",
     };
     // for skill scores <= 50%
-    var dGreen = {
+    let dGreen = {
       siteName: [],
       queryVal: [],
       lat: [],
@@ -907,7 +903,7 @@ const queryDBMapCTC = function (
       color: "rgb(128,255,0)",
     };
     // for skill scores <= 60%
-    var dGreenYellow = {
+    let dGreenYellow = {
       siteName: [],
       queryVal: [],
       lat: [],
@@ -917,7 +913,7 @@ const queryDBMapCTC = function (
       color: "rgb(160,224,0)",
     };
     // for skill scores <= 70%
-    var dYellow = {
+    let dYellow = {
       siteName: [],
       queryVal: [],
       lat: [],
@@ -927,7 +923,7 @@ const queryDBMapCTC = function (
       color: "rgb(192,192,0)",
     };
     // for skill scores <= 80%
-    var dOrange = {
+    let dOrange = {
       siteName: [],
       queryVal: [],
       lat: [],
@@ -937,7 +933,7 @@ const queryDBMapCTC = function (
       color: "rgb(255,128,0)",
     };
     // for skill scores <= 90%
-    var dOrangeRed = {
+    let dOrangeRed = {
       siteName: [],
       queryVal: [],
       lat: [],
@@ -947,7 +943,7 @@ const queryDBMapCTC = function (
       color: "rgb(255,64,0)",
     };
     // for skill scores <= 100%
-    var dRed = {
+    let dRed = {
       siteName: [],
       queryVal: [],
       lat: [],
@@ -958,10 +954,10 @@ const queryDBMapCTC = function (
     };
     let valueLimits = {};
 
-    var error = "";
-    var parsedData;
+    let error = "";
+    let parsedData;
     const Future = require("fibers/future");
-    var pFuture = new Future();
+    const pFuture = new Future();
     if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
       /*
             we have to call the couchbase utilities as async functions but this
@@ -1067,8 +1063,8 @@ const queryDBMapCTC = function (
       dataOrange: dOrange,
       dataOrangeRed: dOrangeRed,
       dataRed: dRed,
-      valueLimits: valueLimits,
-      error: error,
+      valueLimits,
+      error,
     };
   }
 };
@@ -1076,7 +1072,7 @@ const queryDBMapCTC = function (
 // this method queries the database for contour plots
 const queryDBContour = function (pool, statement, appParams, statisticStr) {
   if (Meteor.isServer) {
-    var d = {
+    let d = {
       // d will contain the curve data
       x: [],
       y: [],
@@ -1129,10 +1125,10 @@ const queryDBContour = function (pool, statement, appParams, statisticStr) {
       zmax: Number.MIN_VALUE,
       sum: 0,
     };
-    var error = "";
-    var parsedData;
+    let error = "";
+    let parsedData;
     const Future = require("fibers/future");
-    var dFuture = new Future();
+    const dFuture = new Future();
 
     if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
       /*
@@ -1173,7 +1169,7 @@ const queryDBContour = function (pool, statement, appParams, statisticStr) {
 
     return {
       data: d,
-      error: error,
+      error,
     };
   }
 };
@@ -1219,37 +1215,37 @@ const parseQueryDataXYCurve = function (
             sum: 0
         };
     */
-  const plotType = appParams.plotType;
-  const hasLevels = appParams.hasLevels;
+  const { plotType } = appParams;
+  const { hasLevels } = appParams;
   const completenessQCParam = Number(appParams.completeness) / 100;
   const outlierQCParam =
     appParams.outliers !== "all" ? Number(appParams.outliers) : appParams.outliers;
 
   let isCTC = false;
   let isScalar = false;
-  const hideGaps = appParams.hideGaps;
+  const { hideGaps } = appParams;
 
   // initialize local variables
-  var N0 = [];
-  var N_times = [];
-  var curveIndependentVars = [];
-  var curveStats = [];
-  var subHit = [];
-  var subFa = [];
-  var subMiss = [];
-  var subCn = [];
-  var subSquareDiffSum = [];
-  var subNSum = [];
-  var subObsModelDiffSum = [];
-  var subModelSum = [];
-  var subObsSum = [];
-  var subAbsSum = [];
-  var subVals = [];
-  var subSecs = [];
-  var subLevs = [];
-  var time_interval;
+  const N0 = [];
+  const N_times = [];
+  const curveIndependentVars = [];
+  const curveStats = [];
+  const subHit = [];
+  const subFa = [];
+  const subMiss = [];
+  const subCn = [];
+  const subSquareDiffSum = [];
+  const subNSum = [];
+  const subObsModelDiffSum = [];
+  const subModelSum = [];
+  const subObsSum = [];
+  const subAbsSum = [];
+  const subVals = [];
+  const subSecs = [];
+  const subLevs = [];
+  let time_interval;
 
-  for (var rowIndex = 0; rowIndex < rows.length; rowIndex++) {
+  for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
     var independentVar;
     switch (plotType) {
       case matsTypes.PlotTypes.validtime:
@@ -1330,7 +1326,7 @@ const parseQueryDataXYCurve = function (
     if (plotType === matsTypes.PlotTypes.timeSeries) {
       // Find the minimum time_interval to be sure we don't accidentally go past the next data point.
       if (rowIndex < rows.length - 1) {
-        var time_diff =
+        const time_diff =
           Number(rows[rowIndex + 1].avtime) - Number(rows[rowIndex].avtime);
         if (time_diff < time_interval) {
           time_interval = time_diff;
@@ -1339,22 +1335,22 @@ const parseQueryDataXYCurve = function (
     }
 
     // store sub values that will later be used for calculating error bar statistics.
-    var sub_hit = [];
-    var sub_fa = [];
-    var sub_miss = [];
-    var sub_cn = [];
-    var sub_square_diff_sum = [];
-    var sub_N_sum = [];
-    var sub_obs_model_diff_sum = [];
-    var sub_model_sum = [];
-    var sub_obs_sum = [];
-    var sub_abs_sum = [];
-    var sub_values = [];
-    var sub_secs = [];
-    var sub_levs = [];
-    var sub_stdev = 0;
-    var sub_mean = 0;
-    var sd_limit = 0;
+    let sub_hit = [];
+    let sub_fa = [];
+    let sub_miss = [];
+    let sub_cn = [];
+    let sub_square_diff_sum = [];
+    let sub_N_sum = [];
+    let sub_obs_model_diff_sum = [];
+    let sub_model_sum = [];
+    let sub_obs_sum = [];
+    let sub_abs_sum = [];
+    let sub_values = [];
+    let sub_secs = [];
+    let sub_levs = [];
+    let sub_stdev = 0;
+    let sub_mean = 0;
+    let sd_limit = 0;
     if (
       stat !== null &&
       rows[rowIndex].sub_data !== undefined &&
@@ -1362,9 +1358,9 @@ const parseQueryDataXYCurve = function (
     ) {
       // parse the sub-data
       try {
-        var sub_data = rows[rowIndex].sub_data.toString().split(",");
+        const sub_data = rows[rowIndex].sub_data.toString().split(",");
         var curr_sub_data;
-        for (var sd_idx = 0; sd_idx < sub_data.length; sd_idx++) {
+        for (let sd_idx = 0; sd_idx < sub_data.length; sd_idx++) {
           curr_sub_data = sub_data[sd_idx].split(";");
           if (isCTC) {
             sub_secs.push(Number(curr_sub_data[0]));
@@ -1467,7 +1463,7 @@ const parseQueryDataXYCurve = function (
           sub_stdev = matsDataUtils.stdev(sub_values);
           sub_mean = matsDataUtils.average(sub_values);
           sd_limit = outlierQCParam * sub_stdev;
-          for (var svIdx = sub_values.length - 1; svIdx >= 0; svIdx--) {
+          for (let svIdx = sub_values.length - 1; svIdx >= 0; svIdx--) {
             if (Math.abs(sub_values[svIdx] - sub_mean) > sd_limit) {
               if (isCTC) {
                 sub_hit.splice(svIdx, 1);
@@ -1524,9 +1520,7 @@ const parseQueryDataXYCurve = function (
         }
       } catch (e) {
         // this is an error produced by a bug in the query function, not an error returned by the mysql database
-        e.message =
-          "Error in parseQueryDataXYCurve. The expected fields don't seem to be present in the results cache: " +
-          e.message;
+        e.message = `Error in parseQueryDataXYCurve. The expected fields don't seem to be present in the results cache: ${e.message}`;
         throw new Error(e.message);
       }
     } else {
@@ -1634,18 +1628,18 @@ const parseQueryDataXYCurve = function (
     }
   }
 
-  var N0_max = Math.max(...N0);
-  var N_times_max = Math.max(...N_times);
-  var sum = 0;
-  var indVarMin = Number.MAX_VALUE;
-  var indVarMax = -1 * Number.MAX_VALUE;
-  var depVarMin = Number.MAX_VALUE;
-  var depVarMax = -1 * Number.MAX_VALUE;
-  var d_idx;
+  const N0_max = Math.max(...N0);
+  const N_times_max = Math.max(...N_times);
+  let sum = 0;
+  let indVarMin = Number.MAX_VALUE;
+  let indVarMax = -1 * Number.MAX_VALUE;
+  let depVarMin = Number.MAX_VALUE;
+  let depVarMax = -1 * Number.MAX_VALUE;
+  let d_idx;
 
   for (d_idx = 0; d_idx < curveIndependentVars.length; d_idx++) {
-    var this_N0 = N0[d_idx];
-    var this_N_times = N_times[d_idx];
+    const this_N0 = N0[d_idx];
+    const this_N_times = N_times[d_idx];
     // Make sure that we don't have any points with a smaller completeness value than specified by the user.
     if (
       curveStats[d_idx] === null ||
@@ -1723,13 +1717,13 @@ const parseQueryDataXYCurve = function (
 
   // add in any missing times in the time series
   if (plotType === matsTypes.PlotTypes.timeSeries && !hideGaps) {
-    time_interval = time_interval * 1000;
-    var dayInMilliSeconds = 24 * 3600 * 1000;
-    var lowerIndependentVar;
-    var upperIndependentVar;
-    var newTime;
-    var thisCadence;
-    var numberOfDaysBack;
+    time_interval *= 1000;
+    const dayInMilliSeconds = 24 * 3600 * 1000;
+    let lowerIndependentVar;
+    let upperIndependentVar;
+    let newTime;
+    let thisCadence;
+    let numberOfDaysBack;
     for (d_idx = curveIndependentVars.length - 2; d_idx >= 0; d_idx--) {
       lowerIndependentVar = curveIndependentVars[d_idx];
       upperIndependentVar = curveIndependentVars[d_idx + 1];
@@ -1800,9 +1794,9 @@ const parseQueryDataXYCurve = function (
   d.sum = sum;
 
   return {
-    d: d,
-    N0: N0,
-    N_times: N_times,
+    d,
+    N0,
+    N_times,
   };
 };
 
@@ -1834,25 +1828,25 @@ const parseQueryDataPerformanceDiagram = function (rows, d, appParams) {
         };
     */
 
-  const hasLevels = appParams.hasLevels;
+  const { hasLevels } = appParams;
 
   // initialize local variables
-  var N0 = [];
-  var N_times = [];
-  var successes = [];
-  var pods = [];
-  var binVals = [];
-  var oy_all = [];
-  var on_all = [];
-  var subHit = [];
-  var subFa = [];
-  var subMiss = [];
-  var subCn = [];
-  var subVals = [];
-  var subSecs = [];
-  var subLevs = [];
-  for (var rowIndex = 0; rowIndex < rows.length; rowIndex++) {
-    var binVal = Number(rows[rowIndex].binVal);
+  const N0 = [];
+  const N_times = [];
+  const successes = [];
+  const pods = [];
+  const binVals = [];
+  const oy_all = [];
+  const on_all = [];
+  const subHit = [];
+  const subFa = [];
+  const subMiss = [];
+  const subCn = [];
+  const subVals = [];
+  const subSecs = [];
+  const subLevs = [];
+  for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
+    const binVal = Number(rows[rowIndex].binVal);
     var pod;
     var success;
     var oy;
@@ -1876,13 +1870,13 @@ const parseQueryDataPerformanceDiagram = function (rows, d, appParams) {
     oy_all.push(oy);
     on_all.push(on);
 
-    var sub_hit = [];
-    var sub_fa = [];
-    var sub_miss = [];
-    var sub_cn = [];
-    var sub_values = [];
-    var sub_secs = [];
-    var sub_levs = [];
+    let sub_hit = [];
+    let sub_fa = [];
+    let sub_miss = [];
+    let sub_cn = [];
+    const sub_values = [];
+    let sub_secs = [];
+    let sub_levs = [];
     if (
       pod !== null &&
       rows[rowIndex].sub_data !== undefined &&
@@ -1890,9 +1884,9 @@ const parseQueryDataPerformanceDiagram = function (rows, d, appParams) {
     ) {
       // parse the sub-data
       try {
-        var sub_data = rows[rowIndex].sub_data.toString().split(",");
+        const sub_data = rows[rowIndex].sub_data.toString().split(",");
         var curr_sub_data;
-        for (var sd_idx = 0; sd_idx < sub_data.length; sd_idx++) {
+        for (let sd_idx = 0; sd_idx < sub_data.length; sd_idx++) {
           curr_sub_data = sub_data[sd_idx].split(";");
           sub_secs.push(Number(curr_sub_data[0]));
           if (hasLevels) {
@@ -1918,9 +1912,7 @@ const parseQueryDataPerformanceDiagram = function (rows, d, appParams) {
         }
       } catch (e) {
         // this is an error produced by a bug in the query function, not an error returned by the mysql database
-        e.message =
-          "Error in parseQueryDataPerformanceDiagram. The expected fields don't seem to be present in the results cache: " +
-          e.message;
+        e.message = `Error in parseQueryDataPerformanceDiagram. The expected fields don't seem to be present in the results cache: ${e.message}`;
         throw new Error(e.message);
       }
     } else {
@@ -1958,12 +1950,12 @@ const parseQueryDataPerformanceDiagram = function (rows, d, appParams) {
   d.subLevs = subLevs;
   d.n = N0;
 
-  var successMin = Number.MAX_VALUE;
-  var successMax = -1 * Number.MAX_VALUE;
-  var podMin = Number.MAX_VALUE;
-  var podMax = -1 * Number.MAX_VALUE;
+  let successMin = Number.MAX_VALUE;
+  let successMax = -1 * Number.MAX_VALUE;
+  let podMin = Number.MAX_VALUE;
+  let podMax = -1 * Number.MAX_VALUE;
 
-  for (var d_idx = 0; d_idx < binVals.length; d_idx++) {
+  for (let d_idx = 0; d_idx < binVals.length; d_idx++) {
     successMin =
       successes[d_idx] !== null && successes[d_idx] < successMin
         ? successes[d_idx]
@@ -1982,9 +1974,9 @@ const parseQueryDataPerformanceDiagram = function (rows, d, appParams) {
   d.ymax = podMax;
 
   return {
-    d: d,
-    N0: N0,
-    N_times: N_times,
+    d,
+    N0,
+    N_times,
   };
 };
 
@@ -2027,32 +2019,32 @@ const parseQueryDataSimpleScatter = function (
         };
     */
 
-  const hasLevels = appParams.hasLevels;
+  const { hasLevels } = appParams;
 
   // initialize local variables
-  var N0 = [];
-  var N_times = [];
-  var xStats = [];
-  var yStats = [];
-  var binVals = [];
-  var subSquareDiffSumX = [];
-  var subNSumX = [];
-  var subObsModelDiffSumX = [];
-  var subModelSumX = [];
-  var subObsSumX = [];
-  var subAbsSumX = [];
-  var subSquareDiffSumY = [];
-  var subNSumY = [];
-  var subObsModelDiffSumY = [];
-  var subModelSumY = [];
-  var subObsSumY = [];
-  var subAbsSumY = [];
-  var subValsX = [];
-  var subValsY = [];
-  var subSecs = [];
-  var subLevs = [];
-  for (var rowIndex = 0; rowIndex < rows.length; rowIndex++) {
-    var binVal = Number(rows[rowIndex].binVal);
+  const N0 = [];
+  const N_times = [];
+  const xStats = [];
+  const yStats = [];
+  const binVals = [];
+  const subSquareDiffSumX = [];
+  const subNSumX = [];
+  const subObsModelDiffSumX = [];
+  const subModelSumX = [];
+  const subObsSumX = [];
+  const subAbsSumX = [];
+  const subSquareDiffSumY = [];
+  const subNSumY = [];
+  const subObsModelDiffSumY = [];
+  const subModelSumY = [];
+  const subObsSumY = [];
+  const subAbsSumY = [];
+  const subValsX = [];
+  const subValsY = [];
+  const subSecs = [];
+  const subLevs = [];
+  for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
+    const binVal = Number(rows[rowIndex].binVal);
     var xStat;
     var yStat;
     if (
@@ -2102,22 +2094,22 @@ const parseQueryDataSimpleScatter = function (
     N_times.push(rows[rowIndex].N_times); // number of times that go into a point on the graph
     binVals.push(binVal);
 
-    var sub_square_diff_sumX = [];
-    var sub_N_sumX = [];
-    var sub_obs_model_diff_sumX = [];
-    var sub_model_sumX = [];
-    var sub_obs_sumX = [];
-    var sub_abs_sumX = [];
-    var sub_valuesX = [];
-    var sub_square_diff_sumY = [];
-    var sub_N_sumY = [];
-    var sub_obs_model_diff_sumY = [];
-    var sub_model_sumY = [];
-    var sub_obs_sumY = [];
-    var sub_abs_sumY = [];
-    var sub_valuesY = [];
-    var sub_secs = [];
-    var sub_levs = [];
+    let sub_square_diff_sumX = [];
+    let sub_N_sumX = [];
+    let sub_obs_model_diff_sumX = [];
+    let sub_model_sumX = [];
+    let sub_obs_sumX = [];
+    let sub_abs_sumX = [];
+    let sub_valuesX = [];
+    let sub_square_diff_sumY = [];
+    let sub_N_sumY = [];
+    let sub_obs_model_diff_sumY = [];
+    let sub_model_sumY = [];
+    let sub_obs_sumY = [];
+    let sub_abs_sumY = [];
+    let sub_valuesY = [];
+    let sub_secs = [];
+    let sub_levs = [];
     if (
       xStat !== null &&
       yStat !== null &&
@@ -2126,9 +2118,9 @@ const parseQueryDataSimpleScatter = function (
     ) {
       // parse the sub-data
       try {
-        var sub_data = rows[rowIndex].sub_data.toString().split(",");
+        const sub_data = rows[rowIndex].sub_data.toString().split(",");
         var curr_sub_data;
-        for (var sd_idx = 0; sd_idx < sub_data.length; sd_idx++) {
+        for (let sd_idx = 0; sd_idx < sub_data.length; sd_idx++) {
           curr_sub_data = sub_data[sd_idx].split(";");
           sub_secs.push(Number(curr_sub_data[0]));
           if (hasLevels) {
@@ -2240,9 +2232,7 @@ const parseQueryDataSimpleScatter = function (
         );
       } catch (e) {
         // this is an error produced by a bug in the query function, not an error returned by the mysql database
-        e.message =
-          "Error in parseQueryDataXYCurve. The expected fields don't seem to be present in the results cache: " +
-          e.message;
+        e.message = `Error in parseQueryDataXYCurve. The expected fields don't seem to be present in the results cache: ${e.message}`;
         throw new Error(e.message);
       }
     } else {
@@ -2309,12 +2299,12 @@ const parseQueryDataSimpleScatter = function (
   d.subLevs = subLevs;
   d.n = N0;
 
-  var xmin = Number.MAX_VALUE;
-  var xmax = -1 * Number.MAX_VALUE;
-  var ymin = Number.MAX_VALUE;
-  var ymax = -1 * Number.MAX_VALUE;
+  let xmin = Number.MAX_VALUE;
+  let xmax = -1 * Number.MAX_VALUE;
+  let ymin = Number.MAX_VALUE;
+  let ymax = -1 * Number.MAX_VALUE;
 
-  for (var d_idx = 0; d_idx < binVals.length; d_idx++) {
+  for (let d_idx = 0; d_idx < binVals.length; d_idx++) {
     xmin = xStats[d_idx] !== null && xStats[d_idx] < xmin ? xStats[d_idx] : xmin;
     xmax = xStats[d_idx] !== null && xStats[d_idx] > xmax ? xStats[d_idx] : xmax;
     ymin = yStats[d_idx] !== null && yStats[d_idx] < ymin ? yStats[d_idx] : ymin;
@@ -2327,9 +2317,9 @@ const parseQueryDataSimpleScatter = function (
   d.ymax = ymax;
 
   return {
-    d: d,
-    N0: N0,
-    N_times: N_times,
+    d,
+    N0,
+    N_times,
   };
 };
 
@@ -2349,9 +2339,9 @@ const parseQueryDataMapScalar = function (
   varUnits,
   appParams
 ) {
-  const hasLevels = appParams.hasLevels;
-  var highLimit = 10;
-  var lowLimit = -10;
+  const { hasLevels } = appParams;
+  let highLimit = 10;
+  let lowLimit = -10;
   const outlierQCParam =
     appParams.outliers !== "all" ? Number(appParams.outliers) : appParams.outliers;
 
@@ -2394,8 +2384,8 @@ const parseQueryDataMapScalar = function (
   dHigh.color = colorHigh;
   dHighest.color = colorHighest;
 
-  var queryVal;
-  for (var rowIndex = 0; rowIndex < rows.length; rowIndex++) {
+  let queryVal;
+  for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
     const site = rows[rowIndex].sta_id;
     const squareDiffSum = Number(rows[rowIndex].square_diff_sum);
     const NSum = Number(rows[rowIndex].N_sum);
@@ -2411,25 +2401,25 @@ const parseQueryDataMapScalar = function (
         modelSum,
         obsSum,
         absSum,
-        statistic + "_" + variable
+        `${statistic}_${variable}`
       );
       queryVal = isNaN(Number(queryVal)) ? null : queryVal;
     } else {
       queryVal = null;
     }
     // store sub values to test them for stdev.
-    var sub_square_diff_sum = [];
-    var sub_N_sum = [];
-    var sub_obs_model_diff_sum = [];
-    var sub_model_sum = [];
-    var sub_obs_sum = [];
-    var sub_abs_sum = [];
-    var sub_values = [];
-    var sub_secs = [];
-    var sub_levs = [];
-    var sub_stdev = 0;
-    var sub_mean = 0;
-    var sd_limit = 0;
+    const sub_square_diff_sum = [];
+    const sub_N_sum = [];
+    const sub_obs_model_diff_sum = [];
+    const sub_model_sum = [];
+    const sub_obs_sum = [];
+    const sub_abs_sum = [];
+    const sub_values = [];
+    const sub_secs = [];
+    const sub_levs = [];
+    let sub_stdev = 0;
+    let sub_mean = 0;
+    let sd_limit = 0;
     if (
       queryVal !== null &&
       rows[rowIndex].sub_data !== undefined &&
@@ -2437,9 +2427,9 @@ const parseQueryDataMapScalar = function (
     ) {
       // parse the sub-data
       try {
-        var sub_data = rows[rowIndex].sub_data.toString().split(",");
+        const sub_data = rows[rowIndex].sub_data.toString().split(",");
         var curr_sub_data;
-        for (var sd_idx = 0; sd_idx < sub_data.length; sd_idx++) {
+        for (let sd_idx = 0; sd_idx < sub_data.length; sd_idx++) {
           curr_sub_data = sub_data[sd_idx].split(";");
           sub_secs.push(Number(curr_sub_data[0]));
           if (hasLevels) {
@@ -2462,7 +2452,7 @@ const parseQueryDataMapScalar = function (
                 Number(curr_sub_data[5]),
                 Number(curr_sub_data[6]),
                 Number(curr_sub_data[7]),
-                statistic + "_" + variable
+                `${statistic}_${variable}`
               )
             );
           } else {
@@ -2480,7 +2470,7 @@ const parseQueryDataMapScalar = function (
                 Number(curr_sub_data[4]),
                 Number(curr_sub_data[5]),
                 Number(curr_sub_data[6]),
-                statistic + "_" + variable
+                `${statistic}_${variable}`
               )
             );
           }
@@ -2490,7 +2480,7 @@ const parseQueryDataMapScalar = function (
           sub_stdev = matsDataUtils.stdev(sub_values);
           sub_mean = matsDataUtils.average(sub_values);
           sd_limit = outlierQCParam * sub_stdev;
-          for (var svIdx = sub_values.length - 1; svIdx >= 0; svIdx--) {
+          for (let svIdx = sub_values.length - 1; svIdx >= 0; svIdx--) {
             if (Math.abs(sub_values[svIdx] - sub_mean) > sd_limit) {
               sub_square_diff_sum.splice(svIdx, 1);
               sub_N_sum.splice(svIdx, 1);
@@ -2519,14 +2509,12 @@ const parseQueryDataMapScalar = function (
           modelSum,
           obsSum,
           absSum,
-          statistic + "_" + variable
+          `${statistic}_${variable}`
         );
         queryVal = isNaN(Number(queryVal)) ? null : queryVal;
       } catch (e) {
         // this is an error produced by a bug in the query function, not an error returned by the mysql database
-        e.message =
-          "Error in parseQueryDataMapScalar. The expected fields don't seem to be present in the results cache: " +
-          e.message;
+        e.message = `Error in parseQueryDataMapScalar. The expected fields don't seem to be present in the results cache: ${e.message}`;
         throw new Error(e.message);
       }
       d.queryVal.push(queryVal);
@@ -2536,27 +2524,13 @@ const parseQueryDataMapScalar = function (
         max_time: rows[rowIndex].max_secs,
       });
 
-      var thisSite = siteMap.find((obj) => {
-        return obj.options.id === site;
-      });
+      const thisSite = siteMap.find((obj) => obj.options.id === site);
 
-      var tooltips =
-        thisSite.origName +
-        "<br>" +
-        variable +
-        " " +
-        statistic +
-        "<br>" +
-        "model: " +
-        dataSource +
-        "<br>" +
-        "stat: " +
-        queryVal +
-        " " +
-        varUnits +
-        "<br>" +
-        "n: " +
-        rows[rowIndex].N0;
+      const tooltips =
+        `${thisSite.origName}<br>${variable} ${statistic}<br>` +
+        `model: ${dataSource}<br>` +
+        `stat: ${queryVal} ${varUnits}<br>` +
+        `n: ${rows[rowIndex].N0}`;
       d.text.push(tooltips);
       d.siteName.push(thisSite.origName);
       d.lat.push(thisSite.point[0]);
@@ -2566,7 +2540,7 @@ const parseQueryDataMapScalar = function (
   }
 
   // get range of values for colorscale, eliminating the highest and lowest as outliers
-  var filteredValues = d.queryVal.filter((x) => x);
+  let filteredValues = d.queryVal.filter((x) => x);
   filteredValues = filteredValues.sort(function (a, b) {
     return Number(a) - Number(b);
   });
@@ -2589,7 +2563,7 @@ const parseQueryDataMapScalar = function (
     all_sd_limit = outlierQCParam * all_stdev;
   }
 
-  for (var didx = d.queryVal.length - 1; didx >= 0; didx--) {
+  for (let didx = d.queryVal.length - 1; didx >= 0; didx--) {
     queryVal = d.queryVal[didx];
     if (outlierQCParam !== "all" && Math.abs(queryVal - all_mean) > all_sd_limit) {
       // this point is too far from the mean. Exclude it.
@@ -2647,16 +2621,16 @@ const parseQueryDataMapScalar = function (
     }
   } // end of loop row
   return {
-    d: d,
-    dLowest: dLowest,
-    dLow: dLow,
-    dModerate: dModerate,
-    dHigh: dHigh,
-    dHighest: dHighest,
+    d,
+    dLowest,
+    dLow,
+    dModerate,
+    dHigh,
+    dHighest,
     valueLimits: {
-      maxValue: maxValue,
-      highLimit: highLimit,
-      lowLimit: lowLimit,
+      maxValue,
+      highLimit,
+      lowLimit,
     },
   };
 };
@@ -2680,14 +2654,14 @@ const parseQueryDataMapCTC = function (
   statistic,
   appParams
 ) {
-  const hasLevels = appParams.hasLevels;
-  var highLimit = 100;
-  var lowLimit = -100;
+  const { hasLevels } = appParams;
+  let highLimit = 100;
+  let lowLimit = -100;
   const outlierQCParam =
     appParams.outliers !== "all" ? Number(appParams.outliers) : appParams.outliers;
 
-  var queryVal;
-  for (var rowIndex = 0; rowIndex < rows.length; rowIndex++) {
+  let queryVal;
+  for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
     const site = rows[rowIndex].sta_id;
     const hit = Number(rows[rowIndex].hit);
     const fa = Number(rows[rowIndex].fa);
@@ -2733,16 +2707,16 @@ const parseQueryDataMapCTC = function (
     }
 
     // store sub values to test them for stdev.
-    var sub_hit = [];
-    var sub_fa = [];
-    var sub_miss = [];
-    var sub_cn = [];
-    var sub_values = [];
-    var sub_secs = [];
-    var sub_levs = [];
-    var sub_stdev = 0;
-    var sub_mean = 0;
-    var sd_limit = 0;
+    const sub_hit = [];
+    const sub_fa = [];
+    const sub_miss = [];
+    const sub_cn = [];
+    const sub_values = [];
+    const sub_secs = [];
+    const sub_levs = [];
+    let sub_stdev = 0;
+    let sub_mean = 0;
+    let sd_limit = 0;
     if (
       queryVal !== null &&
       rows[rowIndex].sub_data !== undefined &&
@@ -2750,9 +2724,9 @@ const parseQueryDataMapCTC = function (
     ) {
       // parse the sub-data
       try {
-        var sub_data = rows[rowIndex].sub_data.toString().split(",");
+        const sub_data = rows[rowIndex].sub_data.toString().split(",");
         var curr_sub_data;
-        for (var sd_idx = 0; sd_idx < sub_data.length; sd_idx++) {
+        for (let sd_idx = 0; sd_idx < sub_data.length; sd_idx++) {
           curr_sub_data = sub_data[sd_idx].split(";");
           sub_secs.push(Number(curr_sub_data[0]));
           if (hasLevels) {
@@ -2797,7 +2771,7 @@ const parseQueryDataMapCTC = function (
           sub_stdev = matsDataUtils.stdev(sub_values);
           sub_mean = matsDataUtils.average(sub_values);
           sd_limit = outlierQCParam * sub_stdev;
-          for (var svIdx = sub_values.length - 1; svIdx >= 0; svIdx--) {
+          for (let svIdx = sub_values.length - 1; svIdx >= 0; svIdx--) {
             if (Math.abs(sub_values[svIdx] - sub_mean) > sd_limit) {
               sub_hit.splice(svIdx, 1);
               sub_fa.splice(svIdx, 1);
@@ -2826,9 +2800,7 @@ const parseQueryDataMapCTC = function (
         queryVal = isNaN(Number(queryVal)) ? null : queryVal;
       } catch (e) {
         // this is an error produced by a bug in the query function, not an error returned by the mysql database
-        e.message =
-          "Error in parseQueryDataMapCTC. The expected fields don't seem to be present in the results cache: " +
-          e.message;
+        e.message = `Error in parseQueryDataMapCTC. The expected fields don't seem to be present in the results cache: ${e.message}`;
         throw new Error(e.message);
       }
       d.queryVal.push(queryVal);
@@ -2844,46 +2816,26 @@ const parseQueryDataMapCTC = function (
 
       let thisSite;
       if (appParams.isCouchbase) {
-        thisSite = siteMap.find((obj) => {
-          return obj.name === site;
-        });
+        thisSite = siteMap.find((obj) => obj.name === site);
       } else {
-        thisSite = siteMap.find((obj) => {
-          return obj.options.id === site;
-        });
+        thisSite = siteMap.find((obj) => obj.options.id === site);
       }
 
-      var tooltips =
-        thisSite.origName +
-        "<br>" +
-        "model: " +
-        dataSource +
-        "<br>" +
-        statistic +
-        ": " +
-        queryVal +
-        "<br>" +
-        "n: " +
-        rows[rowIndex].N_times +
-        "<br>" +
-        "hits: " +
-        rows[rowIndex].hit +
-        "<br>" +
-        "false alarms: " +
-        rows[rowIndex].fa +
-        "<br>" +
-        "misses: " +
-        rows[rowIndex].miss +
-        "<br>" +
-        "correct nulls: " +
-        rows[rowIndex].cn;
+      const tooltips =
+        `${thisSite.origName}<br>` +
+        `model: ${dataSource}<br>${statistic}: ${queryVal}<br>` +
+        `n: ${rows[rowIndex].N_times}<br>` +
+        `hits: ${rows[rowIndex].hit}<br>` +
+        `false alarms: ${rows[rowIndex].fa}<br>` +
+        `misses: ${rows[rowIndex].miss}<br>` +
+        `correct nulls: ${rows[rowIndex].cn}`;
       d.text.push(tooltips);
       d.siteName.push(thisSite.origName);
       d.lat.push(thisSite.point[0]);
       d.lon.push(thisSite.point[1]);
 
       // sort the data by the color it will appear on the map
-      var textMarker = queryVal === null ? "" : queryVal.toFixed(0);
+      const textMarker = queryVal === null ? "" : queryVal.toFixed(0);
       if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.1) {
         d.color.push("rgb(128,0,255)");
         dPurple.siteName.push(thisSite.origName);
@@ -2959,21 +2911,21 @@ const parseQueryDataMapCTC = function (
   } // end of loop row
 
   return {
-    d: d,
-    dPurple: dPurple,
-    dPurpleBlue: dPurpleBlue,
-    dBlue: dBlue,
-    dBlueGreen: dBlueGreen,
-    dGreen: dGreen,
-    dGreenYellow: dGreenYellow,
-    dYellow: dYellow,
-    dOrange: dOrange,
-    dOrangeRed: dOrangeRed,
-    dRed: dRed,
+    d,
+    dPurple,
+    dPurpleBlue,
+    dBlue,
+    dBlueGreen,
+    dGreen,
+    dGreenYellow,
+    dYellow,
+    dOrange,
+    dOrangeRed,
+    dRed,
     valueLimits: {
       maxValue: highLimit,
-      highLimit: highLimit,
-      lowLimit: lowLimit,
+      highLimit,
+      lowLimit,
     },
   };
 };
@@ -3012,17 +2964,17 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
             sum: 0
         };
     */
-  const hasLevels = appParams.hasLevels;
-  var isCTC = false;
-  var isScalar = false;
+  const { hasLevels } = appParams;
+  let isCTC = false;
+  let isScalar = false;
 
   // these arrays hold all the sub values and seconds (and levels) until they are sorted into bins
-  var curveSubStatsRaw = [];
-  var curveSubSecsRaw = [];
-  var curveSubLevsRaw = [];
+  const curveSubStatsRaw = [];
+  const curveSubSecsRaw = [];
+  const curveSubLevsRaw = [];
 
   // parse the data returned from the query
-  for (var rowIndex = 0; rowIndex < rows.length; rowIndex++) {
+  for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
     var stat;
     if (rows[rowIndex].stat === undefined && rows[rowIndex].hit !== undefined) {
       // this is a contingency table plot
@@ -3068,9 +3020,9 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
       // not a contingency table plot or a scalar partial sums plot
       stat = rows[rowIndex].stat === "NULL" ? null : rows[rowIndex].stat;
     }
-    var sub_stats = [];
-    var sub_secs = [];
-    var sub_levs = [];
+    const sub_stats = [];
+    const sub_secs = [];
+    const sub_levs = [];
     if (
       stat !== null &&
       rows[rowIndex].sub_data !== undefined &&
@@ -3078,9 +3030,9 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
     ) {
       // parse the sub-data
       try {
-        var sub_data = rows[rowIndex].sub_data.toString().split(",");
+        const sub_data = rows[rowIndex].sub_data.toString().split(",");
         var curr_sub_data;
-        for (var sd_idx = 0; sd_idx < sub_data.length; sd_idx++) {
+        for (let sd_idx = 0; sd_idx < sub_data.length; sd_idx++) {
           curr_sub_data = sub_data[sd_idx].split(";");
           if (isCTC) {
             sub_secs.push(Number(curr_sub_data[0]));
@@ -3163,9 +3115,7 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
         curveSubLevsRaw.push(sub_levs);
       } catch (e) {
         // this is an error produced by a bug in the query function, not an error returned by the mysql database
-        e.message =
-          "Error in parseQueryDataHistogram. The expected fields don't seem to be present in the results cache: " +
-          e.message;
+        e.message = `Error in parseQueryDataHistogram. The expected fields don't seem to be present in the results cache: ${e.message}`;
         throw new Error(e.message);
       }
     }
@@ -3174,7 +3124,7 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
   // we don't have bins yet, so we want all of the data in one array
   const subVals = [].concat.apply([], curveSubStatsRaw);
   const subSecs = [].concat.apply([], curveSubSecsRaw);
-  var subLevs;
+  let subLevs;
   if (hasLevels) {
     subLevs = [].concat.apply([], curveSubLevsRaw);
   }
@@ -3184,7 +3134,7 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
   d.subLevs = subLevs;
 
   return {
-    d: d,
+    d,
     N0: subVals.length,
     N_times: subSecs.length,
   };
@@ -3242,49 +3192,49 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
             sum: 0
         };
     */
-  const hasLevels = appParams.hasLevels;
-  var isCTC = false;
-  var isScalar = false;
+  const { hasLevels } = appParams;
+  let isCTC = false;
+  let isScalar = false;
 
   // initialize local variables
-  var curveStatLookup = {};
-  var curveStdevLookup = {};
-  var curveNLookup = {};
-  var curveSubHitLookup = {};
-  var curveSubFaLookup = {};
-  var curveSubMissLookup = {};
-  var curveSubCnLookup = {};
-  var curveSubSquareDiffSumLookup = {};
-  var curveSubNSumLookup = {};
-  var curveSubObsModelDiffSumLookup = {};
-  var curveSubModelSumLookup = {};
-  var curveSubObsSumLookup = {};
-  var curveSubAbsSumLookup = {};
-  var curveSubValLookup = {};
-  var curveSubSecLookup = {};
-  var curveSubLevLookup = {};
+  const curveStatLookup = {};
+  const curveStdevLookup = {};
+  const curveNLookup = {};
+  const curveSubHitLookup = {};
+  const curveSubFaLookup = {};
+  const curveSubMissLookup = {};
+  const curveSubCnLookup = {};
+  const curveSubSquareDiffSumLookup = {};
+  const curveSubNSumLookup = {};
+  const curveSubObsModelDiffSumLookup = {};
+  const curveSubModelSumLookup = {};
+  const curveSubObsSumLookup = {};
+  const curveSubAbsSumLookup = {};
+  const curveSubValLookup = {};
+  const curveSubSecLookup = {};
+  const curveSubLevLookup = {};
 
   // get all the data out of the query array
-  for (var rowIndex = 0; rowIndex < rows.length; rowIndex++) {
-    var rowXVal = rows[rowIndex].xVal;
-    var rowYVal = rows[rowIndex].yVal;
-    var statKey = rowXVal.toString() + "_" + rowYVal.toString();
-    var stat = null;
-    var hit = null;
-    var fa = null;
-    var miss = null;
-    var cn = null;
-    var n =
+  for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
+    const rowXVal = rows[rowIndex].xVal;
+    const rowYVal = rows[rowIndex].yVal;
+    const statKey = `${rowXVal.toString()}_${rowYVal.toString()}`;
+    let stat = null;
+    let hit = null;
+    let fa = null;
+    let miss = null;
+    let cn = null;
+    let n =
       rows[rowIndex].sub_data !== undefined && rows[rowIndex].sub_data !== null
         ? rows[rowIndex].sub_data.toString().split(",").length
         : 0;
-    var squareDiffSum = null;
-    var NSum = null;
-    var obsModelDiffSum = null;
-    var modelSum = null;
-    var obsSum = null;
-    var absSum = null;
-    var stdev = null;
+    let squareDiffSum = null;
+    let NSum = null;
+    let obsModelDiffSum = null;
+    let modelSum = null;
+    let obsSum = null;
+    let absSum = null;
+    let stdev = null;
     if (rows[rowIndex].stat === undefined && rows[rowIndex].hit !== undefined) {
       // this is a contingency table plot
       isCTC = true;
@@ -3327,7 +3277,7 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
           modelSum,
           obsSum,
           absSum,
-          "Std deviation_" + variable
+          `Std deviation_${variable}`
         );
       }
     } else {
@@ -3335,8 +3285,8 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
       stat = rows[rowIndex].stat === "NULL" ? null : rows[rowIndex].stat;
       stdev = rows[rowIndex].stdev !== undefined ? rows[rowIndex].stdev : null;
     }
-    var minDate = rows[rowIndex].min_secs;
-    var maxDate = rows[rowIndex].max_secs;
+    let minDate = rows[rowIndex].min_secs;
+    let maxDate = rows[rowIndex].max_secs;
     if (stat === undefined || stat === null) {
       stat = null;
       stdev = 0;
@@ -3344,19 +3294,19 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
       minDate = null;
       maxDate = null;
     }
-    var sub_hit = [];
-    var sub_fa = [];
-    var sub_miss = [];
-    var sub_cn = [];
-    var sub_square_diff_sum = [];
-    var sub_N_sum = [];
-    var sub_obs_model_diff_sum = [];
-    var sub_model_sum = [];
-    var sub_obs_sum = [];
-    var sub_abs_sum = [];
-    var sub_values = [];
-    var sub_secs = [];
-    var sub_levs = [];
+    let sub_hit = [];
+    let sub_fa = [];
+    let sub_miss = [];
+    let sub_cn = [];
+    let sub_square_diff_sum = [];
+    let sub_N_sum = [];
+    let sub_obs_model_diff_sum = [];
+    let sub_model_sum = [];
+    let sub_obs_sum = [];
+    let sub_abs_sum = [];
+    let sub_values = [];
+    let sub_secs = [];
+    let sub_levs = [];
     if (
       stat !== null &&
       rows[rowIndex].sub_data !== undefined &&
@@ -3364,9 +3314,9 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
     ) {
       // parse the sub-data
       try {
-        var sub_data = rows[rowIndex].sub_data.toString().split(",");
+        const sub_data = rows[rowIndex].sub_data.toString().split(",");
         var curr_sub_data;
-        for (var sd_idx = 0; sd_idx < sub_data.length; sd_idx++) {
+        for (let sd_idx = 0; sd_idx < sub_data.length; sd_idx++) {
           curr_sub_data = sub_data[sd_idx].split(";");
           if (isCTC) {
             sub_secs.push(Number(curr_sub_data[0]));
@@ -3424,9 +3374,7 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
         }
       } catch (e) {
         // this is an error produced by a bug in the query function, not an error returned by the mysql database
-        e.message =
-          "Error in parseQueryDataContour. The expected fields don't seem to be present in the results cache: " +
-          e.message;
+        e.message = `Error in parseQueryDataContour. The expected fields don't seem to be present in the results cache: ${e.message}`;
         throw new Error(e.message);
       }
     } else {
@@ -3498,47 +3446,47 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
   d.y = matsDataUtils.arrayUnique(d.yTextOutput).sort(function (a, b) {
     return a - b;
   });
-  var i;
-  var j;
-  var currX;
-  var currY;
-  var currStat;
-  var currStdev;
-  var currN;
-  var currSubHit;
-  var currSubFa;
-  var currSubMiss;
-  var currSubCn;
-  var currSubSquareDiffSum;
-  var currSubNSum;
-  var currSubObsModelDiffSum;
-  var currSubModelSum;
-  var currSubObsSum;
-  var currSubAbsSum;
-  var currSubVal;
-  var currSubSec;
-  var currSubLev;
-  var currStatKey;
-  var currYStatArray;
-  var currYStdevArray;
-  var currYNArray;
-  var currYSubHitArray;
-  var currYSubFaArray;
-  var currYSubMissArray;
-  var currYSubCnArray;
-  var currYSubSquareDiffSumArray;
-  var currYSubNSumArray;
-  var currYSubObsModelDiffSumArray;
-  var currYSubModelSumArray;
-  var currYSubObsSumArray;
-  var currYSubAbsSumArray;
-  var currYSubValArray;
-  var currYSubSecArray;
-  var currYSubLevArray;
-  var sum = 0;
-  var nPoints = 0;
-  var zmin = Number.MAX_VALUE;
-  var zmax = -1 * Number.MAX_VALUE;
+  let i;
+  let j;
+  let currX;
+  let currY;
+  let currStat;
+  let currStdev;
+  let currN;
+  let currSubHit;
+  let currSubFa;
+  let currSubMiss;
+  let currSubCn;
+  let currSubSquareDiffSum;
+  let currSubNSum;
+  let currSubObsModelDiffSum;
+  let currSubModelSum;
+  let currSubObsSum;
+  let currSubAbsSum;
+  let currSubVal;
+  let currSubSec;
+  let currSubLev;
+  let currStatKey;
+  let currYStatArray;
+  let currYStdevArray;
+  let currYNArray;
+  let currYSubHitArray;
+  let currYSubFaArray;
+  let currYSubMissArray;
+  let currYSubCnArray;
+  let currYSubSquareDiffSumArray;
+  let currYSubNSumArray;
+  let currYSubObsModelDiffSumArray;
+  let currYSubModelSumArray;
+  let currYSubObsSumArray;
+  let currYSubAbsSumArray;
+  let currYSubValArray;
+  let currYSubSecArray;
+  let currYSubLevArray;
+  let sum = 0;
+  let nPoints = 0;
+  let zmin = Number.MAX_VALUE;
+  let zmax = -1 * Number.MAX_VALUE;
 
   for (j = 0; j < d.y.length; j++) {
     currY = d.y[j];
@@ -3566,7 +3514,7 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
     }
     for (i = 0; i < d.x.length; i++) {
       currX = d.x[i];
-      currStatKey = currX.toString() + "_" + currY.toString();
+      currStatKey = `${currX.toString()}_${currY.toString()}`;
       currStat = curveStatLookup[currStatKey];
       currStdev = curveStdevLookup[currStatKey];
       currN = curveNLookup[currStatKey];
@@ -3614,7 +3562,7 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
         }
       } else {
         sum += currStat;
-        nPoints = nPoints + 1;
+        nPoints += 1;
         currYStatArray.push(currStat);
         currYStdevArray.push(currStdev);
         currYNArray.push(currN);
@@ -3676,24 +3624,24 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
 
   const filteredMinDate = d.minDateTextOutput.filter((t) => t);
   const filteredMaxDate = d.maxDateTextOutput.filter((t) => t);
-  d.glob_stats["mean"] = sum / nPoints;
-  d.glob_stats["minDate"] = Math.min(...filteredMinDate);
-  d.glob_stats["maxDate"] = Math.max(...filteredMaxDate);
-  d.glob_stats["n"] = nPoints;
+  d.glob_stats.mean = sum / nPoints;
+  d.glob_stats.minDate = Math.min(...filteredMinDate);
+  d.glob_stats.maxDate = Math.max(...filteredMaxDate);
+  d.glob_stats.n = nPoints;
 
   return {
-    d: d,
+    d,
   };
 };
 
 export default matsDataQueryUtils = {
-  simplePoolQueryWrapSynchronous: simplePoolQueryWrapSynchronous,
-  queryDBPython: queryDBPython,
-  queryDBTimeSeries: queryDBTimeSeries,
-  queryDBSpecialtyCurve: queryDBSpecialtyCurve,
-  queryDBPerformanceDiagram: queryDBPerformanceDiagram,
-  queryDBSimpleScatter: queryDBSimpleScatter,
-  queryDBMapScalar: queryDBMapScalar,
-  queryDBMapCTC: queryDBMapCTC,
-  queryDBContour: queryDBContour,
+  simplePoolQueryWrapSynchronous,
+  queryDBPython,
+  queryDBTimeSeries,
+  queryDBSpecialtyCurve,
+  queryDBPerformanceDiagram,
+  queryDBSimpleScatter,
+  queryDBMapScalar,
+  queryDBMapCTC,
+  queryDBContour,
 };
