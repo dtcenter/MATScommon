@@ -5,17 +5,15 @@
  *                              or not
  */
 export default (obsolete, falseCase) => {
-    /**
-     * The handles of all open windows/tabs
-     * @type {Object}
-     */
-    const windowHandles = browser.getWindowHandles();
+  /**
+   * The handles of all open windows/tabs
+   * @type {Object}
+   */
+  const windowHandles = browser.getWindowHandles();
 
-    if (falseCase) {
-        expect(windowHandles)
-            .toHaveLength(1, 'A new window should not have been opened');
-    } else {
-        expect(windowHandles)
-            .not.toHaveLength(1, 'A new window has been opened');
-    }
+  if (falseCase) {
+    expect(windowHandles).toHaveLength(1, "A new window should not have been opened");
+  } else {
+    expect(windowHandles).not.toHaveLength(1, "A new window has been opened");
+  }
 };

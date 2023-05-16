@@ -3,5 +3,5 @@
  * @param  {String}   selector Element selector
  */
 export default (selector) => {
-    $(selector).clearValue();
+  $(selector).clearValue();
 };

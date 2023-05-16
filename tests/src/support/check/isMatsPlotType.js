@@ -4,10 +4,13 @@
  * @param  {String} value the expected value
  */
 export default (value) => {
-    /**
-     * The selected state
-     * @type {Boolean}
-     */
-    const selectedValue = $("#plotTypes-selector").getValue();
-    expect(selectedValue).toBe(value, `"plot type" should be ${value} and is ${selectedValue}`);
+  /**
+   * The selected state
+   * @type {Boolean}
+   */
+  const selectedValue = $("#plotTypes-selector").getValue();
+  expect(selectedValue).toBe(
+    value,
+    `"plot type" should be ${value} and is ${selectedValue}`
+  );
 };

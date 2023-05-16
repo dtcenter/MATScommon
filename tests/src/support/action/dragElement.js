@@ -4,5 +4,5 @@
  * @param  {String}   destination The selector for the destination element
  */
 export default (selector, destination) => {
-    $(selector).dragAndDrop($(destination));
+  $(selector).dragAndDrop($(destination));
 };

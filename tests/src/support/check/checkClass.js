@@ -6,21 +6,21 @@
  * @param  {String}   expectedClassName The class name to check
  */
 export default (selector, falseCase, expectedClassName) => {
-    /**
-     * List of all the classes of the element
-     * @type {Array}
-     */
-    const classesList = $(selector).getAttribute('className').split(' ');
+  /**
+   * List of all the classes of the element
+   * @type {Array}
+   */
+  const classesList = $(selector).getAttribute("className").split(" ");
 
-    if (falseCase === 'does not have') {
-        expect(classesList).not.toContain(
-            expectedClassName,
-            `Element ${selector} should not have the class ${expectedClassName}`
-        );
-    } else {
-        expect(classesList).toContain(
-            expectedClassName,
-            `Element ${selector} should have the class ${expectedClassName}`
-        );
-    }
+  if (falseCase === "does not have") {
+    expect(classesList).not.toContain(
+      expectedClassName,
+      `Element ${selector} should not have the class ${expectedClassName}`
+    );
+  } else {
+    expect(classesList).toContain(
+      expectedClassName,
+      `Element ${selector} should have the class ${expectedClassName}`
+    );
+  }
 };

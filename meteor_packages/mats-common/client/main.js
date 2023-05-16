@@ -6,9 +6,9 @@
  * Created by pierce on 8/31/16.
  */
 
-import '../imports/startup/client';
-import '../imports/startup/both';
-import '@fortawesome/fontawesome-free';
-import '@fortawesome/fontawesome-free/css/all.css';
-import '@fortawesome/fontawesome-free/js/all.js';
-import 'daterangepicker/daterangepicker.css';
+import "../imports/startup/client";
+import "../imports/startup/both";
+import "@fortawesome/fontawesome-free";
+import "@fortawesome/fontawesome-free/css/all.css";
+import "@fortawesome/fontawesome-free/js/all.js";
+import "daterangepicker/daterangepicker.css";

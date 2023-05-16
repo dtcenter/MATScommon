@@ -2,13 +2,12 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import {matsTypes} from 'meteor/randyp:mats-common';
-import {matsCollections} from 'meteor/randyp:mats-common';
-import {matsPlotUtils} from 'meteor/randyp:mats-common';
-import {matsParamUtils} from 'meteor/randyp:mats-common';
-import {Info} from 'meteor/randyp:mats-common';
-import {matsMethods} from 'meteor/randyp:mats-common';
-
+import { matsTypes } from "meteor/randyp:mats-common";
+import { matsCollections } from "meteor/randyp:mats-common";
+import { matsPlotUtils } from "meteor/randyp:mats-common";
+import { matsParamUtils } from "meteor/randyp:mats-common";
+import { Info } from "meteor/randyp:mats-common";
+import { matsMethods } from "meteor/randyp:mats-common";
 
 /*
  global dataset variable - container for graph dataset.
@@ -19,254 +18,275 @@ import {matsMethods} from 'meteor/randyp:mats-common';
  */
 
 //var plotResultData = null; -- this was the global variable for the text output data, but now it is set elsewhere
-var graphResult = null;     // this is the global variable for the data on the graph
+var graphResult = null; // this is the global variable for the data on the graph
 var plot;
 
 const sizeof = function (_1) {
-    var _2 = [_1];
-    var _3 = 0;
-    for (var _4 = 0; _4 < _2.length; _4++) {
-        switch (typeof _2[_4]) {
-            case "boolean":
-                _3 += 4;
-                break;
-            case "number":
-                _3 += 8;
-                break;
-            case "string":
-                _3 += 2 * _2[_4].length;
-                break;
-            case "object":
-                if (Object.prototype.toString.call(_2[_4]) !== "[object Array]") {
-                    for (var _5 in _2[_4]) {
-                        _3 += 2 * _5.length;
-                    }
-                }
-                for (var _5 in _2[_4]) {
-                    var _6 = false;
-                    for (var _7 = 0; _7 < _2.length; _7++) {
-                        if (_2[_7] === _2[_4][_5]) {
-                            _6 = true;
-                            break;
-                        }
-                    }
-                    if (!_6) {
-                        _2.push(_2[_4][_5]);
-                    }
-                }
+  var _2 = [_1];
+  var _3 = 0;
+  for (var _4 = 0; _4 < _2.length; _4++) {
+    switch (typeof _2[_4]) {
+      case "boolean":
+        _3 += 4;
+        break;
+      case "number":
+        _3 += 8;
+        break;
+      case "string":
+        _3 += 2 * _2[_4].length;
+        break;
+      case "object":
+        if (Object.prototype.toString.call(_2[_4]) !== "[object Array]") {
+          for (var _5 in _2[_4]) {
+            _3 += 2 * _5.length;
+          }
+        }
+        for (var _5 in _2[_4]) {
+          var _6 = false;
+          for (var _7 = 0; _7 < _2.length; _7++) {
+            if (_2[_7] === _2[_4][_5]) {
+              _6 = true;
+              break;
+            }
+          }
+          if (!_6) {
+            _2.push(_2[_4][_5]);
+          }
         }
     }
-    return _3;
+  }
+  return _3;
 };
 
 // Retrieves the globally stored plotResultData for the text output and other things.
 // Re-sets the plotResultData if the requested page range has changed, or if it has not been previously set.
 const getPlotResultData = function () {
-    var pageIndex = Session.get("pageIndex");
-    var newPageIndex = Session.get("newPageIndex");
-    if (plotResultData === undefined || plotResultData === null || Session.get('textRefreshNeeded') === true) {
-        setPlotResultData();
-    }
-    return plotResultData;
+  var pageIndex = Session.get("pageIndex");
+  var newPageIndex = Session.get("newPageIndex");
+  if (
+    plotResultData === undefined ||
+    plotResultData === null ||
+    Session.get("textRefreshNeeded") === true
+  ) {
+    setPlotResultData();
+  }
+  return plotResultData;
 };
 
 // Sets the global plotResultData variable for the text output to the requested range from the Results data stored in mongo, via a MatsMethod.
 const setPlotResultData = function () {
-    var pageIndex = Session.get("pageIndex");
-    var newPageIndex = Session.get("newPageIndex");
+  var pageIndex = Session.get("pageIndex");
+  var newPageIndex = Session.get("newPageIndex");
 
-    if (Session.get('textRefreshNeeded') === true) {
-        showSpinner();
-        matsMethods.getPlotResult.call({
-            resultKey: Session.get("plotResultKey"),
-            pageIndex: pageIndex,
-            newPageIndex: newPageIndex
-        }, function (error, result) {
-            if (error !== undefined) {
-                setError(new Error("matsMethods.getPlotResult failed : error: " + error));
-                Session.set('textRefreshNeeded', false);
-            }
-            if (!result) {
-                plotResultData = undefined;
-                Session.set('textRefreshNeeded', false);
-                hideSpinner();
-                return;
-            }
-            plotResultData = result;
-            Session.set("pageIndex", result.dsiRealPageIndex);
-            Session.set("pageTextDirection", result.dsiTextDirection);
-            Session.set('textLoaded', new Date());
-            console.log("size of plotResultData is ", sizeof(plotResultData));
-            Session.set('textRefreshNeeded', false);
-            hideSpinner();
-        });
-    }
+  if (Session.get("textRefreshNeeded") === true) {
+    showSpinner();
+    matsMethods.getPlotResult.call(
+      {
+        resultKey: Session.get("plotResultKey"),
+        pageIndex: pageIndex,
+        newPageIndex: newPageIndex,
+      },
+      function (error, result) {
+        if (error !== undefined) {
+          setError(new Error("matsMethods.getPlotResult failed : error: " + error));
+          Session.set("textRefreshNeeded", false);
+        }
+        if (!result) {
+          plotResultData = undefined;
+          Session.set("textRefreshNeeded", false);
+          hideSpinner();
+          return;
+        }
+        plotResultData = result;
+        Session.set("pageIndex", result.dsiRealPageIndex);
+        Session.set("pageTextDirection", result.dsiTextDirection);
+        Session.set("textLoaded", new Date());
+        console.log("size of plotResultData is ", sizeof(plotResultData));
+        Session.set("textRefreshNeeded", false);
+        hideSpinner();
+      }
+    );
+  }
 };
 
 // resets the global plotResultData variable for the text output to null
 const resetPlotResultData = function () {
-    plotResultData = null;
-    Session.set('textLoaded', new Date());
+  plotResultData = null;
+  Session.set("textLoaded", new Date());
 };
 
 // gets the global graphResult variable, which is the data object for the (possibly downsampled) data on the graph
 const getGraphResult = function () {
-    if (graphResult === undefined || graphResult === null) {
-        return [];
-    }
-    return graphResult;
+  if (graphResult === undefined || graphResult === null) {
+    return [];
+  }
+  return graphResult;
 };
 
 // sets the global graphResult variable to the (possibly downsampled) data object returned from MatsMethods, in order to make the graph
 const setGraphResult = function (result) {
-    graphResult = result;
-    Session.set('graphDataLoaded', new Date());
-    console.log("size of graphResultData is", sizeof(graphResult));
+  graphResult = result;
+  Session.set("graphDataLoaded", new Date());
+  console.log("size of graphResultData is", sizeof(graphResult));
 };
 
 // resets the global graphResult variable to null
 const resetGraphResult = function () {
-    graphResult = null;
-    Session.set('graphDataLoaded', new Date());
+  graphResult = null;
+  Session.set("graphDataLoaded", new Date());
 };
 
 const setCurveParamDisplayText = function (paramName, newText) {
-    if (document.getElementById(paramName + "-item")) {
-        matsMethods.setCurveParamDisplayText.call(
-        {
-            paramName: paramName,
-            newText: newText,
-        },
-        function (error, res) {
-            if (error !== undefined) {
-            setError(error);
-            }
-            return;
+  if (document.getElementById(paramName + "-item")) {
+    matsMethods.setCurveParamDisplayText.call(
+      {
+        paramName: paramName,
+        newText: newText,
+      },
+      function (error, res) {
+        if (error !== undefined) {
+          setError(error);
         }
-        );
-    }
-  };  
+        return;
+      }
+    );
+  }
+};
 
 /*
  Curve utilities - used to determine curve labels and colors etc.
  */
 const getUsedLabels = function () {
-    if (Session.get('UsedLabels') === undefined) {
-        return [];
-    }
-    return Session.get('UsedLabels');
+  if (Session.get("UsedLabels") === undefined) {
+    return [];
+  }
+  return Session.get("UsedLabels");
 };
 
 const getNextCurveLabel = function () {
-    if (Session.get('NextCurveLabel') === undefined) {
-        setNextCurveLabel();
-    }
-    return Session.get('NextCurveLabel');
+  if (Session.get("NextCurveLabel") === undefined) {
+    setNextCurveLabel();
+  }
+  return Session.get("NextCurveLabel");
 };
 
 // determine the next curve Label and set it in the session
 // private, not exported
 const setNextCurveLabel = function () {
-    const usedLabels = Session.get('UsedLabels');
-    const settings = matsCollections.Settings.findOne({}, {fields: {LabelPrefix: 1}});
-    if (settings === undefined) {
-        return false;
-    }
-    const labelPrefix = settings.LabelPrefix;
-    // find all the labels that start with our prefix (some could be custom)
-    const prefixLabels = _.filter(usedLabels, function (l) {
-        return (l && (l.lastIndexOf(labelPrefix, 0) === 0) && (l.match(new RegExp(labelPrefix, 'g')).length) === 1);
-    });
-    const lastUsedLabel = _.last(prefixLabels);
-    var lastLabelNumber = -1;
+  const usedLabels = Session.get("UsedLabels");
+  const settings = matsCollections.Settings.findOne({}, { fields: { LabelPrefix: 1 } });
+  if (settings === undefined) {
+    return false;
+  }
+  const labelPrefix = settings.LabelPrefix;
+  // find all the labels that start with our prefix (some could be custom)
+  const prefixLabels = _.filter(usedLabels, function (l) {
+    return (
+      l &&
+      l.lastIndexOf(labelPrefix, 0) === 0 &&
+      l.match(new RegExp(labelPrefix, "g")).length === 1
+    );
+  });
+  const lastUsedLabel = _.last(prefixLabels);
+  var lastLabelNumber = -1;
 
-    if (lastUsedLabel !== undefined) {
-        const minusPrefix = lastUsedLabel.replace(labelPrefix, '');
-        const tryNum = parseInt(minusPrefix, 10);
-        if (!isNaN(tryNum)) {
-            lastLabelNumber = tryNum;
-        }
+  if (lastUsedLabel !== undefined) {
+    const minusPrefix = lastUsedLabel.replace(labelPrefix, "");
+    const tryNum = parseInt(minusPrefix, 10);
+    if (!isNaN(tryNum)) {
+      lastLabelNumber = tryNum;
     }
-    var newLabelNumber = lastLabelNumber + 1;
-    var nextCurveLabel = labelPrefix + newLabelNumber;
-    // the label might be one from a removed curve so the next ones might be used
-    while (_.indexOf(usedLabels, nextCurveLabel) !== -1) {
-        newLabelNumber++;
-        nextCurveLabel = labelPrefix + newLabelNumber;
-    }
-    Session.set('NextCurveLabel', nextCurveLabel);
+  }
+  var newLabelNumber = lastLabelNumber + 1;
+  var nextCurveLabel = labelPrefix + newLabelNumber;
+  // the label might be one from a removed curve so the next ones might be used
+  while (_.indexOf(usedLabels, nextCurveLabel) !== -1) {
+    newLabelNumber++;
+    nextCurveLabel = labelPrefix + newLabelNumber;
+  }
+  Session.set("NextCurveLabel", nextCurveLabel);
 };
 
 // determine the next curve color and set it in the session
 // private - not exported
 const setNextCurveColor = function () {
-    var usedColors = Session.get('UsedColors');
-    var colors = matsCollections.ColorScheme.findOne({}, {fields: {colors: 1}}).colors;
-    var lastUsedIndex = -1;
-    if (usedColors !== undefined) {
-        lastUsedIndex = _.indexOf(colors, _.last(usedColors));
-    }
-    var nextCurveColor;
-    if (lastUsedIndex !== undefined && lastUsedIndex !== -1) {
-        if (lastUsedIndex < colors.length - 1) {
-            var newIndex = lastUsedIndex + 1;
-            nextCurveColor = colors[newIndex];
-            // the color might be one from a removed curve so the next ones might be used
-            while (_.indexOf(usedColors, nextCurveColor) !== -1) {
-                newIndex++;
-                nextCurveColor = colors[newIndex];
-            }
-        } else {
-            // out of defaults
-            var rint = Math.round(0xffffff * Math.random());
-            nextCurveColor = 'rgb(' + (rint >> 16) + ',' + (rint >> 8 & 255) + ',' + (rint & 255) + ')';
-        }
+  var usedColors = Session.get("UsedColors");
+  var colors = matsCollections.ColorScheme.findOne(
+    {},
+    { fields: { colors: 1 } }
+  ).colors;
+  var lastUsedIndex = -1;
+  if (usedColors !== undefined) {
+    lastUsedIndex = _.indexOf(colors, _.last(usedColors));
+  }
+  var nextCurveColor;
+  if (lastUsedIndex !== undefined && lastUsedIndex !== -1) {
+    if (lastUsedIndex < colors.length - 1) {
+      var newIndex = lastUsedIndex + 1;
+      nextCurveColor = colors[newIndex];
+      // the color might be one from a removed curve so the next ones might be used
+      while (_.indexOf(usedColors, nextCurveColor) !== -1) {
+        newIndex++;
+        nextCurveColor = colors[newIndex];
+      }
     } else {
-        nextCurveColor = colors[0];
+      // out of defaults
+      var rint = Math.round(0xffffff * Math.random());
+      nextCurveColor =
+        "rgb(" + (rint >> 16) + "," + ((rint >> 8) & 255) + "," + (rint & 255) + ")";
     }
-    Session.set('NextCurveColor', nextCurveColor);
+  } else {
+    nextCurveColor = colors[0];
+  }
+  Session.set("NextCurveColor", nextCurveColor);
 };
 
 // get the next curve color from the session
 // private - not exported
 const getNextCurveColor = function () {
-    if (Session.get('NextCurveColor') === undefined) {
-        setNextCurveColor();
-    }
-    return Session.get('NextCurveColor');
+  if (Session.get("NextCurveColor") === undefined) {
+    setNextCurveColor();
+  }
+  return Session.get("NextCurveColor");
 };
 
 // clear a used label and set the nextCurveLabel to the one just cleared
 const clearUsedLabel = function (label) {
-    var usedLabels = Session.get('UsedLabels');
-    var newUsedLabels = _.reject(usedLabels, function (l) {
-        return l === label;
-    });
-    Session.set('UsedLabels', newUsedLabels);
-    Session.set('NextCurveLabel', label);
+  var usedLabels = Session.get("UsedLabels");
+  var newUsedLabels = _.reject(usedLabels, function (l) {
+    return l === label;
+  });
+  Session.set("UsedLabels", newUsedLabels);
+  Session.set("NextCurveLabel", label);
 };
 
 // clear a used color and set the nextCurveColor to the one just cleared
 const clearUsedColor = function (color) {
-    var usedColors = Session.get('UsedColors');
-    var newUsedColors = _.reject(usedColors, function (c) {
-        return c === color;
-    });
-    Session.set('UsedColors', newUsedColors);
-    Session.set('NextCurveColor', color);
+  var usedColors = Session.get("UsedColors");
+  var newUsedColors = _.reject(usedColors, function (c) {
+    return c === color;
+  });
+  Session.set("UsedColors", newUsedColors);
+  Session.set("NextCurveColor", color);
 };
 
 // clear all the used colors and labels and set the nextCurve values
 // to the first in the scheme and the first of the labelPrefix.
 // This is used by the removeAll
 const clearAllUsed = function () {
-    Session.set('UsedColors', undefined);
-    var colors = matsCollections.ColorScheme.findOne({}, {fields: {colors: 1}}).colors;
-    Session.set('NextCurveColor', colors[0]);
-    Session.set('UsedLabels', undefined);
-    var labelPrefix = matsCollections.Settings.findOne({}, {fields: {LabelPrefix: 1}}).LabelPrefix;
-    Session.set('NextCurveLabel', labelPrefix + 0);
-    Session.set('Curves', []);
+  Session.set("UsedColors", undefined);
+  var colors = matsCollections.ColorScheme.findOne(
+    {},
+    { fields: { colors: 1 } }
+  ).colors;
+  Session.set("NextCurveColor", colors[0]);
+  Session.set("UsedLabels", undefined);
+  var labelPrefix = matsCollections.Settings.findOne(
+    {},
+    { fields: { LabelPrefix: 1 } }
+  ).LabelPrefix;
+  Session.set("NextCurveLabel", labelPrefix + 0);
+  Session.set("Curves", []);
 };
 
 // use curves in session to determine which defaults are already used
@@ -275,1155 +295,1188 @@ const clearAllUsed = function () {
 // private - not exported
 //setUsedDefaults = function() {
 const setUsedColors = function () {
-    var curves = Session.get('Curves');
-    var usedColors = [];
-    for (var i = 0; i < curves.length; i++) {
-        var color = curves[i].color;
-        usedColors.push(color);
-    }
-    Session.set('UsedColors', usedColors);
-    setNextCurveColor();
+  var curves = Session.get("Curves");
+  var usedColors = [];
+  for (var i = 0; i < curves.length; i++) {
+    var color = curves[i].color;
+    usedColors.push(color);
+  }
+  Session.set("UsedColors", usedColors);
+  setNextCurveColor();
 };
 
 // private - not exported
 const setUsedLabels = function () {
-    var curves = Session.get('Curves');
-    var usedLabels = [];
-    for (var i = 0; i < curves.length; i++) {
-        var label = curves[i].label;
-        usedLabels.push(label);
-    }
-    Session.set('UsedLabels', usedLabels);
-    setNextCurveLabel();
+  var curves = Session.get("Curves");
+  var usedLabels = [];
+  for (var i = 0; i < curves.length; i++) {
+    var label = curves[i].label;
+    usedLabels.push(label);
+  }
+  Session.set("UsedLabels", usedLabels);
+  setNextCurveLabel();
 };
 
 const setUsedColorsAndLabels = function () {
-    setUsedColors();
-    setUsedLabels();
+  setUsedColors();
+  setUsedLabels();
 };
 
 const resetScatterApply = function () {
-    if (matsPlotUtils.getPlotType() === matsTypes.PlotTypes.scatter2d) {
-        Session.set('axisCurveIcon', 'fa-solid fa-asterisk');
-        Session.set('xaxisCurveText', 'XAXIS NOT YET APPLIED');
-        Session.set('yaxisCurveText', 'YAXIS NOT YET APPLIED');
-        Session.set('xaxisCurveColor', 'red');
-        Session.set('yaxisCurveColor', 'red');
-        if (document.getElementById('Fit-Type-radioGroup-none') !== null) {
-            document.getElementById('Fit-Type-radioGroup-none').checked = true;
-        }
+  if (matsPlotUtils.getPlotType() === matsTypes.PlotTypes.scatter2d) {
+    Session.set("axisCurveIcon", "fa-solid fa-asterisk");
+    Session.set("xaxisCurveText", "XAXIS NOT YET APPLIED");
+    Session.set("yaxisCurveText", "YAXIS NOT YET APPLIED");
+    Session.set("xaxisCurveColor", "red");
+    Session.set("yaxisCurveColor", "red");
+    if (document.getElementById("Fit-Type-radioGroup-none") !== null) {
+      document.getElementById("Fit-Type-radioGroup-none").checked = true;
     }
+  }
 };
 
 // add the difference curves
 // private - not exported
 const addDiffs = function () {
-    var curves = Session.get('Curves');
-    var newCurves = Session.get('Curves');
-    // diffs is checked -- have to add diff curves
-    var curvesLength = curves.length;
-    if (curvesLength <= 1) {
-        setInfo("You cannot difference less than two curves!");
-        return false;
-    }
+  var curves = Session.get("Curves");
+  var newCurves = Session.get("Curves");
+  // diffs is checked -- have to add diff curves
+  var curvesLength = curves.length;
+  if (curvesLength <= 1) {
+    setInfo("You cannot difference less than two curves!");
+    return false;
+  }
 
-    switch (matsPlotUtils.getPlotFormat()) {
-        case matsTypes.PlotFormats.matching:
-            var baseIndex = 0; // This will probably not default to curve 0 in the future
-            for (var ci = 1; ci < curves.length; ci++) {
-                var newCurve = $.extend(true, {}, curves[ci]);
-                newCurve.label = curves[ci].label + "-" + curves[0].label;
-                newCurve.color = getNextCurveColor();
-                newCurve.diffFrom = [ci, baseIndex];
-                // do not create extra diff if it already exists
-                if (_.findWhere(curves, {label: newCurve.label}) === undefined) {
-                    newCurves.push(newCurve);
-                    Session.set('Curves', newCurves);
-                    setUsedColorsAndLabels();
-                }
-            }
-            break;
-        case matsTypes.PlotFormats.pairwise:
-            var baseIndex = 0; // This will probably not default to curve 0 in the future
-            for (var ci = 1; ci < curves.length; ci++) {
-                if (ci % 2 !== 0) {  // only diff on odd curves against previous curve
-                    baseIndex = ci - 1;
-                    var newCurve = $.extend(true, {}, curves[ci]);
-                    newCurve.label = curves[ci].label + "-" + curves[baseIndex].label;
-                    newCurve.color = getNextCurveColor();
-                    newCurve.diffFrom = [ci, baseIndex];
-                    // do not create extra diff if it already exists
-                    if (_.findWhere(curves, {label: newCurve.label}) === undefined) {
-                        newCurves.push(newCurve);
-                        Session.set('Curves', newCurves);
-                        setUsedColorsAndLabels();
-                    }
-                }
-            }
-            break;
-        case matsTypes.PlotFormats.absolute:
-            var baseIndex = 0; // This will probably not default to curve 0 in the future
-            for (var ci = 1; ci < curves.length; ci++) {
-                var newCurve = $.extend(true, {}, curves[ci]);
-                newCurve.label = curves[ci].label + "-" + curves[0].label;
-                newCurve.color = getNextCurveColor();
-                newCurve.diffFrom = [ci, baseIndex];
-                // do not create extra diff if it already exists
-                if (_.findWhere(curves, {label: newCurve.label}) === undefined) {
-                    newCurves.push(newCurve);
-                    Session.set('Curves', newCurves);
-                    setUsedColorsAndLabels();
-                }
-            }
-            break;
-    }
+  switch (matsPlotUtils.getPlotFormat()) {
+    case matsTypes.PlotFormats.matching:
+      var baseIndex = 0; // This will probably not default to curve 0 in the future
+      for (var ci = 1; ci < curves.length; ci++) {
+        var newCurve = $.extend(true, {}, curves[ci]);
+        newCurve.label = curves[ci].label + "-" + curves[0].label;
+        newCurve.color = getNextCurveColor();
+        newCurve.diffFrom = [ci, baseIndex];
+        // do not create extra diff if it already exists
+        if (_.findWhere(curves, { label: newCurve.label }) === undefined) {
+          newCurves.push(newCurve);
+          Session.set("Curves", newCurves);
+          setUsedColorsAndLabels();
+        }
+      }
+      break;
+    case matsTypes.PlotFormats.pairwise:
+      var baseIndex = 0; // This will probably not default to curve 0 in the future
+      for (var ci = 1; ci < curves.length; ci++) {
+        if (ci % 2 !== 0) {
+          // only diff on odd curves against previous curve
+          baseIndex = ci - 1;
+          var newCurve = $.extend(true, {}, curves[ci]);
+          newCurve.label = curves[ci].label + "-" + curves[baseIndex].label;
+          newCurve.color = getNextCurveColor();
+          newCurve.diffFrom = [ci, baseIndex];
+          // do not create extra diff if it already exists
+          if (_.findWhere(curves, { label: newCurve.label }) === undefined) {
+            newCurves.push(newCurve);
+            Session.set("Curves", newCurves);
+            setUsedColorsAndLabels();
+          }
+        }
+      }
+      break;
+    case matsTypes.PlotFormats.absolute:
+      var baseIndex = 0; // This will probably not default to curve 0 in the future
+      for (var ci = 1; ci < curves.length; ci++) {
+        var newCurve = $.extend(true, {}, curves[ci]);
+        newCurve.label = curves[ci].label + "-" + curves[0].label;
+        newCurve.color = getNextCurveColor();
+        newCurve.diffFrom = [ci, baseIndex];
+        // do not create extra diff if it already exists
+        if (_.findWhere(curves, { label: newCurve.label }) === undefined) {
+          newCurves.push(newCurve);
+          Session.set("Curves", newCurves);
+          setUsedColorsAndLabels();
+        }
+      }
+      break;
+  }
 };
-
 
 // remove difference curves
 // private - not exported
 const removeDiffs = function () {
-    var curves = Session.get('Curves');
-    var newCurves = _.reject(curves, function (curve) {
-        return curve.diffFrom !== undefined && curve.diffFrom !== null
-    });
-    Session.set('Curves', newCurves);
-    setUsedColorsAndLabels();
+  var curves = Session.get("Curves");
+  var newCurves = _.reject(curves, function (curve) {
+    return curve.diffFrom !== undefined && curve.diffFrom !== null;
+  });
+  Session.set("Curves", newCurves);
+  setUsedColorsAndLabels();
 };
 
 // resolve the difference curves
 // (used after adding or removing a curve while the show diffs box is checked)
 const checkDiffs = function () {
-    var curves = Session.get('Curves');
-    if (matsPlotUtils.getPlotType() === matsTypes.PlotTypes.scatter2d) {
-        // scatter plots have no concept of difference curves.
-        return;
+  var curves = Session.get("Curves");
+  if (matsPlotUtils.getPlotType() === matsTypes.PlotTypes.scatter2d) {
+    // scatter plots have no concept of difference curves.
+    return;
+  }
+  var plotFormat = matsPlotUtils.getPlotFormat();
+  if (curves.length > 1) {
+    if (plotFormat !== matsTypes.PlotFormats.none) {
+      removeDiffs();
+      addDiffs();
+    } else {
+      removeDiffs();
     }
-    var plotFormat = matsPlotUtils.getPlotFormat();
-    if (curves.length > 1) {
-        if (plotFormat !== matsTypes.PlotFormats.none) {
-            removeDiffs();
-            addDiffs();
+  }
+};
+
+const checkIfDisplayAllQCParams = function (faceOptions) {
+  // we only want to allow people to filter sub-values for apps with scalar or precalculated stats.
+  // the stats in the list below are representative of these apps.
+  const subValueFilterableStats = [
+    "RMSE",
+    "ACC",
+    "Track error (nm)",
+    "Number of stations",
+  ];
+  const doNotFilterStats = ["Spread"];
+  if (matsCollections && matsCollections.statistic) {
+    // scalar apps will have RMSE/ACC in their list of statistics,
+    // and precalculated apps will have Number of stations or Track error (nm).
+    // If neither of those are present, we don't want to allow people to filter their sub-values.
+    // Also if Spread is present, don't allow filtering because ensembles are weird.
+    const thisAppsStatistics = matsCollections.statistic.findOne({});
+    if (
+      thisAppsStatistics &&
+      (_.intersection(thisAppsStatistics.options, subValueFilterableStats).length ===
+        0 ||
+        _.intersection(thisAppsStatistics.options, doNotFilterStats).length > 0)
+    ) {
+      if (faceOptions["QCParamGroup"] === "block") {
+        // not a map plot, display only the gaps selector
+        faceOptions["QCParamGroup"] = "none";
+        faceOptions["QCParamGroup-gaps"] = "block";
+      } else if (faceOptions["QCParamGroup-lite"] === "block") {
+        // map plot, display nothing
+        faceOptions["QCParamGroup-lite"] = "none";
+      }
+    }
+  }
+  return faceOptions;
+};
+
+const setSelectorVisibility = function (plotType, faceOptions, selectorsToReset) {
+  if (
+    document.getElementById("plotTypes-selector") !== undefined &&
+    document.getElementById("plotTypes-selector") !== null &&
+    document.getElementById("plotTypes-selector").value === plotType
+  ) {
+    // reset selectors that may have been set to something invalid for the new plot type
+    const resetSelectors = Object.keys(selectorsToReset);
+    for (var ridx = 0; ridx < resetSelectors.length; ridx++) {
+      if (matsParamUtils.getParameterForName(resetSelectors[ridx]) !== undefined) {
+        if (
+          matsParamUtils.getParameterForName(resetSelectors[ridx]).type ===
+          matsTypes.InputTypes.radioGroup
+        ) {
+          matsParamUtils.setInputForParamName(
+            resetSelectors[ridx],
+            selectorsToReset[resetSelectors[ridx]]
+          );
         } else {
-            removeDiffs();
+          matsParamUtils.setInputValueForParamAndTriggerChange(
+            resetSelectors[ridx],
+            selectorsToReset[resetSelectors[ridx]]
+          );
         }
+      }
     }
-};
-
-const checkIfDisplayAllQCParams = function(faceOptions) {
-    // we only want to allow people to filter sub-values for apps with scalar or precalculated stats.
-    // the stats in the list below are representative of these apps.
-    const subValueFilterableStats = ["RMSE", "ACC", "Track error (nm)", "Number of stations"];
-    const doNotFilterStats = ["Spread"];
-    if (matsCollections && matsCollections.statistic) {
-        // scalar apps will have RMSE/ACC in their list of statistics,
-        // and precalculated apps will have Number of stations or Track error (nm). 
-        // If neither of those are present, we don't want to allow people to filter their sub-values.
-        // Also if Spread is present, don't allow filtering because ensembles are weird.
-        const thisAppsStatistics = matsCollections.statistic.findOne({});
-        if (thisAppsStatistics 
-            && (_.intersection(thisAppsStatistics.options, subValueFilterableStats).length === 0
-            || _.intersection(thisAppsStatistics.options, doNotFilterStats).length > 0)) {
-            if (faceOptions['QCParamGroup'] === 'block') {
-                // not a map plot, display only the gaps selector
-                faceOptions['QCParamGroup'] = 'none';
-                faceOptions['QCParamGroup-gaps'] = 'block';
-            } else if (faceOptions['QCParamGroup-lite'] === 'block') {
-                // map plot, display nothing
-                faceOptions['QCParamGroup-lite'] = 'none';
-            }
-        }
+    // show/hide selectors appropriate to this plot type
+    var elem;
+    const faceSelectors = Object.keys(faceOptions);
+    for (var fidx = 0; fidx < faceSelectors.length; fidx++) {
+      elem = document.getElementById(faceSelectors[fidx] + "-item");
+      if (
+        elem &&
+        elem.style &&
+        (elem.purposelyHidden === undefined || !elem.purposelyHidden)
+      ) {
+        elem.style.display = faceOptions[faceSelectors[fidx]];
+      }
     }
-    return faceOptions;
-};
-
-const setSelectorVisibility = function(plotType, faceOptions, selectorsToReset) {
-    if (document.getElementById('plotTypes-selector') !== undefined && document.getElementById('plotTypes-selector') !== null && document.getElementById('plotTypes-selector').value === plotType) {
-        // reset selectors that may have been set to something invalid for the new plot type
-        const resetSelectors = Object.keys(selectorsToReset);
-        for (var ridx = 0; ridx < resetSelectors.length; ridx++) {
-            if (matsParamUtils.getParameterForName(resetSelectors[ridx]) !== undefined) {
-                if (matsParamUtils.getParameterForName(resetSelectors[ridx]).type === matsTypes.InputTypes.radioGroup) {
-                    matsParamUtils.setInputForParamName(resetSelectors[ridx], selectorsToReset[resetSelectors[ridx]]);
-                } else {
-                    matsParamUtils.setInputValueForParamAndTriggerChange(resetSelectors[ridx], selectorsToReset[resetSelectors[ridx]]);
-                }
-            }
-        }
-        // show/hide selectors appropriate to this plot type
-        var elem;
-        const faceSelectors = Object.keys(faceOptions);
-        for (var fidx = 0; fidx < faceSelectors.length; fidx++) {
-            elem = document.getElementById(faceSelectors[fidx] + '-item');
-            if (elem && elem.style && (elem.purposelyHidden === undefined || !elem.purposelyHidden)) {
-                elem.style.display = faceOptions[faceSelectors[fidx]];
-            }
-        }
-        elem = document.getElementById(matsTypes.PlotTypes.scatter2d);
-        if (elem && elem.style) {
-            elem.style.display = plotType === matsTypes.PlotTypes.scatter2d ? "block" : "none";
-        }
-        Session.set('plotType', plotType);
-        Session.set('lastUpdate', Date.now());
+    elem = document.getElementById(matsTypes.PlotTypes.scatter2d);
+    if (elem && elem.style) {
+      elem.style.display =
+        plotType === matsTypes.PlotTypes.scatter2d ? "block" : "none";
     }
+    Session.set("plotType", plotType);
+    Session.set("lastUpdate", Date.now());
+  }
 };
 
 // method to display the appropriate selectors for a timeseries curve
 const showTimeseriesFace = function () {
-    const plotType = matsTypes.PlotTypes.timeSeries;
-    let faceOptions = {
-        'curve-dates': 'none',
-        'dates': 'block',
-        'statistic': 'block',
-        'x-statistic': 'none',
-        'y-statistic': 'none',
-        'variable': 'block',
-        'x-variable': 'none',
-        'y-variable': 'none',
-        'threshold': 'block',
-        'scale': 'block',
-        'level': 'block',
-        'forecast-length': 'block',
-        'dieoff-type': 'none',
-        'average': 'block',
-        'valid-time': 'block',
-        'utc-cycle-start': 'none',
-        'aggregation-method': 'block',
-        'histogram-type-controls': 'none',
-        'histogram-bin-controls': 'none',
-        'histogram-yaxis-controls': 'none',
-        'bin-number': 'none',
-        'bin-start': 'none',
-        'bin-stride': 'none',
-        'bin-pivot': 'none',
-        'bin-bounds': 'none',
-        'truth': 'block',
-        'year': 'block',
-        'storm': 'block',
-        'region-type' : 'block',
-        'x-axis-parameter': 'none',
-        'y-axis-parameter': 'none',
-        'bin-parameter': 'none',
-        'significance': 'none',
-        'plotFormat': 'block',
-        'QCParamGroup': 'block',
-        'QCParamGroup-gaps': 'none',
-        'QCParamGroup-lite': 'none'
-    };
-    const selectorsToReset = {
-        'dieoff-type': 'Dieoff',
-        'bin-parameter': 'Valid Date'
-    };
-    faceOptions = checkIfDisplayAllQCParams(faceOptions);
-    setSelectorVisibility(plotType, faceOptions, selectorsToReset);
-    return selectorsToReset;
+  const plotType = matsTypes.PlotTypes.timeSeries;
+  let faceOptions = {
+    "curve-dates": "none",
+    dates: "block",
+    statistic: "block",
+    "x-statistic": "none",
+    "y-statistic": "none",
+    variable: "block",
+    "x-variable": "none",
+    "y-variable": "none",
+    threshold: "block",
+    scale: "block",
+    level: "block",
+    "forecast-length": "block",
+    "dieoff-type": "none",
+    average: "block",
+    "valid-time": "block",
+    "utc-cycle-start": "none",
+    "aggregation-method": "block",
+    "histogram-type-controls": "none",
+    "histogram-bin-controls": "none",
+    "histogram-yaxis-controls": "none",
+    "bin-number": "none",
+    "bin-start": "none",
+    "bin-stride": "none",
+    "bin-pivot": "none",
+    "bin-bounds": "none",
+    truth: "block",
+    year: "block",
+    storm: "block",
+    "region-type": "block",
+    "x-axis-parameter": "none",
+    "y-axis-parameter": "none",
+    "bin-parameter": "none",
+    significance: "none",
+    plotFormat: "block",
+    QCParamGroup: "block",
+    "QCParamGroup-gaps": "none",
+    "QCParamGroup-lite": "none",
+  };
+  const selectorsToReset = {
+    "dieoff-type": "Dieoff",
+    "bin-parameter": "Valid Date",
+  };
+  faceOptions = checkIfDisplayAllQCParams(faceOptions);
+  setSelectorVisibility(plotType, faceOptions, selectorsToReset);
+  return selectorsToReset;
 };
 
 // method to display the appropriate selectors for a profile curve
 const showProfileFace = function () {
-    const plotType = matsTypes.PlotTypes.profile;
-    let faceOptions = {
-        'curve-dates': 'block',
-        'dates': 'none',
-        'statistic': 'block',
-        'x-statistic': 'none',
-        'y-statistic': 'none',
-        'variable': 'block',
-        'x-variable': 'none',
-        'y-variable': 'none',
-        'threshold': 'block',
-        'scale': 'block',
-        'level': 'none',
-        'forecast-length': 'block',
-        'dieoff-type': 'none',
-        'average': 'none',
-        'valid-time': 'block',
-        'utc-cycle-start': 'none',
-        'aggregation-method': 'block',
-        'histogram-type-controls': 'none',
-        'histogram-bin-controls': 'none',
-        'histogram-yaxis-controls': 'none',
-        'bin-number': 'none',
-        'bin-start': 'none',
-        'bin-stride': 'none',
-        'bin-pivot': 'none',
-        'bin-bounds': 'none',
-        'truth': 'block',
-        'year': 'block',
-        'storm': 'block',
-        'region-type' : 'block',
-        'x-axis-parameter': 'none',
-        'y-axis-parameter': 'none',
-        'bin-parameter': 'none',
-        'significance': 'none',
-        'plotFormat': 'block',
-        'QCParamGroup': 'block',
-        'QCParamGroup-gaps': 'none',
-        'QCParamGroup-lite': 'none'
-    };
-    const selectorsToReset = {
-        'dieoff-type': 'Dieoff',
-        'bin-parameter': 'Valid Date'
-    };
-    faceOptions = checkIfDisplayAllQCParams(faceOptions);
-    setSelectorVisibility(plotType, faceOptions, selectorsToReset);
-    return selectorsToReset;
+  const plotType = matsTypes.PlotTypes.profile;
+  let faceOptions = {
+    "curve-dates": "block",
+    dates: "none",
+    statistic: "block",
+    "x-statistic": "none",
+    "y-statistic": "none",
+    variable: "block",
+    "x-variable": "none",
+    "y-variable": "none",
+    threshold: "block",
+    scale: "block",
+    level: "none",
+    "forecast-length": "block",
+    "dieoff-type": "none",
+    average: "none",
+    "valid-time": "block",
+    "utc-cycle-start": "none",
+    "aggregation-method": "block",
+    "histogram-type-controls": "none",
+    "histogram-bin-controls": "none",
+    "histogram-yaxis-controls": "none",
+    "bin-number": "none",
+    "bin-start": "none",
+    "bin-stride": "none",
+    "bin-pivot": "none",
+    "bin-bounds": "none",
+    truth: "block",
+    year: "block",
+    storm: "block",
+    "region-type": "block",
+    "x-axis-parameter": "none",
+    "y-axis-parameter": "none",
+    "bin-parameter": "none",
+    significance: "none",
+    plotFormat: "block",
+    QCParamGroup: "block",
+    "QCParamGroup-gaps": "none",
+    "QCParamGroup-lite": "none",
+  };
+  const selectorsToReset = {
+    "dieoff-type": "Dieoff",
+    "bin-parameter": "Valid Date",
+  };
+  faceOptions = checkIfDisplayAllQCParams(faceOptions);
+  setSelectorVisibility(plotType, faceOptions, selectorsToReset);
+  return selectorsToReset;
 };
 
 // method to display the appropriate selectors for a dieoff curve
 const showDieOffFace = function () {
-    const plotType = matsTypes.PlotTypes.dieoff;
-    let faceOptions = {
-        'curve-dates': 'block',
-        'dates': 'none',
-        'statistic': 'block',
-        'x-statistic': 'none',
-        'y-statistic': 'none',
-        'variable': 'block',
-        'x-variable': 'none',
-        'y-variable': 'none',
-        'threshold': 'block',
-        'scale': 'block',
-        'level': 'block',
-        'forecast-length': 'none',
-        'dieoff-type': 'block',
-        'average': 'none',
-        'valid-time': 'block',
-        'utc-cycle-start': 'none',
-        'aggregation-method': 'block',
-        'histogram-type-controls': 'none',
-        'histogram-bin-controls': 'none',
-        'histogram-yaxis-controls': 'none',
-        'bin-number': 'none',
-        'bin-start': 'none',
-        'bin-stride': 'none',
-        'bin-pivot': 'none',
-        'bin-bounds': 'none',
-        'truth': 'block',
-        'year': 'block',
-        'storm': 'block',
-        'region-type' : 'block',
-        'x-axis-parameter': 'none',
-        'y-axis-parameter': 'none',
-        'bin-parameter': 'none',
-        'significance': 'none',
-        'plotFormat': 'block',
-        'QCParamGroup': 'block',
-        'QCParamGroup-gaps': 'none',
-        'QCParamGroup-lite': 'none'
-    };
-    const selectorsToReset = {
-        'dieoff-type': 'Dieoff',
-        'bin-parameter': 'Valid Date'
-    };
-    faceOptions = checkIfDisplayAllQCParams(faceOptions);
-    setSelectorVisibility(plotType, faceOptions, selectorsToReset);
-    return selectorsToReset;
+  const plotType = matsTypes.PlotTypes.dieoff;
+  let faceOptions = {
+    "curve-dates": "block",
+    dates: "none",
+    statistic: "block",
+    "x-statistic": "none",
+    "y-statistic": "none",
+    variable: "block",
+    "x-variable": "none",
+    "y-variable": "none",
+    threshold: "block",
+    scale: "block",
+    level: "block",
+    "forecast-length": "none",
+    "dieoff-type": "block",
+    average: "none",
+    "valid-time": "block",
+    "utc-cycle-start": "none",
+    "aggregation-method": "block",
+    "histogram-type-controls": "none",
+    "histogram-bin-controls": "none",
+    "histogram-yaxis-controls": "none",
+    "bin-number": "none",
+    "bin-start": "none",
+    "bin-stride": "none",
+    "bin-pivot": "none",
+    "bin-bounds": "none",
+    truth: "block",
+    year: "block",
+    storm: "block",
+    "region-type": "block",
+    "x-axis-parameter": "none",
+    "y-axis-parameter": "none",
+    "bin-parameter": "none",
+    significance: "none",
+    plotFormat: "block",
+    QCParamGroup: "block",
+    "QCParamGroup-gaps": "none",
+    "QCParamGroup-lite": "none",
+  };
+  const selectorsToReset = {
+    "dieoff-type": "Dieoff",
+    "bin-parameter": "Valid Date",
+  };
+  faceOptions = checkIfDisplayAllQCParams(faceOptions);
+  setSelectorVisibility(plotType, faceOptions, selectorsToReset);
+  return selectorsToReset;
 };
 
 // method to display the appropriate selectors for a threshold curve
 const showThresholdFace = function () {
-    const plotType = matsTypes.PlotTypes.threshold;
-    let faceOptions = {
-        'curve-dates': 'block',
-        'dates': 'none',
-        'statistic': 'block',
-        'x-statistic': 'none',
-        'y-statistic': 'none',
-        'variable': 'block',
-        'x-variable': 'none',
-        'y-variable': 'none',
-        'threshold': 'none',
-        'scale': 'block',
-        'level': 'block',
-        'forecast-length': 'block',
-        'dieoff-type': 'none',
-        'average': 'none',
-        'valid-time': 'block',
-        'utc-cycle-start': 'none',
-        'aggregation-method': 'block',
-        'histogram-type-controls': 'none',
-        'histogram-bin-controls': 'none',
-        'histogram-yaxis-controls': 'none',
-        'bin-number': 'none',
-        'bin-start': 'none',
-        'bin-stride': 'none',
-        'bin-pivot': 'none',
-        'bin-bounds': 'none',
-        'truth': 'block',
-        'year': 'block',
-        'storm': 'block',
-        'region-type' : 'none',
-        'x-axis-parameter': 'none',
-        'y-axis-parameter': 'none',
-        'bin-parameter': 'none',
-        'significance': 'none',
-        'plotFormat': 'block',
-        'QCParamGroup': 'block',
-        'QCParamGroup-gaps': 'none',
-        'QCParamGroup-lite': 'none'
-    };
-    const selectorsToReset = {
-        'dieoff-type': 'Dieoff',
-        'bin-parameter': 'Valid Date'
-    };
-    // thresholds need to have the region be in predefined mode
-    if (matsParamUtils.getParameterForName('region-type') !== undefined) {
-        selectorsToReset['region-type'] = 'Predefined region';
-    }
-    faceOptions = checkIfDisplayAllQCParams(faceOptions);
-    setSelectorVisibility(plotType, faceOptions, selectorsToReset);
-    return selectorsToReset;
+  const plotType = matsTypes.PlotTypes.threshold;
+  let faceOptions = {
+    "curve-dates": "block",
+    dates: "none",
+    statistic: "block",
+    "x-statistic": "none",
+    "y-statistic": "none",
+    variable: "block",
+    "x-variable": "none",
+    "y-variable": "none",
+    threshold: "none",
+    scale: "block",
+    level: "block",
+    "forecast-length": "block",
+    "dieoff-type": "none",
+    average: "none",
+    "valid-time": "block",
+    "utc-cycle-start": "none",
+    "aggregation-method": "block",
+    "histogram-type-controls": "none",
+    "histogram-bin-controls": "none",
+    "histogram-yaxis-controls": "none",
+    "bin-number": "none",
+    "bin-start": "none",
+    "bin-stride": "none",
+    "bin-pivot": "none",
+    "bin-bounds": "none",
+    truth: "block",
+    year: "block",
+    storm: "block",
+    "region-type": "none",
+    "x-axis-parameter": "none",
+    "y-axis-parameter": "none",
+    "bin-parameter": "none",
+    significance: "none",
+    plotFormat: "block",
+    QCParamGroup: "block",
+    "QCParamGroup-gaps": "none",
+    "QCParamGroup-lite": "none",
+  };
+  const selectorsToReset = {
+    "dieoff-type": "Dieoff",
+    "bin-parameter": "Valid Date",
+  };
+  // thresholds need to have the region be in predefined mode
+  if (matsParamUtils.getParameterForName("region-type") !== undefined) {
+    selectorsToReset["region-type"] = "Predefined region";
+  }
+  faceOptions = checkIfDisplayAllQCParams(faceOptions);
+  setSelectorVisibility(plotType, faceOptions, selectorsToReset);
+  return selectorsToReset;
 };
 
 // method to display the appropriate selectors for a valid time curve
 const showValidTimeFace = function () {
-    const plotType = matsTypes.PlotTypes.validtime;
-    let faceOptions = {
-        'curve-dates': 'block',
-        'dates': 'none',
-        'statistic': 'block',
-        'x-statistic': 'none',
-        'y-statistic': 'none',
-        'variable': 'block',
-        'x-variable': 'none',
-        'y-variable': 'none',
-        'threshold': 'block',
-        'scale': 'block',
-        'level': 'block',
-        'forecast-length': 'block',
-        'dieoff-type': 'none',
-        'average': 'none',
-        'valid-time': 'none',
-        'utc-cycle-start': 'none',
-        'aggregation-method': 'block',
-        'histogram-type-controls': 'none',
-        'histogram-bin-controls': 'none',
-        'histogram-yaxis-controls': 'none',
-        'bin-number': 'none',
-        'bin-start': 'none',
-        'bin-stride': 'none',
-        'bin-pivot': 'none',
-        'bin-bounds': 'none',
-        'truth': 'block',
-        'year': 'block',
-        'storm': 'block',
-        'region-type' : 'block',
-        'x-axis-parameter': 'none',
-        'y-axis-parameter': 'none',
-        'bin-parameter': 'none',
-        'significance': 'none',
-        'plotFormat': 'block',
-        'QCParamGroup': 'block',
-        'QCParamGroup-gaps': 'none',
-        'QCParamGroup-lite': 'none'
-    };
-    const selectorsToReset = {
-        'dieoff-type': 'Dieoff',
-        'bin-parameter': 'Valid Date'
-    };
-    faceOptions = checkIfDisplayAllQCParams(faceOptions);
-    setSelectorVisibility(plotType, faceOptions, selectorsToReset);
-    return selectorsToReset;
+  const plotType = matsTypes.PlotTypes.validtime;
+  let faceOptions = {
+    "curve-dates": "block",
+    dates: "none",
+    statistic: "block",
+    "x-statistic": "none",
+    "y-statistic": "none",
+    variable: "block",
+    "x-variable": "none",
+    "y-variable": "none",
+    threshold: "block",
+    scale: "block",
+    level: "block",
+    "forecast-length": "block",
+    "dieoff-type": "none",
+    average: "none",
+    "valid-time": "none",
+    "utc-cycle-start": "none",
+    "aggregation-method": "block",
+    "histogram-type-controls": "none",
+    "histogram-bin-controls": "none",
+    "histogram-yaxis-controls": "none",
+    "bin-number": "none",
+    "bin-start": "none",
+    "bin-stride": "none",
+    "bin-pivot": "none",
+    "bin-bounds": "none",
+    truth: "block",
+    year: "block",
+    storm: "block",
+    "region-type": "block",
+    "x-axis-parameter": "none",
+    "y-axis-parameter": "none",
+    "bin-parameter": "none",
+    significance: "none",
+    plotFormat: "block",
+    QCParamGroup: "block",
+    "QCParamGroup-gaps": "none",
+    "QCParamGroup-lite": "none",
+  };
+  const selectorsToReset = {
+    "dieoff-type": "Dieoff",
+    "bin-parameter": "Valid Date",
+  };
+  faceOptions = checkIfDisplayAllQCParams(faceOptions);
+  setSelectorVisibility(plotType, faceOptions, selectorsToReset);
+  return selectorsToReset;
 };
 
 // method to display the appropriate selectors for a grid scale curve
 const showGridScaleFace = function () {
-    const plotType = matsTypes.PlotTypes.gridscale;
-    let faceOptions = {
-        'curve-dates': 'block',
-        'dates': 'none',
-        'statistic': 'block',
-        'x-statistic': 'none',
-        'y-statistic': 'none',
-        'variable': 'block',
-        'x-variable': 'none',
-        'y-variable': 'none',
-        'threshold': 'block',
-        'scale': 'none',
-        'level': 'block',
-        'forecast-length': 'block',
-        'dieoff-type': 'none',
-        'average': 'none',
-        'valid-time': 'block',
-        'utc-cycle-start': 'none',
-        'aggregation-method': 'block',
-        'histogram-type-controls': 'none',
-        'histogram-bin-controls': 'none',
-        'histogram-yaxis-controls': 'none',
-        'bin-number': 'none',
-        'bin-start': 'none',
-        'bin-stride': 'none',
-        'bin-pivot': 'none',
-        'bin-bounds': 'none',
-        'truth': 'block',
-        'year': 'block',
-        'storm': 'block',
-        'region-type' : 'block',
-        'x-axis-parameter': 'none',
-        'y-axis-parameter': 'none',
-        'bin-parameter': 'none',
-        'significance': 'none',
-        'plotFormat': 'block',
-        'QCParamGroup': 'block',
-        'QCParamGroup-gaps': 'none',
-        'QCParamGroup-lite': 'none'
-    };
-    const selectorsToReset = {
-        'dieoff-type': 'Dieoff',
-        'bin-parameter': 'Valid Date'
-    };
-    faceOptions = checkIfDisplayAllQCParams(faceOptions);
-    setSelectorVisibility(plotType, faceOptions, selectorsToReset);
-    return selectorsToReset;
+  const plotType = matsTypes.PlotTypes.gridscale;
+  let faceOptions = {
+    "curve-dates": "block",
+    dates: "none",
+    statistic: "block",
+    "x-statistic": "none",
+    "y-statistic": "none",
+    variable: "block",
+    "x-variable": "none",
+    "y-variable": "none",
+    threshold: "block",
+    scale: "none",
+    level: "block",
+    "forecast-length": "block",
+    "dieoff-type": "none",
+    average: "none",
+    "valid-time": "block",
+    "utc-cycle-start": "none",
+    "aggregation-method": "block",
+    "histogram-type-controls": "none",
+    "histogram-bin-controls": "none",
+    "histogram-yaxis-controls": "none",
+    "bin-number": "none",
+    "bin-start": "none",
+    "bin-stride": "none",
+    "bin-pivot": "none",
+    "bin-bounds": "none",
+    truth: "block",
+    year: "block",
+    storm: "block",
+    "region-type": "block",
+    "x-axis-parameter": "none",
+    "y-axis-parameter": "none",
+    "bin-parameter": "none",
+    significance: "none",
+    plotFormat: "block",
+    QCParamGroup: "block",
+    "QCParamGroup-gaps": "none",
+    "QCParamGroup-lite": "none",
+  };
+  const selectorsToReset = {
+    "dieoff-type": "Dieoff",
+    "bin-parameter": "Valid Date",
+  };
+  faceOptions = checkIfDisplayAllQCParams(faceOptions);
+  setSelectorVisibility(plotType, faceOptions, selectorsToReset);
+  return selectorsToReset;
 };
 
 // method to display the appropriate selectors for a daily model cycle curve
 const showDailyModelCycleFace = function () {
-    const plotType = matsTypes.PlotTypes.dailyModelCycle;
-    let faceOptions = {
-        'curve-dates': 'none',
-        'dates': 'block',
-        'statistic': 'block',
-        'x-statistic': 'none',
-        'y-statistic': 'none',
-        'variable': 'block',
-        'x-variable': 'none',
-        'y-variable': 'none',
-        'threshold': 'block',
-        'scale': 'block',
-        'level': 'block',
-        'forecast-length': 'none',
-        'dieoff-type': 'none',
-        'average': 'none',
-        'valid-time': 'none',
-        'utc-cycle-start': 'block',
-        'aggregation-method': 'block',
-        'histogram-type-controls': 'none',
-        'histogram-bin-controls': 'none',
-        'histogram-yaxis-controls': 'none',
-        'bin-number': 'none',
-        'bin-start': 'none',
-        'bin-stride': 'none',
-        'bin-pivot': 'none',
-        'bin-bounds': 'none',
-        'truth': 'block',
-        'year': 'block',
-        'storm': 'block',
-        'region-type' : 'block',
-        'x-axis-parameter': 'none',
-        'y-axis-parameter': 'none',
-        'bin-parameter': 'none',
-        'significance': 'none',
-        'plotFormat': 'block',
-        'QCParamGroup': 'block',
-        'QCParamGroup-gaps': 'none',
-        'QCParamGroup-lite': 'none'
-    };
-    const selectorsToReset = {
-        'dieoff-type': 'Dieoff for a specified UTC cycle init hour',
-        'bin-parameter': 'Valid Date'
-    };
-    faceOptions = checkIfDisplayAllQCParams(faceOptions);
-    setSelectorVisibility(plotType, faceOptions, selectorsToReset);
-    return selectorsToReset;
+  const plotType = matsTypes.PlotTypes.dailyModelCycle;
+  let faceOptions = {
+    "curve-dates": "none",
+    dates: "block",
+    statistic: "block",
+    "x-statistic": "none",
+    "y-statistic": "none",
+    variable: "block",
+    "x-variable": "none",
+    "y-variable": "none",
+    threshold: "block",
+    scale: "block",
+    level: "block",
+    "forecast-length": "none",
+    "dieoff-type": "none",
+    average: "none",
+    "valid-time": "none",
+    "utc-cycle-start": "block",
+    "aggregation-method": "block",
+    "histogram-type-controls": "none",
+    "histogram-bin-controls": "none",
+    "histogram-yaxis-controls": "none",
+    "bin-number": "none",
+    "bin-start": "none",
+    "bin-stride": "none",
+    "bin-pivot": "none",
+    "bin-bounds": "none",
+    truth: "block",
+    year: "block",
+    storm: "block",
+    "region-type": "block",
+    "x-axis-parameter": "none",
+    "y-axis-parameter": "none",
+    "bin-parameter": "none",
+    significance: "none",
+    plotFormat: "block",
+    QCParamGroup: "block",
+    "QCParamGroup-gaps": "none",
+    "QCParamGroup-lite": "none",
+  };
+  const selectorsToReset = {
+    "dieoff-type": "Dieoff for a specified UTC cycle init hour",
+    "bin-parameter": "Valid Date",
+  };
+  faceOptions = checkIfDisplayAllQCParams(faceOptions);
+  setSelectorVisibility(plotType, faceOptions, selectorsToReset);
+  return selectorsToReset;
 };
 
 // method to display the appropriate selectors for a year to year curve
 const showYearToYearFace = function () {
-    const plotType = matsTypes.PlotTypes.yearToYear;
-    let faceOptions = {
-        'curve-dates': 'none',
-        'dates': 'none',
-        'statistic': 'block',
-        'x-statistic': 'none',
-        'y-statistic': 'none',
-        'variable': 'block',
-        'x-variable': 'none',
-        'y-variable': 'none',
-        'threshold': 'block',
-        'scale': 'block',
-        'level': 'block',
-        'forecast-length': 'block',
-        'dieoff-type': 'none',
-        'average': 'none',
-        'valid-time': 'block',
-        'utc-cycle-start': 'none',
-        'aggregation-method': 'block',
-        'histogram-type-controls': 'none',
-        'histogram-bin-controls': 'none',
-        'histogram-yaxis-controls': 'none',
-        'bin-number': 'none',
-        'bin-start': 'none',
-        'bin-stride': 'none',
-        'bin-pivot': 'none',
-        'bin-bounds': 'none',
-        'truth': 'block',
-        'year': 'none',
-        'storm': 'none',
-        'region-type' : 'block',
-        'x-axis-parameter': 'none',
-        'y-axis-parameter': 'none',
-        'bin-parameter': 'none',
-        'significance': 'none',
-        'plotFormat': 'block',
-        'QCParamGroup': 'block',
-        'QCParamGroup-gaps': 'none',
-        'QCParamGroup-lite': 'none'
-    };
-    const selectorsToReset = {
-        'dieoff-type': 'Dieoff',
-        'bin-parameter': 'Valid Date'
-    };
-    faceOptions = checkIfDisplayAllQCParams(faceOptions);
-    setSelectorVisibility(plotType, faceOptions, selectorsToReset);
-    return selectorsToReset;
+  const plotType = matsTypes.PlotTypes.yearToYear;
+  let faceOptions = {
+    "curve-dates": "none",
+    dates: "none",
+    statistic: "block",
+    "x-statistic": "none",
+    "y-statistic": "none",
+    variable: "block",
+    "x-variable": "none",
+    "y-variable": "none",
+    threshold: "block",
+    scale: "block",
+    level: "block",
+    "forecast-length": "block",
+    "dieoff-type": "none",
+    average: "none",
+    "valid-time": "block",
+    "utc-cycle-start": "none",
+    "aggregation-method": "block",
+    "histogram-type-controls": "none",
+    "histogram-bin-controls": "none",
+    "histogram-yaxis-controls": "none",
+    "bin-number": "none",
+    "bin-start": "none",
+    "bin-stride": "none",
+    "bin-pivot": "none",
+    "bin-bounds": "none",
+    truth: "block",
+    year: "none",
+    storm: "none",
+    "region-type": "block",
+    "x-axis-parameter": "none",
+    "y-axis-parameter": "none",
+    "bin-parameter": "none",
+    significance: "none",
+    plotFormat: "block",
+    QCParamGroup: "block",
+    "QCParamGroup-gaps": "none",
+    "QCParamGroup-lite": "none",
+  };
+  const selectorsToReset = {
+    "dieoff-type": "Dieoff",
+    "bin-parameter": "Valid Date",
+  };
+  faceOptions = checkIfDisplayAllQCParams(faceOptions);
+  setSelectorVisibility(plotType, faceOptions, selectorsToReset);
+  return selectorsToReset;
 };
 
 // method to display the appropriate selectors for a reliability curve
 const showReliabilityFace = function () {
-    const plotType = matsTypes.PlotTypes.reliability;
-    let faceOptions = {
-        'curve-dates': 'none',
-        'dates': 'block',
-        'statistic': 'none',
-        'x-statistic': 'none',
-        'y-statistic': 'none',
-        'variable': 'block',
-        'x-variable': 'none',
-        'y-variable': 'none',
-        'threshold': 'block',
-        'scale': 'block',
-        'level': 'block',
-        'forecast-length': 'block',
-        'dieoff-type': 'none',
-        'average': 'none',
-        'valid-time': 'block',
-        'utc-cycle-start': 'none',
-        'aggregation-method': 'none',
-        'histogram-type-controls': 'none',
-        'histogram-bin-controls': 'none',
-        'histogram-yaxis-controls': 'none',
-        'bin-number': 'none',
-        'bin-start': 'none',
-        'bin-stride': 'none',
-        'bin-pivot': 'none',
-        'bin-bounds': 'none',
-        'truth': 'block',
-        'year': 'block',
-        'storm': 'block',
-        'region-type' : 'none',
-        'x-axis-parameter': 'none',
-        'y-axis-parameter': 'none',
-        'bin-parameter': 'none',
-        'significance': 'none',
-        'plotFormat': 'none',
-        'QCParamGroup': 'none',
-        'QCParamGroup-gaps': 'none',
-        'QCParamGroup-lite': 'none'
-    };
-    const selectorsToReset = {
-        'dieoff-type': 'Dieoff',
-        'bin-parameter': 'Valid Date',
-        'plotFormat': matsTypes.PlotFormats.none
-    };
-    setSelectorVisibility(plotType, faceOptions, selectorsToReset);
-    return selectorsToReset;
+  const plotType = matsTypes.PlotTypes.reliability;
+  let faceOptions = {
+    "curve-dates": "none",
+    dates: "block",
+    statistic: "none",
+    "x-statistic": "none",
+    "y-statistic": "none",
+    variable: "block",
+    "x-variable": "none",
+    "y-variable": "none",
+    threshold: "block",
+    scale: "block",
+    level: "block",
+    "forecast-length": "block",
+    "dieoff-type": "none",
+    average: "none",
+    "valid-time": "block",
+    "utc-cycle-start": "none",
+    "aggregation-method": "none",
+    "histogram-type-controls": "none",
+    "histogram-bin-controls": "none",
+    "histogram-yaxis-controls": "none",
+    "bin-number": "none",
+    "bin-start": "none",
+    "bin-stride": "none",
+    "bin-pivot": "none",
+    "bin-bounds": "none",
+    truth: "block",
+    year: "block",
+    storm: "block",
+    "region-type": "none",
+    "x-axis-parameter": "none",
+    "y-axis-parameter": "none",
+    "bin-parameter": "none",
+    significance: "none",
+    plotFormat: "none",
+    QCParamGroup: "none",
+    "QCParamGroup-gaps": "none",
+    "QCParamGroup-lite": "none",
+  };
+  const selectorsToReset = {
+    "dieoff-type": "Dieoff",
+    "bin-parameter": "Valid Date",
+    plotFormat: matsTypes.PlotFormats.none,
+  };
+  setSelectorVisibility(plotType, faceOptions, selectorsToReset);
+  return selectorsToReset;
 };
 
 // method to display the appropriate selectors for a ROC curve
 const showROCFace = function () {
-    const plotType = matsTypes.PlotTypes.roc;
-    let faceOptions = {
-        'curve-dates': 'block',
-        'dates': 'none',
-        'statistic': 'none',
-        'x-statistic': 'none',
-        'y-statistic': 'none',
-        'variable': 'block',
-        'x-variable': 'none',
-        'y-variable': 'none',
-        'threshold': 'block',
-        'scale': 'block',
-        'level': 'block',
-        'forecast-length': 'block',
-        'dieoff-type': 'none',
-        'average': 'none',
-        'valid-time': 'block',
-        'utc-cycle-start': 'none',
-        'aggregation-method': 'none',
-        'histogram-type-controls': 'none',
-        'histogram-bin-controls': 'none',
-        'histogram-yaxis-controls': 'none',
-        'bin-number': 'none',
-        'bin-start': 'none',
-        'bin-stride': 'none',
-        'bin-pivot': 'none',
-        'bin-bounds': 'none',
-        'truth': 'block',
-        'year': 'block',
-        'storm': 'block',
-        'region-type' : 'none',
-        'x-axis-parameter': 'none',
-        'y-axis-parameter': 'none',
-        'bin-parameter': 'block',
-        'significance': 'none',
-        'plotFormat': 'none',
-        'QCParamGroup': 'none',
-        'QCParamGroup-gaps': 'none',
-        'QCParamGroup-lite': 'none'
-    };
-    const selectorsToReset = {
-        'dieoff-type': 'Dieoff',
-        'bin-parameter': 'Valid Date',
-        'plotFormat': matsTypes.PlotFormats.none
-    };
-    setSelectorVisibility(plotType, faceOptions, selectorsToReset);
-    return selectorsToReset;
+  const plotType = matsTypes.PlotTypes.roc;
+  let faceOptions = {
+    "curve-dates": "block",
+    dates: "none",
+    statistic: "none",
+    "x-statistic": "none",
+    "y-statistic": "none",
+    variable: "block",
+    "x-variable": "none",
+    "y-variable": "none",
+    threshold: "block",
+    scale: "block",
+    level: "block",
+    "forecast-length": "block",
+    "dieoff-type": "none",
+    average: "none",
+    "valid-time": "block",
+    "utc-cycle-start": "none",
+    "aggregation-method": "none",
+    "histogram-type-controls": "none",
+    "histogram-bin-controls": "none",
+    "histogram-yaxis-controls": "none",
+    "bin-number": "none",
+    "bin-start": "none",
+    "bin-stride": "none",
+    "bin-pivot": "none",
+    "bin-bounds": "none",
+    truth: "block",
+    year: "block",
+    storm: "block",
+    "region-type": "none",
+    "x-axis-parameter": "none",
+    "y-axis-parameter": "none",
+    "bin-parameter": "block",
+    significance: "none",
+    plotFormat: "none",
+    QCParamGroup: "none",
+    "QCParamGroup-gaps": "none",
+    "QCParamGroup-lite": "none",
+  };
+  const selectorsToReset = {
+    "dieoff-type": "Dieoff",
+    "bin-parameter": "Valid Date",
+    plotFormat: matsTypes.PlotFormats.none,
+  };
+  setSelectorVisibility(plotType, faceOptions, selectorsToReset);
+  return selectorsToReset;
 };
 
 // method to display the appropriate selectors for a performance diagram curve
 const showPerformanceDiagramFace = function () {
-    const plotType = matsTypes.PlotTypes.performanceDiagram;
-    const isMetexpress = matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
-    let faceOptions = {
-        'curve-dates': 'block',
-        'dates': 'none',
-        'statistic': 'none',
-        'x-statistic': 'none',
-        'y-statistic': 'none',
-        'variable': 'block',
-        'x-variable': 'none',
-        'y-variable': 'none',
-        'threshold': 'block',
-        'scale': 'block',
-        'level': 'block',
-        'forecast-length': 'block',
-        'dieoff-type': 'none',
-        'average': 'none',
-        'valid-time': 'block',
-        'utc-cycle-start': 'none',
-        'aggregation-method': 'none',
-        'histogram-type-controls': 'none',
-        'histogram-bin-controls': 'none',
-        'histogram-yaxis-controls': 'none',
-        'bin-number': 'none',
-        'bin-start': 'none',
-        'bin-stride': 'none',
-        'bin-pivot': 'none',
-        'bin-bounds': 'none',
-        'truth': 'block',
-        'year': 'block',
-        'storm': 'block',
-        'region-type' : 'none',
-        'x-axis-parameter': 'none',
-        'y-axis-parameter': 'none',
-        'bin-parameter': 'block',
-        'significance': 'none',
-        'plotFormat': 'none',
-        'QCParamGroup': 'none',
-        'QCParamGroup-gaps': 'none',
-        'QCParamGroup-lite': 'none'
-    };
-    const selectorsToReset = {
-        'dieoff-type': 'Dieoff',
-        'bin-parameter': 'Valid Date',
-        'plotFormat': matsTypes.PlotFormats.none
-    };
-    // in metexpress, users don't get to choose how to bin data
-    if (isMetexpress) {
-        faceOptions['bin-parameter'] = 'none';
-    }
-    // performance diagrams need to have the region be in predefined mode
-    if (matsParamUtils.getParameterForName('region-type') !== undefined) {
-        selectorsToReset['region-type'] = 'Predefined region';
-    }
-    setSelectorVisibility(plotType, faceOptions, selectorsToReset);
-    return selectorsToReset;
+  const plotType = matsTypes.PlotTypes.performanceDiagram;
+  const isMetexpress =
+    matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
+  let faceOptions = {
+    "curve-dates": "block",
+    dates: "none",
+    statistic: "none",
+    "x-statistic": "none",
+    "y-statistic": "none",
+    variable: "block",
+    "x-variable": "none",
+    "y-variable": "none",
+    threshold: "block",
+    scale: "block",
+    level: "block",
+    "forecast-length": "block",
+    "dieoff-type": "none",
+    average: "none",
+    "valid-time": "block",
+    "utc-cycle-start": "none",
+    "aggregation-method": "none",
+    "histogram-type-controls": "none",
+    "histogram-bin-controls": "none",
+    "histogram-yaxis-controls": "none",
+    "bin-number": "none",
+    "bin-start": "none",
+    "bin-stride": "none",
+    "bin-pivot": "none",
+    "bin-bounds": "none",
+    truth: "block",
+    year: "block",
+    storm: "block",
+    "region-type": "none",
+    "x-axis-parameter": "none",
+    "y-axis-parameter": "none",
+    "bin-parameter": "block",
+    significance: "none",
+    plotFormat: "none",
+    QCParamGroup: "none",
+    "QCParamGroup-gaps": "none",
+    "QCParamGroup-lite": "none",
+  };
+  const selectorsToReset = {
+    "dieoff-type": "Dieoff",
+    "bin-parameter": "Valid Date",
+    plotFormat: matsTypes.PlotFormats.none,
+  };
+  // in metexpress, users don't get to choose how to bin data
+  if (isMetexpress) {
+    faceOptions["bin-parameter"] = "none";
+  }
+  // performance diagrams need to have the region be in predefined mode
+  if (matsParamUtils.getParameterForName("region-type") !== undefined) {
+    selectorsToReset["region-type"] = "Predefined region";
+  }
+  setSelectorVisibility(plotType, faceOptions, selectorsToReset);
+  return selectorsToReset;
 };
 
 // method to display the appropriate selectors for a map
 const showMapFace = function () {
-    const plotType = matsTypes.PlotTypes.map;
-    const appName = matsCollections.Settings.findOne({}).appName;
-    let faceOptions = {
-        'curve-dates': 'none',
-        'dates': 'block',
-        'statistic': 'block',
-        'x-statistic': 'none',
-        'y-statistic': 'none',
-        'variable': 'block',
-        'x-variable': 'none',
-        'y-variable': 'none',
-        'threshold': 'block',
-        'scale': 'block',
-        'level': 'block',
-        'forecast-length': 'block',
-        'dieoff-type': 'none',
-        'average': 'none',
-        'valid-time': 'block',
-        'utc-cycle-start': 'none',
-        'aggregation-method': 'none',
-        'histogram-type-controls': 'none',
-        'histogram-bin-controls': 'none',
-        'histogram-yaxis-controls': 'none',
-        'bin-number': 'none',
-        'bin-start': 'none',
-        'bin-stride': 'none',
-        'bin-pivot': 'none',
-        'bin-bounds': 'none',
-        'truth': 'none',
-        'year': 'block',
-        'storm': 'block',
-        'region-type' : 'none',
-        'x-axis-parameter': 'none',
-        'y-axis-parameter': 'none',
-        'bin-parameter': 'none',
-        'significance': 'none',
-        'plotFormat': 'none',
-        'QCParamGroup': 'none',
-        'QCParamGroup-gaps': 'none',
-        'QCParamGroup-lite': 'block'
-    };
-    const selectorsToReset = {
-        'dieoff-type': 'Dieoff',
-        'bin-parameter': 'Valid Date',
-        'plotFormat': matsTypes.PlotFormats.none
-    };
-    // maps need to have the region be station-select mode
-    if (matsParamUtils.getParameterForName('region-type') !== undefined) {
-        selectorsToReset['region-type'] = 'Select stations';
-    }
-    // visibility15 can handle truth selection on maps
-    if (appName !== undefined && appName === "visibility15") {
-        faceOptions['truth'] = 'block';
-    }
-    faceOptions = checkIfDisplayAllQCParams(faceOptions);
-    setSelectorVisibility(plotType, faceOptions, selectorsToReset);
-    return selectorsToReset;
+  const plotType = matsTypes.PlotTypes.map;
+  const appName = matsCollections.Settings.findOne({}).appName;
+  let faceOptions = {
+    "curve-dates": "none",
+    dates: "block",
+    statistic: "block",
+    "x-statistic": "none",
+    "y-statistic": "none",
+    variable: "block",
+    "x-variable": "none",
+    "y-variable": "none",
+    threshold: "block",
+    scale: "block",
+    level: "block",
+    "forecast-length": "block",
+    "dieoff-type": "none",
+    average: "none",
+    "valid-time": "block",
+    "utc-cycle-start": "none",
+    "aggregation-method": "none",
+    "histogram-type-controls": "none",
+    "histogram-bin-controls": "none",
+    "histogram-yaxis-controls": "none",
+    "bin-number": "none",
+    "bin-start": "none",
+    "bin-stride": "none",
+    "bin-pivot": "none",
+    "bin-bounds": "none",
+    truth: "none",
+    year: "block",
+    storm: "block",
+    "region-type": "none",
+    "x-axis-parameter": "none",
+    "y-axis-parameter": "none",
+    "bin-parameter": "none",
+    significance: "none",
+    plotFormat: "none",
+    QCParamGroup: "none",
+    "QCParamGroup-gaps": "none",
+    "QCParamGroup-lite": "block",
+  };
+  const selectorsToReset = {
+    "dieoff-type": "Dieoff",
+    "bin-parameter": "Valid Date",
+    plotFormat: matsTypes.PlotFormats.none,
+  };
+  // maps need to have the region be station-select mode
+  if (matsParamUtils.getParameterForName("region-type") !== undefined) {
+    selectorsToReset["region-type"] = "Select stations";
+  }
+  // visibility15 can handle truth selection on maps
+  if (appName !== undefined && appName === "visibility15") {
+    faceOptions["truth"] = "block";
+  }
+  faceOptions = checkIfDisplayAllQCParams(faceOptions);
+  setSelectorVisibility(plotType, faceOptions, selectorsToReset);
+  return selectorsToReset;
 };
 
 // method to display the appropriate selectors for a histogram
 const showHistogramFace = function () {
-    const plotType = matsTypes.PlotTypes.histogram;
-    let faceOptions = {
-        'curve-dates': 'block',
-        'dates': 'none',
-        'statistic': 'block',
-        'x-statistic': 'none',
-        'y-statistic': 'none',
-        'variable': 'block',
-        'x-variable': 'none',
-        'y-variable': 'none',
-        'threshold': 'block',
-        'scale': 'block',
-        'level': 'block',
-        'forecast-length': 'block',
-        'dieoff-type': 'none',
-        'average': 'none',
-        'valid-time': 'block',
-        'utc-cycle-start': 'none',
-        'aggregation-method': 'none',
-        'histogram-type-controls': 'none',
-        'histogram-bin-controls': 'block',
-        'histogram-yaxis-controls': 'block',
-        'bin-number': 'none',
-        'bin-start': 'none',
-        'bin-stride': 'none',
-        'bin-pivot': 'none',
-        'bin-bounds': 'none',
-        'truth': 'block',
-        'year': 'block',
-        'storm': 'block',
-        'region-type' : 'block',
-        'x-axis-parameter': 'none',
-        'y-axis-parameter': 'none',
-        'bin-parameter': 'none',
-        'significance': 'none',
-        'plotFormat': 'block',
-        'QCParamGroup': 'none',
-        'QCParamGroup-gaps': 'none',
-        'QCParamGroup-lite': 'none'
-    };
-    const selectorsToReset = {
-        'dieoff-type': 'Dieoff',
-        'bin-parameter': 'Valid Date'
-    };
-    // CTC histograms need to have the region be predefined mode.
-    // They are identified by the presence of a threshold selector
-    // (threshold only makes sense as a parameter for CTC stats).
-    if (matsParamUtils.getParameterForName('region-type') !== undefined && matsParamUtils.getParameterForName('threshold') !== undefined) {
-        faceOptions['region-type'] = 'none';
-        selectorsToReset['region-type'] = 'Predefined region';
-    }
-    setSelectorVisibility(plotType, faceOptions, selectorsToReset);
-    return selectorsToReset;
+  const plotType = matsTypes.PlotTypes.histogram;
+  let faceOptions = {
+    "curve-dates": "block",
+    dates: "none",
+    statistic: "block",
+    "x-statistic": "none",
+    "y-statistic": "none",
+    variable: "block",
+    "x-variable": "none",
+    "y-variable": "none",
+    threshold: "block",
+    scale: "block",
+    level: "block",
+    "forecast-length": "block",
+    "dieoff-type": "none",
+    average: "none",
+    "valid-time": "block",
+    "utc-cycle-start": "none",
+    "aggregation-method": "none",
+    "histogram-type-controls": "none",
+    "histogram-bin-controls": "block",
+    "histogram-yaxis-controls": "block",
+    "bin-number": "none",
+    "bin-start": "none",
+    "bin-stride": "none",
+    "bin-pivot": "none",
+    "bin-bounds": "none",
+    truth: "block",
+    year: "block",
+    storm: "block",
+    "region-type": "block",
+    "x-axis-parameter": "none",
+    "y-axis-parameter": "none",
+    "bin-parameter": "none",
+    significance: "none",
+    plotFormat: "block",
+    QCParamGroup: "none",
+    "QCParamGroup-gaps": "none",
+    "QCParamGroup-lite": "none",
+  };
+  const selectorsToReset = {
+    "dieoff-type": "Dieoff",
+    "bin-parameter": "Valid Date",
+  };
+  // CTC histograms need to have the region be predefined mode.
+  // They are identified by the presence of a threshold selector
+  // (threshold only makes sense as a parameter for CTC stats).
+  if (
+    matsParamUtils.getParameterForName("region-type") !== undefined &&
+    matsParamUtils.getParameterForName("threshold") !== undefined
+  ) {
+    faceOptions["region-type"] = "none";
+    selectorsToReset["region-type"] = "Predefined region";
+  }
+  setSelectorVisibility(plotType, faceOptions, selectorsToReset);
+  return selectorsToReset;
 };
 
 // method to display the appropriate selectors for a histogram
 const showEnsembleHistogramFace = function () {
-    const plotType = matsTypes.PlotTypes.ensembleHistogram;
-    let faceOptions = {
-        'curve-dates': 'block',
-        'dates': 'none',
-        'statistic': 'none',
-        'x-statistic': 'none',
-        'y-statistic': 'none',
-        'variable': 'block',
-        'x-variable': 'none',
-        'y-variable': 'none',
-        'threshold': 'block',
-        'scale': 'block',
-        'level': 'block',
-        'forecast-length': 'block',
-        'dieoff-type': 'none',
-        'average': 'none',
-        'valid-time': 'block',
-        'utc-cycle-start': 'none',
-        'aggregation-method': 'none',
-        'histogram-type-controls': 'block',
-        'histogram-bin-controls': 'none',
-        'histogram-yaxis-controls': 'block',
-        'bin-number': 'none',
-        'bin-start': 'none',
-        'bin-stride': 'none',
-        'bin-pivot': 'none',
-        'bin-bounds': 'none',
-        'truth': 'block',
-        'year': 'block',
-        'storm': 'block',
-        'region-type' : 'none',
-        'x-axis-parameter': 'none',
-        'y-axis-parameter': 'none',
-        'bin-parameter': 'none',
-        'significance': 'none',
-        'plotFormat': 'block',
-        'QCParamGroup': 'none',
-        'QCParamGroup-gaps': 'none',
-        'QCParamGroup-lite': 'none'
-    };
-    const selectorsToReset = {
-        'dieoff-type': 'Dieoff',
-        'bin-parameter': 'Valid Date'
-    };
-    setSelectorVisibility(plotType, faceOptions, selectorsToReset);
-    return selectorsToReset;
+  const plotType = matsTypes.PlotTypes.ensembleHistogram;
+  let faceOptions = {
+    "curve-dates": "block",
+    dates: "none",
+    statistic: "none",
+    "x-statistic": "none",
+    "y-statistic": "none",
+    variable: "block",
+    "x-variable": "none",
+    "y-variable": "none",
+    threshold: "block",
+    scale: "block",
+    level: "block",
+    "forecast-length": "block",
+    "dieoff-type": "none",
+    average: "none",
+    "valid-time": "block",
+    "utc-cycle-start": "none",
+    "aggregation-method": "none",
+    "histogram-type-controls": "block",
+    "histogram-bin-controls": "none",
+    "histogram-yaxis-controls": "block",
+    "bin-number": "none",
+    "bin-start": "none",
+    "bin-stride": "none",
+    "bin-pivot": "none",
+    "bin-bounds": "none",
+    truth: "block",
+    year: "block",
+    storm: "block",
+    "region-type": "none",
+    "x-axis-parameter": "none",
+    "y-axis-parameter": "none",
+    "bin-parameter": "none",
+    significance: "none",
+    plotFormat: "block",
+    QCParamGroup: "none",
+    "QCParamGroup-gaps": "none",
+    "QCParamGroup-lite": "none",
+  };
+  const selectorsToReset = {
+    "dieoff-type": "Dieoff",
+    "bin-parameter": "Valid Date",
+  };
+  setSelectorVisibility(plotType, faceOptions, selectorsToReset);
+  return selectorsToReset;
 };
 
 // method to display the appropriate selectors for a contour plot
 const showContourFace = function () {
-    const plotType = document.getElementById('plotTypes-selector').value === matsTypes.PlotTypes.contour ? matsTypes.PlotTypes.contour : matsTypes.PlotTypes.contourDiff;
-    let faceOptions = {
-        'curve-dates': 'none',
-        'dates': 'block',
-        'statistic': 'block',
-        'x-statistic': 'none',
-        'y-statistic': 'none',
-        'variable': 'block',
-        'x-variable': 'none',
-        'y-variable': 'none',
-        'threshold': 'block',
-        'scale': 'block',
-        'level': 'block',
-        'forecast-length': 'block',
-        'dieoff-type': 'none',
-        'average': 'none',
-        'valid-time': 'block',
-        'utc-cycle-start': 'none',
-        'aggregation-method': 'block',
-        'histogram-type-controls': 'none',
-        'histogram-bin-controls': 'none',
-        'histogram-yaxis-controls': 'none',
-        'bin-number': 'none',
-        'bin-start': 'none',
-        'bin-stride': 'none',
-        'bin-pivot': 'none',
-        'bin-bounds': 'none',
-        'truth': 'block',
-        'year': 'block',
-        'storm': 'block',
-        'region-type' : 'none',
-        'x-axis-parameter': 'block',
-        'y-axis-parameter': 'block',
-        'bin-parameter': 'none',
-        'significance': plotType === matsTypes.PlotTypes.contourDiff ? 'block' : 'none',
-        'plotFormat': 'none',
-        'QCParamGroup': 'none',
-        'QCParamGroup-gaps': 'none',
-        'QCParamGroup-lite': 'none'
-    };
-    const selectorsToReset = {
-        'dieoff-type': 'Dieoff',
-        'bin-parameter': 'Valid Date',
-        'plotFormat': matsTypes.PlotFormats.none
-    };
-    // contours need to have the region be in predefined mode
-    if (matsParamUtils.getParameterForName('region-type') !== undefined) {
-        selectorsToReset['region-type'] = 'Predefined region';
-    }
-    setSelectorVisibility(plotType, faceOptions, selectorsToReset);
-    return selectorsToReset;
+  const plotType =
+    document.getElementById("plotTypes-selector").value === matsTypes.PlotTypes.contour
+      ? matsTypes.PlotTypes.contour
+      : matsTypes.PlotTypes.contourDiff;
+  let faceOptions = {
+    "curve-dates": "none",
+    dates: "block",
+    statistic: "block",
+    "x-statistic": "none",
+    "y-statistic": "none",
+    variable: "block",
+    "x-variable": "none",
+    "y-variable": "none",
+    threshold: "block",
+    scale: "block",
+    level: "block",
+    "forecast-length": "block",
+    "dieoff-type": "none",
+    average: "none",
+    "valid-time": "block",
+    "utc-cycle-start": "none",
+    "aggregation-method": "block",
+    "histogram-type-controls": "none",
+    "histogram-bin-controls": "none",
+    "histogram-yaxis-controls": "none",
+    "bin-number": "none",
+    "bin-start": "none",
+    "bin-stride": "none",
+    "bin-pivot": "none",
+    "bin-bounds": "none",
+    truth: "block",
+    year: "block",
+    storm: "block",
+    "region-type": "none",
+    "x-axis-parameter": "block",
+    "y-axis-parameter": "block",
+    "bin-parameter": "none",
+    significance: plotType === matsTypes.PlotTypes.contourDiff ? "block" : "none",
+    plotFormat: "none",
+    QCParamGroup: "none",
+    "QCParamGroup-gaps": "none",
+    "QCParamGroup-lite": "none",
+  };
+  const selectorsToReset = {
+    "dieoff-type": "Dieoff",
+    "bin-parameter": "Valid Date",
+    plotFormat: matsTypes.PlotFormats.none,
+  };
+  // contours need to have the region be in predefined mode
+  if (matsParamUtils.getParameterForName("region-type") !== undefined) {
+    selectorsToReset["region-type"] = "Predefined region";
+  }
+  setSelectorVisibility(plotType, faceOptions, selectorsToReset);
+  return selectorsToReset;
 };
 
 // method to display the appropriate selectors for a simple scatter plot
 const showSimpleScatterFace = function () {
-    const plotType = matsTypes.PlotTypes.simpleScatter;
-    const isMetexpress = matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
-    let faceOptions = {
-        'curve-dates': 'block',
-        'dates': 'none',
-        'statistic': 'none',
-        'x-statistic': 'block',
-        'y-statistic': 'block',
-        'variable': 'none',
-        'x-variable': 'block',
-        'y-variable': 'block',
-        'threshold': 'block',
-        'scale': 'block',
-        'level': 'block',
-        'forecast-length': 'block',
-        'dieoff-type': 'none',
-        'average': 'none',
-        'valid-time': 'block',
-        'utc-cycle-start': 'none',
-        'aggregation-method': 'block',
-        'histogram-type-controls': 'none',
-        'histogram-bin-controls': 'none',
-        'histogram-yaxis-controls': 'none',
-        'bin-number': 'none',
-        'bin-start': 'none',
-        'bin-stride': 'none',
-        'bin-pivot': 'none',
-        'bin-bounds': 'none',
-        'truth': 'block',
-        'year': 'block',
-        'storm': 'block',
-        'region-type' : 'none',
-        'x-axis-parameter': 'none',
-        'y-axis-parameter': 'none',
-        'bin-parameter': 'block',
-        'significance': 'none',
-        'plotFormat': 'none',
-        'QCParamGroup': 'none',
-        'QCParamGroup-gaps': 'none',
-        'QCParamGroup-lite': 'none'
-    };
-    const selectorsToReset = {
-        'dieoff-type': 'Dieoff',
-        'bin-parameter': 'Valid Date',
-        'plotFormat': matsTypes.PlotFormats.none
-    };
-    if (isMetexpress) {
-        // in metexpress, scatter plots use the original statistic selector (to handle dependencies)
-        faceOptions['statistic'] = 'block';
-        faceOptions['variable'] = 'block';
-    }
-    // performance diagrams need to have the region be in predefined mode
-    if (matsParamUtils.getParameterForName('region-type') !== undefined) {
-        selectorsToReset['region-type'] = 'Predefined region';
-    }
-    setSelectorVisibility(plotType, faceOptions, selectorsToReset);
-    return selectorsToReset;
+  const plotType = matsTypes.PlotTypes.simpleScatter;
+  const isMetexpress =
+    matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
+  let faceOptions = {
+    "curve-dates": "block",
+    dates: "none",
+    statistic: "none",
+    "x-statistic": "block",
+    "y-statistic": "block",
+    variable: "none",
+    "x-variable": "block",
+    "y-variable": "block",
+    threshold: "block",
+    scale: "block",
+    level: "block",
+    "forecast-length": "block",
+    "dieoff-type": "none",
+    average: "none",
+    "valid-time": "block",
+    "utc-cycle-start": "none",
+    "aggregation-method": "block",
+    "histogram-type-controls": "none",
+    "histogram-bin-controls": "none",
+    "histogram-yaxis-controls": "none",
+    "bin-number": "none",
+    "bin-start": "none",
+    "bin-stride": "none",
+    "bin-pivot": "none",
+    "bin-bounds": "none",
+    truth: "block",
+    year: "block",
+    storm: "block",
+    "region-type": "none",
+    "x-axis-parameter": "none",
+    "y-axis-parameter": "none",
+    "bin-parameter": "block",
+    significance: "none",
+    plotFormat: "none",
+    QCParamGroup: "none",
+    "QCParamGroup-gaps": "none",
+    "QCParamGroup-lite": "none",
+  };
+  const selectorsToReset = {
+    "dieoff-type": "Dieoff",
+    "bin-parameter": "Valid Date",
+    plotFormat: matsTypes.PlotFormats.none,
+  };
+  if (isMetexpress) {
+    // in metexpress, scatter plots use the original statistic selector (to handle dependencies)
+    faceOptions["statistic"] = "block";
+    faceOptions["variable"] = "block";
+  }
+  // performance diagrams need to have the region be in predefined mode
+  if (matsParamUtils.getParameterForName("region-type") !== undefined) {
+    selectorsToReset["region-type"] = "Predefined region";
+  }
+  setSelectorVisibility(plotType, faceOptions, selectorsToReset);
+  return selectorsToReset;
 };
 
 // method to display the appropriate selectors for a scatter plot
 const showScatterFace = function () {
-    const plotType = matsTypes.PlotTypes.scatter2d;
-    let faceOptions = {
-        'curve-dates': 'none',
-        'dates': 'block',
-        'statistic': 'block',
-        'x-statistic': 'none',
-        'y-statistic': 'none',
-        'variable': 'block',
-        'x-variable': 'none',
-        'y-variable': 'none',
-        'threshold': 'block',
-        'scale': 'block',
-        'level': 'block',
-        'forecast-length': 'block',
-        'dieoff-type': 'none',
-        'average': 'none',
-        'valid-time': 'block',
-        'utc-cycle-start': 'none',
-        'aggregation-method': 'none',
-        'histogram-type-controls': 'none',
-        'histogram-bin-controls': 'none',
-        'histogram-yaxis-controls': 'none',
-        'bin-number': 'none',
-        'bin-start': 'none',
-        'bin-stride': 'none',
-        'bin-pivot': 'none',
-        'bin-bounds': 'none',
-        'truth': 'block',
-        'year': 'block',
-        'storm': 'block',
-        'region-type' : 'block',
-        'x-axis-parameter': 'none',
-        'y-axis-parameter': 'none',
-        'bin-parameter': 'none',
-        'significance': 'none',
-        'plotFormat': 'none',
-        'QCParamGroup': 'none',
-        'QCParamGroup-gaps': 'none',
-        'QCParamGroup-lite': 'none'
-    };
-    const selectorsToReset = {
-        'dieoff-type': 'Dieoff',
-        'bin-parameter': 'Valid Date',
-        'plotFormat': matsTypes.PlotFormats.none
-    };
-    setSelectorVisibility(plotType, faceOptions, selectorsToReset);
-    return selectorsToReset;
+  const plotType = matsTypes.PlotTypes.scatter2d;
+  let faceOptions = {
+    "curve-dates": "none",
+    dates: "block",
+    statistic: "block",
+    "x-statistic": "none",
+    "y-statistic": "none",
+    variable: "block",
+    "x-variable": "none",
+    "y-variable": "none",
+    threshold: "block",
+    scale: "block",
+    level: "block",
+    "forecast-length": "block",
+    "dieoff-type": "none",
+    average: "none",
+    "valid-time": "block",
+    "utc-cycle-start": "none",
+    "aggregation-method": "none",
+    "histogram-type-controls": "none",
+    "histogram-bin-controls": "none",
+    "histogram-yaxis-controls": "none",
+    "bin-number": "none",
+    "bin-start": "none",
+    "bin-stride": "none",
+    "bin-pivot": "none",
+    "bin-bounds": "none",
+    truth: "block",
+    year: "block",
+    storm: "block",
+    "region-type": "block",
+    "x-axis-parameter": "none",
+    "y-axis-parameter": "none",
+    "bin-parameter": "none",
+    significance: "none",
+    plotFormat: "none",
+    QCParamGroup: "none",
+    "QCParamGroup-gaps": "none",
+    "QCParamGroup-lite": "none",
+  };
+  const selectorsToReset = {
+    "dieoff-type": "Dieoff",
+    "bin-parameter": "Valid Date",
+    plotFormat: matsTypes.PlotFormats.none,
+  };
+  setSelectorVisibility(plotType, faceOptions, selectorsToReset);
+  return selectorsToReset;
 };
 
 const showSpinner = function () {
-    if (document.getElementById("spinner")) {
-        document.getElementById("spinner").style.display = "block";
-    }
+  if (document.getElementById("spinner")) {
+    document.getElementById("spinner").style.display = "block";
+  }
 };
 const hideSpinner = function () {
-    if (document.getElementById("spinner")) {
-        document.getElementById("spinner").style.display = "none";
-    }
+  if (document.getElementById("spinner")) {
+    document.getElementById("spinner").style.display = "none";
+  }
 };
 
 export default matsCurveUtils = {
-    addDiffs: addDiffs,
-    checkDiffs: checkDiffs,
-    clearAllUsed: clearAllUsed,
-    clearUsedColor: clearUsedColor,
-    clearUsedLabel: clearUsedLabel,
-    getGraphResult: getGraphResult,
-    getNextCurveColor: getNextCurveColor,
-    getNextCurveLabel: getNextCurveLabel,
-    getPlotResultData: getPlotResultData,
-    getUsedLabels: getUsedLabels,
-    hideSpinner: hideSpinner,
-    removeDiffs: removeDiffs,
-    resetGraphResult: resetGraphResult,
-    resetPlotResultData: resetPlotResultData,
-    resetScatterApply: resetScatterApply,
-    setGraphResult: setGraphResult,
-    setUsedColorsAndLabels: setUsedColorsAndLabels,
-    setUsedLabels: setUsedLabels,
-    showSpinner: showSpinner,
-    showTimeseriesFace: showTimeseriesFace,
-    showProfileFace: showProfileFace,
-    showDieOffFace: showDieOffFace,
-    showThresholdFace: showThresholdFace,
-    showValidTimeFace: showValidTimeFace,
-    showGridScaleFace: showGridScaleFace,
-    showDailyModelCycleFace: showDailyModelCycleFace,
-    showYearToYearFace: showYearToYearFace,
-    showReliabilityFace: showReliabilityFace,
-    showROCFace: showROCFace,
-    showPerformanceDiagramFace: showPerformanceDiagramFace,
-    showMapFace: showMapFace,
-    showHistogramFace: showHistogramFace,
-    showEnsembleHistogramFace: showEnsembleHistogramFace,
-    showContourFace: showContourFace,
-    showSimpleScatterFace: showSimpleScatterFace,
-    showScatterFace: showScatterFace,
+  addDiffs: addDiffs,
+  checkDiffs: checkDiffs,
+  clearAllUsed: clearAllUsed,
+  clearUsedColor: clearUsedColor,
+  clearUsedLabel: clearUsedLabel,
+  getGraphResult: getGraphResult,
+  getNextCurveColor: getNextCurveColor,
+  getNextCurveLabel: getNextCurveLabel,
+  getPlotResultData: getPlotResultData,
+  getUsedLabels: getUsedLabels,
+  hideSpinner: hideSpinner,
+  removeDiffs: removeDiffs,
+  resetGraphResult: resetGraphResult,
+  resetPlotResultData: resetPlotResultData,
+  resetScatterApply: resetScatterApply,
+  setGraphResult: setGraphResult,
+  setUsedColorsAndLabels: setUsedColorsAndLabels,
+  setUsedLabels: setUsedLabels,
+  showSpinner: showSpinner,
+  showTimeseriesFace: showTimeseriesFace,
+  showProfileFace: showProfileFace,
+  showDieOffFace: showDieOffFace,
+  showThresholdFace: showThresholdFace,
+  showValidTimeFace: showValidTimeFace,
+  showGridScaleFace: showGridScaleFace,
+  showDailyModelCycleFace: showDailyModelCycleFace,
+  showYearToYearFace: showYearToYearFace,
+  showReliabilityFace: showReliabilityFace,
+  showROCFace: showROCFace,
+  showPerformanceDiagramFace: showPerformanceDiagramFace,
+  showMapFace: showMapFace,
+  showHistogramFace: showHistogramFace,
+  showEnsembleHistogramFace: showEnsembleHistogramFace,
+  showContourFace: showContourFace,
+  showSimpleScatterFace: showSimpleScatterFace,
+  showScatterFace: showScatterFace,
 };
-            

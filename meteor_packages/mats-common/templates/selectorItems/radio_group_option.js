@@ -2,25 +2,25 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import { matsCollections } from 'meteor/randyp:mats-common';
-import { matsSelectUtils } from 'meteor/randyp:mats-common';
-import { matsParamUtils } from 'meteor/randyp:mats-common';
+import { matsCollections } from "meteor/randyp:mats-common";
+import { matsSelectUtils } from "meteor/randyp:mats-common";
+import { matsParamUtils } from "meteor/randyp:mats-common";
 
 Template.radioGroup.helpers({
-    checkedByDefault: function (def) {
-        if (def === this) {
-            return "checked";
-        } else {
-            return "";
-        }
-    },
-    labelValue: function (optionsMap) {
-        if (optionsMap !== undefined) {
-            return optionsMap[this];
-        } else {
-            return this;
-        }
+  checkedByDefault: function (def) {
+    if (def === this) {
+      return "checked";
+    } else {
+      return "";
     }
+  },
+  labelValue: function (optionsMap) {
+    if (optionsMap !== undefined) {
+      return optionsMap[this];
+    } else {
+      return this;
+    }
+  },
 });
 
 /*
@@ -43,33 +43,40 @@ Template.radioGroup.helpers({
 
    */
 Template.radioGroup.events({
-    'change, blur': function (event) {
-        try {
-            var text = event.currentTarget.value;
-            matsParamUtils.setValueTextForParamName(event.target.name,text);
+  "change, blur": function (event) {
+    try {
+      var text = event.currentTarget.value;
+      matsParamUtils.setValueTextForParamName(event.target.name, text);
 
-            // check hide other for
-            const radioGroupParam = matsCollections.PlotParams.findOne({name: event.target.parentElement.id.replace('-radioGroup','')});
-            if (radioGroupParam !== 'undefined') {
-                matsSelectUtils.checkHideOther(radioGroupParam, false); // calls checkDisable
+      // check hide other for
+      const radioGroupParam = matsCollections.PlotParams.findOne({
+        name: event.target.parentElement.id.replace("-radioGroup", ""),
+      });
+      if (radioGroupParam !== "undefined") {
+        matsSelectUtils.checkHideOther(radioGroupParam, false); // calls checkDisable
 
-                // trigger changes in dependent radio groups, if any exist, without changing their values
-                // this makes sure that *their* hideOtherFor is correct
-                if (radioGroupParam.dependentRadioGroups !== undefined) {
-                    for (let didx = 0; didx < radioGroupParam.dependentRadioGroups.length; didx++) {
-                        let dependentElemOptions = matsParamUtils.getInputElementForParamName(radioGroupParam.dependentRadioGroups[didx]).getElementsByTagName('input');
-                        for (let deidx = 0; deidx < dependentElemOptions.length; deidx++) {
-                            if (dependentElemOptions[deidx].checked) {
-                                $("#" + dependentElemOptions[deidx].id).trigger('change');
-                                break;
-                            }
-                        }
-                    }
-                }
+        // trigger changes in dependent radio groups, if any exist, without changing their values
+        // this makes sure that *their* hideOtherFor is correct
+        if (radioGroupParam.dependentRadioGroups !== undefined) {
+          for (
+            let didx = 0;
+            didx < radioGroupParam.dependentRadioGroups.length;
+            didx++
+          ) {
+            let dependentElemOptions = matsParamUtils
+              .getInputElementForParamName(radioGroupParam.dependentRadioGroups[didx])
+              .getElementsByTagName("input");
+            for (let deidx = 0; deidx < dependentElemOptions.length; deidx++) {
+              if (dependentElemOptions[deidx].checked) {
+                $("#" + dependentElemOptions[deidx].id).trigger("change");
+                break;
+              }
             }
-        } catch (error){
-            matsParamUtils.setValueTextForParamName(event.target.name, "");
+          }
         }
+      }
+    } catch (error) {
+      matsParamUtils.setValueTextForParamName(event.target.name, "");
     }
+  },
 });
-

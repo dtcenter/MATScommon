@@ -1,88 +1,145 @@
 <template name="scorecardStatusPage">
-    {{refresh}}
-    <div id="scorecardStatus" class="container-fluid pull-left"
-        style="margin-top: 0.5em; padding-left: 5%; display:none;">
-        <div id="scorecardStatusPage-control" class="row">
-            <span id="all-plot-buttons-grp" class="btn-group btn-group-sm">
-                <button id="backButton" type="button" class="back btn btn-primary" style="border-radius: 5px;">
-                    <i class="fa-solid fa-arrow-left-long"></i>&nbsp;&nbsp;<strong>Back</strong>
-                </button>
-                <button id="gc-spacer" type="button" class="btn spacebutton"></button>
-                <button id="refresh-scorecard" type="button" class="refresh-scorecard btn btn-info"
-                    style="border-radius: 15px; background-color: #00badb;">
-                    <i class="fa-solid fa-arrows-rotate"></i>
-                </button>
-            </span>
-        </div>
-        <h1>
-            Scorecard Status Panel
-        </h1>
-        <div id="statusPanel" class="row">
-            <table id="userTable" class="table table-condensed table-responsive table-sm" cellspacing="0">
-                <thead>
-                    <th>User Name</th>
-                </thead>
-                <tbody>
-                    {{#each userName in userNames}}
-                    <tr style="padding: 0;">
-                        <td style="vertical-align:top; padding: 0;">
-                            <button type="button" id="{{userName}}-control" data-target="{{userName}}"
-                                class="btn btn-info btn-xs userName-control" role="button">{{userName}}</button>
-                        </td>
-                        <td colspan="12" style="padding: 0;vertical-align:top;">
-                            <div id="{{userName}}" style="background-color:#d4f6fb; display:none;">
-                                <table id="{{userName}}-Table" class="table table-condensed table-responsive table-bordered table-sm" cellspacing="0">
-                                    <tbody>
-                                        {{#each name in names userName}}
-                                        <tr style="padding: 0;">
-                                            <td style="vertical-align:top; padding: 0;">
-                                                <button type="button" id="{{userName}}-{{name}}-control"
-                                                    class="btn btn-info btn-xs userName-name-control" style="width:100%"
-                                                    data-target="{{userName}}-{{name}}" role="button">{{name}}</button>
-                                            </td>
-                                            <td colspan="12" style="vertical-align:top;">
-                                                <div id="{{userName}}-{{name}}"
-                                                    style="background-color:#E9FCFE; display:none;">
-                                                    <table id="{{userName}}-{{name}}-Table"
-                                                        class="table table-condensed table-responsive table-stripedtable-bordered">
-                                                        <thead>
-                                                            <tr class="info">
-                                                                <th>submitted</th>
-                                                                <th>processedAt</th>
-                                                                <th>status</th>
-                                                                <th>visit link</th>
-                                                                <th></th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {{#each submitted in submittedTimes userName name}}
-                                                                {{#each processedAt in processedAtTimes userName name submitted}}
-                                                                <tr class={{statusType userName name submitted processedAt}}>
-                                                                    <td>{{timeStr submitted}}</td>
-                                                                    <td>{{timeStr processedAt}}</td>
-                                                                    <td>{{status userName name submitted processedAt}}</td>
-                                                                    <td><a href="{{visitLink userName name submitted processedAt}}"
-                                                                            target="_blank">display</a></td>
-                                                                    <td><button type="button" class="btn btn-danger btn-xs drop-sc-instance" id="{{scid userName name submitted processedAt}}"
-                                                                        data-user_name="{{userName}}" data-name="{{name}}" data-submit_time="{{submitted}}"
-                                                                        data-run_time="{{processedAt}}">Drop</button></td>
-                                                                </tr>
-                                                                {{/each}}
-                                                            {{/each}}
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        {{/each}}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </td>
+  {{refresh}}
+  <div
+    id="scorecardStatus"
+    class="container-fluid pull-left"
+    style="margin-top: 0.5em; padding-left: 5%; display: none"
+  >
+    <div id="scorecardStatusPage-control" class="row">
+      <span id="all-plot-buttons-grp" class="btn-group btn-group-sm">
+        <button
+          id="backButton"
+          type="button"
+          class="back btn btn-primary"
+          style="border-radius: 5px"
+        >
+          <i class="fa-solid fa-arrow-left-long"></i>&nbsp;&nbsp;<strong>Back</strong>
+        </button>
+        <button id="gc-spacer" type="button" class="btn spacebutton"></button>
+        <button
+          id="refresh-scorecard"
+          type="button"
+          class="refresh-scorecard btn btn-info"
+          style="border-radius: 15px; background-color: #00badb"
+        >
+          <i class="fa-solid fa-arrows-rotate"></i>
+        </button>
+      </span>
+    </div>
+    <h1>Scorecard Status Panel</h1>
+    <div id="statusPanel" class="row">
+      <table
+        id="userTable"
+        class="table table-condensed table-responsive table-sm"
+        cellspacing="0"
+      >
+        <thead>
+          <th>User Name</th>
+        </thead>
+        <tbody>
+          {{#each userName in userNames}}
+          <tr style="padding: 0">
+            <td style="vertical-align: top; padding: 0">
+              <button
+                type="button"
+                id="{{userName}}-control"
+                data-target="{{userName}}"
+                class="btn btn-info btn-xs userName-control"
+                role="button"
+              >
+                {{userName}}
+              </button>
+            </td>
+            <td colspan="12" style="padding: 0; vertical-align: top">
+              <div id="{{userName}}" style="background-color: #d4f6fb; display: none">
+                <table
+                  id="{{userName}}-Table"
+                  class="table table-condensed table-responsive table-bordered table-sm"
+                  cellspacing="0"
+                >
+                  <tbody>
+                    {{#each name in names userName}}
+                    <tr style="padding: 0">
+                      <td style="vertical-align: top; padding: 0">
+                        <button
+                          type="button"
+                          id="{{userName}}-{{name}}-control"
+                          class="btn btn-info btn-xs userName-name-control"
+                          style="width: 100%"
+                          data-target="{{userName}}-{{name}}"
+                          role="button"
+                        >
+                          {{name}}
+                        </button>
+                      </td>
+                      <td colspan="12" style="vertical-align: top">
+                        <div
+                          id="{{userName}}-{{name}}"
+                          style="background-color: #e9fcfe; display: none"
+                        >
+                          <table
+                            id="{{userName}}-{{name}}-Table"
+                            class="table table-condensed table-responsive table-stripedtable-bordered"
+                          >
+                            <thead>
+                              <tr class="info">
+                                <th>submitted</th>
+                                <th>processedAt</th>
+                                <th>status</th>
+                                <th>visit link</th>
+                                <th></th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {{#each submitted in submittedTimes userName name}}
+                              {{#each processedAt in processedAtTimes userName name
+                              submitted}}
+                              <tr
+                                class="{{statusType"
+                                userName
+                                name
+                                submitted
+                                processedAt}}
+                              >
+                                <td>{{timeStr submitted}}</td>
+                                <td>{{timeStr processedAt}}</td>
+                                <td>{{status userName name submitted processedAt}}</td>
+                                <td>
+                                  <a
+                                    href="{{visitLink userName name submitted processedAt}}"
+                                    target="_blank"
+                                    >display</a
+                                  >
+                                </td>
+                                <td>
+                                  <button
+                                    type="button"
+                                    class="btn btn-danger btn-xs drop-sc-instance"
+                                    id="{{scid userName name submitted processedAt}}"
+                                    data-user_name="{{userName}}"
+                                    data-name="{{name}}"
+                                    data-submit_time="{{submitted}}"
+                                    data-run_time="{{processedAt}}"
+                                  >
+                                    Drop
+                                  </button>
+                                </td>
+                              </tr>
+                              {{/each}} {{/each}}
+                            </tbody>
+                          </table>
+                        </div>
+                      </td>
                     </tr>
                     {{/each}}
-                </tbody>
-            </table>
-        </div>
+                  </tbody>
+                </table>
+              </div>
+            </td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
     </div>
+  </div>
 </template>

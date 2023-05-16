@@ -2,55 +2,55 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import {matsTypes} from "meteor/randyp:mats-common";
-import {matsCollections} from "meteor/randyp:mats-common";
-import {matsMethods} from "meteor/randyp:mats-common";
-import {matsCurveUtils} from 'meteor/randyp:mats-common';
-import {matsPlotUtils} from 'meteor/randyp:mats-common';
-import {matsParamUtils} from 'meteor/randyp:mats-common';
+import { matsTypes } from "meteor/randyp:mats-common";
+import { matsCollections } from "meteor/randyp:mats-common";
+import { matsMethods } from "meteor/randyp:mats-common";
+import { matsCurveUtils } from "meteor/randyp:mats-common";
+import { matsPlotUtils } from "meteor/randyp:mats-common";
+import { matsParamUtils } from "meteor/randyp:mats-common";
 
 Template.scorecardCurveList.helpers({
-    displayScorecardStatus: function() {
-        // don't allow plotting when editing
-        const mode = Session.get("editMode");
-        if (mode === undefined || mode === "") {
-            return "block";
-        } else {
-            return "none";
-        }
-    },
-    displaySaveSettings: function() {
-        // don't allow saving settings when editing
-        const mode = Session.get("editMode");
-        if (mode === undefined || mode === "") {
-            return "block";
-        } else {
-            return "none";
-        }
-    },
+  displayScorecardStatus: function () {
+    // don't allow plotting when editing
+    const mode = Session.get("editMode");
+    if (mode === undefined || mode === "") {
+      return "block";
+    } else {
+      return "none";
+    }
+  },
+  displaySaveSettings: function () {
+    // don't allow saving settings when editing
+    const mode = Session.get("editMode");
+    if (mode === undefined || mode === "") {
+      return "block";
+    } else {
+      return "none";
+    }
+  },
 
-    curves: function () {
-        return Session.get('Curves');
-    },
-    displayCurves: function () {
-        if (Session.get('Curves') === undefined || Session.get('Curves').length === 0) {
-            return "none";
-        } else {
-            return "block";
-        }
-    },
-    log: function () {
-        console.log(this);
-    },
-    editMode: function() {
-        if (Session.get('editMode') === '') {
-            return '';
-        } else {
-            return "Changing " + Session.get('editMode');
-        }
-    },
+  curves: function () {
+    return Session.get("Curves");
+  },
+  displayCurves: function () {
+    if (Session.get("Curves") === undefined || Session.get("Curves").length === 0) {
+      return "none";
+    } else {
+      return "block";
+    }
+  },
+  log: function () {
+    console.log(this);
+  },
+  editMode: function () {
+    if (Session.get("editMode") === "") {
+      return "";
+    } else {
+      return "Changing " + Session.get("editMode");
+    }
+  },
 });
-  /*
+/*
     A note about how things get to the backend, and then to the graph or display view.
     When the user clicks "Submit Scorecard" on the curve-list page
     there is a spinner displayed and a plotParameter set, and then
@@ -67,37 +67,37 @@ Template.scorecardCurveList.helpers({
     is what sets up the graph page.
     */
 Template.scorecardCurveList.events({
-    'click .remove-all': function () {
-        if (Session.get("confirmRemoveAll")) {
-            matsCurveUtils.clearAllUsed();
-            matsParamUtils.setAllParamsToDefault();
-            Session.set("editMode", "");
-            Session.set("paramWellColor", "#f5f5f5");  // default grey
-            Session.set("lastUpdate", Date.now());
-            Session.set("confirmRemoveAll","");
-            return false;
-        } else {
-            if (Session.get("Curves").length > 0 ) {
-                $("#modal-confirm-remove-all").modal();
-            }
-        }
-    },
-    'click .confirm-remove-all': function () {
-        Session.set("confirmRemoveAll", Date.now());
-        $("#remove-all").trigger('click');
-    },
-    'click .submitScorecard': function (event) {
-        document.getElementById("spinner").style.display = "block";
-        matsPlotUtils.disableActionButtons();
-        event.preventDefault();
-        // trigger the submit-params event (plot-curves) on plot_list.js - click plot-curves
-        Session.set('plotParameter', matsTypes.PlotActions.scorecard);
-        document.getElementById("plot-curves").click();
-        return false;
-    },
-    'click .save-settings': function (event) {
-        event.preventDefault();
-        document.getElementById("save-settings").click();
-        return false;
+  "click .remove-all": function () {
+    if (Session.get("confirmRemoveAll")) {
+      matsCurveUtils.clearAllUsed();
+      matsParamUtils.setAllParamsToDefault();
+      Session.set("editMode", "");
+      Session.set("paramWellColor", "#f5f5f5"); // default grey
+      Session.set("lastUpdate", Date.now());
+      Session.set("confirmRemoveAll", "");
+      return false;
+    } else {
+      if (Session.get("Curves").length > 0) {
+        $("#modal-confirm-remove-all").modal();
+      }
     }
+  },
+  "click .confirm-remove-all": function () {
+    Session.set("confirmRemoveAll", Date.now());
+    $("#remove-all").trigger("click");
+  },
+  "click .submitScorecard": function (event) {
+    document.getElementById("spinner").style.display = "block";
+    matsPlotUtils.disableActionButtons();
+    event.preventDefault();
+    // trigger the submit-params event (plot-curves) on plot_list.js - click plot-curves
+    Session.set("plotParameter", matsTypes.PlotActions.scorecard);
+    document.getElementById("plot-curves").click();
+    return false;
+  },
+  "click .save-settings": function (event) {
+    event.preventDefault();
+    document.getElementById("save-settings").click();
+    return false;
+  },
 });

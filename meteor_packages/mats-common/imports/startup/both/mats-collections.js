@@ -5,20 +5,24 @@
 /**
  * Created by pierce on 8/31/16.
  */
-import { Mongo } from 'meteor/mongo';
+import { Mongo } from "meteor/mongo";
 import { Meteor } from "meteor/meteor";
-import { curveParamsByApp } from './mats-curve-params';
+import { curveParamsByApp } from "./mats-curve-params";
 
 const params = curveParamsByApp[Meteor.settings.public.app];
 if (!params) {
-    console.log("curveParams are not defined in imports/startup/both/mats-curve-params.js. Please define some curveParams for this app.");
-    throw new Meteor.Error("curveParams are not defined in imports/startup/both/mats-curve-params.js. Please define some curveParams for this app.");
+  console.log(
+    "curveParams are not defined in imports/startup/both/mats-curve-params.js. Please define some curveParams for this app."
+  );
+  throw new Meteor.Error(
+    "curveParams are not defined in imports/startup/both/mats-curve-params.js. Please define some curveParams for this app."
+  );
 }
 var paramCollections = {};
 var currParam;
 for (var i = 0; i < params.length; i++) {
-    currParam = params[i];
-    paramCollections[currParam] = new Mongo.Collection(currParam);
+  currParam = params[i];
+  paramCollections[currParam] = new Mongo.Collection(currParam);
 }
 
 var CurveParamsInfo = new Mongo.Collection("CurveParamsInfo");
@@ -48,42 +52,41 @@ var Scorecard = new Mongo.Collection("Scorecard");
 
 // expire after 24 hours from when the scorecard is last upserted
 if (Meteor.isServer) {
-    try {
-        Scorecard.createIndex( { "createdAt": 1 }, { expireAfterSeconds: 24 * 60 * 60 } );
-    } catch (e) {
-        // ignore this - this isn't a scorecard
-    }
+  try {
+    Scorecard.createIndex({ createdAt: 1 }, { expireAfterSeconds: 24 * 60 * 60 });
+  } catch (e) {
+    // ignore this - this isn't a scorecard
+  }
 }
 
-
 const explicitCollections = {
-    CurveParamsInfo:CurveParamsInfo,
-    AppsToScore: AppsToScore,
-    Scatter2dParams:Scatter2dParams,
-    CurveTextPatterns:CurveTextPatterns, 
-    ScatterAxisTextPattern:ScatterAxisTextPattern,
-    SavedCurveParams:SavedCurveParams,
-    PlotParams:PlotParams,
-    SavedPlotParams:SavedPlotParams,
-    PlotGraphFunctions:PlotGraphFunctions,
-    SavedPlotGraphFunctions:SavedPlotGraphFunctions,
-    CurveSettings:CurveSettings,
-    Settings:Settings,
-    ColorScheme:ColorScheme,
-    SentAddresses:SentAddresses,
-    Authorization:Authorization,
-    Roles:Roles,
-    SavedRoles:SavedRoles,
-    Databases:Databases,
-    SavedDatabases:SavedDatabases,
-    Credentials:Credentials,
-    SavedCredentials:SavedCredentials,
-    SiteMap:SiteMap,
-    StationMap:StationMap,
-    Scorecard:Scorecard,
+  CurveParamsInfo: CurveParamsInfo,
+  AppsToScore: AppsToScore,
+  Scatter2dParams: Scatter2dParams,
+  CurveTextPatterns: CurveTextPatterns,
+  ScatterAxisTextPattern: ScatterAxisTextPattern,
+  SavedCurveParams: SavedCurveParams,
+  PlotParams: PlotParams,
+  SavedPlotParams: SavedPlotParams,
+  PlotGraphFunctions: PlotGraphFunctions,
+  SavedPlotGraphFunctions: SavedPlotGraphFunctions,
+  CurveSettings: CurveSettings,
+  Settings: Settings,
+  ColorScheme: ColorScheme,
+  SentAddresses: SentAddresses,
+  Authorization: Authorization,
+  Roles: Roles,
+  SavedRoles: SavedRoles,
+  Databases: Databases,
+  SavedDatabases: SavedDatabases,
+  Credentials: Credentials,
+  SavedCredentials: SavedCredentials,
+  SiteMap: SiteMap,
+  StationMap: StationMap,
+  Scorecard: Scorecard,
 };
 
 export default matsCollections = {
-    ...paramCollections,
-    ...explicitCollections
+  ...paramCollections,
+  ...explicitCollections,
 };
