@@ -44,16 +44,14 @@
       </h4>
       {{#each scatter2dOptions}}
       <input
-        class="data-input {{className ..}}"
-        type="{{type"
-        ..}}
-        name="{{name ..}}"
-        id="{{idOption ..}}"
+        class="data-input {{className}}"
+        type="{{type}}"
+        name="{{name}}"
+        id="{{idOption}}"
         value="{{this}}"
-        {{isDefault
-        ..}}
+        {{isDefault}}
       />
-      <label for="{{idParam ..}}">{{label this ..}}</label>
+      <label for="{{idParam}}">{{label this}}</label>
       {{/each}} {{/if}}
       <div>
         <div class="btn-toolbar btn-group btn-xs" role="toolbar">
