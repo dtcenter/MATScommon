@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
-var gaussianElimination = function (a, o) {
-  var i = 0,
-    j = 0,
-    k = 0,
-    maxrow = 0,
-    tmp = 0,
-    n = a.length - 1,
-    x = new Array(o);
+const gaussianElimination = function (a, o) {
+  let i = 0;
+  let j = 0;
+  let k = 0;
+  let maxrow = 0;
+  let tmp = 0;
+  const n = a.length - 1;
+  const x = new Array(o);
   for (i = 0; i < n; i++) {
     maxrow = i;
     for (j = i + 1; j < n; j++) {
@@ -33,11 +33,11 @@ var gaussianElimination = function (a, o) {
   return x;
 };
 
-var methods = {
-  linear: function (data) {
-    var sum = [0, 0, 0, 0, 0],
-      n = 0,
-      results = [];
+const methods = {
+  linear(data) {
+    const sum = [0, 0, 0, 0, 0];
+    let n = 0;
+    const results = [];
 
     for (; n < data.length; n++) {
       if (data[n][1]) {
@@ -49,52 +49,50 @@ var methods = {
       }
     }
 
-    var gradient = (n * sum[3] - sum[0] * sum[1]) / (n * sum[2] - sum[0] * sum[0]);
-    var intercept = sum[1] / n - (gradient * sum[0]) / n;
+    const gradient = (n * sum[3] - sum[0] * sum[1]) / (n * sum[2] - sum[0] * sum[0]);
+    const intercept = sum[1] / n - (gradient * sum[0]) / n;
     //  var correlation = (n * sum[3] - sum[0] * sum[1]) / Math.sqrt((n * sum[2] - sum[0] * sum[0]) * (n * sum[4] - sum[1] * sum[1]));
 
-    for (var i = 0, len = data.length; i < len; i++) {
-      var coordinate = [data[i][0], data[i][0] * gradient + intercept];
+    for (let i = 0, len = data.length; i < len; i++) {
+      const coordinate = [data[i][0], data[i][0] * gradient + intercept];
       results.push(coordinate);
     }
 
-    var string =
-      "y = " +
-      Math.round(gradient * 100) / 100 +
-      "x + " +
-      Math.round(intercept * 100) / 100;
+    const string = `y = ${Math.round(gradient * 100) / 100}x + ${
+      Math.round(intercept * 100) / 100
+    }`;
 
-    return { equation: [gradient, intercept], points: results, string: string };
+    return { equation: [gradient, intercept], points: results, string };
   },
 
-  linearThroughOrigin: function (data) {
-    var sum = [0, 0],
-      n = 0,
-      results = [];
+  linearThroughOrigin(data) {
+    const sum = [0, 0];
+    let n = 0;
+    const results = [];
 
     for (; n < data.length; n++) {
       if (data[n][1]) {
-        sum[0] += data[n][0] * data[n][0]; //sumSqX
-        sum[1] += data[n][0] * data[n][1]; //sumXY
+        sum[0] += data[n][0] * data[n][0]; // sumSqX
+        sum[1] += data[n][0] * data[n][1]; // sumXY
       }
     }
 
-    var gradient = sum[1] / sum[0];
+    const gradient = sum[1] / sum[0];
 
-    for (var i = 0, len = data.length; i < len; i++) {
-      var coordinate = [data[i][0], data[i][0] * gradient];
+    for (let i = 0, len = data.length; i < len; i++) {
+      const coordinate = [data[i][0], data[i][0] * gradient];
       results.push(coordinate);
     }
 
-    var string = "y = " + Math.round(gradient * 100) / 100 + "x";
+    const string = `y = ${Math.round(gradient * 100) / 100}x`;
 
-    return { equation: [gradient], points: results, string: string };
+    return { equation: [gradient], points: results, string };
   },
 
-  exponential: function (data) {
-    var sum = [0, 0, 0, 0, 0, 0],
-      n = 0,
-      results = [];
+  exponential(data) {
+    const sum = [0, 0, 0, 0, 0, 0];
+    let n = 0;
+    const results = [];
 
     for (len = data.length; n < len; n++) {
       if (data[n][1]) {
@@ -107,100 +105,100 @@ var methods = {
       }
     }
 
-    var denominator = sum[1] * sum[2] - sum[5] * sum[5];
-    var A = Math.pow(Math.E, (sum[2] * sum[3] - sum[5] * sum[4]) / denominator);
-    var B = (sum[1] * sum[4] - sum[5] * sum[3]) / denominator;
+    const denominator = sum[1] * sum[2] - sum[5] * sum[5];
+    const A = Math.E ** ((sum[2] * sum[3] - sum[5] * sum[4]) / denominator);
+    const B = (sum[1] * sum[4] - sum[5] * sum[3]) / denominator;
 
     for (var i = 0, len = data.length; i < len; i++) {
-      var coordinate = [data[i][0], A * Math.pow(Math.E, B * data[i][0])];
+      const coordinate = [data[i][0], A * Math.E ** (B * data[i][0])];
       results.push(coordinate);
     }
 
-    var string =
-      "y = " + Math.round(A * 100) / 100 + "e^(" + Math.round(B * 100) / 100 + "x)";
+    const string = `y = ${Math.round(A * 100) / 100}e^(${Math.round(B * 100) / 100}x)`;
 
-    return { equation: [A, B], points: results, string: string };
+    return { equation: [A, B], points: results, string };
   },
 
-  logarithmic: function (data) {
-    var sum = [0, 0, 0, 0],
-      n = 0,
-      results = [];
+  logarithmic(data) {
+    const sum = [0, 0, 0, 0];
+    let n = 0;
+    const results = [];
 
     for (len = data.length; n < len; n++) {
       if (data[n][1]) {
         sum[0] += Math.log(data[n][0]);
         sum[1] += data[n][1] * Math.log(data[n][0]);
         sum[2] += data[n][1];
-        sum[3] += Math.pow(Math.log(data[n][0]), 2);
+        sum[3] += Math.log(data[n][0]) ** 2;
       }
     }
 
-    var B = (n * sum[1] - sum[2] * sum[0]) / (n * sum[3] - sum[0] * sum[0]);
-    var A = (sum[2] - B * sum[0]) / n;
+    const B = (n * sum[1] - sum[2] * sum[0]) / (n * sum[3] - sum[0] * sum[0]);
+    const A = (sum[2] - B * sum[0]) / n;
 
     for (var i = 0, len = data.length; i < len; i++) {
-      var coordinate = [data[i][0], A + B * Math.log(data[i][0])];
+      const coordinate = [data[i][0], A + B * Math.log(data[i][0])];
       results.push(coordinate);
     }
 
-    var string =
-      "y = " + Math.round(A * 100) / 100 + " + " + Math.round(B * 100) / 100 + " ln(x)";
+    const string = `y = ${Math.round(A * 100) / 100} + ${
+      Math.round(B * 100) / 100
+    } ln(x)`;
 
-    return { equation: [A, B], points: results, string: string };
+    return { equation: [A, B], points: results, string };
   },
 
-  power: function (data) {
-    var sum = [0, 0, 0, 0],
-      n = 0,
-      results = [];
+  power(data) {
+    const sum = [0, 0, 0, 0];
+    let n = 0;
+    const results = [];
 
     for (len = data.length; n < len; n++) {
       if (data[n][1]) {
         sum[0] += Math.log(data[n][0]);
         sum[1] += Math.log(data[n][1]) * Math.log(data[n][0]);
         sum[2] += Math.log(data[n][1]);
-        sum[3] += Math.pow(Math.log(data[n][0]), 2);
+        sum[3] += Math.log(data[n][0]) ** 2;
       }
     }
 
-    var B = (n * sum[1] - sum[2] * sum[0]) / (n * sum[3] - sum[0] * sum[0]);
-    var A = Math.pow(Math.E, (sum[2] - B * sum[0]) / n);
+    const B = (n * sum[1] - sum[2] * sum[0]) / (n * sum[3] - sum[0] * sum[0]);
+    const A = Math.E ** ((sum[2] - B * sum[0]) / n);
 
     for (var i = 0, len = data.length; i < len; i++) {
-      var coordinate = [data[i][0], A * Math.pow(data[i][0], B)];
+      const coordinate = [data[i][0], A * data[i][0] ** B];
       results.push(coordinate);
     }
 
-    var string = "y = " + Math.round(A * 100) / 100 + "x^" + Math.round(B * 100) / 100;
+    const string = `y = ${Math.round(A * 100) / 100}x^${Math.round(B * 100) / 100}`;
 
-    return { equation: [A, B], points: results, string: string };
+    return { equation: [A, B], points: results, string };
   },
 
-  polynomial: function (data, order) {
+  polynomial(data, order) {
     if (typeof order === "undefined") {
       order = 2;
     }
-    var lhs = [],
-      rhs = [],
-      results = [],
-      a = 0,
-      b = 0,
-      i = 0,
-      k = order + 1;
+    const lhs = [];
+    const rhs = [];
+    const results = [];
+    let a = 0;
+    let b = 0;
+    var i = 0;
+    const k = order + 1;
 
     for (; i < k; i++) {
       for (var l = 0, len = data.length; l < len; l++) {
         if (data[l][1]) {
-          a += Math.pow(data[l][0], i) * data[l][1];
+          a += data[l][0] ** i * data[l][1];
         }
       }
       lhs.push(a), (a = 0);
-      var c = [];
-      for (var j = 0; j < k; j++) {
+      const c = [];
+      for (let j = 0; j < k; j++) {
         for (var l = 0, len = data.length; l < len; l++) {
           if (data[l][1]) {
-            b += Math.pow(data[l][0], i + j);
+            b += data[l][0] ** (i + j);
           }
         }
         c.push(b), (b = 0);
@@ -209,36 +207,31 @@ var methods = {
     }
     rhs.push(lhs);
 
-    var equation = gaussianElimination(rhs, k);
+    const equation = gaussianElimination(rhs, k);
 
     for (var i = 0, len = data.length; i < len; i++) {
-      var answer = 0;
-      for (var w = 0; w < equation.length; w++) {
-        answer += equation[w] * Math.pow(data[i][0], w);
+      let answer = 0;
+      for (let w = 0; w < equation.length; w++) {
+        answer += equation[w] * data[i][0] ** w;
       }
       results.push([data[i][0], answer]);
     }
 
-    var string = "y = ";
+    let string = "y = ";
 
     for (var i = equation.length - 1; i >= 0; i--) {
-      if (i > 1)
-        string +=
-          Math.round(equation[i] * Math.pow(10, i)) / Math.pow(10, i) +
-          "x^" +
-          i +
-          " + ";
-      else if (i === 1) string += Math.round(equation[i] * 100) / 100 + "x" + " + ";
+      if (i > 1) string += `${Math.round(equation[i] * 10 ** i) / 10 ** i}x^${i} + `;
+      else if (i === 1) string += `${Math.round(equation[i] * 100) / 100}x` + ` + `;
       else string += Math.round(equation[i] * 100) / 100;
     }
 
-    return { equation: equation, points: results, string: string };
+    return { equation, points: results, string };
   },
 
-  lastvalue: function (data) {
-    var results = [];
-    var lastvalue = null;
-    for (var i = 0; i < data.length; i++) {
+  lastvalue(data) {
+    const results = [];
+    let lastvalue = null;
+    for (let i = 0; i < data.length; i++) {
       if (data[i][1]) {
         lastvalue = data[i][1];
         results.push([data[i][0], data[i][1]]);
@@ -247,7 +240,7 @@ var methods = {
       }
     }
 
-    return { equation: [lastvalue], points: results, string: "" + lastvalue };
+    return { equation: [lastvalue], points: results, string: `${lastvalue}` };
   },
 };
 

@@ -30,7 +30,7 @@ const DownSampleResults = new Mongo.Collection("DownSampleResults");
 
 // utility to check for empty object
 const isEmpty = function (map) {
-  for (var key in map) {
+  for (const key in map) {
     if (map.hasOwnProperty(key)) {
       return false;
     }
@@ -68,14 +68,14 @@ if (Meteor.isServer) {
   });
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/status",
+    `${Meteor.settings.public.proxy_prefix_path}/status`,
     function (params, req, res, next) {
       Picker.middleware(_status(params, req, res, next));
     }
   );
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/:app/status",
+    `${Meteor.settings.public.proxy_prefix_path}/:app/status`,
     function (params, req, res, next) {
       Picker.middleware(_status(params, req, res, next));
     }
@@ -86,14 +86,14 @@ if (Meteor.isServer) {
   });
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/_getCSV/:key",
+    `${Meteor.settings.public.proxy_prefix_path}/_getCSV/:key`,
     function (params, req, res, next) {
       Picker.middleware(_getCSV(params, req, res, next));
     }
   );
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/app:/_getCSV/:key",
+    `${Meteor.settings.public.proxy_prefix_path}/app:/_getCSV/:key`,
     function (params, req, res, next) {
       Picker.middleware(_getCSV(params, req, res, next));
     }
@@ -104,14 +104,14 @@ if (Meteor.isServer) {
   });
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/CSV/:f/:key/:m/:a",
+    `${Meteor.settings.public.proxy_prefix_path}/CSV/:f/:key/:m/:a`,
     function (params, req, res, next) {
       Picker.middleware(_getCSV(params, req, res, next));
     }
   );
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/:app/CSV/:f/:key/:m/:a",
+    `${Meteor.settings.public.proxy_prefix_path}/:app/CSV/:f/:key/:m/:a`,
     function (params, req, res, next) {
       Picker.middleware(_getCSV(params, req, res, next));
     }
@@ -122,14 +122,14 @@ if (Meteor.isServer) {
   });
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/_getJSON/:key",
+    `${Meteor.settings.public.proxy_prefix_path}/_getJSON/:key`,
     function (params, req, res, next) {
       Picker.middleware(_getJSON(params, req, res, next));
     }
   );
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/app:/_getJSON/:key",
+    `${Meteor.settings.public.proxy_prefix_path}/app:/_getJSON/:key`,
     function (params, req, res, next) {
       Picker.middleware(_getJSON(params, req, res, next));
     }
@@ -140,14 +140,14 @@ if (Meteor.isServer) {
   });
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/JSON/:f/:key/:m/:a",
+    `${Meteor.settings.public.proxy_prefix_path}/JSON/:f/:key/:m/:a`,
     function (params, req, res, next) {
       Picker.middleware(_getJSON(params, req, res, next));
     }
   );
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/:app/JSON/:f/:key/:m/:a",
+    `${Meteor.settings.public.proxy_prefix_path}/:app/JSON/:f/:key/:m/:a`,
     function (params, req, res, next) {
       Picker.middleware(_getJSON(params, req, res, next));
     }
@@ -158,14 +158,14 @@ if (Meteor.isServer) {
   });
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/clearCache",
+    `${Meteor.settings.public.proxy_prefix_path}/clearCache`,
     function (params, req, res, next) {
       Picker.middleware(_clearCache(params, req, res, next));
     }
   );
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/:app/clearCache",
+    `${Meteor.settings.public.proxy_prefix_path}/:app/clearCache`,
     function (params, req, res, next) {
       Picker.middleware(_clearCache(params, req, res, next));
     }
@@ -176,14 +176,14 @@ if (Meteor.isServer) {
   });
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/getApps",
+    `${Meteor.settings.public.proxy_prefix_path}/getApps`,
     function (params, req, res, next) {
       Picker.middleware(_getApps(params, req, res, next));
     }
   );
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/:app/getApps",
+    `${Meteor.settings.public.proxy_prefix_path}/:app/getApps`,
     function (params, req, res, next) {
       Picker.middleware(_getApps(params, req, res, next));
     }
@@ -194,14 +194,14 @@ if (Meteor.isServer) {
   });
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/getAppSumsDBs",
+    `${Meteor.settings.public.proxy_prefix_path}/getAppSumsDBs`,
     function (params, req, res, next) {
       Picker.middleware(_getAppSumsDBs(params, req, res, next));
     }
   );
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/:app/getAppSumsDBs",
+    `${Meteor.settings.public.proxy_prefix_path}/:app/getAppSumsDBs`,
     function (params, req, res, next) {
       Picker.middleware(_getAppSumsDBs(params, req, res, next));
     }
@@ -212,14 +212,14 @@ if (Meteor.isServer) {
   });
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/getModels",
+    `${Meteor.settings.public.proxy_prefix_path}/getModels`,
     function (params, req, res, next) {
       Picker.middleware(_getModels(params, req, res, next));
     }
   );
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/:app/getModels",
+    `${Meteor.settings.public.proxy_prefix_path}/:app/getModels`,
     function (params, req, res, next) {
       Picker.middleware(_getModels(params, req, res, next));
     }
@@ -230,14 +230,14 @@ if (Meteor.isServer) {
   });
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/getRegions",
+    `${Meteor.settings.public.proxy_prefix_path}/getRegions`,
     function (params, req, res, next) {
       Picker.middleware(_getRegions(params, req, res, next));
     }
   );
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/:app/getRegions",
+    `${Meteor.settings.public.proxy_prefix_path}/:app/getRegions`,
     function (params, req, res, next) {
       Picker.middleware(_getRegions(params, req, res, next));
     }
@@ -248,14 +248,14 @@ if (Meteor.isServer) {
   });
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/getRegionsValuesMap",
+    `${Meteor.settings.public.proxy_prefix_path}/getRegionsValuesMap`,
     function (params, req, res, next) {
       Picker.middleware(_getRegionsValuesMap(params, req, res, next));
     }
   );
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/:app/getRegionsValuesMap",
+    `${Meteor.settings.public.proxy_prefix_path}/:app/getRegionsValuesMap`,
     function (params, req, res, next) {
       Picker.middleware(_getRegionsValuesMap(params, req, res, next));
     }
@@ -266,14 +266,14 @@ if (Meteor.isServer) {
   });
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/getStatistics",
+    `${Meteor.settings.public.proxy_prefix_path}/getStatistics`,
     function (params, req, res, next) {
       Picker.middleware(_getStatistics(params, req, res, next));
     }
   );
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/:app/getStatistics",
+    `${Meteor.settings.public.proxy_prefix_path}/:app/getStatistics`,
     function (params, req, res, next) {
       Picker.middleware(_getStatistics(params, req, res, next));
     }
@@ -284,14 +284,14 @@ if (Meteor.isServer) {
   });
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/getStatisticsValuesMap",
+    `${Meteor.settings.public.proxy_prefix_path}/getStatisticsValuesMap`,
     function (params, req, res, next) {
       Picker.middleware(_getStatisticsValuesMap(params, req, res, next));
     }
   );
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/:app/getStatisticsValuesMap",
+    `${Meteor.settings.public.proxy_prefix_path}/:app/getStatisticsValuesMap`,
     function (params, req, res, next) {
       Picker.middleware(_getStatisticsValuesMap(params, req, res, next));
     }
@@ -302,14 +302,14 @@ if (Meteor.isServer) {
   });
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/getVariables",
+    `${Meteor.settings.public.proxy_prefix_path}/getVariables`,
     function (params, req, res, next) {
       Picker.middleware(_getVariables(params, req, res, next));
     }
   );
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/:app/getVariables",
+    `${Meteor.settings.public.proxy_prefix_path}/:app/getVariables`,
     function (params, req, res, next) {
       Picker.middleware(_getVariables(params, req, res, next));
     }
@@ -320,14 +320,14 @@ if (Meteor.isServer) {
   });
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/getVariablesValuesMap",
+    `${Meteor.settings.public.proxy_prefix_path}/getVariablesValuesMap`,
     function (params, req, res, next) {
       Picker.middleware(_getVariablesValuesMap(params, req, res, next));
     }
   );
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/:app/getVariablesValuesMap",
+    `${Meteor.settings.public.proxy_prefix_path}/:app/getVariablesValuesMap`,
     function (params, req, res, next) {
       Picker.middleware(_getVariablesValuesMap(params, req, res, next));
     }
@@ -338,14 +338,14 @@ if (Meteor.isServer) {
   });
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/getThresholds",
+    `${Meteor.settings.public.proxy_prefix_path}/getThresholds`,
     function (params, req, res, next) {
       Picker.middleware(_getThresholds(params, req, res, next));
     }
   );
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/:app/getThresholds",
+    `${Meteor.settings.public.proxy_prefix_path}/:app/getThresholds`,
     function (params, req, res, next) {
       Picker.middleware(_getThresholds(params, req, res, next));
     }
@@ -356,14 +356,14 @@ if (Meteor.isServer) {
   });
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/getThresholdsValuesMap",
+    `${Meteor.settings.public.proxy_prefix_path}/getThresholdsValuesMap`,
     function (params, req, res, next) {
       Picker.middleware(_getThresholdsValuesMap(params, req, res, next));
     }
   );
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/:app/getThresholdsValuesMap",
+    `${Meteor.settings.public.proxy_prefix_path}/:app/getThresholdsValuesMap`,
     function (params, req, res, next) {
       Picker.middleware(_getThresholdsValuesMap(params, req, res, next));
     }
@@ -374,14 +374,14 @@ if (Meteor.isServer) {
   });
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/getScales",
+    `${Meteor.settings.public.proxy_prefix_path}/getScales`,
     function (params, req, res, next) {
       Picker.middleware(_getScales(params, req, res, next));
     }
   );
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/:app/getScales",
+    `${Meteor.settings.public.proxy_prefix_path}/:app/getScales`,
     function (params, req, res, next) {
       Picker.middleware(_getScales(params, req, res, next));
     }
@@ -392,14 +392,14 @@ if (Meteor.isServer) {
   });
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/getScalesValuesMap",
+    `${Meteor.settings.public.proxy_prefix_path}/getScalesValuesMap`,
     function (params, req, res, next) {
       Picker.middleware(_getScalesValuesMap(params, req, res, next));
     }
   );
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/:app/getScalesValuesMap",
+    `${Meteor.settings.public.proxy_prefix_path}/:app/getScalesValuesMap`,
     function (params, req, res, next) {
       Picker.middleware(_getScalesValuesMap(params, req, res, next));
     }
@@ -410,14 +410,14 @@ if (Meteor.isServer) {
   });
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/getTruths",
+    `${Meteor.settings.public.proxy_prefix_path}/getTruths`,
     function (params, req, res, next) {
       Picker.middleware(_getTruths(params, req, res, next));
     }
   );
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/:app/getTruths",
+    `${Meteor.settings.public.proxy_prefix_path}/:app/getTruths`,
     function (params, req, res, next) {
       Picker.middleware(_getTruths(params, req, res, next));
     }
@@ -428,14 +428,14 @@ if (Meteor.isServer) {
   });
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/getTruthsValuesMap",
+    `${Meteor.settings.public.proxy_prefix_path}/getTruthsValuesMap`,
     function (params, req, res, next) {
       Picker.middleware(_getTruthsValuesMap(params, req, res, next));
     }
   );
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/:app/getTruthsValuesMap",
+    `${Meteor.settings.public.proxy_prefix_path}/:app/getTruthsValuesMap`,
     function (params, req, res, next) {
       Picker.middleware(_getTruthsValuesMap(params, req, res, next));
     }
@@ -446,14 +446,14 @@ if (Meteor.isServer) {
   });
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/getFcstLengths",
+    `${Meteor.settings.public.proxy_prefix_path}/getFcstLengths`,
     function (params, req, res, next) {
       Picker.middleware(_getFcstLengths(params, req, res, next));
     }
   );
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/:app/getFcstLengths",
+    `${Meteor.settings.public.proxy_prefix_path}/:app/getFcstLengths`,
     function (params, req, res, next) {
       Picker.middleware(_getFcstLengths(params, req, res, next));
     }
@@ -464,14 +464,14 @@ if (Meteor.isServer) {
   });
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/getFcstTypes",
+    `${Meteor.settings.public.proxy_prefix_path}/getFcstTypes`,
     function (params, req, res, next) {
       Picker.middleware(_getFcstTypes(params, req, res, next));
     }
   );
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/:app/getFcstTypes",
+    `${Meteor.settings.public.proxy_prefix_path}/:app/getFcstTypes`,
     function (params, req, res, next) {
       Picker.middleware(_getFcstTypes(params, req, res, next));
     }
@@ -482,14 +482,14 @@ if (Meteor.isServer) {
   });
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/getFcstTypesValuesMap",
+    `${Meteor.settings.public.proxy_prefix_path}/getFcstTypesValuesMap`,
     function (params, req, res, next) {
       Picker.middleware(_getFcstTypesValuesMap(params, req, res, next));
     }
   );
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/:app/getFcstTypesValuesMap",
+    `${Meteor.settings.public.proxy_prefix_path}/:app/getFcstTypesValuesMap`,
     function (params, req, res, next) {
       Picker.middleware(_getFcstTypesValuesMap(params, req, res, next));
     }
@@ -500,14 +500,14 @@ if (Meteor.isServer) {
   });
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/getValidTimes",
+    `${Meteor.settings.public.proxy_prefix_path}/getValidTimes`,
     function (params, req, res, next) {
       Picker.middleware(_getValidTimes(params, req, res, next));
     }
   );
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/:app/getValidTimes",
+    `${Meteor.settings.public.proxy_prefix_path}/:app/getValidTimes`,
     function (params, req, res, next) {
       Picker.middleware(_getValidTimes(params, req, res, next));
     }
@@ -518,14 +518,14 @@ if (Meteor.isServer) {
   });
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/getLevels",
+    `${Meteor.settings.public.proxy_prefix_path}/getLevels`,
     function (params, req, res, next) {
       Picker.middleware(_getLevels(params, req, res, next));
     }
   );
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/:app/getLevels",
+    `${Meteor.settings.public.proxy_prefix_path}/:app/getLevels`,
     function (params, req, res, next) {
       Picker.middleware(_getLevels(params, req, res, next));
     }
@@ -536,14 +536,14 @@ if (Meteor.isServer) {
   });
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/getDates",
+    `${Meteor.settings.public.proxy_prefix_path}/getDates`,
     function (params, req, res, next) {
       Picker.middleware(_getDates(params, req, res, next));
     }
   );
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/:app/getDates",
+    `${Meteor.settings.public.proxy_prefix_path}/:app/getDates`,
     function (params, req, res, next) {
       Picker.middleware(_getDates(params, req, res, next));
     }
@@ -555,14 +555,14 @@ if (Meteor.isServer) {
   });
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/refreshMetadata",
+    `${Meteor.settings.public.proxy_prefix_path}/refreshMetadata`,
     function (params, req, res, next) {
       Picker.middleware(_refreshMetadataMWltData(params, req, res, next));
     }
   );
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/:app/refreshMetadata",
+    `${Meteor.settings.public.proxy_prefix_path}/:app/refreshMetadata`,
     function (params, req, res, next) {
       Picker.middleware(_refreshMetadataMWltData(params, req, res, next));
     }
@@ -572,14 +572,14 @@ if (Meteor.isServer) {
   });
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/refreshScorecard/:docId",
+    `${Meteor.settings.public.proxy_prefix_path}/refreshScorecard/:docId`,
     function (params, req, res, next) {
       Picker.middleware(_refreshScorecard(params, req, res, next));
     }
   );
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/:app/refreshScorecard/:docId",
+    `${Meteor.settings.public.proxy_prefix_path}/:app/refreshScorecard/:docId`,
     function (params, req, res, next) {
       Picker.middleware(_refreshScorecard(params, req, res, next));
     }
@@ -590,14 +590,14 @@ if (Meteor.isServer) {
   });
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/setStatusScorecard/:docId",
+    `${Meteor.settings.public.proxy_prefix_path}/setStatusScorecard/:docId`,
     function (params, req, res, next) {
       Picker.middleware(_setStatusScorecard(params, req, res, next));
     }
   );
 
   Picker.route(
-    Meteor.settings.public.proxy_prefix_path + "/:app/setStatusScorecard/:docId",
+    `${Meteor.settings.public.proxy_prefix_path}/:app/setStatusScorecard/:docId`,
     function (params, req, res, next) {
       Picker.middleware(_setStatusScorecard(params, req, res, next));
     }
@@ -618,35 +618,31 @@ const _checkMetaDataRefresh = async function () {
             lastRefreshed : timestamp
         }
      */
-  var refresh = false;
+  let refresh = false;
   const tableUpdates = metaDataTableUpdates.find({}).fetch();
   const dbType =
     matsCollections.Settings.findOne() !== undefined
       ? matsCollections.Settings.findOne().dbType
       : matsTypes.DbTypes.mysql;
-  for (var tui = 0; tui < tableUpdates.length; tui++) {
-    var id = tableUpdates[tui]._id;
-    var poolName = tableUpdates[tui].pool;
-    var dbName = tableUpdates[tui].name;
-    var tableNames = tableUpdates[tui].tables;
-    var lastRefreshed = tableUpdates[tui]["lastRefreshed"];
-    var updatedEpoch = Number.MAX_VALUE;
-    for (var ti = 0; ti < tableNames.length; ti++) {
-      var tName = tableNames[ti];
+  for (let tui = 0; tui < tableUpdates.length; tui++) {
+    const id = tableUpdates[tui]._id;
+    const poolName = tableUpdates[tui].pool;
+    const dbName = tableUpdates[tui].name;
+    const tableNames = tableUpdates[tui].tables;
+    const { lastRefreshed } = tableUpdates[tui];
+    let updatedEpoch = Number.MAX_VALUE;
+    for (let ti = 0; ti < tableNames.length; ti++) {
+      const tName = tableNames[ti];
       try {
         if (Meteor.isServer) {
           switch (dbType) {
             case matsTypes.DbTypes.mysql:
               var rows = matsDataQueryUtils.simplePoolQueryWrapSynchronous(
                 global[poolName],
-                "SELECT UNIX_TIMESTAMP(UPDATE_TIME)" +
-                  "    FROM   information_schema.tables" +
-                  "    WHERE  TABLE_SCHEMA = '" +
-                  dbName +
-                  "'" +
-                  "    AND TABLE_NAME = '" +
-                  tName +
-                  "'"
+                `SELECT UNIX_TIMESTAMP(UPDATE_TIME)` +
+                  `    FROM   information_schema.tables` +
+                  `    WHERE  TABLE_SCHEMA = '${dbName}'` +
+                  `    AND TABLE_NAME = '${tName}'`
               );
               updatedEpoch = rows[0]["UNIX_TIMESTAMP(UPDATE_TIME)"];
               break;
@@ -659,7 +655,7 @@ const _checkMetaDataRefresh = async function () {
               throw new Meteor.Error("resetApp: undefined DbType");
           }
         }
-        //console.log("DB says metadata for table " + dbName + "." + tName + " was updated at " + updatedEpoch);
+        // console.log("DB says metadata for table " + dbName + "." + tName + " was updated at " + updatedEpoch);
         if (
           updatedEpoch === undefined ||
           updatedEpoch === null ||
@@ -667,32 +663,27 @@ const _checkMetaDataRefresh = async function () {
           updatedEpoch === Number.MAX_VALUE
         ) {
           // if time of last update isn't stored by the database (thanks, Aurora DB), refresh automatically
-          //console.log("_checkMetaDataRefresh - cannot find last update time for database: " + dbName + " and table: " + tName);
+          // console.log("_checkMetaDataRefresh - cannot find last update time for database: " + dbName + " and table: " + tName);
           refresh = true;
-          //console.log("FORCED Refreshing the metadata for table because updatedEpoch is undefined" + dbName + "." + tName + " : updated at " + updatedEpoch);
+          // console.log("FORCED Refreshing the metadata for table because updatedEpoch is undefined" + dbName + "." + tName + " : updated at " + updatedEpoch);
           break;
         }
       } catch (e) {
         throw new Error(
-          "_checkMetaDataRefresh - error finding last update time for database: " +
-            dbName +
-            " and table: " +
-            tName +
-            ", ERROR:" +
-            e.message
+          `_checkMetaDataRefresh - error finding last update time for database: ${dbName} and table: ${tName}, ERROR:${e.message}`
         );
       }
       const lastRefreshedEpoch = moment.utc(lastRefreshed).valueOf() / 1000;
       const updatedEpochMoment = moment.utc(updatedEpoch).valueOf();
-      //console.log("Epoch of when this app last refreshed metadata for table " + dbName + "." + tName + " is " + lastRefreshedEpoch);
-      //console.log("Epoch of when the DB says table " + dbName + "." + tName + " was last updated is " + updatedEpochMoment);
+      // console.log("Epoch of when this app last refreshed metadata for table " + dbName + "." + tName + " is " + lastRefreshedEpoch);
+      // console.log("Epoch of when the DB says table " + dbName + "." + tName + " was last updated is " + updatedEpochMoment);
       if (lastRefreshedEpoch < updatedEpochMoment || updatedEpochMoment === 0) {
         // Aurora DB sometimes returns a 0 for last updated. In that case, do refresh the metadata.
         refresh = true;
-        //console.log("Refreshing the metadata in the app selectors because table " + dbName + "." + tName + " was updated at " + moment.utc(updatedEpoch * 1000).format("YYYY-MM-DD HH:mm:ss") + " while the metadata was last refreshed at " + moment.utc(lastRefreshedEpoch * 1000).format("YYYY-MM-DD HH:mm:ss"));
+        // console.log("Refreshing the metadata in the app selectors because table " + dbName + "." + tName + " was updated at " + moment.utc(updatedEpoch * 1000).format("YYYY-MM-DD HH:mm:ss") + " while the metadata was last refreshed at " + moment.utc(lastRefreshedEpoch * 1000).format("YYYY-MM-DD HH:mm:ss"));
         break;
       } else {
-        //console.log("NOT Refreshing the metadata for table " + dbName + "." + tName + " : updated at " + moment.utc(updatedEpoch * 1000).format("YYYY-MM-DD HH:mm:ss") + " : metadata last refreshed at " + moment.utc(lastRefreshedEpoch * 1000).format("YYYY-MM-DD HH:mm:ss"));
+        // console.log("NOT Refreshing the metadata for table " + dbName + "." + tName + " : updated at " + moment.utc(updatedEpoch * 1000).format("YYYY-MM-DD HH:mm:ss") + " : metadata last refreshed at " + moment.utc(lastRefreshedEpoch * 1000).format("YYYY-MM-DD HH:mm:ss"));
       }
     }
     if (refresh === true) {
@@ -700,7 +691,7 @@ const _checkMetaDataRefresh = async function () {
       // app specific routines
       // const asrKeys = Object.keys(appSpecificResetRoutines);
       const asrKeys = appSpecificResetRoutines;
-      for (var ai = 0; ai < asrKeys.length; ai++) {
+      for (let ai = 0; ai < asrKeys.length; ai++) {
         global.appSpecificResetRoutines[ai]();
       }
       // remember that we updated ALL the metadata tables just now
@@ -724,9 +715,7 @@ const _status = function (params, req, res, next) {
   if (Meteor.isServer) {
     const settings = matsCollections.Settings.findOne();
     res.end(
-      "<body><div id='status'>Running: version - " +
-        settings.appVersion +
-        " </div></body>"
+      `<body><div id='status'>Running: version - ${settings.appVersion} </div></body>`
     );
   }
 };
@@ -750,29 +739,20 @@ const _dropScorecardInstance = async function (
     if (cbScorecardPool === undefined) {
       throw new Meteor.Error("_dropScorecardInstance: No cbScorecardPool defined");
     }
-    const statement =
-      `DELETE
+    const statement = `DELETE
             From
                 vxdata._default.SCORECARD sc
             WHERE
                 sc.type='SC'
-                AND sc.userName='` +
-      userName +
-      `'
-                AND sc.name='` +
-      name +
-      `'
-                AND sc.processedAt=` +
-      processedAt +
-      `
-                AND sc.submitted=` +
-      submittedTime +
-      `;`;
+                AND sc.userName='${userName}'
+                AND sc.name='${name}'
+                AND sc.processedAt=${processedAt}
+                AND sc.submitted=${submittedTime};`;
     const result = await cbScorecardPool.queryCB(statement);
     // delete this result from the mongo Scorecard collection
     return;
   } catch (err) {
-    console.log("_dropScorecardInstance error : " + err.message);
+    console.log(`_dropScorecardInstance error : ${err.message}`);
     return {
       error: err.message,
     };
@@ -782,9 +762,9 @@ const _dropScorecardInstance = async function (
 // helper function to map a results array to specific apps
 function _mapArrayToApps(result) {
   // put results in a map keyed by app
-  let newResult = {};
-  let apps = _getListOfApps();
-  for (var aidx = 0; aidx < apps.length; aidx++) {
+  const newResult = {};
+  const apps = _getListOfApps();
+  for (let aidx = 0; aidx < apps.length; aidx++) {
     if (result[aidx] === apps[aidx]) {
       newResult[apps[aidx]] = [result[aidx]];
     } else {
@@ -798,11 +778,11 @@ function _mapArrayToApps(result) {
 function _mapMapToApps(result) {
   // put results in a map keyed by app
   let newResult = {};
-  let apps = _getListOfApps();
-  let resultKeys = Object.keys(result);
+  const apps = _getListOfApps();
+  const resultKeys = Object.keys(result);
   if (!matsDataUtils.arraysEqual(apps.sort(), resultKeys.sort())) {
     if (resultKeys.includes("Predefined region")) result = result["Predefined region"];
-    for (var aidx = 0; aidx < apps.length; aidx++) {
+    for (let aidx = 0; aidx < apps.length; aidx++) {
       newResult[apps[aidx]] = result;
     }
   } else {
@@ -815,26 +795,26 @@ function _mapMapToApps(result) {
 function _getListOfApps() {
   let apps;
   if (
-    matsCollections["database"] !== undefined &&
-    matsCollections["database"].findOne({ name: "database" }) !== undefined
+    matsCollections.database !== undefined &&
+    matsCollections.database.findOne({ name: "database" }) !== undefined
   ) {
     // get list of databases (one per app)
-    apps = matsCollections["database"].findOne({
+    apps = matsCollections.database.findOne({
       name: "database",
     }).options;
     if (!Array.isArray(apps)) apps = Object.keys(apps);
   } else if (
-    matsCollections["variable"] !== undefined &&
-    matsCollections["variable"].findOne({
+    matsCollections.variable !== undefined &&
+    matsCollections.variable.findOne({
       name: "variable",
     }) !== undefined &&
-    matsCollections["threshold"] !== undefined &&
-    matsCollections["threshold"].findOne({
+    matsCollections.threshold !== undefined &&
+    matsCollections.threshold.findOne({
       name: "threshold",
     }) !== undefined
   ) {
     // get list of apps (variables in apps that also have thresholds)
-    apps = matsCollections["variable"].findOne({
+    apps = matsCollections.variable.findOne({
       name: "variable",
     }).options;
     if (!Array.isArray(apps)) apps = Object.keys(apps);
@@ -847,39 +827,39 @@ function _getListOfApps() {
 // helper function for returning a map of database-distinct apps contained within a larger MATS app and their DBs
 function _getListOfAppDBs() {
   let apps;
-  let result = {};
+  const result = {};
   let aidx;
   if (
-    matsCollections["database"] !== undefined &&
-    matsCollections["database"].findOne({ name: "database" }) !== undefined
+    matsCollections.database !== undefined &&
+    matsCollections.database.findOne({ name: "database" }) !== undefined
   ) {
     // get list of databases (one per app)
-    apps = matsCollections["database"].findOne({
+    apps = matsCollections.database.findOne({
       name: "database",
     }).options;
     if (!Array.isArray(apps)) apps = Object.keys(apps);
     for (aidx = 0; aidx < apps.length; aidx++) {
-      result[apps[aidx]] = matsCollections["database"].findOne({
+      result[apps[aidx]] = matsCollections.database.findOne({
         name: "database",
       }).optionsMap[apps[aidx]].sumsDB;
     }
   } else if (
-    matsCollections["variable"] !== undefined &&
-    matsCollections["variable"].findOne({
+    matsCollections.variable !== undefined &&
+    matsCollections.variable.findOne({
       name: "variable",
     }) !== undefined &&
-    matsCollections["threshold"] !== undefined &&
-    matsCollections["threshold"].findOne({
+    matsCollections.threshold !== undefined &&
+    matsCollections.threshold.findOne({
       name: "threshold",
     }) !== undefined
   ) {
     // get list of apps (variables in apps that also have thresholds)
-    apps = matsCollections["variable"].findOne({
+    apps = matsCollections.variable.findOne({
       name: "variable",
     }).options;
     if (!Array.isArray(apps)) apps = Object.keys(apps);
     for (aidx = 0; aidx < apps.length; aidx++) {
-      result[apps[aidx]] = matsCollections["variable"].findOne({
+      result[apps[aidx]] = matsCollections.variable.findOne({
         name: "variable",
       }).optionsMap[apps[aidx]];
       if (
@@ -922,10 +902,10 @@ function _getMapByAppAndModel(selector, mapType) {
         newResult = _mapMapToApps(result);
         result = newResult;
       } else if (
-        matsCollections["database"] === undefined &&
+        matsCollections.database === undefined &&
         !(
-          matsCollections["variable"] !== undefined &&
-          matsCollections["threshold"] !== undefined
+          matsCollections.variable !== undefined &&
+          matsCollections.threshold !== undefined
         )
       ) {
         // key by app title if we're not already
@@ -938,7 +918,7 @@ function _getMapByAppAndModel(selector, mapType) {
     }
     flatJSON = JSON.stringify(result);
   } catch (e) {
-    console.log("error retrieving metadata from " + selector + ": ", e);
+    console.log(`error retrieving metadata from ${selector}: `, e);
     flatJSON = JSON.stringify({
       error: e,
     });
@@ -953,27 +933,27 @@ function _getDateMapByAppAndModel() {
     let result;
     // the date map can be in a few places. we have to hunt for it.
     if (
-      matsCollections["database"] !== undefined &&
-      matsCollections["database"].findOne({
+      matsCollections.database !== undefined &&
+      matsCollections.database.findOne({
         name: "database",
       }) !== undefined &&
-      matsCollections["database"].findOne({
+      matsCollections.database.findOne({
         name: "database",
       }).dates !== undefined
     ) {
-      result = matsCollections["database"].findOne({
+      result = matsCollections.database.findOne({
         name: "database",
       }).dates;
     } else if (
-      matsCollections["variable"] !== undefined &&
-      matsCollections["variable"].findOne({
+      matsCollections.variable !== undefined &&
+      matsCollections.variable.findOne({
         name: "variable",
       }) !== undefined &&
-      matsCollections["variable"].findOne({
+      matsCollections.variable.findOne({
         name: "variable",
       }).dates !== undefined
     ) {
-      result = matsCollections["variable"].findOne({
+      result = matsCollections.variable.findOne({
         name: "variable",
       }).dates;
     } else if (
@@ -992,15 +972,15 @@ function _getDateMapByAppAndModel() {
       result = {};
     }
     if (
-      matsCollections["database"] === undefined &&
+      matsCollections.database === undefined &&
       !(
-        matsCollections["variable"] !== undefined &&
-        matsCollections["threshold"] !== undefined
+        matsCollections.variable !== undefined &&
+        matsCollections.threshold !== undefined
       )
     ) {
       // key by app title if we're not already
       const appTitle = matsCollections.Settings.findOne().Title;
-      let newResult = {};
+      const newResult = {};
       newResult[appTitle] = result;
       result = newResult;
     }
@@ -1028,14 +1008,12 @@ function _getMapByApp(selector) {
         name: selector,
       }).options;
       if (!Array.isArray(result)) result = Object.keys(result);
+    } else if (selector === "statistic") {
+      result = ["ACC"];
+    } else if (selector === "variable") {
+      result = [matsCollections.Settings.findOne().Title];
     } else {
-      if (selector === "statistic") {
-        result = ["ACC"];
-      } else if (selector === "variable") {
-        result = [matsCollections.Settings.findOne().Title];
-      } else {
-        result = [];
-      }
+      result = [];
     }
     // put results in a map keyed by app
     let newResult;
@@ -1046,7 +1024,7 @@ function _getMapByApp(selector) {
     }
     flatJSON = JSON.stringify(newResult);
   } catch (e) {
-    console.log("error retrieving metadata from " + selector + ": ", e);
+    console.log(`error retrieving metadata from ${selector}: `, e);
     flatJSON = JSON.stringify({
       error: e,
     });
@@ -1060,17 +1038,17 @@ function _getlevelsByApp() {
   try {
     let result;
     if (
-      matsCollections["level"] !== undefined &&
-      matsCollections["level"].findOne({ name: "level" }) !== undefined
+      matsCollections.level !== undefined &&
+      matsCollections.level.findOne({ name: "level" }) !== undefined
     ) {
       // we have levels already defined
-      result = matsCollections["level"].findOne({
+      result = matsCollections.level.findOne({
         name: "level",
       }).options;
       if (!Array.isArray(result)) result = Object.keys(result);
     } else if (
-      matsCollections["top"] !== undefined &&
-      matsCollections["top"].findOne({ name: "top" }) !== undefined
+      matsCollections.top !== undefined &&
+      matsCollections.top.findOne({ name: "top" }) !== undefined
     ) {
       // use the MATS mandatory levels
       result = _.range(100, 1050, 50);
@@ -1100,7 +1078,7 @@ const _getApps = function (params, req, res, next) {
   if (Meteor.isServer) {
     let flatJSON = "";
     try {
-      let result = _getListOfApps();
+      const result = _getListOfApps();
       flatJSON = JSON.stringify(result);
     } catch (e) {
       console.log("error retrieving apps: ", e);
@@ -1120,7 +1098,7 @@ const _getAppSumsDBs = function (params, req, res, next) {
   if (Meteor.isServer) {
     let flatJSON = "";
     try {
-      let result = _getListOfAppDBs();
+      const result = _getListOfAppDBs();
       flatJSON = JSON.stringify(result);
     } catch (e) {
       console.log("error retrieving apps: ", e);
@@ -1138,7 +1116,7 @@ const _getAppSumsDBs = function (params, req, res, next) {
 const _getModels = function (params, req, res, next) {
   // this function returns a map of models keyed by app title and model display text
   if (Meteor.isServer) {
-    let flatJSON = _getMapByAppAndModel("data-source", "optionsMap");
+    const flatJSON = _getMapByAppAndModel("data-source", "optionsMap");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
@@ -1177,7 +1155,7 @@ const _getRegionsValuesMap = function (params, req, res, next) {
 const _getStatistics = function (params, req, res, next) {
   // this function returns an map of statistics keyed by app title
   if (Meteor.isServer) {
-    let flatJSON = _getMapByApp("statistic");
+    const flatJSON = _getMapByApp("statistic");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
@@ -1188,7 +1166,7 @@ const _getStatistics = function (params, req, res, next) {
 const _getStatisticsValuesMap = function (params, req, res, next) {
   // this function returns a map of statistic values keyed by app title
   if (Meteor.isServer) {
-    let flatJSON = _getMapByAppAndModel("statistic", "optionsMap");
+    const flatJSON = _getMapByAppAndModel("statistic", "optionsMap");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
@@ -1199,7 +1177,7 @@ const _getStatisticsValuesMap = function (params, req, res, next) {
 const _getVariables = function (params, req, res, next) {
   // this function returns an map of variables keyed by app title
   if (Meteor.isServer) {
-    let flatJSON = _getMapByApp("variable");
+    const flatJSON = _getMapByApp("variable");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
@@ -1210,7 +1188,7 @@ const _getVariables = function (params, req, res, next) {
 const _getVariablesValuesMap = function (params, req, res, next) {
   // this function returns a map of variable values keyed by app title
   if (Meteor.isServer) {
-    let flatJSON = _getMapByAppAndModel("variable", "optionsMap");
+    const flatJSON = _getMapByAppAndModel("variable", "optionsMap");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
@@ -1221,7 +1199,7 @@ const _getVariablesValuesMap = function (params, req, res, next) {
 const _getThresholds = function (params, req, res, next) {
   // this function returns a map of thresholds keyed by app title and model display text
   if (Meteor.isServer) {
-    let flatJSON = _getMapByAppAndModel("threshold", "optionsMap");
+    const flatJSON = _getMapByAppAndModel("threshold", "optionsMap");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
@@ -1232,7 +1210,7 @@ const _getThresholds = function (params, req, res, next) {
 const _getThresholdsValuesMap = function (params, req, res, next) {
   // this function returns a map of threshold values keyed by app title
   if (Meteor.isServer) {
-    let flatJSON = _getMapByAppAndModel("threshold", "valuesMap");
+    const flatJSON = _getMapByAppAndModel("threshold", "valuesMap");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
@@ -1243,7 +1221,7 @@ const _getThresholdsValuesMap = function (params, req, res, next) {
 const _getScales = function (params, req, res, next) {
   // this function returns a map of scales keyed by app title and model display text
   if (Meteor.isServer) {
-    let flatJSON = _getMapByAppAndModel("scale", "optionsMap");
+    const flatJSON = _getMapByAppAndModel("scale", "optionsMap");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
@@ -1254,7 +1232,7 @@ const _getScales = function (params, req, res, next) {
 const _getScalesValuesMap = function (params, req, res, next) {
   // this function returns a map of scale values keyed by app title
   if (Meteor.isServer) {
-    let flatJSON = _getMapByAppAndModel("scale", "valuesMap");
+    const flatJSON = _getMapByAppAndModel("scale", "valuesMap");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
@@ -1265,7 +1243,7 @@ const _getScalesValuesMap = function (params, req, res, next) {
 const _getTruths = function (params, req, res, next) {
   // this function returns a map of truths keyed by app title and model display text
   if (Meteor.isServer) {
-    let flatJSON = _getMapByAppAndModel("truth", "optionsMap");
+    const flatJSON = _getMapByAppAndModel("truth", "optionsMap");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
@@ -1276,7 +1254,7 @@ const _getTruths = function (params, req, res, next) {
 const _getTruthsValuesMap = function (params, req, res, next) {
   // this function returns a map of truth values keyed by app title
   if (Meteor.isServer) {
-    let flatJSON = _getMapByAppAndModel("truth", "valuesMap");
+    const flatJSON = _getMapByAppAndModel("truth", "valuesMap");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
@@ -1287,7 +1265,7 @@ const _getTruthsValuesMap = function (params, req, res, next) {
 const _getFcstLengths = function (params, req, res, next) {
   // this function returns a map of forecast lengths keyed by app title and model display text
   if (Meteor.isServer) {
-    let flatJSON = _getMapByAppAndModel("forecast-length", "optionsMap");
+    const flatJSON = _getMapByAppAndModel("forecast-length", "optionsMap");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
@@ -1298,7 +1276,7 @@ const _getFcstLengths = function (params, req, res, next) {
 const _getFcstTypes = function (params, req, res, next) {
   // this function returns a map of forecast types keyed by app title and model display text
   if (Meteor.isServer) {
-    let flatJSON = _getMapByAppAndModel("forecast-type", "optionsMap");
+    const flatJSON = _getMapByAppAndModel("forecast-type", "optionsMap");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
@@ -1309,7 +1287,7 @@ const _getFcstTypes = function (params, req, res, next) {
 const _getFcstTypesValuesMap = function (params, req, res, next) {
   // this function returns a map of forecast type values keyed by app title
   if (Meteor.isServer) {
-    let flatJSON = _getMapByAppAndModel("forecast-type", "valuesMap");
+    const flatJSON = _getMapByAppAndModel("forecast-type", "valuesMap");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
@@ -1320,7 +1298,7 @@ const _getFcstTypesValuesMap = function (params, req, res, next) {
 const _getValidTimes = function (params, req, res, next) {
   // this function returns an map of valid times keyed by app title
   if (Meteor.isServer) {
-    let flatJSON = _getMapByApp("valid-time");
+    const flatJSON = _getMapByApp("valid-time");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
@@ -1331,7 +1309,7 @@ const _getValidTimes = function (params, req, res, next) {
 const _getLevels = function (params, req, res, next) {
   // this function returns an map of pressure levels keyed by app title
   if (Meteor.isServer) {
-    let flatJSON = _getlevelsByApp();
+    const flatJSON = _getlevelsByApp();
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
@@ -1342,7 +1320,7 @@ const _getLevels = function (params, req, res, next) {
 const _getDates = function (params, req, res, next) {
   // this function returns a map of dates keyed by app title and model display text
   if (Meteor.isServer) {
-    let flatJSON = _getDateMapByAppAndModel();
+    const flatJSON = _getDateMapByAppAndModel();
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
@@ -1352,30 +1330,28 @@ const _getDates = function (params, req, res, next) {
 // private middleware for _getCSV route
 const _getCSV = function (params, req, res, next) {
   if (Meteor.isServer) {
-    var stringify = require("csv-stringify");
-    var csv = "";
+    const stringify = require("csv-stringify");
+    let csv = "";
     try {
-      var result = _getFlattenedResultData(params.key, 0, -1000);
-      var statArray = Object.values(result.stats);
-      var dataArray = Object.values(result.data);
-      var statResultArray = [];
-      var dataResultArray = [];
-      for (var si = 0; si < statArray.length; si++) {
+      const result = _getFlattenedResultData(params.key, 0, -1000);
+      const statArray = Object.values(result.stats);
+      const dataArray = Object.values(result.data);
+      const statResultArray = [];
+      const dataResultArray = [];
+      for (let si = 0; si < statArray.length; si++) {
         statResultArray.push(Object.keys(statArray[si])); // push the stat header for this curve(keys)
         statResultArray.push(
-          statArray[si]["n"] === 0
-            ? [statArray[si].label]
-            : Object.values(statArray[si])
+          statArray[si].n === 0 ? [statArray[si].label] : Object.values(statArray[si])
         ); // push the stats for this curve
       }
 
-      for (var di = 0; di < dataArray.length; di++) {
-        var dataSubArray = Object.values(dataArray[di]);
-        var dataHeader =
+      for (let di = 0; di < dataArray.length; di++) {
+        const dataSubArray = Object.values(dataArray[di]);
+        const dataHeader =
           dataSubArray[0] === undefined
             ? statArray[di].label
             : Object.keys(dataSubArray[0]);
-        //dataHeader[0] = 'label';
+        // dataHeader[0] = 'label';
         dataHeader[0] =
           dataSubArray[0] === undefined
             ? "NO DATA"
@@ -1386,13 +1362,13 @@ const _getCSV = function (params, req, res, next) {
         if (dataSubArray[0] === undefined) {
           continue;
         }
-        for (var dsi = 0; dsi < dataSubArray.length; dsi++) {
+        for (let dsi = 0; dsi < dataSubArray.length; dsi++) {
           // push this curves data
           dataResultArray.push(Object.values(dataSubArray[dsi]));
         }
       }
-      var fileName = "matsplot-" + moment.utc().format("YYYYMMDD-HH.mm.ss") + ".csv";
-      res.setHeader("Content-disposition", "attachment; filename=" + fileName);
+      const fileName = `matsplot-${moment.utc().format("YYYYMMDD-HH.mm.ss")}.csv`;
+      res.setHeader("Content-disposition", `attachment; filename=${fileName}`);
       res.setHeader("Content-Type", "attachment.ContentType");
       stringify(
         statResultArray,
@@ -1402,10 +1378,8 @@ const _getCSV = function (params, req, res, next) {
         function (err, output) {
           if (err) {
             console.log("error in _getCSV:", err);
-            res.write("error," + err.toLocaleString());
-            res.end(
-              "<body><h1>_getCSV Error! " + err.toLocaleString() + "</h1></body>"
-            );
+            res.write(`error,${err.toLocaleString()}`);
+            res.end(`<body><h1>_getCSV Error! ${err.toLocaleString()}</h1></body>`);
             return;
           }
           res.write(output);
@@ -1417,10 +1391,8 @@ const _getCSV = function (params, req, res, next) {
             function (err, output) {
               if (err) {
                 console.log("error in _getCSV:", err);
-                res.write("error," + err.toLocaleString());
-                res.end(
-                  "<body><h1>_getCSV Error! " + err.toLocaleString() + "</h1></body>"
-                );
+                res.write(`error,${err.toLocaleString()}`);
+                res.end(`<body><h1>_getCSV Error! ${err.toLocaleString()}</h1></body>`);
                 return;
               }
               res.write(output);
@@ -1431,10 +1403,10 @@ const _getCSV = function (params, req, res, next) {
       );
     } catch (e) {
       console.log("error retrieving data: ", e);
-      csv = "error," + e.toLocaleString();
+      csv = `error,${e.toLocaleString()}`;
       res.setHeader("Content-disposition", "attachment; filename=matsplot.csv");
       res.setHeader("Content-Type", "attachment.ContentType");
-      res.end("<body><h1>_getCSV Error! " + csv + "</h1></body>");
+      res.end(`<body><h1>_getCSV Error! ${csv}</h1></body>`);
     }
   }
 };
@@ -1442,9 +1414,9 @@ const _getCSV = function (params, req, res, next) {
 // private middleware for _getJSON route
 const _getJSON = function (params, req, res, next) {
   if (Meteor.isServer) {
-    var flatJSON = "";
+    let flatJSON = "";
     try {
-      var result = _getPagenatedData(params.key, 0, -1000);
+      const result = _getPagenatedData(params.key, 0, -1000);
       flatJSON = JSON.stringify(result);
     } catch (e) {
       console.log("error retrieving data: ", e);
@@ -1463,23 +1435,23 @@ const _getJSON = function (params, req, res, next) {
 // private method for getting pagenated results and flattening them in order to be appropriate for text display.
 const _getFlattenedResultData = function (rk, p, np) {
   if (Meteor.isServer) {
-    var resp;
+    let resp;
     try {
-      var r = rk;
+      const r = rk;
       var p = p;
       var np = np;
       // get the pagenated data
-      var result = _getPagenatedData(r, p, np);
+      const result = _getPagenatedData(r, p, np);
       // find the type
-      var plotTypes = result.basis.plotParams.plotTypes;
-      var plotType = _.invert(plotTypes)[true];
+      const { plotTypes } = result.basis.plotParams;
+      const plotType = _.invert(plotTypes).true;
       // extract data
       let isCTC = false;
       let isModeSingle = false;
       let isModePairs = false;
-      var data = result.data;
-      var dsiRealPageIndex = result.dsiRealPageIndex;
-      var dsiTextDirection = result.dsiTextDirection;
+      const { data } = result;
+      const { dsiRealPageIndex } = result;
+      const { dsiTextDirection } = result;
       switch (plotType) {
         case matsTypes.PlotTypes.timeSeries:
         case matsTypes.PlotTypes.profile:
@@ -1542,19 +1514,19 @@ const _getFlattenedResultData = function (rk, p, np) {
               continue; // don't process the zero or max curves
             }
             var stats = {};
-            stats["label"] = data[ci].label;
-            stats["mean"] = data[ci].glob_stats.d_mean;
+            stats.label = data[ci].label;
+            stats.mean = data[ci].glob_stats.d_mean;
             stats["standard deviation"] = data[ci].glob_stats.sd;
-            stats["n"] = data[ci].glob_stats.n_good;
+            stats.n = data[ci].glob_stats.n_good;
             if (
               plotType === matsTypes.PlotTypes.timeSeries ||
               plotType === matsTypes.PlotTypes.profile
             ) {
               stats["standard error"] = data[ci].glob_stats.stde_betsy;
-              stats["lag1"] = data[ci].glob_stats.lag1;
+              stats.lag1 = data[ci].glob_stats.lag1;
             }
-            stats["minimum"] = data[ci].glob_stats.minVal;
-            stats["maximum"] = data[ci].glob_stats.maxVal;
+            stats.minimum = data[ci].glob_stats.minVal;
+            stats.maximum = data[ci].glob_stats.maxVal;
             returnData.stats[data[ci].label] = stats;
 
             var curveData = []; // array of maps
@@ -1567,34 +1539,34 @@ const _getFlattenedResultData = function (rk, p, np) {
                 curveDataElement[data[ci].label + labelSuffix] = data[ci].x[cdi];
               }
               if (isCTC) {
-                curveDataElement["stat"] = data[ci].stats[cdi].stat;
-                curveDataElement["n"] = data[ci].stats[cdi].n;
-                curveDataElement["hit"] = data[ci].stats[cdi].hit;
-                curveDataElement["fa"] = data[ci].stats[cdi].fa;
-                curveDataElement["miss"] = data[ci].stats[cdi].miss;
-                curveDataElement["cn"] = data[ci].stats[cdi].cn;
+                curveDataElement.stat = data[ci].stats[cdi].stat;
+                curveDataElement.n = data[ci].stats[cdi].n;
+                curveDataElement.hit = data[ci].stats[cdi].hit;
+                curveDataElement.fa = data[ci].stats[cdi].fa;
+                curveDataElement.miss = data[ci].stats[cdi].miss;
+                curveDataElement.cn = data[ci].stats[cdi].cn;
               } else if (isModeSingle) {
-                curveDataElement["stat"] = data[ci].stats[cdi].stat;
-                curveDataElement["n_forecast"] = data[ci].stats[cdi].n_forecast;
-                curveDataElement["n_matched"] = data[ci].stats[cdi].n_matched;
-                curveDataElement["n_simple"] = data[ci].stats[cdi].n_simple;
-                curveDataElement["n_total"] = data[ci].stats[cdi].n_total;
+                curveDataElement.stat = data[ci].stats[cdi].stat;
+                curveDataElement.n_forecast = data[ci].stats[cdi].n_forecast;
+                curveDataElement.n_matched = data[ci].stats[cdi].n_matched;
+                curveDataElement.n_simple = data[ci].stats[cdi].n_simple;
+                curveDataElement.n_total = data[ci].stats[cdi].n_total;
               } else if (isModePairs) {
-                curveDataElement["stat"] = data[ci].stats[cdi].stat;
-                curveDataElement["n"] = data[ci].stats[cdi].n;
-                curveDataElement["avgInterest"] = data[ci].stats[cdi].avgInterest;
+                curveDataElement.stat = data[ci].stats[cdi].stat;
+                curveDataElement.n = data[ci].stats[cdi].n;
+                curveDataElement.avgInterest = data[ci].stats[cdi].avgInterest;
               } else {
-                curveDataElement["stat"] = data[ci].stats[cdi].stat;
-                curveDataElement["mean"] = data[ci].stats[cdi].mean;
+                curveDataElement.stat = data[ci].stats[cdi].stat;
+                curveDataElement.mean = data[ci].stats[cdi].mean;
                 curveDataElement["std dev"] = data[ci].stats[cdi].sd;
                 if (
                   plotType === matsTypes.PlotTypes.timeSeries ||
                   plotType === matsTypes.PlotTypes.profile
                 ) {
                   curveDataElement["std error"] = data[ci].stats[cdi].stde_betsy;
-                  curveDataElement["lag1"] = data[ci].stats[cdi].lag1;
+                  curveDataElement.lag1 = data[ci].stats[cdi].lag1;
                 }
-                curveDataElement["n"] = data[ci].stats[cdi].n_good;
+                curveDataElement.n = data[ci].stats[cdi].n_good;
               }
               curveData.push(curveDataElement);
             }
@@ -1615,11 +1587,11 @@ const _getFlattenedResultData = function (rk, p, np) {
               continue; // don't process the zero or max curves
             }
             var stats = {};
-            stats["label"] = data[ci].label;
+            stats.label = data[ci].label;
             if (plotType === matsTypes.PlotTypes.reliability) {
               stats["sample climo"] = data[ci].glob_stats.sample_climo;
             } else if (plotType === matsTypes.PlotTypes.roc) {
-              stats["auc"] = data[ci].glob_stats.auc;
+              stats.auc = data[ci].glob_stats.auc;
             }
             returnData.stats[data[ci].label] = stats;
 
@@ -1628,11 +1600,11 @@ const _getFlattenedResultData = function (rk, p, np) {
               // for each datapoint
               var curveDataElement = {};
               if (plotType === matsTypes.PlotTypes.reliability) {
-                curveDataElement[data[ci].label + " probability bin"] =
+                curveDataElement[`${data[ci].label} probability bin`] =
                   data[ci].stats[cdi].prob_bin;
                 curveDataElement["hit rate"] = data[ci].stats[cdi].hit_rate;
               } else {
-                curveDataElement[data[ci].label + " bin value"] =
+                curveDataElement[`${data[ci].label} bin value`] =
                   data[ci].stats[cdi].bin_value;
                 curveDataElement["probability of detection"] = data[ci].stats[cdi].pody;
                 if (plotType === matsTypes.PlotTypes.roc) {
@@ -1641,10 +1613,10 @@ const _getFlattenedResultData = function (rk, p, np) {
                 } else {
                   curveDataElement["success ratio"] = data[ci].stats[cdi].fa;
                 }
-                curveDataElement["n"] = data[ci].stats[cdi].n;
+                curveDataElement.n = data[ci].stats[cdi].n;
               }
-              curveDataElement["oy"] = data[ci].stats[cdi].obs_y;
-              curveDataElement["on"] = data[ci].stats[cdi].obs_n;
+              curveDataElement.oy = data[ci].stats[cdi].obs_y;
+              curveDataElement.on = data[ci].stats[cdi].obs_n;
               curveData.push(curveDataElement);
             }
             returnData.data[data[ci].label] = curveData;
@@ -1662,17 +1634,17 @@ const _getFlattenedResultData = function (rk, p, np) {
               continue; // don't process the zero or max curves
             }
             var stats = {};
-            stats["label"] = data[ci].label;
+            stats.label = data[ci].label;
 
             var curveData = []; // array of maps
             for (var cdi = 0; cdi < data[ci].y.length; cdi++) {
               // for each datapoint
               var curveDataElement = {};
-              curveDataElement[data[ci].label + " bin value"] =
+              curveDataElement[`${data[ci].label} bin value`] =
                 data[ci].stats[cdi].bin_value;
               curveDataElement["x-stat"] = data[ci].stats[cdi].xstat;
               curveDataElement["y-stat"] = data[ci].stats[cdi].ystat;
-              curveDataElement["n"] = data[ci].stats[cdi].n;
+              curveDataElement.n = data[ci].stats[cdi].n;
               curveData.push(curveDataElement);
             }
             returnData.data[data[ci].label] = curveData;
@@ -1684,7 +1656,7 @@ const _getFlattenedResultData = function (rk, p, np) {
           returnData.data = {}; // map of arrays of maps
 
           var stats = {};
-          stats["label"] = data[0].label;
+          stats.label = data[0].label;
           stats["total number of obs"] = data[0].stats.reduce(function (prev, curr) {
             return prev + curr.N_times;
           }, 0);
@@ -1716,11 +1688,11 @@ const _getFlattenedResultData = function (rk, p, np) {
             curveDataElement["site name"] = data[0].siteName[si];
             curveDataElement["number of times"] = data[0].stats[si].N_times;
             if (isCTC) {
-              curveDataElement["stat"] = data[0].queryVal[si];
-              curveDataElement["hit"] = data[0].stats[si].hit;
-              curveDataElement["fa"] = data[0].stats[si].fa;
-              curveDataElement["miss"] = data[0].stats[si].miss;
-              curveDataElement["cn"] = data[0].stats[si].cn;
+              curveDataElement.stat = data[0].queryVal[si];
+              curveDataElement.hit = data[0].stats[si].hit;
+              curveDataElement.fa = data[0].stats[si].fa;
+              curveDataElement.miss = data[0].stats[si].miss;
+              curveDataElement.cn = data[0].stats[si].cn;
             } else {
               curveDataElement["start date"] = moment
                 .utc(data[0].stats[si].min_time * 1000)
@@ -1728,7 +1700,7 @@ const _getFlattenedResultData = function (rk, p, np) {
               curveDataElement["end date"] = moment
                 .utc(data[0].stats[si].max_time * 1000)
                 .format("YYYY-MM-DD HH:mm");
-              curveDataElement["stat"] = data[0].queryVal[si];
+              curveDataElement.stat = data[0].queryVal[si];
             }
             curveData.push(curveDataElement);
           }
@@ -1746,21 +1718,21 @@ const _getFlattenedResultData = function (rk, p, np) {
               continue; // don't process the zero or max curves
             }
             var stats = {};
-            stats["label"] = data[ci].label;
-            stats["mean"] = data[ci].glob_stats.glob_mean;
+            stats.label = data[ci].label;
+            stats.mean = data[ci].glob_stats.glob_mean;
             stats["standard deviation"] = data[ci].glob_stats.glob_sd;
-            stats["n"] = data[ci].glob_stats.glob_n;
-            stats["minimum"] = data[ci].glob_stats.glob_min;
-            stats["maximum"] = data[ci].glob_stats.glob_max;
+            stats.n = data[ci].glob_stats.glob_n;
+            stats.minimum = data[ci].glob_stats.glob_min;
+            stats.maximum = data[ci].glob_stats.glob_max;
             returnData.stats[data[ci].label] = stats;
 
             var curveData = []; // array of maps
             for (var cdi = 0; cdi < data[ci].x.length; cdi++) {
               // for each datapoint
               var curveDataElement = {};
-              curveDataElement[data[ci].label + " bin range"] =
-                data[ci].bin_stats[cdi]["binLabel"];
-              curveDataElement["n"] = data[ci].bin_stats[cdi].bin_n;
+              curveDataElement[`${data[ci].label} bin range`] =
+                data[ci].bin_stats[cdi].binLabel;
+              curveDataElement.n = data[ci].bin_stats[cdi].bin_n;
               curveDataElement["bin rel freq"] = data[ci].bin_stats[cdi].bin_rf;
               curveDataElement["bin lower bound"] = data[ci].bin_stats[cdi].binLowBound;
               curveDataElement["bin upper bound"] = data[ci].bin_stats[cdi].binUpBound;
@@ -1783,20 +1755,20 @@ const _getFlattenedResultData = function (rk, p, np) {
               continue; // don't process the zero or max curves
             }
             var stats = {};
-            stats["label"] = data[ci].label;
-            stats["mean"] = data[ci].glob_stats.d_mean;
+            stats.label = data[ci].label;
+            stats.mean = data[ci].glob_stats.d_mean;
             stats["standard deviation"] = data[ci].glob_stats.sd;
-            stats["n"] = data[ci].glob_stats.n_good;
-            stats["minimum"] = data[ci].glob_stats.minVal;
-            stats["maximum"] = data[ci].glob_stats.maxVal;
+            stats.n = data[ci].glob_stats.n_good;
+            stats.minimum = data[ci].glob_stats.minVal;
+            stats.maximum = data[ci].glob_stats.maxVal;
             returnData.stats[data[ci].label] = stats;
 
             var curveData = []; // array of maps
             for (var cdi = 0; cdi < data[ci].x.length; cdi++) {
               // for each datapoint
               var curveDataElement = {};
-              curveDataElement[data[ci].label + " bin"] = data[ci].x[cdi];
-              curveDataElement["n"] = data[ci].bin_stats[cdi].bin_n;
+              curveDataElement[`${data[ci].label} bin`] = data[ci].x[cdi];
+              curveDataElement.n = data[ci].bin_stats[cdi].bin_n;
               curveDataElement["bin rel freq"] = data[ci].bin_stats[cdi].bin_rf;
               curveData.push(curveDataElement);
             }
@@ -1809,7 +1781,7 @@ const _getFlattenedResultData = function (rk, p, np) {
           returnData.stats = {}; // map of maps
           returnData.data = {}; // map of arrays of maps
           var stats = {};
-          stats["label"] = data[0].label;
+          stats.label = data[0].label;
           stats["total number of points"] = data[0].glob_stats.n;
           stats["mean stat"] = data[0].glob_stats.mean;
           stats["minimum time"] = moment
@@ -1828,15 +1800,15 @@ const _getFlattenedResultData = function (rk, p, np) {
             data[0].hitTextOutput.length > 0;
           for (var si = 0; si < data[0].xTextOutput.length; si++) {
             var curveDataElement = {};
-            curveDataElement["xVal"] = data[0].xTextOutput[si];
-            curveDataElement["yVal"] = data[0].yTextOutput[si];
-            curveDataElement["stat"] = data[0].zTextOutput[si];
-            curveDataElement["N"] = data[0].nTextOutput[si];
+            curveDataElement.xVal = data[0].xTextOutput[si];
+            curveDataElement.yVal = data[0].yTextOutput[si];
+            curveDataElement.stat = data[0].zTextOutput[si];
+            curveDataElement.N = data[0].nTextOutput[si];
             if (isCTC) {
-              curveDataElement["hit"] = data[0].hitTextOutput[si];
-              curveDataElement["fa"] = data[0].faTextOutput[si];
-              curveDataElement["miss"] = data[0].missTextOutput[si];
-              curveDataElement["cn"] = data[0].cnTextOutput[si];
+              curveDataElement.hit = data[0].hitTextOutput[si];
+              curveDataElement.fa = data[0].faTextOutput[si];
+              curveDataElement.miss = data[0].missTextOutput[si];
+              curveDataElement.cn = data[0].cnTextOutput[si];
             } else {
               curveDataElement["Start Date"] = moment
                 .utc(data[0].minDateTextOutput[si] * 1000)
@@ -1859,8 +1831,8 @@ const _getFlattenedResultData = function (rk, p, np) {
             }
             var curveData = data[ci];
             // look for a best fit curve - only have to look at curves with higher index than this one
-            var bestFitIndex = -1;
-            for (var cbi = ci + 1; cbi < data.length; cbi++) {
+            const bestFitIndex = -1;
+            for (let cbi = ci + 1; cbi < data.length; cbi++) {
               if (
                 data[cbi].label.indexOf(curveData.label) !== -1 &&
                 data[cbi].label.indexOf("-best fit") !== -1
@@ -1872,11 +1844,11 @@ const _getFlattenedResultData = function (rk, p, np) {
                 break;
               }
             }
-            var curveTextData = [];
+            const curveTextData = [];
             for (var cdi = 0; cdi < curveData.data.length; cdi++) {
-              var element = {};
-              element["xAxis"] = curveData.data[cdi][0];
-              element["yAxis"] = curveData.data[cdi][1];
+              const element = {};
+              element.xAxis = curveData.data[cdi][0];
+              element.yAxis = curveData.data[cdi][1];
               if (bestFitIndexes[ci] === undefined) {
                 element["best fit"] = "none;";
               } else {
@@ -1895,7 +1867,7 @@ const _getFlattenedResultData = function (rk, p, np) {
       return returnData;
     } catch (error) {
       throw new Meteor.Error(
-        "Error in _getFlattenedResultData function: " + error.message
+        `Error in _getFlattenedResultData function: ${error.message}`
       );
     }
   }
@@ -1906,23 +1878,23 @@ const _getFlattenedResultData = function (rk, p, np) {
 // a newPageIndex of -2000 means get just the last page
 const _getPagenatedData = function (rky, p, np) {
   if (Meteor.isServer) {
-    var key = rky;
-    var myPageIndex = p;
-    var newPageIndex = np;
-    var ret;
-    var rawReturn;
+    const key = rky;
+    const myPageIndex = p;
+    const newPageIndex = np;
+    let ret;
+    let rawReturn;
 
     try {
-      var result = matsCache.getResult(key);
+      const result = matsCache.getResult(key);
       rawReturn = result === undefined ? undefined : result.result; // getResult structure is {key:something, result:resultObject}
     } catch (e) {
       console.log("_getPagenatedData: Error - ", e);
       return undefined;
     }
     ret = rawReturn === undefined ? undefined : JSON.parse(JSON.stringify(rawReturn));
-    var start;
-    var end;
-    var direction = 1;
+    let start;
+    let end;
+    let direction = 1;
     if (newPageIndex === -1000) {
       // all the data
       start = 0;
@@ -1942,9 +1914,9 @@ const _getPagenatedData = function (rky, p, np) {
       end = (newPageIndex + 1) * 100;
     }
 
-    var dsiStart;
-    var dsiEnd;
-    for (var csi = 0; csi < ret.data.length; csi++) {
+    let dsiStart;
+    let dsiEnd;
+    for (let csi = 0; csi < ret.data.length; csi++) {
       if (!ret.data[csi].x || ret.data[csi].x.length <= 100) {
         continue; // don't bother pagenating datasets less than or equal to a page - ret is rawReturn
       }
@@ -2001,12 +1973,10 @@ const _refreshMetadataMWltData = function (params, req, res, next) {
     } catch (e) {
       console.log(e);
       res.end(
-        "<body>" +
-          "<h1>refreshMetadata Failed!</h1>" +
-          "<p>" +
-          e.message +
-          "</p>" +
-          "</body>"
+        `<body>` +
+          `<h1>refreshMetadata Failed!</h1>` +
+          `<p>${e.message}</p>` +
+          `</body>`
       );
     }
     res.end("<body><h1>refreshMetadata Done!</h1></body>");
@@ -2016,20 +1986,17 @@ const _refreshMetadataMWltData = function (params, req, res, next) {
 // private middleware for causing the scorecard to refresh its mongo collection for a given document
 const _refreshScorecard = function (params, req, res, next) {
   if (Meteor.isServer) {
-    let docId = decodeURIComponent(params.docId);
+    const docId = decodeURIComponent(params.docId);
     // get userName, name, submitted, processedAt from id
     // SC:anonymous--submitted:20230322230435--1block:0:02/19/2023_20_00_-_03/21/2023_20_00
     if (cbScorecardPool === undefined) {
       throw new Meteor.Error("_getScorecardData: No cbScorecardPool defined");
     }
-    const statement =
-      `SELECT sc.*
+    const statement = `SELECT sc.*
                 From
                     vxdata._default.SCORECARD sc
                 WHERE
-                    sc.id='` +
-      docId +
-      `';`;
+                    sc.id='${docId}';`;
     cbScorecardPool
       .queryCB(statement)
       .then((result) => {
@@ -2038,36 +2005,32 @@ const _refreshScorecard = function (params, req, res, next) {
         // TTL is 24 hours
         if (typeof result === "string") {
           throw new Error(`Error from couchbase query - ${result}`);
+        } else if (result[0] === undefined) {
+          throw new Error("Error from couchbase query - document not found");
         } else {
-          if (result[0] === undefined) {
-            throw new Error("Error from couchbase query - document not found");
-          } else {
-            matsCollections.Scorecard.upsert(
-              {
-                "scorecard.userName": result[0].userName,
-                "scorecard.name": result[0].name,
-                "scorecard.submitted": result[0].submitted,
-                "scorecard.processedAt": result[0].processedAt,
+          matsCollections.Scorecard.upsert(
+            {
+              "scorecard.userName": result[0].userName,
+              "scorecard.name": result[0].name,
+              "scorecard.submitted": result[0].submitted,
+              "scorecard.processedAt": result[0].processedAt,
+            },
+            {
+              $set: {
+                createdAt: new Date(),
+                scorecard: result[0],
               },
-              {
-                $set: {
-                  createdAt: new Date(),
-                  scorecard: result[0],
-                },
-              }
-            );
-          }
+            }
+          );
         }
         res.end("<body><h1>refreshScorecard Done!</h1></body>");
       })
       .catch((err) => {
         res.end(
-          "<body>" +
-            "<h1>refreshScorecard Failed!</h1>" +
-            "<p>" +
-            err.message +
-            "</p>" +
-            "</body>"
+          `<body>` +
+            `<h1>refreshScorecard Failed!</h1>` +
+            `<p>${err.message}</p>` +
+            `</body>`
         );
       });
   }
@@ -2075,8 +2038,8 @@ const _refreshScorecard = function (params, req, res, next) {
 
 const _setStatusScorecard = function (params, req, res, next) {
   if (Meteor.isServer) {
-    let docId = decodeURIComponent(params.docId);
-    var body = "";
+    const docId = decodeURIComponent(params.docId);
+    let body = "";
     req.on(
       "data",
       Meteor.bindEnvironment(function (data) {
@@ -2087,12 +2050,12 @@ const _setStatusScorecard = function (params, req, res, next) {
     req.on(
       "end",
       Meteor.bindEnvironment(function () {
-        //console.log(body);
+        // console.log(body);
         try {
-          let doc = JSON.parse(body);
-          let status = doc.status;
-          let error = doc.error;
-          let found = matsCollections.Scorecard.find({ id: docId }).fetch();
+          const doc = JSON.parse(body);
+          const { status } = doc;
+          const { error } = doc;
+          const found = matsCollections.Scorecard.find({ id: docId }).fetch();
           if (found.length === 0) {
             throw new Error("Error from scorecard lookup - document not found");
           }
@@ -2102,7 +2065,7 @@ const _setStatusScorecard = function (params, req, res, next) {
             },
             {
               $set: {
-                status: status,
+                status,
               },
             }
           );
@@ -2111,12 +2074,10 @@ const _setStatusScorecard = function (params, req, res, next) {
         } catch (err) {
           res.statusCode = 400;
           res.end(
-            "<body>" +
-              "<h1>setScorecardStatus Failed!</h1>" +
-              "<p>" +
-              err.message +
-              "</p>" +
-              "</body>"
+            `<body>` +
+              `<h1>setScorecardStatus Failed!</h1>` +
+              `<p>${err.message}</p>` +
+              `</body>`
           );
         }
       })
@@ -2127,14 +2088,14 @@ const _setStatusScorecard = function (params, req, res, next) {
 // private save the result from the query into mongo and downsample if that result's size is greater than 1.2Mb
 const _saveResultData = function (result) {
   if (Meteor.isServer) {
-    var sizeof = require("object-sizeof");
-    var hash = require("object-hash");
-    var key = hash(result.basis.plotParams);
-    var threshold = 1200000;
-    var ret = {};
+    const sizeof = require("object-sizeof");
+    const hash = require("object-hash");
+    const key = hash(result.basis.plotParams);
+    const threshold = 1200000;
+    let ret = {};
     try {
-      var dSize = sizeof(result.data);
-      //console.log("result.basis.data size is ", dSize);
+      const dSize = sizeof(result.data);
+      // console.log("result.basis.data size is ", dSize);
       // TimeSeries and DailyModelCycle are the only plot types that require downSampling
       if (
         dSize > threshold &&
@@ -2144,31 +2105,31 @@ const _saveResultData = function (result) {
         // greater than threshold need to downsample
         // downsample and save it in DownSampleResult
         console.log("DownSampling");
-        var downsampler = require("downsample-lttb");
-        var totalPoints = 0;
-        for (var di = 0; di < result.data.length; di++) {
+        const downsampler = require("downsample-lttb");
+        let totalPoints = 0;
+        for (let di = 0; di < result.data.length; di++) {
           totalPoints += result.data[di].x_epoch.length;
         }
-        var allowedNumberOfPoints = (threshold / dSize) * totalPoints;
-        var downSampleResult =
+        const allowedNumberOfPoints = (threshold / dSize) * totalPoints;
+        const downSampleResult =
           result === undefined ? undefined : JSON.parse(JSON.stringify(result));
         for (var ci = 0; ci < result.data.length; ci++) {
-          var dsData = {};
-          var xyDataset = result.data[ci].x_epoch.map(function (d, index) {
+          const dsData = {};
+          const xyDataset = result.data[ci].x_epoch.map(function (d, index) {
             return [result.data[ci].x_epoch[index], result.data[ci].y[index]];
           });
-          var ratioTotalPoints = xyDataset.length / totalPoints;
-          var myAllowedPoints = Math.round(ratioTotalPoints * allowedNumberOfPoints);
+          const ratioTotalPoints = xyDataset.length / totalPoints;
+          const myAllowedPoints = Math.round(ratioTotalPoints * allowedNumberOfPoints);
           // downsample the array
           var downsampledSeries;
           if (myAllowedPoints < xyDataset.length && xyDataset.length > 2) {
             downsampledSeries = downsampler.processData(xyDataset, myAllowedPoints);
             // replace the y attributes (tooltips etc.) with the y attributes from the nearest x
-            var originalIndex = 0;
+            let originalIndex = 0;
             // skip through the original dataset capturing each downSampled data point
-            var arrayKeys = [];
-            var nonArrayKeys = [];
-            var keys = Object.keys(result.data[ci]);
+            const arrayKeys = [];
+            const nonArrayKeys = [];
+            const keys = Object.keys(result.data[ci]);
             for (var ki = 0; ki < keys.length; ki++) {
               if (keys[ki] !== "x_epoch") {
                 if (Array.isArray(result.data[ci][keys[ki]])) {
@@ -2188,8 +2149,8 @@ const _saveResultData = function (result) {
               );
             }
             // remove the original error_y array data.
-            dsData["error_y"].array = [];
-            for (var dsi = 0; dsi < downsampledSeries.length; dsi++) {
+            dsData.error_y.array = [];
+            for (let dsi = 0; dsi < downsampledSeries.length; dsi++) {
               while (
                 originalIndex < result.data[ci].x_epoch.length &&
                 result.data[ci].x_epoch[originalIndex] < downsampledSeries[dsi][0]
@@ -2201,8 +2162,7 @@ const _saveResultData = function (result) {
                 dsData[arrayKeys[ki]][dsi] =
                   result.data[ci][arrayKeys[ki]][originalIndex];
               }
-              dsData["error_y"]["array"][dsi] =
-                result.data[ci]["error_y"]["array"][originalIndex];
+              dsData.error_y.array[dsi] = result.data[ci].error_y.array[originalIndex];
             }
             // add downsampled annotation to curve options
             downSampleResult[ci] = dsData;
@@ -2214,17 +2174,17 @@ const _saveResultData = function (result) {
         }
         DownSampleResults.rawCollection().insert({
           createdAt: new Date(),
-          key: key,
+          key,
           result: downSampleResult,
         }); // createdAt ensures expiration set in mats-collections
         ret = {
-          key: key,
+          key,
           result: downSampleResult,
         };
       } else {
         ret = {
-          key: key,
-          result: result,
+          key,
+          result,
         };
       }
       // save original dataset in the matsCache
@@ -2233,12 +2193,12 @@ const _saveResultData = function (result) {
         result.basis.plotParams.plotTypes.DailyModelCycle
       ) {
         for (var ci = 0; ci < result.data.length; ci++) {
-          delete result.data[ci]["x_epoch"]; // we only needed this as an index for downsampling
+          delete result.data[ci].x_epoch; // we only needed this as an index for downsampling
         }
       }
       matsCache.storeResult(key, {
-        key: key,
-        result: result,
+        key,
+        result,
       }); // lifespan is handled by lowDb (internally) in matscache
     } catch (error) {
       if (error.toLocaleString().indexOf("larger than the maximum size") !== -1) {
@@ -2249,10 +2209,10 @@ const _saveResultData = function (result) {
   }
 };
 
-//Utility method for writing out the meteor.settings file
+// Utility method for writing out the meteor.settings file
 const _write_settings = function (settings, appName) {
   const fs = require("fs");
-  var settingsPath = process.env.METEOR_SETTINGS_DIR;
+  let settingsPath = process.env.METEOR_SETTINGS_DIR;
   if (!settingsPath) {
     console.log(
       "environment var METEOR_SETTINGS_DIR is undefined: setting it to /usr/app/settings"
@@ -2264,12 +2224,10 @@ const _write_settings = function (settings, appName) {
       recursive: true,
     });
   }
-  var appSettings = {};
-  var newSettings = {};
+  let appSettings = {};
+  let newSettings = {};
   try {
-    const appSettingsData = fs.readFileSync(
-      settingsPath + "/" + appName + "/settings.json"
-    );
+    const appSettingsData = fs.readFileSync(`${settingsPath}/${appName}/settings.json`);
     appSettings = JSON.parse(appSettingsData);
   } catch (e) {
     appSettings = {
@@ -2289,36 +2247,27 @@ const _write_settings = function (settings, appName) {
   };
   // write the settings file
   const jsonSettings = JSON.stringify(newSettings, null, 2);
-  //console.log (jsonSettings);
-  fs.writeFileSync(settingsPath + "/" + appName + "/settings.json", jsonSettings, {
+  // console.log (jsonSettings);
+  fs.writeFileSync(`${settingsPath}/${appName}/settings.json`, jsonSettings, {
     encoding: "utf8",
     flag: "w",
   });
 };
-//return the scorecard for the provided selectors
+// return the scorecard for the provided selectors
 const _getScorecardData = async function (userName, name, submitted, processedAt) {
   try {
     if (cbScorecardPool === undefined) {
       throw new Meteor.Error("_getScorecardData: No cbScorecardPool defined");
     }
-    const statement =
-      `SELECT sc.*
+    const statement = `SELECT sc.*
             From
                 vxdata._default.SCORECARD sc
             WHERE
                 sc.type='SC'
-                AND sc.userName='` +
-      userName +
-      `'
-                AND sc.name='` +
-      name +
-      `'
-                AND sc.processedAt=` +
-      processedAt +
-      `
-                AND sc.submitted=` +
-      submitted +
-      `;`;
+                AND sc.userName='${userName}'
+                AND sc.name='${name}'
+                AND sc.processedAt=${processedAt}
+                AND sc.submitted=${submitted};`;
     const result = await cbScorecardPool.queryCBWithConsistency(statement);
     if (typeof result === "string" && result.indexOf("ERROR")) {
       throw new Meteor.Error(result);
@@ -2351,9 +2300,9 @@ const _getScorecardData = async function (userName, name, submitted, processedAt
     )._id;
     // no need to return the whole thing, just the identifying fields
     // and the ID. The app will find the whole thing in the mongo collection.
-    return { scorecard: result[0], docID: docID };
+    return { scorecard: result[0], docID };
   } catch (err) {
-    console.log("_getScorecardData error : " + err.message);
+    console.log(`_getScorecardData error : ${err.message}`);
     return {
       error: err.message,
     };
@@ -2402,7 +2351,7 @@ const _getScorecardInfo = async function () {
     });
     return scMap;
   } catch (err) {
-    console.log("_getScorecardInfo error : " + err.message);
+    console.log(`_getScorecardInfo error : ${err.message}`);
     return {
       error: err.message,
     };
@@ -2419,31 +2368,22 @@ const _getPlotParamsFromScorecardInstance = async function (
     if (cbScorecardPool === undefined) {
       throw new Meteor.Error("_getScorecardInfo: No cbScorecardPool defined");
     }
-    const statement =
-      `SELECT sc.plotParams
+    const statement = `SELECT sc.plotParams
             From
                 vxdata._default.SCORECARD sc
             WHERE
                 sc.type='SC'
-                AND sc.userName='` +
-      userName +
-      `'
-                AND sc.name='` +
-      name +
-      `'
-                AND sc.processedAt=` +
-      processedAt +
-      `
-                AND sc.submitted=` +
-      submitted +
-      `;`;
+                AND sc.userName='${userName}'
+                AND sc.name='${name}'
+                AND sc.processedAt=${processedAt}
+                AND sc.submitted=${submitted};`;
     const result = await cbScorecardPool.queryCBWithConsistency(statement);
     if (typeof result === "string" && result.indexOf("ERROR")) {
       throw new Meteor.Error(result);
     }
     return result[0];
   } catch (err) {
-    console.log("_getPlotParamsFromScorecardInstance error : " + err.message);
+    console.log(`_getPlotParamsFromScorecardInstance error : ${err.message}`);
     return {
       error: err.message,
     };
@@ -2451,7 +2391,7 @@ const _getPlotParamsFromScorecardInstance = async function (
 };
 
 // PUBLIC METHODS
-//administration tools
+// administration tools
 const addSentAddress = new ValidatedMethod({
   name: "matsMethods.addSentAddress",
   validate: new SimpleSchema({
@@ -2487,22 +2427,22 @@ const applyAuthorization = new ValidatedMethod({
   }).validator(),
   run(settings) {
     if (Meteor.isServer) {
-      var roles;
-      var roleName;
-      var authorization;
+      let roles;
+      let roleName;
+      let authorization;
 
-      var userRoleName = settings.userRoleName;
-      var userRoleDescription = settings.userRoleDescription;
-      var authorizationRole = settings.authorizationRole;
-      var newUserEmail = settings.newUserEmail;
-      var existingUserEmail = settings.existingUserEmail;
+      const { userRoleName } = settings;
+      const { userRoleDescription } = settings;
+      const { authorizationRole } = settings;
+      const { newUserEmail } = settings;
+      const { existingUserEmail } = settings;
 
       if (authorizationRole) {
         // existing role - the role roleName - no need to verify as the selection list came from the database
         roleName = authorizationRole;
       } else if (userRoleName && userRoleDescription) {
         // possible new role - see if it happens to already exist
-        var role = matsCollections.Roles.findOne({
+        const role = matsCollections.Roles.findOne({
           name: userRoleName,
         });
         if (role === undefined) {
@@ -2521,7 +2461,7 @@ const applyAuthorization = new ValidatedMethod({
         } else {
           // see if the description matches...
           roleName = role.name;
-          var description = role.description;
+          const { description } = role;
           if (description !== userRoleDescription) {
             // have to update the description
             matsCollections.Roles.upsert(
@@ -2556,7 +2496,7 @@ const applyAuthorization = new ValidatedMethod({
             },
             {
               $set: {
-                roles: roles,
+                roles,
               },
             }
           );
@@ -2580,7 +2520,7 @@ const applyAuthorization = new ValidatedMethod({
               },
               {
                 $set: {
-                  roles: roles,
+                  roles,
                 },
               }
             );
@@ -2598,7 +2538,7 @@ const applyAuthorization = new ValidatedMethod({
               },
               {
                 $set: {
-                  roles: roles,
+                  roles,
                 },
               }
             );
@@ -2645,7 +2585,7 @@ const applyDatabaseSettings = new ValidatedMethod({
   },
 });
 
-//administration tools
+// administration tools
 const deleteSettings = new ValidatedMethod({
   name: "matsMethods.deleteSettings",
   validate: new SimpleSchema({
@@ -2694,7 +2634,7 @@ const dropScorecardInstance = new ValidatedMethod({
   },
 });
 
-//administration tools
+// administration tools
 const emailImage = new ValidatedMethod({
   name: "matsMethods.emailImage",
   validate: new SimpleSchema({
@@ -2709,22 +2649,22 @@ const emailImage = new ValidatedMethod({
     },
   }).validator(),
   run(params) {
-    var imageStr = params.imageStr;
-    var toAddress = params.toAddress;
-    var subject = params.subject;
+    const { imageStr } = params;
+    const { toAddress } = params;
+    const { subject } = params;
     if (!Meteor.userId()) {
       throw new Meteor.Error(401, "not-logged-in");
     }
-    var fromAddress = Meteor.user().services.google.email;
+    const fromAddress = Meteor.user().services.google.email;
     // these come from google - see
     // http://masashi-k.blogspot.fr/2013/06/sending-mail-with-gmail-using-xoauth2.html
-    //http://stackoverflow.com/questions/24098461/nodemailer-gmail-what-exactly-is-a-refresh-token-and-how-do-i-get-one/24123550
+    // http://stackoverflow.com/questions/24098461/nodemailer-gmail-what-exactly-is-a-refresh-token-and-how-do-i-get-one/24123550
 
     // the gmail account for the credentials is mats.mail.daemon@gmail.com - pwd mats2015!
-    //var clientId = "339389735380-382sf11aicmgdgn7e72p4end5gnm9sad.apps.googleusercontent.com";
-    //var clientSecret = "7CfNN-tRl5QAL595JTW2TkRl";
-    //var refresh_token = "1/PDql7FR01N2gmq5NiTfnrT-OlCYC3U67KJYYDNPeGnA";
-    var credentials = matsCollections.Credentials.findOne(
+    // var clientId = "339389735380-382sf11aicmgdgn7e72p4end5gnm9sad.apps.googleusercontent.com";
+    // var clientSecret = "7CfNN-tRl5QAL595JTW2TkRl";
+    // var refresh_token = "1/PDql7FR01N2gmq5NiTfnrT-OlCYC3U67KJYYDNPeGnA";
+    const credentials = matsCollections.Credentials.findOne(
       {
         name: "oauth_google",
       },
@@ -2734,33 +2674,33 @@ const emailImage = new ValidatedMethod({
         refresh_token: 1,
       }
     );
-    var clientId = credentials.clientId;
-    var clientSecret = credentials.clientSecret;
-    var refresh_token = credentials.refresh_token;
+    const { clientId } = credentials;
+    const { clientSecret } = credentials;
+    const { refresh_token } = credentials;
 
-    var smtpTransporter;
+    let smtpTransporter;
     try {
       smtpTransporter = Nodemailer.createTransport("SMTP", {
         service: "Gmail",
         auth: {
           XOAuth2: {
             user: "mats.gsd@noaa.gov",
-            clientId: clientId,
-            clientSecret: clientSecret,
+            clientId,
+            clientSecret,
             refreshToken: refresh_token,
           },
         },
       });
     } catch (e) {
-      throw new Meteor.Error(401, "Transport error " + e.message());
+      throw new Meteor.Error(401, `Transport error ${e.message()}`);
     }
     try {
-      var mailOptions = {
+      const mailOptions = {
         sender: fromAddress,
         replyTo: fromAddress,
         from: fromAddress,
         to: toAddress,
-        subject: subject,
+        subject,
         attachments: [
           {
             filename: "graph.png",
@@ -2772,20 +2712,15 @@ const emailImage = new ValidatedMethod({
       smtpTransporter.sendMail(mailOptions, function (error, response) {
         if (error) {
           console.log(
-            "smtpTransporter error " +
-              error +
-              " from:" +
-              fromAddress +
-              " to:" +
-              toAddress
+            `smtpTransporter error ${error} from:${fromAddress} to:${toAddress}`
           );
         } else {
-          console.log(response + " from:" + fromAddress + " to:" + toAddress);
+          console.log(`${response} from:${fromAddress} to:${toAddress}`);
         }
         smtpTransporter.close();
       });
     } catch (e) {
-      throw new Meteor.Error(401, "Send error " + e.message());
+      throw new Meteor.Error(401, `Send error ${e.message()}`);
     }
     return false;
   },
@@ -2796,9 +2731,9 @@ const getAuthorizations = new ValidatedMethod({
   name: "matsMethods.getAuthorizations",
   validate: new SimpleSchema({}).validator(),
   run() {
-    var roles = [];
+    let roles = [];
     if (Meteor.isServer) {
-      var userEmail = Meteor.user().services.google.email.toLowerCase();
+      const userEmail = Meteor.user().services.google.email.toLowerCase();
       roles = matsCollections.Authorization.findOne({
         email: userEmail,
       }).roles;
@@ -2842,71 +2777,67 @@ const getGraphData = new ValidatedMethod({
   }).validator(),
   run(params) {
     if (Meteor.isServer) {
-      var plotGraphFunction = matsCollections.PlotGraphFunctions.findOne({
+      const plotGraphFunction = matsCollections.PlotGraphFunctions.findOne({
         plotType: params.plotType,
       });
-      var dataFunction = plotGraphFunction.dataFunction;
-      var ret;
+      const { dataFunction } = plotGraphFunction;
+      let ret;
       try {
-        var hash = require("object-hash");
-        var key = hash(params.plotParams);
+        const hash = require("object-hash");
+        const key = hash(params.plotParams);
         if (process.env.NODE_ENV === "development" || params.expireKey) {
           matsCache.expireKey(key);
         }
-        var results = matsCache.getResult(key);
+        const results = matsCache.getResult(key);
         if (results === undefined) {
           // results aren't in the cache - need to process data routine
           const Future = require("fibers/future");
-          var future = new Future();
+          const future = new Future();
           global[dataFunction](params.plotParams, function (results) {
             ret = _saveResultData(results);
-            future["return"](ret);
+            future.return(ret);
           });
           return future.wait();
-        } else {
-          // results were already in the matsCache (same params and not yet expired)
-          // are results in the downsampled collection?
-          var dsResults = DownSampleResults.findOne(
+        }
+        // results were already in the matsCache (same params and not yet expired)
+        // are results in the downsampled collection?
+        const dsResults = DownSampleResults.findOne(
+          {
+            key,
+          },
+          {},
+          {
+            disableOplog: true,
+          }
+        );
+        if (dsResults !== undefined) {
+          // results are in the mongo cache downsampled collection - returned the downsampled graph data
+          ret = dsResults;
+          // update the expire time in the downsampled collection - this requires a new Date
+          DownSampleResults.rawCollection().update(
             {
-              key: key,
+              key,
             },
-            {},
             {
-              disableOplog: true,
+              $set: {
+                createdAt: new Date(),
+              },
             }
           );
-          if (dsResults !== undefined) {
-            // results are in the mongo cache downsampled collection - returned the downsampled graph data
-            ret = dsResults;
-            // update the expire time in the downsampled collection - this requires a new Date
-            DownSampleResults.rawCollection().update(
-              {
-                key: key,
-              },
-              {
-                $set: {
-                  createdAt: new Date(),
-                },
-              }
-            );
-          } else {
-            ret = results; // {key:someKey, result:resultObject}
-            // refresh expire time. The only way to perform a refresh on matsCache is to re-save the result.
-            matsCache.storeResult(results.key, results);
-          }
-          var sizeof = require("object-sizeof");
-          console.log("result.data size is ", sizeof(results));
-          return ret;
+        } else {
+          ret = results; // {key:someKey, result:resultObject}
+          // refresh expire time. The only way to perform a refresh on matsCache is to re-save the result.
+          matsCache.storeResult(results.key, results);
         }
+        const sizeof = require("object-sizeof");
+        console.log("result.data size is ", sizeof(results));
+        return ret;
       } catch (dataFunctionError) {
         if (dataFunctionError.toLocaleString().indexOf("INFO:") !== -1) {
           throw new Meteor.Error(dataFunctionError.message);
         } else {
           throw new Meteor.Error(
-            "Error in getGraphData function:" +
-              dataFunction +
-              " : " +
-              dataFunctionError.message
+            `Error in getGraphData function:${dataFunction} : ${dataFunctionError.message}`
           );
         }
       }
@@ -2924,12 +2855,12 @@ const getGraphDataByKey = new ValidatedMethod({
   }).validator(),
   run(params) {
     if (Meteor.isServer) {
-      var ret;
-      var key = params.resultKey;
+      let ret;
+      const key = params.resultKey;
       try {
-        var dsResults = DownSampleResults.findOne(
+        const dsResults = DownSampleResults.findOne(
           {
-            key: key,
+            key,
           },
           {},
           {
@@ -2941,12 +2872,12 @@ const getGraphDataByKey = new ValidatedMethod({
         } else {
           ret = matsCache.getResult(key); // {key:someKey, result:resultObject}
         }
-        var sizeof = require("object-sizeof");
+        const sizeof = require("object-sizeof");
         console.log("getGraphDataByKey results size is ", sizeof(dsResults));
         return ret;
       } catch (error) {
         throw new Meteor.Error(
-          "Error in getGraphDataByKey function:" + key + " : " + error.message
+          `Error in getGraphDataByKey function:${key} : ${error.message}`
         );
       }
     }
@@ -2962,17 +2893,15 @@ const getLayout = new ValidatedMethod({
   }).validator(),
   run(params) {
     if (Meteor.isServer) {
-      var ret;
-      var key = params.resultKey;
+      let ret;
+      const key = params.resultKey;
       try {
         ret = LayoutStoreCollection.rawCollection().findOne({
-          key: key,
+          key,
         });
         return ret;
       } catch (error) {
-        throw new Meteor.Error(
-          "Error in getLayout function:" + key + " : " + error.message
-        );
+        throw new Meteor.Error(`Error in getLayout function:${key} : ${error.message}`);
       }
     }
   },
@@ -2987,14 +2916,14 @@ const getScorecardSettings = new ValidatedMethod({
   }).validator(),
   async run(params) {
     if (Meteor.isServer) {
-      let key = params.settingsKey;
+      const key = params.settingsKey;
       try {
         // global cbScorecardSettingsPool
         const rv = await cbScorecardSettingsPool.getCB(key);
         return { scorecardSettings: rv.content };
       } catch (error) {
         throw new Meteor.Error(
-          "Error in getScorecardSettings function:" + key + " : " + error.message
+          `Error in getScorecardSettings function:${key} : ${error.message}`
         );
       }
     }
@@ -3029,7 +2958,7 @@ const getPlotParamsFromScorecardInstance = new ValidatedMethod({
       }
     } catch (error) {
       throw new Meteor.Error(
-        "Error in getPlotParamsFromScorecardInstance function:" + error.message
+        `Error in getPlotParamsFromScorecardInstance function:${error.message}`
       );
     }
   },
@@ -3059,10 +2988,10 @@ const getPlotResult = new ValidatedMethod({
   }).validator(),
   run(params) {
     if (Meteor.isServer) {
-      var rKey = params.resultKey;
-      var pi = params.pageIndex;
-      var npi = params.newPageIndex;
-      var ret = {};
+      const rKey = params.resultKey;
+      const pi = params.pageIndex;
+      const npi = params.newPageIndex;
+      let ret = {};
       try {
         ret = _getFlattenedResultData(rKey, pi, npi);
       } catch (e) {
@@ -3080,33 +3009,29 @@ const getReleaseNotes = new ValidatedMethod({
     //     return Assets.getText('public/MATSReleaseNotes.html');
     // }
     if (Meteor.isServer) {
-      var future = require("fibers/future");
-      var fse = require("fs-extra");
-      var dFuture = new future();
-      var fData;
-      var file;
+      const future = require("fibers/future");
+      const fse = require("fs-extra");
+      const dFuture = new future();
+      let fData;
+      let file;
       if (process.env.NODE_ENV === "development") {
-        file =
-          process.env.PWD +
-          "/.meteor/local/build/programs/server/assets/packages/randyp_mats-common/public/MATSReleaseNotes.html";
+        file = `${process.env.PWD}/.meteor/local/build/programs/server/assets/packages/randyp_mats-common/public/MATSReleaseNotes.html`;
       } else {
-        file =
-          process.env.PWD +
-          "/programs/server/assets/packages/randyp_mats-common/public/MATSReleaseNotes.html";
+        file = `${process.env.PWD}/programs/server/assets/packages/randyp_mats-common/public/MATSReleaseNotes.html`;
       }
       try {
         fse.readFile(file, "utf8", function (err, data) {
           if (err) {
             fData = err.message;
-            dFuture["return"]();
+            dFuture.return();
           } else {
             fData = data;
-            dFuture["return"]();
+            dFuture.return();
           }
         });
       } catch (e) {
         fData = e.message;
-        dFuture["return"]();
+        dFuture.return();
       }
       dFuture.wait();
       return fData;
@@ -3198,7 +3123,7 @@ const insertColor = new ValidatedMethod({
     if (params.newColor === "rgb(255,255,255)") {
       return false;
     }
-    var colorScheme = matsCollections.ColorScheme.findOne({});
+    const colorScheme = matsCollections.ColorScheme.findOne({});
     colorScheme.colors.splice(params.insertAfterIndex, 0, newColor);
     matsCollections.update({}, colorScheme);
     return false;
@@ -3211,23 +3136,23 @@ const readFunctionFile = new ValidatedMethod({
   validate: new SimpleSchema({}).validator(),
   run() {
     if (Meteor.isServer) {
-      var future = require("fibers/future");
-      var fse = require("fs-extra");
-      var path = "";
-      var fData;
+      const future = require("fibers/future");
+      const fse = require("fs-extra");
+      let path = "";
+      let fData;
       if (type === "data") {
-        path = "/web/static/dataFunctions/" + file;
-        console.log("exporting data file: " + path);
+        path = `/web/static/dataFunctions/${file}`;
+        console.log(`exporting data file: ${path}`);
       } else if (type === "graph") {
-        path = "/web/static/displayFunctions/" + file;
-        console.log("exporting graph file: " + path);
+        path = `/web/static/displayFunctions/${file}`;
+        console.log(`exporting graph file: ${path}`);
       } else {
         return "error - wrong type";
       }
       fse.readFile(path, function (err, data) {
         if (err) throw err;
         fData = data.toString();
-        future["return"](fData);
+        future.return(fData);
       });
       return future.wait();
     }
@@ -3241,7 +3166,7 @@ const refreshMetaData = new ValidatedMethod({
   run() {
     if (Meteor.isServer) {
       try {
-        //console.log("GUI asked to refresh metadata");
+        // console.log("GUI asked to refresh metadata");
         _checkMetaDataRefresh();
       } catch (e) {
         console.log(e);
@@ -3263,12 +3188,12 @@ const removeAuthorization = new ValidatedMethod({
   }).validator(),
   run(settings) {
     if (Meteor.isServer) {
-      var email;
-      var roleName;
-      var userRoleName = settings.userRoleName;
-      var authorizationRole = settings.authorizationRole;
-      var newUserEmail = settings.newUserEmail;
-      var existingUserEmail = settings.existingUserEmail;
+      let email;
+      let roleName;
+      const { userRoleName } = settings;
+      const { authorizationRole } = settings;
+      const { newUserEmail } = settings;
+      const { existingUserEmail } = settings;
       if (authorizationRole) {
         // existing role - the role roleName - no need to verify as the selection list came from the database
         roleName = authorizationRole;
@@ -3285,7 +3210,7 @@ const removeAuthorization = new ValidatedMethod({
       if (email && roleName) {
         matsCollections.Authorization.update(
           {
-            email: email,
+            email,
           },
           {
             $pull: {
@@ -3297,7 +3222,7 @@ const removeAuthorization = new ValidatedMethod({
       // if user and no role remove the user
       if (email && !roleName) {
         matsCollections.Authorization.remove({
-          email: email,
+          email,
         });
       }
       // if role and no user remove role and remove role from all users
@@ -3335,8 +3260,8 @@ const removeColor = new ValidatedMethod({
     },
   }).validator(),
   run(removeColor) {
-    var colorScheme = matsCollections.ColorScheme.findOne({});
-    var removeIndex = colorScheme.colors.indexOf(removeColor);
+    const colorScheme = matsCollections.ColorScheme.findOne({});
+    const removeIndex = colorScheme.colors.indexOf(removeColor);
     colorScheme.colors.splice(removeIndex, 1);
     matsCollections.ColorScheme.update({}, colorScheme);
     return false;
@@ -3375,17 +3300,17 @@ const applySettingsData = new ValidatedMethod({
   run(settingsParam) {
     if (Meteor.isServer) {
       // Read the existing settings file
-      const settings = settingsParam.settings;
+      const { settings } = settingsParam;
       console.log(
         "applySettingsData - matsCollections.appName.findOne({}) is ",
         matsCollections.appName.findOne({})
       );
-      const appName = matsCollections.Settings.findOne({}).appName;
+      const { appName } = matsCollections.Settings.findOne({});
       _write_settings(settings, appName);
       // in development - when being run by meteor, this should force a restart of the app.
-      //in case I am in a container - exit and force a reload
+      // in case I am in a container - exit and force a reload
       console.log(
-        "applySettingsData - process.env.NODE_ENV is: " + process.env.NODE_ENV
+        `applySettingsData - process.env.NODE_ENV is: ${process.env.NODE_ENV}`
       );
       if (process.env.NODE_ENV !== "development") {
         console.log("applySettingsData - exiting after writing new Settings");
@@ -3399,9 +3324,9 @@ const applySettingsData = new ValidatedMethod({
 // for default settings ...
 const resetApp = async function (appRef) {
   if (Meteor.isServer) {
-    var fse = require("fs-extra");
+    const fse = require("fs-extra");
     const metaDataTableRecords = appRef.appMdr;
-    const appPools = appRef.appPools;
+    const { appPools } = appRef;
     const type = appRef.appType;
     const scorecard = Meteor.settings.public.scorecard
       ? Meteor.settings.public.scorecard
@@ -3417,10 +3342,10 @@ const resetApp = async function (appRef) {
     const thresholdUnits = Meteor.settings.public.threshold_units
       ? Meteor.settings.public.threshold_units
       : {};
-    var appDefaultGroup = "";
-    var appDefaultDB = "";
-    var appDefaultModel = "";
-    var appColor;
+    let appDefaultGroup = "";
+    let appDefaultDB = "";
+    let appDefaultModel = "";
+    let appColor;
     switch (type) {
       case matsTypes.AppTypes.mats:
         if (dbType === matsTypes.DbTypes.couchbase) {
@@ -3449,15 +3374,15 @@ const resetApp = async function (appRef) {
     const appTimeOut = Meteor.settings.public.mysql_wait_timeout
       ? Meteor.settings.public.mysql_wait_timeout
       : 300;
-    var dep_env = process.env.NODE_ENV;
-    var curve_params = curveParamsByApp[Meteor.settings.public.app];
-    var apps_to_score;
+    let dep_env = process.env.NODE_ENV;
+    const curve_params = curveParamsByApp[Meteor.settings.public.app];
+    let apps_to_score;
     if (Meteor.settings.public.scorecard) {
       apps_to_score = Meteor.settings.public.apps_to_score
         ? Meteor.settings.public.apps_to_score
         : [];
     }
-    var mapboxKey = "undefined";
+    let mapboxKey = "undefined";
 
     // see if there's any messages to display to the users
     const appMessage = Meteor.settings.public.alert_message
@@ -3467,13 +3392,13 @@ const resetApp = async function (appRef) {
     // set meteor settings defaults if they do not exist
     if (isEmpty(Meteor.settings.private) || isEmpty(Meteor.settings.public)) {
       // create some default meteor settings and write them out
-      var homeUrl = "";
+      let homeUrl = "";
       if (!process.env.ROOT_URL) {
         homeUrl = "https://localhost/home";
       } else {
-        var homeUrlArr = process.env.ROOT_URL.split("/");
+        const homeUrlArr = process.env.ROOT_URL.split("/");
         homeUrlArr.pop();
-        homeUrl = homeUrlArr.join("/") + "/home";
+        homeUrl = `${homeUrlArr.join("/")}/home`;
       }
       const settings = {
         private: {
@@ -3483,13 +3408,13 @@ const resetApp = async function (appRef) {
         },
         public: {
           run_environment: dep_env,
-          apps_to_score: apps_to_score,
+          apps_to_score,
           default_group: appDefaultGroup,
           default_db: appDefaultDB,
           default_model: appDefaultModel,
           proxy_prefix_path: "",
           home: homeUrl,
-          appName: appName,
+          appName,
           mysql_wait_timeout: appTimeOut,
           group: appGroup,
           app_order: 1,
@@ -3519,7 +3444,7 @@ const resetApp = async function (appRef) {
       mapboxKey = Meteor.settings.private.MAPBOX_KEY;
     }
     delete Meteor.settings.public.undefinedRoles;
-    for (var pi = 0; pi < appPools.length; pi++) {
+    for (let pi = 0; pi < appPools.length; pi++) {
       const record = appPools[pi];
       const poolName = record.pool;
       // if the database credentials have been set in the meteor.private.settings file then the global[poolName]
@@ -3528,7 +3453,7 @@ const resetApp = async function (appRef) {
       // the corresponding role to Meteor.settings.public.undefinedRoles -
       // which will cause the app to route to the configuration page.
       if (!global[poolName]) {
-        console.log("resetApp adding " + global[poolName] + "to undefined roles");
+        console.log(`resetApp adding ${global[poolName]}to undefined roles`);
         // There was no pool defined for this poolName - probably needs to be configured so stash the role in the public settings
         if (!Meteor.settings.public.undefinedRoles) {
           Meteor.settings.public.undefinedRoles = [];
@@ -3538,22 +3463,20 @@ const resetApp = async function (appRef) {
       }
       try {
         if (dbType === matsTypes.DbTypes.couchbase) {
-          //simple couchbase test
+          // simple couchbase test
           const time = await cbPool.queryCB("select NOW_MILLIS() as time;");
           break;
         } else {
           // default to mysql so that old apps won't break
           global[poolName].on("connection", function (connection) {
             connection.query("set group_concat_max_len = 4294967295");
-            connection.query("set session wait_timeout = " + appTimeOut);
-            //("opening new " + poolName + " connection");
+            connection.query(`set session wait_timeout = ${appTimeOut}`);
+            // ("opening new " + poolName + " connection");
           });
         }
       } catch (e) {
         console.log(
-          poolName +
-            ":  not initialized-- could not open connection: Error:" +
-            e.message
+          `${poolName}:  not initialized-- could not open connection: Error:${e.message}`
         );
         Meteor.settings.public.undefinedRoles =
           Meteor.settings.public.undefinedRoles === undefined
@@ -3571,23 +3494,19 @@ const resetApp = async function (appRef) {
       Meteor.settings.public.undefinedRoles.length > 1
     ) {
       throw new Meteor.Error(
-        "dbpools not initialized " + Meteor.settings.public.undefinedRoles
+        `dbpools not initialized ${Meteor.settings.public.undefinedRoles}`
       );
     }
 
     // Try getting version from env
-    let {
-      version: appVersion,
-      commit: commit,
-      branch: branch,
-    } = versionInfo.getVersionsFromEnv();
+    let { version: appVersion, commit, branch } = versionInfo.getVersionsFromEnv();
     if (appVersion === "Unknown") {
       // Try getting versionInfo from the appProduction database
       console.log("VERSION not set in the environment - using localhost");
       appVersion = "localhost";
       commit = "HEAD";
     }
-    const appType = type ? type : matsTypes.AppTypes.mats;
+    const appType = type || matsTypes.AppTypes.mats;
 
     // remember that we updated the metadata tables just now - create metaDataTableUpdates
     /*
@@ -3600,8 +3519,8 @@ const resetApp = async function (appRef) {
          */
     // only create metadata tables if the resetApp was called with a real metaDataTables object
     if (metaDataTableRecords instanceof matsTypes.MetaDataDBRecord) {
-      var metaDataTables = metaDataTableRecords.getRecords();
-      for (var mdti = 0; mdti < metaDataTables.length; mdti++) {
+      const metaDataTables = metaDataTableRecords.getRecords();
+      for (let mdti = 0; mdti < metaDataTables.length; mdti++) {
         const metaDataRef = metaDataTables[mdti];
         metaDataRef.lastRefreshed = moment().format();
         if (metaDataTableUpdates.find({ name: metaDataRef.name }).count() === 0) {
@@ -3650,9 +3569,9 @@ const resetApp = async function (appRef) {
     // get the curve params for this app into their collections
     matsCollections.CurveParamsInfo.remove({});
     matsCollections.CurveParamsInfo.insert({
-      curve_params: curve_params,
+      curve_params,
     });
-    for (var cp = 0; cp < curve_params.length; cp++) {
+    for (let cp = 0; cp < curve_params.length; cp++) {
       if (matsCollections[curve_params[cp]] !== undefined) {
         matsCollections[curve_params[cp]].remove({});
       }
@@ -3663,7 +3582,7 @@ const resetApp = async function (appRef) {
         apps_to_score = Meteor.settings.public.apps_to_score;
         matsCollections.AppsToScore.remove({});
         matsCollections.AppsToScore.insert({
-          apps_to_score: apps_to_score,
+          apps_to_score,
         });
       } else {
         throw new Meteor.Error(
@@ -3672,9 +3591,9 @@ const resetApp = async function (appRef) {
       }
     }
     // invoke the app specific routines
-    //const asrKeys = Object.keys(appSpecificResetRoutines);
+    // const asrKeys = Object.keys(appSpecificResetRoutines);
     const asrKeys = appSpecificResetRoutines;
-    for (var ai = 0; ai < asrKeys.length; ai++) {
+    for (let ai = 0; ai < asrKeys.length; ai++) {
       global.appSpecificResetRoutines[ai]();
     }
     matsCache.clear();
@@ -3701,27 +3620,27 @@ const saveLayout = new ValidatedMethod({
   }).validator(),
   run(params) {
     if (Meteor.isServer) {
-      var key = params.resultKey;
-      var layout = params.layout;
-      var curveOpsUpdate = params.curveOpsUpdate;
-      var annotation = params.annotation;
+      const key = params.resultKey;
+      const { layout } = params;
+      const { curveOpsUpdate } = params;
+      const { annotation } = params;
       try {
         LayoutStoreCollection.upsert(
           {
-            key: key,
+            key,
           },
           {
             $set: {
               createdAt: new Date(),
-              layout: layout,
-              curveOpsUpdate: curveOpsUpdate,
-              annotation: annotation,
+              layout,
+              curveOpsUpdate,
+              annotation,
             },
           }
         );
       } catch (error) {
         throw new Meteor.Error(
-          "Error in saveLayout function:" + key + " : " + error.message
+          `Error in saveLayout function:${key} : ${error.message}`
         );
       }
     }
@@ -3740,15 +3659,16 @@ const saveScorecardSettings = new ValidatedMethod({
   }).validator(),
   run(params) {
     if (Meteor.isServer) {
-      var key = params.settingsKey;
-      var scorecardSettings = params.scorecardSettings;
+      const key = params.settingsKey;
+      const { scorecardSettings } = params;
       try {
         // TODO - remove after tests
         console.log(
-          "saveScorecardSettings(" +
-            key +
-            "):\n" +
-            JSON.stringify(scorecardSettings, null, 2)
+          `saveScorecardSettings(${key}):\n${JSON.stringify(
+            scorecardSettings,
+            null,
+            2
+          )}`
         );
         // global cbScorecardSettingsPool
         (async function (id, doc) {
@@ -3764,7 +3684,7 @@ const saveScorecardSettings = new ValidatedMethod({
   },
 });
 
-//administration tools
+// administration tools
 const saveSettings = new ValidatedMethod({
   name: "matsMethods.saveSettings",
   validate: new SimpleSchema({
@@ -3780,7 +3700,7 @@ const saveSettings = new ValidatedMethod({
     },
   }).validator(),
   run(params) {
-    var user = "anonymous";
+    const user = "anonymous";
     matsCollections.CurveSettings.upsert(
       {
         name: params.saveAs,
@@ -3854,7 +3774,7 @@ const testGetTables = new ValidatedMethod({
           });
           connection.query("show tables;", function (err, result) {
             if (err || result === undefined) {
-              //return callback(err,null);
+              // return callback(err,null);
               return callback(err, null);
             }
             const tables = result.map(function (a) {
@@ -3883,8 +3803,8 @@ const testSetMetaDataTableUpdatesLastRefreshedBack = new ValidatedMethod({
   name: "matsMethods.testSetMetaDataTableUpdatesLastRefreshedBack",
   validate: new SimpleSchema({}).validator(),
   run() {
-    var mtu = metaDataTableUpdates.find({}).fetch();
-    var id = mtu[0]._id;
+    const mtu = metaDataTableUpdates.find({}).fetch();
+    const id = mtu[0]._id;
     metaDataTableUpdates.update(
       {
         _id: id,
@@ -3899,39 +3819,38 @@ const testSetMetaDataTableUpdatesLastRefreshedBack = new ValidatedMethod({
   },
 });
 export default matsMethods = {
-  addSentAddress: addSentAddress,
-  applyAuthorization: applyAuthorization,
-  applyDatabaseSettings: applyDatabaseSettings,
-  applySettingsData: applySettingsData,
-  deleteSettings: deleteSettings,
-  dropScorecardInstance: dropScorecardInstance,
-  emailImage: emailImage,
-  getAuthorizations: getAuthorizations,
-  getRunEnvironment: getRunEnvironment,
-  getDefaultGroupList: getDefaultGroupList,
-  getGraphData: getGraphData,
-  getGraphDataByKey: getGraphDataByKey,
-  getLayout: getLayout,
-  getPlotParamsFromScorecardInstance: getPlotParamsFromScorecardInstance,
-  getPlotResult: getPlotResult,
-  getReleaseNotes: getReleaseNotes,
-  getScorecardInfo: getScorecardInfo,
-  getScorecardData: getScorecardData,
-  getScorecardSettings: getScorecardSettings,
-  getUserAddress: getUserAddress,
-  insertColor: insertColor,
-  readFunctionFile: readFunctionFile,
-  refreshMetaData: refreshMetaData,
-  removeAuthorization: removeAuthorization,
-  removeColor: removeColor,
-  removeDatabase: removeDatabase,
-  resetApp: resetApp,
-  saveLayout: saveLayout,
-  saveScorecardSettings: saveScorecardSettings,
-  saveSettings: saveSettings,
-  setCurveParamDisplayText: setCurveParamDisplayText,
-  testGetMetaDataTableUpdates: testGetMetaDataTableUpdates,
-  testGetTables: testGetTables,
-  testSetMetaDataTableUpdatesLastRefreshedBack:
-    testSetMetaDataTableUpdatesLastRefreshedBack,
+  addSentAddress,
+  applyAuthorization,
+  applyDatabaseSettings,
+  applySettingsData,
+  deleteSettings,
+  dropScorecardInstance,
+  emailImage,
+  getAuthorizations,
+  getRunEnvironment,
+  getDefaultGroupList,
+  getGraphData,
+  getGraphDataByKey,
+  getLayout,
+  getPlotParamsFromScorecardInstance,
+  getPlotResult,
+  getReleaseNotes,
+  getScorecardInfo,
+  getScorecardData,
+  getScorecardSettings,
+  getUserAddress,
+  insertColor,
+  readFunctionFile,
+  refreshMetaData,
+  removeAuthorization,
+  removeColor,
+  removeDatabase,
+  resetApp,
+  saveLayout,
+  saveScorecardSettings,
+  saveSettings,
+  setCurveParamDisplayText,
+  testGetMetaDataTableUpdates,
+  testGetTables,
+  testSetMetaDataTableUpdatesLastRefreshedBack,
 };

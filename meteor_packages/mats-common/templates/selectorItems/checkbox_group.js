@@ -3,27 +3,26 @@
  */
 
 import { matsTypes } from "meteor/randyp:mats-common";
+
 Template.checkboxGroup.helpers({
-  checkedByDefault: function (def) {
+  checkedByDefault(def) {
     if (def === this) {
       return "checked";
-    } else {
-      return "";
     }
+    return "";
   },
-  labelValue: function (optionsMap) {
+  labelValue(optionsMap) {
     if (optionsMap !== undefined) {
       return optionsMap[this];
-    } else {
-      return this;
     }
+    return this;
   },
 });
 
 Template.checkboxGroup.events({
-  "change, blur": function (event) {
+  "change, blur"(event) {
     try {
-      var text = event.currentTarget.value;
+      const text = event.currentTarget.value;
       matsParamUtils.setValueTextForParamName(event.target.name, text);
     } catch (error) {
       matsParamUtils.setValueTextForParamName(event.target.name, "");

@@ -16,7 +16,7 @@ import { Template } from "meteor/templating";
 import { FlowRouter } from "meteor/ostrio:flow-router-extra";
 import "./graphStandAlone.html";
 
-var resizeOptions;
+let resizeOptions;
 
 Template.GraphStandAlone.onCreated(function () {
   // get the params for what this window will contain from the route
@@ -31,12 +31,12 @@ Template.GraphStandAlone.onCreated(function () {
 Template.GraphStandAlone.onRendered(function () {
   // the window resize event needs to also resize the graph
   $(window).resize(function () {
-    var plotType = Session.get("plotType");
+    const plotType = Session.get("plotType");
     document.getElementById("placeholder").style.width =
       matsGraphUtils.standAloneWidth(plotType);
     document.getElementById("placeholder").style.height =
       matsGraphUtils.standAloneHeight(plotType);
-    var dataset = matsCurveUtils.getGraphResult().data;
+    const dataset = matsCurveUtils.getGraphResult().data;
     Plotly.newPlot($("#placeholder")[0], dataset, resizeOptions, { showLink: true });
   });
   document.getElementById("graph-container").style.backgroundColor = "white";
@@ -47,10 +47,10 @@ Template.GraphStandAlone.helpers({
    * @return {string}
    * @return {string}
    */
-  graphFunction: function (params) {
+  graphFunction(params) {
     // causes graph display routine to be processed
-    var graphFunction = FlowRouter.getParam("graphFunction");
-    var key = FlowRouter.getParam("key");
+    const graphFunction = FlowRouter.getParam("graphFunction");
+    const key = FlowRouter.getParam("key");
     matsMethods.getGraphDataByKey.call({ resultKey: key }, function (error, ret) {
       if (error !== undefined) {
         setError(error);
@@ -63,8 +63,8 @@ Template.GraphStandAlone.helpers({
       Session.set("graphFunction", graphFunction);
       Session.set("PlotResultsUpDated", new Date());
       Session.set("PlotParams", ret.result.basis.plotParams);
-      var ptypes = Object.keys(ret.result.basis.plotParams.plotTypes);
-      for (var i = 0; i < ptypes.length; i++) {
+      const ptypes = Object.keys(ret.result.basis.plotParams.plotTypes);
+      for (let i = 0; i < ptypes.length; i++) {
         if (ret.result.basis.plotParams.plotTypes[ptypes[i]] === true) {
           Session.set("plotType", ptypes[i]);
           break;
@@ -72,9 +72,9 @@ Template.GraphStandAlone.helpers({
       }
       if (graphFunction) {
         eval(graphFunction)(key);
-        var plotType = Session.get("plotType");
-        var dataset = matsCurveUtils.getGraphResult().data;
-        var options = matsCurveUtils.getGraphResult().options;
+        const plotType = Session.get("plotType");
+        const dataset = matsCurveUtils.getGraphResult().data;
+        let { options } = matsCurveUtils.getGraphResult();
         if (dataset === undefined) {
           return false;
         }
@@ -84,7 +84,7 @@ Template.GraphStandAlone.helpers({
             setError(error);
             return false;
           }
-          var mapLoadPause = 0;
+          let mapLoadPause = 0;
           options = ret.layout;
           if (plotType === matsTypes.PlotTypes.map) {
             options.mapbox.zoom = 2.75;
@@ -106,13 +106,13 @@ Template.GraphStandAlone.helpers({
             // update changes to the curve ops -- need to pause if we're doing a map so the map can finish loading before we try to edit it
             setTimeout(function () {
               const updates = ret.curveOpsUpdate.curveOpsUpdate;
-              for (var uidx = 0; uidx < updates.length; uidx++) {
-                var curveOpsUpdate = {};
-                var updatedKeys = Object.keys(updates[uidx]);
-                for (var kidx = 0; kidx < updatedKeys.length; kidx++) {
-                  var jsonHappyKey = updatedKeys[kidx];
+              for (let uidx = 0; uidx < updates.length; uidx++) {
+                const curveOpsUpdate = {};
+                const updatedKeys = Object.keys(updates[uidx]);
+                for (let kidx = 0; kidx < updatedKeys.length; kidx++) {
+                  const jsonHappyKey = updatedKeys[kidx];
                   // turn the json placeholder back into .
-                  var updatedKey = jsonHappyKey.split("____").join(".");
+                  const updatedKey = jsonHappyKey.split("____").join(".");
                   curveOpsUpdate[updatedKey] = updates[uidx][jsonHappyKey];
                 }
                 Plotly.restyle($("#placeholder")[0], curveOpsUpdate, uidx);
@@ -127,34 +127,34 @@ Template.GraphStandAlone.helpers({
       }
     });
   },
-  graphFunctionDispay: function () {
+  graphFunctionDispay() {
     return "block";
   },
-  Title: function () {
+  Title() {
     return Session.get("appName");
   },
-  width: function () {
-    var plotType = Session.get("plotType");
+  width() {
+    const plotType = Session.get("plotType");
     return matsGraphUtils.standAloneWidth(plotType);
   },
-  height: function () {
-    var plotType = Session.get("plotType");
+  height() {
+    const plotType = Session.get("plotType");
     return matsGraphUtils.standAloneHeight(plotType);
   },
-  curves: function () {
+  curves() {
     return Session.get("Curves");
   },
-  plotName: function () {
+  plotName() {
     return Session.get("PlotParams") === [] ||
       Session.get("PlotParams").plotAction === undefined ||
       Session.get("plotType") === matsTypes.PlotTypes.map
       ? ""
       : Session.get("PlotParams").plotAction.toUpperCase();
   },
-  plotText: function () {
-    var p = Session.get("PlotParams");
+  plotText() {
+    const p = Session.get("PlotParams");
     if (p !== undefined) {
-      var format = p.plotFormat;
+      let format = p.plotFormat;
       if (
         matsCollections.PlotParams.findOne({ name: "plotFormat" }) &&
         matsCollections.PlotParams.findOne({ name: "plotFormat" }).optionsMap &&
@@ -169,76 +169,75 @@ Template.GraphStandAlone.helpers({
       if (format === undefined) {
         format = "Unmatched";
       }
-      var plotType = Session.get("plotType");
+      const plotType = Session.get("plotType");
       switch (plotType) {
         case matsTypes.PlotTypes.timeSeries:
-          return "TimeSeries " + p.dates + " : " + format;
+          return `TimeSeries ${p.dates} : ${format}`;
         case matsTypes.PlotTypes.profile:
-          return "Profile: " + format;
+          return `Profile: ${format}`;
         case matsTypes.PlotTypes.dieoff:
-          return "DieOff: " + format;
+          return `DieOff: ${format}`;
         case matsTypes.PlotTypes.threshold:
-          return "Threshold: " + format;
+          return `Threshold: ${format}`;
         case matsTypes.PlotTypes.validtime:
-          return "ValidTime: " + format;
+          return `ValidTime: ${format}`;
         case matsTypes.PlotTypes.gridscale:
-          return "GridScale: " + format;
+          return `GridScale: ${format}`;
         case matsTypes.PlotTypes.dailyModelCycle:
-          return "DailyModelCycle " + p.dates + " : " + format;
+          return `DailyModelCycle ${p.dates} : ${format}`;
         case matsTypes.PlotTypes.yearToYear:
-          return "YearToYear: " + format;
+          return `YearToYear: ${format}`;
         case matsTypes.PlotTypes.reliability:
-          return "Reliability: " + p.dates + " : " + format;
+          return `Reliability: ${p.dates} : ${format}`;
         case matsTypes.PlotTypes.roc:
-          return "ROC Curve: " + format;
+          return `ROC Curve: ${format}`;
         case matsTypes.PlotTypes.performanceDiagram:
-          return "Performance Diagram: " + format;
+          return `Performance Diagram: ${format}`;
         case matsTypes.PlotTypes.map:
-          return "Map " + p.dates + " ";
+          return `Map ${p.dates} `;
         case matsTypes.PlotTypes.histogram:
-          return "Histogram: " + format;
+          return `Histogram: ${format}`;
         case matsTypes.PlotTypes.ensembleHistogram:
-          return "Ensemble Histogram: " + format;
+          return `Ensemble Histogram: ${format}`;
         case matsTypes.PlotTypes.contour:
-          return "Contour " + p.dates + " : " + format;
+          return `Contour ${p.dates} : ${format}`;
         case matsTypes.PlotTypes.contourDiff:
-          return "ContourDiff " + p.dates + " : " + format;
+          return `ContourDiff ${p.dates} : ${format}`;
         case matsTypes.PlotTypes.simpleScatter:
-          return "SimpleScatter " + p.dates + " : " + format;
+          return `SimpleScatter ${p.dates} : ${format}`;
         case matsTypes.PlotTypes.scatter2d:
           break;
         default:
-          return "Scatter: " + p.dates + " : " + format;
+          return `Scatter: ${p.dates} : ${format}`;
       }
     } else {
       return "no plot params";
     }
   },
-  color: function () {
+  color() {
     return this.color;
   },
-  matsplotFilemname: function () {
-    return "newplot-" + moment(new Date()).format("DD-MM-YYYY-hh:mm:ss");
+  matsplotFilemname() {
+    return `newplot-${moment(new Date()).format("DD-MM-YYYY-hh:mm:ss")}`;
   },
-  spinnerUrl: function () {
-    return (
-      document.location.href.split("preview")[0] +
-      "/packages/randyp_mats-common/public/img/spinner.gif"
-    );
+  spinnerUrl() {
+    return `${
+      document.location.href.split("preview")[0]
+    }/packages/randyp_mats-common/public/img/spinner.gif`;
   },
 });
 
 Template.GraphStandAlone.events({
-  "click .exportpdf": function (e) {
+  "click .exportpdf"(e) {
     $(".previewCurveButtons").each(function (i, obj) {
       obj.style.display = "none";
     });
     html2canvas(document.querySelector("#graph-container"), { scale: 3.0 }).then(
       (canvas) => {
-        var h = 419.53;
-        var w = 595.28;
-        var filename = document.getElementById("exportFileName").value;
-        let pdf = new jsPDF("letter", "pt", "a5");
+        const h = 419.53;
+        const w = 595.28;
+        const filename = document.getElementById("exportFileName").value;
+        const pdf = new jsPDF("letter", "pt", "a5");
         pdf.addImage(canvas.toDataURL("image/jpeg"), "JPEG", 0, 0, w, h);
         pdf.save(filename);
         $(".previewCurveButtons").each(function (i, obj) {
@@ -247,16 +246,16 @@ Template.GraphStandAlone.events({
       }
     );
   },
-  "click .exportpng": function (e) {
+  "click .exportpng"(e) {
     $(".previewCurveButtons").each(function (i, obj) {
       obj.style.display = "none";
     });
     html2canvas(document.querySelector("#graph-container"), { scale: 3.0 }).then(
       (canvas) => {
-        var h = 419.53;
-        var w = 595.28;
-        var filename = document.getElementById("exportFileName").value;
-        saveAs(canvas.toDataURL(), filename + ".png");
+        const h = 419.53;
+        const w = 595.28;
+        const filename = document.getElementById("exportFileName").value;
+        saveAs(canvas.toDataURL(), `${filename}.png`);
         $(".previewCurveButtons").each(function (i, obj) {
           obj.style.display = "block";
         });
@@ -264,18 +263,18 @@ Template.GraphStandAlone.events({
     );
 
     function saveAs(uri, filename) {
-      var link = document.createElement("a");
+      const link = document.createElement("a");
       if (typeof link.download === "string") {
         link.href = uri;
         link.download = filename;
 
-        //Firefox requires the link to be in the body
+        // Firefox requires the link to be in the body
         document.body.appendChild(link);
 
-        //simulate click
+        // simulate click
         link.click();
 
-        //remove the link when done
+        // remove the link when done
         document.body.removeChild(link);
       } else {
         window.open(uri);

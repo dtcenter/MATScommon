@@ -5,26 +5,22 @@
 import { Meteor } from "meteor/meteor";
 import { FlowRouter } from "meteor/ostrio:flow-router-extra";
 
-//localhost routes
+// localhost routes
 
 FlowRouter.route("/", {
   name: "main",
   action() {
     if (Meteor.settings.public.scorecard) {
       this.render("ScorecardHome");
+    } else if (Meteor.settings.public.custom) {
+      this.render("CustomHome");
+    } else if (
+      Meteor.settings.public.undefinedRoles !== undefined &&
+      Meteor.settings.public.undefinedRoles.length > 0
+    ) {
+      this.render("Configure");
     } else {
-      if (Meteor.settings.public.custom) {
-        this.render("CustomHome");
-      } else {
-        if (
-          Meteor.settings.public.undefinedRoles !== undefined &&
-          Meteor.settings.public.undefinedRoles.length > 0
-        ) {
-          this.render("Configure");
-        } else {
-          this.render("Home");
-        }
-      }
+      this.render("Home");
     }
   },
 });
@@ -69,32 +65,27 @@ FlowRouter.route("/scorecardTimeseries/:key", {
   },
 });
 
-//prefix routes
-FlowRouter.route(Meteor.settings.public.proxy_prefix_path + "/", {
+// prefix routes
+FlowRouter.route(`${Meteor.settings.public.proxy_prefix_path}/`, {
   name: "main",
   action() {
     if (Meteor.settings.public.scorecard) {
       this.render("ScorecardHome");
+    } else if (Meteor.settings.public.custom) {
+      this.render("CustomHome");
+    } else if (
+      Meteor.settings.public.undefinedRoles !== undefined &&
+      Meteor.settings.public.undefinedRoles.length > 0
+    ) {
+      this.render("Configure");
     } else {
-      if (Meteor.settings.public.custom) {
-        this.render("CustomHome");
-      } else {
-        if (
-          Meteor.settings.public.undefinedRoles !== undefined &&
-          Meteor.settings.public.undefinedRoles.length > 0
-        ) {
-          this.render("Configure");
-        } else {
-          this.render("Home");
-        }
-      }
+      this.render("Home");
     }
   },
 });
 
 FlowRouter.route(
-  Meteor.settings.public.proxy_prefix_path +
-    "/CSV/:graphFunction/:key/:matching/:appName",
+  `${Meteor.settings.public.proxy_prefix_path}/CSV/:graphFunction/:key/:matching/:appName`,
   {
     name: "csv",
     action(params) {
@@ -104,8 +95,7 @@ FlowRouter.route(
 );
 
 FlowRouter.route(
-  Meteor.settings.public.proxy_prefix_path +
-    "/JSON/:graphFunction/:key/:matching/:appName",
+  `${Meteor.settings.public.proxy_prefix_path}/JSON/:graphFunction/:key/:matching/:appName`,
   {
     name: "json",
     action(params) {
@@ -115,8 +105,7 @@ FlowRouter.route(
 );
 
 FlowRouter.route(
-  Meteor.settings.public.proxy_prefix_path +
-    "/preview/:graphFunction/:key/:matching/:appName",
+  `${Meteor.settings.public.proxy_prefix_path}/preview/:graphFunction/:key/:matching/:appName`,
   {
     name: "preview",
     action(params) {
@@ -126,8 +115,7 @@ FlowRouter.route(
 );
 
 FlowRouter.route(
-  Meteor.settings.public.proxy_prefix_path +
-    "/scorecardDisplay/:userName/:name/:submitted/:processedAt",
+  `${Meteor.settings.public.proxy_prefix_path}/scorecardDisplay/:userName/:name/:submitted/:processedAt`,
   {
     name: "scorecardDisplay",
     action(params) {
@@ -137,7 +125,7 @@ FlowRouter.route(
 );
 
 FlowRouter.route(
-  Meteor.settings.public.proxy_prefix_path + "/scorecardTimeseries/:key",
+  `${Meteor.settings.public.proxy_prefix_path}/scorecardTimeseries/:key`,
   {
     name: "scorecardTimeseries",
     action(params) {
@@ -152,31 +140,26 @@ FlowRouter.route(
 );
 
 // appname routes
-FlowRouter.route(Meteor.settings.public.proxy_prefix_path + "/:appName", {
+FlowRouter.route(`${Meteor.settings.public.proxy_prefix_path}/:appName`, {
   name: "main",
   action() {
     if (Meteor.settings.public.scorecard) {
       this.render("ScorecardHome");
+    } else if (Meteor.settings.public.custom) {
+      this.render("CustomHome");
+    } else if (
+      Meteor.settings.public.undefinedRoles !== undefined &&
+      Meteor.settings.public.undefinedRoles.length > 0
+    ) {
+      this.render("Configure");
     } else {
-      if (Meteor.settings.public.custom) {
-        this.render("CustomHome");
-      } else {
-        if (
-          Meteor.settings.public.undefinedRoles !== undefined &&
-          Meteor.settings.public.undefinedRoles.length > 0
-        ) {
-          this.render("Configure");
-        } else {
-          this.render("Home");
-        }
-      }
+      this.render("Home");
     }
   },
 });
 
 FlowRouter.route(
-  Meteor.settings.public.proxy_prefix_path +
-    "/*/CSV/:graphFunction/:key/:matching/:appName",
+  `${Meteor.settings.public.proxy_prefix_path}/*/CSV/:graphFunction/:key/:matching/:appName`,
   {
     name: "csv",
     action(params) {
@@ -186,8 +169,7 @@ FlowRouter.route(
 );
 
 FlowRouter.route(
-  Meteor.settings.public.proxy_prefix_path +
-    "/*/JSON/:graphFunction/:key/:matching/:appName",
+  `${Meteor.settings.public.proxy_prefix_path}/*/JSON/:graphFunction/:key/:matching/:appName`,
   {
     name: "json",
     action(params) {
@@ -197,8 +179,7 @@ FlowRouter.route(
 );
 
 FlowRouter.route(
-  Meteor.settings.public.proxy_prefix_path +
-    "/*/preview/:graphFunction/:key/:matching/:appName",
+  `${Meteor.settings.public.proxy_prefix_path}/*/preview/:graphFunction/:key/:matching/:appName`,
   {
     name: "preview",
     action(params) {
@@ -208,8 +189,7 @@ FlowRouter.route(
 );
 
 FlowRouter.route(
-  Meteor.settings.public.proxy_prefix_path +
-    "/*/scorecardDisplay/:userName/:name/:submitted/:processedAt",
+  `${Meteor.settings.public.proxy_prefix_path}/*/scorecardDisplay/:userName/:name/:submitted/:processedAt`,
   {
     name: "scorecardDisplay",
     action(params) {
@@ -219,7 +199,7 @@ FlowRouter.route(
 );
 
 FlowRouter.route(
-  Meteor.settings.public.proxy_prefix_path + "/*/scorecardTimeseries/:key",
+  `${Meteor.settings.public.proxy_prefix_path}/*/scorecardTimeseries/:key`,
   {
     name: "scorecardTimeseries",
     action(params) {
@@ -234,7 +214,7 @@ FlowRouter.route(
 );
 
 // exception routes
-FlowRouter.route(Meteor.settings.public.proxy_prefix_path + "/*/", {
+FlowRouter.route(`${Meteor.settings.public.proxy_prefix_path}/*/`, {
   name: "main",
   action() {
     this.render("notFound");

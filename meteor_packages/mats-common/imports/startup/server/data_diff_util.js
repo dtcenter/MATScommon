@@ -2,15 +2,14 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import { matsTypes } from "meteor/randyp:mats-common";
-import { matsDataUtils } from "meteor/randyp:mats-common";
+import { matsTypes, matsDataUtils } from "meteor/randyp:mats-common";
 
 // returns the data for whichever curve has the larger interval in its independent variable
 const getLargeIntervalCurveData = function (dataset, diffFrom, independentVarName) {
-  var dataMaxInterval = Number.MIN_VALUE;
-  var largeIntervalCurveData = dataset[diffFrom[0]];
+  let dataMaxInterval = Number.MIN_VALUE;
+  let largeIntervalCurveData = dataset[diffFrom[0]];
   // set up the indexes and determine the minimum independentVarName value for the dataset
-  for (var ci = 0; ci < dataset.length; ci++) {
+  for (let ci = 0; ci < dataset.length; ci++) {
     if (
       dataset[ci][independentVarName] === undefined ||
       dataset[ci][independentVarName].length === 0
@@ -20,7 +19,7 @@ const getLargeIntervalCurveData = function (dataset, diffFrom, independentVarNam
     }
     if (dataset[ci][independentVarName].length > 1) {
       var diff;
-      for (var di = 0; di < dataset[ci][independentVarName].length - 1; di++) {
+      for (let di = 0; di < dataset[ci][independentVarName].length - 1; di++) {
         // don't go all the way to the end - one shy
         diff =
           dataset[ci][independentVarName][di + 1] - dataset[ci][independentVarName][di];
@@ -79,12 +78,12 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC, isSca
 
      */
 
-  const plotType = appParams.plotType;
-  const hasLevels = appParams.hasLevels;
+  const { plotType } = appParams;
+  const { hasLevels } = appParams;
 
   // determine whether data[0] or data[1] is the independent variable, and which is the stat value
-  var independentVarName;
-  var statVarName;
+  let independentVarName;
+  let statVarName;
   if (plotType !== matsTypes.PlotTypes.profile) {
     independentVarName = "x";
     statVarName = "y";
@@ -94,12 +93,12 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC, isSca
   }
 
   // initialize variables
-  var minuendData = dataset[diffFrom[0]];
-  var subtrahendData = dataset[diffFrom[1]];
-  var subtrahendIndex = 0;
-  var minuendIndex = 0;
+  const minuendData = dataset[diffFrom[0]];
+  const subtrahendData = dataset[diffFrom[1]];
+  let subtrahendIndex = 0;
+  let minuendIndex = 0;
 
-  var d = {
+  const d = {
     x: [],
     y: [],
     error_x: [],
@@ -149,7 +148,7 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC, isSca
   // this is a difference curve - we are differencing diffFrom[0] - diffFrom[1] based on the
   // independentVarName values of whichever has the largest interval
   // find the largest interval between diffFrom[0] curve and diffFrom[1] curve
-  var largeIntervalCurveData = getLargeIntervalCurveData(
+  const largeIntervalCurveData = getLargeIntervalCurveData(
     dataset,
     diffFrom,
     independentVarName
@@ -157,18 +156,18 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC, isSca
 
   // calculate the differences
   for (
-    var largeIntervalCurveIndex = 0;
+    let largeIntervalCurveIndex = 0;
     largeIntervalCurveIndex < largeIntervalCurveData[independentVarName].length;
     largeIntervalCurveIndex++
   ) {
     // make sure that we are actually on the same independentVarName value for each curve
-    var subtrahendIndependentVar = subtrahendData[independentVarName][subtrahendIndex];
-    var minuendIndependentVar = minuendData[independentVarName][minuendIndex];
-    var largeIntervalIndependentVar =
+    let subtrahendIndependentVar = subtrahendData[independentVarName][subtrahendIndex];
+    let minuendIndependentVar = minuendData[independentVarName][minuendIndex];
+    const largeIntervalIndependentVar =
       largeIntervalCurveData[independentVarName][largeIntervalCurveIndex];
 
     // increment the minuendIndex until it reaches this iteration's largeIntervalIndependentVar
-    var minuendChanged = false;
+    let minuendChanged = false;
     while (
       largeIntervalIndependentVar > minuendIndependentVar &&
       minuendIndex < minuendData[independentVarName].length - 1
@@ -182,7 +181,7 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC, isSca
     }
 
     // increment the subtrahendIndex until it reaches this iteration's largeIntervalIndependentVar
-    var subtrahendChanged = false;
+    let subtrahendChanged = false;
     while (
       largeIntervalIndependentVar > subtrahendIndependentVar &&
       subtrahendIndex < subtrahendData[independentVarName].length - 1
@@ -198,7 +197,7 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC, isSca
       ++subtrahendIndex;
     }
 
-    var diffValue = null;
+    let diffValue = null;
     var tempSubHitArray;
     var tempSubFaArray;
     var tempSubMissArray;
@@ -298,19 +297,19 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC, isSca
               var subtrahendDataNSimple = subtrahendData.n_simple[subtrahendIndex];
               var subtrahendDataNTotal = subtrahendData.n_total[subtrahendIndex];
             }
-            var minuendDataSubValues = minuendData.subVals[minuendIndex];
-            var subtrahendDataSubValues = subtrahendData.subVals[subtrahendIndex];
-            var minuendDataSubSeconds = minuendData.subSecs[minuendIndex];
-            var subtrahendDataSubSeconds = subtrahendData.subSecs[subtrahendIndex];
+            const minuendDataSubValues = minuendData.subVals[minuendIndex];
+            const subtrahendDataSubValues = subtrahendData.subVals[subtrahendIndex];
+            const minuendDataSubSeconds = minuendData.subSecs[minuendIndex];
+            const subtrahendDataSubSeconds = subtrahendData.subSecs[subtrahendIndex];
             if (hasLevels) {
               var minuendDataSubLevels = minuendData.subLevs[minuendIndex];
               var subtrahendDataSubLevels = subtrahendData.subLevs[subtrahendIndex];
             }
 
             // find matching sub values and diff those
-            for (var mvalIdx = 0; mvalIdx < minuendDataSubSeconds.length; mvalIdx++) {
+            for (let mvalIdx = 0; mvalIdx < minuendDataSubSeconds.length; mvalIdx++) {
               for (
-                var svalIdx = 0;
+                let svalIdx = 0;
                 svalIdx < subtrahendDataSubSeconds.length;
                 svalIdx++
               ) {
@@ -367,7 +366,7 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC, isSca
                   if (hasLevels) {
                     tempSubLevsArray.push(minuendDataSubLevels[mvalIdx]);
                   }
-                  d["glob_stats"]["glob_n"]++;
+                  d.glob_stats.glob_n++;
                 }
               }
             }
@@ -393,7 +392,7 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC, isSca
               d.n_simple.push(minuendDataNSimple - subtrahendDataNSimple);
               d.n_total.push(minuendDataNTotal - subtrahendDataNTotal);
             }
-            d.sum = d.sum + d[independentVarName][largeIntervalCurveIndex];
+            d.sum += d[independentVarName][largeIntervalCurveIndex];
           } else {
             d.bin_stats.push({
               bin_mean: null,
@@ -455,19 +454,19 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC, isSca
   const filteredx = d.x.filter((x) => x);
   const filteredy = d.y.filter((y) => y);
   d.xmin = Math.min(...filteredx);
-  if (d.x.indexOf(0) !== -1 && 0 < d.xmin) {
+  if (d.x.indexOf(0) !== -1 && d.xmin > 0) {
     d.xmin = 0;
   }
   d.xmax = Math.max(...filteredx);
-  if (d.x.indexOf(0) !== -1 && 0 > d.xmax) {
+  if (d.x.indexOf(0) !== -1 && d.xmax < 0) {
     d.xmax = 0;
   }
   d.ymin = Math.min(...filteredy);
-  if (d.y.indexOf(0) !== -1 && 0 < d.ymin) {
+  if (d.y.indexOf(0) !== -1 && d.ymin > 0) {
     d.ymin = 0;
   }
   d.ymax = Math.max(...filteredy);
-  if (d.y.indexOf(0) !== -1 && 0 > d.ymax) {
+  if (d.y.indexOf(0) !== -1 && d.ymax < 0) {
     d.ymax = 0;
   }
 
@@ -543,55 +542,55 @@ const getDataForDiffContour = function (
      */
 
   // initialize output object
-  var diffDataset = {};
-  diffDataset["label"] = dataset[1].label + "-" + dataset[0].label;
-  diffDataset["curveId"] = dataset[1].curveId + "-" + dataset[0].curveId;
-  diffDataset["name"] = dataset[1].label + "-" + dataset[0].label;
-  diffDataset["annotateColor"] = "rgb(255,165,0)";
-  diffDataset["annotation"] = "";
-  diffDataset["text"] = [];
-  diffDataset["type"] = dataset[0].type;
-  diffDataset["marker"] = dataset[0].marker;
-  diffDataset["xAxisKey"] = dataset[0].xAxisKey;
-  diffDataset["yAxisKey"] = dataset[0].yAxisKey;
-  diffDataset["visible"] = dataset[0].visible;
-  diffDataset["showlegend"] = dataset[0].showlegend;
-  diffDataset["x"] = [];
-  diffDataset["y"] = [];
-  diffDataset["z"] = [];
-  diffDataset["n"] = [];
-  diffDataset["xTextOutput"] = [];
-  diffDataset["yTextOutput"] = [];
-  diffDataset["zTextOutput"] = [];
-  diffDataset["nTextOutput"] = [];
-  diffDataset["hitTextOutput"] = [];
-  diffDataset["faTextOutput"] = [];
-  diffDataset["missTextOutput"] = [];
-  diffDataset["cnTextOutput"] = [];
-  diffDataset["squareDiffSumTextOutput"] = [];
-  diffDataset["NSumTextOutput"] = [];
-  diffDataset["obsModelDiffSumTextOutput"] = [];
-  diffDataset["modelSumTextOutput"] = [];
-  diffDataset["obsSumTextOutput"] = [];
-  diffDataset["absSumTextOutput"] = [];
-  diffDataset["maxDateTextOutput"] = [];
-  diffDataset["minDateTextOutput"] = [];
-  diffDataset["stats"] = [];
-  diffDataset["stdev"] = [];
-  diffDataset["glob_stats"] = {};
-  diffDataset["xmax"] = -1 * Number.MAX_VALUE;
-  diffDataset["xmin"] = Number.MAX_VALUE;
-  diffDataset["ymax"] = -1 * Number.MAX_VALUE;
-  diffDataset["ymin"] = Number.MAX_VALUE;
-  diffDataset["zmax"] = -1 * Number.MAX_VALUE;
-  diffDataset["zmin"] = Number.MAX_VALUE;
-  diffDataset["sum"] = 0;
+  const diffDataset = {};
+  diffDataset.label = `${dataset[1].label}-${dataset[0].label}`;
+  diffDataset.curveId = `${dataset[1].curveId}-${dataset[0].curveId}`;
+  diffDataset.name = `${dataset[1].label}-${dataset[0].label}`;
+  diffDataset.annotateColor = "rgb(255,165,0)";
+  diffDataset.annotation = "";
+  diffDataset.text = [];
+  diffDataset.type = dataset[0].type;
+  diffDataset.marker = dataset[0].marker;
+  diffDataset.xAxisKey = dataset[0].xAxisKey;
+  diffDataset.yAxisKey = dataset[0].yAxisKey;
+  diffDataset.visible = dataset[0].visible;
+  diffDataset.showlegend = dataset[0].showlegend;
+  diffDataset.x = [];
+  diffDataset.y = [];
+  diffDataset.z = [];
+  diffDataset.n = [];
+  diffDataset.xTextOutput = [];
+  diffDataset.yTextOutput = [];
+  diffDataset.zTextOutput = [];
+  diffDataset.nTextOutput = [];
+  diffDataset.hitTextOutput = [];
+  diffDataset.faTextOutput = [];
+  diffDataset.missTextOutput = [];
+  diffDataset.cnTextOutput = [];
+  diffDataset.squareDiffSumTextOutput = [];
+  diffDataset.NSumTextOutput = [];
+  diffDataset.obsModelDiffSumTextOutput = [];
+  diffDataset.modelSumTextOutput = [];
+  diffDataset.obsSumTextOutput = [];
+  diffDataset.absSumTextOutput = [];
+  diffDataset.maxDateTextOutput = [];
+  diffDataset.minDateTextOutput = [];
+  diffDataset.stats = [];
+  diffDataset.stdev = [];
+  diffDataset.glob_stats = {};
+  diffDataset.xmax = -1 * Number.MAX_VALUE;
+  diffDataset.xmin = Number.MAX_VALUE;
+  diffDataset.ymax = -1 * Number.MAX_VALUE;
+  diffDataset.ymin = Number.MAX_VALUE;
+  diffDataset.zmax = -1 * Number.MAX_VALUE;
+  diffDataset.zmin = Number.MAX_VALUE;
+  diffDataset.sum = 0;
 
   // initialize local variables
-  const hasLevels = appParams.hasLevels;
+  const { hasLevels } = appParams;
   const isMatching = appParams.matching;
-  var minuendData = dataset[1];
-  var subtrahendData = dataset[0];
+  const minuendData = dataset[1];
+  const subtrahendData = dataset[0];
 
   // get common x and y
   diffDataset.x = _.intersection(minuendData.x, subtrahendData.x).sort(function (a, b) {
@@ -618,9 +617,9 @@ const getDataForDiffContour = function (
     return [diffDataset];
   }
 
-  var minuendYIndex = 0;
-  var subtrahendYIndex = 0;
-  var nPoints = 0;
+  let minuendYIndex = 0;
+  let subtrahendYIndex = 0;
+  let nPoints = 0;
 
   // loop through common Ys
   for (
@@ -629,9 +628,9 @@ const getDataForDiffContour = function (
     diffDataYIndex++
   ) {
     // make sure that we are actually on the same y value for each curve
-    var diffDataY = diffDataset.y[diffDataYIndex];
-    var minuendY = minuendData.y[minuendYIndex];
-    var subtrahendY = subtrahendData.y[subtrahendYIndex];
+    const diffDataY = diffDataset.y[diffDataYIndex];
+    let minuendY = minuendData.y[minuendYIndex];
+    let subtrahendY = subtrahendData.y[subtrahendYIndex];
 
     // increment the minuendYIndex until it reaches this iteration's diffDataY
     while (diffDataY > minuendY && minuendYIndex < minuendData.y.length - 1) {
@@ -648,17 +647,17 @@ const getDataForDiffContour = function (
     diffDataset.stdev[diffDataYIndex] = [];
     diffDataset.n[diffDataYIndex] = [];
 
-    var minuendXIndex = 0;
-    var subtrahendXIndex = 0;
+    let minuendXIndex = 0;
+    let subtrahendXIndex = 0;
     for (
-      var diffDataXIndex = 0;
+      let diffDataXIndex = 0;
       diffDataXIndex < diffDataset.x.length;
       diffDataXIndex++
     ) {
       // make sure that we are actually on the same x value for each curve
-      var diffDataX = diffDataset.x[diffDataXIndex];
-      var minuendX = minuendData.x[minuendXIndex];
-      var subtrahendX = subtrahendData.x[subtrahendXIndex];
+      const diffDataX = diffDataset.x[diffDataXIndex];
+      let minuendX = minuendData.x[minuendXIndex];
+      let subtrahendX = subtrahendData.x[subtrahendXIndex];
 
       // increment the minuendXIndex until it reaches this iteration's diffDataX
       while (diffDataX > minuendX && minuendXIndex < minuendData.x.length - 1) {
@@ -673,23 +672,23 @@ const getDataForDiffContour = function (
         subtrahendX = subtrahendData.x[++subtrahendXIndex];
       }
 
-      var diffValue = null;
-      var diffNumber = 0;
-      var diffHit = null;
-      var diffFa = null;
-      var diffMiss = null;
-      var diffCn = null;
-      var diffSquareDiffSum = null;
-      var diffNSum = null;
-      var diffObsModelDiffSum = null;
-      var diffModelSum = null;
-      var diffObsSum = null;
-      var diffAbsSum = null;
-      var diffMinDate = null;
-      var diffMaxDate = null;
-      var isDiffSignificant = null;
-      var matchingSeconds = [];
-      var matchingSecLevs = [];
+      let diffValue = null;
+      let diffNumber = 0;
+      let diffHit = null;
+      let diffFa = null;
+      let diffMiss = null;
+      let diffCn = null;
+      let diffSquareDiffSum = null;
+      let diffNSum = null;
+      let diffObsModelDiffSum = null;
+      let diffModelSum = null;
+      let diffObsSum = null;
+      let diffAbsSum = null;
+      let diffMinDate = null;
+      let diffMaxDate = null;
+      let isDiffSignificant = null;
+      let matchingSeconds = [];
+      let matchingSecLevs = [];
       var newMinuendSubHitArray;
       var newMinuendSubFaArray;
       var newMinuendSubMissArray;
@@ -801,8 +800,9 @@ const getDataForDiffContour = function (
             var subtrahendDataSubValues =
               subtrahendData.subVals[subtrahendYIndex][subtrahendXIndex];
           }
-          var minuendDataSubSeconds = minuendData.subSecs[minuendYIndex][minuendXIndex];
-          var subtrahendDataSubSeconds =
+          const minuendDataSubSeconds =
+            minuendData.subSecs[minuendYIndex][minuendXIndex];
+          const subtrahendDataSubSeconds =
             subtrahendData.subSecs[subtrahendYIndex][subtrahendXIndex];
           if (hasLevels) {
             var minuendDataSubLevels =
@@ -813,15 +813,15 @@ const getDataForDiffContour = function (
 
           // find matching sub values and diff those
           if (hasLevels) {
-            var minuendSecLevs = [];
-            for (var midx = 0; midx < minuendDataSubSeconds.length; midx++) {
+            const minuendSecLevs = [];
+            for (let midx = 0; midx < minuendDataSubSeconds.length; midx++) {
               minuendSecLevs.push([
                 minuendDataSubSeconds[midx],
                 minuendDataSubLevels[midx],
               ]);
             }
             matchingSecLevs = [];
-            for (var sidx = 0; sidx < subtrahendDataSubSeconds.length; sidx++) {
+            for (let sidx = 0; sidx < subtrahendDataSubSeconds.length; sidx++) {
               if (
                 matsDataUtils.arrayContainsSubArray(minuendSecLevs, [
                   subtrahendDataSubSeconds[sidx],
@@ -841,7 +841,7 @@ const getDataForDiffContour = function (
             );
           }
 
-          for (var mvalIdx = 0; mvalIdx < minuendDataSubSeconds.length; mvalIdx++) {
+          for (let mvalIdx = 0; mvalIdx < minuendDataSubSeconds.length; mvalIdx++) {
             if (
               (hasLevels &&
                 matsDataUtils.arrayContainsSubArray(matchingSecLevs, [
@@ -875,7 +875,7 @@ const getDataForDiffContour = function (
               }
             }
           }
-          for (var svalIdx = 0; svalIdx < subtrahendDataSubSeconds.length; svalIdx++) {
+          for (let svalIdx = 0; svalIdx < subtrahendDataSubSeconds.length; svalIdx++) {
             if (
               (hasLevels &&
                 matsDataUtils.arrayContainsSubArray(matchingSecLevs, [
@@ -996,7 +996,7 @@ const getDataForDiffContour = function (
               );
             // need to populate subVals so stdev of them can be taken (Bill's method for determining significance)
             for (
-              var msvIdx = 0;
+              let msvIdx = 0;
               msvIdx < newMinuendSubSquareDiffSumArray.length;
               msvIdx++
             ) {
@@ -1039,7 +1039,7 @@ const getDataForDiffContour = function (
               );
             // need to populate subVals so stdev of them can be taken (Bill's method for determining significance)
             for (
-              var ssvIdx = 0;
+              let ssvIdx = 0;
               ssvIdx < newSubtrahendSubSquareDiffSumArray.length;
               ssvIdx++
             ) {
@@ -1225,8 +1225,8 @@ const getDataForDiffContour = function (
             : subtrahendData.maxDateTextOutput[
                 subtrahendYIndex * subtrahendData.x.length + subtrahendXIndex
               ];
-        diffDataset["sum"] += diffValue;
-        nPoints = nPoints + 1;
+        diffDataset.sum += diffValue;
+        nPoints += 1;
       }
       diffDataset.z[diffDataYIndex].push(diffValue);
       diffDataset.stdev[diffDataYIndex].push(isDiffSignificant);
@@ -1254,7 +1254,7 @@ const getDataForDiffContour = function (
   }
 
   // trim empty points at the bottom of the plot
-  var dataLength = diffDataset.y.length;
+  let dataLength = diffDataset.y.length;
   for (diffDataYIndex = 0; diffDataYIndex < dataLength; diffDataYIndex++) {
     // always check the 0-index, if points were previously removed something new will become 0-index.
     if (
@@ -1296,81 +1296,81 @@ const getDataForDiffContour = function (
   diffDataset.xmin = Math.min(...filteredx);
   if (
     !isFinite(diffDataset.xmin) ||
-    (diffDataset.x.indexOf(0) !== -1 && 0 < diffDataset.xmin)
+    (diffDataset.x.indexOf(0) !== -1 && diffDataset.xmin > 0)
   ) {
     diffDataset.xmin = 0;
   }
   diffDataset.xmax = Math.max(...filteredx);
   if (
     !isFinite(diffDataset.xmax) ||
-    (diffDataset.x.indexOf(0) !== -1 && 0 > diffDataset.xmax)
+    (diffDataset.x.indexOf(0) !== -1 && diffDataset.xmax < 0)
   ) {
     diffDataset.xmax = 0;
   }
   diffDataset.ymin = Math.min(...filteredy);
   if (
     !isFinite(diffDataset.ymin) ||
-    (diffDataset.y.indexOf(0) !== -1 && 0 < diffDataset.ymin)
+    (diffDataset.y.indexOf(0) !== -1 && diffDataset.ymin > 0)
   ) {
     diffDataset.ymin = 0;
   }
   diffDataset.ymax = Math.max(...filteredy);
   if (
     !isFinite(diffDataset.ymax) ||
-    (diffDataset.y.indexOf(0) !== -1 && 0 > diffDataset.ymax)
+    (diffDataset.y.indexOf(0) !== -1 && diffDataset.ymax < 0)
   ) {
     diffDataset.ymax = 0;
   }
   diffDataset.zmin = Math.min(...filteredz);
   if (
     !isFinite(diffDataset.zmin) ||
-    (diffDataset.z.indexOf(0) !== -1 && 0 < diffDataset.zmin)
+    (diffDataset.z.indexOf(0) !== -1 && diffDataset.zmin > 0)
   ) {
     diffDataset.zmin = 0;
   }
   diffDataset.zmax = Math.max(...filteredz);
   if (
     !isFinite(diffDataset.zmax) ||
-    (diffDataset.z.indexOf(0) !== -1 && 0 > diffDataset.zmax)
+    (diffDataset.z.indexOf(0) !== -1 && diffDataset.zmax < 0)
   ) {
     diffDataset.zmax = 0;
   }
 
   const filteredMinDate = diffDataset.minDateTextOutput.filter((t) => t);
   const filteredMaxDate = diffDataset.maxDateTextOutput.filter((t) => t);
-  diffDataset.glob_stats["mean"] = diffDataset.sum / nPoints;
-  diffDataset.glob_stats["minDate"] = Math.min(...filteredMinDate);
-  diffDataset.glob_stats["maxDate"] = Math.max(...filteredMaxDate);
-  diffDataset.glob_stats["n"] = nPoints;
-  diffDataset["annotation"] =
+  diffDataset.glob_stats.mean = diffDataset.sum / nPoints;
+  diffDataset.glob_stats.minDate = Math.min(...filteredMinDate);
+  diffDataset.glob_stats.maxDate = Math.max(...filteredMaxDate);
+  diffDataset.glob_stats.n = nPoints;
+  diffDataset.annotation =
     diffDataset.glob_stats.mean === undefined
-      ? diffDataset.label + "- mean = NaN"
-      : diffDataset.label + "- mean = " + diffDataset.glob_stats.mean.toPrecision(4);
+      ? `${diffDataset.label}- mean = NaN`
+      : `${diffDataset.label}- mean = ${diffDataset.glob_stats.mean.toPrecision(4)}`;
 
   // make contours symmetrical around 0
-  diffDataset["autocontour"] = false;
-  diffDataset["ncontours"] = 15;
-  diffDataset["colorbar"] = dataset[0].colorbar;
-  diffDataset["colorbar"]["title"] =
+  diffDataset.autocontour = false;
+  diffDataset.ncontours = 15;
+  diffDataset.colorbar = dataset[0].colorbar;
+  diffDataset.colorbar.title =
     dataset[0].colorbar.title === dataset[1].colorbar.title
       ? dataset[0].colorbar.title
-      : dataset[1].colorbar.title + " - " + dataset[0].colorbar.title;
-  diffDataset["colorscale"] = dataset[0].colorscale;
-  diffDataset["reversescale"] = dataset[0].reversescale;
-  diffDataset["connectgaps"] = dataset[0].connectgaps;
-  diffDataset["contours"] = dataset[0].contours;
+      : `${dataset[1].colorbar.title} - ${dataset[0].colorbar.title}`;
+  diffDataset.colorscale = dataset[0].colorscale;
+  diffDataset.reversescale = dataset[0].reversescale;
+  diffDataset.connectgaps = dataset[0].connectgaps;
+  diffDataset.contours = dataset[0].contours;
   const maxZ =
     Math.abs(diffDataset.zmax) > Math.abs(diffDataset.zmin)
       ? Math.abs(diffDataset.zmax)
       : Math.abs(diffDataset.zmin);
-  diffDataset["contours"]["start"] = -1 * maxZ + (2 * maxZ) / 16;
-  diffDataset["contours"]["end"] = maxZ - (2 * maxZ) / 16;
-  diffDataset["contours"]["size"] = (2 * maxZ) / 16;
+  diffDataset.contours.start = -1 * maxZ + (2 * maxZ) / 16;
+  diffDataset.contours.end = maxZ - (2 * maxZ) / 16;
+  diffDataset.contours.size = (2 * maxZ) / 16;
 
   return [diffDataset];
 };
 
 export default matsDataDiffUtils = {
-  getDataForDiffCurve: getDataForDiffCurve,
-  getDataForDiffContour: getDataForDiffContour,
+  getDataForDiffCurve,
+  getDataForDiffContour,
 };

@@ -2,14 +2,12 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import { matsTypes } from "meteor/randyp:mats-common";
-import { matsCollections } from "meteor/randyp:mats-common";
-import { matsPlotUtils } from "meteor/randyp:mats-common";
+import { matsTypes, matsCollections, matsPlotUtils } from "meteor/randyp:mats-common";
 
-var duplicate = function (param) {
-  var obj = {};
-  var keys = Object.keys(param);
-  for (var i = 0; i < keys.length; i++) {
+const duplicate = function (param) {
+  const obj = {};
+  const keys = Object.keys(param);
+  for (let i = 0; i < keys.length; i++) {
     if (keys[i] !== "_id") {
       obj[keys[i]] = param[keys[i]];
     }
@@ -17,22 +15,22 @@ var duplicate = function (param) {
   return obj;
 };
 
-var filterParams = function (params) {
+const filterParams = function (params) {
   /*
     If the plottype is a 2d scatter plot we need to basically create a new set of parameters (except for the label)
     for each axis. The double set of parameters will get sent back to the backend.
      */
   if (matsPlotUtils.getPlotType() === matsTypes.PlotTypes.scatter2d) {
-    var xparams = [];
-    var yparams = [];
-    var newParams = [];
-    for (var i = 0; i < params.length; i++) {
-      var xp = duplicate(params[i]);
-      xp.name = "xaxis-" + params[i].name;
+    const xparams = [];
+    const yparams = [];
+    let newParams = [];
+    for (let i = 0; i < params.length; i++) {
+      const xp = duplicate(params[i]);
+      xp.name = `xaxis-${params[i].name}`;
       xp.hidden = true;
       xparams.push(xp);
-      var yp = duplicate(params[i]);
-      yp.name = "yaxis-" + params[i].name;
+      const yp = duplicate(params[i]);
+      yp.name = `yaxis-${params[i].name}`;
       yp.hidden = true;
       yparams.push(yp);
     }
@@ -40,19 +38,18 @@ var filterParams = function (params) {
     newParams = newParams.concat(xparams);
     newParams = newParams.concat(yparams);
     return newParams;
-  } else {
-    return params;
   }
+  return params;
 };
 
 const getParams = function (num) {
-  var paramNames = matsCollections.CurveParamsInfo.find({
+  const paramNames = matsCollections.CurveParamsInfo.find({
     curve_params: { $exists: true },
-  }).fetch()[0]["curve_params"];
-  var paramMap = {};
-  var params = [];
-  var param;
-  for (var i = 0; i < paramNames.length; i++) {
+  }).fetch()[0].curve_params;
+  const paramMap = {};
+  let params = [];
+  let param;
+  for (let i = 0; i < paramNames.length; i++) {
     param = matsCollections[paramNames[i]].find({}).fetch()[0];
     if (param.displayGroup === num) {
       paramMap[param.displayOrder] = param;
@@ -61,7 +58,7 @@ const getParams = function (num) {
   const displayOrders = Object.keys(paramMap).sort(function (a, b) {
     return a - b;
   });
-  for (var dor = 0; dor < displayOrders.length; dor++) {
+  for (let dor = 0; dor < displayOrders.length; dor++) {
     params.push(paramMap[displayOrders[dor]]);
   }
   params = filterParams(params);
@@ -69,26 +66,26 @@ const getParams = function (num) {
 };
 
 Template.curveParamGroup.helpers({
-  CurveParams: function (num) {
-    var restoreSettingsTime = Session.get("restoreSettingsTime"); // used to force re-render
-    var lastUpdate = Session.get("lastUpdate");
+  CurveParams(num) {
+    const restoreSettingsTime = Session.get("restoreSettingsTime"); // used to force re-render
+    const lastUpdate = Session.get("lastUpdate");
     return getParams(num);
   },
-  gapAbove: function (num) {
-    var restoreSettingsTime = Session.get("restoreSettingsTime"); // used to force re-render
-    var lastUpdate = Session.get("lastUpdate");
+  gapAbove(num) {
+    const restoreSettingsTime = Session.get("restoreSettingsTime"); // used to force re-render
+    const lastUpdate = Session.get("lastUpdate");
     const params = getParams(num);
-    for (var i = 0; i < params.length; i++) {
+    for (let i = 0; i < params.length; i++) {
       if (params[i].gapAbove) {
         return "margin-top: 1em; border-top: 2px solid gray;";
       }
     }
     return "";
   },
-  gapMessage: function (num) {
-    var restoreSettingsTime = Session.get("restoreSettingsTime"); // used to force re-render
-    var lastUpdate = Session.get("lastUpdate");
-    let plotType = Session.get("plotType");
+  gapMessage(num) {
+    const restoreSettingsTime = Session.get("restoreSettingsTime"); // used to force re-render
+    const lastUpdate = Session.get("lastUpdate");
+    const plotType = Session.get("plotType");
     let isMetexpress = false;
     if (
       matsCollections.Settings.findOne({}) !== undefined &&
@@ -99,7 +96,7 @@ Template.curveParamGroup.helpers({
     }
     const params = getParams(num);
     if (isMetexpress) {
-      for (var i = 0; i < params.length; i++) {
+      for (let i = 0; i < params.length; i++) {
         if (params[i].gapAbove) {
           if (params[i].name === "aggregation-method") {
             switch (plotType) {
@@ -137,32 +134,32 @@ Template.curveParamGroup.helpers({
     }
     return "";
   },
-  gapMessageSpacing: function (num) {
-    var restoreSettingsTime = Session.get("restoreSettingsTime"); // used to force re-render
-    var lastUpdate = Session.get("lastUpdate");
+  gapMessageSpacing(num) {
+    const restoreSettingsTime = Session.get("restoreSettingsTime"); // used to force re-render
+    const lastUpdate = Session.get("lastUpdate");
     const params = getParams(num);
-    for (var i = 0; i < params.length; i++) {
+    for (let i = 0; i < params.length; i++) {
       if (params[i].gapAbove) {
         return "margin-left: 10px; margin-top: 1em;";
       }
     }
     return "margin-left: 10px;";
   },
-  gapBelow: function (num) {
-    var restoreSettingsTime = Session.get("restoreSettingsTime"); // used to force re-render
-    var lastUpdate = Session.get("lastUpdate");
+  gapBelow(num) {
+    const restoreSettingsTime = Session.get("restoreSettingsTime"); // used to force re-render
+    const lastUpdate = Session.get("lastUpdate");
     const params = getParams(num);
-    for (var i = 0; i < params.length; i++) {
+    for (let i = 0; i < params.length; i++) {
       if (params[i].gapBelow) {
         return "margin-bottom: 2em;";
       }
     }
     return "";
   },
-  displayGroup: function () {
+  displayGroup() {
     return "block";
   },
-  log: function () {
+  log() {
     console.log(this);
   },
 });

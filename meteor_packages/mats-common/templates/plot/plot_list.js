@@ -2,14 +2,16 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import { matsTypes } from "meteor/randyp:mats-common";
-import { matsCollections } from "meteor/randyp:mats-common";
-import { matsCurveUtils } from "meteor/randyp:mats-common";
-import { matsMethods } from "meteor/randyp:mats-common";
-import { matsGraphUtils } from "meteor/randyp:mats-common";
-import { matsPlotUtils } from "meteor/randyp:mats-common";
-import { matsParamUtils } from "meteor/randyp:mats-common";
-import { matsSelectUtils } from "meteor/randyp:mats-common";
+import {
+  matsTypes,
+  matsCollections,
+  matsCurveUtils,
+  matsMethods,
+  matsGraphUtils,
+  matsPlotUtils,
+  matsParamUtils,
+  matsSelectUtils,
+} from "meteor/randyp:mats-common";
 
 /*
     A note about how things get to the backend, and then to the graph or display view.
@@ -37,7 +39,7 @@ const _setCommonParams = async (commonParamKeys, commonParams) => {
     const thisKey = commonParamKeys[kidx];
     const thisValue = commonParams[commonParamKeys[kidx]];
     if (thisValue !== "undefined") {
-      if (document.getElementById(thisKey + "-item")) {
+      if (document.getElementById(`${thisKey}-item`)) {
         matsParamUtils.setValueTextForParamName(thisKey, thisValue);
       } else if (thisKey === "region" && document.getElementById("vgtyp-item")) {
         // landuse regions go in the vgtyp selector
@@ -66,73 +68,72 @@ const addCurvesAndPlot = async (parsedSettings, commonParamKeys, commonParams) =
 };
 
 Template.plotList.helpers({
-  Title: function () {
+  Title() {
     return matsCollections.Settings.findOne({}, { fields: { Title: 1 } }).Title;
   },
-  PlotParamGroups: function () {
-    var groupNums = [];
-    var params = matsCollections.PlotParams.find(
+  PlotParamGroups() {
+    const groupNums = [];
+    const params = matsCollections.PlotParams.find(
       {},
       { fields: { displayGroup: 1 } }
     ).fetch();
-    for (var i = 0; i < params.length; i++) {
+    for (let i = 0; i < params.length; i++) {
       groupNums.push(params[i].displayGroup);
     }
-    var res = _.uniq(groupNums).sort();
+    const res = _.uniq(groupNums).sort();
     return res;
   },
-  curves: function () {
+  curves() {
     return Session.get("Curves");
   },
-  privateDisabled: function () {
+  privateDisabled() {
     if (!Meteor.user()) {
       return "disabled";
-    } else {
-      return "";
     }
+    return "";
   },
-  privateRestoreNames: function () {
-    var names = [];
-    var l = matsCollections.CurveSettings.find(
+  privateRestoreNames() {
+    const names = [];
+    const l = matsCollections.CurveSettings.find(
       {},
       { fields: { name: 1, owner: 1, permission: 1 } }
     ).fetch();
-    for (var i = 0; i < l.length; i++) {
+    for (let i = 0; i < l.length; i++) {
       if (l[i].owner === Meteor.userId() && l[i].permission === "private") {
         names.push(l[i].name);
       }
     }
     return names;
   },
-  publicRestoreNames: function () {
-    var names = [];
-    var savedSettings = matsCollections.CurveSettings.find(
+  publicRestoreNames() {
+    const names = [];
+    const savedSettings = matsCollections.CurveSettings.find(
       {},
       { fields: { name: 1, owner: 1, permission: 1 } }
     ).fetch();
-    for (var i = 0; i < savedSettings.length; i++) {
+    for (let i = 0; i < savedSettings.length; i++) {
       if (savedSettings[i].permission === "public") {
         names.push(savedSettings[i].name);
       }
     }
     return names;
   },
-  isOwner: function () {
+  isOwner() {
     return this.owner === Meteor.userId();
   },
 });
 
 Template.plotList.events({
-  "click .cancel-restore": function () {
+  "click .cancel-restore"() {
     document.getElementById("restore_from_public").value = "";
     document.getElementById("restore_from_private").value = "";
   },
-  "click .cancel-save": function () {
+  "click .cancel-save"() {
     document.getElementById("save_as").value = "";
     document.getElementById("save_to").value = "";
   },
-  "click .delete-selected": function () {
-    var deleteThis = document.getElementById("save_to").value;
+  "click .delete-selected"() {
+    const deleteThis = document.getElementById("save_to").value;
     if (deleteThis !== undefined && deleteThis !== "") {
       matsMethods.deleteSettings.call({ name: deleteThis }, function (error) {
         if (error) {
@@ -143,29 +144,29 @@ Template.plotList.events({
   },
 
   // catch a click on a diff plotFormat radio button.
-  "click .data-input": function () {
-    var formats = Object.keys(matsTypes.PlotFormats);
+  "click .data-input"() {
+    const formats = Object.keys(matsTypes.PlotFormats);
     if ($.inArray(this.toString(), formats) !== -1) {
       matsCurveUtils.checkDiffs();
     }
   },
-  "click .restore-from-private": function () {
+  "click .restore-from-private"() {
     document.getElementById("restore_from_public").value = "";
   },
-  "click .restore-from-public": function () {
+  "click .restore-from-public"() {
     document.getElementById("restore_from_private").value = "";
   },
-  "click .submit-params": function (event, template) {
-    var plotAction = Session.get("plotParameter");
+  "click .submit-params"(event, template) {
+    const plotAction = Session.get("plotParameter");
     Session.set("spinner_img", "spinner.gif");
     document.getElementById("spinner").style.display = "block";
     event.preventDefault();
-    var action =
+    const action =
       plotAction !== undefined &&
       plotAction.toUpperCase() === matsTypes.PlotTypes.scorecard.toUpperCase()
         ? "displayScorecardStatusPage"
         : event.currentTarget.name;
-    var p = {};
+    let p = {};
     // get the plot-type elements checked state
     const plotTypeElems = document.getElementById("plotTypes-selector");
     p.plotTypes = {};
@@ -173,9 +174,9 @@ Template.plotList.events({
       const ptElem = plotTypeElems[ptei];
       p.plotTypes[ptElem.value] = ptElem.value === plotTypeElems.value;
     }
-    var curves = Session.get("Curves");
+    const curves = Session.get("Curves");
     if (curves === 0 && action !== "restore") {
-      //alert ("No Curves To plot");
+      // alert ("No Curves To plot");
       setError(new Error("There are no curves to plot!"));
       Session.set("spinner_img", "spinner.gif");
       document.getElementById("spinner").style.display = "none";
@@ -189,15 +190,14 @@ Template.plotList.events({
     matsCollections.PlotParams.find({})
       .fetch()
       .forEach(function (plotParam) {
-        var name = plotParam.name;
-        var type = plotParam.type;
-        var options = plotParam.options;
+        const { name } = plotParam;
+        const { type } = plotParam;
+        const { options } = plotParam;
 
         if (type === matsTypes.InputTypes.radioGroup) {
           for (var i = 0; i < options.length; i++) {
             if (
-              document.getElementById(name + "-" + type + "-" + options[i]).checked ===
-              true
+              document.getElementById(`${name}-${type}-${options[i]}`).checked === true
             ) {
               p[name] = options[i];
               break;
@@ -206,49 +206,49 @@ Template.plotList.events({
         } else if (type === matsTypes.InputTypes.checkBoxGroup) {
           p[name] = [];
           for (var i = 0; i < options.length; i++) {
-            if (document.getElementById(name + "-" + type + "-" + options[i]).checked) {
+            if (document.getElementById(`${name}-${type}-${options[i]}`).checked) {
               p[name].push(options[i]);
             }
           }
         } else if (type === matsTypes.InputTypes.dateRange) {
           p[name] = matsParamUtils.getValueForParamName(name);
         } else if (type === matsTypes.InputTypes.numberSpinner) {
-          p[name] = document.getElementById(name + "-" + type).value;
+          p[name] = document.getElementById(`${name}-${type}`).value;
         } else if (type === matsTypes.InputTypes.select) {
-          p[name] = document.getElementById(name + "-" + type).value;
+          p[name] = document.getElementById(`${name}-${type}`).value;
         } else if (type === matsTypes.InputTypes.textInput) {
-          p[name] = document.getElementById(name + "-" + type).value;
+          p[name] = document.getElementById(`${name}-${type}`).value;
         } else if (type === matsTypes.InputTypes.color) {
-          p[name] = document.getElementById(name + "-" + type).value;
+          p[name] = document.getElementById(`${name}-${type}`).value;
         }
       });
     if (
       document.getElementById("QCParamGroup-item") &&
       document.getElementById("QCParamGroup-item").style.display === "block"
     ) {
-      p["completeness"] = document.getElementById("completeness").value;
+      p.completeness = document.getElementById("completeness").value;
     } else if (
       document.getElementById("QCParamGroup-gaps-item") &&
       document.getElementById("QCParamGroup-gaps-item").style.display === "block"
     ) {
-      p["completeness"] = document.getElementById("completeness-gaps").value;
+      p.completeness = document.getElementById("completeness-gaps").value;
     } else {
-      p["completeness"] = 0;
+      p.completeness = 0;
     }
     if (
       document.getElementById("QCParamGroup-item") &&
       document.getElementById("QCParamGroup-item").style.display === "block"
     ) {
-      p["outliers"] = document.getElementById("outliers").value;
+      p.outliers = document.getElementById("outliers").value;
     } else if (
       document.getElementById("QCParamGroup-lite-item") &&
       document.getElementById("QCParamGroup-lite-item").style.display === "block"
     ) {
-      p["outliers"] = document.getElementById("outliers-lite").value;
+      p.outliers = document.getElementById("outliers-lite").value;
     } else {
-      p["outliers"] = "all";
+      p.outliers = "all";
     }
-    p["noGapsCheck"] = document.getElementById("noGapsCheck")
+    p.noGapsCheck = document.getElementById("noGapsCheck")
       ? document.getElementById("noGapsCheck").checked
       : false;
     Session.set("PlotParams", p);
@@ -279,22 +279,19 @@ Template.plotList.events({
           document.getElementById("save-public").checked === true
             ? "public"
             : "private";
-        //console.log("saving settings to " + saveAs);
+        // console.log("saving settings to " + saveAs);
         Session.set("plotName", saveAs);
         // get the settings to save out of the session
         p = Session.get("PlotParams");
         var paramData = matsParamUtils.getElementValues();
-        p["paramData"] = paramData;
-        matsMethods.saveSettings.call(
-          { saveAs: saveAs, p: p, permission: permission },
-          function (error) {
-            if (error) {
-              setError(
-                new Error("matsMethods.saveSettings from plot_list.js " + error.message)
-              );
-            }
+        p.paramData = paramData;
+        matsMethods.saveSettings.call({ saveAs, p, permission }, function (error) {
+          if (error) {
+            setError(
+              new Error(`matsMethods.saveSettings from plot_list.js ${error.message}`)
+            );
           }
-        );
+        });
 
         document.getElementById("save_as").value = "";
         document.getElementById("save_to").value = "";
@@ -320,7 +317,7 @@ Template.plotList.events({
         if (restoreFrom === "" || restoreFrom === undefined) {
           restoreFrom = document.getElementById("restore_from_public").value;
         }
-        //console.log("restore settings from " + restoreFrom);
+        // console.log("restore settings from " + restoreFrom);
         Session.set("plotName", restoreFrom);
 
         p = matsCollections.CurveSettings.findOne({ name: restoreFrom });
@@ -336,8 +333,7 @@ Template.plotList.events({
         if (pgf === undefined) {
           setError(
             new Error(
-              "plot_list.js - plot -do not have a plotGraphFunction for this plotType: " +
-                pt
+              `plot_list.js - plot -do not have a plotGraphFunction for this plotType: ${pt}`
             )
           );
           Session.set("spinner_img", "spinner.gif");
@@ -347,18 +343,18 @@ Template.plotList.events({
         Session.set("graphViewMode", matsTypes.PlotView.graph);
         Session.set("mvResultKey", null); // disable the mv links on the graph page
 
-        var graphFunction = pgf.graphFunction;
+        var { graphFunction } = pgf;
         console.log("prior to getGraphData call time:", new Date());
         // the following line converts a null expireKey to false.
-        var expireKey = Session.get("expireKey") === true ? true : false;
+        var expireKey = Session.get("expireKey") === true;
         matsMethods.getGraphData.call(
-          { plotParams: p, plotType: pt, expireKey: expireKey },
+          { plotParams: p, plotType: pt, expireKey },
           function (error, ret) {
             if (error !== undefined) {
-              //setError(new Error("matsMethods.getGraphData from plot_list.js : error: " + error ));
+              // setError(new Error("matsMethods.getGraphData from plot_list.js : error: " + error ));
               setError(error);
               matsCurveUtils.resetGraphResult();
-              //Session.set ('PlotResultsUpDated', new Date());
+              // Session.set ('PlotResultsUpDated', new Date());
               Session.set("spinner_img", "spinner.gif");
               matsCurveUtils.hideSpinner();
               Session.set("expireKey", false);
@@ -394,51 +390,46 @@ Template.plotList.events({
         if (pgf === undefined) {
           setError(
             new Error(
-              "plot_list.js - plot -do not have a plotGraphFunction for this plotType: " +
-                pt
+              `plot_list.js - plot -do not have a plotGraphFunction for this plotType: ${pt}`
             )
           );
           Session.set("spinner_img", "spinner.gif");
           document.getElementById("spinner").style.display = "none";
           return false;
         }
-        var graphFunction = pgf.graphFunction;
+        var { graphFunction } = pgf;
         console.log("prior to getGraphData call time:", new Date());
         // the following line converts a null expireKey to false.
-        var expireKey = Session.get("expireKey") === true ? true : false;
+        var expireKey = Session.get("expireKey") === true;
         // add user and name to the plotparams
         if (Meteor.user() === null) {
-          p["userName"] = "anonymous";
+          p.userName = "anonymous";
         } else {
-          p["userName"] = Meteor.user().emails[0].address;
+          p.userName = Meteor.user().emails[0].address;
         }
-        let x = new Date();
-        let y = x.getUTCFullYear().toString();
+        const x = new Date();
+        const y = x.getUTCFullYear().toString();
         let m = (x.getUTCMonth() + 1).toString();
         let d = x.getUTCDate().toString();
         let h = x.getUTCHours().toString();
         let min = x.getUTCMinutes().toString();
         let sec = x.getUTCSeconds().toString();
-        d.length === 1 && (d = "0" + d);
-        m.length === 1 && (m = "0" + m);
-        h.length === 1 && (h = "0" + h);
-        min.length === 1 && (min = "0" + min);
-        sec.length === 1 && (sec = "0" + sec);
-        let submitTime = y + m + d + h + min + sec;
+        d.length === 1 && (d = `0${d}`);
+        m.length === 1 && (m = `0${m}`);
+        h.length === 1 && (h = `0${h}`);
+        min.length === 1 && (min = `0${min}`);
+        sec.length === 1 && (sec = `0${sec}`);
+        const submitTime = y + m + d + h + min + sec;
         // stash the submit epoch in the params
-        p["submitEpoch"] = Math.floor(x.getTime() / 1000);
-        p["scorecard-name"] =
-          p["userName"] +
-          "--submitted:" +
-          submitTime +
-          "--" +
-          p["curves"].length +
-          "block";
+        p.submitEpoch = Math.floor(x.getTime() / 1000);
+        p[
+          "scorecard-name"
+        ] = `${p.userName}--submitted:${submitTime}--${p.curves.length}block`;
         matsMethods.getGraphData.call(
-          { plotParams: p, plotType: pt, expireKey: expireKey },
+          { plotParams: p, plotType: pt, expireKey },
           function (error, ret) {
             if (error !== undefined) {
-              //setError(new Error("matsMethods.getGraphData from plot_list.js : error: " + error ));
+              // setError(new Error("matsMethods.getGraphData from plot_list.js : error: " + error ));
               setError(error);
               Session.set("spinner_img", "spinner.gif");
               matsCurveUtils.hideSpinner();

@@ -1,5 +1,6 @@
 import { versionInfo } from "meteor/randyp:mats-common";
-var assert = require("assert");
+
+const assert = require("assert");
 
 describe("getVersionsFromEnv", function () {
   let envCache;

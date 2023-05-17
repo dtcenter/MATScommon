@@ -23,15 +23,15 @@ Template.ScorecardHome.onCreated(function () {
 });
 
 Template.ScorecardHome.helpers({
-  isUnderConstruction: function () {
+  isUnderConstruction() {
     return (
-      matsCollections["underConstruction"] !== undefined &&
-      matsCollections["underConstruction"].findOne({
+      matsCollections.underConstruction !== undefined &&
+      matsCollections.underConstruction.findOne({
         name: "underConstruction",
       }) !== undefined
     );
   },
-  resetDefaults: function () {
+  resetDefaults() {
     matsMethods.refreshMetaData.call({}, function (error, result) {
       if (error !== undefined) {
         setError(new Error(error.message));
@@ -39,7 +39,7 @@ Template.ScorecardHome.helpers({
       matsParamUtils.setAllParamsToDefault();
     });
   },
-  title: function () {
+  title() {
     if (
       matsCollections.Settings === undefined ||
       matsCollections.Settings.findOne(
@@ -52,16 +52,15 @@ Template.ScorecardHome.helpers({
       ) === undefined
     ) {
       return "";
-    } else {
-      return matsCollections.Settings.findOne(
-        {},
-        {
-          fields: {
-            Title: 1,
-          },
-        }
-      ).Title;
     }
+    return matsCollections.Settings.findOne(
+      {},
+      {
+        fields: {
+          Title: 1,
+        },
+      }
+    ).Title;
   },
 });
 
@@ -103,8 +102,8 @@ Template.ScorecardHome.events({
     const defaultOption = matsParamUtils.getParameterForName(
       "scorecard-recurrence-interval"
     ).default;
-    let elem = document.getElementById(
-      "scorecard-recurrence-interval-radioGroup-" + defaultOption
+    const elem = document.getElementById(
+      `scorecard-recurrence-interval-radioGroup-${defaultOption}`
     );
     elem.dispatchEvent(new Event("blur"));
   },

@@ -2,56 +2,58 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import { matsTypes } from "meteor/randyp:mats-common";
-import { matsCollections } from "meteor/randyp:mats-common";
-import { matsCurveUtils } from "meteor/randyp:mats-common";
-import { matsPlotUtils } from "meteor/randyp:mats-common";
-import { matsParamUtils } from "meteor/randyp:mats-common";
-import { matsSelectUtils } from "meteor/randyp:mats-common";
+import {
+  matsTypes,
+  matsCollections,
+  matsCurveUtils,
+  matsPlotUtils,
+  matsParamUtils,
+  matsSelectUtils,
+} from "meteor/randyp:mats-common";
 
 label;
 Template.curveItem.onRendered(function () {
   // the value used for the colorpicker (l) MUST match the returned value in the colorpick helper
   label = this.data.label;
   $(function () {
-    var l = "." + label + "-colorpick";
+    const l = `.${label}-colorpick`;
     $(l).colorpicker({ format: "rgb", align: "left" });
   });
 });
 
 Template.curveItem.helpers({
-  removeCurve: function () {
-    var confirmRemoveCurve = Session.get("confirmRemoveCurve");
+  removeCurve() {
+    const confirmRemoveCurve = Session.get("confirmRemoveCurve");
     return confirmRemoveCurve ? confirmRemoveCurve.label : null;
   },
-  displayEditXaxis: function () {
+  displayEditXaxis() {
     if (Session.get("plotType") === matsTypes.PlotTypes.scatter2d) {
       return "block";
     }
     return "none";
   },
-  displayEditYaxis: function () {
+  displayEditYaxis() {
     if (Session.get("plotType") === matsTypes.PlotTypes.scatter2d) {
       return "block";
     }
     return "none";
   },
-  displayEdit: function () {
+  displayEdit() {
     if (Session.get("plotType") === matsTypes.PlotTypes.scatter2d) {
       return "none";
     }
     return "block";
   },
-  colorpick: function () {
-    var l = this.label + "-colorpick";
+  colorpick() {
+    const l = `${this.label}-colorpick`;
     return l;
   },
-  text: function () {
+  text() {
     if (this.diffFrom === undefined) {
-      var plotType = Session.get("plotType");
+      let plotType = Session.get("plotType");
       if (plotType === undefined) {
-        var pfuncs = matsCollections.PlotGraphFunctions.find({}).fetch();
-        for (var i = 0; i < pfuncs.length; i++) {
+        const pfuncs = matsCollections.PlotGraphFunctions.find({}).fetch();
+        for (let i = 0; i < pfuncs.length; i++) {
           if (pfuncs[i].checked === true) {
             Session.set("plotType", pfuncs[i].plotType);
           }
@@ -62,46 +64,45 @@ Template.curveItem.helpers({
         this.regionName = this.region.split(" ")[0];
       }
       return matsPlotUtils.getCurveText(plotType, this);
-    } else {
-      return this.label + ":  Difference";
     }
+    return `${this.label}:  Difference`;
   },
-  color: function () {
+  color() {
     return this.color;
   },
-  label: function () {
+  label() {
     return this.label;
   },
-  defaultColor: function () {
-    var curves = Session.get("Curves");
-    var label = this.label;
-    for (var i = 0; i < curves.length; i++) {
+  defaultColor() {
+    const curves = Session.get("Curves");
+    const { label } = this;
+    for (let i = 0; i < curves.length; i++) {
       if (curves[i].label === label) {
         return curves[i].color;
       }
     }
   },
-  curveNumber: function () {
-    const label = this.label;
+  curveNumber() {
+    const { label } = this;
     const curves = Session.get("Curves");
     const index = curves.findIndex(function (obj) {
       return obj.label === label;
     });
     return index;
   },
-  log: function () {
+  log() {
     console.log(this);
   },
-  DBcurve: function () {
+  DBcurve() {
     return this.diffFrom === undefined;
   },
-  editingThis: function () {
+  editingThis() {
     return Session.get("editMode") === this.label;
   },
-  editCurve: function () {
+  editCurve() {
     return Session.get("editMode");
   },
-  editTarget: function () {
+  editTarget() {
     return Session.get("eventTargetCurve");
   },
 });
@@ -111,15 +112,15 @@ const setParamsToAxis = function (newAxis, currentParams) {
   matsCurveUtils.resetScatterApply();
   // set param values to this curve
   // reset the form parameters for the superiors first
-  var currentParamName;
-  var paramNames = matsCollections.CurveParamsInfo.find({
+  let currentParamName;
+  const paramNames = matsCollections.CurveParamsInfo.find({
     curve_params: { $exists: true },
-  }).fetch()[0]["curve_params"];
-  var params = [];
-  var superiors = [];
-  var dependents = [];
+  }).fetch()[0].curve_params;
+  let params = [];
+  const superiors = [];
+  const dependents = [];
   // get all of the curve param collections in one place
-  for (var pidx = 0; pidx < paramNames.length; pidx++) {
+  for (let pidx = 0; pidx < paramNames.length; pidx++) {
     const param = matsCollections[paramNames[pidx]].find({}).fetch()[0];
     // superiors
     if (param.dependentNames !== undefined) {
@@ -132,7 +133,7 @@ const setParamsToAxis = function (newAxis, currentParams) {
       params.push(param);
     }
   }
-  for (var s = 0; s < superiors.length; s++) {
+  for (let s = 0; s < superiors.length; s++) {
     var plotParam = superiors[p];
     // do any date parameters - there are no axis date params in a scatter plot
     if (plotParam.type === matsTypes.InputTypes.dateRange) {
@@ -142,7 +143,7 @@ const setParamsToAxis = function (newAxis, currentParams) {
       const dateArr = currentParams[plotParam.name].split(" - ");
       const from = dateArr[0];
       const to = dateArr[1];
-      const idref = "#" + plotParam.name + "-" + plotParam.type;
+      const idref = `#${plotParam.name}-${plotParam.type}`;
       $(idref)
         .data("daterangepicker")
         .setStartDate(moment.utc(from, "MM-DD-YYYY HH:mm"));
@@ -153,9 +154,9 @@ const setParamsToAxis = function (newAxis, currentParams) {
       );
     } else {
       currentParamName =
-        currentParams[newAxis + "-" + plotParam.name] === undefined
+        currentParams[`${newAxis}-${plotParam.name}`] === undefined
           ? plotParam.name
-          : newAxis + "-" + plotParam.name;
+          : `${newAxis}-${plotParam.name}`;
       const val =
         currentParams[currentParamName] === null ||
         currentParams[currentParamName] === undefined
@@ -170,9 +171,9 @@ const setParamsToAxis = function (newAxis, currentParams) {
     var plotParam = combParams[p];
     // do any plot date parameters
     currentParamName =
-      currentParams[newAxis + "-" + plotParam.name] === undefined
+      currentParams[`${newAxis}-${plotParam.name}`] === undefined
         ? plotParam.name
-        : newAxis + "-" + plotParam.name;
+        : `${newAxis}-${plotParam.name}`;
     if (plotParam.type === matsTypes.InputTypes.dateRange) {
       if (currentParams[currentParamName] === undefined) {
         continue; // just like continue
@@ -180,7 +181,7 @@ const setParamsToAxis = function (newAxis, currentParams) {
       const dateArr = currentParams[currentParamName].split(" - ");
       const from = dateArr[0];
       const to = dateArr[1];
-      const idref = "#" + plotParam.name + "-" + plotParam.type;
+      const idref = `#${plotParam.name}-${plotParam.type}`;
       $(idref)
         .data("daterangepicker")
         .setStartDate(moment.utc(from, "MM-DD-YYYY HH:mm"));
@@ -203,9 +204,9 @@ const setParamsToAxis = function (newAxis, currentParams) {
   for (var p = 0; p < params.length; p++) {
     var plotParam = params[p];
     currentParamName =
-      currentParams[newAxis + "-" + plotParam.name] === undefined
+      currentParams[`${newAxis}-${plotParam.name}`] === undefined
         ? plotParam.name
-        : newAxis + "-" + plotParam.name;
+        : `${newAxis}-${plotParam.name}`;
     const val =
       currentParams[currentParamName] === null ||
       currentParams[currentParamName] === undefined
@@ -222,8 +223,8 @@ const correlateEditPanelToCurveItems = function (
   currentParams,
   doCheckHideOther
 ) {
-  for (var p = 0; p < params.length; p++) {
-    var plotParam = params[p];
+  for (let p = 0; p < params.length; p++) {
+    const plotParam = params[p];
     // do any plot date parameters
     if (plotParam.type === matsTypes.InputTypes.dateRange) {
       if (currentParams[plotParam.name] === undefined) {
@@ -232,7 +233,7 @@ const correlateEditPanelToCurveItems = function (
       const dateArr = currentParams[plotParam.name].split(" - ");
       const from = dateArr[0];
       const to = dateArr[1];
-      const idref = "#" + plotParam.name + "-" + plotParam.type;
+      const idref = `#${plotParam.name}-${plotParam.type}`;
       $(idref)
         .data("daterangepicker")
         .setStartDate(moment.utc(from, "MM-DD-YYYY HH:mm"));
@@ -242,7 +243,7 @@ const correlateEditPanelToCurveItems = function (
         currentParams[plotParam.name]
       );
     } else {
-      var val =
+      const val =
         currentParams[plotParam.name] === null ||
         currentParams[plotParam.name] === undefined
           ? matsTypes.InputTypes.unused
@@ -255,24 +256,24 @@ const correlateEditPanelToCurveItems = function (
   }
 };
 
-var curveListEditNode; // used to pass the edit button to the modal continue
+let curveListEditNode; // used to pass the edit button to the modal continue
 Template.curveItem.events({
-  "click .save-changes": function () {
+  "click .save-changes"() {
     $(".displayBtn").css({ border: "" }); // clear any borders from any display buttons
     document.getElementById("save").click();
     Session.set("paramWellColor", "#f5f5f5");
   },
-  "click .cancel": function () {
+  "click .cancel"() {
     $(".displayBtn").css({ border: "" }); // clear any borders from any display buttons
     document.getElementById("cancel").click();
     Session.set("paramWellColor", "#f5f5f5");
   },
-  "click .remove-curve": function (event) {
-    var removeCurve = Session.get("confirmRemoveCurve");
+  "click .remove-curve"(event) {
+    const removeCurve = Session.get("confirmRemoveCurve");
     if (removeCurve && removeCurve.confirm) {
-      var label = removeCurve.label;
-      var color = removeCurve.color;
-      var Curves = _.reject(Session.get("Curves"), function (item) {
+      const { label } = removeCurve;
+      const { color } = removeCurve;
+      const Curves = _.reject(Session.get("Curves"), function (item) {
         return item.label === label;
       });
       Session.set("Curves", Curves);
@@ -285,13 +286,12 @@ Template.curveItem.events({
         location.reload(true);
       }
       return false;
-    } else {
-      Session.set("confirmRemoveCurve", { label: this.label, color: this.color });
-      $("#modal-confirm-remove-curve").modal();
     }
+    Session.set("confirmRemoveCurve", { label: this.label, color: this.color });
+    $("#modal-confirm-remove-curve").modal();
   },
-  "click .confirm-remove-curve": function () {
-    var confirmCurve = Session.get("confirmRemoveCurve");
+  "click .confirm-remove-curve"() {
+    const confirmCurve = Session.get("confirmRemoveCurve");
     Session.set("confirmRemoveCurve", {
       label: confirmCurve.label,
       color: confirmCurve.color,
@@ -299,21 +299,21 @@ Template.curveItem.events({
     });
     $("#curve-list-remove").trigger("click");
   },
-  "click .edit-curve-xaxis": function (event) {
+  "click .edit-curve-xaxis"(event) {
     Session.set("axis", "xaxis");
     Session.set("editMode", this.label);
-    var currentParams = jQuery.extend({}, this);
+    const currentParams = jQuery.extend({}, this);
     setParamsToAxis("xaxis", currentParams);
   },
-  "click .edit-curve-yaxis": function (event) {
+  "click .edit-curve-yaxis"(event) {
     Session.set("axis", "yaxis");
     Session.set("editMode", this.label);
-    var currentParams = jQuery.extend({}, this);
+    const currentParams = jQuery.extend({}, this);
     setParamsToAxis("yaxis", currentParams);
   },
-  "click .edit-curve": function (event) {
+  "click .edit-curve"(event) {
     const srcEditButton = event.currentTarget;
-    const name = srcEditButton.name;
+    const { name } = srcEditButton;
     const editingCurve = Session.get("editMode");
     curveListEditNode = $(
       event.currentTarget.parentNode.parentNode.parentNode.parentNode
@@ -338,17 +338,17 @@ Template.curveItem.events({
     // reset scatter plot apply stuff
     matsCurveUtils.resetScatterApply();
     // capture the current parameters from the curveItem
-    var currentParams = jQuery.extend({}, this);
+    const currentParams = jQuery.extend({}, this);
     // set param values to this curve
     // reset the form parameters for the superiors first
-    var paramNames = matsCollections.CurveParamsInfo.find({
+    const paramNames = matsCollections.CurveParamsInfo.find({
       curve_params: { $exists: true },
-    }).fetch()[0]["curve_params"];
-    var params = [];
-    var superiors = [];
-    var hidden = [];
+    }).fetch()[0].curve_params;
+    let params = [];
+    const superiors = [];
+    const hidden = [];
     // get all of the curve param collections in one place
-    for (var pidx = 0; pidx < paramNames.length; pidx++) {
+    for (let pidx = 0; pidx < paramNames.length; pidx++) {
       const param = matsCollections[paramNames[pidx]].find({}).fetch()[0];
       // superiors
       if (param.dependentNames !== undefined) {
@@ -373,7 +373,7 @@ Template.curveItem.events({
         const dateArr = currentParams[plotParam.name].split(" - ");
         const from = dateArr[0];
         const to = dateArr[1];
-        const idref = "#" + plotParam.name + "-" + plotParam.type;
+        const idref = `#${plotParam.name}-${plotParam.type}`;
         $(idref)
           .data("daterangepicker")
           .setStartDate(moment.utc(from, "MM-DD-YYYY HH:mm"));
@@ -383,7 +383,7 @@ Template.curveItem.events({
           currentParams[plotParam.name]
         );
       } else {
-        var val =
+        const val =
           currentParams[plotParam.name] === null ||
           currentParams[plotParam.name] === undefined
             ? matsTypes.InputTypes.unused
@@ -413,20 +413,20 @@ Template.curveItem.events({
     matsParamUtils.collapseParams();
     return false;
   },
-  hidePicker: function () {
-    var Curves = Session.get("Curves");
-    var label = this.label;
-    for (var i = 0; i < Curves.length; i++) {
+  hidePicker() {
+    const Curves = Session.get("Curves");
+    const { label } = this;
+    for (let i = 0; i < Curves.length; i++) {
       if (label === Curves[i].label) {
-        Curves[i].color = document.getElementById(label + "-color-value").value;
+        Curves[i].color = document.getElementById(`${label}-color-value`).value;
       }
     }
     Session.set("Curves", Curves);
     return false;
   },
-  "click .displayBtn": function (event) {
+  "click .displayBtn"(event) {
     const srcDisplayButton = event.currentTarget;
-    const name = srcDisplayButton.name;
+    const { name } = srcDisplayButton;
     const inputElem = matsParamUtils.getInputElementForParamName(name);
     const controlElem = matsParamUtils.getControlElementForParamName(name);
     const editingCurve = Session.get("editMode");
@@ -438,17 +438,15 @@ Template.curveItem.events({
       curveListEditNode = $(
         event.currentTarget.parentNode.parentNode.parentNode.parentNode
       ).find("#curve-list-edit-yaxis");
+    } else if (matsPlotUtils.getPlotType() === matsTypes.PlotTypes.scatter2d) {
+      // for a scatter param that is not axis specific we still have to choos an axis - just choose x
+      curveListEditNode = $(
+        event.currentTarget.parentNode.parentNode.parentNode.parentNode
+      ).find("#curve-list-edit-xaxis");
     } else {
-      if (matsPlotUtils.getPlotType() === matsTypes.PlotTypes.scatter2d) {
-        // for a scatter param that is not axis specific we still have to choos an axis - just choose x
-        curveListEditNode = $(
-          event.currentTarget.parentNode.parentNode.parentNode.parentNode
-        ).find("#curve-list-edit-xaxis");
-      } else {
-        curveListEditNode = $(
-          event.currentTarget.parentNode.parentNode.parentNode.parentNode
-        ).find("#curve-list-edit");
-      }
+      curveListEditNode = $(
+        event.currentTarget.parentNode.parentNode.parentNode.parentNode
+      ).find("#curve-list-edit");
     }
     const eventTargetCurve = $(event.currentTarget.parentNode.parentNode.parentNode)
       .find(".displayItemLabelSpan")
@@ -471,9 +469,9 @@ Template.curveItem.events({
     controlElem && controlElem.click();
     Session.set("elementChanged", Date.now());
   },
-  "click .continue-lose-edits": function () {
+  "click .continue-lose-edits"() {
     const intendedName = Session.get("intendedActiveDisplayButton");
-    var activeDisplayButton = Session.set("activeDisplayButton", intendedName);
+    const activeDisplayButton = Session.set("activeDisplayButton", intendedName);
     document.getElementById("cancel").click();
     Session.set("paramWellColor", "#f5f5f5");
     const controlElem = matsParamUtils.getControlElementForParamName(intendedName);
@@ -483,7 +481,7 @@ Template.curveItem.events({
     controlElem && controlElem.click();
     Session.set("elementChanged", Date.now());
   },
-  "click .cancel-lose-edits": function () {
+  "click .cancel-lose-edits"() {
     // don't change the active button
     const name = Session.get("activeDisplayButton");
     const controlElem = matsParamUtils.getControlElementForParamName(name);

@@ -2,24 +2,24 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import { matsCollections } from "meteor/randyp:mats-common";
-import { matsSelectUtils } from "meteor/randyp:mats-common";
-import { matsParamUtils } from "meteor/randyp:mats-common";
+import {
+  matsCollections,
+  matsSelectUtils,
+  matsParamUtils,
+} from "meteor/randyp:mats-common";
 
 Template.radioGroup.helpers({
-  checkedByDefault: function (def) {
+  checkedByDefault(def) {
     if (def === this) {
       return "checked";
-    } else {
-      return "";
     }
+    return "";
   },
-  labelValue: function (optionsMap) {
+  labelValue(optionsMap) {
     if (optionsMap !== undefined) {
       return optionsMap[this];
-    } else {
-      return this;
     }
+    return this;
   },
 });
 
@@ -43,9 +43,9 @@ Template.radioGroup.helpers({
 
    */
 Template.radioGroup.events({
-  "change, blur": function (event) {
+  "change, blur"(event) {
     try {
-      var text = event.currentTarget.value;
+      const text = event.currentTarget.value;
       matsParamUtils.setValueTextForParamName(event.target.name, text);
 
       // check hide other for
@@ -63,12 +63,12 @@ Template.radioGroup.events({
             didx < radioGroupParam.dependentRadioGroups.length;
             didx++
           ) {
-            let dependentElemOptions = matsParamUtils
+            const dependentElemOptions = matsParamUtils
               .getInputElementForParamName(radioGroupParam.dependentRadioGroups[didx])
               .getElementsByTagName("input");
             for (let deidx = 0; deidx < dependentElemOptions.length; deidx++) {
               if (dependentElemOptions[deidx].checked) {
-                $("#" + dependentElemOptions[deidx].id).trigger("change");
+                $(`#${dependentElemOptions[deidx].id}`).trigger("change");
                 break;
               }
             }

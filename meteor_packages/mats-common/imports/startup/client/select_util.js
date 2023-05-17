@@ -12,11 +12,11 @@ import {
 // method to refresh the peers of the current selector
 const refreshPeer = function (event, param) {
   try {
-    const peerName = param.peerName;
+    const { peerName } = param;
     if (peerName !== undefined) {
       // refresh the peer
       const targetParam = matsParamUtils.getParameterForName(peerName);
-      const targetId = targetParam.name + "-" + targetParam.type;
+      const targetId = `${targetParam.name}-${targetParam.type}`;
       const targetElem = document.getElementById(targetId);
       const refreshMapEvent = new CustomEvent("refresh", {
         detail: {
@@ -27,7 +27,7 @@ const refreshPeer = function (event, param) {
     }
     refreshDependents(event, param);
   } catch (e) {
-    e.message = "INFO: Error in select.js refreshPeer: " + e.message;
+    e.message = `INFO: Error in select.js refreshPeer: ${e.message}`;
     setInfo(e.message);
   }
 };
@@ -35,22 +35,22 @@ const refreshPeer = function (event, param) {
 // method to refresh the dependents of the current selector
 const refreshDependents = function (event, param) {
   try {
-    const dependentNames = param.dependentNames;
+    const { dependentNames } = param;
     if (
       dependentNames &&
       Object.prototype.toString.call(dependentNames) === "[object Array]" &&
       dependentNames.length > 0
     ) {
       // refresh the dependents
-      var selectAllbool = false;
-      for (var i = 0; i < dependentNames.length; i++) {
+      let selectAllbool = false;
+      for (let i = 0; i < dependentNames.length; i++) {
         const name = dependentNames[i];
         const targetParam = matsParamUtils.getParameterForName(name);
         var targetId;
         if (targetParam.type === matsTypes.InputTypes.dateRange) {
-          targetId = "element-" + targetParam.name;
+          targetId = `element-${targetParam.name}`;
         } else {
-          targetId = targetParam.name + "-" + targetParam.type;
+          targetId = `${targetParam.name}-${targetParam.type}`;
         }
         const targetElem = document.getElementById(targetId);
 
@@ -60,26 +60,20 @@ const refreshDependents = function (event, param) {
         try {
           targetElem.dispatchEvent(new CustomEvent("refresh"));
         } catch (re) {
-          re.message =
-            "INFO: refreshDependents of: " +
-            param.name +
-            " dependent: " +
-            targetParam.name +
-            " - error: " +
-            re.message;
+          re.message = `INFO: refreshDependents of: ${param.name} dependent: ${targetParam.name} - error: ${re.message}`;
           setInfo(re.message);
         }
         const elements = targetElem.options;
         const select = true;
         if (targetElem.multiple && elements !== undefined && elements.length > 0) {
           if (selectAllbool) {
-            for (var i1 = 0; i1 < elements.length; i1++) {
+            for (let i1 = 0; i1 < elements.length; i1++) {
               elements[i1].selected = select;
             }
             matsParamUtils.setValueTextForParamName(name, "");
           } else {
             const previously_selected = Session.get("selected");
-            for (var i2 = 0; i2 < elements.length; i2++) {
+            for (let i2 = 0; i2 < elements.length; i2++) {
               if (_.indexOf(previously_selected, elements[i2].text) !== -1) {
                 elements[i2].selected = select;
               }
@@ -89,7 +83,7 @@ const refreshDependents = function (event, param) {
       }
     }
   } catch (e) {
-    e.message = "INFO: Error in select.js refreshDependents: " + e.message;
+    e.message = `INFO: Error in select.js refreshDependents: ${e.message}`;
     setInfo(e.message);
   }
 };
@@ -101,12 +95,12 @@ const checkDisableOther = function (param, firstRender) {
       // this param controls the enable/disable properties of at least one other param.
       // Use the options to enable disable that param.
       const controlledSelectors = Object.keys(param.disableOtherFor);
-      for (var i = 0; i < controlledSelectors.length; i++) {
+      for (let i = 0; i < controlledSelectors.length; i++) {
         const elem = matsParamUtils.getInputElementForParamName(param.name);
         if (!elem) {
           return;
         }
-        const selectedOptions = elem.selectedOptions;
+        const { selectedOptions } = elem;
         const selectedText =
           selectedOptions && selectedOptions.length > 0 ? selectedOptions[0].text : "";
         if (
@@ -129,7 +123,7 @@ const checkDisableOther = function (param, firstRender) {
       }
     }
   } catch (e) {
-    e.message = "INFO: Error in select.js checkDisableOther: " + e.message;
+    e.message = `INFO: Error in select.js checkDisableOther: ${e.message}`;
     setInfo(e.message);
   }
 };
@@ -140,7 +134,7 @@ const checkHideOther = function (param, firstRender) {
     if (param.hideOtherFor !== undefined) {
       // this param controls the visibility of at least one other param.
       const controlledSelectors = Object.keys(param.hideOtherFor);
-      for (var i = 0; i < controlledSelectors.length; i++) {
+      for (let i = 0; i < controlledSelectors.length; i++) {
         const elem = matsParamUtils.getInputElementForParamName(param.name);
         if (!elem) {
           return;
@@ -156,8 +150,8 @@ const checkHideOther = function (param, firstRender) {
               break;
             }
           }
-          selectedOptions = selectedOptions ? selectedOptions : [];
-          selectedText = selectedText ? selectedText : "";
+          selectedOptions = selectedOptions || [];
+          selectedText = selectedText || "";
         } else {
           selectedOptions = elem.selectedOptions;
           selectedText =
@@ -183,7 +177,7 @@ const checkHideOther = function (param, firstRender) {
             let superiorSelectedText = "";
             for (let sidx = 0; sidx < superiorInputElementOptions.length; sidx++) {
               if (superiorInputElementOptions[sidx].checked) {
-                let superiorSelectedOptions =
+                const superiorSelectedOptions =
                   superiorInputElementOptions[sidx].id.split("-radioGroup-");
                 superiorSelectedText =
                   superiorSelectedOptions[superiorSelectedOptions.length - 1];
@@ -203,7 +197,7 @@ const checkHideOther = function (param, firstRender) {
           }
         }
 
-        let otherInputElement = matsParamUtils.getInputElementForParamName(
+        const otherInputElement = matsParamUtils.getInputElementForParamName(
           controlledSelectors[i]
         );
         var selectorControlElem;
@@ -216,7 +210,7 @@ const checkHideOther = function (param, firstRender) {
           $.inArray(selectedText, param.hideOtherFor[controlledSelectors[i]]) !== -1
         ) {
           selectorControlElem = document.getElementById(
-            controlledSelectors[i] + "-item"
+            `${controlledSelectors[i]}-item`
           );
           if (selectorControlElem && selectorControlElem.style) {
             selectorControlElem.style.display = "none";
@@ -232,7 +226,7 @@ const checkHideOther = function (param, firstRender) {
         ) {
           // don't change anything if the parent parameter is unused in this curve and that situation isn't specified in hideOtherFor.
           selectorControlElem = document.getElementById(
-            controlledSelectors[i] + "-item"
+            `${controlledSelectors[i]}-item`
           );
           if (selectorControlElem && selectorControlElem.style) {
             if (param.controlButtonVisibility !== "none" && !doNotShow) {
@@ -249,7 +243,7 @@ const checkHideOther = function (param, firstRender) {
       checkDisableOther(param, firstRender);
     }
   } catch (e) {
-    e.message = "INFO: Error in select.js checkHideOther: " + e.message;
+    e.message = `INFO: Error in select.js checkHideOther: ${e.message}`;
     setInfo(e.message);
   }
 };
@@ -272,19 +266,19 @@ const refresh = function (event, paramName) {
     and they are the sort order of those keys.
     */
   const disabledOptions = matsParamUtils.getDisabledOptionsForParamName(paramName);
-  const optionsGroups = param.optionsGroups;
-  const optionsMap = param.optionsMap;
+  const { optionsGroups } = param;
+  const { optionsMap } = param;
   const isMetexpress =
     matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
   const isScorecard = matsCollections.Settings.findOne({}).scorecard;
-  var statisticTranslations = {};
+  let statisticTranslations = {};
   if (isMetexpress) {
-    statisticTranslations = matsCollections["statistic"].findOne({
+    statisticTranslations = matsCollections.statistic.findOne({
       name: "statistic",
     }).valuesMap;
   }
 
-  const superiorNames = param.superiorNames;
+  const { superiorNames } = param;
   const superiorDimensionality =
     superiorNames !== undefined &&
     superiorNames !== null &&
@@ -292,9 +286,9 @@ const refresh = function (event, paramName) {
     Array.isArray(superiorNames[0])
       ? superiorNames.length
       : 1;
-  var superiors = [];
+  const superiors = [];
   // get a list of the current superior selected values - in order of superiority i.e. [databaseValue,dataSourceValue]
-  var sNames;
+  let sNames;
   if (superiorNames !== undefined) {
     if (superiorDimensionality === 1) {
       sNames = superiorNames;
@@ -375,7 +369,7 @@ const refresh = function (event, paramName) {
      */
 
   // find all the elements that have ids like .... "x|y|z" + "axis-" + this.name
-  const name = param.name;
+  const { name } = param;
   const elems =
     document.getElementsByClassName("data-input") === undefined
       ? []
@@ -392,14 +386,14 @@ const refresh = function (event, paramName) {
       elem.selectedIndex >= 0
         ? elem.options[elem.selectedIndex].text
         : matsTypes.InputTypes.unused;
-    var brothers = [];
+    const brothers = [];
     for (var i = 0; i < elems.length; i++) {
       if (elems[i].id.indexOf(name) >= 0 && elems[i].id !== elem.id)
         brothers.push(elems[i]);
     }
 
-    var myOptions = [];
-    var selectedSuperiorValues = [];
+    let myOptions = [];
+    const selectedSuperiorValues = [];
 
     try {
       // index down through the options for the list of superiors
@@ -407,7 +401,7 @@ const refresh = function (event, paramName) {
       // and get the options list for the first set of superiors.
       // These are the ancestral options.
       if (param.optionsMap) {
-        var firstSuperiorOptions = optionsMap;
+        let firstSuperiorOptions = optionsMap;
         var theseSuperiors =
           superiors === undefined || superiors.length === 0 ? [] : superiors[0];
         for (
@@ -421,7 +415,7 @@ const refresh = function (event, paramName) {
             firstSuperiorOptions =
               firstSuperiorOptions[selectedSuperiorValue] !== undefined
                 ? firstSuperiorOptions[selectedSuperiorValue]
-                : firstSuperiorOptions["NULL"];
+                : firstSuperiorOptions.NULL;
           } else {
             firstSuperiorOptions = firstSuperiorOptions[selectedSuperiorValue];
           }
@@ -472,7 +466,7 @@ const refresh = function (event, paramName) {
         // starting with the most superior down through the least superior
         // and get the options list for the first set of superiors.
         // These are the ancestral options.
-        var nextSuperiorOptions = optionsMap;
+        let nextSuperiorOptions = optionsMap;
         var theseSuperiors =
           superiors === undefined || superiors.length === 0
             ? []
@@ -494,9 +488,7 @@ const refresh = function (event, paramName) {
         matsParamUtils.setValueTextForParamName(name, matsTypes.InputTypes.unused);
       }
     } catch (e) {
-      e.message =
-        "INFO: Error in select.js refresh: determining options from superiors: " +
-        e.message;
+      e.message = `INFO: Error in select.js refresh: determining options from superiors: ${e.message}`;
       setInfo(e.message);
     }
 
@@ -511,7 +503,7 @@ const refresh = function (event, paramName) {
           // optionGroups are an ordered map. It probably has options that are in the disabledOption list
           // which are used as markers in the select options pulldown. This is typical for models
           const optionsGroupsKeys = Object.keys(optionsGroups);
-          for (var k = 0; k < optionsGroupsKeys.length; k++) {
+          for (let k = 0; k < optionsGroupsKeys.length; k++) {
             if (myOptions === null) {
               myOptions = [];
               myOptions.push(optionsGroupsKeys[k]);
@@ -525,39 +517,36 @@ const refresh = function (event, paramName) {
           myOptions = param.options;
         }
       }
-      var optionsAsString = "";
+      let optionsAsString = "";
       if (myOptions === undefined || myOptions === null) {
         return;
       }
-      var firstGroup = true;
+      let firstGroup = true;
       for (var i = 0; i < myOptions.length; i++) {
-        var dIndex =
+        const dIndex =
           disabledOptions === undefined ? -1 : disabledOptions.indexOf(myOptions[i]);
         if (dIndex >= 0) {
           // the option was found in the disabled options so it needs to be an optgroup label
           // disabled option
           if (firstGroup === true) {
             // first in group
-            optionsAsString += "<optgroup label=" + myOptions[i] + ">";
+            optionsAsString += `<optgroup label=${myOptions[i]}>`;
             firstGroup = false;
           } else {
             optionsAsString += "</optgroup>";
-            optionsAsString += "<optgroup label=" + myOptions[i] + ">";
+            optionsAsString += `<optgroup label=${myOptions[i]}>`;
           }
         } else {
-          //regular option - the option was not found in the disabled options
-          optionsAsString +=
-            "<option value='" + myOptions[i] + "'>" + myOptions[i] + "</option>";
+          // regular option - the option was not found in the disabled options
+          optionsAsString += `<option value='${myOptions[i]}'>${myOptions[i]}</option>`;
         }
       }
       if (disabledOptions !== undefined) {
         optionsAsString += "</optgroup>";
       }
-      $('select[name="' + name + '"]')
-        .empty()
-        .append(optionsAsString);
-      //reset the selected index if it had been set prior (the list may have changed so the index may have changed)
-      var selectedOptionIndex;
+      $(`select[name="${name}"]`).empty().append(optionsAsString);
+      // reset the selected index if it had been set prior (the list may have changed so the index may have changed)
+      let selectedOptionIndex;
       if (selectedText === "initial") {
         selectedOptionIndex = myOptions.indexOf(param.default);
       } else if (name === "plot-type") {
@@ -566,17 +555,15 @@ const refresh = function (event, paramName) {
       } else {
         selectedOptionIndex = myOptions.indexOf(selectedText);
       }
-      var sviText = "";
+      let sviText = "";
       if (selectedOptionIndex === -1) {
         if (name === "plot-type") {
           setInfo(
-            "INFO:  Plot type " +
-              matsPlotUtils.getPlotType() +
-              " is not available for this database/model combination."
+            `INFO:  Plot type ${matsPlotUtils.getPlotType()} is not available for this database/model combination.`
           );
         }
         if (elem.selectedIndex >= 0) {
-          for (var svi = 0; svi < selectedSuperiorValues.length; svi++) {
+          for (let svi = 0; svi < selectedSuperiorValues.length; svi++) {
             superior = superiors[svi];
             if (
               matsParamUtils.getControlElementForParamName(superior.element.name)
@@ -589,16 +576,7 @@ const refresh = function (event, paramName) {
             }
           }
           setInfo(
-            "I changed your selected " +
-              name +
-              ": '" +
-              selectedText +
-              "' to '" +
-              myOptions[0] +
-              "' because '" +
-              selectedText +
-              "' is no longer an option for " +
-              sviText
+            `I changed your selected ${name}: '${selectedText}' to '${myOptions[0]}' because '${selectedText}' is no longer an option for ${sviText}`
           );
         }
       }
@@ -645,7 +623,7 @@ const refresh = function (event, paramName) {
           .get();
         if (belemSelectedOptions === undefined || belemSelectedOptions.length === 0) {
           belem.options = [];
-          for (var i1 = 0; i1 < myOptions.length; i1++) {
+          for (let i1 = 0; i1 < myOptions.length; i1++) {
             belem.options[belem.options.length] = new Option(
               myOptions[i1],
               myOptions[i1],
@@ -656,8 +634,7 @@ const refresh = function (event, paramName) {
         }
       }
     } catch (e) {
-      e.message =
-        "INFO: Error in select.js refresh: resetting selected options: " + e.message;
+      e.message = `INFO: Error in select.js refresh: resetting selected options: ${e.message}`;
       setInfo(e.message);
     }
   }
@@ -668,9 +645,9 @@ const refresh = function (event, paramName) {
 }; // refresh function
 
 export default matsSelectUtils = {
-  refresh: refresh,
-  refreshPeer: refreshPeer,
-  refreshDependents: refreshDependents,
-  checkDisableOther: checkDisableOther,
-  checkHideOther: checkHideOther,
+  refresh,
+  refreshPeer,
+  refreshDependents,
+  checkDisableOther,
+  checkHideOther,
 };

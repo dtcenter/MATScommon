@@ -6,20 +6,20 @@ import "../imports/startup/server/index.js";
 import "../imports/startup/both/index.js";
 import { ServiceConfiguration } from "meteor/service-configuration";
 
-var setGoogleCred = function () {
+const setGoogleCred = function () {
   /*
      from developer console:
      console.developers.google.apis
      */
   if (Meteor.isServer) {
-    var os = Npm.require("os");
-    var hostname = os.hostname();
-    var cid = "";
-    var cSecret = "";
-    var gid = "";
-    var gSecret = "";
-    var _id = "";
-    var cred;
+    const os = Npm.require("os");
+    const hostname = os.hostname();
+    let cid = "";
+    let cSecret = "";
+    let gid = "";
+    let gSecret = "";
+    let _id = "";
+    let cred;
     try {
       cred = ServiceConfiguration.configurations.findOne({ service: "google" });
       if (cred) {

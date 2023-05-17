@@ -2,29 +2,29 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import { matsParamUtils } from "meteor/randyp:mats-common";
-import { matsCollections } from "meteor/randyp:mats-common";
-var refresh = function (name) {
+import { matsParamUtils, matsCollections } from "meteor/randyp:mats-common";
+
+const refresh = function (name) {
   if (matsCollections[name] !== undefined) {
     const paramData = matsCollections[name].findOne(
-      { name: name },
+      { name },
       { dependentNames: 1, peerName: 1 }
     );
-    const optionsMap = paramData.optionsMap;
-    var superiorNames = paramData.superiorNames;
-    var ref = paramData.name + "-" + paramData.type;
-    var refValueDisplay = "controlButton-" + paramData.name + "-value";
-    var dispElem = document.getElementById(refValueDisplay);
-    var elem = document.getElementById(ref);
-    var dispDefault = paramData.default;
-    var min = paramData.min;
-    var step = paramData.step === undefined ? "any" : paramData.step;
-    var max = paramData.max;
-    for (var si = 0; si < superiorNames.length; si++) {
-      var superiorElement = matsParamUtils.getInputElementForParamName(
+    const { optionsMap } = paramData;
+    const { superiorNames } = paramData;
+    const ref = `${paramData.name}-${paramData.type}`;
+    const refValueDisplay = `controlButton-${paramData.name}-value`;
+    const dispElem = document.getElementById(refValueDisplay);
+    const elem = document.getElementById(ref);
+    let dispDefault = paramData.default;
+    let { min } = paramData;
+    let step = paramData.step === undefined ? "any" : paramData.step;
+    let { max } = paramData;
+    for (let si = 0; si < superiorNames.length; si++) {
+      const superiorElement = matsParamUtils.getInputElementForParamName(
         superiorNames[si]
       );
-      var selectedSuperiorValue =
+      const selectedSuperiorValue =
         superiorElement.options[superiorElement.selectedIndex] &&
         superiorElement.options[superiorElement.selectedIndex].text;
       const options = optionsMap[selectedSuperiorValue];
@@ -46,26 +46,26 @@ var refresh = function (name) {
 };
 
 Template.numberSpinner.helpers({
-  defaultValue: function () {
+  defaultValue() {
     return this.default;
   },
-  min: function () {
-    //default
+  min() {
+    // default
     return this.min;
   },
-  max: function () {
-    //default
+  max() {
+    // default
     return this.max;
   },
-  step: function () {
-    //default
+  step() {
+    // default
     return this.step;
   },
 });
 
 Template.numberSpinner.onRendered(function () {
   // register an event listener so that the select.js can ask the map div to refresh after a selection
-  const ref = this.data.name + "-" + this.data.type;
+  const ref = `${this.data.name}-${this.data.type}`;
   const elem = document.getElementById(ref);
   if (ref.search("axis") === 1) {
     // this is a "brother" (hidden) scatterplot param. There is no need to refresh it or add event listeners etc.
@@ -77,10 +77,10 @@ Template.numberSpinner.onRendered(function () {
 });
 
 Template.numberSpinner.events({
-  "change, blur": function (event) {
+  "change, blur"(event) {
     try {
       event.target.checkValidity();
-      var text = event.currentTarget.value;
+      const text = event.currentTarget.value;
       matsParamUtils.setValueTextForParamName(event.target.name, text);
     } catch (error) {
       matsParamUtils.setValueTextForParamName(event.target.name, "");

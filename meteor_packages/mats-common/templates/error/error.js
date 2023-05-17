@@ -5,25 +5,25 @@
 import { matsPlotUtils } from "meteor/randyp:mats-common";
 
 Template.error.helpers({
-  errorMessage: function () {
+  errorMessage() {
     return getError();
   },
-  stackTrace: function () {
+  stackTrace() {
     return getStack();
   },
 });
 
 Template.error.events({
-  "click .clear-error": function () {
+  "click .clear-error"() {
     clearError();
     document.getElementById("stack").style.display = "none";
     matsPlotUtils.enableActionButtons();
     return false;
   },
-  "click .show-stack": function () {
+  "click .show-stack"() {
     document.getElementById("stack").style.display = "block";
   },
-  "click .hide-stack": function () {
+  "click .hide-stack"() {
     document.getElementById("stack").style.display = "none";
   },
 });

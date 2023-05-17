@@ -2,30 +2,28 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import { matsCollections } from "meteor/randyp:mats-common";
-import { matsParamUtils } from "meteor/randyp:mats-common";
-import { matsTypes } from "meteor/randyp:mats-common";
+import { matsCollections, matsParamUtils, matsTypes } from "meteor/randyp:mats-common";
 
 // determine the axisText (used in scatter_axis.js for example)
 // according to the Scatter Axis Text Patterns Pattern defined in
 // ScatterAxisTextPatterns according to plotType - and derived from
 // currently selected inputs in the document.
 const getAxisText = function (plotType) {
-  var scatterAxisTextPattern = matsCollections.ScatterAxisTextPattern.findOne({
+  const scatterAxisTextPattern = matsCollections.ScatterAxisTextPattern.findOne({
     plotType: getPlotType(),
   });
-  var textPattern = scatterAxisTextPattern
+  const textPattern = scatterAxisTextPattern
     ? matsCollections.ScatterAxisTextPattern.findOne({ plotType: getPlotType() })
         .textPattern
     : undefined;
   if (scatterAxisTextPattern === undefined) {
     return "";
   }
-  var text = "";
-  for (var i = 0; i < scatterAxisTextPattern.length; i++) {
-    var pName = scatterAxisTextPattern[i][0];
-    var delimiter = scatterAxisTextPattern[i][1];
-    var value = matsParamUtils.getValueForParamName(pName);
+  let text = "";
+  for (let i = 0; i < scatterAxisTextPattern.length; i++) {
+    const pName = scatterAxisTextPattern[i][0];
+    const delimiter = scatterAxisTextPattern[i][1];
+    let value = matsParamUtils.getValueForParamName(pName);
     text += value += delimiter;
   }
   return text;
@@ -34,19 +32,19 @@ const getAxisText = function (plotType) {
 // determine the curveText (used in curveItem for example) for a given curve (from Session.get('curves'))
 // that has already been added
 const getCurveText = function (plotType, curve) {
-  var curveTextPattern = matsCollections.CurveTextPatterns.findOne({
-    plotType: plotType,
+  const curveTextPattern = matsCollections.CurveTextPatterns.findOne({
+    plotType,
   }).textPattern;
-  var text = "";
+  let text = "";
 
-  for (var i = 0; i < curveTextPattern.length; i++) {
-    var a = curveTextPattern[i];
+  for (let i = 0; i < curveTextPattern.length; i++) {
+    const a = curveTextPattern[i];
     if (a === undefined || a === null || curve[a[1]] === undefined) {
       continue;
     }
     text += a[0];
     if (curve[a[1]] instanceof Array && curve[a[1]].length > 2) {
-      text += curve[a[1]][0] + ".." + curve[a[1]][curve[a[1]].length - 1];
+      text += `${curve[a[1]][0]}..${curve[a[1]][curve[a[1]].length - 1]}`;
     } else {
       text += curve[a[1]];
     }
@@ -57,26 +55,26 @@ const getCurveText = function (plotType, curve) {
 
 // like getCurveText but with wrapping
 const getCurveTextWrapping = function (plotType, curve) {
-  var curveTextPattern = matsCollections.CurveTextPatterns.findOne({
-    plotType: plotType,
+  const curveTextPattern = matsCollections.CurveTextPatterns.findOne({
+    plotType,
   }).textPattern;
-  var text = "";
-  var wrapLimit = 40;
-  for (var i = 0; i < curveTextPattern.length; i++) {
-    var a = curveTextPattern[i];
+  let text = "";
+  let wrapLimit = 40;
+  for (let i = 0; i < curveTextPattern.length; i++) {
+    const a = curveTextPattern[i];
     if (a === undefined || a === null || curve[a[1]] === undefined) {
       continue;
     }
     text += a[0];
     if (curve[a[1]] instanceof Array && curve[a[1]].length > 2) {
-      text += curve[a[1]][0] + ".." + curve[a[1]][curve[a[1]].length - 1];
+      text += `${curve[a[1]][0]}..${curve[a[1]][curve[a[1]].length - 1]}`;
     } else {
       text += curve[a[1]];
     }
     text += a[2];
     if (text.length > wrapLimit) {
       text += "<br>";
-      wrapLimit = wrapLimit + 40;
+      wrapLimit += 40;
     }
   }
   return text;
@@ -91,16 +89,16 @@ const getPlotType = function () {
 
 // determine which plotFormat radio button is checked
 const getPlotFormat = function () {
-  var buttons = document.getElementsByName("plotFormat");
+  const buttons = document.getElementsByName("plotFormat");
   if (buttons === undefined) {
     return ""; // app may not have plotFormat?
   }
-  var plotFormatParam = matsCollections.PlotParams.findOne({ name: "plotFormat" });
+  const plotFormatParam = matsCollections.PlotParams.findOne({ name: "plotFormat" });
   if (plotFormatParam === undefined) {
     return ""; // app may not have plotFormat?
   }
-  var optionsMap = plotFormatParam.optionsMap;
-  for (var i = 0, len = buttons.length; i < len; i++) {
+  const { optionsMap } = plotFormatParam;
+  for (let i = 0, len = buttons.length; i < len; i++) {
     if (buttons[i].checked) {
       return buttons[i].value;
     }
@@ -110,9 +108,9 @@ const getPlotFormat = function () {
 
 // Determine which BestFit radio button is checked
 const getBestFit = function () {
-  var buttons = document.getElementsByName("Fit Type");
-  var optionsMap = matsCollections.PlotParams.findOne({ name: "bestFit" }).optionsMap;
-  for (var i = 0, len = buttons.length; i < len; i++) {
+  const buttons = document.getElementsByName("Fit Type");
+  const { optionsMap } = matsCollections.PlotParams.findOne({ name: "bestFit" });
+  for (let i = 0, len = buttons.length; i < len; i++) {
     if (buttons[i].checked) {
       return buttons[i].value;
     }
@@ -121,11 +119,11 @@ const getBestFit = function () {
 };
 
 const containsPoint = function (pointArray, point) {
-  var lat = point[0];
-  var lon = point[1];
-  for (var i = 0; i < pointArray.length; i++) {
-    var pLat = pointArray[i][0];
-    var pLon = pointArray[i][1];
+  const lat = point[0];
+  const lon = point[1];
+  for (let i = 0; i < pointArray.length; i++) {
+    const pLat = pointArray[i][0];
+    const pLon = pointArray[i][1];
     if (lat === pLat && lon === pLon) {
       return true;
     }
@@ -167,10 +165,10 @@ const restoreSettings = function (p) {
   Session.set("Curves", p.data.curves);
   // reset the plotType - have to do this first because the event will remove all the possibly existing curves
   // get the plot-type elements checked state
-  var plotTypeSaved = false;
+  let plotTypeSaved = false;
   const plotTypeElems = document.getElementById("plotTypes-selector");
-  for (var ptei = 0; ptei < plotTypeElems.length; ptei++) {
-    var ptElem = plotTypeElems[ptei];
+  for (let ptei = 0; ptei < plotTypeElems.length; ptei++) {
+    const ptElem = plotTypeElems[ptei];
     if (p.data.plotTypes && p.data.plotTypes[ptElem.value] === true) {
       plotTypeSaved = true;
       ptElem.checked = true;
@@ -241,7 +239,7 @@ const restoreSettings = function (p) {
   }
 
   // now set the PlotParams
-  var params = matsCollections.PlotParams.find({}).fetch();
+  let params = matsCollections.PlotParams.find({}).fetch();
   params.forEach(function (plotParam) {
     const val =
       p.data.paramData.plotParams[plotParam.name] === null ||
@@ -251,14 +249,14 @@ const restoreSettings = function (p) {
     matsParamUtils.setInputForParamName(plotParam.name, val);
   });
 
-  var paramNames = matsCollections.CurveParamsInfo.find({
+  const paramNames = matsCollections.CurveParamsInfo.find({
     curve_params: { $exists: true },
-  }).fetch()[0]["curve_params"];
+  }).fetch()[0].curve_params;
   params = [];
-  var superiors = [];
-  var dependents = [];
+  const superiors = [];
+  const dependents = [];
   // get all of the curve param collections in one place
-  for (var pidx = 0; pidx < paramNames.length; pidx++) {
+  for (let pidx = 0; pidx < paramNames.length; pidx++) {
     const param = matsCollections[paramNames[pidx]].find({}).fetch()[0];
     // superiors
     if (param.dependentNames !== undefined) {
@@ -281,7 +279,7 @@ const restoreSettings = function (p) {
       const dateArr = p.data.paramData.curveParams[plotParam.name].split(" - ");
       const from = dateArr[0];
       const to = dateArr[1];
-      const idref = "#" + plotParam.name + "-" + plotParam.type;
+      const idref = `#${plotParam.name}-${plotParam.type}`;
       $(idref)
         .data("daterangepicker")
         .setStartDate(moment.utc(from, "MM-DD-YYYY HH:mm"));
@@ -310,7 +308,7 @@ const restoreSettings = function (p) {
       const dateArr = p.data.paramData.curveParams[plotParam.name].split(" - ");
       const from = dateArr[0];
       const to = dateArr[1];
-      const idref = "#" + plotParam.name + "-" + plotParam.type;
+      const idref = `#${plotParam.name}-${plotParam.type}`;
       $(idref)
         .data("daterangepicker")
         .setStartDate(moment.utc(from, "MM-DD-YYYY HH:mm"));
@@ -345,10 +343,10 @@ const restoreSettings = function (p) {
     const dateArr = p.data.dates.split(" - ");
     const from = dateArr[0];
     const to = dateArr[1];
-    $("#dates-" + matsTypes.InputTypes.dateRange)
+    $(`#dates-${matsTypes.InputTypes.dateRange}`)
       .data("daterangepicker")
       .setStartDate(moment.utc(from, "MM-DD-YYYY HH:mm"));
-    $("#dates-" + matsTypes.InputTypes.dateRange)
+    $(`#dates-${matsTypes.InputTypes.dateRange}`)
       .data("daterangepicker")
       .setEndDate(moment.utc(to, "MM-DD-YYYY HH:mm"));
     matsParamUtils.setValueTextForParamName("dates", p.data.dates);
@@ -357,7 +355,7 @@ const restoreSettings = function (p) {
   // reset the plotFormat
   // reset the plotParams
   Session.set("PlotParams", p);
-  //set the used defaults so that subsequent adds get a core default
+  // set the used defaults so that subsequent adds get a core default
   matsCurveUtils.setUsedColorsAndLabels();
   document.getElementById("restore_from_public").value = "";
   document.getElementById("restore_from_private").value = "";
@@ -365,18 +363,17 @@ const restoreSettings = function (p) {
   Session.set("spinner_img", "spinner.gif");
   document.getElementById("spinner").style.display = "none";
   matsParamUtils.collapseParams();
-  return;
 };
 
 export default matsPlotUtils = {
-  getAxisText: getAxisText,
-  getCurveText: getCurveText,
-  getCurveTextWrapping: getCurveTextWrapping,
-  getPlotType: getPlotType,
-  getPlotFormat: getPlotFormat,
-  getBestFit: getBestFit,
-  containsPoint: containsPoint,
-  disableActionButtons: disableActionButtons,
-  enableActionButtons: enableActionButtons,
-  restoreSettings: restoreSettings,
+  getAxisText,
+  getCurveText,
+  getCurveTextWrapping,
+  getPlotType,
+  getPlotFormat,
+  getBestFit,
+  containsPoint,
+  disableActionButtons,
+  enableActionButtons,
+  restoreSettings,
 };

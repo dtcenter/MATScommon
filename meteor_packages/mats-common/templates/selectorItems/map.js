@@ -2,37 +2,36 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import { matsParamUtils } from "meteor/randyp:mats-common";
-import { matsCollections } from "meteor/randyp:mats-common";
+import { matsParamUtils, matsCollections } from "meteor/randyp:mats-common";
 
 Template.map.onRendered(function () {
-  var defaultAttrs = this; // save for when we need to reset to defaults
-  var divElement; // save so the event handlers can talk to the two selectors
-  var targetElement; // save so the event handlers can talk to the two selectors
-  var settings = matsCollections.Settings.findOne({});
+  const defaultAttrs = this; // save for when we need to reset to defaults
+  let divElement; // save so the event handlers can talk to the two selectors
+  let targetElement; // save so the event handlers can talk to the two selectors
+  const settings = matsCollections.Settings.findOne({});
 
   $.getScript("https://cdn.plot.ly/plotly-latest.min.js", function () {
-    var targetId = "";
-    var peerName = "";
-    var markers = [];
-    var thisMarkers = [];
-    var peerOptions = [];
-    var selectedValues = [];
-    var divId = "";
-    var layout = {};
-    var dataset = {};
+    let targetId = "";
+    let peerName = "";
+    let markers = [];
+    let thisMarkers = [];
+    let peerOptions = [];
+    let selectedValues = [];
+    let divId = "";
+    let layout = {};
+    let dataset = {};
 
     // method to initialize the map selector
-    var initializeSelectorMap = function (item) {
-      var defaultPoint = item.data.defaultMapView.point;
-      var defaultZoomLevel = item.data.defaultMapView.zoomLevel;
+    const initializeSelectorMap = function (item) {
+      const defaultPoint = item.data.defaultMapView.point;
+      const defaultZoomLevel = item.data.defaultMapView.zoomLevel;
       peerName = item.data.peerName;
 
       targetElement = document.getElementsByName(peerName)[0];
       if (!targetElement) {
         return;
       }
-      targetId = "#" + targetElement.id;
+      targetId = `#${targetElement.id}`;
 
       markers = item.data.optionsMap; // from app startup
       thisMarkers = []; // markers valid for this data source
@@ -40,14 +39,14 @@ Template.map.onRendered(function () {
       // find out what peer options are available for this data source
       peerOptions = [];
       if (targetElement.options) {
-        for (var i = 0; i < targetElement.options.length; i++) {
+        for (let i = 0; i < targetElement.options.length; i++) {
           peerOptions.push(targetElement.options[i].text);
         }
       }
       selectedValues = $(targetId).val() ? $(targetId).val() : [];
 
-      divElement = item.data.name + "-" + item.data.type;
-      divId = "#" + divElement;
+      divElement = `${item.data.name}-${item.data.type}`;
+      divId = `#${divElement}`;
 
       layout = {
         autosize: true,
@@ -90,11 +89,9 @@ Template.map.onRendered(function () {
       };
 
       // set the initial site marker locations and colors
-      var marker;
+      let marker;
       for (var sidx = 0; sidx < peerOptions.length; sidx++) {
-        marker = markers.find((obj) => {
-          return obj.name === peerOptions[sidx];
-        });
+        marker = markers.find((obj) => obj.name === peerOptions[sidx]);
         thisMarkers[sidx] = marker;
         dataset.siteName[sidx] = marker.name;
         dataset.text[sidx] = marker.name;
@@ -147,7 +144,7 @@ Template.map.onRendered(function () {
 
       // event handler for clicking individual stations
       $(divId)[0].on("plotly_click", function (eventdata) {
-        //get index of current station
+        // get index of current station
         const currPoint = eventdata.points[0].pointNumber;
         if (dataset.marker.color[currPoint] === thisMarkers[currPoint].options.color) {
           // switch to selected color and add this station to our selected values array
@@ -157,13 +154,13 @@ Template.map.onRendered(function () {
         } else {
           // switch to deselected color and remove this station from our selected values array
           dataset.marker.color[currPoint] = thisMarkers[currPoint].options.color;
-          var tidx = selectedValues.indexOf(eventdata.points[0].text);
+          const tidx = selectedValues.indexOf(eventdata.points[0].text);
           if (tidx > -1) {
             selectedValues.splice(tidx, 1);
           }
         }
         // update the marker color on the plot and the values in the site selector
-        var update = { marker: { color: dataset.marker.color, opacity: 1 } };
+        const update = { marker: { color: dataset.marker.color, opacity: 1 } };
         Plotly.restyle($(divId)[0], update, eventdata.points[0].curveNumber);
         $(targetId).val(selectedValues).trigger("change");
         matsParamUtils.collapseParam(peerName);
@@ -175,11 +172,11 @@ Template.map.onRendered(function () {
         if (eventdata === undefined || eventdata.points.length < 1) {
           // the user has clicked outside of the select area, so make sure plotly's area select is disabled.
           // otherwise the user won't be able to choose individual stations after choosing an area select
-          $(divId + " .select-outline").remove();
+          $(`${divId} .select-outline`).remove();
           Plotly.restyle($(divId)[0], { selectedpoints: [null] });
         } else {
           // the user has selected all the points in an area. Iterate through them and select any that are not already selected.
-          var currPoint;
+          let currPoint;
           eventdata.points.forEach(function (pt) {
             currPoint = pt.pointNumber;
             if (
@@ -192,7 +189,7 @@ Template.map.onRendered(function () {
             }
           });
           // update the marker color on the plot and the values in the site selector
-          var update = { marker: { color: dataset.marker.color, opacity: 1 } };
+          const update = { marker: { color: dataset.marker.color, opacity: 1 } };
           Plotly.restyle($(divId)[0], update, eventdata.points[0].curveNumber);
           $(targetId).val(selectedValues).trigger("change");
           matsParamUtils.collapseParam(peerName);
@@ -200,7 +197,7 @@ Template.map.onRendered(function () {
 
           // As per the comment block above, we're done here, so make sure plotly's area select is disabled.
           // otherwise the user won't be able to choose individual stations after choosing an area select.
-          $(divId + " .select-outline").remove();
+          $(`${divId} .select-outline`).remove();
           Plotly.restyle($(divId)[0], { selectedpoints: [null] });
         }
       });
@@ -212,10 +209,10 @@ Template.map.onRendered(function () {
         $(targetId).val(peerOptions).trigger("change");
         matsParamUtils.collapseParam(peerName);
         $(targetId).select2("close");
-        for (var sidx = 0; sidx < thisMarkers.length; sidx++) {
+        for (let sidx = 0; sidx < thisMarkers.length; sidx++) {
           dataset.marker.color[sidx] = thisMarkers[sidx].options.highLightColor;
         }
-        var update = { marker: { color: dataset.marker.color, opacity: 1 } };
+        const update = { marker: { color: dataset.marker.color, opacity: 1 } };
         Plotly.restyle($(divId)[0], update, [0]);
       });
 
@@ -226,32 +223,32 @@ Template.map.onRendered(function () {
         $(targetId).val([]).trigger("change");
         matsParamUtils.collapseParam(peerName);
         $(targetId).select2("close");
-        for (var sidx = 0; sidx < thisMarkers.length; sidx++) {
+        for (let sidx = 0; sidx < thisMarkers.length; sidx++) {
           dataset.marker.color[sidx] = thisMarkers[sidx].options.color;
         }
-        var update = { marker: { color: dataset.marker.color, opacity: 1 } };
+        const update = { marker: { color: dataset.marker.color, opacity: 1 } };
         Plotly.restyle($(divId)[0], update, [0]);
       });
 
       // method to see if the available sites have changed for this data source
-      var refreshOptionsForPeer = function (peerElement) {
+      const refreshOptionsForPeer = function (peerElement) {
         // find out what peer options are available
         peerOptions = [];
         if (peerElement.options) {
-          for (var i = 0; i < peerElement.options.length; i++) {
+          for (let i = 0; i < peerElement.options.length; i++) {
             peerOptions.push(peerElement.options[i].text);
           }
         }
       };
 
       // method to sync the map up with the sites selector
-      var refresh = function (peerElement) {
+      const refresh = function (peerElement) {
         if (!peerElement) {
           return;
         }
-        var peerId = peerElement.id;
+        const peerId = peerElement.id;
         refreshOptionsForPeer(peerElement);
-        selectedValues = $("#" + peerId).val() ? $("#" + peerId).val() : [];
+        selectedValues = $(`#${peerId}`).val() ? $(`#${peerId}`).val() : [];
 
         // need to redo these in case the available sites have changed for this data source
         thisMarkers = [];
@@ -260,11 +257,9 @@ Template.map.onRendered(function () {
         dataset.lat = [];
         dataset.lon = [];
         dataset.marker.color = [];
-        var marker;
+        let marker;
         for (var sidx = 0; sidx < peerOptions.length; sidx++) {
-          marker = markers.find((obj) => {
-            return obj.name === peerOptions[sidx];
-          });
+          marker = markers.find((obj) => obj.name === peerOptions[sidx]);
           thisMarkers[sidx] = marker;
           dataset.siteName[sidx] = marker.name;
           dataset.text[sidx] = marker.name;
@@ -281,7 +276,7 @@ Template.map.onRendered(function () {
       };
 
       // method to reset the map to defaults
-      var resetMap = function (item) {
+      const resetMap = function (item) {
         initializeSelectorMap(item);
         $(divId)[0].data[0] = dataset;
         $(divId)[0].layout = layout;
@@ -289,7 +284,7 @@ Template.map.onRendered(function () {
       };
 
       // register an event listener so that the select.js can ask the map div to refresh after a selection
-      var elem = document.getElementById(divElement);
+      let elem = document.getElementById(divElement);
       elem.addEventListener("refresh", function (e) {
         refresh(targetElement);
       });

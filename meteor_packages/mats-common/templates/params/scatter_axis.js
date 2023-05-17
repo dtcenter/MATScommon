@@ -2,9 +2,7 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import { matsTypes } from "meteor/randyp:mats-common";
-import { matsCollections } from "meteor/randyp:mats-common";
-import { matsPlotUtils } from "meteor/randyp:mats-common";
+import { matsTypes, matsCollections, matsPlotUtils } from "meteor/randyp:mats-common";
 
 const isEditing = function () {
   const mode = Session.get("editMode");
@@ -12,120 +10,108 @@ const isEditing = function () {
 };
 const setAxisText = function (axis) {
   Session.set(
-    axis + "CurveText",
-    axis + " " + matsPlotUtils.getAxisText(matsPlotUtils.getPlotType())
+    `${axis}CurveText`,
+    `${axis} ${matsPlotUtils.getAxisText(matsPlotUtils.getPlotType())}`
   );
-  Session.set(axis + "CurveColor", "green");
+  Session.set(`${axis}CurveColor`, "green");
   Session.set("axisCurveIcon", "fa-check");
 };
 
 Template.scatter2d.helpers({
-  modeText: function () {
+  modeText() {
     return isEditing()
-      ? "Editing the curve " +
-          Session.get("editMode") +
-          " (" +
-          Session.get("axis") +
-          ")"
+      ? `Editing the curve ${Session.get("editMode")} (${Session.get("axis")})`
       : "Creating a new curve";
   },
-  creating: function () {
+  creating() {
     if (isEditing()) {
       return "none";
-    } else {
-      return "block";
     }
+    return "block";
   },
-  editing: function () {
+  editing() {
     if (isEditing()) {
       return "block";
-    } else {
-      return "none";
     }
+    return "none";
   },
-  xaxisCurveText: function () {
+  xaxisCurveText() {
     if (isEditing()) {
       setAxisText("xaxis");
     }
     const t = Session.get("xaxisCurveText");
     if (t) {
       return t;
-    } else {
-      Session.set("xaxisCurveText", "XAXIS NOT YET APPLIED");
-      return "XAXIS NOT YET APPLIED";
     }
+    Session.set("xaxisCurveText", "XAXIS NOT YET APPLIED");
+    return "XAXIS NOT YET APPLIED";
   },
-  yaxisCurveText: function () {
+  yaxisCurveText() {
     if (isEditing()) {
       setAxisText("yaxis");
     }
     const t = Session.get("yaxisCurveText");
     if (t || isEditing()) {
       return t;
-    } else {
-      Session.set("yaxisCurveText", "YAXIS NOT YET APPLIED");
-      return "YAXIS NOT YET APPLIED";
     }
+    Session.set("yaxisCurveText", "YAXIS NOT YET APPLIED");
+    return "YAXIS NOT YET APPLIED";
   },
-  yApplyEnabled: function () {
+  yApplyEnabled() {
     const c = Session.get("xaxisCurveColor");
     if (c === "red" && !isEditing()) {
       return "disabled";
-    } else {
-      return "";
     }
+    return "";
   },
 
-  xaxisCurveColor: function () {
+  xaxisCurveColor() {
     const t = Session.get("xaxisCurveColor");
     if (t) {
       return t;
-    } else {
-      Session.set("xaxisCurveColor", "red");
-      return "red";
     }
+    Session.set("xaxisCurveColor", "red");
+    return "red";
   },
-  yaxisCurveColor: function () {
+  yaxisCurveColor() {
     const t = Session.get("yaxisCurveColor");
     if (t) {
       return t;
-    } else {
-      Session.set("yaxisCurveColor", "red");
-      return "red";
     }
+    Session.set("yaxisCurveColor", "red");
+    return "red";
   },
-  curveIcon: function () {
+  curveIcon() {
     const t = Session.get("axisCurveIcon");
     if (t) {
       return t;
-    } else {
-      Session.set("axisCurveIcon", "fa-asterisk");
-      return "-solid fa-asterisk";
     }
+    Session.set("axisCurveIcon", "fa-asterisk");
+    return "-solid fa-asterisk";
   },
-  title: function () {
+  title() {
     return "Scatter Plot parameters";
   },
-  scatter2dParams: function () {
+  scatter2dParams() {
     const params = matsCollections.Scatter2dParams.find({}).fetch();
     return params;
   },
-  scatter2dOptions: function () {
-    const options = this.options;
+  scatter2dOptions() {
+    const { options } = this;
     return options;
   },
-  name: function (param) {
-    //console.log("name: " + param.name);
+  name(param) {
+    // console.log("name: " + param.name);
     const name = param.name.replace(/ /g, "-");
     return name;
   },
-  className: function (param) {
-    //console.log("name: " + param.name);
-    const cname = param.name.replace(/ /g, "-") + "-" + param.type;
+  className(param) {
+    // console.log("name: " + param.name);
+    const cname = `${param.name.replace(/ /g, "-")}-${param.type}`;
     return cname;
   },
 
-  type: function (param) {
+  type(param) {
     switch (param.type) {
       case matsTypes.InputTypes.checkBoxGroup:
         return "checkbox";
@@ -143,65 +129,61 @@ Template.scatter2d.helpers({
         return "text";
     }
   },
-  default: function () {
+  default() {
     return this.default;
   },
-  idOption: function (param) {
-    var id = param.name + "-" + param.type + "-" + this;
+  idOption(param) {
+    let id = `${param.name}-${param.type}-${this}`;
     id = id.replace(/ /g, "-");
     return id;
   },
-  idParam: function () {
-    var id = this.name + "-" + this.type;
+  idParam() {
+    let id = `${this.name}-${this.type}`;
     id = id.replace(/ /g, "-");
     return id;
   },
-  plotType: function () {
+  plotType() {
     return matsTypes.PlotTypes.scatter2d;
   },
-  isDefault: function (param) {
+  isDefault(param) {
     const def = param.default;
     if (def === this) {
       return "checked";
-    } else {
-      return "";
     }
+    return "";
   },
-  displayScatter2d: function () {
+  displayScatter2d() {
     if (matsPlotUtils.getPlotType() === matsTypes.PlotTypes.scatter2d) {
       return "block";
-    } else {
-      return "none";
     }
+    return "none";
   },
-  label: function (param, parent) {
+  label(param, parent) {
     if (parent.name === "Fit Type") {
       return parent.optionsMap[this];
-    } else {
-      return this;
     }
+    return this;
   },
-  labelParam: function () {
+  labelParam() {
     return this.name;
   },
-  log: function () {
+  log() {
     console.log(this);
   },
-  axis: function (param) {
-    var axis = Session.get("axis");
+  axis(param) {
+    const axis = Session.get("axis");
     if (axis === undefined) {
       if (param) {
         return param.default;
-      } else {
-        return "xaxis";
       }
+      return "xaxis";
     }
     return axis;
   },
-  isNumberSpinner: function (param) {
+  isNumberSpinner(param) {
     return param.type === matsTypes.InputTypes.numberSpinner;
   },
-  hasHelp: function () {
+  hasHelp() {
     return this.help !== undefined;
   },
 });
@@ -210,29 +192,27 @@ const apply = function (axis) {
   const elems = document.getElementsByClassName("data-input");
   const curveNames = matsCollections.CurveParamsInfo.find({
     curve_params: { $exists: true },
-  }).fetch()[0]["curve_params"];
+  }).fetch()[0].curve_params;
   const param_elems = _.filter(elems, function (elem) {
     return _.contains(curveNames, elem.name);
   });
-  var l = param_elems.length;
-  for (var i = 0; i < l; i++) {
-    var pelem = param_elems[i];
-    //console.log("pelem.type is " + pelem.type);
-    var elem_id = pelem.id;
-    var target_id = axis + "-" + elem_id;
-    var telem = document.getElementById(target_id);
+  const l = param_elems.length;
+  for (let i = 0; i < l; i++) {
+    const pelem = param_elems[i];
+    // console.log("pelem.type is " + pelem.type);
+    const elem_id = pelem.id;
+    const target_id = `${axis}-${elem_id}`;
+    const telem = document.getElementById(target_id);
     // Notice that these types are not matsTypes these are javascript types
     if (pelem.type === "select-multiple") {
-      var $options = $("#" + elem_id + " > option").clone();
-      $("#" + target_id)
-        .empty()
-        .append($options);
-      var selectedOptions = $(pelem.selectedOptions)
+      var $options = $(`#${elem_id} > option`).clone();
+      $(`#${target_id}`).empty().append($options);
+      const selectedOptions = $(pelem.selectedOptions)
         .map(function () {
           return this.value;
         })
         .get();
-      for (var x = 0; x < telem.options.length; x++) {
+      for (let x = 0; x < telem.options.length; x++) {
         if ($.inArray(telem.options[x].value, selectedOptions) !== -1) {
           telem.options[x].selected = true;
         } else {
@@ -240,15 +220,13 @@ const apply = function (axis) {
         }
       }
     } else if (pelem.type === "select-one") {
-      var $options = $("#" + elem_id + " > option").clone();
-      $("#" + target_id)
-        .empty()
-        .append($options);
+      var $options = $(`#${elem_id} > option`).clone();
+      $(`#${target_id}`).empty().append($options);
       telem.selectedIndex = pelem.selectedIndex;
     } else if (pelem.type === "radio") {
       // NOT SURE THIS IS RIGHT
-      //console.log(pelem.name + " is " + $('input[name="' + pelem.name + '"]:checked').val());
-      $('input[name="' + telem.name + '"]:checked');
+      // console.log(pelem.name + " is " + $('input[name="' + pelem.name + '"]:checked').val());
+      $(`input[name="${telem.name}"]:checked`);
     } else if (pelem.type === "button") {
       telem.value = pelem.value;
     } else {
@@ -259,26 +237,26 @@ const apply = function (axis) {
 };
 
 Template.scatter2d.events({
-  "click .apply-params-to-xaxis": function (event) {
+  "click .apply-params-to-xaxis"(event) {
     apply("xaxis");
   },
-  "click .apply-params-to-yaxis": function (event) {
+  "click .apply-params-to-yaxis"(event) {
     apply("yaxis");
   },
-  "change .axis-selector-radioGroup": function (event) {
-    var newAxis = event.currentTarget.value;
+  "change .axis-selector-radioGroup"(event) {
+    const newAxis = event.currentTarget.value;
     Session.set("axis", newAxis);
-    var elems = document.getElementsByClassName("data-input");
-    var axis_elems = _.filter(elems, function (elem) {
+    const elems = document.getElementsByClassName("data-input");
+    const axis_elems = _.filter(elems, function (elem) {
       return elem.name.indexOf(newAxis) > -1;
     });
-    var l = axis_elems.length;
-    for (var i = 0; i < l; i++) {
-      var aelem = axis_elems[i];
-      var aelem_id = aelem.id;
+    const l = axis_elems.length;
+    for (let i = 0; i < l; i++) {
+      const aelem = axis_elems[i];
+      const aelem_id = aelem.id;
       // remove the axis part at the front
-      var target_id = aelem_id.substring(newAxis.length + 1, aelem_id.length);
-      var telem = document.getElementById(target_id);
+      const target_id = aelem_id.substring(newAxis.length + 1, aelem_id.length);
+      const telem = document.getElementById(target_id);
       if (aelem.type === "select-multiple") {
         $(telem).val(
           $(aelem.selectedOptions)
@@ -289,8 +267,8 @@ Template.scatter2d.events({
         );
       } else if (aelem.type === "radio") {
         // NOT SURE THIS IS RIGHT
-        //console.log(pelem.name + " is " + $('input[name="' + pelem.name + '"]:checked').val());
-        $('input[name="' + telem.name + '"]:checked');
+        // console.log(pelem.name + " is " + $('input[name="' + pelem.name + '"]:checked').val());
+        $(`input[name="${telem.name}"]:checked`);
       } else if (aelem.type === "button") {
         telem.value = aelem.value;
       } else {
@@ -299,12 +277,12 @@ Template.scatter2d.events({
       telem.dispatchEvent(new CustomEvent("axisRefresh"));
     }
   },
-  "click .axishelp": function () {
+  "click .axishelp"() {
     $("#matshelp").load("/help/scatter-help.html #matshelp");
     $("#helpModal").modal("show");
   },
-  "click .help": function () {
-    $("#matshelp").load("/help/" + this.help + " #matshelp");
+  "click .help"() {
+    $("#matshelp").load(`/help/${this.help} #matshelp`);
     $("#helpModal").modal("show");
   },
 });

@@ -3,39 +3,38 @@
  */
 
 import { matsParamUtils } from "meteor/randyp:mats-common";
+
 Template.color.helpers({
-  defaultColor: function () {
+  defaultColor() {
     return this.default;
   },
 });
 
 Template.color.events({
-  "click, blur": function (event) {
+  "click, blur"(event) {
     try {
       event.target.checkValidity();
-      var value = event.currentTarget.value;
+      const { value } = event.currentTarget;
       matsParamUtils.setValueTextForParamName(event.target.name, value);
     } catch (error) {
       matsParamUtils.setValueTextForParamName(event.target.name, this.default); // make it black
     }
   },
-  change: function (event) {
+  change(event) {
     if (
-      document.getElementById(
-        "controlButton-" + event.currentTarget.name + "-value"
-      ) !== null
+      document.getElementById(`controlButton-${event.currentTarget.name}-value`) !==
+      null
     ) {
       document.getElementById(
-        "controlButton-" + event.currentTarget.name + "-value"
+        `controlButton-${event.currentTarget.name}-value`
       ).style.backgroundColor = event.currentTarget.value;
       this.value = event.currentTarget.value;
     } else {
       document.querySelector(
-        '[name="' + event.currentTarget.name + "-icon" + '"]'
+        `[name="${event.currentTarget.name}-icon` + `"]`
       ).style.color = event.currentTarget.value;
-      document.querySelector(
-        '[name="' + event.currentTarget.name + "-icon" + '"]'
-      ).value = event.currentTarget.value;
+      document.querySelector(`[name="${event.currentTarget.name}-icon` + `"]`).value =
+        event.currentTarget.value;
     }
   },
 });

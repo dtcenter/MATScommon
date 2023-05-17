@@ -2,40 +2,36 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import { matsTypes } from "meteor/randyp:mats-common";
-import { matsCollections } from "meteor/randyp:mats-common";
-import { matsCurveUtils } from "meteor/randyp:mats-common";
-import { matsPlotUtils } from "meteor/randyp:mats-common";
-import { matsParamUtils } from "meteor/randyp:mats-common";
-import { matsMethods } from "meteor/randyp:mats-common";
+import {
+  matsTypes,
+  matsCollections,
+  matsCurveUtils,
+  matsPlotUtils,
+  matsParamUtils,
+  matsMethods,
+} from "meteor/randyp:mats-common";
 
 function shadeRGBColor(color, percent) {
-  var f = color.split(","),
-    t = percent < 0 ? 0 : 255,
-    p = percent < 0 ? percent * -1 : percent,
-    R = parseInt(f[0].slice(4)),
-    G = parseInt(f[1]),
-    B = parseInt(f[2]);
-  return (
-    "rgb(" +
-    (Math.round((t - R) * p) + R) +
-    "," +
-    (Math.round((t - G) * p) + G) +
-    "," +
-    (Math.round((t - B) * p) + B) +
-    ")"
-  );
+  const f = color.split(",");
+  const t = percent < 0 ? 0 : 255;
+  const p = percent < 0 ? percent * -1 : percent;
+  const R = parseInt(f[0].slice(4));
+  const G = parseInt(f[1]);
+  const B = parseInt(f[2]);
+  return `rgb(${Math.round((t - R) * p) + R},${Math.round((t - G) * p) + G},${
+    Math.round((t - B) * p) + B
+  })`;
 }
 
 Template.scorecardParamList.helpers({
-  CurveParamGroups: function () {
-    var lastUpdate = Session.get("lastUpdate");
-    var groupNums = [];
-    var params = matsCollections.CurveParamsInfo.find({
+  CurveParamGroups() {
+    const lastUpdate = Session.get("lastUpdate");
+    const groupNums = [];
+    const params = matsCollections.CurveParamsInfo.find({
       curve_params: { $exists: true },
-    }).fetch()[0]["curve_params"];
-    var param;
-    for (var i = 0; i < params.length; i++) {
+    }).fetch()[0].curve_params;
+    let param;
+    for (let i = 0; i < params.length; i++) {
       if (
         matsCollections[params[i]].find({}).fetch() !== undefined &&
         matsCollections[params[i]].find({}).fetch().length !== 0
@@ -44,16 +40,16 @@ Template.scorecardParamList.helpers({
         groupNums.push(param.displayGroup);
       }
     }
-    var res = _.uniq(groupNums).sort();
+    const res = _.uniq(groupNums).sort();
     return res;
   },
-  isEdit: function () {
+  isEdit() {
     return Session.get("editMode") !== "" && Session.get("editMode") !== undefined;
   },
-  log: function () {
+  log() {
     console.log(this);
   },
-  paramWellColor: function () {
+  paramWellColor() {
     if (Session.get("paramWellColor") === undefined) {
       Session.set("paramWellColor", "rgb(245,245,245)");
     }
@@ -65,7 +61,7 @@ Template.scorecardParamList.helpers({
         Session.set("paramWellColor", "rgb(245,245,245)");
         return "rgb(245,245,245)";
       }
-      const color = curveBeingEdited[0].color;
+      const { color } = curveBeingEdited[0];
       const lighterShadeOfColor = shadeRGBColor(color, 0.2);
       Session.set("paramWellColor", lighterShadeOfColor);
     }
@@ -75,22 +71,22 @@ Template.scorecardParamList.helpers({
 });
 
 Template.scorecardParamList.events({
-  "click .edit-cancel": function () {
+  "click .edit-cancel"() {
     Session.set("editMode", "");
     Session.set("paramWellColor", "rgb(245,245,245)");
-    var labelId = "label-" + matsTypes.InputTypes.textInput;
-    var label = document.getElementById(labelId);
+    const labelId = `label-${matsTypes.InputTypes.textInput}`;
+    const label = document.getElementById(labelId);
     label.disabled = false;
     // reset parameters to match edited curve.....
     matsParamUtils.setInputForParamName("label", matsCurveUtils.getNextCurveLabel());
     matsParamUtils.collapseParams();
   },
-  "click .reset": function (event, template) {
+  "click .reset"(event, template) {
     const plotType = document.getElementById("plotTypes-selector").value;
     event.preventDefault();
     Session.set("paramWellColor", "rgb(245,245,245)");
-    var paramView = document.getElementById("paramList");
-    var plotView = document.getElementById("plotList");
+    const paramView = document.getElementById("paramList");
+    const plotView = document.getElementById("plotList");
     document.getElementById("plotTypes-selector").value = plotType;
     matsMethods.refreshMetaData.call({}, function (error, result) {
       if (error !== undefined) {
@@ -99,14 +95,14 @@ Template.scorecardParamList.events({
       matsParamUtils.setAllParamsToDefault();
     });
   },
-  "click .expand": function () {
+  "click .expand"() {
     matsParamUtils.expandParams();
   },
-  "click .collapse": function () {
+  "click .collapse"() {
     matsParamUtils.collapseParams();
   },
   // restore settings
-  "click .restore-settings": function (event) {
+  "click .restore-settings"(event) {
     Session.set("paramWellColor", "rgb(245,245,245)");
     event.preventDefault();
     document.getElementById("restore-settings").click();
@@ -118,35 +114,37 @@ Template.scorecardParamList.events({
         Note: when adding a curve or saving changes after editing a curve there is a special
         case for scatter plots. Each hidden axis parameter must get set with the value from the regular parameter.
      */
-  "submit form": function (event, template) {
+  "submit form"(event, template) {
     event.preventDefault();
     if (!matsParamUtils.getValueForParamName("label")) {
       setError("Label cannot be blank");
       return;
     }
-    var isScatter = matsPlotUtils.getPlotType() === matsTypes.PlotTypes.scatter2d;
-    var isMap = matsPlotUtils.getPlotType() === matsTypes.PlotTypes.map;
-    var isReliability = matsPlotUtils.getPlotType() === matsTypes.PlotTypes.reliability;
-    var isContour = matsPlotUtils.getPlotType() === matsTypes.PlotTypes.contour;
-    var isContourDiff = matsPlotUtils.getPlotType() === matsTypes.PlotTypes.contourDiff;
-    var curves = Session.get("Curves");
-    var p = {};
-    var elems = event.target.valueOf().elements;
-    var curveNames = matsCollections.CurveParamsInfo.find({
+    const isScatter = matsPlotUtils.getPlotType() === matsTypes.PlotTypes.scatter2d;
+    const isMap = matsPlotUtils.getPlotType() === matsTypes.PlotTypes.map;
+    const isReliability =
+      matsPlotUtils.getPlotType() === matsTypes.PlotTypes.reliability;
+    const isContour = matsPlotUtils.getPlotType() === matsTypes.PlotTypes.contour;
+    const isContourDiff =
+      matsPlotUtils.getPlotType() === matsTypes.PlotTypes.contourDiff;
+    const curves = Session.get("Curves");
+    const p = {};
+    const elems = event.target.valueOf().elements;
+    let curveNames = matsCollections.CurveParamsInfo.find({
       curve_params: { $exists: true },
-    }).fetch()[0]["curve_params"];
-    var dateParamNames = [];
-    var param;
+    }).fetch()[0].curve_params;
+    const dateParamNames = [];
+    let param;
     // remove any hidden params (not unused ones -- unused is a valid state)
     // iterate backwards so that we can splice to remove
-    for (var cindex = curveNames.length - 1; cindex >= 0; cindex--) {
-      var cname = curveNames[cindex];
+    for (let cindex = curveNames.length - 1; cindex >= 0; cindex--) {
+      const cname = curveNames[cindex];
       param = matsCollections[cname].find({}).fetch()[0];
       if (param.type === matsTypes.InputTypes.dateRange) {
         dateParamNames.push(cname);
       }
-      var ctlElem = document.getElementById(cname + "-item");
-      var isHidden =
+      const ctlElem = document.getElementById(`${cname}-item`);
+      const isHidden =
         (matsParamUtils.getInputElementForParamName(cname) &&
           matsParamUtils.getInputElementForParamName(cname).style &&
           matsParamUtils.getInputElementForParamName(cname).style.display === "none") ||
@@ -162,22 +160,22 @@ Template.scorecardParamList.events({
     // iterate backwards so that we can splice to remove
     // dates are a little different - there is no element named paramName-paramtype because of the way daterange widgets are attached
     // Instead we have to look for a document element with an id element-paramName
-    for (var dindex = dateParamNames.length - 1; dindex >= 0; dindex--) {
-      var dElem = document.getElementById(dateParamNames[dindex] + "-item");
+    for (let dindex = dateParamNames.length - 1; dindex >= 0; dindex--) {
+      const dElem = document.getElementById(`${dateParamNames[dindex]}-item`);
       if (dElem && dElem.style && dElem.style.display === "none") {
         dateParamNames.splice(dindex, 1);
       }
     }
     if (isScatter) {
-      var scatterCurveNames = [];
+      const scatterCurveNames = [];
       for (var i = 0; i < curveNames.length; i++) {
         scatterCurveNames.push(curveNames[i]);
-        scatterCurveNames.push("xaxis-" + curveNames[i]);
-        scatterCurveNames.push("yaxis-" + curveNames[i]);
+        scatterCurveNames.push(`xaxis-${curveNames[i]}`);
+        scatterCurveNames.push(`yaxis-${curveNames[i]}`);
       }
       curveNames = scatterCurveNames;
     }
-    var paramElems = _.filter(elems, function (elem) {
+    const paramElems = _.filter(elems, function (elem) {
       return _.contains(curveNames, elem.name);
     });
     // add in any date params (they aren't technically elements)
@@ -188,13 +186,13 @@ Template.scorecardParamList.events({
         paramElems.push(this);
       });
     }
-    var l = paramElems.length;
+    const l = paramElems.length;
     if (Session.get("editMode")) {
-      var changingCurveLabel = Session.get("editMode");
+      const changingCurveLabel = Session.get("editMode");
       Session.set("editMode", "");
       Session.set("paramWellColor", "rgb(245,245,245)");
-      var labelId = "label-" + matsTypes.InputTypes.textInput;
-      var label = document.getElementById(labelId);
+      const labelId = `label-${matsTypes.InputTypes.textInput}`;
+      const label = document.getElementById(labelId);
       label.disabled = false;
 
       for (var i = 0; i < l; i++) {
@@ -222,23 +220,21 @@ Template.scorecardParamList.events({
               })
               .get();
           }
-        } else {
-          if (paramElems[i].type === "radio") {
-            if (paramElems[i].checked) {
-              p[paramElems[i].name] = paramElems[i].value;
-            }
-          } else if (paramElems[i].type === "checkbox") {
-            if (paramElems[i].checked) {
-              p[paramElems[i].name].push(paramElems[i].value);
-            }
-          } else if (paramElems[i].type === "button") {
-            p[paramElems[i].id] = paramElems[i].value;
-          } else {
+        } else if (paramElems[i].type === "radio") {
+          if (paramElems[i].checked) {
             p[paramElems[i].name] = paramElems[i].value;
           }
+        } else if (paramElems[i].type === "checkbox") {
+          if (paramElems[i].checked) {
+            p[paramElems[i].name].push(paramElems[i].value);
+          }
+        } else if (paramElems[i].type === "button") {
+          p[paramElems[i].id] = paramElems[i].value;
+        } else {
+          p[paramElems[i].name] = paramElems[i].value;
         }
       }
-      var index = -1;
+      let index = -1;
       for (var i = 0; i < curves.length; i++) {
         if (curves[i].label === p.label) {
           index = i;
@@ -248,13 +244,13 @@ Template.scorecardParamList.events({
       if (index !== -1) {
         if (isScatter) {
           // copy the params to the current axis paremeters
-          var axis = Session.get("axis");
-          var axisParams = Object.keys(p).filter(function (key) {
+          const axis = Session.get("axis");
+          const axisParams = Object.keys(p).filter(function (key) {
             return key.startsWith(axis);
           });
-          for (var api = 0; api < axisParams.length; api++) {
-            var ap = axisParams[api];
-            var pp = ap.replace(axis + "-", "");
+          for (let api = 0; api < axisParams.length; api++) {
+            const ap = axisParams[api];
+            const pp = ap.replace(`${axis}-`, "");
             p[ap] = p[pp];
             curves[index][ap] = p[pp];
           }
@@ -267,77 +263,74 @@ Template.scorecardParamList.events({
       if (isMap && curves.length >= 1) {
         setError(new Error("ERROR: Map plot-type can only have one curve!"));
         return false;
-      } else if (isContour && curves.length >= 1) {
+      }
+      if (isContour && curves.length >= 1) {
         setError(new Error("ERROR: Contour plot-type can only have one curve!"));
         return false;
-      } else if (isContourDiff && curves.length >= 2) {
+      }
+      if (isContourDiff && curves.length >= 2) {
         setError(new Error("ERROR: Contour Diff plot-type can only have two curves!"));
         return false;
-      } else if (isReliability && curves.length >= 1) {
+      }
+      if (isReliability && curves.length >= 1) {
         setError(
           new Error("ERROR: Reliability plot-type can only have one curve right now!")
         );
         return false;
-      } else {
-        for (var i = 0; i < l; i++) {
-          if (paramElems[i] instanceof Element === false) {
-            // isn't really an element - must be a date field - these are only strings
-            p[paramElems[i]] = matsParamUtils.getValueForParamName(paramElems[i]);
-          } else if (paramElems[i].type === "select-multiple") {
-            // sometimes multi-selects will have "unused" as a value. This is fine, the data routines are set up to handle it.
-            if (
-              matsParamUtils.getValueForParamName(paramElems[i].name) ===
-              matsTypes.InputTypes.unused
-            ) {
-              p[paramElems[i].name] = matsTypes.InputTypes.unused;
-            } else {
-              p[paramElems[i].name] = $(paramElems[i].selectedOptions)
-                .map(function () {
-                  return this.value;
-                })
-                .get();
-            }
+      }
+      for (var i = 0; i < l; i++) {
+        if (paramElems[i] instanceof Element === false) {
+          // isn't really an element - must be a date field - these are only strings
+          p[paramElems[i]] = matsParamUtils.getValueForParamName(paramElems[i]);
+        } else if (paramElems[i].type === "select-multiple") {
+          // sometimes multi-selects will have "unused" as a value. This is fine, the data routines are set up to handle it.
+          if (
+            matsParamUtils.getValueForParamName(paramElems[i].name) ===
+            matsTypes.InputTypes.unused
+          ) {
+            p[paramElems[i].name] = matsTypes.InputTypes.unused;
           } else {
-            if (paramElems[i].type === "radio") {
-              if (paramElems[i].checked) {
-                p[paramElems[i].name] = paramElems[i].value;
-              }
-            } else if (paramElems[i].type === "checkbox") {
-              if (paramElems[i].checked) {
-                if (p[paramElems[i].name] === undefined) {
-                  p[paramElems[i].name] = [];
-                }
-                p[paramElems[i].name].push(paramElems[i].value);
-              }
-            } else if (paramElems[i].type === "button") {
-              p[paramElems[i].id] = paramElems[i].value;
-            } else {
-              if (isScatter) {
-                p[paramElems[i].name] = paramElems[i].value;
-              } else {
-                p[paramElems[i].name] = matsParamUtils.getValueForParamName(
-                  paramElems[i].name
-                );
-              }
-            }
+            p[paramElems[i].name] = $(paramElems[i].selectedOptions)
+              .map(function () {
+                return this.value;
+              })
+              .get();
           }
-          if (paramElems[i].name && paramElems[i].name === "label") {
-            if (_.indexOf(matsCurveUtils.getUsedLabels(), paramElems[i].value) !== -1) {
-              setError(
-                new Error(
-                  "labels need to be unique - change " +
-                    paramElems[i].value +
-                    " to something else"
-                )
-              );
-              return false;
+        } else if (paramElems[i].type === "radio") {
+          if (paramElems[i].checked) {
+            p[paramElems[i].name] = paramElems[i].value;
+          }
+        } else if (paramElems[i].type === "checkbox") {
+          if (paramElems[i].checked) {
+            if (p[paramElems[i].name] === undefined) {
+              p[paramElems[i].name] = [];
             }
+            p[paramElems[i].name].push(paramElems[i].value);
+          }
+        } else if (paramElems[i].type === "button") {
+          p[paramElems[i].id] = paramElems[i].value;
+        } else if (isScatter) {
+          p[paramElems[i].name] = paramElems[i].value;
+        } else {
+          p[paramElems[i].name] = matsParamUtils.getValueForParamName(
+            paramElems[i].name
+          );
+        }
+        if (paramElems[i].name && paramElems[i].name === "label") {
+          if (_.indexOf(matsCurveUtils.getUsedLabels(), paramElems[i].value) !== -1) {
+            setError(
+              new Error(
+                `labels need to be unique - change ${paramElems[i].value} to something else`
+              )
+            );
+            return false;
           }
         }
       }
+
       p.color = matsCurveUtils.getNextCurveColor();
       curves.push(p);
-      var elem = document.getElementById("curveList");
+      const elem = document.getElementById("curveList");
       elem.style.display = "block";
     }
 
@@ -354,14 +347,14 @@ Template.paramList.onRendered(function () {
   Session.set("displayPriority", 1);
   Session.set("editMode", "");
 
-  //hide sites and sitesMap selectors for anything that isn't a map plot or wfip2
-  var elem;
-  var ptype = matsPlotUtils.getPlotType();
+  // hide sites and sitesMap selectors for anything that isn't a map plot or wfip2
+  let elem;
+  const ptype = matsPlotUtils.getPlotType();
   elem = document.getElementById("sites-item");
-  var sitesParamHidden;
+  let sitesParamHidden;
   if (elem && elem.style) {
-    if (matsCollections["sites"] !== undefined) {
-      sitesParamHidden = matsCollections["sites"].findOne({
+    if (matsCollections.sites !== undefined) {
+      sitesParamHidden = matsCollections.sites.findOne({
         name: "sites",
       }).hiddenForPlotTypes;
       if (sitesParamHidden) {
@@ -375,8 +368,8 @@ Template.paramList.onRendered(function () {
   }
   elem = document.getElementById("sitesMap-item");
   if (elem && elem.style) {
-    if (matsCollections["sitesMap"] !== undefined) {
-      sitesParamHidden = matsCollections["sitesMap"].findOne({
+    if (matsCollections.sitesMap !== undefined) {
+      sitesParamHidden = matsCollections.sitesMap.findOne({
         name: "sitesMap",
       }).hiddenForPlotTypes;
       if (sitesParamHidden) {
