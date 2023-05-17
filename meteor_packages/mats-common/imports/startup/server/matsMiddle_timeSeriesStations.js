@@ -16,6 +16,7 @@ class MatsMiddleTimeSeriesStations
     average = null;
     fromSecs = null;
     toSecs = null;
+    validTimes = [];
     writeOutput = false;
 
     constructor(cbPool)
@@ -23,7 +24,7 @@ class MatsMiddleTimeSeriesStations
         this.cbPool = cbPool;
     }
 
-    processStationQuery = (varName, stationNames, model, fcstLen, threshold, average, fromSecs, toSecs, writeOutput) =>
+    processStationQuery = (varName, stationNames, model, fcstLen, threshold, average, fromSecs, toSecs, validTimes, writeOutput) =>
     {
         const Future = require('fibers/future');
 
@@ -31,18 +32,19 @@ class MatsMiddleTimeSeriesStations
         let dFuture = new Future();
         (async () =>
         {
-            rv = await this.processStationQuery_int(varName, stationNames, model, fcstLen, threshold, average, fromSecs, toSecs, writeOutput);
+            rv = await this.processStationQuery_int(varName, stationNames, model, fcstLen, threshold, average, fromSecs, toSecs, validTimes, writeOutput);
             dFuture.return();
         })();
         dFuture.wait();
         return rv;
     }
 
-    processStationQuery_int = async (varName, stationNames, model, fcstLen, threshold, average, fromSecs, toSecs, writeOutput) =>
+    processStationQuery_int = async (varName, stationNames, model, fcstLen, threshold, average, fromSecs, toSecs, validTimes, writeOutput) =>
     {
         let fs = require("fs");
 
-        console.log("processStationQuery()");
+        console.log("processStationQuery(" + varName + "," + stationNames.length + "," + model + "," + fcstLen + "," +
+            threshold + "," + average + "," + fromSecs + "," + toSecs + "," + JSON.stringify(validTimes) + ")");
 
         this.varName = varName;
         this.stationNames = stationNames;
@@ -54,9 +56,14 @@ class MatsMiddleTimeSeriesStations
         this.toSecs = toSecs;
         this.writeOutput = writeOutput;
 
-        if(this.average.includes("m0."))
+        this.average = this.average.replace(/m0./g, "");
+        if (validTimes && validTimes.length > 0)
         {
-            this.average = this.average.substring(3);
+            for (let i = 0; i < validTimes.length; i++)
+            {
+                this.validTimes.push(Number(validTimes[i]));
+            }
+            console.log("validTimes:" + JSON.stringify(this.validTimes));
         }
 
         this.conn = await cbPool.getConnection();
@@ -255,15 +262,22 @@ class MatsMiddleTimeSeriesStations
                 continue;
             }
 
+            if (this.validTimes && this.validTimes.length > 0)
+            {
+                if (false == this.validTimes.includes(fve % (24 * 3600) / 3600))
+                {
+                    continue;
+                }
+            }
+
             let stats_fve = {};
             stats_fve["avtime"] = obsSingleFve.avtime;
-            stats_fve["total"] = 0;
-            stats_fve["hits"] = 0;
-            stats_fve["misses"] = 0;
+            stats_fve["hit"] = 0;
+            stats_fve["miss"] = 0;
             stats_fve["fa"] = 0;
             stats_fve["cn"] = 0;
             stats_fve["N0"] = 0;
-            stats_fve["N_times"] = 0;
+            stats_fve["N_times"] = 1;
             stats_fve["sub_data"] = [];
 
             for (let i = 0; i < this.stationNames.length; i++)
@@ -283,11 +297,11 @@ class MatsMiddleTimeSeriesStations
                 {
                     // console.log("varVal_o:" + varVal_o + ",varVal_m:" + varVal_m);
 
-                    stats_fve["total"] = stats_fve["total"] + 1;
+                    stats_fve["N0"] = stats_fve["N0"] + 1;
                     let sub = fve + ';';
                     if (varVal_o < threshold && varVal_m < threshold)
                     {
-                        stats_fve["hits"] = stats_fve["hits"] + 1;
+                        stats_fve["hit"] = stats_fve["hit"] + 1;
                         sub += "1;";
                     }
                     else
@@ -311,7 +325,7 @@ class MatsMiddleTimeSeriesStations
 
                     if (varVal_o < threshold && varVal_m >= threshold)
                     {
-                        stats_fve["misses"] = stats_fve["misses"] + 1;
+                        stats_fve["miss"] = stats_fve["miss"] + 1;
                         sub += "1;";
                     }
                     else
