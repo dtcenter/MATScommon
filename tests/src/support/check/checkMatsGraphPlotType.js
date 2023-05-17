@@ -3,17 +3,17 @@
  * @param  {String}   plotType  The text to check against
  */
 export default (plotType) => {
-    /**
-     * Check that the header contains the plot type
-     * @plotType {String}
-     */
-    const command = 'getText';
+  /**
+   * Check that the header contains the plot type
+   * @plotType {String}
+   */
+  const command = "getText";
 
-    const stringExpectedText = plotType;
+  const stringExpectedText = plotType;
 
-    const elem = $('#header');
-    elem.waitForDisplayed();
-    const text = elem[command]();
+  const elem = $("#header");
+  elem.waitForDisplayed();
+  const text = elem[command]();
 
-    expect(text).toContain(stringExpectedText);
+  expect(text).toContain(stringExpectedText);
 };

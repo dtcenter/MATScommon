@@ -7,11 +7,11 @@
  * @todo  merge with waitfor
  */
 export default (selector, falseCase) => {
-    /**
-     * Maximum number of milliseconds to wait for
-     * @type {Int}
-     */
-    const ms = 10000;
+  /**
+   * Maximum number of milliseconds to wait for
+   * @type {Int}
+   */
+  const ms = 10000;
 
-    $(selector).waitForDisplayed(ms, !!falseCase);
+  $(selector).waitForDisplayed(ms, !!falseCase);
 };

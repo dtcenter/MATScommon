@@ -5,8 +5,10 @@
  */
 
 export default (curve, color) => {
-    const actualColor = $(`#${curve}-color-value`).getValue();
-    const expectedColor = color;
-    expect(actualColor).toEqual(expectedColor,
-        `expected color ${expectedColor} does not match actualColor ${actualColor}`);
+  const actualColor = $(`#${curve}-color-value`).getValue();
+  const expectedColor = color;
+  expect(actualColor).toEqual(
+    expectedColor,
+    `expected color ${expectedColor} does not match actualColor ${actualColor}`
+  );
 };

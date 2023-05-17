@@ -1,78 +1,185 @@
 <template name="topNav">
-
-    <div id="navbar" style="display:block;height:100%;margin-bottom:0;margin-top:0;padding-top:0;padding-bottom:0;">
-        <nav id="topnav" class="navbar navbar-default"
-             style="color:white; background: #006699;height:100%;margin-bottom:0;margin-top:0;padding-top:0;padding-bottom:0;">
-            <div class="container-fluid">
-                <div class="navbar-header" style="color: cyan; padding-left: 5px;">
-                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
-                            data-target="#navbar-collapse-1" aria-expanded="false">
-                        <span class="sr-only">Toggle navigation</span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button>
-                    <a href="{{productLink}}"> <i style="color: cyan; padding-top: 10px;" class="fa-solid fa-house-chimney fa-2x" aria-hidden="true"></i></a>
-                </div>
-                <!-- Collect the nav links, forms, and other content for toggling -->
-                <div class="collapse navbar-collapse" id="navbar-collapse-1">
-                    <ul class="nav navbar-nav">
-                        <li><a href="http://www.doc.gov/"><span
-                                style="color:white">U.S. Department of Commerce</span></a></li>
-                        <li><a href="http://www.noaa.gov/"><span style="color:white">National Oceanic and Atmospheric Administration</span></a>
-                        </li>
-                        {{#unless isMetexpress}}
-                        <li><a href="http://www.research.noaa.gov/"><span style="color:white">NOAA Research</span></a>
-                        </li>
-                        {{/unless}}
-                    </ul>
-                </div><!-- /.navbar-collapse -->
-            </div><!-- /.container-fluid -->
-        </nav>
-        <nav id="topnav1" class="navbar navbar-default"
-             style="color:white; background: #000066;height:100%;margin-bottom:0;margin-top:0;padding-top:0;padding-bottom:1%;">
-            <div class="container-fluid">
-                <!-- Brand and toggle get grouped for better mobile display -->
-                <div class="navbar-header">
-                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
-                            data-target="#navbar-collapse-2" aria-expanded="false">
-                        <span class="sr-only">Toggle navigation</span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button>
-                    <a style="margin-bottom:0;margin-top:0;padding: 0;" class="navbar-brand" href="https://www.noaa.gov"><img
-                            style="height:100%;margin-bottom:0;margin-top:0.5em;padding-left:1em;padding-right:1em;"
-                            src = "{{transparentGif}}" alt="NOAA"></a>
-                </div>
-
-                <!-- Collect the nav links, forms, and other content for toggling -->
-                <div class="collapse navbar-collapse" id="navbar-collapse-2">
-                    <ul class="nav navbar-nav">
-                        <li>
-                            <div style="margin-top:0.5em;">
-                                <a href="{{agencyLink}}"><span style="color:white;font-size: small;">{{agencyText}}</span></a><br>
-                                <a href="{{productLink}}"><span style="color:white;font-size: x-large;">{{productText}}</span></a><br>
-                            </div>
-                        </li>
-                    </ul>
-                    <ul class="nav navbar-nav navbar-right">
-                        <li style="margin-top:0.5em;"><a href="{{bugsLink}}" target="_blank"><span
-                                style="color:white;font-size: medium;">{{bugsText}}</span></a></li>
-                        <li style="margin-top:0.5em;"><a href="{{productLink}}"> <span style="color:white;font-size: medium;">Home</span></a></li>
-                        <li style="margin-top:0.5em;"><a href="" class="about"><span style="color:white;font-size: medium;">About</span></a></li>
-                        <li style="margin-top:0.5em;"><a href="mailto:mats.gsl@noaa.gov?Subject=Feedback from {{emailText}}"><span style="color:white;font-size: medium;">Contact Us</span></a></li>
-                        <li style="margin-top: 1.45em; margin-left: 0.95em;">{{> loginButtons align="right"}}</li>
-                    </ul>
-                </div><!-- /.navbar-collapse -->
-            </div><!-- /.container-fluid -->
-        </nav>
-        {{#unless isMetexpress}}
-        <div style="background-color: #dddddd;height:100%;margin-bottom:0;margin-top:0;padding-left:1em;padding-right: 0"
-             class="container-fluid">
-            <a style="font-size:large;font-weight: bold" href="http://esrl.noaa.gov/gsd/mdb">GSL Modeling</a>
+  <div
+    id="navbar"
+    style="
+      display: block;
+      height: 100%;
+      margin-bottom: 0;
+      margin-top: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+    "
+  >
+    <nav
+      id="topnav"
+      class="navbar navbar-default"
+      style="
+        color: white;
+        background: #006699;
+        height: 100%;
+        margin-bottom: 0;
+        margin-top: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+      "
+    >
+      <div class="container-fluid">
+        <div class="navbar-header" style="color: cyan; padding-left: 5px">
+          <button
+            type="button"
+            class="navbar-toggle collapsed"
+            data-toggle="collapse"
+            data-target="#navbar-collapse-1"
+            aria-expanded="false"
+          >
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="{{productLink}}">
+            <i
+              style="color: cyan; padding-top: 10px"
+              class="fa-solid fa-house-chimney fa-2x"
+              aria-hidden="true"
+            ></i
+          ></a>
         </div>
-        {{/unless}}
-    </div>
-</template>
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="navbar-collapse-1">
+          <ul class="nav navbar-nav">
+            <li>
+              <a href="http://www.doc.gov/"
+                ><span style="color: white">U.S. Department of Commerce</span></a
+              >
+            </li>
+            <li>
+              <a href="http://www.noaa.gov/"
+                ><span style="color: white"
+                  >National Oceanic and Atmospheric Administration</span
+                ></a
+              >
+            </li>
+            {{#unless isMetexpress}}
+            <li>
+              <a href="http://www.research.noaa.gov/"
+                ><span style="color: white">NOAA Research</span></a
+              >
+            </li>
+            {{/unless}}
+          </ul>
+        </div>
+        <!-- /.navbar-collapse -->
+      </div>
+      <!-- /.container-fluid -->
+    </nav>
+    <nav
+      id="topnav1"
+      class="navbar navbar-default"
+      style="
+        color: white;
+        background: #000066;
+        height: 100%;
+        margin-bottom: 0;
+        margin-top: 0;
+        padding-top: 0;
+        padding-bottom: 1%;
+      "
+    >
+      <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+          <button
+            type="button"
+            class="navbar-toggle collapsed"
+            data-toggle="collapse"
+            data-target="#navbar-collapse-2"
+            aria-expanded="false"
+          >
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a
+            style="margin-bottom: 0; margin-top: 0; padding: 0"
+            class="navbar-brand"
+            href="https://www.noaa.gov"
+            ><img
+              style="
+                height: 100%;
+                margin-bottom: 0;
+                margin-top: 0.5em;
+                padding-left: 1em;
+                padding-right: 1em;
+              "
+              src="{{transparentGif}}"
+              alt="NOAA"
+          /></a>
+        </div>
 
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="navbar-collapse-2">
+          <ul class="nav navbar-nav">
+            <li>
+              <div style="margin-top: 0.5em">
+                <a href="{{agencyLink}}"
+                  ><span style="color: white; font-size: small">{{agencyText}}</span></a
+                ><br />
+                <a href="{{productLink}}"
+                  ><span style="color: white; font-size: x-large"
+                    >{{productText}}</span
+                  ></a
+                ><br />
+              </div>
+            </li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li style="margin-top: 0.5em">
+              <a href="{{bugsLink}}" target="_blank"
+                ><span style="color: white; font-size: medium">{{bugsText}}</span></a
+              >
+            </li>
+            <li style="margin-top: 0.5em">
+              <a href="{{productLink}}">
+                <span style="color: white; font-size: medium">Home</span></a
+              >
+            </li>
+            <li style="margin-top: 0.5em">
+              <a href="" class="about"
+                ><span style="color: white; font-size: medium">About</span></a
+              >
+            </li>
+            <li style="margin-top: 0.5em">
+              <a href="mailto:mats.gsl@noaa.gov?Subject=Feedback from {{emailText}}"
+                ><span style="color: white; font-size: medium">Contact Us</span></a
+              >
+            </li>
+            <li style="margin-top: 1.45em; margin-left: 0.95em">
+              {{> loginButtons align="right"}}
+            </li>
+          </ul>
+        </div>
+        <!-- /.navbar-collapse -->
+      </div>
+      <!-- /.container-fluid -->
+    </nav>
+    {{#unless isMetexpress}}
+    <div
+      style="
+        background-color: #dddddd;
+        height: 100%;
+        margin-bottom: 0;
+        margin-top: 0;
+        padding-left: 1em;
+        padding-right: 0;
+      "
+      class="container-fluid"
+    >
+      <a style="font-size: large; font-weight: bold" href="http://esrl.noaa.gov/gsd/mdb"
+        >GSL Modeling</a
+      >
+    </div>
+    {{/unless}}
+  </div>
+</template>

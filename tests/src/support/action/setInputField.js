@@ -1,4 +1,4 @@
-import checkIfElementExists from '../lib/checkIfElementExists';
+import checkIfElementExists from "../lib/checkIfElementExists";
 
 /**
  * Set the value of the given input field to a new value or add a value to the
@@ -8,19 +8,19 @@ import checkIfElementExists from '../lib/checkIfElementExists';
  * @param  {String}   selector Element selector
  */
 export default (method, value, selector) => {
-    /**
-     * The command to perform on the browser object (addValue or setValue)
-     * @type {String}
-     */
-    const command = (method === 'add') ? 'addValue' : 'setValue';
+  /**
+   * The command to perform on the browser object (addValue or setValue)
+   * @type {String}
+   */
+  const command = method === "add" ? "addValue" : "setValue";
 
-    let checkValue = value;
+  let checkValue = value;
 
-    checkIfElementExists(selector, false, 1);
+  checkIfElementExists(selector, false, 1);
 
-    if (!value) {
-        checkValue = '';
-    }
+  if (!value) {
+    checkValue = "";
+  }
 
-    $(selector)[command](checkValue);
+  $(selector)[command](checkValue);
 };

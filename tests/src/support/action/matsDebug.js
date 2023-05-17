@@ -2,5 +2,5 @@
  * browser.debug
  */
 export default () => {
-    browser.debug();
+  browser.debug();
 };

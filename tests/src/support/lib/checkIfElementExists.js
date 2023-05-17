@@ -6,27 +6,26 @@
  *                             of times
  */
 export default (selector, falseCase, exactly) => {
-    /**
-     * The number of elements found in the DOM
-     * @type {Int}
-     */
-    const nrOfElements = $$(selector);
+  /**
+   * The number of elements found in the DOM
+   * @type {Int}
+   */
+  const nrOfElements = $$(selector);
 
-    if (falseCase === true) {
-        expect(nrOfElements).toHaveLength(
-            0,
-            `Element with selector "${selector}" should not exist on the page`
-        );
-    } else if (exactly) {
-        expect(nrOfElements).toHaveLength(
-            exactly,
-            `Element with selector "${selector}" should exist exactly `
-            + `${exactly} time(s)`
-        );
-    } else {
-        expect(nrOfElements.length).toBeGreaterThanOrEqual(
-            1,
-            `Element with selector "${selector}" should exist on the page`
-        );
-    }
+  if (falseCase === true) {
+    expect(nrOfElements).toHaveLength(
+      0,
+      `Element with selector "${selector}" should not exist on the page`
+    );
+  } else if (exactly) {
+    expect(nrOfElements).toHaveLength(
+      exactly,
+      `Element with selector "${selector}" should exist exactly ` + `${exactly} time(s)`
+    );
+  } else {
+    expect(nrOfElements.length).toBeGreaterThanOrEqual(
+      1,
+      `Element with selector "${selector}" should exist on the page`
+    );
+  }
 };

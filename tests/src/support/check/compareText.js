@@ -6,27 +6,21 @@
  * @param  {String}   selector2  Element selector for the second element
  */
 export default (selector1, falseCase, selector2) => {
-    /**
-     * The text of the first element
-     * @type {String}
-     */
-    const text1 = $(selector1).getText();
+  /**
+   * The text of the first element
+   * @type {String}
+   */
+  const text1 = $(selector1).getText();
 
-    /**
-     * The text of the second element
-     * @type {String}
-     */
-    const text2 = $(selector2).getText();
+  /**
+   * The text of the second element
+   * @type {String}
+   */
+  const text2 = $(selector2).getText();
 
-    if (falseCase) {
-        expect(text1).not.toEqual(
-            text2,
-            `Expected text not to be "${text1}"`
-        );
-    } else {
-        expect(text1).toEqual(
-            text2,
-            `Expected text to be "${text1}" but found "${text2}"`
-        );
-    }
+  if (falseCase) {
+    expect(text1).not.toEqual(text2, `Expected text not to be "${text1}"`);
+  } else {
+    expect(text1).toEqual(text2, `Expected text to be "${text1}" but found "${text2}"`);
+  }
 };
