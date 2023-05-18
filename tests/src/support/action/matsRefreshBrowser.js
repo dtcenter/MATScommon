@@ -6,5 +6,5 @@
  * to avoid creating hundreds of single test files with WDIO.
  */
 export default () => {
-    browser.reloadSession();
+  browser.reloadSession();
 };

@@ -5,21 +5,18 @@
  *                              is enabled or not
  */
 export default (selector, falseCase) => {
-    /**
-     * The enabled state of the given selector
-     * @type {Boolean}
-     */
-    const isEnabled = $(selector).isEnabled();
+  /**
+   * The enabled state of the given selector
+   * @type {Boolean}
+   */
+  const isEnabled = $(selector).isEnabled();
 
-    if (falseCase) {
-        expect(isEnabled).not.toEqual(
-            true,
-            `Expected element "${selector}" not to be enabled`
-        );
-    } else {
-        expect(isEnabled).toEqual(
-            true,
-            `Expected element "${selector}" to be enabled`
-        );
-    }
+  if (falseCase) {
+    expect(isEnabled).not.toEqual(
+      true,
+      `Expected element "${selector}" not to be enabled`
+    );
+  } else {
+    expect(isEnabled).toEqual(true, `Expected element "${selector}" to be enabled`);
+  }
 };

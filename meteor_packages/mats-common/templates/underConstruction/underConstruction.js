@@ -3,8 +3,8 @@
  */
 
 Template.underConstruction.helpers({
-    image: function () {
-        var img = "underConstruction.jpg";
-        return img;
-    }
+  image() {
+    const img = "underConstruction.jpg";
+    return img;
+  },
 });

@@ -2,250 +2,295 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import {matsTypes} from 'meteor/randyp:mats-common';
-import {matsCollections} from 'meteor/randyp:mats-common';
-import {matsPlotUtils} from 'meteor/randyp:mats-common';
-import {matsParamUtils} from 'meteor/randyp:mats-common';
+import {
+  matsTypes,
+  matsCollections,
+  matsPlotUtils,
+  matsParamUtils,
+} from "meteor/randyp:mats-common";
 
-var allGroups = {};
+const allGroups = {};
 Template.curveParamItemGroup.helpers({
-    curveParamGroups: function (c) {
-        const label = c.label;
-        const curves = Session.get("Curves");
-        const index = curves.findIndex(
-            function (obj) {
-                return obj.label === label;
-            }
-        );
+  curveParamGroups(c) {
+    const { label } = c;
+    const curves = Session.get("Curves");
+    const index = curves.findIndex(function (obj) {
+      return obj.label === label;
+    });
 
-        // create a set of groups each with an array of 6 params for display
-        const lastUpdate = Session.get('lastUpdate');
-        const plotType = matsPlotUtils.getPlotType();
-        var elmementValues = matsParamUtils.getElementValues().curveParams;
-        // derive the sorted pValues, xpValues, and ypValues from the sorted params and the elementValues
-        var pValues = [];
-        var pattern;
-        switch (plotType) {
-            case matsTypes.PlotTypes.profile:
-                pattern = matsCollections.CurveTextPatterns.findOne({plotType: matsTypes.PlotTypes.profile});
-                break;
-            case matsTypes.PlotTypes.dieoff:
-                pattern = matsCollections.CurveTextPatterns.findOne({plotType: matsTypes.PlotTypes.dieoff});
-                break;
-            case matsTypes.PlotTypes.threshold:
-                pattern = matsCollections.CurveTextPatterns.findOne({plotType: matsTypes.PlotTypes.threshold});
-                break;
-            case matsTypes.PlotTypes.validtime:
-                pattern = matsCollections.CurveTextPatterns.findOne({plotType: matsTypes.PlotTypes.validtime});
-                break;
-            case matsTypes.PlotTypes.gridscale:
-                pattern = matsCollections.CurveTextPatterns.findOne({plotType: matsTypes.PlotTypes.gridscale});
-                break;
-            case matsTypes.PlotTypes.dailyModelCycle:
-                pattern = matsCollections.CurveTextPatterns.findOne({plotType: matsTypes.PlotTypes.dailyModelCycle});
-                break;
-            case matsTypes.PlotTypes.yearToYear:
-                pattern = matsCollections.CurveTextPatterns.findOne({plotType: matsTypes.PlotTypes.yearToYear});
-                break;
-            case matsTypes.PlotTypes.reliability:
-                pattern = matsCollections.CurveTextPatterns.findOne({plotType: matsTypes.PlotTypes.reliability});
-                break;
-            case matsTypes.PlotTypes.roc:
-                pattern = matsCollections.CurveTextPatterns.findOne({plotType: matsTypes.PlotTypes.roc});
-                break;
-            case matsTypes.PlotTypes.performanceDiagram:
-                pattern = matsCollections.CurveTextPatterns.findOne({plotType: matsTypes.PlotTypes.performanceDiagram});
-                break;
-            case matsTypes.PlotTypes.map:
-                pattern = matsCollections.CurveTextPatterns.findOne({plotType: matsTypes.PlotTypes.map});
-                break;
-            case matsTypes.PlotTypes.histogram:
-                pattern = matsCollections.CurveTextPatterns.findOne({plotType: matsTypes.PlotTypes.histogram});
-                break;
-            case matsTypes.PlotTypes.ensembleHistogram:
-                pattern = matsCollections.CurveTextPatterns.findOne({plotType: matsTypes.PlotTypes.ensembleHistogram});
-                break;
-            case matsTypes.PlotTypes.contour:
-                pattern = matsCollections.CurveTextPatterns.findOne({plotType: matsTypes.PlotTypes.contour});
-                break;
-            case matsTypes.PlotTypes.contourDiff:
-                pattern = matsCollections.CurveTextPatterns.findOne({plotType: matsTypes.PlotTypes.contourDiff});
-                break;
-            case matsTypes.PlotTypes.simpleScatter:
-                pattern = matsCollections.CurveTextPatterns.findOne({plotType: matsTypes.PlotTypes.simpleScatter});
-                break;
-            case matsTypes.PlotTypes.scatter2d:
-                pattern = matsCollections.CurveTextPatterns.findOne({plotType: matsTypes.PlotTypes.scatter2d});
-                break;
-            case matsTypes.PlotTypes.scorecard:
-                pattern = matsCollections.CurveTextPatterns.findOne({plotType: matsTypes.PlotTypes.scorecard});
-                break;
-            case matsTypes.PlotTypes.timeSeries:
-            default:
-                pattern = matsCollections.CurveTextPatterns.findOne({plotType: matsTypes.PlotTypes.timeSeries});
-                break;
-        }
-        const groupSize = pattern.groupSize;
-        const displayParams = pattern.displayParams;
-        for (var di = 0; di < displayParams.length; di++) {
-            pValues.push({
-                name: displayParams[di],
-                value: c[displayParams[di]],
-                color: c.color,
-                curve: c.label,
-                index: index
-            });
-        }
-
-        // create array of parameter value display groups each of groupSize
-        var pGroups = [];
-        var groupParams = [];
-        var pvi = 0;
-        while (pvi < pValues.length) {
-            if (pValues[pvi] && (pValues[pvi].name === 'xaxis' || pValues[pvi].name === 'yaxis')) {
-                if (groupParams.length > 0) {
-                    // finish the old group and make a new group for 'xaxis' or 'yaxis'
-                    pGroups.push(groupParams);
-                }
-                groupParams = [];
-            }
-            pValues[pvi] && groupParams.push(pValues[pvi]);
-            if (groupParams.length >= groupSize) {
-                pGroups.push(groupParams);
-                groupParams = [];
-            }
-            pvi++;
-        }
-        // check for a partial last group
-        if (groupParams.length > 0) {
-            pGroups.push(groupParams);
-        }
-        allGroups[c.label] = pGroups;
-        return pGroups;
-    },
-    curveNumber: function (elem) {
-        return elem.index;
-    },
-    curveParams: function (paramGroup) {
-        return paramGroup;
-    },
-    label: function (elem) {
-        var pLabel = "";
-        if (matsPlotUtils.getPlotType() === matsTypes.PlotTypes.scatter2d) {
-            const pNameArr = elem.name.match(/([xy]axis-)(.*)/);
-            if (pNameArr === null) {
-                pLabel = elem.name;
-            }
-            const prefix = pNameArr[1];
-            const pName = pNameArr[2];
-            if (matsCollections[pName] !== undefined) {
-                const p = matsCollections[pName].findOne({name: pName});
-                if (p.controlButtonText) {
-                    pLabel = (prefix + p.controlButtonText);
-                } else {
-                    pLabel = elem.name;
-                }
-            }
-        } else {
-            if (matsCollections[elem.name] !== undefined) {
-                const p = matsCollections[elem.name].findOne({name: elem.name});
-                if (p.controlButtonText) {
-                    pLabel = p.controlButtonText;
-                } else {
-                    pLabel = elem.name;
-                }
-            }
-        }
-        // Make everything title case
-        pLabel = pLabel.split(" ");
-        for (var i = 0; i < pLabel.length; i++) {
-            pLabel[i] = pLabel[i].charAt(0).toUpperCase() + pLabel[i].slice(1);
-            pLabel[i] = pLabel[i] === "Utc" ? "UTC" : pLabel[i];
-        }
-        pLabel = pLabel.join(" ").split("-");
-        for (var i = 0; i < pLabel.length; i++) {
-            pLabel[i] = pLabel[i].charAt(0).toUpperCase() + pLabel[i].slice(1);
-        }
-        return pLabel.join(" ");
-    },
-    name: function (elem) {
-        return elem.name;
-    },
-    id: function (elem) {
-        return elem.name;
-    },
-    buttonId: function (elem) {
-        const name = new String(elem.name);
-        const upperName = name.toUpperCase();
-        const curveNumber = elem.index;
-        const spanId = upperName + "-curve-" + curveNumber + "-Button";
-        return spanId;
-    },
-    spanId: function (elem) {
-        const name = new String(elem.name);
-        const upperName = name.toUpperCase();
-        const curveNumber = elem.index;
-        const spanId = upperName + "-curve-" + curveNumber + "-Item";
-        return spanId;
-    },
-    value: function (elem) {
-        // have to get this from the session
-        const curve = Session.get("Curves")[elem.index];
-        if (curve === undefined) {
-            return "";
-        }
-        var value = curve[elem.name];
-        var text = "";
-        if (Object.prototype.toString.call(value) === '[object Array]') {
-            if (value.length === 1) {
-                text = value[0];
-            } else if (value.length > 1) {
-                text = value[0] + " .. " + value[value.length - 1];
-            }
-        } else {
-            text = value;
-        }
-        return text;
-    },
-    defaultColor: function (elem) {
-        return elem.color;
-    },
-    border: function (elem) {
-        var elementChanged = Session.get("elementChanged");
-        const name = elem.name; // for xaxis params
-        const curve = elem.curve;
-        const adb = (name === Session.get("activeDisplayButton"));
-        const isEditMode = (curve === Session.get("editMode"));
-        const inputElemIsVisible = matsParamUtils.isInputElementVisible(name);
-        if (adb && isEditMode && inputElemIsVisible) {
-            return "solid";
-        }
-        return "";
-    },
-    editCurve: function () {
-        return Session.get('editMode');
-    },
-    editTarget: function () {
-        return Session.get("eventTargetCurve");
-    },
-    displayParam: function (elem) {
-        if (elem.name === "label") {
-            return "none";
-        }
-        // it isn't good enough to just check the item control button. Need to evaluate the hideOtherFor functionality with
-        // respect to this particular curve item
-        // First - determine if my visibility is controlled by another
-        const visibilityControllingParam = matsParamUtils.visibilityControllerForParam(elem.name);
-        // Second - Check the hide/show state based on the parameter hideOtherFor map in the parameter nad the state of this particular curve
-        if (visibilityControllingParam !== undefined) {
-            const curve = Session.get("Curves")[elem.index];
-            const hideOtherFor = visibilityControllingParam.hideOtherFor[elem.name];
-            if (curve !== undefined && curve[visibilityControllingParam.name] !== undefined && hideOtherFor.indexOf(curve[visibilityControllingParam.name]) !== -1) {
-                elem.purposelyHidden = true;
-                return "none";
-            }
-        }
-        elem.purposelyHidden = false;
-        return "block";
+    // create a set of groups each with an array of 6 params for display
+    const lastUpdate = Session.get("lastUpdate");
+    const plotType = matsPlotUtils.getPlotType();
+    const elmementValues = matsParamUtils.getElementValues().curveParams;
+    // derive the sorted pValues, xpValues, and ypValues from the sorted params and the elementValues
+    const pValues = [];
+    let pattern;
+    switch (plotType) {
+      case matsTypes.PlotTypes.profile:
+        pattern = matsCollections.CurveTextPatterns.findOne({
+          plotType: matsTypes.PlotTypes.profile,
+        });
+        break;
+      case matsTypes.PlotTypes.dieoff:
+        pattern = matsCollections.CurveTextPatterns.findOne({
+          plotType: matsTypes.PlotTypes.dieoff,
+        });
+        break;
+      case matsTypes.PlotTypes.threshold:
+        pattern = matsCollections.CurveTextPatterns.findOne({
+          plotType: matsTypes.PlotTypes.threshold,
+        });
+        break;
+      case matsTypes.PlotTypes.validtime:
+        pattern = matsCollections.CurveTextPatterns.findOne({
+          plotType: matsTypes.PlotTypes.validtime,
+        });
+        break;
+      case matsTypes.PlotTypes.gridscale:
+        pattern = matsCollections.CurveTextPatterns.findOne({
+          plotType: matsTypes.PlotTypes.gridscale,
+        });
+        break;
+      case matsTypes.PlotTypes.dailyModelCycle:
+        pattern = matsCollections.CurveTextPatterns.findOne({
+          plotType: matsTypes.PlotTypes.dailyModelCycle,
+        });
+        break;
+      case matsTypes.PlotTypes.yearToYear:
+        pattern = matsCollections.CurveTextPatterns.findOne({
+          plotType: matsTypes.PlotTypes.yearToYear,
+        });
+        break;
+      case matsTypes.PlotTypes.reliability:
+        pattern = matsCollections.CurveTextPatterns.findOne({
+          plotType: matsTypes.PlotTypes.reliability,
+        });
+        break;
+      case matsTypes.PlotTypes.roc:
+        pattern = matsCollections.CurveTextPatterns.findOne({
+          plotType: matsTypes.PlotTypes.roc,
+        });
+        break;
+      case matsTypes.PlotTypes.performanceDiagram:
+        pattern = matsCollections.CurveTextPatterns.findOne({
+          plotType: matsTypes.PlotTypes.performanceDiagram,
+        });
+        break;
+      case matsTypes.PlotTypes.map:
+        pattern = matsCollections.CurveTextPatterns.findOne({
+          plotType: matsTypes.PlotTypes.map,
+        });
+        break;
+      case matsTypes.PlotTypes.histogram:
+        pattern = matsCollections.CurveTextPatterns.findOne({
+          plotType: matsTypes.PlotTypes.histogram,
+        });
+        break;
+      case matsTypes.PlotTypes.ensembleHistogram:
+        pattern = matsCollections.CurveTextPatterns.findOne({
+          plotType: matsTypes.PlotTypes.ensembleHistogram,
+        });
+        break;
+      case matsTypes.PlotTypes.contour:
+        pattern = matsCollections.CurveTextPatterns.findOne({
+          plotType: matsTypes.PlotTypes.contour,
+        });
+        break;
+      case matsTypes.PlotTypes.contourDiff:
+        pattern = matsCollections.CurveTextPatterns.findOne({
+          plotType: matsTypes.PlotTypes.contourDiff,
+        });
+        break;
+      case matsTypes.PlotTypes.simpleScatter:
+        pattern = matsCollections.CurveTextPatterns.findOne({
+          plotType: matsTypes.PlotTypes.simpleScatter,
+        });
+        break;
+      case matsTypes.PlotTypes.scatter2d:
+        pattern = matsCollections.CurveTextPatterns.findOne({
+          plotType: matsTypes.PlotTypes.scatter2d,
+        });
+        break;
+      case matsTypes.PlotTypes.scorecard:
+        pattern = matsCollections.CurveTextPatterns.findOne({
+          plotType: matsTypes.PlotTypes.scorecard,
+        });
+        break;
+      case matsTypes.PlotTypes.timeSeries:
+      default:
+        pattern = matsCollections.CurveTextPatterns.findOne({
+          plotType: matsTypes.PlotTypes.timeSeries,
+        });
+        break;
     }
+    const { groupSize } = pattern;
+    const { displayParams } = pattern;
+    for (let di = 0; di < displayParams.length; di++) {
+      pValues.push({
+        name: displayParams[di],
+        value: c[displayParams[di]],
+        color: c.color,
+        curve: c.label,
+        index,
+      });
+    }
+
+    // create array of parameter value display groups each of groupSize
+    const pGroups = [];
+    let groupParams = [];
+    let pvi = 0;
+    while (pvi < pValues.length) {
+      if (
+        pValues[pvi] &&
+        (pValues[pvi].name === "xaxis" || pValues[pvi].name === "yaxis")
+      ) {
+        if (groupParams.length > 0) {
+          // finish the old group and make a new group for 'xaxis' or 'yaxis'
+          pGroups.push(groupParams);
+        }
+        groupParams = [];
+      }
+      pValues[pvi] && groupParams.push(pValues[pvi]);
+      if (groupParams.length >= groupSize) {
+        pGroups.push(groupParams);
+        groupParams = [];
+      }
+      pvi++;
+    }
+    // check for a partial last group
+    if (groupParams.length > 0) {
+      pGroups.push(groupParams);
+    }
+    allGroups[c.label] = pGroups;
+    return pGroups;
+  },
+  curveNumber(elem) {
+    return elem.index;
+  },
+  curveParams(paramGroup) {
+    return paramGroup;
+  },
+  label(elem) {
+    let pLabel = "";
+    if (matsPlotUtils.getPlotType() === matsTypes.PlotTypes.scatter2d) {
+      const pNameArr = elem.name.match(/([xy]axis-)(.*)/);
+      if (pNameArr === null) {
+        pLabel = elem.name;
+      }
+      const prefix = pNameArr[1];
+      const pName = pNameArr[2];
+      if (matsCollections[pName] !== undefined) {
+        const p = matsCollections[pName].findOne({ name: pName });
+        if (p.controlButtonText) {
+          pLabel = prefix + p.controlButtonText;
+        } else {
+          pLabel = elem.name;
+        }
+      }
+    } else if (matsCollections[elem.name] !== undefined) {
+      const p = matsCollections[elem.name].findOne({ name: elem.name });
+      if (p.controlButtonText) {
+        pLabel = p.controlButtonText;
+      } else {
+        pLabel = elem.name;
+      }
+    }
+    // Make everything title case
+    pLabel = pLabel.split(" ");
+    for (var i = 0; i < pLabel.length; i++) {
+      pLabel[i] = pLabel[i].charAt(0).toUpperCase() + pLabel[i].slice(1);
+      pLabel[i] = pLabel[i] === "Utc" ? "UTC" : pLabel[i];
+    }
+    pLabel = pLabel.join(" ").split("-");
+    for (var i = 0; i < pLabel.length; i++) {
+      pLabel[i] = pLabel[i].charAt(0).toUpperCase() + pLabel[i].slice(1);
+    }
+    return pLabel.join(" ");
+  },
+  name(elem) {
+    return elem.name;
+  },
+  id(elem) {
+    return elem.name;
+  },
+  buttonId(elem) {
+    const name = new String(elem.name);
+    const upperName = name.toUpperCase();
+    const curveNumber = elem.index;
+    const spanId = `${upperName}-curve-${curveNumber}-Button`;
+    return spanId;
+  },
+  spanId(elem) {
+    const name = new String(elem.name);
+    const upperName = name.toUpperCase();
+    const curveNumber = elem.index;
+    const spanId = `${upperName}-curve-${curveNumber}-Item`;
+    return spanId;
+  },
+  value(elem) {
+    // have to get this from the session
+    const curve = Session.get("Curves")[elem.index];
+    if (curve === undefined) {
+      return "";
+    }
+    const value = curve[elem.name];
+    let text = "";
+    if (Object.prototype.toString.call(value) === "[object Array]") {
+      if (value.length === 1) {
+        text = value[0];
+      } else if (value.length > 1) {
+        text = `${value[0]} .. ${value[value.length - 1]}`;
+      }
+    } else {
+      text = value;
+    }
+    return text;
+  },
+  defaultColor(elem) {
+    return elem.color;
+  },
+  border(elem) {
+    const elementChanged = Session.get("elementChanged");
+    const { name } = elem; // for xaxis params
+    const { curve } = elem;
+    const adb = name === Session.get("activeDisplayButton");
+    const isEditMode = curve === Session.get("editMode");
+    const inputElemIsVisible = matsParamUtils.isInputElementVisible(name);
+    if (adb && isEditMode && inputElemIsVisible) {
+      return "solid";
+    }
+    return "";
+  },
+  editCurve() {
+    return Session.get("editMode");
+  },
+  editTarget() {
+    return Session.get("eventTargetCurve");
+  },
+  displayParam(elem) {
+    if (elem.name === "label") {
+      return "none";
+    }
+    // it isn't good enough to just check the item control button. Need to evaluate the hideOtherFor functionality with
+    // respect to this particular curve item
+    // First - determine if my visibility is controlled by another
+    const visibilityControllingParam = matsParamUtils.visibilityControllerForParam(
+      elem.name
+    );
+    // Second - Check the hide/show state based on the parameter hideOtherFor map in the parameter nad the state of this particular curve
+    if (visibilityControllingParam !== undefined) {
+      const curve = Session.get("Curves")[elem.index];
+      const hideOtherFor = visibilityControllingParam.hideOtherFor[elem.name];
+      if (
+        curve !== undefined &&
+        curve[visibilityControllingParam.name] !== undefined &&
+        hideOtherFor.indexOf(curve[visibilityControllingParam.name]) !== -1
+      ) {
+        elem.purposelyHidden = true;
+        return "none";
+      }
+    }
+    elem.purposelyHidden = false;
+    return "block";
+  },
 });

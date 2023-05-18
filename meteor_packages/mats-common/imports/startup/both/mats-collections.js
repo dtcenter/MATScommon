@@ -5,85 +5,88 @@
 /**
  * Created by pierce on 8/31/16.
  */
-import { Mongo } from 'meteor/mongo';
+import { Mongo } from "meteor/mongo";
 import { Meteor } from "meteor/meteor";
-import { curveParamsByApp } from './mats-curve-params';
+import { curveParamsByApp } from "./mats-curve-params";
 
 const params = curveParamsByApp[Meteor.settings.public.app];
 if (!params) {
-    console.log("curveParams are not defined in imports/startup/both/mats-curve-params.js. Please define some curveParams for this app.");
-    throw new Meteor.Error("curveParams are not defined in imports/startup/both/mats-curve-params.js. Please define some curveParams for this app.");
+  console.log(
+    "curveParams are not defined in imports/startup/both/mats-curve-params.js. Please define some curveParams for this app."
+  );
+  throw new Meteor.Error(
+    "curveParams are not defined in imports/startup/both/mats-curve-params.js. Please define some curveParams for this app."
+  );
 }
-var paramCollections = {};
-var currParam;
-for (var i = 0; i < params.length; i++) {
-    currParam = params[i];
-    paramCollections[currParam] = new Mongo.Collection(currParam);
+const paramCollections = {};
+let currParam;
+for (let i = 0; i < params.length; i++) {
+  currParam = params[i];
+  paramCollections[currParam] = new Mongo.Collection(currParam);
 }
 
-var CurveParamsInfo = new Mongo.Collection("CurveParamsInfo");
-var AppsToScore = new Mongo.Collection("AppsToScore");
-var Scatter2dParams = new Mongo.Collection("Scatter2dParams");
-var CurveTextPatterns = new Mongo.Collection("CurveTextPatterns");
-var ScatterAxisTextPattern = new Mongo.Collection("ScatterAxisTextPattern");
-var SavedCurveParams = new Mongo.Collection("SavedCurveParams");
-var PlotParams = new Mongo.Collection("PlotParams");
-var SavedPlotParams = new Mongo.Collection("SavedPlotParams");
-var PlotGraphFunctions = new Mongo.Collection("PlotGraphFunctions");
-var SavedPlotGraphFunctions = new Mongo.Collection("SavedPlotGraphFunctions");
-var CurveSettings = new Mongo.Collection("CurveSettings");
-var Settings = new Mongo.Collection("Settings");
-var ColorScheme = new Mongo.Collection("ColorScheme");
-var SentAddresses = new Mongo.Collection("SentAddresses");
-var Authorization = new Mongo.Collection("Authorization");
-var Roles = new Mongo.Collection("Roles");
-var SavedRoles = new Mongo.Collection("SavedRoles");
-var Databases = new Mongo.Collection("Databases");
-var SavedDatabases = new Mongo.Collection("SavedDatabases");
-var Credentials = new Mongo.Collection("Credentials");
-var SavedCredentials = new Mongo.Collection("SavedCredentials");
-var SiteMap = new Mongo.Collection("SiteMap");
-var StationMap = new Mongo.Collection("StationMap");
-var Scorecard = new Mongo.Collection("Scorecard");
+const CurveParamsInfo = new Mongo.Collection("CurveParamsInfo");
+const AppsToScore = new Mongo.Collection("AppsToScore");
+const Scatter2dParams = new Mongo.Collection("Scatter2dParams");
+const CurveTextPatterns = new Mongo.Collection("CurveTextPatterns");
+const ScatterAxisTextPattern = new Mongo.Collection("ScatterAxisTextPattern");
+const SavedCurveParams = new Mongo.Collection("SavedCurveParams");
+const PlotParams = new Mongo.Collection("PlotParams");
+const SavedPlotParams = new Mongo.Collection("SavedPlotParams");
+const PlotGraphFunctions = new Mongo.Collection("PlotGraphFunctions");
+const SavedPlotGraphFunctions = new Mongo.Collection("SavedPlotGraphFunctions");
+const CurveSettings = new Mongo.Collection("CurveSettings");
+const Settings = new Mongo.Collection("Settings");
+const ColorScheme = new Mongo.Collection("ColorScheme");
+const SentAddresses = new Mongo.Collection("SentAddresses");
+const Authorization = new Mongo.Collection("Authorization");
+const Roles = new Mongo.Collection("Roles");
+const SavedRoles = new Mongo.Collection("SavedRoles");
+const Databases = new Mongo.Collection("Databases");
+const SavedDatabases = new Mongo.Collection("SavedDatabases");
+const Credentials = new Mongo.Collection("Credentials");
+const SavedCredentials = new Mongo.Collection("SavedCredentials");
+const SiteMap = new Mongo.Collection("SiteMap");
+const StationMap = new Mongo.Collection("StationMap");
+const Scorecard = new Mongo.Collection("Scorecard");
 
 // expire after 24 hours from when the scorecard is last upserted
 if (Meteor.isServer) {
-    try {
-        Scorecard.createIndex( { "createdAt": 1 }, { expireAfterSeconds: 24 * 60 * 60 } );
-    } catch (e) {
-        // ignore this - this isn't a scorecard
-    }
+  try {
+    Scorecard.createIndex({ createdAt: 1 }, { expireAfterSeconds: 24 * 60 * 60 });
+  } catch (e) {
+    // ignore this - this isn't a scorecard
+  }
 }
 
-
 const explicitCollections = {
-    CurveParamsInfo:CurveParamsInfo,
-    AppsToScore: AppsToScore,
-    Scatter2dParams:Scatter2dParams,
-    CurveTextPatterns:CurveTextPatterns, 
-    ScatterAxisTextPattern:ScatterAxisTextPattern,
-    SavedCurveParams:SavedCurveParams,
-    PlotParams:PlotParams,
-    SavedPlotParams:SavedPlotParams,
-    PlotGraphFunctions:PlotGraphFunctions,
-    SavedPlotGraphFunctions:SavedPlotGraphFunctions,
-    CurveSettings:CurveSettings,
-    Settings:Settings,
-    ColorScheme:ColorScheme,
-    SentAddresses:SentAddresses,
-    Authorization:Authorization,
-    Roles:Roles,
-    SavedRoles:SavedRoles,
-    Databases:Databases,
-    SavedDatabases:SavedDatabases,
-    Credentials:Credentials,
-    SavedCredentials:SavedCredentials,
-    SiteMap:SiteMap,
-    StationMap:StationMap,
-    Scorecard:Scorecard,
+  CurveParamsInfo,
+  AppsToScore,
+  Scatter2dParams,
+  CurveTextPatterns,
+  ScatterAxisTextPattern,
+  SavedCurveParams,
+  PlotParams,
+  SavedPlotParams,
+  PlotGraphFunctions,
+  SavedPlotGraphFunctions,
+  CurveSettings,
+  Settings,
+  ColorScheme,
+  SentAddresses,
+  Authorization,
+  Roles,
+  SavedRoles,
+  Databases,
+  SavedDatabases,
+  Credentials,
+  SavedCredentials,
+  SiteMap,
+  StationMap,
+  Scorecard,
 };
 
 export default matsCollections = {
-    ...paramCollections,
-    ...explicitCollections
+  ...paramCollections,
+  ...explicitCollections,
 };

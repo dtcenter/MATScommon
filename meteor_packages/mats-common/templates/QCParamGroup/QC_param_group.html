@@ -1,55 +1,92 @@
 <template name="QCParamGroup">
-    <div id="QCParamGroup-item" style="background-color:lightcyan;margin-top: 1.5em;float:left;display:block;">
-        <label style="padding-left:1em;font-size:large;font-weight: normal;">QC parameters: </label>
-        <span style="font-size:large;font-weight: normal;">
-            <label style="padding-left:1em;font-size:large;font-weight: normal;">Data completeness percentage: </label>
-            <input type="number" name="quantity" id="completeness" min="0" max="100" value="{{completenessNumber}}">
-        </span>
-        <span style="font-size:large;font-weight: normal;">
-            <label style="padding-left:1em;font-size:large;font-weight: normal;">Stdev filter level: </label>
-            {{#if noQC}}
-                <select id="outliers">
-                <option value="all" selected="selected">All Data</option>
-                <option value=3>3 sd</option>
-                <option value=2>2 sd</option>
-                <option value=1>1 sd</option>
-            </select>
-            {{else}}
-                <select id="outliers">
-                <option value="all">All Data</option>
-                <option value=3 selected="selected">3 sd</option>
-                <option value=2>2 sd</option>
-                <option value=1>1 sd</option>
-            </select>
-            {{/if}}
-        </span>
-    </div>
-    <div id="QCParamGroup-lite-item" style="background-color:lightcyan;margin-top: 1.5em;float:left;display:none;">
-        <label style="padding-left:1em;font-size:large;font-weight: normal;">QC parameters: </label>
-        <span style="font-size:large;font-weight: normal;">
-            <label style="padding-left:1em;font-size:large;font-weight: normal;">Stdev filter level: </label>
-            {{#if noQC}}
-                <select id="outliers-lite">
-                <option value="all" selected="selected">All Data</option>
-                <option value=3>3 sd</option>
-                <option value=2>2 sd</option>
-                <option value=1>1 sd</option>
-            </select>
-            {{else}}
-                <select id="outliers-lite">
-                <option value="all">All Data</option>
-                <option value=3 selected="selected">3 sd</option>
-                <option value=2>2 sd</option>
-                <option value=1>1 sd</option>
-            </select>
-            {{/if}}
-        </span>
-    </div>
-    <div id="QCParamGroup-gaps-item" style="background-color:lightcyan;margin-top: 1.5em;float:left;display:none;">
-        <label style="padding-left:1em;font-size:large;font-weight: normal;">QC parameters: </label>
-        <span style="font-size:large;font-weight: normal;">
-            <label style="padding-left:1em;font-size:large;font-weight: normal;">Data completeness percentage: </label>
-            <input type="number" name="quantity" id="completeness-gaps" min="0" max="100" value="{{completenessNumber}}">
-        </span>
-    </div>
+  <div
+    id="QCParamGroup-item"
+    style="background-color: lightcyan; margin-top: 1.5em; float: left; display: block"
+  >
+    <label style="padding-left: 1em; font-size: large; font-weight: normal"
+      >QC parameters:
+    </label>
+    <span style="font-size: large; font-weight: normal">
+      <label style="padding-left: 1em; font-size: large; font-weight: normal"
+        >Data completeness percentage:
+      </label>
+      <input
+        type="number"
+        name="quantity"
+        id="completeness"
+        min="0"
+        max="100"
+        value="{{completenessNumber}}"
+      />
+    </span>
+    <span style="font-size: large; font-weight: normal">
+      <label style="padding-left: 1em; font-size: large; font-weight: normal"
+        >Stdev filter level:
+      </label>
+      {{#if noQC}}
+      <select id="outliers">
+        <option value="all" selected="selected">All Data</option>
+        <option value="3">3 sd</option>
+        <option value="2">2 sd</option>
+        <option value="1">1 sd</option>
+      </select>
+      {{else}}
+      <select id="outliers">
+        <option value="all">All Data</option>
+        <option value="3" selected="selected">3 sd</option>
+        <option value="2">2 sd</option>
+        <option value="1">1 sd</option>
+      </select>
+      {{/if}}
+    </span>
+  </div>
+  <div
+    id="QCParamGroup-lite-item"
+    style="background-color: lightcyan; margin-top: 1.5em; float: left; display: none"
+  >
+    <label style="padding-left: 1em; font-size: large; font-weight: normal"
+      >QC parameters:
+    </label>
+    <span style="font-size: large; font-weight: normal">
+      <label style="padding-left: 1em; font-size: large; font-weight: normal"
+        >Stdev filter level:
+      </label>
+      {{#if noQC}}
+      <select id="outliers-lite">
+        <option value="all" selected="selected">All Data</option>
+        <option value="3">3 sd</option>
+        <option value="2">2 sd</option>
+        <option value="1">1 sd</option>
+      </select>
+      {{else}}
+      <select id="outliers-lite">
+        <option value="all">All Data</option>
+        <option value="3" selected="selected">3 sd</option>
+        <option value="2">2 sd</option>
+        <option value="1">1 sd</option>
+      </select>
+      {{/if}}
+    </span>
+  </div>
+  <div
+    id="QCParamGroup-gaps-item"
+    style="background-color: lightcyan; margin-top: 1.5em; float: left; display: none"
+  >
+    <label style="padding-left: 1em; font-size: large; font-weight: normal"
+      >QC parameters:
+    </label>
+    <span style="font-size: large; font-weight: normal">
+      <label style="padding-left: 1em; font-size: large; font-weight: normal"
+        >Data completeness percentage:
+      </label>
+      <input
+        type="number"
+        name="quantity"
+        id="completeness-gaps"
+        min="0"
+        max="100"
+        value="{{completenessNumber}}"
+      />
+    </span>
+  </div>
 </template>

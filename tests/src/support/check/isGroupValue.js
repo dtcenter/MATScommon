@@ -4,11 +4,11 @@
  * @param  {String}   the expected value
  */
 export default (name, value) => {
-    /**
-     * The selected state
-     * @type {Boolean}
-     */
-    const selector = `input[name=${name}]`;
-    const selectedValue = $(selector).getValue();
-    expect(selectedValue).toBe(value, `"${name}" should should have selected ${value}`);
+  /**
+   * The selected state
+   * @type {Boolean}
+   */
+  const selector = `input[name=${name}]`;
+  const selectedValue = $(selector).getValue();
+  expect(selectedValue).toBe(value, `"${name}" should should have selected ${value}`);
 };
