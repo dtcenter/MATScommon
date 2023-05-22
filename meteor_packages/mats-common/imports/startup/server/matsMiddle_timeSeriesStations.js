@@ -61,7 +61,10 @@ class MatsMiddleTimeSeriesStations
         {
             for (let i = 0; i < validTimes.length; i++)
             {
-                this.validTimes.push(Number(validTimes[i]));
+                if (validTimes[i] != null && Number(validTimes[i]) > 0)
+                {
+                    this.validTimes.push(Number(validTimes[i]));
+                }
             }
             console.log("validTimes:" + JSON.stringify(this.validTimes));
         }
@@ -97,7 +100,7 @@ class MatsMiddleTimeSeriesStations
             fs.writeFileSync('/Users/gopa.padmanabhan/scratch/matsMiddle/output/stats.json', JSON.stringify(this.stats, null, 2));
             fs.writeFileSync('/Users/gopa.padmanabhan/scratch/matsMiddle/output/fveObs.json', JSON.stringify(this.fveObs, null, 2));
             fs.writeFileSync('/Users/gopa.padmanabhan/scratch/matsMiddle/output/fveModels.json', JSON.stringify(this.fveModels, null, 2));
-            console.log("Output written to files: stats.json, fveObs.json, fveModels.json");
+            console.log("Output written to files: stats.json, fveObs.json,fveModels.json");
         }
 
         endTime = (new Date()).valueOf();
@@ -262,6 +265,7 @@ class MatsMiddleTimeSeriesStations
                 continue;
             }
 
+            // console.log("0-stat at imfve:" + imfve + ",fve:" + fve);
             if (this.validTimes && this.validTimes.length > 0)
             {
                 if (false == this.validTimes.includes(fve % (24 * 3600) / 3600))
@@ -269,6 +273,7 @@ class MatsMiddleTimeSeriesStations
                     continue;
                 }
             }
+            // console.log("1-stat at imfve:" + imfve + ",fve:" + fve);
 
             let stats_fve = {};
             stats_fve["avtime"] = obsSingleFve.avtime;
