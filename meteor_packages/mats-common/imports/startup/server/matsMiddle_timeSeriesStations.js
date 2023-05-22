@@ -24,7 +24,7 @@ class MatsMiddleTimeSeriesStations
         this.cbPool = cbPool;
     }
 
-    processStationQuery = (varName, stationNames, model, fcstLen, threshold, average, fromSecs, toSecs, validTimes, writeOutput) =>
+    processStationQuery = (varName, stationNames, model, fcstLen, threshold, average, fromSecs, toSecs, validTimes) =>
     {
         const Future = require('fibers/future');
 
@@ -32,14 +32,14 @@ class MatsMiddleTimeSeriesStations
         let dFuture = new Future();
         (async () =>
         {
-            rv = await this.processStationQuery_int(varName, stationNames, model, fcstLen, threshold, average, fromSecs, toSecs, validTimes, writeOutput);
+            rv = await this.processStationQuery_int(varName, stationNames, model, fcstLen, threshold, average, fromSecs, toSecs, validTimes);
             dFuture.return();
         })();
         dFuture.wait();
         return rv;
     }
 
-    processStationQuery_int = async (varName, stationNames, model, fcstLen, threshold, average, fromSecs, toSecs, validTimes, writeOutput) =>
+    processStationQuery_int = async (varName, stationNames, model, fcstLen, threshold, average, fromSecs, toSecs, validTimes) =>
     {
         let fs = require("fs");
 
@@ -88,20 +88,11 @@ class MatsMiddleTimeSeriesStations
         }
         let endTime = (new Date()).valueOf();
         console.log("\tfcstValidEpoch_Array:" + this.fcstValidEpoch_Array.length + " in " + (endTime - startTime) + " ms.");
-        // console.log( "\tfcstValidEpoch_Array:" + JSON.stringify(this.fcstValidEpoch_Array, null, 2) + " in " + (endTime - startTime) + " ms.");
 
         let prObs = this.createObsData();
         let prModel = this.createModelData();
         await Promise.all([prObs, prModel]);
         this.generateStats(threshold);
-
-        if (true === writeOutput)
-        {
-            fs.writeFileSync('/Users/gopa.padmanabhan/scratch/matsMiddle/output/stats.json', JSON.stringify(this.stats, null, 2));
-            fs.writeFileSync('/Users/gopa.padmanabhan/scratch/matsMiddle/output/fveObs.json', JSON.stringify(this.fveObs, null, 2));
-            fs.writeFileSync('/Users/gopa.padmanabhan/scratch/matsMiddle/output/fveModels.json', JSON.stringify(this.fveModels, null, 2));
-            console.log("Output written to files: stats.json, fveObs.json,fveModels.json");
-        }
 
         endTime = (new Date()).valueOf();
         console.log("\tprocessStationQuery in " + (endTime - startTime) + " ms.");
@@ -141,10 +132,6 @@ class MatsMiddleTimeSeriesStations
         {
             let fveArraySlice = this.fcstValidEpoch_Array.slice(iofve, iofve + 100);
             let sql = tmplWithStationNames_obs.replace(/{{fcstValidEpoch}}/g, JSON.stringify(fveArraySlice));
-            if (iofve === 0)
-            {
-                fs.writeFileSync('/Users/gopa.padmanabhan/scratch/matsMiddle/output/obs.sql', sql);
-            }
             let prSlice = this.conn.cluster.query(sql);
             promises.push(prSlice);
             prSlice.then((qr) =>
@@ -211,10 +198,6 @@ class MatsMiddleTimeSeriesStations
         {
             let fveArraySlice = this.fcstValidEpoch_Array.slice(imfve, imfve + 100);
             let sql = tmplWithStationNames_models.replace(/{{fcstValidEpoch}}/g, JSON.stringify(fveArraySlice));
-            if (imfve === 0)
-            {
-                fs.writeFileSync('/Users/gopa.padmanabhan/scratch/matsMiddle/output/model.sql', sql);
-            }
             let prSlice = this.conn.cluster.query(sql);
 
             promises.push(prSlice);
@@ -223,7 +206,6 @@ class MatsMiddleTimeSeriesStations
                 for (let jmfve = 0; jmfve < qr.rows.length; jmfve++)
                 {
                     let fveDataSingleEpoch = qr.rows[jmfve];
-                    // console.log("mfveData:\n" + JSON.stringify(mfveData, null, 2));
                     let dataSingleEpoch = {};
                     let stationsSingleEpoch = {};
                     for (let i = 0; i < this.stationNames.length; i++)
@@ -261,11 +243,9 @@ class MatsMiddleTimeSeriesStations
 
             if (!obsSingleFve || !modelSingleFve)
             {
-                // console.log("no data for fve:" + fve + ",obsSingleFve:"+ obsSingleFve + ",modelSingleFve:" + modelSingleFve);
                 continue;
             }
 
-            // console.log("0-stat at imfve:" + imfve + ",fve:" + fve);
             if (this.validTimes && this.validTimes.length > 0)
             {
                 if (false == this.validTimes.includes(fve % (24 * 3600) / 3600))
@@ -273,7 +253,6 @@ class MatsMiddleTimeSeriesStations
                     continue;
                 }
             }
-            // console.log("1-stat at imfve:" + imfve + ",fve:" + fve);
 
             let stats_fve = {};
             stats_fve["avtime"] = obsSingleFve.avtime;
@@ -291,17 +270,8 @@ class MatsMiddleTimeSeriesStations
                 let varVal_o = obsSingleFve.stations[station];
                 let varVal_m = modelSingleFve.stations[station];
 
-                if (fve === 1662508800)
-                {
-                    // console.log("obsSingleFve:" + JSON.stringify(obsSingleFve, null, 2));
-                    // console.log("modelSingleFve:" + JSON.stringify(modelSingleFve, null, 2));
-                }
-                // console.log("obs_mfve[mfveVal]:" + JSON.stringify(obs_mfve[mfveVal]) + ":stationNames[i]:" + stationNames[i] + ":" + obs_mfve[mfveVal][stationNames[i]]);
-
                 if (varVal_o && varVal_m)
                 {
-                    // console.log("varVal_o:" + varVal_o + ",varVal_m:" + varVal_m);
-
                     stats_fve["N0"] = stats_fve["N0"] + 1;
                     let sub = fve + ';';
                     if (varVal_o < threshold && varVal_m < threshold)
@@ -314,10 +284,6 @@ class MatsMiddleTimeSeriesStations
                         sub += "0;";
                     }
 
-                    if (fve === 1662508800)
-                    {
-                        // console.log("station:" + station + ",varVal_o:" + varVal_o + ",varVal_m:" + varVal_m);
-                    }
                     if (varVal_o >= threshold && varVal_m < threshold)
                     {
                         stats_fve["fa"] = stats_fve["fa"] + 1;
