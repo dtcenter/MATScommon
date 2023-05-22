@@ -31,7 +31,9 @@
                         </td>
                         <td colspan="12" style="padding: 0;vertical-align:top;">
                             <div id="{{userName}}" style="background-color:#d4f6fb; display:none;">
-                                <table id="{{userName}}-Table" class="table table-condensed table-responsive table-bordered table-sm" cellspacing="0">
+                                <table id="{{userName}}-Table"
+                                    class="table table-condensed table-responsive table-bordered table-sm"
+                                    cellspacing="0">
                                     <tbody>
                                         {{#each name in names userName}}
                                         <tr style="padding: 0;">
@@ -56,18 +58,32 @@
                                                         </thead>
                                                         <tbody>
                                                             {{#each submitted in submittedTimes userName name}}
-                                                                {{#each processedAt in processedAtTimes userName name submitted}}
-                                                                <tr class={{statusType userName name submitted processedAt}}>
-                                                                    <td>{{timeStr submitted}}</td>
-                                                                    <td>{{timeStr processedAt}}</td>
-                                                                    <td>{{status userName name submitted processedAt}}</td>
-                                                                    <td><a href="{{visitLink userName name submitted processedAt}}"
-                                                                            target="_blank">display</a></td>
-                                                                    <td><button type="button" class="btn btn-danger btn-xs drop-sc-instance" id="{{scid userName name submitted processedAt}}"
-                                                                        data-user_name="{{userName}}" data-name="{{name}}" data-submit_time="{{submitted}}"
-                                                                        data-run_time="{{processedAt}}">Drop</button></td>
-                                                                </tr>
-                                                                {{/each}}
+                                                            {{#each processedAt in processedAtTimes userName name submitted}}
+                                                            <tr
+                                                                class={{statusType userName name submitted processedAt}}>
+                                                                <td>{{timeStr submitted}}</td>
+                                                                <td>{{timeStr processedAt}}</td>
+                                                                <td>{{status userName name submitted processedAt}}</td>
+                                                                <td><a href="{{visitLink userName name submitted processedAt}}"
+                                                                        target="_blank">display</a></td>
+                                                                <td><button type="button"
+                                                                        class="btn btn-danger btn-xs drop-sc-instance"
+                                                                        id="{{scid userName name submitted processedAt}}"
+                                                                        data-user_name="{{userName}}"
+                                                                        data-name="{{name}}"
+                                                                        data-submit_time="{{submitted}}"
+                                                                        data-run_time="{{processedAt}}">Drop</button>
+                                                                </td>
+                                                                <td><button type="button"
+                                                                        class="btn btn-success btn-xs restore-sc-instance"
+                                                                        id="{{scid userName name submitted processedAt}}"
+                                                                        data-user_name="{{userName}}"
+                                                                        data-name="{{name}}"
+                                                                        data-submit_time="{{submitted}}"
+                                                                        data-run_time="{{processedAt}}">Restore Settings</button>
+                                                                </td>
+                                                            </tr>
+                                                            {{/each}}
                                                             {{/each}}
                                                         </tbody>
                                                     </table>

@@ -47,8 +47,8 @@ function getprocessedAtsForUserName(userName, name){
     return processedAts;
 }
 
-
-Template.scorecardStatusPage.created = function (){
+function refreshPage() {
+    // refresh the page
     matsMethods.getScorecardInfo.call(function (error, ret) {
         if (error !== undefined) {
             setError(error);
@@ -56,18 +56,24 @@ Template.scorecardStatusPage.created = function (){
             Session.set("updateStatusPage", ret);
         }
     });
+}
+
+Template.scorecardStatusPage.created = function (){
+    refreshPage();
+    const cursor = matsCollections.Scorecard.find({}).observeChanges({
+        added(id, fields) {
+            refreshPage();
+        },
+        changed(id, fields) {
+            refreshPage();
+        }
+    });
 };
 
 Template.scorecardStatusPage.helpers({
     refresh: function(){
         if (Session.get("updateStatusPage") === undefined || typeof Session.get("updateStatusPage") === "number"){
-            matsMethods.getScorecardInfo.call(function (error, ret) {
-                if (error !== undefined) {
-                    setError(error);
-                } else {
-                    Session.set("updateStatusPage", ret);
-                }
-            });
+            refreshPage();
         }
     },
     image: function () {
@@ -135,13 +141,7 @@ Template.scorecardStatusPage.events({
         return false;
     },
     'click .refresh-scorecard': function(event) {
-        matsMethods.getScorecardInfo.call(function (error, ret) {
-            if (error !== undefined) {
-                setError(error);
-            } else {
-                Session.set("updateStatusPage", ret);
-            }
-        });
+        refreshPage();
     },
     'click .userName-control': function(event) {
         toggleDisplay(event.currentTarget.attributes['data-target'].value);
@@ -159,15 +159,33 @@ Template.scorecardStatusPage.events({
             if (error !== undefined) {
                 setError(error);
             } else {
-                // refresh the list
-                matsMethods.getScorecardInfo.call(function (error, ret) {
-                    if (error !== undefined) {
-                        setError(error);
-                    } else {
-                        Session.set("updateStatusPage", ret);
-                    }
-                });
+                // refresh the page
+                refreshPage();
             }
         });
+    },
+    'click .restore-sc-instance': function(e) {
+        const userName=e.currentTarget.dataset.user_name;
+        const name=e.currentTarget.dataset.name;
+        const submitted=e.currentTarget.dataset.submit_time;
+        const processedAt=e.currentTarget.dataset.run_time;
+
+        matsMethods.getPlotParamsFromScorecardInstance.call({userName:userName,name:name,submitted:submitted,processedAt:processedAt}, function (error, ret) {
+            if (error !== undefined) {
+                setError(error);
+            } else {
+                plotParams = ret
+                matsPlotUtils.enableActionButtons();
+                matsGraphUtils.setDefaultView();
+                matsCurveUtils.resetPlotResultData();
+                let p = { data: {} };
+                p.data = plotParams.plotParams;
+                p.data['paramData'] = {};
+                p.data['paramData']["curveParams"] = plotParams.plotParams.curves;
+                p.data['paramData']["plotParams"] = plotParams.plotParams;
+                matsPlotUtils.restoreSettings(p);
+            }
+        });
+        return false;
     },
 });

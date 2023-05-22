@@ -415,6 +415,18 @@ if (Meteor.isServer) {
     Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/refreshScorecard/:docId', function (params, req, res, next) {
         Picker.middleware(_refreshScorecard(params, req, res, next));
     });
+
+    Picker.route('/setStatusScorecard/:docId', function (params, req, res, next) {
+        Picker.middleware(_setStatusScorecard(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/setStatusScorecard/:docId', function (params, req, res, next) {
+        Picker.middleware(_setStatusScorecard(params, req, res, next));
+    });
+
+    Picker.route(Meteor.settings.public.proxy_prefix_path + '/:app/setStatusScorecard/:docId', function (params, req, res, next) {
+        Picker.middleware(_setStatusScorecard(params, req, res, next));
+    });
 }
 
 // private - used to see if the main page needs to update its selectors
@@ -1690,6 +1702,44 @@ const _refreshScorecard = function(params, req, res, next) {
     }
 };
 
+const _setStatusScorecard = function(params, req, res, next) {
+    if (Meteor.isServer) {
+        let docId = decodeURIComponent(params.docId)
+        var body = "";
+        req.on('data', Meteor.bindEnvironment(function (data) {
+            body += data;
+        }));
+
+        req.on('end', Meteor.bindEnvironment(function () {
+            //console.log(body);
+            try {
+                let doc = JSON.parse(body);
+                let status = doc.status;
+                let error = doc.error;
+                let found = matsCollections.Scorecard.find({ id: docId }).fetch();
+                if (found.length === 0) {
+                    throw new Error("Error from scorecard lookup - document not found");
+                }
+                matsCollections.Scorecard.upsert({
+                    'id': docId,
+                }, {
+                    $set: {
+                        status: status
+                    }
+                });
+                // set error if there is one somehow. (use the session?)
+                res.end("<body><h1>setScorecardStatus Done!</h1></body>");
+            } catch (err) {
+                res.statusCode = 400;
+                res.end("<body>" +
+                "<h1>setScorecardStatus Failed!</h1>" +
+                "<p>" + err.message + "</p>" +
+                "</body>");
+            }
+        }));
+     }
+};
+
 // private save the result from the query into mongo and downsample if that result's size is greater than 1.2Mb
 const _saveResultData = function (result) {
     if (Meteor.isServer) {
@@ -1858,7 +1908,7 @@ const _getScorecardData = async function (userName, name, submitted, processedAt
                 AND sc.name='` + name + `'
                 AND sc.processedAt=` + processedAt + `
                 AND sc.submitted=` + submitted + `;`
-        const result = await cbScorecardPool.queryCB(statement);
+        const result = await cbScorecardPool.queryCBWithConsistency(statement);
         if (typeof (result) === 'string' && result.indexOf('ERROR')) {
             throw new Meteor.Error(result);
         }
@@ -1941,6 +1991,34 @@ const _getScorecardInfo = async function () {
         }
     }
 };
+
+const _getPlotParamsFromScorecardInstance = async function (userName, name, submitted, processedAt) {
+    try {
+        if (cbScorecardPool === undefined) {
+            throw new Meteor.Error("_getScorecardInfo: No cbScorecardPool defined");
+        }
+        const statement = `SELECT sc.plotParams
+            From
+                vxdata._default.SCORECARD sc
+            WHERE
+                sc.type='SC'
+                AND sc.userName='` + userName + `'
+                AND sc.name='` + name + `'
+                AND sc.processedAt=` + processedAt + `
+                AND sc.submitted=` + submitted + `;`
+        const result = await cbScorecardPool.queryCBWithConsistency(statement);
+        if (typeof (result) === 'string' && result.indexOf('ERROR')) {
+            throw new Meteor.Error(result);
+        }
+        return result[0];
+    } catch (err) {
+        console.log("_getPlotParamsFromScorecardInstance error : " + err.message);
+        return {
+            "error": err.message
+        }
+    }
+};
+
 
 // PUBLIC METHODS
 //administration tools
@@ -2434,6 +2512,32 @@ const getScorecardSettings = new ValidatedMethod({
     }
 });
 
+const getPlotParamsFromScorecardInstance = new ValidatedMethod({
+    name: 'matsMethods.getPlotParamsFromScorecardInstance',
+    validate: new SimpleSchema({
+        userName: {
+            type: String
+        },
+        name: {
+            type: String
+        },
+        submitted: {
+            type: String
+        },
+        processedAt: {
+            type: String
+        }
+    }).validator(),
+    run(params) {
+        try {
+            if (Meteor.isServer) {
+                return _getPlotParamsFromScorecardInstance(params.userName, params.name, params.submitted, params.processedAt);
+            }
+        } catch (error) {
+            throw new Meteor.Error("Error in getPlotParamsFromScorecardInstance function:" + error.message);
+        }
+    }
+});
 
 /*
 getPlotResult is used by the graph/text_*_output templates which are used to display textual results.
@@ -3212,11 +3316,12 @@ export default matsMethods = {
     getGraphData: getGraphData,
     getGraphDataByKey: getGraphDataByKey,
     getLayout: getLayout,
-    getScorecardSettings: getScorecardSettings,
+    getPlotParamsFromScorecardInstance: getPlotParamsFromScorecardInstance,
     getPlotResult: getPlotResult,
     getReleaseNotes: getReleaseNotes,
     getScorecardInfo: getScorecardInfo,
     getScorecardData: getScorecardData,
+    getScorecardSettings: getScorecardSettings,
     getUserAddress: getUserAddress,
     insertColor: insertColor,
     readFunctionFile: readFunctionFile,
