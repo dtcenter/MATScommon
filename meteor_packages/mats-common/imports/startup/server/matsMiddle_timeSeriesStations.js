@@ -54,7 +54,6 @@ class MatsMiddleTimeSeriesStations
         this.average = average;
         this.fromSecs = fromSecs;
         this.toSecs = toSecs;
-        this.writeOutput = writeOutput;
 
         this.average = this.average.replace(/m0./g, "");
         if (validTimes && validTimes.length > 0)
