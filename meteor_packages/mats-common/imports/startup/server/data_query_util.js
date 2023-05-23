@@ -324,7 +324,6 @@ const queryDBTimeSeriesMT = function (
     var N_times = [];
     let parsedData;
 
-    console.log(`queryDBTimeSeriesMT rows:${rows.length}`);
     if (rows === undefined || rows === null || rows.length === 0) {
       error = matsTypes.Messages.NO_DATA_FOUND;
     } else {
@@ -1287,7 +1286,6 @@ const parseQueryDataXYCurve = function (
   cycles,
   regular
 ) {
-  console.log(`parseQueryDataXYCurve(), rows:${rows.length}`);
   /*
         var d = {   // d will contain the curve data
             x: [],
@@ -1349,7 +1347,6 @@ const parseQueryDataXYCurve = function (
   const subLevs = [];
   let time_interval;
 
-  console.log("parseQueryDataXYCurve()-0");
   for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
     var independentVar;
     switch (plotType) {
@@ -1732,7 +1729,6 @@ const parseQueryDataXYCurve = function (
       subLevs.push(sub_levs);
     }
   }
-  console.log("parseQueryDataXYCurve()-1");
 
   const N0_max = Math.max(...N0);
   const N_times_max = Math.max(...N_times);
@@ -1820,7 +1816,6 @@ const parseQueryDataXYCurve = function (
       depVarMax = curveStats[d_idx] > depVarMax ? curveStats[d_idx] : depVarMax;
     }
   }
-  console.log("parseQueryDataXYCurve()-2");
 
   // add in any missing times in the time series
   if (plotType === matsTypes.PlotTypes.timeSeries && !hideGaps) {
@@ -1899,7 +1894,6 @@ const parseQueryDataXYCurve = function (
   }
 
   d.sum = sum;
-  console.log("parseQueryDataXYCurve()-3");
 
   return {
     d,
