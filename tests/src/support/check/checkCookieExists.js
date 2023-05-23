@@ -5,21 +5,21 @@
  *                              not
  */
 export default (name, falseCase) => {
-    /**
-     * The cookie as retrieved from the browser
-     * @type {Object}
-     */
-    const cookie = browser.getCookies(name);
+  /**
+   * The cookie as retrieved from the browser
+   * @type {Object}
+   */
+  const cookie = browser.getCookies(name);
 
-    if (falseCase) {
-        expect(cookie).toHaveLength(
-            0,
-            `Expected cookie "${name}" not to exists but it does`
-        );
-    } else {
-        expect(cookie).not.toHaveLength(
-            0,
-            `Expected cookie "${name}" to exists but it does not`
-        );
-    }
+  if (falseCase) {
+    expect(cookie).toHaveLength(
+      0,
+      `Expected cookie "${name}" not to exists but it does`
+    );
+  } else {
+    expect(cookie).not.toHaveLength(
+      0,
+      `Expected cookie "${name}" to exists but it does not`
+    );
+  }
 };

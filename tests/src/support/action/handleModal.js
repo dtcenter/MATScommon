@@ -4,18 +4,18 @@
  * @param  {String}   modalType Type of modal (alertbox, confirmbox, prompt)
  */
 export default (action, modalType) => {
-    /**
-     * The command to perform on the browser object
-     * @type {String}
-     */
-    let command = `${action.slice(0, 1).toLowerCase()}${action.slice(1)}Alert`;
+  /**
+   * The command to perform on the browser object
+   * @type {String}
+   */
+  let command = `${action.slice(0, 1).toLowerCase()}${action.slice(1)}Alert`;
 
-    /**
-     * Alert boxes can't be dismissed, this causes Chrome to crash during tests
-     */
-    if (modalType === 'alertbox') {
-        command = 'acceptAlert';
-    }
+  /**
+   * Alert boxes can't be dismissed, this causes Chrome to crash during tests
+   */
+  if (modalType === "alertbox") {
+    command = "acceptAlert";
+  }
 
-    browser[command]();
+  browser[command]();
 };

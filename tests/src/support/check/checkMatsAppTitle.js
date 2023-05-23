@@ -3,21 +3,21 @@
  * @param  {String}   title the selection parameter
  */
 export default (title) => {
-    const command = 'getText';
+  const command = "getText";
 
-    /**
-     * The expected text
-     * @type {String}
-     */
-    const stringExpectedText = title;
+  /**
+   * The expected text
+   * @type {String}
+   */
+  const stringExpectedText = title;
 
-    /**
-     * The text of the element
-     * @type {String}
-     */
-    const elem = $('#plotType');
-    elem.waitForDisplayed();
-    const text = elem[command]();
+  /**
+   * The text of the element
+   * @type {String}
+   */
+  const elem = $("#plotType");
+  elem.waitForDisplayed();
+  const text = elem[command]();
 
-    expect(text).toContain(stringExpectedText);
+  expect(text).toContain(stringExpectedText);
 };

@@ -3,5 +3,5 @@
  * @param  {String}   key  The key to press
  */
 export default (key) => {
-    browser.keys(key);
+  browser.keys(key);
 };

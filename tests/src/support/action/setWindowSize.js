@@ -4,8 +4,5 @@
  * @param  {String}   screenHeight The height of the window to resize to
  */
 export default (screenWidth, screenHeight) => {
-    browser.setWindowSize(
-        parseInt(screenWidth, 10),
-        parseInt(screenHeight, 10)
-    );
+  browser.setWindowSize(parseInt(screenWidth, 10), parseInt(screenHeight, 10));
 };
