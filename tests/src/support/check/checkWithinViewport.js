@@ -5,21 +5,21 @@
  *                              within the current viewport or not
  */
 export default (selector, falseCase) => {
-    /**
-     * The state of visibility of the given element inside the viewport
-     * @type {Boolean}
-     */
-    const isDisplayed = $(selector).isDisplayedInViewport();
+  /**
+   * The state of visibility of the given element inside the viewport
+   * @type {Boolean}
+   */
+  const isDisplayed = $(selector).isDisplayedInViewport();
 
-    if (falseCase) {
-        expect(isDisplayed).not.toEqual(
-            true,
-            `Expected element "${selector}" to be outside the viewport`
-        );
-    } else {
-        expect(isDisplayed).toEqual(
-            true,
-            `Expected element "${selector}" to be inside the viewport`
-        );
-    }
+  if (falseCase) {
+    expect(isDisplayed).not.toEqual(
+      true,
+      `Expected element "${selector}" to be outside the viewport`
+    );
+  } else {
+    expect(isDisplayed).toEqual(
+      true,
+      `Expected element "${selector}" to be inside the viewport`
+    );
+  }
 };

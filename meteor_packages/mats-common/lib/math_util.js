@@ -1,4 +1,3 @@
-
 /*
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
@@ -6,111 +5,95 @@
 /*
 generic Math Functions
  */
-var isNum = function (args)
-{
-    if (args === null || args === undefined) {
-        return false;
-    }
-    args = args.toString();
-    if (args.length === 0) return false;
+const isNum = function (args) {
+  if (args === null || args === undefined) {
+    return false;
+  }
+  args = args.toString();
+  if (args.length === 0) return false;
 
-    for (var i = 0;  i<args.length;  i++)
-    {
-        if ((args.substring(i,i+1) < "0" || args.substring(i, i+1) > "9") && args.substring(i, i+1) !== "."&& args.substring(i, i+1) !== "-")
-        {
-            return false;
-        }
+  for (let i = 0; i < args.length; i++) {
+    if (
+      (args.substring(i, i + 1) < "0" || args.substring(i, i + 1) > "9") &&
+      args.substring(i, i + 1) !== "." &&
+      args.substring(i, i + 1) !== "-"
+    ) {
+      return false;
     }
+  }
 
-    return true;
+  return true;
 };
 
-var mean = function (arr)
-{
-    var len = 0;
-    var sum = 0;
+const mean = function (arr) {
+  let len = 0;
+  let sum = 0;
 
-    for(var i=0;i<arr.length;i++)
-    {
-        if (arr[i] === ""){}
-        else if (!isNum(arr[i]))
-        {
-            //alert(arr[i] + " is not number!");
-            console.log("Error: value at position: " + i + " is not number! Mean Calculation failed!" );
-            return 0;
-        }
-        else
-        {
-            len = len + 1;
-            sum = sum + parseFloat(arr[i]);
-        }
+  for (let i = 0; i < arr.length; i++) {
+    if (arr[i] === "") {
+    } else if (!isNum(arr[i])) {
+      // alert(arr[i] + " is not number!");
+      console.log(
+        `Error: value at position: ${i} is not number! Mean Calculation failed!`
+      );
+      return 0;
+    } else {
+      len += 1;
+      sum += parseFloat(arr[i]);
     }
-    return sum / len;
+  }
+  return sum / len;
 };
 
-var variance = function (arr)
-{
-    var len = 0;
-    var sum=0;
-    for(var i=0;i<arr.length;i++)
-    {
-        if (arr[i] === ""){}
-        else if (!isNum(arr[i]))
-        {
-            //alert(arr[i] + " is not number, Variance Calculation failed!");
-            console.log ("value at position " + i + " is not number, Variance Calculation failed!");
-            return 0;
-        }
-        else
-        {
-            len = len + 1;
-            sum = sum + parseFloat(arr[i]);
-        }
+const variance = function (arr) {
+  let len = 0;
+  let sum = 0;
+  for (var i = 0; i < arr.length; i++) {
+    if (arr[i] === "") {
+    } else if (!isNum(arr[i])) {
+      // alert(arr[i] + " is not number, Variance Calculation failed!");
+      console.log(`value at position ${i} is not number, Variance Calculation failed!`);
+      return 0;
+    } else {
+      len += 1;
+      sum += parseFloat(arr[i]);
+    }
+  }
+
+  let v = 0;
+  if (len > 1) {
+    const mean = sum / len;
+    for (var i = 0; i < arr.length; i++) {
+      if (arr[i] === "") {
+      } else {
+        v += (arr[i] - mean) * (arr[i] - mean);
+      }
     }
 
-    var v = 0;
-    if (len > 1)
-    {
-        var mean = sum / len;
-        for(var i=0;i<arr.length;i++)
-        {
-            if (arr[i] === ""){}
-            else
-            {
-                v = v + (arr[i] - mean) * (arr[i] - mean);
-            }
-        }
-
-        return v / len;
-    }
-    else
-    {
-        return 0;
-    }
+    return v / len;
+  }
+  return 0;
 };
 
+const median = function (arr) {
+  arr.sort(function (a, b) {
+    return a - b;
+  });
 
-var median = function (arr)
-{
-    arr.sort(function(a,b){return a-b});
+  let median = 0;
 
-    var median = 0;
+  if (arr.length % 2 === 1) {
+    median = arr[(arr.length + 1) / 2 - 1];
+  } else {
+    median = (1 * arr[arr.length / 2 - 1] + 1 * arr[arr.length / 2]) / 2;
+  }
 
-    if (arr.length % 2 === 1)
-    {
-        median = arr[(arr.length+1)/2 - 1];
-    }
-    else
-    {
-        median = (1 * arr[arr.length/2 - 1] + 1 * arr[arr.length/2] )/2;
-    }
-
-    return median
+  return median;
 };
 
 export default matsMathUtils = {
-    isNum:isNum,
-    mean:mean,
-    variance:variance,
-    median:median
-}
+  isNum,
+  mean,
+  variance,
+  median,
+};

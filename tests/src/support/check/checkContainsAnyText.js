@@ -6,40 +6,37 @@
  *                                  text or not
  */
 export default (elementType, selector, falseCase) => {
-    /**
-     * The command to perform on the browser object
-     * @type {String}
-     */
-    let command = 'getValue';
+  /**
+   * The command to perform on the browser object
+   * @type {String}
+   */
+  let command = "getValue";
 
-    if (
-        elementType === 'button'
-        || $(selector).getAttribute('value') === null
-    ) {
-        command = 'getText';
-    }
+  if (elementType === "button" || $(selector).getAttribute("value") === null) {
+    command = "getText";
+  }
 
-    /**
-     * False case
-     * @type {Boolean}
-     */
-    let boolFalseCase;
+  /**
+   * False case
+   * @type {Boolean}
+   */
+  let boolFalseCase;
 
-    /**
-     * The text of the element
-     * @type {String}
-     */
-    const text = $(selector)[command]();
+  /**
+   * The text of the element
+   * @type {String}
+   */
+  const text = $(selector)[command]();
 
-    if (typeof falseCase === 'undefined') {
-        boolFalseCase = false;
-    } else {
-        boolFalseCase = !!falseCase;
-    }
+  if (typeof falseCase === "undefined") {
+    boolFalseCase = false;
+  } else {
+    boolFalseCase = !!falseCase;
+  }
 
-    if (boolFalseCase) {
-        expect(text).toBe('');
-    } else {
-        expect(text).not.toBe('');
-    }
+  if (boolFalseCase) {
+    expect(text).toBe("");
+  } else {
+    expect(text).not.toBe("");
+  }
 };

@@ -2,14 +2,14 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-setStatus = function(status){
-    Session.set('statusMessage', status );
+setStatus = function (status) {
+  Session.set("statusMessage", status);
 };
 
-clearStatus = function(status){
-    Session.set('statusMessage', '');
+clearStatus = function (status) {
+  Session.set("statusMessage", "");
 };
 
-getStatus = function() {
-    return Session.get('statusMessage');
+getStatus = function () {
+  return Session.get("statusMessage");
 };
