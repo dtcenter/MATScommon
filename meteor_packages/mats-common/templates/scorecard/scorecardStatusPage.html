@@ -95,11 +95,7 @@
                               {{#each processedAt in processedAtTimes userName name
                               submitted}}
                               <tr
-                                class="{{statusType"
-                                userName
-                                name
-                                submitted
-                                processedAt}}
+                                class="{{statusType userName name submitted processedAt}}"
                               >
                                 <td>{{timeStr submitted}}</td>
                                 <td>{{timeStr processedAt}}</td>

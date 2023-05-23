@@ -43,15 +43,14 @@
         </small>
       </h4>
       {{#each scatter2dOptions}}
+      <!-- prettier-ignore -->
       <input
         class="data-input {{className ..}}"
-        type="{{type"
-        ..}}
+        type="{{type ..}}"
         name="{{name ..}}"
         id="{{idOption ..}}"
         value="{{this}}"
-        {{isDefault
-        ..}}
+        {{isDefault ..}}
       />
       <label for="{{idParam ..}}">{{label this ..}}</label>
       {{/each}} {{/if}}
