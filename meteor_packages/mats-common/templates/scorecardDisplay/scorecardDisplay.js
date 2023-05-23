@@ -184,6 +184,9 @@ const hideLoading = function () {
 
 Template.ScorecardDisplay.onRendered(function () {
   //  onVisible(document.querySelector("#scorecard-display-container"), hideLoading());
+  $(document).ready(function(){
+    $('[data-toggle="tooltip"]').tooltip();
+  });
   refreshScorecard(this.data.userName, this.data.name, this.data.submitted, this.data.processedAt);
 });
 
@@ -283,8 +286,9 @@ Template.ScorecardDisplay.helpers({
     //un padd the possibly padded fcstlen
     let fcstlenStr = Number(fcstlen) + '';
     const sigVal =
-      myScorecard['scorecard']['results']['blocks'][blockName]['data'][region][stat][variable]
-          [threshold][level][fcstlenStr];
+      typeof myScorecard['scorecard']['results']['blocks'][blockName]['data'][region][stat][variable][threshold][level][fcstlenStr] === "object" ?
+        myScorecard['scorecard']['results']['blocks'][blockName]['data'][region][stat][variable][threshold][level][fcstlenStr]['Value'] :
+        myScorecard['scorecard']['results']['blocks'][blockName]['data'][region][stat][variable][threshold][level][fcstlenStr];
     let icon;
     let color;
     switch(sigVal) {
@@ -329,9 +333,13 @@ Template.ScorecardDisplay.helpers({
     }
     //un padd the possibly padded fcstlen
     let fcstlenStr = Number(fcstlen) + '';
+    // the value of the significance can be an object or an integer depending on if the scorecard was recently processed
+    // newer scorecards have an object with the value and the other data associated with the significance - which is used
+    // to form a tooltip
     const sigVal =
-        myScorecard['scorecard']['results']['blocks'][blockName]['data'][region][stat][variable]
-            [threshold][level][fcstlenStr];
+      typeof myScorecard['scorecard']['results']['blocks'][blockName]['data'][region][stat][variable][threshold][level][fcstlenStr] === "object" ?
+        myScorecard['scorecard']['results']['blocks'][blockName]['data'][region][stat][variable][threshold][level][fcstlenStr]['Value'] :
+        myScorecard['scorecard']['results']['blocks'][blockName]['data'][region][stat][variable][threshold][level][fcstlenStr];
     switch(sigVal) {
       case -2:
         return LightenDarkenColor(
@@ -360,6 +368,29 @@ Template.ScorecardDisplay.helpers({
         return 'white';
     }
   },
+  tooltip: function (blockName, region, stat, variable, threshold, level, fcstlen) {
+    let myScorecard = Session.get('myScorecard');
+    if (myScorecard === undefined) {
+      return "";
+    }
+    //un padd the possibly padded fcstlen
+    let fcstlenStr = Number(fcstlen) + '';
+    let tooltip = "";
+    let gp = myScorecard['scorecard']['results']['blocks'][blockName]['data'][region][stat][variable][threshold][level][fcstlenStr]['GoodnessPolarity'] === 1 ? "positive" : "negative";
+    if (typeof myScorecard['scorecard']['results']['blocks'][blockName]['data'][region][stat][variable][threshold][level][fcstlenStr] === "object") {
+      tooltip = "Value:" + myScorecard['scorecard']['results']['blocks'][blockName]['data'][region][stat][variable][threshold][level][fcstlenStr]['Value'] + "\n" +
+        "Path:" + myScorecard['scorecard']['results']['blocks'][blockName]['data'][region][stat][variable][threshold][level][fcstlenStr]['Path'] + "\n" +
+        "MajorThreshold:" + myScorecard['scorecard']['results']['blocks'][blockName]['data'][region][stat][variable][threshold][level][fcstlenStr]['MajorThreshold'] + "\n" +
+        "MinorThreshold:" + myScorecard['scorecard']['results']['blocks'][blockName]['data'][region][stat][variable][threshold][level][fcstlenStr]['MinorThreshold'] + "\n" +
+        "StatisticType:" + String(myScorecard['scorecard']['results']['blocks'][blockName]['data'][region][stat][variable][threshold][level][fcstlenStr]['StatisticType']) + "\n" +
+        "Pvalue:" + myScorecard['scorecard']['results']['blocks'][blockName]['data'][region][stat][variable][threshold][level][fcstlenStr]['Pvalue'] + "\n" +
+        "GoodnessPolarity:" + gp;
+      } else {
+      tooltip = String(myScorecard['scorecard']['results']['blocks'][blockName]['data'][region][stat][variable][threshold][level][fcstlenStr]);
+    }
+    return tooltip;
+  },
+
   stats: function (blockName) {
     // return a distinct list of all the possible stats
     return getAllStats(blockName);
