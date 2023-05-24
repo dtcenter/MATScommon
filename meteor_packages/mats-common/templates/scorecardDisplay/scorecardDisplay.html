@@ -155,6 +155,9 @@
                   {{#each fcstlen in fcstlens scorecardBlock}}
                   <td
                     class="scTableSigTd"
+                    data-toggle="tooltip"
+                    data-placement="right"
+                    title="{{tooltip scorecardBlock region stat variable threshold level fcstlen}}"
                     id="{{sigIconId scorecardBlock region stat variable threshold level fcstlen}}"
                     data-scorecardBlock="{{scorecardBlock}}"
                     data-region="{{region}}"
