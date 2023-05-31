@@ -1,7 +1,7 @@
 import { matsTypes, matsDataQueryUtils } from "meteor/randyp:mats-common";
 import { Meteor } from "meteor/meteor";
 
-class MatsMiddleTimeSeriesStations
+class MatsMiddleDieOffStations
 {
   fcstValidEpoch_Array = [];
 
@@ -13,7 +13,7 @@ class MatsMiddleTimeSeriesStations
 
   fveModels = {};
 
-  stats = [];
+  ctc = [];
 
   varName = null;
 
@@ -75,51 +75,12 @@ class MatsMiddleTimeSeriesStations
     return rv;
   };
 
-  // this method queries the database for timeseries plots
-  queryDBTimeSeriesMatsMiddle = (
-    pool,
-    rows,
-    dataSource,
-    forecastOffset,
-    startDate,
-    endDate,
-    averageStr,
-    statisticStr,
-    validTimes,
-    appParams,
-    forceRegularCadence
-  ) =>
+  // this method queries the database for specialty curves such as profiles, dieoffs, threshold plots, valid time plots, grid scale plots, and histograms
+  queryDBSpecialtyCurveMatsMiddle = (pool, rows, appParams, statisticStr) =>
   {
     if (Meteor.isServer)
     {
-      // upper air is only verified at 00Z and 12Z, so you need to force irregular models to verify at that regular cadence
-      let cycles = matsDataQueryUtils.getModelCadence(pool, dataSource, startDate, endDate); // if irregular model cadence, get cycle times. If regular, get empty array.
-      if (validTimes.length > 0 && validTimes !== matsTypes.InputTypes.unused)
-      {
-        if (typeof validTimes === "string" || validTimes instanceof String)
-        {
-          validTimes = validTimes.split(",");
-        }
-        let vtCycles = validTimes.map(function (x)
-        {
-          return (Number(x) - forecastOffset) * 3600 * 1000;
-        }); // selecting validTimes makes the cadence irregular
-        vtCycles = vtCycles.map(function (x)
-        {
-          return x < 0 ? x + 24 * 3600 * 1000 : x;
-        }); // make sure no cycles are negative
-        vtCycles = vtCycles.sort(function (a, b)
-        {
-          return Number(a) - Number(b);
-        }); // sort 'em
-        cycles = cycles.length > 0 ? _.intersection(cycles, vtCycles) : vtCycles; // if we already had cycles get the ones that correspond to valid times
-      }
-      const regular =
-        forceRegularCadence ||
-        averageStr !== "None" ||
-        !(cycles !== null && cycles.length > 0); // If curves have averaging, the cadence is always regular, i.e. it's the cadence of the average
-
-      var d = {
+      let d = {
         // d will contain the curve data
         x: [],
         y: [],
@@ -147,37 +108,37 @@ class MatsMiddleTimeSeriesStations
         n_simple: [],
         n_total: [],
         glob_stats: {},
+        bin_stats: [],
         xmin: Number.MAX_VALUE,
         xmax: Number.MIN_VALUE,
         ymin: Number.MAX_VALUE,
         ymax: Number.MIN_VALUE,
         sum: 0,
       };
-      var error = "";
-      var N0 = [];
-      var N_times = [];
+      let error = "";
+      let N0 = [];
+      let N_times = [];
       let parsedData;
-
-      if (rows === undefined || rows === null || rows.length === 0)
+      if (appParams.plotType !== matsTypes.PlotTypes.histogram)
       {
-        error = matsTypes.Messages.NO_DATA_FOUND;
-      } else
-      {
-        parsedData = matsDataQueryUtils.parseQueryDataXYCurve(
+        parsedData = parseQueryDataXYCurve(
           rows,
           d,
           appParams,
           statisticStr,
-          forecastOffset,
-          cycles,
-          regular
+          null,
+          null,
+          null
         );
-        d = parsedData.d;
-        N0 = parsedData.N0;
-        N_times = parsedData.N_times;
+      } else
+      {
+        parsedData = parseQueryDataHistogram(rows, d, appParams, statisticStr);
       }
+      d = parsedData.d;
+      N0 = parsedData.N0;
+      N_times = parsedData.N_times;
     }
-
+    
     return {
       data: d,
       error,
@@ -185,6 +146,7 @@ class MatsMiddleTimeSeriesStations
       N_times,
     };
   };
+
 
   processStationQuery_int = async (
     varName,
@@ -257,12 +219,12 @@ class MatsMiddleTimeSeriesStations
     const prObs = this.createObsData();
     const prModel = this.createModelData();
     await Promise.all([prObs, prModel]);
-    this.generateStats(threshold);
+    this.generateCTC(threshold);
 
     endTime = new Date().valueOf();
     console.log(`\tprocessStationQuery in ${endTime - startTime} ms.`);
 
-    return this.stats;
+    return this.ctc;
   };
 
   createObsData = async () =>
@@ -430,9 +392,9 @@ class MatsMiddleTimeSeriesStations
     console.log(`fveModel:` + ` in ${endTime - startTime} ms.`);
   };
 
-  generateStats = async (threshold) =>
+  generateCTC = async (threshold) =>
   {
-    console.log(`generateStats(${threshold})`);
+    console.log(`generateCTC(${threshold})`);
 
     const startTime = new Date().valueOf();
 
@@ -513,15 +475,14 @@ class MatsMiddleTimeSeriesStations
           stats_fve.sub_data.push(sub);
         }
       }
-      this.stats.push(stats_fve);
+      this.ctc.push(stats_fve);
     }
 
     const endTime = new Date().valueOf();
-    console.log(`generateStats:` + ` in ${endTime - startTime} ms.`);
+    console.log(`generateCTC:` + ` in ${endTime - startTime} ms.`);
   };
-
 }
 
 export default matsMiddle = {
-  MatsMiddleTimeSeriesStations,
+  MatsMiddleDieOffStations,
 };
