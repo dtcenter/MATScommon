@@ -210,7 +210,9 @@ class MatsMiddleDieOff
     );
 
     const prObs = this.createObsData();
+    fs.writeFileSync("/Users/gopa.padmanabhan/scratch/matsMiddle/output/fveObs.json", JSON.stringify(this.fveObs, null, 2));
     const prModel = this.createModelData();
+    fs.writeFileSync("/Users/gopa.padmanabhan/scratch/matsMiddle/output/fveModels.json", JSON.stringify(this.fveModels, null, 2));
     await Promise.all([prObs, prModel]);
     this.generateCtc(threshold);
 
@@ -259,6 +261,10 @@ class MatsMiddleDieOff
         /{{fcstValidEpoch}}/g,
         JSON.stringify(fveArraySlice)
       );
+      if(iofve === 0)
+      {
+        fs.writeFileSync("/Users/gopa.padmanabhan/scratch/matsMiddle/output/obs.sql", sql);
+      }
       const prSlice = this.conn.cluster.query(sql);
       promises.push(prSlice);
       prSlice.then((qr) =>
@@ -274,7 +280,7 @@ class MatsMiddleDieOff
             const varValStation = fveDataSingleEpoch[this.stationNames[i]];
             stationsSingleEpoch[this.stationNames[i]] = varValStation;
           }
-          dataSingleEpoch.avtime = fveDataSingleEpoch.avtime;
+          dataSingleEpoch.fcst = fveDataSingleEpoch.fcst;
           dataSingleEpoch.stations = stationsSingleEpoch;
           this.fveObs[fveDataSingleEpoch.fve] = dataSingleEpoch;
         }
@@ -345,6 +351,10 @@ class MatsMiddleDieOff
         /{{fcstValidEpoch}}/g,
         JSON.stringify(fveArraySlice)
       );
+      if(imfve === 0)
+      {
+        fs.writeFileSync("/Users/gopa.padmanabhan/scratch/matsMiddle/output/model.sql", sql);
+      }
       const prSlice = this.conn.cluster.query(sql);
 
       promises.push(prSlice);
@@ -360,7 +370,7 @@ class MatsMiddleDieOff
             const varValStation = fveDataSingleEpoch[this.stationNames[i]];
             stationsSingleEpoch[this.stationNames[i]] = varValStation;
           }
-          dataSingleEpoch.avtime = fveDataSingleEpoch.avtime;
+          dataSingleEpoch.fcst = fveDataSingleEpoch.fcst;
           dataSingleEpoch.stations = stationsSingleEpoch;
           this.fveModels[fveDataSingleEpoch.fve] = dataSingleEpoch;
         }
