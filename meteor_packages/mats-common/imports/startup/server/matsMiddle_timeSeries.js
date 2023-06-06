@@ -1,7 +1,7 @@
 import { matsTypes, matsDataQueryUtils } from "meteor/randyp:mats-common";
 import { Meteor } from "meteor/meteor";
 
-class MatsMiddleTimeSeriesStations
+class MatsMiddleTimeSeries
 {
   fcstValidEpoch_Array = [];
 
@@ -13,7 +13,7 @@ class MatsMiddleTimeSeriesStations
 
   fveModels = {};
 
-  stats = [];
+  ctc = [];
 
   varName = null;
 
@@ -76,7 +76,7 @@ class MatsMiddleTimeSeriesStations
   };
 
   // this method queries the database for timeseries plots
-  queryDBTimeSeriesMatsMiddle = (
+  queryDBTimeSeries = (
     pool,
     rows,
     dataSource,
@@ -257,12 +257,12 @@ class MatsMiddleTimeSeriesStations
     const prObs = this.createObsData();
     const prModel = this.createModelData();
     await Promise.all([prObs, prModel]);
-    this.generateStats(threshold);
+    this.generateCtc(threshold);
 
     endTime = new Date().valueOf();
     console.log(`\tprocessStationQuery in ${endTime - startTime} ms.`);
 
-    return this.stats;
+    return this.ctc;
   };
 
   createObsData = async () =>
@@ -430,9 +430,9 @@ class MatsMiddleTimeSeriesStations
     console.log(`fveModel:` + ` in ${endTime - startTime} ms.`);
   };
 
-  generateStats = async (threshold) =>
+  generateCtc = async (threshold) =>
   {
-    console.log(`generateStats(${threshold})`);
+    console.log(`generateCtc(${threshold})`);
 
     const startTime = new Date().valueOf();
 
@@ -513,15 +513,15 @@ class MatsMiddleTimeSeriesStations
           stats_fve.sub_data.push(sub);
         }
       }
-      this.stats.push(stats_fve);
+      this.ctc.push(stats_fve);
     }
 
     const endTime = new Date().valueOf();
-    console.log(`generateStats:` + ` in ${endTime - startTime} ms.`);
+    console.log(`generateCtc:` + ` in ${endTime - startTime} ms.`);
   };
 
 }
 
 export default matsMiddle = {
-  MatsMiddleTimeSeriesStations,
+  MatsMiddleTimeSeries: MatsMiddleTimeSeries
 };

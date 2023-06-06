@@ -127,7 +127,8 @@ Package.onUse(function (api) {
   api.addFiles("imports/startup/server/index.js");
   api.addFiles("imports/startup/server/publications.js");
   api.addFiles("imports/startup/server/cache.js");
-  api.addFiles("imports/startup/server/matsMiddle_timeSeriesStations.js");
+  api.addFiles("imports/startup/server/matsMiddle_timeSeries.js");
+  api.addFiles("imports/startup/server/matsMiddle_dieOff.js");
 
   // files outside of imports
   // client

@@ -3639,6 +3639,7 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
 export default matsDataQueryUtils = {
   getModelCadence,
   parseQueryDataXYCurve,
+  parseQueryDataHistogram,
   simplePoolQueryWrapSynchronous,
   queryDBPython,
   queryDBTimeSeries,

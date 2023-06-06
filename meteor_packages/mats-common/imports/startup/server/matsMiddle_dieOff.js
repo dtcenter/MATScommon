@@ -1,7 +1,7 @@
 import { matsTypes, matsDataQueryUtils } from "meteor/randyp:mats-common";
 import { Meteor } from "meteor/meteor";
 
-class MatsMiddleDieOffStations
+class MatsMiddleDieOff
 {
   fcstValidEpoch_Array = [];
 
@@ -25,8 +25,6 @@ class MatsMiddleDieOffStations
 
   threshold = null;
 
-  average = null;
-
   fromSecs = null;
 
   toSecs = null;
@@ -46,7 +44,6 @@ class MatsMiddleDieOffStations
     model,
     fcstLen,
     threshold,
-    average,
     fromSecs,
     toSecs,
     validTimes
@@ -64,7 +61,6 @@ class MatsMiddleDieOffStations
         model,
         fcstLen,
         threshold,
-        average,
         fromSecs,
         toSecs,
         validTimes
@@ -76,7 +72,7 @@ class MatsMiddleDieOffStations
   };
 
   // this method queries the database for specialty curves such as profiles, dieoffs, threshold plots, valid time plots, grid scale plots, and histograms
-  queryDBSpecialtyCurveMatsMiddle = (pool, rows, appParams, statisticStr) =>
+  queryDBSpecialtyCurve = (pool, rows, appParams, statisticStr) =>
   {
     if (Meteor.isServer)
     {
@@ -121,7 +117,7 @@ class MatsMiddleDieOffStations
       let parsedData;
       if (appParams.plotType !== matsTypes.PlotTypes.histogram)
       {
-        parsedData = parseQueryDataXYCurve(
+        parsedData = matsDataQueryUtils.parseQueryDataXYCurve(
           rows,
           d,
           appParams,
@@ -132,13 +128,13 @@ class MatsMiddleDieOffStations
         );
       } else
       {
-        parsedData = parseQueryDataHistogram(rows, d, appParams, statisticStr);
+        parsedData = matsDataQueryUtils.parseQueryDataHistogram(rows, d, appParams, statisticStr);
       }
       d = parsedData.d;
       N0 = parsedData.N0;
       N_times = parsedData.N_times;
     }
-    
+
     return {
       data: d,
       error,
@@ -154,7 +150,6 @@ class MatsMiddleDieOffStations
     model,
     fcstLen,
     threshold,
-    average,
     fromSecs,
     toSecs,
     validTimes
@@ -164,7 +159,7 @@ class MatsMiddleDieOffStations
 
     console.log(
       `processStationQuery(${varName},${stationNames.length
-      },${model},${fcstLen},${threshold},${average},${fromSecs},${toSecs},${JSON.stringify(
+      },${model},${fcstLen},${threshold},${fromSecs},${toSecs},${JSON.stringify(
         validTimes
       )})`
     );
@@ -174,11 +169,9 @@ class MatsMiddleDieOffStations
     this.model = model;
     this.fcstLen = fcstLen;
     this.threshold = threshold;
-    this.average = average;
     this.fromSecs = fromSecs;
     this.toSecs = toSecs;
 
-    this.average = this.average.replace(/m0./g, "");
     if (validTimes && validTimes.length > 0)
     {
       for (let i = 0; i < validTimes.length; i++)
@@ -219,7 +212,7 @@ class MatsMiddleDieOffStations
     const prObs = this.createObsData();
     const prModel = this.createModelData();
     await Promise.all([prObs, prModel]);
-    this.generateCTC(threshold);
+    this.generateCtc(threshold);
 
     endTime = new Date().valueOf();
     console.log(`\tprocessStationQuery in ${endTime - startTime} ms.`);
@@ -251,10 +244,7 @@ class MatsMiddleDieOffStations
         stationNames_obs += `,obs.data.${this.stationNames[i]}.${this.varName} ${this.stationNames[i]}`;
       }
     }
-    let tmplWithStationNames_obs = tmpl_get_N_stations_mfve_obs.replace(
-      /{{vxAVERAGE}}/g,
-      this.average
-    );
+    let tmplWithStationNames_obs = cbPool.trfmSQLRemoveClause(tmpl_get_N_stations_mfve_obs, "{{vxAVERAGE}}");
     tmplWithStationNames_obs = tmplWithStationNames_obs.replace(
       /{{stationNamesList}}/g,
       stationNames_obs
@@ -316,6 +306,7 @@ class MatsMiddleDieOffStations
       "assets/app/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_model.sql",
       "utf-8"
     );
+    tmpl_get_N_stations_mfve_model = this.cbPool.trfmSQLRemoveClause(tmpl_get_N_stations_mfve_model, "{{vxFCST_LEN}}");
     tmpl_get_N_stations_mfve_model = tmpl_get_N_stations_mfve_model.replace(
       /{{vxMODEL}}/g,
       `"${this.model}"`
@@ -392,9 +383,9 @@ class MatsMiddleDieOffStations
     console.log(`fveModel:` + ` in ${endTime - startTime} ms.`);
   };
 
-  generateCTC = async (threshold) =>
+  generateCtc = async (threshold) =>
   {
-    console.log(`generateCTC(${threshold})`);
+    console.log(`generateCtc(${threshold})`);
 
     const startTime = new Date().valueOf();
 
@@ -479,10 +470,10 @@ class MatsMiddleDieOffStations
     }
 
     const endTime = new Date().valueOf();
-    console.log(`generateCTC:` + ` in ${endTime - startTime} ms.`);
+    console.log(`generateCtc:` + ` in ${endTime - startTime} ms.`);
   };
 }
 
 export default matsMiddle = {
-  MatsMiddleDieOffStations,
+  MatsMiddleDieOff: MatsMiddleDieOff
 };
