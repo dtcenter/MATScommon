@@ -75,7 +75,6 @@ class MatsMiddleTimeSeries
     return rv;
   };
 
-  // this method queries the database for timeseries plots
   queryDBTimeSeries = (
     pool,
     rows,
@@ -272,7 +271,6 @@ class MatsMiddleTimeSeries
 
     const startTime = new Date().valueOf();
 
-    // ==============================  OBS =====================================================
     const tmpl_get_N_stations_mfve_obs = fs.readFileSync(
       "assets/app/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_obs.sql",
       "utf-8"
@@ -354,6 +352,7 @@ class MatsMiddleTimeSeries
       "assets/app/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_model.sql",
       "utf-8"
     );
+    tmpl_get_N_stations_mfve_model = this.cbPool.trfmSQLRemoveClause(tmpl_get_N_stations_mfve_model, "fcstLen fcst");
     tmpl_get_N_stations_mfve_model = tmpl_get_N_stations_mfve_model.replace(
       /{{vxMODEL}}/g,
       `"${this.model}"`
@@ -522,6 +521,6 @@ class MatsMiddleTimeSeries
 
 }
 
-export default matsMiddle = {
+export default matsMiddleTimeSeries = {
   MatsMiddleTimeSeries: MatsMiddleTimeSeries
 };

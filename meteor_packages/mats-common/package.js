@@ -89,7 +89,8 @@ Package.onUse(function (api) {
   api.export("regression", ["client", "server"]);
   api.export("matsCache", ["server"]);
   api.export("versionInfo", ["server", "client"]);
-  api.export("matsMiddle", ["server"]);
+  api.export("matsMiddleTimeSeries", ["server"]);
+  api.export("matsMiddleDieOff", ["server"]);
 
   // add imports
   // both

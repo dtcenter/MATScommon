@@ -227,7 +227,6 @@ class MatsMiddleDieOff
 
     const startTime = new Date().valueOf();
 
-    // ==============================  OBS =====================================================
     const tmpl_get_N_stations_mfve_obs = fs.readFileSync(
       "assets/app/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_obs.sql",
       "utf-8"
@@ -307,6 +306,7 @@ class MatsMiddleDieOff
       "utf-8"
     );
     tmpl_get_N_stations_mfve_model = this.cbPool.trfmSQLRemoveClause(tmpl_get_N_stations_mfve_model, "{{vxFCST_LEN}}");
+    tmpl_get_N_stations_mfve_model = this.cbPool.trfmSQLRemoveClause(tmpl_get_N_stations_mfve_model, "{{vxAVERAGE}}");
     tmpl_get_N_stations_mfve_model = tmpl_get_N_stations_mfve_model.replace(
       /{{vxMODEL}}/g,
       `"${this.model}"`
@@ -314,10 +314,6 @@ class MatsMiddleDieOff
     tmpl_get_N_stations_mfve_model = tmpl_get_N_stations_mfve_model.replace(
       /{{vxFCST_LEN}}/g,
       this.fcstLen
-    );
-    tmpl_get_N_stations_mfve_model = tmpl_get_N_stations_mfve_model.replace(
-      /{{vxAVERAGE}}/g,
-      this.average
     );
 
     let stationNames_models = "";
@@ -474,6 +470,6 @@ class MatsMiddleDieOff
   };
 }
 
-export default matsMiddle = {
+export default matsMiddleDieOff = {
   MatsMiddleDieOff: MatsMiddleDieOff
 };
