@@ -352,7 +352,7 @@ class MatsMiddleTimeSeries
       "assets/app/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_model.sql",
       "utf-8"
     );
-    tmpl_get_N_stations_mfve_model = this.cbPool.trfmSQLRemoveClause(tmpl_get_N_stations_mfve_model, "fcstLen fcst");
+    tmpl_get_N_stations_mfve_model = this.cbPool.trfmSQLRemoveClause(tmpl_get_N_stations_mfve_model, "fcstLen fcst_lead");
     tmpl_get_N_stations_mfve_model = tmpl_get_N_stations_mfve_model.replace(
       /{{vxMODEL}}/g,
       `"${this.model}"`

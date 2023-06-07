@@ -447,6 +447,12 @@ const queryDBSpecialtyCurve = function (pool, statement, appParams, statisticStr
             */
       (async () => {
         const rows = await pool.queryCB(statement);
+        // TODO - remove write-out
+        {
+          const fs = require("fs");
+          const homedir = require('os').homedir();
+          fs.writeFileSync(homedir + "/scratch/matsMiddle/output/rows.json", JSON.stringify(rows,null,2));
+        }
         if (rows === undefined || rows === null || rows.length === 0) {
           error = matsTypes.Messages.NO_DATA_FOUND;
         } else if (rows.includes("queryCB ERROR: ")) {

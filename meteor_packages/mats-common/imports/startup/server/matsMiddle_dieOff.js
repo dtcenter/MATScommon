@@ -38,6 +38,13 @@ class MatsMiddleDieOff
     this.cbPool = cbPool;
   }
 
+  writeToLocalFile(filePath, contentStr)
+  {
+    const fs = require("fs");
+    const homedir = require('os').homedir();
+    fs.writeFileSync(homedir + filePath, contentStr);
+  }
+
   processStationQuery = (
     varName,
     stationNames,
@@ -155,8 +162,6 @@ class MatsMiddleDieOff
     validTimes
   ) =>
   {
-    const fs = require("fs");
-
     console.log(
       `processStationQuery(${varName},${stationNames.length
       },${model},${fcstLen},${threshold},${fromSecs},${toSecs},${JSON.stringify(
@@ -171,6 +176,7 @@ class MatsMiddleDieOff
     this.threshold = threshold;
     this.fromSecs = fromSecs;
     this.toSecs = toSecs;
+    const fs = require("fs");
 
     if (validTimes && validTimes.length > 0)
     {
@@ -210,11 +216,12 @@ class MatsMiddleDieOff
     );
 
     const prObs = this.createObsData();
-    fs.writeFileSync("/Users/gopa.padmanabhan/scratch/matsMiddle/output/fveObs.json", JSON.stringify(this.fveObs, null, 2));
     const prModel = this.createModelData();
-    fs.writeFileSync("/Users/gopa.padmanabhan/scratch/matsMiddle/output/fveModels.json", JSON.stringify(this.fveModels, null, 2));
     await Promise.all([prObs, prModel]);
     this.generateCtc(threshold);
+    this.writeToLocalFile("/scratch/matsMiddle/output/fveObs.json", JSON.stringify(this.fveObs, null, 2));
+    this.writeToLocalFile("/scratch/matsMiddle/output/fveModels.json", JSON.stringify(this.fveModels, null, 2));
+    this.writeToLocalFile("/scratch/matsMiddle/output/ctc.json", JSON.stringify(this.ctc, null, 2));
 
     endTime = new Date().valueOf();
     console.log(`\tprocessStationQuery in ${endTime - startTime} ms.`);
@@ -263,7 +270,7 @@ class MatsMiddleDieOff
       );
       if(iofve === 0)
       {
-        fs.writeFileSync("/Users/gopa.padmanabhan/scratch/matsMiddle/output/obs.sql", sql);
+        this.writeToLocalFile("/scratch/matsMiddle/output/obs.sql", sql);
       }
       const prSlice = this.conn.cluster.query(sql);
       promises.push(prSlice);
@@ -353,7 +360,7 @@ class MatsMiddleDieOff
       );
       if(imfve === 0)
       {
-        fs.writeFileSync("/Users/gopa.padmanabhan/scratch/matsMiddle/output/model.sql", sql);
+        this.writeToLocalFile("/scratch/matsMiddle/output/model.sql", sql);
       }
       const prSlice = this.conn.cluster.query(sql);
 
@@ -370,7 +377,7 @@ class MatsMiddleDieOff
             const varValStation = fveDataSingleEpoch[this.stationNames[i]];
             stationsSingleEpoch[this.stationNames[i]] = varValStation;
           }
-          dataSingleEpoch.fcst = fveDataSingleEpoch.fcst;
+          dataSingleEpoch.fcst_lead = fveDataSingleEpoch.fcst_lead;
           dataSingleEpoch.stations = stationsSingleEpoch;
           this.fveModels[fveDataSingleEpoch.fve] = dataSingleEpoch;
         }
@@ -415,7 +422,8 @@ class MatsMiddleDieOff
       }
 
       const stats_fve = {};
-      stats_fve.avtime = obsSingleFve.avtime;
+      stats_fve.min_secs = fve;
+      stats_fve.max_secs = fve;
       stats_fve.hit = 0;
       stats_fve.miss = 0;
       stats_fve.fa = 0;
