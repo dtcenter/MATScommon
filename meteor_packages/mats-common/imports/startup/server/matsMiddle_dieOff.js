@@ -83,7 +83,7 @@ class MatsMiddleDieOff
   {
     if (Meteor.isServer)
     {
-      let d = {
+      var d = {
         // d will contain the curve data
         x: [],
         y: [],
@@ -118,25 +118,34 @@ class MatsMiddleDieOff
         ymax: Number.MIN_VALUE,
         sum: 0,
       };
-      let error = "";
-      let N0 = [];
-      let N_times = [];
+      var error = "";
+      var N0 = [];
+      var N_times = [];
       let parsedData;
-      if (appParams.plotType !== matsTypes.PlotTypes.histogram)
+
+      if (rows === undefined || rows === null || rows.length === 0)
       {
-        parsedData = matsDataQueryUtils.parseQueryDataXYCurve(
-          rows,
-          d,
-          appParams,
-          statisticStr,
-          null,
-          null,
-          null
-        );
-      } else
-      {
-        parsedData = matsDataQueryUtils.parseQueryDataHistogram(rows, d, appParams, statisticStr);
+        error = matsTypes.Messages.NO_DATA_FOUND;
       }
+      else
+      {
+        if (appParams.plotType !== matsTypes.PlotTypes.histogram)
+        {
+          parsedData = matsDataQueryUtils.parseQueryDataXYCurve(
+            rows,
+            d,
+            appParams,
+            statisticStr,
+            null,
+            null,
+            null
+          );
+        } else
+        {
+          parsedData = matsDataQueryUtils.parseQueryDataHistogram(rows, d, appParams, statisticStr);
+        }
+      }
+      console.log("parsedData(keys):" + JSON.stringify(Object.keys(parsedData), null, 2));
       d = parsedData.d;
       N0 = parsedData.N0;
       N_times = parsedData.N_times;
@@ -268,7 +277,7 @@ class MatsMiddleDieOff
         /{{fcstValidEpoch}}/g,
         JSON.stringify(fveArraySlice)
       );
-      if(iofve === 0)
+      if (iofve === 0)
       {
         this.writeToLocalFile("/scratch/matsMiddle/output/obs.sql", sql);
       }
@@ -358,7 +367,7 @@ class MatsMiddleDieOff
         /{{fcstValidEpoch}}/g,
         JSON.stringify(fveArraySlice)
       );
-      if(imfve === 0)
+      if (imfve === 0)
       {
         this.writeToLocalFile("/scratch/matsMiddle/output/model.sql", sql);
       }
@@ -377,9 +386,12 @@ class MatsMiddleDieOff
             const varValStation = fveDataSingleEpoch[this.stationNames[i]];
             stationsSingleEpoch[this.stationNames[i]] = varValStation;
           }
-          dataSingleEpoch.fcst_lead = fveDataSingleEpoch.fcst_lead;
           dataSingleEpoch.stations = stationsSingleEpoch;
-          this.fveModels[fveDataSingleEpoch.fve] = dataSingleEpoch;
+          if (!this.fveModels[fveDataSingleEpoch.fcst_lead])
+          {
+            this.fveModels[fveDataSingleEpoch.fcst_lead] = {};
+          }
+          this.fveModels[fveDataSingleEpoch.fcst_lead][fveDataSingleEpoch.fve] = dataSingleEpoch;
         }
         if (imfve % 100 == 0)
         {
@@ -402,85 +414,97 @@ class MatsMiddleDieOff
 
     const startTime = new Date().valueOf();
 
-    for (let imfve = 0; imfve < this.fcstValidEpoch_Array.length; imfve++)
+    let fcst_lead_array = Object.keys(this.fveModels);
+    fcst_lead_array.sort(function (a, b) { return a - b });
+    for (let flai = 0; flai < fcst_lead_array.length; flai++)
     {
-      const fve = this.fcstValidEpoch_Array[imfve];
-      const obsSingleFve = this.fveObs[fve];
-      const modelSingleFve = this.fveModels[fve];
+      const stats_fcst_lead = {};
 
-      if (!obsSingleFve || !modelSingleFve)
-      {
-        continue;
-      }
+      stats_fcst_lead.fcst_lead = Number(fcst_lead_array[flai]);
+      stats_fcst_lead.hit = 0;
+      stats_fcst_lead.miss = 0;
+      stats_fcst_lead.fa = 0;
+      stats_fcst_lead.cn = 0;
+      stats_fcst_lead.N0 = 0;
+      stats_fcst_lead.N_times = new Set(fcst_lead_array).size;
+      stats_fcst_lead.sub_data = [];
 
-      if (this.validTimes && this.validTimes.length > 0)
+      // get all the fve for this fcst_lead
+      let fcst_lead_single = this.fveModels[fcst_lead_array[flai]];
+      let fve_array = Object.keys(fcst_lead_single);
+      fve_array.sort();
+
+      stats_fcst_lead.min_secs = fve_array[0];
+      stats_fcst_lead.max_secs = fve_array[fve_array.length - 1];
+      for (let imfve = 0; imfve < fve_array.length; imfve++)
       {
-        if (this.validTimes.includes((fve % (24 * 3600)) / 3600) == false)
+        const fve = fve_array[imfve];
+        const obsSingleFve = this.fveObs[fve];
+        const modelSingleFve = fcst_lead_single[fve];
+
+        if (!obsSingleFve || !modelSingleFve)
         {
           continue;
         }
-      }
 
-      const stats_fve = {};
-      stats_fve.min_secs = fve;
-      stats_fve.max_secs = fve;
-      stats_fve.hit = 0;
-      stats_fve.miss = 0;
-      stats_fve.fa = 0;
-      stats_fve.cn = 0;
-      stats_fve.N0 = 0;
-      stats_fve.N_times = 1;
-      stats_fve.sub_data = [];
-
-      for (let i = 0; i < this.stationNames.length; i++)
-      {
-        const station = this.stationNames[i];
-        const varVal_o = obsSingleFve.stations[station];
-        const varVal_m = modelSingleFve.stations[station];
-
-        if (varVal_o && varVal_m)
+        if (this.validTimes && this.validTimes.length > 0)
         {
-          stats_fve.N0 += 1;
-          let sub = `${fve};`;
-          if (varVal_o < threshold && varVal_m < threshold)
+          if (this.validTimes.includes((fve % (24 * 3600)) / 3600) == false)
           {
-            stats_fve.hit += 1;
-            sub += "1;";
-          } else
-          {
-            sub += "0;";
+            continue;
           }
+        }
 
-          if (varVal_o >= threshold && varVal_m < threshold)
-          {
-            stats_fve.fa += 1;
-            sub += "1;";
-          } else
-          {
-            sub += "0;";
-          }
+        for (let i = 0; i < this.stationNames.length; i++)
+        {
+          const station = this.stationNames[i];
+          const varVal_o = obsSingleFve.stations[station];
+          const varVal_m = modelSingleFve.stations[station];
 
-          if (varVal_o < threshold && varVal_m >= threshold)
+          if (varVal_o && varVal_m)
           {
-            stats_fve.miss += 1;
-            sub += "1;";
-          } else
-          {
-            sub += "0;";
-          }
+            stats_fcst_lead.N0 += 1;
+            let sub = `${fve};`;
+            if (varVal_o < threshold && varVal_m < threshold)
+            {
+              stats_fcst_lead.hit += 1;
+              sub += "1;";
+            } else
+            {
+              sub += "0;";
+            }
 
-          if (varVal_o >= threshold && varVal_m >= threshold)
-          {
-            stats_fve.cn += 1;
-            sub += "1";
-          } else
-          {
-            sub += "0";
+            if (varVal_o >= threshold && varVal_m < threshold)
+            {
+              stats_fcst_lead.fa += 1;
+              sub += "1;";
+            } else
+            {
+              sub += "0;";
+            }
+
+            if (varVal_o < threshold && varVal_m >= threshold)
+            {
+              stats_fcst_lead.miss += 1;
+              sub += "1;";
+            } else
+            {
+              sub += "0;";
+            }
+
+            if (varVal_o >= threshold && varVal_m >= threshold)
+            {
+              stats_fcst_lead.cn += 1;
+              sub += "1";
+            } else
+            {
+              sub += "0";
+            }
+            stats_fcst_lead.sub_data.push(sub);
           }
-          stats_fve.sub_data.push(sub);
         }
       }
-      this.ctc.push(stats_fve);
+      this.ctc.push(stats_fcst_lead);
     }
 
     const endTime = new Date().valueOf();
