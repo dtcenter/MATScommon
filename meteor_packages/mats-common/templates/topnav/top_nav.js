@@ -62,7 +62,7 @@ Template.topNav.helpers({
         return "https://www.weather.gov/";
         break;
       default:
-        return "http://esrl.noaa.gov/gsd/";
+        return "http://gsl.noaa.gov/";
     }
   },
   productText() {

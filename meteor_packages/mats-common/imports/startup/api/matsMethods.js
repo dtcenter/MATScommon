@@ -2684,7 +2684,7 @@ const emailImage = new ValidatedMethod({
         service: "Gmail",
         auth: {
           XOAuth2: {
-            user: "mats.gsd@noaa.gov",
+            user: "mats.gsl@noaa.gov",
             clientId,
             clientSecret,
             refreshToken: refresh_token,
