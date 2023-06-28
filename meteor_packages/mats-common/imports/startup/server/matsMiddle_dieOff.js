@@ -34,6 +34,10 @@ class MatsMiddleDieOff
 
   validTimes = [];
 
+  utcCycleStart = [];
+
+  singleCycle = null;
+
   writeOutput = false;
 
   constructor(cbPool)
@@ -56,7 +60,9 @@ class MatsMiddleDieOff
     threshold,
     fromSecs,
     toSecs,
-    validTimes
+    validTimes,
+    utcCycleStart,
+    singleCycle
   ) =>
   {
     const Future = require("fibers/future");
@@ -73,7 +79,9 @@ class MatsMiddleDieOff
         threshold,
         fromSecs,
         toSecs,
-        validTimes
+        validTimes,
+        utcCycleStart,
+        singleCycle
       );
       dFuture.return();
     })();
@@ -171,7 +179,9 @@ class MatsMiddleDieOff
     threshold,
     fromSecs,
     toSecs,
-    validTimes
+    validTimes,
+    utcCycleStart,
+    singleCycle
   ) =>
   {
     console.log(
@@ -201,6 +211,20 @@ class MatsMiddleDieOff
       }
       console.log(`validTimes:${JSON.stringify(this.validTimes)}`);
     }
+
+    if (utcCycleStart && utcCycleStart.length > 0)
+    {
+      for (let i = 0; i < utcCycleStart.length; i++)
+      {
+        if (utcCycleStart[i] != null && Number(utcCycleStart[i]) > 0)
+        {
+          this.utcCycleStart.push(Number(utcCycleStart[i]));
+        }
+      }
+      console.log(`utcCycleStart:${JSON.stringify(this.utcCycleStart)}`);
+    }
+
+    this.singleCycle = singleCycle;
 
     this.conn = await cbPool.getConnection();
 
@@ -448,6 +472,7 @@ class MatsMiddleDieOff
             `imfve:${imfve}/${this.fcstValidEpoch_Array.length} idx: ${idx} in ${endTime - startTime
             } ms.`
           );
+          /*
           try
           {
             console.log(memoryUsage());
@@ -460,6 +485,7 @@ class MatsMiddleDieOff
           {
             console.log("exception getting sizes:" + ex);
           }
+          */
         });
       }
       await Promise.all(promises);
@@ -483,7 +509,8 @@ class MatsMiddleDieOff
     {
       const stats_fcst_lead = {};
 
-      stats_fcst_lead.fcst_lead = Number(fcst_lead_array[flai]);
+      let fcst_lead = Number(fcst_lead_array[flai]);
+      stats_fcst_lead.fcst_lead = fcst_lead;
       stats_fcst_lead.hit = 0;
       stats_fcst_lead.miss = 0;
       stats_fcst_lead.fa = 0;
@@ -512,7 +539,26 @@ class MatsMiddleDieOff
 
         if (this.validTimes && this.validTimes.length > 0)
         {
+          // m0.fcstValidEpoch%(24*3600)/3600 IN[vxVALID_TIMES]
           if (this.validTimes.includes((fve % (24 * 3600)) / 3600) == false)
+          {
+            continue;
+          }
+        }
+
+        if (this.utcCycleStart && this.utcCycleStart.length > 0)
+        {
+          // (obs.fcstValidEpoch - obs.fcstLen*3600)%(24*3600)/3600 IN[vxUTC_CYCLE_START])
+          if (this.utcCycleStart.includes(((fve - fcst_lead * 3600) % (24 * 3600)) / 3600) == false)
+          {
+            continue;
+          }
+        }
+
+        if (this.singleCycle !== null)
+        {
+          // obs.fcstValidEpoch-obs.fcstLen*3600 = vxFROM_SECS
+          if ((fve - fcst_lead * 3600) == this.singleCycle)
           {
             continue;
           }

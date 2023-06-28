@@ -451,6 +451,7 @@ const queryDBSpecialtyCurve = function (pool, statement, appParams, statisticStr
         {
           const fs = require("fs");
           const homedir = require('os').homedir();
+          fs.writeFileSync(homedir + "/scratch/matsMiddle/output/query.json", statement);
           fs.writeFileSync(homedir + "/scratch/matsMiddle/output/rows.json", JSON.stringify(rows,null,2));
         }
         if (rows === undefined || rows === null || rows.length === 0) {
