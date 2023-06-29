@@ -1933,15 +1933,11 @@ const processDataContour = function (
   // build the tooltip, and store it in data.text
   let i;
   let j;
-  let currX;
-  let currY;
   let currText;
   let currYTextArray;
   for (j = 0; j < data.y.length; j++) {
-    currY = data.y[j];
     currYTextArray = [];
     for (i = 0; i < data.x.length; i++) {
-      currX = data.x[i];
       currText = `${label}<br>${data.xAxisKey}: ${data.x[i]}<br>${data.yAxisKey}: ${
         data.y[j]
       }<br>${statisticSelect}: ${
