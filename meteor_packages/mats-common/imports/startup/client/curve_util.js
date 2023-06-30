@@ -428,10 +428,11 @@ const checkIfDisplayAllQCParams = function (faceOptions) {
   // we only want to allow people to filter sub-values for apps with scalar or precalculated stats.
   // the stats in the list below are representative of these apps.
   const subValueFilterableStats = [
-    "RMSE",
-    "ACC",
-    "Track error (nm)",
-    "Number of stations",
+    "RMSE", // scalar stats
+    "ACC", // anomalycor stats
+    "Track error (nm)", // TC stats
+    "Number of stations", // precalculated stats
+    "Mean FSS (fractions skill score)", // ensemble stats
   ];
   const doNotFilterStats = ["Spread"];
   if (matsCollections && matsCollections.statistic) {
