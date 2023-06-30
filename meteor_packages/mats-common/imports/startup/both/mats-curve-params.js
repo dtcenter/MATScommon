@@ -78,6 +78,7 @@ export const curveParamsByApp = {
     "neighborhood-size",
     "kernel",
     "radius",
+    "probability-bins",
     "forecast-length",
     "dieoff-type",
     "valid-time",
