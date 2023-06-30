@@ -89,6 +89,7 @@ Package.onUse(function (api) {
   api.export("regression", ["client", "server"]);
   api.export("matsCache", ["server"]);
   api.export("versionInfo", ["server", "client"]);
+  api.export("matsMiddleCommon", ["server"]);
   api.export("matsMiddleTimeSeries", ["server"]);
   api.export("matsMiddleDieOff", ["server"]);
 
@@ -128,6 +129,7 @@ Package.onUse(function (api) {
   api.addFiles("imports/startup/server/index.js");
   api.addFiles("imports/startup/server/publications.js");
   api.addFiles("imports/startup/server/cache.js");
+  api.addFiles("imports/startup/server/matsMiddle_common.js");
   api.addFiles("imports/startup/server/matsMiddle_timeSeries.js");
   api.addFiles("imports/startup/server/matsMiddle_dieOff.js");
 

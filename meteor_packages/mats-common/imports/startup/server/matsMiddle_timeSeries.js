@@ -1,4 +1,4 @@
-import { matsTypes, matsDataQueryUtils } from "meteor/randyp:mats-common";
+import { matsTypes, matsDataQueryUtils, matsMiddleCommon } from "meteor/randyp:mats-common";
 import { Meteor } from "meteor/meteor";
 
 class MatsMiddleTimeSeries
@@ -35,9 +35,12 @@ class MatsMiddleTimeSeries
 
   writeOutput = false;
 
+  mmCommon = null;
+
   constructor(cbPool)
   {
     this.cbPool = cbPool;
+    this.mmCommon = new matsMiddleCommon.MatsMiddleCommon(cbPool);
   }
 
   processStationQuery = (
@@ -231,22 +234,8 @@ class MatsMiddleTimeSeries
     this.conn = await cbPool.getConnection();
 
     const startTime = new Date().valueOf();
+    this.fcstValidEpoch_Array = await this.mmCommon.get_fcstValidEpoch_Array(fromSecs, toSecs);
 
-    let queryTemplate = fs.readFileSync(
-      "assets/app/matsMiddle/sqlTemplates/tmpl_distinct_fcstValidEpoch_obs.sql",
-      "utf-8"
-    );
-    queryTemplate = queryTemplate.replace(/{{vxFROM_SECS}}/g, this.fromSecs);
-    queryTemplate = queryTemplate.replace(/{{vxTO_SECS}}/g, this.toSecs);
-    console.log(`fromSecs:${this.fromSecs},toSecs:${this.toSecs}`);
-    console.log(`queryTemplate:\n${queryTemplate}`);
-
-    const qr_fcstValidEpoch = await this.conn.cluster.query(queryTemplate);
-
-    for (let imfve = 0; imfve < qr_fcstValidEpoch.rows.length; imfve++)
-    {
-      this.fcstValidEpoch_Array.push(qr_fcstValidEpoch.rows[imfve].fcstValidEpoch);
-    }
     let endTime = new Date().valueOf();
     console.log(
       `\tfcstValidEpoch_Array:${this.fcstValidEpoch_Array.length} in ${endTime - startTime
