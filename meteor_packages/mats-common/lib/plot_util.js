@@ -182,7 +182,7 @@ const restoreSettings = function (p) {
           matsCurveUtils.showProfileFace();
           break;
         case matsTypes.PlotTypes.dieoff:
-          matsCurveUtils.showDieOffFace();
+          matsCurveUtils.showDieoffFace();
           break;
         case matsTypes.PlotTypes.threshold:
           matsCurveUtils.showThresholdFace();

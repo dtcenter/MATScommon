@@ -216,7 +216,7 @@ class QueryUtil:
             stat_line_type = queries[i]["statLineType"]
             # only save relevant sub-data
             if plot_type in ['ValidTime', 'GridScale', 'Profile', 'DailyModelCycle', 'TimeSeries',
-                             'DieOff', 'Threshold', 'YearToYear']:
+                             'Dieoff', 'Threshold', 'YearToYear']:
                 if stat_line_type == 'mode_pair':
                     for j in range(len(self.data[i]["subData"])):
                         if self.data[i]["subHeaders"][j] == 'NaN' or len(self.data[i]["subHeaders"][j]) == 0:
@@ -334,7 +334,7 @@ class QueryUtil:
                 ind_var = float(str(row['avVal']).replace('P', ''))
             elif plot_type == 'DailyModelCycle' or plot_type == 'TimeSeries':
                 ind_var = int(row['avtime']) * 1000
-            elif plot_type == 'DieOff':
+            elif plot_type == 'Dieoff':
                 ind_var = int(row['fcst_lead'])
                 ind_var = ind_var if ind_var % 10000 != 0 else ind_var / 10000
             elif plot_type == 'Threshold':
@@ -1033,7 +1033,7 @@ class QueryUtil:
 
         if plot_type in ["EnsembleHistogram"]:
             remove_non_matching_ind_vars = False
-        elif plot_type in ["TimeSeries", "Profile", "DieOff", "Threshold", "ValidTime", "GridScale", "DailyModelCycle",
+        elif plot_type in ["TimeSeries", "Profile", "Dieoff", "Threshold", "ValidTime", "GridScale", "DailyModelCycle",
                            "YearToYear", "SimpleScatter", "Scatter2d", "Contour", "ContourDiff"]:
             remove_non_matching_ind_vars = True
         else:

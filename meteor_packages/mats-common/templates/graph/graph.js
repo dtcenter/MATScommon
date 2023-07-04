@@ -595,7 +595,7 @@ Template.graph.helpers({
         case matsTypes.PlotTypes.profile:
           return `Profile: ${format}`;
         case matsTypes.PlotTypes.dieoff:
-          return `DieOff: ${format}`;
+          return `Dieoff: ${format}`;
         case matsTypes.PlotTypes.threshold:
           return `Threshold: ${format}`;
         case matsTypes.PlotTypes.validtime:

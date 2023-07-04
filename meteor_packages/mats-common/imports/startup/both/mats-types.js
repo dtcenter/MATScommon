@@ -66,7 +66,7 @@ const InputTypes = {
 const PlotTypes = {
   timeSeries: "TimeSeries",
   profile: "Profile",
-  dieoff: "DieOff",
+  dieoff: "Dieoff",
   threshold: "Threshold",
   validtime: "ValidTime",
   gridscale: "GridScale",

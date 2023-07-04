@@ -612,7 +612,7 @@ const showProfileFace = function () {
 };
 
 // method to display the appropriate selectors for a dieoff curve
-const showDieOffFace = function () {
+const showDieoffFace = function () {
   const plotType = matsTypes.PlotTypes.dieoff;
   let faceOptions = {
     "curve-dates": "block",
@@ -1459,7 +1459,7 @@ export default matsCurveUtils = {
   showSpinner,
   showTimeseriesFace,
   showProfileFace,
-  showDieOffFace,
+  showDieoffFace,
   showThresholdFace,
   showValidTimeFace,
   showGridScaleFace,
