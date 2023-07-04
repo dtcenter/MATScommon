@@ -591,46 +591,31 @@ Template.graph.helpers({
       const plotType = Session.get("plotType");
       switch (plotType) {
         case matsTypes.PlotTypes.timeSeries:
-          return `TimeSeries ${p.dates} : ${format}`;
-        case matsTypes.PlotTypes.profile:
-          return `Profile: ${format}`;
-        case matsTypes.PlotTypes.dieoff:
-          return `Dieoff: ${format}`;
-        case matsTypes.PlotTypes.threshold:
-          return `Threshold: ${format}`;
-        case matsTypes.PlotTypes.validtime:
-          return `ValidTime: ${format}`;
-        case matsTypes.PlotTypes.gridscale:
-          return `GridScale: ${format}`;
         case matsTypes.PlotTypes.dailyModelCycle:
-          return `DailyModelCycle ${p.dates} : ${format}`;
-        case matsTypes.PlotTypes.yearToYear:
-          return `Year to Year: ${format}`;
         case matsTypes.PlotTypes.reliability:
-          return `Reliability: ${p.dates} : ${format}`;
+        case matsTypes.PlotTypes.contour:
+        case matsTypes.PlotTypes.contourDiff:
+          return `${plotType.replace(/([A-Z])/g, " $1").trim()} ${p.dates} : ${format}`;
+        case matsTypes.PlotTypes.profile:
+        case matsTypes.PlotTypes.dieoff:
+        case matsTypes.PlotTypes.threshold:
+        case matsTypes.PlotTypes.validtime:
+        case matsTypes.PlotTypes.gridscale:
+        case matsTypes.PlotTypes.yearToYear:
         case matsTypes.PlotTypes.roc:
-          return `ROC Curve: ${format}`;
         case matsTypes.PlotTypes.performanceDiagram:
-          return `Performance Diagram: ${format}`;
+        case matsTypes.PlotTypes.histogram:
+        case matsTypes.PlotTypes.simpleScatter:
+          return `${plotType.replace(/([A-Z])/g, " $1").trim()}: ${format}`;
         case matsTypes.PlotTypes.map:
           return `Map ${p.dates} `;
-        case matsTypes.PlotTypes.histogram:
-          return `Histogram: ${format}`;
-        case matsTypes.PlotTypes.ensembleHistogram:
-          const ensembleType =
-            p["histogram-type-controls"] !== undefined
-              ? p["histogram-type-controls"]
-              : "Ensemble Histogram";
+        case matsTypes.PlotTypes.ensembleHistogram: {
+          const ensembleType = p["histogram-type-controls"]
+            ? p["histogram-type-controls"]
+            : `${plotType.replace(/([A-Z])/g, " $1").trim()}`;
           return `${ensembleType}: ${format}`;
-        case matsTypes.PlotTypes.contour:
-          return `Contour ${p.dates} : ${format}`;
-        case matsTypes.PlotTypes.contourDiff:
-          return `ContourDiff ${p.dates} : ${format}`;
-        case matsTypes.PlotTypes.simpleScatter:
-          return `Simple Scatter: ${format}`;
-          break;
+        }
         case matsTypes.PlotTypes.scatter2d:
-          break;
         default:
           return `Scatter: ${p.dates} : ${format}`;
       }

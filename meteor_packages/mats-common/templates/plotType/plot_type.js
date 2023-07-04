@@ -27,6 +27,10 @@ Template.plotType.helpers({
     }
     return "";
   },
+  spaced(plotType) {
+    // space out the plot type names to be more readable
+    return plotType.replace(/([A-Z])/g, " $1").trim();
+  },
   alertMessageHidden() {
     if (
       matsCollections.Settings === undefined ||
@@ -94,7 +98,7 @@ const setDatesAndShowFace = function (plotType, dateSelector) {
       selectorsToReset = matsCurveUtils.showProfileFace();
       break;
     case matsTypes.PlotTypes.dieoff:
-      selectorsToReset = matsCurveUtils.showDieOffFace();
+      selectorsToReset = matsCurveUtils.showDieoffFace();
       break;
     case matsTypes.PlotTypes.threshold:
       selectorsToReset = matsCurveUtils.showThresholdFace();
