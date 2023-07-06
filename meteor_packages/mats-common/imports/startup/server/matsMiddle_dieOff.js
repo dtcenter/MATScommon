@@ -4,55 +4,32 @@ import { memoryUsage } from 'node:process';
 
 class MatsMiddleDieOff
 {
+  logToFile = true;
+  logMemUsage = false;
   fcstValidEpoch_Array = [];
-
   cbPool = null;
-
   conn = null;
-
   fcstLenArray = [];
-
   fveObs = {};
-
   fveModels = {};
-
   ctc = [];
-
   varName = null;
-
   stationNames = null;
-
   model = null;
-
   fcstLen = null;
-
   threshold = null;
-
   fromSecs = null;
-
   toSecs = null;
-
   validTimes = [];
-
   utcCycleStart = [];
-
   singleCycle = null;
-
   writeOutput = false;
-
   mmCommon = null;
 
   constructor(cbPool)
   {
     this.cbPool = cbPool;
     this.mmCommon = new matsMiddleCommon.MatsMiddleCommon(cbPool);
-  }
-
-  writeToLocalFile(filePath, contentStr)
-  {
-    const fs = require("fs");
-    const homedir = require('os').homedir();
-    fs.writeFileSync(homedir + filePath, contentStr);
   }
 
   processStationQuery = (
@@ -242,45 +219,16 @@ class MatsMiddleDieOff
     );
 
     // =============== get distinct fcstLen in time frame ==================
-    this.fcstLenArray = [];
-    let tmpl_get_distinct_fcstLen = fs.readFileSync(
-      "assets/app/matsMiddle/sqlTemplates/tmpl_get_distinct_fcstLen.sql",
-      "utf-8"
-    );
-    tmpl_get_distinct_fcstLen = tmpl_get_distinct_fcstLen.replace(
-      /{{vxMODEL}}/g,
-      `"${this.model}"`
-    );
-    tmpl_get_distinct_fcstLen = tmpl_get_distinct_fcstLen.replace(
-      /{{vxFROM_SECS}}/g,
-      this.fcstValidEpoch_Array[0]
-    );
-    tmpl_get_distinct_fcstLen = tmpl_get_distinct_fcstLen.replace(
-      /{{vxTO_SECS}}/g,
-      this.fcstValidEpoch_Array[this.fcstValidEpoch_Array.length - 1]
-    );
-    console.log("tmpl_get_distinct_fcstLen:\n" + tmpl_get_distinct_fcstLen);
-    const qr_distinct_fcstLen = await this.conn.cluster.query(tmpl_get_distinct_fcstLen);
-    for (let ifcstLen = 0; ifcstLen < qr_distinct_fcstLen.rows.length; ifcstLen++)
-    {
-      this.fcstLenArray.push(qr_distinct_fcstLen.rows[ifcstLen].fcstLen);
-    }
-    endTime = new Date().valueOf();
-    console.log("fcstLenArray:" + qr_distinct_fcstLen.rows.length + " in " + (endTime - startTime) + " ms.");
-    // console.log("fcstLenArray:\n" + JSON.stringify(this.fcstLenArray, null, 2));
-
-    /*
-    const prObs = this.createObsData();
-    const prModel = this.createModelData();
-    await Promise.all([prObs, prModel]);
-    this.generateCtc(threshold);
-    */
+    this.fcstLenArray = await this.mmCommon.get_fcstLen_Array(this.model, this.fcstValidEpoch_Array[0], this.fcstValidEpoch_Array[this.fcstValidEpoch_Array.length - 1]);
     await this.createObsData();
     await this.createModelData();
 
-    this.writeToLocalFile("/scratch/matsMiddle/output/fveObs.json", JSON.stringify(this.fveObs, null, 2));
-    this.writeToLocalFile("/scratch/matsMiddle/output/fveModels.json", JSON.stringify(this.fveModels, null, 2));
-    this.writeToLocalFile("/scratch/matsMiddle/output/ctc.json", JSON.stringify(this.ctc, null, 2));
+    if (this.logToFile === true)
+    {
+      this.mmCommon.writeToLocalFile("/scratch/matsMiddle/output/fveObs.json", JSON.stringify(this.fveObs, null, 2));
+      this.mmCommon.writeToLocalFile("/scratch/matsMiddle/output/fveModels.json", JSON.stringify(this.fveModels, null, 2));
+      this.mmCommon.writeToLocalFile("/scratch/matsMiddle/output/ctc.json", JSON.stringify(this.ctc, null, 2));
+    }
 
     endTime = new Date().valueOf();
     console.log(`\tprocessStationQuery in ${endTime - startTime} ms.`);
@@ -327,9 +275,9 @@ class MatsMiddleDieOff
         /{{fcstValidEpoch}}/g,
         JSON.stringify(fveArraySlice)
       );
-      if (iofve === 0)
+      if (this.logToFile === true && iofve === 0)
       {
-        this.writeToLocalFile("/scratch/matsMiddle/output/obs.sql", sql);
+        this.mmCommon.writeToLocalFile("/scratch/matsMiddle/output/obs.sql", sql);
       }
       const prSlice = this.conn.cluster.query(sql);
       promises.push(prSlice);
@@ -428,9 +376,9 @@ class MatsMiddleDieOff
         );
         // console.log(sql);
         console.log("flaSlice:" + JSON.stringify(flaSlice) + ",fveArraySlice:" + fveArraySlice[0] + " => " + fveArraySlice[fveArraySlice.length - 1]);
-        if (imfve === 0)
+        if (this.logToFile === true && imfve === 0)
         {
-          this.writeToLocalFile("/scratch/matsMiddle/output/model.sql", sql);
+          this.mmCommon.writeToLocalFile("/scratch/matsMiddle/output/model.sql", sql);
         }
         const prSlice = this.conn.cluster.query(sql);
 
@@ -461,20 +409,22 @@ class MatsMiddleDieOff
             `imfve:${imfve}/${this.fcstValidEpoch_Array.length} idx: ${idx} in ${endTime - startTime
             } ms.`
           );
-          /*
-          try
+
+          if (this.logMemUsage === true)
           {
-            console.log(memoryUsage());
-            let obsSize = (new TextEncoder().encode(JSON.stringify(this.fveObs)).length) / (1024 * 1024);
-            let modelsSize = (new TextEncoder().encode(JSON.stringify(this.fveModels)).length) / (1024 * 1024);
-            let ctcSize = (new TextEncoder().encode(JSON.stringify(this.ctc)).length) / (1024 * 1024);
-            console.log("sizes (MB), obs:" + obsSize + ",model:" + modelsSize + ",ctc:" + ctcSize);
+            try
+            {
+              console.log(memoryUsage());
+              let obsSize = (new TextEncoder().encode(JSON.stringify(this.fveObs)).length) / (1024 * 1024);
+              let modelsSize = (new TextEncoder().encode(JSON.stringify(this.fveModels)).length) / (1024 * 1024);
+              let ctcSize = (new TextEncoder().encode(JSON.stringify(this.ctc)).length) / (1024 * 1024);
+              console.log("sizes (MB), obs:" + obsSize + ",model:" + modelsSize + ",ctc:" + ctcSize);
+            }
+            catch (ex)
+            {
+              console.log("exception getting sizes:" + ex);
+            }
           }
-          catch (ex)
-          {
-            console.log("exception getting sizes:" + ex);
-          }
-          */
         });
       }
       await Promise.all(promises);

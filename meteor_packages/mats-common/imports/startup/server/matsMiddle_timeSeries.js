@@ -3,38 +3,24 @@ import { Meteor } from "meteor/meteor";
 
 class MatsMiddleTimeSeries
 {
+  logToFile = false;
+  logMemUsage = false;
   fcstValidEpoch_Array = [];
-
   cbPool = null;
-
   conn = null;
-
   fveObs = {};
-
   fveModels = {};
-
   ctc = [];
-
   varName = null;
-
   stationNames = null;
-
   model = null;
-
   fcstLen = null;
-
   threshold = null;
-
   average = null;
-
   fromSecs = null;
-
   toSecs = null;
-
   validTimes = [];
-
   writeOutput = false;
-
   mmCommon = null;
 
   constructor(cbPool)
