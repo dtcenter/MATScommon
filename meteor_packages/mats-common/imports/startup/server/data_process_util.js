@@ -160,14 +160,16 @@ const processDataXYCurve = function (
             .format("YYYY-MM-DD HH:mm")}`;
           break;
         case matsTypes.PlotTypes.dailyModelCycle:
-          var fhr =
-            ((data.x[di] / 1000) % (24 * 3600)) / 3600 -
-            curveInfoParams.utcCycleStarts[curveIndex];
-          fhr = fhr < 0 ? fhr + 24 : fhr;
-          data.text[di] = `${data.text[di]}<br>time: ${moment
-            .utc(data.x[di])
-            .format("YYYY-MM-DD HH:mm")}`;
-          data.text[di] = `${data.text[di]}<br>forecast hour: ${fhr}`;
+          {
+            let fhr =
+              ((data.x[di] / 1000) % (24 * 3600)) / 3600 -
+              curveInfoParams.utcCycleStarts[curveIndex];
+            fhr = fhr < 0 ? fhr + 24 : fhr;
+            data.text[di] = `${data.text[di]}<br>time: ${moment
+              .utc(data.x[di])
+              .format("YYYY-MM-DD HH:mm")}`;
+            data.text[di] = `${data.text[di]}<br>forecast hour: ${fhr}`;
+          }
           break;
         case matsTypes.PlotTypes.dieoff:
           data.text[di] = `${data.text[di]}<br>fhr: ${data.x[di]}`;
@@ -1390,6 +1392,104 @@ const processDataPerformanceDiagram = function (
   };
 };
 
+const processDataGridScaleProb = function (
+  dataset,
+  appParams,
+  curveInfoParams,
+  plotParams,
+  bookkeepingParams
+) {
+  const error = "";
+
+  const isMetexpress =
+    matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
+
+  // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
+  if (curveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
+    dataset = matsDataMatchUtils.getMatchedDataSet(
+      dataset,
+      curveInfoParams,
+      appParams,
+      {}
+    );
+  }
+
+  // sort data statistics for each curve
+  for (let curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
+    const data = dataset[curveIndex];
+    const { label } = dataset[curveIndex];
+
+    let di = 0;
+    while (di < data.x.length) {
+      // store statistics for this di datapoint
+      data.stats[di] = {
+        bin_value: data.x[di],
+        n_grid: data.y[di],
+        n: data.subVals[di].length,
+      };
+      // the tooltip is stored in data.text
+      data.text[di] = label;
+      data.text[di] = `${data.text[di]}<br>probability bin: ${data.x[di]}`;
+      data.text[di] = `${data.text[di]}<br>number of grid points: ${data.y[di]}`;
+      data.text[di] = `${data.text[di]}<br>n: ${data.subVals[di].length}`;
+
+      di += 1;
+    }
+    dataset[curveIndex].glob_stats = {};
+  }
+
+  // generate plot options
+  const resultOptions = matsDataPlotOpsUtils.generateGridScaleProbPlotOptions(
+    curveInfoParams.axisMap
+  );
+
+  for (let curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
+    // remove sub values and times to save space
+    const data = dataset[curveIndex];
+    data.subHit = [];
+    data.subFa = [];
+    data.subMiss = [];
+    data.subCn = [];
+    data.subSquareDiffSum = [];
+    data.subNSum = [];
+    data.subObsModelDiffSum = [];
+    data.subModelSum = [];
+    data.subObsSum = [];
+    data.subAbsSum = [];
+    data.subInterest = [];
+    data.subData = [];
+    data.subHeaders = [];
+    data.n_forecast = [];
+    data.n_matched = [];
+    data.n_simple = [];
+    data.n_total = [];
+    data.subVals = [];
+    data.subSecs = [];
+    data.subLevs = [];
+  }
+
+  const totalProcessingFinish = moment();
+  bookkeepingParams.dataRequests["total retrieval and processing time for curve set"] =
+    {
+      begin: bookkeepingParams.totalProcessingStart.format(),
+      finish: totalProcessingFinish.format(),
+      duration: `${moment
+        .duration(totalProcessingFinish.diff(bookkeepingParams.totalProcessingStart))
+        .asSeconds()} seconds`,
+    };
+
+  // pass result to client-side plotting functions
+  return {
+    error,
+    data: dataset,
+    options: resultOptions,
+    basis: {
+      plotParams,
+      queries: bookkeepingParams.dataRequests,
+    },
+  };
+};
+
 const processDataEnsembleHistogram = function (
   dataset,
   appParams,
@@ -2133,6 +2233,7 @@ export default matsDataProcessUtils = {
   processDataReliability,
   processDataROC,
   processDataPerformanceDiagram,
+  processDataGridScaleProb,
   processDataHistogram,
   processDataEnsembleHistogram,
   processDataContour,

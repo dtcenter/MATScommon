@@ -105,6 +105,7 @@ Template.textOutput.helpers({
                     <th>area under the ROC curve</th>";
         break;
       case matsTypes.PlotTypes.performanceDiagram:
+      case matsTypes.PlotTypes.gridscaleProb:
         header += "";
         break;
       case matsTypes.PlotTypes.map:
@@ -273,6 +274,12 @@ Template.textOutput.helpers({
         header += `<th>${curve.label} bin value</th>\
                         <th>probability of detection</th>\
                         <th>success ratio</th>\
+                        <th>n</th>\
+                        `;
+        break;
+      case matsTypes.PlotTypes.gridscaleProb:
+        header += `<th>${curve.label} probability bin</th>\
+                        <th>number of grid points</th>\
                         <th>n</th>\
                         `;
         break;
@@ -678,6 +685,19 @@ Template.textOutput.helpers({
           `<td>${
             element["success ratio"] !== undefined && element["success ratio"] !== null
               ? element["success ratio"]
+              : fillStr
+          }</td>` +
+          `<td>${
+            element.n !== undefined && element.n !== null ? element.n : fillStr
+          }</td>`;
+        break;
+      case matsTypes.PlotTypes.gridscaleProb:
+        line +=
+          `<td>${element[(labelKey += " probability bin")]}</td>` +
+          `<td>${
+            element["number of grid points"] !== undefined &&
+            element["number of grid points"] !== null
+              ? element["number of grid points"]
               : fillStr
           }</td>` +
           `<td>${

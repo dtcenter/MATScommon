@@ -57,6 +57,7 @@ Template.curveList.helpers({
         case matsTypes.PlotTypes.gridscale:
         case matsTypes.PlotTypes.dailyModelCycle:
         case matsTypes.PlotTypes.yearToYear:
+        case matsTypes.PlotTypes.gridscaleProb:
         case matsTypes.PlotTypes.histogram:
         case matsTypes.PlotTypes.ensembleHistogram:
         case matsTypes.PlotTypes.contourDiff:

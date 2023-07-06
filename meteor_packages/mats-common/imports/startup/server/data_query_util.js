@@ -1356,6 +1356,9 @@ const parseQueryDataXYCurve = function (
       case matsTypes.PlotTypes.gridscale:
         independentVar = Number(rows[rowIndex].gridscale);
         break;
+      case matsTypes.PlotTypes.gridscaleProb:
+        independentVar = Number(rows[rowIndex].binValue);
+        break;
       case matsTypes.PlotTypes.profile:
         independentVar = Number(rows[rowIndex].avVal.toString().replace("P", ""));
         break;
@@ -1617,6 +1620,8 @@ const parseQueryDataXYCurve = function (
             absSum,
             statisticStr
           );
+        } else if (statisticStr.toLowerCase().includes("count")) {
+          stat = matsDataUtils.sum(sub_values);
         } else {
           stat = matsDataUtils.average(sub_values);
         }

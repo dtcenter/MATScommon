@@ -1622,6 +1622,34 @@ const _getFlattenedResultData = function (rk, p, np) {
             returnData.data[data[ci].label] = curveData;
           }
           break;
+        case matsTypes.PlotTypes.gridscaleProb:
+          var returnData = {};
+          returnData.stats = {}; // map of maps
+          returnData.data = {}; // map of arrays of maps
+          for (var ci = 0; ci < data.length; ci++) {
+            // for each curve
+            // if the curve label is a reserved word do not process the curve (its a zero or max curve)
+            var reservedWords = Object.values(matsTypes.ReservedWords);
+            if (reservedWords.indexOf(data[ci].label) >= 0) {
+              continue; // don't process the zero or max curves
+            }
+            var stats = {};
+            stats.label = data[ci].label;
+            returnData.stats[data[ci].label] = stats;
+
+            var curveData = []; // array of maps
+            for (var cdi = 0; cdi < data[ci].y.length; cdi++) {
+              // for each datapoint
+              var curveDataElement = {};
+              curveDataElement[`${data[ci].label} probability bin`] =
+                data[ci].stats[cdi].bin_value;
+              curveDataElement["number of grid points"] = data[ci].stats[cdi].n_grid;
+              curveDataElement.n = data[ci].stats[cdi].n;
+              curveData.push(curveDataElement);
+            }
+            returnData.data[data[ci].label] = curveData;
+          }
+          break;
         case matsTypes.PlotTypes.simpleScatter:
           var returnData = {};
           returnData.stats = {}; // map of maps

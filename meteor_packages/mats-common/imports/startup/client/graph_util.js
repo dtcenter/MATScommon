@@ -244,7 +244,6 @@ const width = function (plotType) {
     case matsTypes.PlotTypes.scatter2d:
       // set the width square
       return squareWidthHeight();
-      break;
     case matsTypes.PlotTypes.timeSeries:
     case matsTypes.PlotTypes.dieoff:
     case matsTypes.PlotTypes.threshold:
@@ -252,6 +251,7 @@ const width = function (plotType) {
     case matsTypes.PlotTypes.gridscale:
     case matsTypes.PlotTypes.dailyModelCycle:
     case matsTypes.PlotTypes.yearToYear:
+    case matsTypes.PlotTypes.gridscaleProb:
     case matsTypes.PlotTypes.map:
     case matsTypes.PlotTypes.histogram:
     case matsTypes.PlotTypes.ensembleHistogram:
@@ -260,7 +260,6 @@ const width = function (plotType) {
     default:
       // set the width wide
       return rectangleWidth();
-      break;
   }
 };
 
@@ -275,7 +274,6 @@ const height = function (plotType) {
     case matsTypes.PlotTypes.scatter2d:
       // set the height square
       return squareWidthHeight();
-      break;
     case matsTypes.PlotTypes.timeSeries:
     case matsTypes.PlotTypes.dieoff:
     case matsTypes.PlotTypes.threshold:
@@ -283,6 +281,7 @@ const height = function (plotType) {
     case matsTypes.PlotTypes.gridscale:
     case matsTypes.PlotTypes.dailyModelCycle:
     case matsTypes.PlotTypes.yearToYear:
+    case matsTypes.PlotTypes.gridscaleProb:
     case matsTypes.PlotTypes.map:
     case matsTypes.PlotTypes.histogram:
     case matsTypes.PlotTypes.ensembleHistogram:
@@ -291,7 +290,6 @@ const height = function (plotType) {
     default:
       // set the height wide
       return rectangleHeight();
-      break;
   }
 };
 
@@ -306,7 +304,6 @@ const standAloneWidth = function (plotType) {
     case matsTypes.PlotTypes.scatter2d:
       // set the width square
       return standAloneSquareWidthHeight();
-      break;
     case matsTypes.PlotTypes.timeSeries:
     case matsTypes.PlotTypes.dieoff:
     case matsTypes.PlotTypes.threshold:
@@ -314,6 +311,7 @@ const standAloneWidth = function (plotType) {
     case matsTypes.PlotTypes.gridscale:
     case matsTypes.PlotTypes.dailyModelCycle:
     case matsTypes.PlotTypes.yearToYear:
+    case matsTypes.PlotTypes.gridscaleProb:
     case matsTypes.PlotTypes.map:
     case matsTypes.PlotTypes.histogram:
     case matsTypes.PlotTypes.ensembleHistogram:
@@ -322,7 +320,6 @@ const standAloneWidth = function (plotType) {
     default:
       // set the width wide
       return standAloneRectangleWidth();
-      break;
   }
 };
 
@@ -337,7 +334,6 @@ const standAloneHeight = function (plotType) {
     case matsTypes.PlotTypes.scatter2d:
       // set the height square
       return standAloneSquareWidthHeight();
-      break;
     case matsTypes.PlotTypes.timeSeries:
     case matsTypes.PlotTypes.dieoff:
     case matsTypes.PlotTypes.threshold:
@@ -345,6 +341,7 @@ const standAloneHeight = function (plotType) {
     case matsTypes.PlotTypes.gridscale:
     case matsTypes.PlotTypes.dailyModelCycle:
     case matsTypes.PlotTypes.yearToYear:
+    case matsTypes.PlotTypes.gridscaleProb:
     case matsTypes.PlotTypes.map:
     case matsTypes.PlotTypes.histogram:
     case matsTypes.PlotTypes.ensembleHistogram:
@@ -353,7 +350,6 @@ const standAloneHeight = function (plotType) {
     default:
       // set the height wide
       return standAloneRectangleHeight();
-      break;
   }
 };
 

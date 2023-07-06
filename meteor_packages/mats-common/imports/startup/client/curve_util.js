@@ -464,7 +464,7 @@ const setSelectorVisibility = function (plotType, faceOptions, selectorsToReset)
   if (
     document.getElementById("plotTypes-selector") !== undefined &&
     document.getElementById("plotTypes-selector") !== null &&
-    document.getElementById("plotTypes-selector").value === plotType
+    document.getElementById("plotTypes-selector").value.replace(" ", "") === plotType
   ) {
     // reset selectors that may have been set to something invalid for the new plot type
     const resetSelectors = Object.keys(selectorsToReset);
@@ -526,6 +526,7 @@ const showTimeseriesFace = function () {
     level: "block",
     "forecast-length": "block",
     "dieoff-type": "none",
+    "probability-bins": "block",
     average: "block",
     "valid-time": "block",
     "utc-cycle-start": "none",
@@ -577,6 +578,7 @@ const showProfileFace = function () {
     level: "none",
     "forecast-length": "block",
     "dieoff-type": "none",
+    "probability-bins": "block",
     average: "none",
     "valid-time": "block",
     "utc-cycle-start": "none",
@@ -628,6 +630,7 @@ const showDieoffFace = function () {
     level: "block",
     "forecast-length": "none",
     "dieoff-type": "block",
+    "probability-bins": "block",
     average: "none",
     "valid-time": "block",
     "utc-cycle-start": "none",
@@ -679,6 +682,7 @@ const showThresholdFace = function () {
     level: "block",
     "forecast-length": "block",
     "dieoff-type": "none",
+    "probability-bins": "block",
     average: "none",
     "valid-time": "block",
     "utc-cycle-start": "none",
@@ -734,6 +738,7 @@ const showValidTimeFace = function () {
     level: "block",
     "forecast-length": "block",
     "dieoff-type": "none",
+    "probability-bins": "block",
     average: "none",
     "valid-time": "none",
     "utc-cycle-start": "none",
@@ -785,6 +790,7 @@ const showGridScaleFace = function () {
     level: "block",
     "forecast-length": "block",
     "dieoff-type": "none",
+    "probability-bins": "block",
     average: "none",
     "valid-time": "block",
     "utc-cycle-start": "none",
@@ -836,6 +842,7 @@ const showDailyModelCycleFace = function () {
     level: "block",
     "forecast-length": "none",
     "dieoff-type": "none",
+    "probability-bins": "block",
     average: "none",
     "valid-time": "none",
     "utc-cycle-start": "block",
@@ -887,6 +894,7 @@ const showYearToYearFace = function () {
     level: "block",
     "forecast-length": "block",
     "dieoff-type": "none",
+    "probability-bins": "block",
     average: "none",
     "valid-time": "block",
     "utc-cycle-start": "none",
@@ -938,6 +946,7 @@ const showReliabilityFace = function () {
     level: "block",
     "forecast-length": "block",
     "dieoff-type": "none",
+    "probability-bins": "block",
     average: "none",
     "valid-time": "block",
     "utc-cycle-start": "none",
@@ -989,6 +998,7 @@ const showROCFace = function () {
     level: "block",
     "forecast-length": "block",
     "dieoff-type": "none",
+    "probability-bins": "block",
     average: "none",
     "valid-time": "block",
     "utc-cycle-start": "none",
@@ -1042,6 +1052,7 @@ const showPerformanceDiagramFace = function () {
     level: "block",
     "forecast-length": "block",
     "dieoff-type": "none",
+    "probability-bins": "block",
     average: "none",
     "valid-time": "block",
     "utc-cycle-start": "none",
@@ -1084,6 +1095,58 @@ const showPerformanceDiagramFace = function () {
   return selectorsToReset;
 };
 
+// method to display the appropriate selectors for a performance diagram curve
+const showGridScaleProbFace = function () {
+  const plotType = matsTypes.PlotTypes.gridscaleProb;
+  let faceOptions = {
+    "curve-dates": "block",
+    dates: "none",
+    statistic: "none",
+    "x-statistic": "none",
+    "y-statistic": "none",
+    variable: "block",
+    "x-variable": "none",
+    "y-variable": "none",
+    threshold: "block",
+    scale: "block",
+    level: "block",
+    "forecast-length": "block",
+    "dieoff-type": "none",
+    "probability-bins": "none",
+    average: "none",
+    "valid-time": "block",
+    "utc-cycle-start": "none",
+    "aggregation-method": "block",
+    "histogram-type-controls": "none",
+    "histogram-bin-controls": "none",
+    "histogram-yaxis-controls": "none",
+    "bin-number": "none",
+    "bin-start": "none",
+    "bin-stride": "none",
+    "bin-pivot": "none",
+    "bin-bounds": "none",
+    truth: "block",
+    year: "block",
+    storm: "block",
+    "region-type": "block",
+    "x-axis-parameter": "none",
+    "y-axis-parameter": "none",
+    "bin-parameter": "none",
+    significance: "none",
+    plotFormat: "block",
+    QCParamGroup: "none",
+    "QCParamGroup-gaps": "none",
+    "QCParamGroup-lite": "none",
+  };
+  const selectorsToReset = {
+    "dieoff-type": "Dieoff",
+    "bin-parameter": "Valid Date",
+  };
+  faceOptions = checkIfDisplayAllQCParams(faceOptions);
+  setSelectorVisibility(plotType, faceOptions, selectorsToReset);
+  return selectorsToReset;
+};
+
 // method to display the appropriate selectors for a map
 const showMapFace = function () {
   const plotType = matsTypes.PlotTypes.map;
@@ -1102,6 +1165,7 @@ const showMapFace = function () {
     level: "block",
     "forecast-length": "block",
     "dieoff-type": "none",
+    "probability-bins": "block",
     average: "none",
     "valid-time": "block",
     "utc-cycle-start": "none",
@@ -1162,6 +1226,7 @@ const showHistogramFace = function () {
     level: "block",
     "forecast-length": "block",
     "dieoff-type": "none",
+    "probability-bins": "block",
     average: "none",
     "valid-time": "block",
     "utc-cycle-start": "none",
@@ -1222,6 +1287,7 @@ const showEnsembleHistogramFace = function () {
     level: "block",
     "forecast-length": "block",
     "dieoff-type": "none",
+    "probability-bins": "block",
     average: "none",
     "valid-time": "block",
     "utc-cycle-start": "none",
@@ -1258,7 +1324,8 @@ const showEnsembleHistogramFace = function () {
 // method to display the appropriate selectors for a contour plot
 const showContourFace = function () {
   const plotType =
-    document.getElementById("plotTypes-selector").value === matsTypes.PlotTypes.contour
+    document.getElementById("plotTypes-selector").value.replace(" ", "") ===
+    matsTypes.PlotTypes.contour
       ? matsTypes.PlotTypes.contour
       : matsTypes.PlotTypes.contourDiff;
   const faceOptions = {
@@ -1275,6 +1342,7 @@ const showContourFace = function () {
     level: "block",
     "forecast-length": "block",
     "dieoff-type": "none",
+    "probability-bins": "block",
     average: "none",
     "valid-time": "block",
     "utc-cycle-start": "none",
@@ -1332,6 +1400,7 @@ const showSimpleScatterFace = function () {
     level: "block",
     "forecast-length": "block",
     "dieoff-type": "none",
+    "probability-bins": "block",
     average: "none",
     "valid-time": "block",
     "utc-cycle-start": "none",
@@ -1392,6 +1461,7 @@ const showScatterFace = function () {
     level: "block",
     "forecast-length": "block",
     "dieoff-type": "none",
+    "probability-bins": "block",
     average: "none",
     "valid-time": "block",
     "utc-cycle-start": "none",
@@ -1468,6 +1538,7 @@ export default matsCurveUtils = {
   showReliabilityFace,
   showROCFace,
   showPerformanceDiagramFace,
+  showGridScaleProbFace,
   showMapFace,
   showHistogramFace,
   showEnsembleHistogramFace,

@@ -76,6 +76,11 @@ Template.curveParamItemGroup.helpers({
           plotType: matsTypes.PlotTypes.performanceDiagram,
         });
         break;
+      case matsTypes.PlotTypes.gridscaleProb:
+        pattern = matsCollections.CurveTextPatterns.findOne({
+          plotType: matsTypes.PlotTypes.gridscaleProb,
+        });
+        break;
       case matsTypes.PlotTypes.map:
         pattern = matsCollections.CurveTextPatterns.findOne({
           plotType: matsTypes.PlotTypes.map,

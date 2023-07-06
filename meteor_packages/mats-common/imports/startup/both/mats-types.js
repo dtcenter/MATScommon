@@ -75,6 +75,7 @@ const PlotTypes = {
   reliability: "Reliability",
   roc: "ROC",
   performanceDiagram: "PerformanceDiagram",
+  gridscaleProb: "GridScaleProbability",
   map: "Map",
   histogram: "Histogram",
   ensembleHistogram: "EnsembleHistogram",

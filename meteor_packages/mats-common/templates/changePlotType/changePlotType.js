@@ -15,13 +15,17 @@ Template.changePlotType.events({
     Session.set("lastUpdate", Date.now());
 
     Session.set("confirmPlotChange", Date.now());
-    document.getElementById("plotTypes-selector").value = Session.get("plotChangeType");
+    document.getElementById("plotTypes-selector").value = Session.get("plotChangeType")
+      .replace(/([A-Z])/g, " $1")
+      .trim();
     $("#plotTypes-selector").trigger("change");
   },
   "click .confirm-keep-all"(event) {
     event.preventDefault();
     Session.set("confirmPlotChange", Date.now());
-    document.getElementById("plotTypes-selector").value = Session.get("plotChangeType");
+    document.getElementById("plotTypes-selector").value = Session.get("plotChangeType")
+      .replace(/([A-Z])/g, " $1")
+      .trim();
     $("#plotTypes-selector").trigger("change");
   },
 });

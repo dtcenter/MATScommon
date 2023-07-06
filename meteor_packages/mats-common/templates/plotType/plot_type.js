@@ -82,7 +82,6 @@ const matchPlotTypeSelector = function (plotType) {
 const setDatesAndShowFace = function (plotType, dateSelector) {
   // display appropriate selectors for each plot type, and make sure the previous dates or curve-dates values
   // carry across to the appropriate new selector
-  const { appName } = matsCollections.Settings.findOne({});
   let oldDatesExist;
   if (dateSelector === "dates") {
     oldDatesExist = matsParamUtils.isParamVisible("dates");
@@ -91,9 +90,6 @@ const setDatesAndShowFace = function (plotType, dateSelector) {
   }
   let selectorsToReset = {};
   switch (plotType) {
-    case matsTypes.PlotTypes.timeSeries:
-      selectorsToReset = matsCurveUtils.showTimeseriesFace();
-      break;
     case matsTypes.PlotTypes.profile:
       selectorsToReset = matsCurveUtils.showProfileFace();
       break;
@@ -124,6 +120,9 @@ const setDatesAndShowFace = function (plotType, dateSelector) {
     case matsTypes.PlotTypes.performanceDiagram:
       selectorsToReset = matsCurveUtils.showPerformanceDiagramFace();
       break;
+    case matsTypes.PlotTypes.gridscaleProb:
+      selectorsToReset = matsCurveUtils.showGridScaleProbFace();
+      break;
     case matsTypes.PlotTypes.map:
       selectorsToReset = matsCurveUtils.showMapFace();
       break;
@@ -142,6 +141,10 @@ const setDatesAndShowFace = function (plotType, dateSelector) {
       break;
     case matsTypes.PlotTypes.scatter2d:
       selectorsToReset = matsCurveUtils.showScatterFace();
+      break;
+    case matsTypes.PlotTypes.timeSeries:
+    default:
+      selectorsToReset = matsCurveUtils.showTimeseriesFace();
       break;
   }
   if (dateSelector === "dates") {
@@ -211,6 +214,7 @@ const changePlotType = function (plotType, selectorsToInitialize, dateSelector) 
             case matsTypes.PlotTypes.gridscale:
             case matsTypes.PlotTypes.dailyModelCycle:
             case matsTypes.PlotTypes.yearToYear:
+            case matsTypes.PlotTypes.gridscaleProb:
             case matsTypes.PlotTypes.histogram:
             case matsTypes.PlotTypes.ensembleHistogram:
             default:
@@ -252,9 +256,9 @@ const changePlotType = function (plotType, selectorsToInitialize, dateSelector) 
                 }).options
               ) {
                 // we don't have a default, but we have a list of options. Use the first one of those.
-                curves[ci][selectorsToInitialize[si]] = matsCollections[
+                [curves[ci][selectorsToInitialize[si]]] = matsCollections[
                   selectorsToInitialize[si]
-                ].findOne({ name: selectorsToInitialize[si] }).options[0];
+                ].findOne({ name: selectorsToInitialize[si] }).options;
               }
             }
           }
@@ -264,52 +268,35 @@ const changePlotType = function (plotType, selectorsToInitialize, dateSelector) 
     }
     Session.set("confirmPlotChange", "");
     Session.set("plotChangeType", "");
+  } else if (Session.get("Curves").length > 0) {
+    Session.set("plotChangeType", plotType);
+    $("#modal-change-plot-type").modal();
   } else {
-    // no confirmation yet so check to see if we have any curves and if so then show the confirm dialog
-    if (Session.get("Curves").length > 0) {
-      Session.set("plotChangeType", plotType);
-      $("#modal-change-plot-type").modal();
-    } else {
-      // no curves - just set the new plot type face
-      // the MET apps have a hidden plot-type selector than needs to match the actual plot type
-      matchPlotTypeSelector(plotType);
+    // no curves - just set the new plot type face
+    // the MET apps have a hidden plot-type selector than needs to match the actual plot type
+    matchPlotTypeSelector(plotType);
 
-      // display appropriate selectors for this plot type, and make sure the previous dates or curve-dates values
-      // carry across to the appropriate new selector
-      setDatesAndShowFace(plotType, dateSelector);
-    }
+    // display appropriate selectors for this plot type, and make sure the previous dates or curve-dates values
+    // carry across to the appropriate new selector
+    setDatesAndShowFace(plotType, dateSelector);
   }
 };
 
 Template.plotType.events({
   "change .plotTypes-selector"(event) {
-    const plotType = document.getElementById("plotTypes-selector").value;
+    const plotType = document
+      .getElementById("plotTypes-selector")
+      .value.replace(" ", "");
     let selectorsToInitialize = [];
     let dateSelector = "dates";
     switch (plotType) {
-      case matsTypes.PlotTypes.timeSeries:
-        selectorsToInitialize = [
-          "statistic",
-          "threshold",
-          "scale",
-          "level",
-          "forecast-length",
-          "average",
-          "valid-time",
-          "truth",
-          "year",
-          "storm",
-          "region-type",
-          "region",
-        ];
-        dateSelector = "dates";
-        break;
       case matsTypes.PlotTypes.profile:
         selectorsToInitialize = [
           "statistic",
           "threshold",
           "scale",
           "forecast-length",
+          "probability-bins",
           "valid-time",
           "truth",
           "year",
@@ -325,6 +312,7 @@ Template.plotType.events({
           "threshold",
           "scale",
           "level",
+          "probability-bins",
           "dieoff-type",
           "valid-time",
           "truth",
@@ -341,6 +329,7 @@ Template.plotType.events({
           "scale",
           "level",
           "forecast-length",
+          "probability-bins",
           "valid-time",
           "truth",
           "year",
@@ -357,6 +346,7 @@ Template.plotType.events({
           "scale",
           "level",
           "forecast-length",
+          "probability-bins",
           "truth",
           "year",
           "storm",
@@ -371,6 +361,7 @@ Template.plotType.events({
           "threshold",
           "level",
           "forecast-length",
+          "probability-bins",
           "valid-time",
           "truth",
           "year",
@@ -386,6 +377,7 @@ Template.plotType.events({
           "threshold",
           "scale",
           "level",
+          "probability-bins",
           "utc-cycle-start",
           "truth",
           "year",
@@ -402,6 +394,7 @@ Template.plotType.events({
           "scale",
           "level",
           "forecast-length",
+          "probability-bins",
           "valid-time",
           "truth",
           "region-type",
@@ -415,6 +408,7 @@ Template.plotType.events({
           "scale",
           "level",
           "forecast-length",
+          "probability-bins",
           "valid-time",
           "truth",
           "year",
@@ -430,6 +424,7 @@ Template.plotType.events({
           "scale",
           "level",
           "forecast-length",
+          "probability-bins",
           "valid-time",
           "truth",
           "year",
@@ -445,6 +440,7 @@ Template.plotType.events({
           "scale",
           "level",
           "forecast-length",
+          "probability-bins",
           "valid-time",
           "truth",
           "year",
@@ -455,6 +451,21 @@ Template.plotType.events({
         ];
         dateSelector = "curve-dates";
         break;
+      case matsTypes.PlotTypes.gridscaleProb:
+        selectorsToInitialize = [
+          "threshold",
+          "scale",
+          "level",
+          "forecast-length",
+          "valid-time",
+          "truth",
+          "year",
+          "storm",
+          "region-type",
+          "region",
+        ];
+        dateSelector = "curve-dates";
+        break;
       case matsTypes.PlotTypes.map:
         selectorsToInitialize = [
           "statistic",
@@ -462,6 +473,7 @@ Template.plotType.events({
           "scale",
           "level",
           "forecast-length",
+          "probability-bins",
           "valid-time",
           "truth",
           "year",
@@ -476,6 +488,7 @@ Template.plotType.events({
           "scale",
           "level",
           "forecast-length",
+          "probability-bins",
           "valid-time",
           "truth",
           "year",
@@ -491,6 +504,7 @@ Template.plotType.events({
           "scale",
           "level",
           "forecast-length",
+          "probability-bins",
           "valid-time",
           "truth",
           "year",
@@ -507,6 +521,7 @@ Template.plotType.events({
           "scale",
           "level",
           "forecast-length",
+          "probability-bins",
           "valid-time",
           "truth",
           "year",
@@ -525,6 +540,7 @@ Template.plotType.events({
           "scale",
           "level",
           "forecast-length",
+          "probability-bins",
           "valid-time",
           "truth",
           "year",
@@ -546,6 +562,7 @@ Template.plotType.events({
           "scale",
           "level",
           "forecast-length",
+          "probability-bins",
           "valid-time",
           "truth",
           "year",
@@ -558,6 +575,25 @@ Template.plotType.events({
         break;
       case matsTypes.PlotTypes.scatter2d:
         selectorsToInitialize = [];
+        dateSelector = "dates";
+        break;
+      case matsTypes.PlotTypes.timeSeries:
+      default:
+        selectorsToInitialize = [
+          "statistic",
+          "threshold",
+          "scale",
+          "level",
+          "forecast-length",
+          "probability-bins",
+          "average",
+          "valid-time",
+          "truth",
+          "year",
+          "storm",
+          "region-type",
+          "region",
+        ];
         dateSelector = "dates";
         break;
     }

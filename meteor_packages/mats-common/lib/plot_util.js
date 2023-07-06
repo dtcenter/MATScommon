@@ -83,7 +83,7 @@ const getCurveTextWrapping = function (plotType, curve) {
 // determine which plotType radio button is checked
 const getPlotType = function () {
   return document.getElementById("plotTypes-selector")
-    ? document.getElementById("plotTypes-selector").value
+    ? document.getElementById("plotTypes-selector").value.replace(" ", "")
     : undefined;
 };
 
@@ -175,9 +175,6 @@ const restoreSettings = function (p) {
       // We have to set up the display without using click events because that would cause
       // the restored curves to be removed
       switch (ptElem.value) {
-        case matsTypes.PlotTypes.timeSeries:
-          matsCurveUtils.showTimeseriesFace();
-          break;
         case matsTypes.PlotTypes.profile:
           matsCurveUtils.showProfileFace();
           break;
@@ -208,6 +205,9 @@ const restoreSettings = function (p) {
         case matsTypes.PlotTypes.performanceDiagram:
           matsCurveUtils.showPerformanceDiagramFace();
           break;
+        case matsTypes.PlotTypes.gridscaleProb:
+          matsCurveUtils.showGridScaleProbFace();
+          break;
         case matsTypes.PlotTypes.map:
           matsCurveUtils.showMapFace();
           break;
@@ -227,6 +227,10 @@ const restoreSettings = function (p) {
         case matsTypes.PlotTypes.scatter2d:
           matsCurveUtils.showScatterFace();
           break;
+        case matsTypes.PlotTypes.timeSeries:
+        default:
+          matsCurveUtils.showTimeseriesFace();
+          break;
       }
     } else {
       ptElem.checked = false;
@@ -235,7 +239,9 @@ const restoreSettings = function (p) {
   if (plotTypeSaved !== true) {
     // set the default - in the case none was set in an old saved settings
     document.getElementById("plotTypes-selector").value =
-      matsCollections.PlotGraphFunctions.findOne({ checked: true }).plotType;
+      matsCollections.PlotGraphFunctions.findOne({ checked: true })
+        .plotType.replace(/([A-Z])/g, " $1")
+        .trim();
   }
 
   // now set the PlotParams

@@ -462,8 +462,9 @@ Template.plotList.onRendered(function () {
   if (Session.get("scorecardTimeseriesKey")) {
     // we are plotting a timeseries, make sure MATS is set to that plot type
     Session.set("plotType", matsTypes.PlotTypes.timeSeries);
-    document.getElementById("plotTypes-selector").value =
-      matsTypes.PlotTypes.timeSeries;
+    document.getElementById("plotTypes-selector").value = matsTypes.PlotTypes.timeSeries
+      .replace(/([A-Z])/g, " $1")
+      .trim();
     matsCurveUtils.showTimeseriesFace();
 
     // make sure everything is at default
@@ -528,6 +529,9 @@ Template.plotList.onRendered(function () {
         break;
       case matsTypes.PlotTypes.performanceDiagram:
         matsCurveUtils.showPerformanceDiagramFace();
+        break;
+      case matsTypes.PlotTypes.gridscaleProb:
+        matsCurveUtils.showGridScaleProbFace();
         break;
       case matsTypes.PlotTypes.map:
         matsCurveUtils.showMapFace();

@@ -78,6 +78,7 @@ Template.graph.helpers({
         case matsTypes.PlotTypes.reliability:
         case matsTypes.PlotTypes.roc:
         case matsTypes.PlotTypes.performanceDiagram:
+        case matsTypes.PlotTypes.gridScaleProb:
         case matsTypes.PlotTypes.simpleScatter:
           // saved curve options for line graphs
           var lineTypeResetOpts = [];
@@ -180,6 +181,7 @@ Template.graph.helpers({
           case matsTypes.PlotTypes.reliability:
           case matsTypes.PlotTypes.roc:
           case matsTypes.PlotTypes.performanceDiagram:
+          case matsTypes.PlotTypes.gridScaleProb:
             document.getElementById(`${label}-curve-show-hide`).click();
             return false;
           case matsTypes.PlotTypes.simpleScatter:
@@ -222,6 +224,7 @@ Template.graph.helpers({
             case matsTypes.PlotTypes.reliability:
             case matsTypes.PlotTypes.roc:
             case matsTypes.PlotTypes.performanceDiagram:
+            case matsTypes.PlotTypes.gridScaleProb:
               document.getElementById(`${label}-curve-show-hide`).click();
               break;
             case matsTypes.PlotTypes.simpleScatter:
@@ -261,24 +264,6 @@ Template.graph.helpers({
           }
           label = dataset[i].label;
           switch (plotType) {
-            case matsTypes.PlotTypes.timeSeries:
-            case matsTypes.PlotTypes.profile:
-            case matsTypes.PlotTypes.dieoff:
-            case matsTypes.PlotTypes.threshold:
-            case matsTypes.PlotTypes.validtime:
-            case matsTypes.PlotTypes.gridscale:
-            case matsTypes.PlotTypes.dailyModelCycle:
-            case matsTypes.PlotTypes.yearToYear:
-            case matsTypes.PlotTypes.reliability:
-            case matsTypes.PlotTypes.roc:
-            case matsTypes.PlotTypes.performanceDiagram:
-              if (
-                (hideAllOtherCurves && dataset[i].visible !== "legendonly") ||
-                (!hideAllOtherCurves && dataset[i].visible === "legendonly")
-              ) {
-                document.getElementById(`${label}-curve-show-hide`).click();
-              }
-              break;
             case matsTypes.PlotTypes.simpleScatter:
             case matsTypes.PlotTypes.scatter2d:
               if (
@@ -295,6 +280,26 @@ Template.graph.helpers({
                 (!hideAllOtherCurves && dataset[i].visible === "legendonly")
               ) {
                 document.getElementById(`${label}-curve-show-hide-bars`).click();
+              }
+              break;
+            case matsTypes.PlotTypes.timeSeries:
+            case matsTypes.PlotTypes.profile:
+            case matsTypes.PlotTypes.dieoff:
+            case matsTypes.PlotTypes.threshold:
+            case matsTypes.PlotTypes.validtime:
+            case matsTypes.PlotTypes.gridscale:
+            case matsTypes.PlotTypes.dailyModelCycle:
+            case matsTypes.PlotTypes.yearToYear:
+            case matsTypes.PlotTypes.reliability:
+            case matsTypes.PlotTypes.roc:
+            case matsTypes.PlotTypes.performanceDiagram:
+            case matsTypes.PlotTypes.gridScaleProb:
+            default:
+              if (
+                (hideAllOtherCurves && dataset[i].visible !== "legendonly") ||
+                (!hideAllOtherCurves && dataset[i].visible === "legendonly")
+              ) {
+                document.getElementById(`${label}-curve-show-hide`).click();
               }
               break;
           }
@@ -330,6 +335,7 @@ Template.graph.helpers({
           case matsTypes.PlotTypes.reliability:
           case matsTypes.PlotTypes.roc:
           case matsTypes.PlotTypes.performanceDiagram:
+          case matsTypes.PlotTypes.gridScaleProb:
           case matsTypes.PlotTypes.histogram:
           case matsTypes.PlotTypes.ensembleHistogram:
           case matsTypes.PlotTypes.simpleScatter:
@@ -431,6 +437,7 @@ Template.graph.helpers({
         case matsTypes.PlotTypes.reliability:
         case matsTypes.PlotTypes.roc:
         case matsTypes.PlotTypes.performanceDiagram:
+        case matsTypes.PlotTypes.gridScaleProb:
         case matsTypes.PlotTypes.simpleScatter:
           fieldName = " bin values:";
           break;
@@ -485,6 +492,7 @@ Template.graph.helpers({
               case matsTypes.PlotTypes.gridscale:
               case matsTypes.PlotTypes.dailyModelCycle:
               case matsTypes.PlotTypes.yearToYear:
+              case matsTypes.PlotTypes.gridScaleProb:
                 indValsArray = dataset[i].x;
                 break;
               default:
@@ -552,6 +560,7 @@ Template.graph.helpers({
         case matsTypes.PlotTypes.gridscale:
         case matsTypes.PlotTypes.dailyModelCycle:
         case matsTypes.PlotTypes.yearToYear:
+        case matsTypes.PlotTypes.gridScaleProb:
           return "block";
         case matsTypes.PlotTypes.reliability:
         case matsTypes.PlotTypes.roc:
@@ -589,35 +598,42 @@ Template.graph.helpers({
         format = "Unmatched";
       }
       const plotType = Session.get("plotType");
-      switch (plotType) {
-        case matsTypes.PlotTypes.timeSeries:
-        case matsTypes.PlotTypes.dailyModelCycle:
-        case matsTypes.PlotTypes.reliability:
-        case matsTypes.PlotTypes.contour:
-        case matsTypes.PlotTypes.contourDiff:
-          return `${plotType.replace(/([A-Z])/g, " $1").trim()} ${p.dates} : ${format}`;
-        case matsTypes.PlotTypes.profile:
-        case matsTypes.PlotTypes.dieoff:
-        case matsTypes.PlotTypes.threshold:
-        case matsTypes.PlotTypes.validtime:
-        case matsTypes.PlotTypes.gridscale:
-        case matsTypes.PlotTypes.yearToYear:
-        case matsTypes.PlotTypes.roc:
-        case matsTypes.PlotTypes.performanceDiagram:
-        case matsTypes.PlotTypes.histogram:
-        case matsTypes.PlotTypes.simpleScatter:
-          return `${plotType.replace(/([A-Z])/g, " $1").trim()}: ${format}`;
-        case matsTypes.PlotTypes.map:
-          return `Map ${p.dates} `;
-        case matsTypes.PlotTypes.ensembleHistogram: {
-          const ensembleType = p["histogram-type-controls"]
-            ? p["histogram-type-controls"]
-            : `${plotType.replace(/([A-Z])/g, " $1").trim()}`;
-          return `${ensembleType}: ${format}`;
+      if (plotType) {
+        switch (plotType) {
+          case matsTypes.PlotTypes.timeSeries:
+          case matsTypes.PlotTypes.dailyModelCycle:
+          case matsTypes.PlotTypes.reliability:
+          case matsTypes.PlotTypes.contour:
+          case matsTypes.PlotTypes.contourDiff:
+            return `${plotType.replace(/([A-Z])/g, " $1").trim()} ${
+              p.dates
+            } : ${format}`;
+          case matsTypes.PlotTypes.profile:
+          case matsTypes.PlotTypes.dieoff:
+          case matsTypes.PlotTypes.threshold:
+          case matsTypes.PlotTypes.validtime:
+          case matsTypes.PlotTypes.gridscale:
+          case matsTypes.PlotTypes.yearToYear:
+          case matsTypes.PlotTypes.roc:
+          case matsTypes.PlotTypes.performanceDiagram:
+          case matsTypes.PlotTypes.gridScaleProb:
+          case matsTypes.PlotTypes.histogram:
+          case matsTypes.PlotTypes.simpleScatter:
+            return `${plotType.replace(/([A-Z])/g, " $1").trim()}: ${format}`;
+          case matsTypes.PlotTypes.map:
+            return `Map ${p.dates} `;
+          case matsTypes.PlotTypes.ensembleHistogram: {
+            const ensembleType = p["histogram-type-controls"]
+              ? p["histogram-type-controls"]
+              : `${plotType.replace(/([A-Z])/g, " $1").trim()}`;
+            return `${ensembleType}: ${format}`;
+          }
+          case matsTypes.PlotTypes.scatter2d:
+          default:
+            return `Scatter: ${p.dates} : ${format}`;
         }
-        case matsTypes.PlotTypes.scatter2d:
-        default:
-          return `Scatter: ${p.dates} : ${format}`;
+      } else {
+        return "";
       }
     } else {
       return "no plot params";
@@ -697,6 +713,7 @@ Template.graph.helpers({
       case matsTypes.PlotTypes.reliability:
       case matsTypes.PlotTypes.roc:
       case matsTypes.PlotTypes.performanceDiagram:
+      case matsTypes.PlotTypes.gridScaleProb:
         return true;
       case matsTypes.PlotTypes.map:
       case matsTypes.PlotTypes.histogram:
@@ -723,6 +740,7 @@ Template.graph.helpers({
       case matsTypes.PlotTypes.reliability:
       case matsTypes.PlotTypes.roc:
       case matsTypes.PlotTypes.performanceDiagram:
+      case matsTypes.PlotTypes.gridScaleProb:
       case matsTypes.PlotTypes.scatter2d:
       case matsTypes.PlotTypes.simpleScatter:
         return true;
@@ -751,6 +769,7 @@ Template.graph.helpers({
       case matsTypes.PlotTypes.reliability:
       case matsTypes.PlotTypes.roc:
       case matsTypes.PlotTypes.performanceDiagram:
+      case matsTypes.PlotTypes.gridScaleProb:
       case matsTypes.PlotTypes.map:
       case matsTypes.PlotTypes.histogram:
       case matsTypes.PlotTypes.ensembleHistogram:
@@ -855,6 +874,7 @@ Template.graph.helpers({
       case matsTypes.PlotTypes.reliability:
       case matsTypes.PlotTypes.roc:
       case matsTypes.PlotTypes.performanceDiagram:
+      case matsTypes.PlotTypes.gridScaleProb:
         return "block";
       case matsTypes.PlotTypes.simpleScatter:
       case matsTypes.PlotTypes.scatter2d:
@@ -881,6 +901,7 @@ Template.graph.helpers({
       case matsTypes.PlotTypes.reliability:
       case matsTypes.PlotTypes.roc:
       case matsTypes.PlotTypes.performanceDiagram:
+      case matsTypes.PlotTypes.gridScaleProb:
       case matsTypes.PlotTypes.simpleScatter:
       case matsTypes.PlotTypes.scatter2d:
         return "block";
@@ -906,6 +927,7 @@ Template.graph.helpers({
         case matsTypes.PlotTypes.gridscale:
         case matsTypes.PlotTypes.dailyModelCycle:
         case matsTypes.PlotTypes.yearToYear:
+        case matsTypes.PlotTypes.gridScaleProb:
           return "block";
         case matsTypes.PlotTypes.reliability:
         case matsTypes.PlotTypes.roc:
@@ -948,6 +970,7 @@ Template.graph.helpers({
       case matsTypes.PlotTypes.reliability:
       case matsTypes.PlotTypes.roc:
       case matsTypes.PlotTypes.performanceDiagram:
+      case matsTypes.PlotTypes.gridScaleProb:
       case matsTypes.PlotTypes.simpleScatter:
       case matsTypes.PlotTypes.histogram:
       case matsTypes.PlotTypes.ensembleHistogram:
@@ -971,6 +994,7 @@ Template.graph.helpers({
       case matsTypes.PlotTypes.reliability:
       case matsTypes.PlotTypes.roc:
       case matsTypes.PlotTypes.performanceDiagram:
+      case matsTypes.PlotTypes.gridScaleProb:
       case matsTypes.PlotTypes.simpleScatter:
       case matsTypes.PlotTypes.histogram:
       case matsTypes.PlotTypes.ensembleHistogram:
@@ -1374,6 +1398,7 @@ Template.graph.events({
       case matsTypes.PlotTypes.gridscale:
       case matsTypes.PlotTypes.dailyModelCycle:
       case matsTypes.PlotTypes.yearToYear:
+      case matsTypes.PlotTypes.gridScaleProb:
       case matsTypes.PlotTypes.map:
       case matsTypes.PlotTypes.histogram:
       case matsTypes.PlotTypes.ensembleHistogram:
@@ -2147,6 +2172,7 @@ Template.graph.events({
         case matsTypes.PlotTypes.reliability:
         case matsTypes.PlotTypes.roc:
         case matsTypes.PlotTypes.performanceDiagram:
+        case matsTypes.PlotTypes.gridScaleProb:
         case matsTypes.PlotTypes.simpleScatter:
           // restyle for line plots
           const lineTypeResetOpts = Session.get("lineTypeResetOpts");
@@ -2188,6 +2214,7 @@ Template.graph.events({
                 case matsTypes.PlotTypes.reliability:
                 case matsTypes.PlotTypes.roc:
                 case matsTypes.PlotTypes.performanceDiagram:
+                case matsTypes.PlotTypes.gridScaleProb:
                 case matsTypes.PlotTypes.simpleScatter:
                 case matsTypes.PlotTypes.histogram:
                 case matsTypes.PlotTypes.ensembleHistogram:
@@ -2521,6 +2548,7 @@ Template.graph.events({
             case matsTypes.PlotTypes.reliability:
             case matsTypes.PlotTypes.roc:
             case matsTypes.PlotTypes.performanceDiagram:
+            case matsTypes.PlotTypes.gridScaleProb:
               // options for line plots
               updates[index]["line.color"] = elem.value;
               updates[index]["marker.color"] = elem.value;
@@ -2730,6 +2758,7 @@ Template.graph.events({
                 case matsTypes.PlotTypes.gridscale:
                 case matsTypes.PlotTypes.dailyModelCycle:
                 case matsTypes.PlotTypes.yearToYear:
+                case matsTypes.PlotTypes.gridScaleProb:
                   j = isNaN(Number(indVal))
                     ? dataset[i].x.indexOf(indVal)
                     : dataset[i].x.indexOf(Number(indVal));
