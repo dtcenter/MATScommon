@@ -122,6 +122,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
     case matsTypes.PlotTypes.validtime:
     case matsTypes.PlotTypes.gridscale:
     case matsTypes.PlotTypes.dailyModelCycle:
+    case matsTypes.PlotTypes.gridscaleProb:
     case matsTypes.PlotTypes.yearToYear:
     case matsTypes.PlotTypes.scatter2d:
     case matsTypes.PlotTypes.contour:

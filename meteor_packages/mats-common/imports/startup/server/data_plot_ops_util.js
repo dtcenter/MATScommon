@@ -1493,7 +1493,12 @@ const generateGridScaleProbPlotOptions = function (axisMap) {
   const xPad = (xmax - xmin) * 0.025 !== 0 ? (xmax - xmin) * 0.025 : 0.025;
   layout.xaxis.range = [xmin - xPad, xmax + xPad];
   const yPad = (ymax - ymin) * 0.025 !== 0 ? (ymax - ymin) * 0.025 : 0.025;
-  layout.yaxis.range = [Math.log10(ymin - yPad / 10), Math.log10(ymax + yPad * 10)];
+  const newYmax = Math.log10(ymax + yPad * 100);
+  const newYmin =
+    Number.isNaN(Math.log10(ymin - yPad)) || Math.log10(ymin - yPad) < 1
+      ? 0
+      : Math.log10(ymin - yPad);
+  layout.yaxis.range = [newYmin, newYmax];
   return layout;
 };
 
