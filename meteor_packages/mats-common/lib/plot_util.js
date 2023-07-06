@@ -83,7 +83,7 @@ const getCurveTextWrapping = function (plotType, curve) {
 // determine which plotType radio button is checked
 const getPlotType = function () {
   return document.getElementById("plotTypes-selector")
-    ? document.getElementById("plotTypes-selector").value.replace(" ", "")
+    ? document.getElementById("plotTypes-selector").value
     : undefined;
 };
 
@@ -239,9 +239,7 @@ const restoreSettings = function (p) {
   if (plotTypeSaved !== true) {
     // set the default - in the case none was set in an old saved settings
     document.getElementById("plotTypes-selector").value =
-      matsCollections.PlotGraphFunctions.findOne({ checked: true })
-        .plotType.replace(/([A-Z])/g, " $1")
-        .trim();
+      matsCollections.PlotGraphFunctions.findOne({ checked: true }).plotType;
   }
 
   // now set the PlotParams
