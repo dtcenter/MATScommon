@@ -984,7 +984,7 @@ const processDataReliability = function (
     di += 1;
   }
   dataset[0].glob_stats = {
-    sampleClimo,
+    sample_climo: sampleClimo,
   };
 
   // generate plot options

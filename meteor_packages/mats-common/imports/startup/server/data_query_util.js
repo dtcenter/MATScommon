@@ -614,7 +614,7 @@ const queryDBSpecialtyCurve = function (pool, statement, appParams, statisticStr
 };
 
 // this method queries the database for performance diagrams
-const queryDBReliability = function (pool, statement, appParams) {
+const queryDBReliability = function (pool, statement, kernel) {
   if (Meteor.isServer) {
     let d = {
       // d will contain the curve data
@@ -664,7 +664,7 @@ const queryDBReliability = function (pool, statement, appParams) {
         } else if (rows.includes("queryCB ERROR: ")) {
           error = rows;
         } else {
-          parsedData = parseQueryDataReliability(rows, d, appParams);
+          parsedData = parseQueryDataReliability(rows, d, kernel);
           d = parsedData.d;
         }
         dFuture.return();
@@ -678,7 +678,7 @@ const queryDBReliability = function (pool, statement, appParams) {
         } else if (rows === undefined || rows === null || rows.length === 0) {
           error = matsTypes.Messages.NO_DATA_FOUND;
         } else {
-          parsedData = parseQueryDataReliability(rows, d, appParams);
+          parsedData = parseQueryDataReliability(rows, d, kernel);
           d = parsedData.d;
         }
         // done waiting - have results
@@ -1990,7 +1990,7 @@ const parseQueryDataXYCurve = function (
 };
 
 // this method parses the returned query data for performance diagrams
-const parseQueryDataReliability = function (rows, d, appParams) {
+const parseQueryDataReliability = function (rows, d, kernel) {
   /*
     let d = {
       // d will contain the curve data
@@ -2028,29 +2028,41 @@ const parseQueryDataReliability = function (rows, d, appParams) {
   const hitCounts = [];
   const fcstCounts = [];
   const observedFreqs = [];
+  let totalForecastCount = 0;
   for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
-    const binVal = Number(rows[rowIndex].binValue);
-    let hitCount;
-    let fcstCount;
-    let observedFreq;
     if (
-      rows[rowIndex].fcstcount !== undefined &&
-      rows[rowIndex].hitcount !== undefined
+      Number(rows[rowIndex].kernel) === 0 &&
+      rows[rowIndex].rawfcstcount !== undefined &&
+      rows[rowIndex].rawfcstcount !== "NULL"
     ) {
-      hitCount =
-        rows[rowIndex].hitcount === "NULL" ? null : Number(rows[rowIndex].hitcount);
-      fcstCount =
-        rows[rowIndex].fcstcount === "NULL" ? null : Number(rows[rowIndex].fcstcount);
-      observedFreq = hitCount / fcstCount;
-    } else {
-      hitCount = null;
-      fcstCount = null;
+      totalForecastCount += Number(rows[rowIndex].rawfcstcount);
     }
-    binVals.push(binVal);
-    hitCounts.push(hitCount);
-    fcstCounts.push(fcstCount);
-    observedFreqs.push(observedFreq);
+    if (Number(rows[rowIndex].kernel) === Number(kernel)) {
+      const binVal = Number(rows[rowIndex].binValue);
+      let hitCount;
+      let fcstCount;
+      let observedFreq;
+      if (
+        rows[rowIndex].fcstcount !== undefined &&
+        rows[rowIndex].hitcount !== undefined
+      ) {
+        hitCount =
+          rows[rowIndex].hitcount === "NULL" ? null : Number(rows[rowIndex].hitcount);
+        fcstCount =
+          rows[rowIndex].fcstcount === "NULL" ? null : Number(rows[rowIndex].fcstcount);
+        observedFreq = hitCount / fcstCount;
+      } else {
+        hitCount = null;
+        fcstCount = null;
+      }
+      binVals.push(binVal);
+      hitCounts.push(hitCount);
+      fcstCounts.push(fcstCount);
+      observedFreqs.push(observedFreq);
+    }
   }
+
+  const sampleClimo = matsDataUtils.sum(hitCounts) / totalForecastCount;
 
   d.x =
     binVals[binVals.length - 1] === 100
@@ -2060,7 +2072,7 @@ const parseQueryDataReliability = function (rows, d, appParams) {
   d.binVals = binVals;
   d.hitCount = hitCounts;
   d.fcstCount = fcstCounts;
-  d.sample_climo = 0;
+  d.sample_climo = sampleClimo;
 
   let xMin = Number.MAX_VALUE;
   let xMax = -1 * Number.MAX_VALUE;
