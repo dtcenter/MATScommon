@@ -611,7 +611,7 @@ Template.graph.helpers({
           case matsTypes.PlotTypes.reliability:
           case matsTypes.PlotTypes.contour:
           case matsTypes.PlotTypes.contourDiff:
-            return `${plotType.replace(/([A-Z])/g, " $1").trim()} ${
+            return `${plotType.replace(/([A-Z][a-z])/g, " $1").trim()} ${
               p.dates
             } : ${format}`;
           case matsTypes.PlotTypes.profile:
@@ -625,13 +625,13 @@ Template.graph.helpers({
           case matsTypes.PlotTypes.gridscaleProb:
           case matsTypes.PlotTypes.histogram:
           case matsTypes.PlotTypes.simpleScatter:
-            return `${plotType.replace(/([A-Z])/g, " $1").trim()}: ${format}`;
+            return `${plotType.replace(/([A-Z][a-z])/g, " $1").trim()}: ${format}`;
           case matsTypes.PlotTypes.map:
             return `Map ${p.dates} `;
           case matsTypes.PlotTypes.ensembleHistogram: {
             const ensembleType = p["histogram-type-controls"]
               ? p["histogram-type-controls"]
-              : `${plotType.replace(/([A-Z])/g, " $1").trim()}`;
+              : `${plotType.replace(/([A-Z][a-z])/g, " $1").trim()}`;
             return `${ensembleType}: ${format}`;
           }
           case matsTypes.PlotTypes.scatter2d:

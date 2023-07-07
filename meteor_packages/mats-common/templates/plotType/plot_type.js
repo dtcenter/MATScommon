@@ -29,7 +29,7 @@ Template.plotType.helpers({
   },
   spaced(plotType) {
     // space out the plot type names to be more readable
-    return plotType.replace(/([A-Z])/g, " $1").trim();
+    return plotType.replace(/([A-Z][a-z])/g, " $1").trim();
   },
   alertMessageHidden() {
     if (
