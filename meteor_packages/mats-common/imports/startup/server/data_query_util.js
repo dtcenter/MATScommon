@@ -646,7 +646,7 @@ const queryDBReliability = function (pool, statement, kernel) {
       ymax: Number.MIN_VALUE,
     };
     let error = "";
-    let N0 = [];
+    const N0 = [];
     let parsedData;
     const Future = require("fibers/future");
     const dFuture = new Future();
