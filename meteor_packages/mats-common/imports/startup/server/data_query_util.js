@@ -614,6 +614,88 @@ const queryDBSpecialtyCurve = function (pool, statement, appParams, statisticStr
 };
 
 // this method queries the database for performance diagrams
+const queryDBReliability = function (pool, statement, appParams) {
+  if (Meteor.isServer) {
+    let d = {
+      // d will contain the curve data
+      x: [],
+      y: [],
+      binVals: [],
+      hitCount: [],
+      fcstCount: [],
+      sample_climo: 0,
+      n: [],
+      subHit: [],
+      subFa: [],
+      subMiss: [],
+      subCn: [],
+      subData: [],
+      subHeaders: [],
+      subVals: [],
+      subSecs: [],
+      subLevs: [],
+      stats: [],
+      text: [],
+      n_forecast: [],
+      n_matched: [],
+      n_simple: [],
+      n_total: [],
+      xmin: Number.MAX_VALUE,
+      xmax: Number.MIN_VALUE,
+      ymin: Number.MAX_VALUE,
+      ymax: Number.MIN_VALUE,
+    };
+    let error = "";
+    let N0 = [];
+    let parsedData;
+    const Future = require("fibers/future");
+    const dFuture = new Future();
+
+    if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
+      /*
+            we have to call the couchbase utilities as async functions but this
+            routine 'queryDBReliability' cannot itself be async because the graph page needs to wait
+            for its result, so we use an anonymous async() function here to wrap the queryCB call
+            */
+      (async () => {
+        const rows = await pool.queryCB(statement);
+        if (rows === undefined || rows === null || rows.length === 0) {
+          error = matsTypes.Messages.NO_DATA_FOUND;
+        } else if (rows.includes("queryCB ERROR: ")) {
+          error = rows;
+        } else {
+          parsedData = parseQueryDataReliability(rows, d, appParams);
+          d = parsedData.d;
+        }
+        dFuture.return();
+      })();
+    } else {
+      // if this app isn't couchbase, use mysql
+      pool.query(statement, function (err, rows) {
+        // query callback - build the curve data from the results - or set an error
+        if (err !== undefined && err !== null) {
+          error = err.message;
+        } else if (rows === undefined || rows === null || rows.length === 0) {
+          error = matsTypes.Messages.NO_DATA_FOUND;
+        } else {
+          parsedData = parseQueryDataReliability(rows, d, appParams);
+          d = parsedData.d;
+        }
+        // done waiting - have results
+        dFuture.return();
+      });
+    }
+    // wait for the future to finish - sort of like 'back to the future' ;)
+    dFuture.wait();
+
+    return {
+      data: d,
+      error,
+    };
+  }
+};
+
+// this method queries the database for performance diagrams
 const queryDBPerformanceDiagram = function (pool, statement, appParams) {
   if (Meteor.isServer) {
     let d = {
@@ -1904,6 +1986,100 @@ const parseQueryDataXYCurve = function (
     d,
     N0,
     N_times,
+  };
+};
+
+// this method parses the returned query data for performance diagrams
+const parseQueryDataReliability = function (rows, d, appParams) {
+  /*
+    let d = {
+      // d will contain the curve data
+      x: [],
+      y: [],
+      binVals: [],
+      hitCount: [],
+      fcstCount: [],
+      sample_climo: 0,
+      n: [],
+      subHit: [],
+      subFa: [],
+      subMiss: [],
+      subCn: [],
+      subData: [],
+      subHeaders: [],
+      subVals: [],
+      subSecs: [],
+      subLevs: [],
+      stats: [],
+      text: [],
+      n_forecast: [],
+      n_matched: [],
+      n_simple: [],
+      n_total: [],
+      xmin: Number.MAX_VALUE,
+      xmax: Number.MIN_VALUE,
+      ymin: Number.MAX_VALUE,
+      ymax: Number.MIN_VALUE,
+    };
+    */
+
+  // initialize local variables
+  const binVals = [];
+  const hitCounts = [];
+  const fcstCounts = [];
+  const observedFreqs = [];
+  for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
+    const binVal = Number(rows[rowIndex].binValue);
+    let hitCount;
+    let fcstCount;
+    let observedFreq;
+    if (
+      rows[rowIndex].fcstcount !== undefined &&
+      rows[rowIndex].hitcount !== undefined
+    ) {
+      hitCount =
+        rows[rowIndex].hitcount === "NULL" ? null : Number(rows[rowIndex].hitcount);
+      fcstCount =
+        rows[rowIndex].fcstcount === "NULL" ? null : Number(rows[rowIndex].fcstcount);
+      observedFreq = hitCount / fcstCount;
+    } else {
+      hitCount = null;
+      fcstCount = null;
+    }
+    binVals.push(binVal);
+    hitCounts.push(hitCount);
+    fcstCounts.push(fcstCount);
+    observedFreqs.push(observedFreq);
+  }
+
+  d.x =
+    binVals[binVals.length - 1] === 100
+      ? binVals.map((bin) => bin / 100)
+      : binVals.map((bin) => bin / 10);
+  d.y = observedFreqs;
+  d.binVals = binVals;
+  d.hitCount = hitCounts;
+  d.fcstCount = fcstCounts;
+  d.sample_climo = 0;
+
+  let xMin = Number.MAX_VALUE;
+  let xMax = -1 * Number.MAX_VALUE;
+  let yMin = Number.MAX_VALUE;
+  let yMax = -1 * Number.MAX_VALUE;
+
+  for (let didx = 0; didx < binVals.length; didx += 1) {
+    xMin = d.x[didx] !== null && d.x[didx] < xMin ? d.x[didx] : xMin;
+    xMax = d.x[didx] !== null && d.x[didx] > xMax ? d.x[didx] : xMax;
+    yMin = d.y[didx] !== null && d.y[didx] < yMin ? d.y[didx] : yMin;
+    yMax = d.y[didx] !== null && d.y[didx] > yMax ? d.y[didx] : yMax;
+  }
+
+  d.xmin = xMin;
+  d.xmax = xMax;
+  d.ymin = yMin;
+  d.ymax = yMax;
+  return {
+    d,
   };
 };
 
@@ -3747,6 +3923,7 @@ export default matsDataQueryUtils = {
   queryDBTimeSeriesMT,
   queryDBTimeSeries,
   queryDBSpecialtyCurve,
+  queryDBReliability,
   queryDBPerformanceDiagram,
   queryDBSimpleScatter,
   queryDBMapScalar,

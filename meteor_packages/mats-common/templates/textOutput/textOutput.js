@@ -258,10 +258,17 @@ Template.textOutput.helpers({
         }
         break;
       case matsTypes.PlotTypes.reliability:
-        header += `<th>${curve.label} probability bin</th>\
+        if (curve.kernel) {
+          header += `<th>${curve.label} probability bin</th>\
+                        <th>observed frequency</th>\
+                        <th>hit count</th>\
+                        <th>fcst count</th>`;
+        } else {
+          header += `<th>${curve.label} probability bin</th>\
                         <th>hit rate</th>\
                         <th>oy</th>\
                         <th>on</th>`;
+        }
         break;
       case matsTypes.PlotTypes.roc:
         header += `<th>${curve.label} bin value</th>\
@@ -640,19 +647,40 @@ Template.textOutput.helpers({
         }
         break;
       case matsTypes.PlotTypes.reliability:
-        line +=
-          `<td>${element[(labelKey += " probability bin")]}</td>` +
-          `<td>${
-            element["hit rate"] !== undefined && element["hit rate"] !== null
-              ? element["hit rate"].toPrecision(4)
-              : fillStr
-          }</td>` +
-          `<td>${
-            element.oy !== undefined && element.oy !== null ? element.oy : fillStr
-          }</td>` +
-          `<td>${
-            element.on !== undefined && element.on !== null ? element.on : fillStr
-          }</td>`;
+        if (element["observed frequency"]) {
+          line +=
+            `<td>${element[(labelKey += " probability bin")]}</td>` +
+            `<td>${
+              element["observed frequency"] !== undefined &&
+              element["observed frequency"] !== null
+                ? element["observed frequency"].toPrecision(4)
+                : fillStr
+            }</td>` +
+            `<td>${
+              element.hitcount !== undefined && element.hitcount !== null
+                ? element.hitcount
+                : fillStr
+            }</td>` +
+            `<td>${
+              element.fcstcount !== undefined && element.fcstcount !== null
+                ? element.fcstcount
+                : fillStr
+            }</td>`;
+        } else {
+          line +=
+            `<td>${element[(labelKey += " probability bin")]}</td>` +
+            `<td>${
+              element["hit rate"] !== undefined && element["hit rate"] !== null
+                ? element["hit rate"].toPrecision(4)
+                : fillStr
+            }</td>` +
+            `<td>${
+              element.oy !== undefined && element.oy !== null ? element.oy : fillStr
+            }</td>` +
+            `<td>${
+              element.on !== undefined && element.on !== null ? element.on : fillStr
+            }</td>`;
+        }
         break;
       case matsTypes.PlotTypes.roc:
         line +=

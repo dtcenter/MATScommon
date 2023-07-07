@@ -1602,7 +1602,11 @@ const _getFlattenedResultData = function (rk, p, np) {
               if (plotType === matsTypes.PlotTypes.reliability) {
                 curveDataElement[`${data[ci].label} probability bin`] =
                   data[ci].stats[cdi].prob_bin;
-                curveDataElement["hit rate"] = data[ci].stats[cdi].hit_rate;
+                if (data[ci].stats[cdi].hit_rate) {
+                  curveDataElement["hit rate"] = data[ci].stats[cdi].hit_rate;
+                } else {
+                  curveDataElement["observed frequency"] = data[ci].stats[cdi].obs_freq;
+                }
               } else {
                 curveDataElement[`${data[ci].label} bin value`] =
                   data[ci].stats[cdi].bin_value;
@@ -1615,8 +1619,13 @@ const _getFlattenedResultData = function (rk, p, np) {
                 }
                 curveDataElement.n = data[ci].stats[cdi].n;
               }
-              curveDataElement.oy = data[ci].stats[cdi].obs_y;
-              curveDataElement.on = data[ci].stats[cdi].obs_n;
+              if (data[ci].stats[cdi].obs_y) {
+                curveDataElement.oy = data[ci].stats[cdi].obs_y;
+                curveDataElement.on = data[ci].stats[cdi].obs_n;
+              } else {
+                curveDataElement.hitcount = data[ci].stats[cdi].hit_count;
+                curveDataElement.fcstcount = data[ci].stats[cdi].fcst_count;
+              }
               curveData.push(curveDataElement);
             }
             returnData.data[data[ci].label] = curveData;
