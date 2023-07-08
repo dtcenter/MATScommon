@@ -2,14 +2,14 @@
   "lockfileVersion": 1,
   "dependencies": {
     "@babel/runtime": {
-      "version": "7.21.0",
-      "resolved": "https://registry.npmjs.org/@babel/runtime/-/runtime-7.21.0.tgz",
-      "integrity": "sha512-xwII0//EObnq89Ji5AKYQaRYiW/nZ3llSv29d49IuxPhKbtJoLP+9QUUZ4nVragQVtaVGeZrpB+ZtG/Pdy/POw=="
+      "version": "7.22.6",
+      "resolved": "https://registry.npmjs.org/@babel/runtime/-/runtime-7.22.6.tgz",
+      "integrity": "sha512-wDb5pWm4WDdF6LFUde3Jl8WzPA+3ZbxYqkC6xAXuD3irdEHN1k0NfTRrJD8ZD378SJ61miMLCqIOXYhd8x+AJQ=="
     },
     "@fortawesome/fontawesome-free": {
-      "version": "6.3.0",
-      "resolved": "https://registry.npmjs.org/@fortawesome/fontawesome-free/-/fontawesome-free-6.3.0.tgz",
-      "integrity": "sha512-qVtd5i1Cc7cdrqnTWqTObKQHjPWAiRwjUPaXObaeNPcy7+WKxJumGBx66rfSFgK6LNpIasVKkEgW8oyf0tmPLA=="
+      "version": "6.4.0",
+      "resolved": "https://registry.npmjs.org/@fortawesome/fontawesome-free/-/fontawesome-free-6.4.0.tgz",
+      "integrity": "sha512-0NyytTlPJwB/BF5LtRV8rrABDbe3TdTXqNB3PdZ+UUUZAEIrdOJdmABqKjt4AXwIoJNaRVVZEXxpNrqvE1GAYQ=="
     },
     "ansi": {
       "version": "0.3.1",
@@ -178,9 +178,9 @@
       "integrity": "sha512-ZQBvi1DcpJ4GDqanjucZ2Hj3wEO5pZDS89BWbkcrvdxksJorwUDDZamX9ldFkp9aw2lmBDLgkObEA4DWNJ9FYQ=="
     },
     "couchbase": {
-      "version": "4.1.3",
-      "resolved": "https://registry.npmjs.org/couchbase/-/couchbase-4.1.3.tgz",
-      "integrity": "sha512-Y2HSAGVCt/4Le9/woYRKV4xhD9aohtik+UVQP+s5akQWvMYQ5ev/WyQf0hkrZqLvSJ6F1quZKcYTOAFW3WQErw=="
+      "version": "4.2.4",
+      "resolved": "https://registry.npmjs.org/couchbase/-/couchbase-4.2.4.tgz",
+      "integrity": "sha512-XfsIKS7J9dTC5RS+Mk0n6WPWgGToS1qiK6DGhmSBSgqUAmtLf/yHbwMSdzUv8+EReA1+M17U3ppvxFPybJPIOA=="
     },
     "csv-stringify": {
       "version": "4.3.1",
@@ -188,19 +188,19 @@
       "integrity": "sha512-VRjPYIUzex5kfbsOY7LaJcNE2qMWGQQAanb3/Vv85WbOgA+dAfDNfwntRvv335icJgGYrnTX403WxJxRVpLDFA=="
     },
     "datatables.net": {
-      "version": "1.13.4",
-      "resolved": "https://registry.npmjs.org/datatables.net/-/datatables.net-1.13.4.tgz",
-      "integrity": "sha512-yzhArTOB6tPO2QFKm1z3hA4vabtt2hRvgw8XLsT1xqEirinfGYqWDiWXlkTPTaJv2e7gG+Kf985sXkzBFlGrGQ=="
+      "version": "1.13.5",
+      "resolved": "https://registry.npmjs.org/datatables.net/-/datatables.net-1.13.5.tgz",
+      "integrity": "sha512-XoCQHkUM5MwbC3Wx7WpVvt4i880J8pIFDA9HIKD4GhvtalryBfmdd+bZvrc/rEbraZS7U4eR2k8/wFY0NeHVqQ=="
     },
     "datatables.net-bs": {
-      "version": "1.13.4",
-      "resolved": "https://registry.npmjs.org/datatables.net-bs/-/datatables.net-bs-1.13.4.tgz",
-      "integrity": "sha512-Do+O8HP8xVoayizysOWDBxURDbDmLAKiXDAp0cFl1RFFb5v/SIl+zuBZ03FXjdEs3JN5OksPMcY7WYeHZCaFeQ=="
+      "version": "1.13.5",
+      "resolved": "https://registry.npmjs.org/datatables.net-bs/-/datatables.net-bs-1.13.5.tgz",
+      "integrity": "sha512-ZIiQAKwwIV+BoGijH3MHm6Vc7WB0icFxAF8uxx7nyZr5WMw1R7Pt5pqU1MqwjyjWtu81OveXQdRuwHMijey6ww=="
     },
     "datatables.net-dt": {
-      "version": "1.13.4",
-      "resolved": "https://registry.npmjs.org/datatables.net-dt/-/datatables.net-dt-1.13.4.tgz",
-      "integrity": "sha512-QAvuEej/qKSiaSmSeDQ36wWO72XzFGKkd0jdiqbp+2FHAAzIk+ffsqQAwylystMoBSiO0zlcdaqHoAPa5Dy7Pg=="
+      "version": "1.13.5",
+      "resolved": "https://registry.npmjs.org/datatables.net-dt/-/datatables.net-dt-1.13.5.tgz",
+      "integrity": "sha512-6cIFRd/ujr0AfHPLykJNAs/6FLgDygWgYoV4d7trK2+l4NLRCrlqumtA6pm+7xF5bBaIcD0DIT8W97TIUg/PBA=="
     },
     "daterangepicker": {
       "version": "3.1.0",
@@ -385,9 +385,9 @@
       "integrity": "sha512-8wb9Yw966OSxApiCt0K3yNJL8pnNeIv+OEq2YMidz4FKP6nonSRoOXc80iXY4JaN2FC11B9qsNmDsm+ZOfMROA=="
     },
     "jquery": {
-      "version": "3.6.3",
-      "resolved": "https://registry.npmjs.org/jquery/-/jquery-3.6.3.tgz",
-      "integrity": "sha512-bZ5Sy3YzKo9Fyc8wH2iIQK4JImJ6R0GWI9kL1/k7Z91ZBNgkRXE6U0JfHIizZbort8ZunhSI3jw9I6253ahKfg=="
+      "version": "3.7.0",
+      "resolved": "https://registry.npmjs.org/jquery/-/jquery-3.7.0.tgz",
+      "integrity": "sha512-umpJ0/k8X0MvD1ds0P9SfowREz2LenHsQaxSohMZ5OMNEU2r0tf8pdeEFTHMFxWVxKNyU9rTtK3CWzUCTKJUeQ=="
     },
     "jquery-ui": {
       "version": "1.13.2",
@@ -1073,14 +1073,14 @@
       "integrity": "sha512-ONmRUqK7zj7DWX0D9ADe03wbwOBZxNAfF20PlGfCWQcD3+/MakShIHrMqx9YwPTfxDdF1zLeL+RGZiR9kGMLdg=="
     },
     "node-abi": {
-      "version": "3.40.0",
-      "resolved": "https://registry.npmjs.org/node-abi/-/node-abi-3.40.0.tgz",
-      "integrity": "sha512-zNy02qivjjRosswoYmPi8hIKJRr8MpQyeKT6qlcq/OnOgA3Rhoae+IYOqsM9V5+JnHWmxKnWOT2GxvtqdtOCXA==",
+      "version": "3.45.0",
+      "resolved": "https://registry.npmjs.org/node-abi/-/node-abi-3.45.0.tgz",
+      "integrity": "sha512-iwXuFrMAcFVi/ZoZiqq8BzAdsLw9kxDfTC0HMyjXfSL/6CSDAGD5UmR7azrAgWV1zKYq7dUUMj4owusBWKLsiQ==",
       "dependencies": {
         "semver": {
-          "version": "7.5.1",
-          "resolved": "https://registry.npmjs.org/semver/-/semver-7.5.1.tgz",
-          "integrity": "sha512-Wvss5ivl8TMRZXXESstBA4uR5iXgEN/VC5/sOcuXdVLzcdkz4HWetIoRfG5gb5X+ij/G9rw9YoGn3QoQ8OCSpw=="
+          "version": "7.5.4",
+          "resolved": "https://registry.npmjs.org/semver/-/semver-7.5.4.tgz",
+          "integrity": "sha512-1bCSESV6Pv+i21Hvpxp3Dx+pSD8lIPt8uVjRrxAUt/nbswYc+tK6Y2btiULjd4+fnq15PX+nqQDC7Oft7WkwcA=="
         }
       }
     },
@@ -1326,9 +1326,9 @@
       "integrity": "sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw=="
     },
     "vanillajs-datepicker": {
-      "version": "1.3.1",
-      "resolved": "https://registry.npmjs.org/vanillajs-datepicker/-/vanillajs-datepicker-1.3.1.tgz",
-      "integrity": "sha512-LYYnXXYDw7oqnNbJleLIRXFUjrG2WYOQtU1A2u3FmW3rgzp7lNJ7DGF35CJ3/Dg1OHUh10D9XnJBfSfIKTyeng=="
+      "version": "1.3.3",
+      "resolved": "https://registry.npmjs.org/vanillajs-datepicker/-/vanillajs-datepicker-1.3.3.tgz",
+      "integrity": "sha512-O7eeSSyZ9aeTcy6X9NBswNvWZRRvKIl2F20sbYvL1L32+1fMpiIPD3TvDF4hrU0ezXspHPgGFyvbFkoXIBs83w=="
     },
     "which": {
       "version": "1.3.1",
