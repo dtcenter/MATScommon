@@ -1,30 +1,50 @@
-import { matsTypes, matsDataQueryUtils, matsMiddleCommon } from "meteor/randyp:mats-common";
+import {
+  matsTypes,
+  matsDataQueryUtils,
+  matsMiddleCommon,
+} from "meteor/randyp:mats-common";
 import { Meteor } from "meteor/meteor";
 
-class MatsMiddleTimeSeries
-{
+class MatsMiddleTimeSeries {
   logToFile = false;
+
   logMemUsage = false;
+
   fcstValidEpoch_Array = [];
+
   cbPool = null;
+
   conn = null;
+
   fveObs = {};
+
   fveModels = {};
+
   ctc = [];
+
   varName = null;
+
   stationNames = null;
+
   model = null;
+
   fcstLen = null;
+
   threshold = null;
+
   average = null;
+
   fromSecs = null;
+
   toSecs = null;
+
   validTimes = [];
+
   writeOutput = false;
+
   mmCommon = null;
 
-  constructor(cbPool)
-  {
+  constructor(cbPool) {
     this.cbPool = cbPool;
     this.mmCommon = new matsMiddleCommon.MatsMiddleCommon(cbPool);
   }
@@ -39,14 +59,12 @@ class MatsMiddleTimeSeries
     fromSecs,
     toSecs,
     validTimes
-  ) =>
-  {
+  ) => {
     const Future = require("fibers/future");
 
     let rv = [];
     const dFuture = new Future();
-    (async () =>
-    {
+    (async () => {
       rv = await this.processStationQuery_int(
         varName,
         stationNames,
@@ -76,28 +94,26 @@ class MatsMiddleTimeSeries
     validTimes,
     appParams,
     forceRegularCadence
-  ) =>
-  {
-    if (Meteor.isServer)
-    {
+  ) => {
+    if (Meteor.isServer) {
       // upper air is only verified at 00Z and 12Z, so you need to force irregular models to verify at that regular cadence
-      let cycles = matsDataQueryUtils.getModelCadence(pool, dataSource, startDate, endDate); // if irregular model cadence, get cycle times. If regular, get empty array.
-      if (validTimes.length > 0 && validTimes !== matsTypes.InputTypes.unused)
-      {
-        if (typeof validTimes === "string" || validTimes instanceof String)
-        {
+      let cycles = matsDataQueryUtils.getModelCadence(
+        pool,
+        dataSource,
+        startDate,
+        endDate
+      ); // if irregular model cadence, get cycle times. If regular, get empty array.
+      if (validTimes.length > 0 && validTimes !== matsTypes.InputTypes.unused) {
+        if (typeof validTimes === "string" || validTimes instanceof String) {
           validTimes = validTimes.split(",");
         }
-        let vtCycles = validTimes.map(function (x)
-        {
+        let vtCycles = validTimes.map(function (x) {
           return (Number(x) - forecastOffset) * 3600 * 1000;
         }); // selecting validTimes makes the cadence irregular
-        vtCycles = vtCycles.map(function (x)
-        {
+        vtCycles = vtCycles.map(function (x) {
           return x < 0 ? x + 24 * 3600 * 1000 : x;
         }); // make sure no cycles are negative
-        vtCycles = vtCycles.sort(function (a, b)
-        {
+        vtCycles = vtCycles.sort(function (a, b) {
           return Number(a) - Number(b);
         }); // sort 'em
         cycles = cycles.length > 0 ? _.intersection(cycles, vtCycles) : vtCycles; // if we already had cycles get the ones that correspond to valid times
@@ -146,11 +162,9 @@ class MatsMiddleTimeSeries
       var N_times = [];
       let parsedData;
 
-      if (rows === undefined || rows === null || rows.length === 0)
-      {
+      if (rows === undefined || rows === null || rows.length === 0) {
         error = matsTypes.Messages.NO_DATA_FOUND;
-      } else
-      {
+      } else {
         parsedData = matsDataQueryUtils.parseQueryDataXYCurve(
           rows,
           d,
@@ -184,12 +198,12 @@ class MatsMiddleTimeSeries
     fromSecs,
     toSecs,
     validTimes
-  ) =>
-  {
+  ) => {
     const fs = require("fs");
 
     console.log(
-      `processStationQuery(${varName},${stationNames.length
+      `processStationQuery(${varName},${
+        stationNames.length
       },${model},${fcstLen},${threshold},${average},${fromSecs},${toSecs},${JSON.stringify(
         validTimes
       )})`
@@ -205,12 +219,9 @@ class MatsMiddleTimeSeries
     this.toSecs = toSecs;
 
     this.average = this.average.replace(/m0./g, "");
-    if (validTimes && validTimes.length > 0)
-    {
-      for (let i = 0; i < validTimes.length; i++)
-      {
-        if (validTimes[i] != null && Number(validTimes[i]) > 0)
-        {
+    if (validTimes && validTimes.length > 0) {
+      for (let i = 0; i < validTimes.length; i++) {
+        if (validTimes[i] != null && Number(validTimes[i]) > 0) {
           this.validTimes.push(Number(validTimes[i]));
         }
       }
@@ -220,11 +231,15 @@ class MatsMiddleTimeSeries
     this.conn = await cbPool.getConnection();
 
     const startTime = new Date().valueOf();
-    this.fcstValidEpoch_Array = await this.mmCommon.get_fcstValidEpoch_Array(fromSecs, toSecs);
+    this.fcstValidEpoch_Array = await this.mmCommon.get_fcstValidEpoch_Array(
+      fromSecs,
+      toSecs
+    );
 
     let endTime = new Date().valueOf();
     console.log(
-      `\tfcstValidEpoch_Array:${this.fcstValidEpoch_Array.length} in ${endTime - startTime
+      `\tfcstValidEpoch_Array:${this.fcstValidEpoch_Array.length} in ${
+        endTime - startTime
       } ms.`
     );
 
@@ -239,8 +254,7 @@ class MatsMiddleTimeSeries
     return this.ctc;
   };
 
-  createObsData = async () =>
-  {
+  createObsData = async () => {
     console.log("createObsData()");
     const fs = require("fs");
 
@@ -252,13 +266,10 @@ class MatsMiddleTimeSeries
     );
 
     let stationNames_obs = "";
-    for (let i = 0; i < this.stationNames.length; i++)
-    {
-      if (i === 0)
-      {
+    for (let i = 0; i < this.stationNames.length; i++) {
+      if (i === 0) {
         stationNames_obs = `obs.data.${this.stationNames[i]}.${this.varName} ${this.stationNames[i]}`;
-      } else
-      {
+      } else {
         stationNames_obs += `,obs.data.${this.stationNames[i]}.${this.varName} ${this.stationNames[i]}`;
       }
     }
@@ -274,8 +285,7 @@ class MatsMiddleTimeSeries
     console.log(`\tobs query:${stationNames_obs.length} in ${endTime - startTime} ms.`);
 
     const promises = [];
-    for (let iofve = 0; iofve < this.fcstValidEpoch_Array.length; iofve += 100)
-    {
+    for (let iofve = 0; iofve < this.fcstValidEpoch_Array.length; iofve += 100) {
       const fveArraySlice = this.fcstValidEpoch_Array.slice(iofve, iofve + 100);
       const sql = tmplWithStationNames_obs.replace(
         /{{fcstValidEpoch}}/g,
@@ -283,16 +293,13 @@ class MatsMiddleTimeSeries
       );
       const prSlice = this.conn.cluster.query(sql);
       promises.push(prSlice);
-      prSlice.then((qr) =>
-      {
+      prSlice.then((qr) => {
         console.log(`qr:\n${qr.rows.length}`);
-        for (let jmfve = 0; jmfve < qr.rows.length; jmfve++)
-        {
+        for (let jmfve = 0; jmfve < qr.rows.length; jmfve++) {
           const fveDataSingleEpoch = qr.rows[jmfve];
           const dataSingleEpoch = {};
           const stationsSingleEpoch = {};
-          for (let i = 0; i < this.stationNames.length; i++)
-          {
+          for (let i = 0; i < this.stationNames.length; i++) {
             const varValStation = fveDataSingleEpoch[this.stationNames[i]];
             stationsSingleEpoch[this.stationNames[i]] = varValStation;
           }
@@ -300,11 +307,11 @@ class MatsMiddleTimeSeries
           dataSingleEpoch.stations = stationsSingleEpoch;
           this.fveObs[fveDataSingleEpoch.fve] = dataSingleEpoch;
         }
-        if (iofve % 100 == 0)
-        {
+        if (iofve % 100 == 0) {
           endTime = new Date().valueOf();
           console.log(
-            `iofve:${iofve}/${this.fcstValidEpoch_Array.length} in ${endTime - startTime
+            `iofve:${iofve}/${this.fcstValidEpoch_Array.length} in ${
+              endTime - startTime
             } ms.`
           );
         }
@@ -316,8 +323,7 @@ class MatsMiddleTimeSeries
     console.log(`fveObs:` + ` in ${endTime - startTime} ms.`);
   };
 
-  createModelData = async () =>
-  {
+  createModelData = async () => {
     console.log("createModelData()");
     const fs = require("fs");
 
@@ -327,8 +333,14 @@ class MatsMiddleTimeSeries
       "assets/app/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_model.sql",
       "utf-8"
     );
-    tmpl_get_N_stations_mfve_model = this.cbPool.trfmSQLRemoveClause(tmpl_get_N_stations_mfve_model, "fcstLen fcst_lead");
-    tmpl_get_N_stations_mfve_model = this.cbPool.trfmSQLRemoveClause(tmpl_get_N_stations_mfve_model, "{{vxFCST_LEN_ARRAY}}");
+    tmpl_get_N_stations_mfve_model = this.cbPool.trfmSQLRemoveClause(
+      tmpl_get_N_stations_mfve_model,
+      "fcstLen fcst_lead"
+    );
+    tmpl_get_N_stations_mfve_model = this.cbPool.trfmSQLRemoveClause(
+      tmpl_get_N_stations_mfve_model,
+      "{{vxFCST_LEN_ARRAY}}"
+    );
     tmpl_get_N_stations_mfve_model = tmpl_get_N_stations_mfve_model.replace(
       /{{vxMODEL}}/g,
       `"${this.model}"`
@@ -343,13 +355,10 @@ class MatsMiddleTimeSeries
     );
 
     let stationNames_models = "";
-    for (let i = 0; i < this.stationNames.length; i++)
-    {
-      if (i === 0)
-      {
+    for (let i = 0; i < this.stationNames.length; i++) {
+      if (i === 0) {
         stationNames_models = `models.data.${this.stationNames[i]}.${this.varName} ${this.stationNames[i]}`;
-      } else
-      {
+      } else {
         stationNames_models += `,models.data.${this.stationNames[i]}.${this.varName} ${this.stationNames[i]}`;
       }
     }
@@ -364,8 +373,7 @@ class MatsMiddleTimeSeries
     );
 
     const promises = [];
-    for (let imfve = 0; imfve < this.fcstValidEpoch_Array.length; imfve += 100)
-    {
+    for (let imfve = 0; imfve < this.fcstValidEpoch_Array.length; imfve += 100) {
       const fveArraySlice = this.fcstValidEpoch_Array.slice(imfve, imfve + 100);
       const sql = tmplWithStationNames_models.replace(
         /{{fcstValidEpoch}}/g,
@@ -374,15 +382,12 @@ class MatsMiddleTimeSeries
       const prSlice = this.conn.cluster.query(sql);
 
       promises.push(prSlice);
-      prSlice.then((qr) =>
-      {
-        for (let jmfve = 0; jmfve < qr.rows.length; jmfve++)
-        {
+      prSlice.then((qr) => {
+        for (let jmfve = 0; jmfve < qr.rows.length; jmfve++) {
           const fveDataSingleEpoch = qr.rows[jmfve];
           const dataSingleEpoch = {};
           const stationsSingleEpoch = {};
-          for (let i = 0; i < this.stationNames.length; i++)
-          {
+          for (let i = 0; i < this.stationNames.length; i++) {
             const varValStation = fveDataSingleEpoch[this.stationNames[i]];
             stationsSingleEpoch[this.stationNames[i]] = varValStation;
           }
@@ -390,11 +395,11 @@ class MatsMiddleTimeSeries
           dataSingleEpoch.stations = stationsSingleEpoch;
           this.fveModels[fveDataSingleEpoch.fve] = dataSingleEpoch;
         }
-        if (imfve % 100 == 0)
-        {
+        if (imfve % 100 == 0) {
           endTime = new Date().valueOf();
           console.log(
-            `imfve:${imfve}/${this.fcstValidEpoch_Array.length} in ${endTime - startTime
+            `imfve:${imfve}/${this.fcstValidEpoch_Array.length} in ${
+              endTime - startTime
             } ms.`
           );
         }
@@ -405,27 +410,22 @@ class MatsMiddleTimeSeries
     console.log(`fveModel:` + ` in ${endTime - startTime} ms.`);
   };
 
-  generateCtc = async (threshold) =>
-  {
+  generateCtc = async (threshold) => {
     console.log(`generateCtc(${threshold})`);
 
     const startTime = new Date().valueOf();
 
-    for (let imfve = 0; imfve < this.fcstValidEpoch_Array.length; imfve++)
-    {
+    for (let imfve = 0; imfve < this.fcstValidEpoch_Array.length; imfve++) {
       const fve = this.fcstValidEpoch_Array[imfve];
       const obsSingleFve = this.fveObs[fve];
       const modelSingleFve = this.fveModels[fve];
 
-      if (!obsSingleFve || !modelSingleFve)
-      {
+      if (!obsSingleFve || !modelSingleFve) {
         continue;
       }
 
-      if (this.validTimes && this.validTimes.length > 0)
-      {
-        if (this.validTimes.includes((fve % (24 * 3600)) / 3600) == false)
-        {
+      if (this.validTimes && this.validTimes.length > 0) {
+        if (this.validTimes.includes((fve % (24 * 3600)) / 3600) == false) {
           continue;
         }
       }
@@ -440,49 +440,39 @@ class MatsMiddleTimeSeries
       stats_fve.N_times = 1;
       stats_fve.sub_data = [];
 
-      for (let i = 0; i < this.stationNames.length; i++)
-      {
+      for (let i = 0; i < this.stationNames.length; i++) {
         const station = this.stationNames[i];
         const varVal_o = obsSingleFve.stations[station];
         const varVal_m = modelSingleFve.stations[station];
 
-        if (varVal_o && varVal_m)
-        {
+        if (varVal_o && varVal_m) {
           stats_fve.N0 += 1;
           let sub = `${fve};`;
-          if (varVal_o < threshold && varVal_m < threshold)
-          {
+          if (varVal_o < threshold && varVal_m < threshold) {
             stats_fve.hit += 1;
             sub += "1;";
-          } else
-          {
+          } else {
             sub += "0;";
           }
 
-          if (varVal_o >= threshold && varVal_m < threshold)
-          {
+          if (varVal_o >= threshold && varVal_m < threshold) {
             stats_fve.fa += 1;
             sub += "1;";
-          } else
-          {
+          } else {
             sub += "0;";
           }
 
-          if (varVal_o < threshold && varVal_m >= threshold)
-          {
+          if (varVal_o < threshold && varVal_m >= threshold) {
             stats_fve.miss += 1;
             sub += "1;";
-          } else
-          {
+          } else {
             sub += "0;";
           }
 
-          if (varVal_o >= threshold && varVal_m >= threshold)
-          {
+          if (varVal_o >= threshold && varVal_m >= threshold) {
             stats_fve.cn += 1;
             sub += "1";
-          } else
-          {
+          } else {
             sub += "0";
           }
           stats_fve.sub_data.push(sub);
@@ -494,9 +484,8 @@ class MatsMiddleTimeSeries
     const endTime = new Date().valueOf();
     console.log(`generateCtc:` + ` in ${endTime - startTime} ms.`);
   };
-
 }
 
 export default matsMiddleTimeSeries = {
-  MatsMiddleTimeSeries: MatsMiddleTimeSeries
+  MatsMiddleTimeSeries,
 };

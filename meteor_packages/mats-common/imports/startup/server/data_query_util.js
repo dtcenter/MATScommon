@@ -248,7 +248,6 @@ const queryDBPython = function (pool, queryArray) {
   }
 };
 
-
 // this method queries the database for timeseries plots
 const queryDBTimeSeries = function (
   pool,
@@ -393,7 +392,6 @@ const queryDBTimeSeries = function (
   }
 };
 
-
 // this method queries the database for specialty curves such as profiles, dieoffs, threshold plots, valid time plots, grid scale plots, and histograms
 const queryDBSpecialtyCurve = function (pool, statement, appParams, statisticStr) {
   if (Meteor.isServer) {
@@ -447,13 +445,6 @@ const queryDBSpecialtyCurve = function (pool, statement, appParams, statisticStr
             */
       (async () => {
         const rows = await pool.queryCB(statement);
-        // TODO - remove write-out
-        {
-          const fs = require("fs");
-          const homedir = require('os').homedir();
-          fs.writeFileSync(homedir + "/scratch/matsMiddle/output/query.json", statement);
-          fs.writeFileSync(homedir + "/scratch/matsMiddle/output/rows.json", JSON.stringify(rows,null,2));
-        }
         if (rows === undefined || rows === null || rows.length === 0) {
           error = matsTypes.Messages.NO_DATA_FOUND;
         } else if (rows.includes("queryCB ERROR: ")) {
