@@ -104,6 +104,7 @@ Template.curveParamGroup.helpers({
               case matsTypes.PlotTypes.ensembleHistogram:
               case matsTypes.PlotTypes.roc:
               case matsTypes.PlotTypes.performanceDiagram:
+              case matsTypes.PlotTypes.gridscaleProb:
                 return "Date range:";
               case matsTypes.PlotTypes.profile:
               case matsTypes.PlotTypes.dieoff:

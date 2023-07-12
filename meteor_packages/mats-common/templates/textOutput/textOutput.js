@@ -105,6 +105,7 @@ Template.textOutput.helpers({
                     <th>area under the ROC curve</th>";
         break;
       case matsTypes.PlotTypes.performanceDiagram:
+      case matsTypes.PlotTypes.gridscaleProb:
         header += "";
         break;
       case matsTypes.PlotTypes.map:
@@ -257,10 +258,17 @@ Template.textOutput.helpers({
         }
         break;
       case matsTypes.PlotTypes.reliability:
-        header += `<th>${curve.label} probability bin</th>\
+        if (curve.kernel) {
+          header += `<th>${curve.label} probability bin</th>\
+                        <th>observed frequency</th>\
+                        <th>hit count</th>\
+                        <th>fcst count</th>`;
+        } else {
+          header += `<th>${curve.label} probability bin</th>\
                         <th>hit rate</th>\
                         <th>oy</th>\
                         <th>on</th>`;
+        }
         break;
       case matsTypes.PlotTypes.roc:
         header += `<th>${curve.label} bin value</th>\
@@ -273,6 +281,12 @@ Template.textOutput.helpers({
         header += `<th>${curve.label} bin value</th>\
                         <th>probability of detection</th>\
                         <th>success ratio</th>\
+                        <th>n</th>\
+                        `;
+        break;
+      case matsTypes.PlotTypes.gridscaleProb:
+        header += `<th>${curve.label} probability bin</th>\
+                        <th>number of grid points</th>\
                         <th>n</th>\
                         `;
         break;
@@ -633,19 +647,40 @@ Template.textOutput.helpers({
         }
         break;
       case matsTypes.PlotTypes.reliability:
-        line +=
-          `<td>${element[(labelKey += " probability bin")]}</td>` +
-          `<td>${
-            element["hit rate"] !== undefined && element["hit rate"] !== null
-              ? element["hit rate"].toPrecision(4)
-              : fillStr
-          }</td>` +
-          `<td>${
-            element.oy !== undefined && element.oy !== null ? element.oy : fillStr
-          }</td>` +
-          `<td>${
-            element.on !== undefined && element.on !== null ? element.on : fillStr
-          }</td>`;
+        if (element["observed frequency"]) {
+          line +=
+            `<td>${element[(labelKey += " probability bin")]}</td>` +
+            `<td>${
+              element["observed frequency"] !== undefined &&
+              element["observed frequency"] !== null
+                ? element["observed frequency"].toPrecision(4)
+                : fillStr
+            }</td>` +
+            `<td>${
+              element.hitcount !== undefined && element.hitcount !== null
+                ? element.hitcount
+                : fillStr
+            }</td>` +
+            `<td>${
+              element.fcstcount !== undefined && element.fcstcount !== null
+                ? element.fcstcount
+                : fillStr
+            }</td>`;
+        } else {
+          line +=
+            `<td>${element[(labelKey += " probability bin")]}</td>` +
+            `<td>${
+              element["hit rate"] !== undefined && element["hit rate"] !== null
+                ? element["hit rate"].toPrecision(4)
+                : fillStr
+            }</td>` +
+            `<td>${
+              element.oy !== undefined && element.oy !== null ? element.oy : fillStr
+            }</td>` +
+            `<td>${
+              element.on !== undefined && element.on !== null ? element.on : fillStr
+            }</td>`;
+        }
         break;
       case matsTypes.PlotTypes.roc:
         line +=
@@ -678,6 +713,19 @@ Template.textOutput.helpers({
           `<td>${
             element["success ratio"] !== undefined && element["success ratio"] !== null
               ? element["success ratio"]
+              : fillStr
+          }</td>` +
+          `<td>${
+            element.n !== undefined && element.n !== null ? element.n : fillStr
+          }</td>`;
+        break;
+      case matsTypes.PlotTypes.gridscaleProb:
+        line +=
+          `<td>${element[(labelKey += " probability bin")]}</td>` +
+          `<td>${
+            element["number of grid points"] !== undefined &&
+            element["number of grid points"] !== null
+              ? element["number of grid points"]
               : fillStr
           }</td>` +
           `<td>${

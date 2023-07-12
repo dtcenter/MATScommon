@@ -82,12 +82,8 @@ Template.scorecardParamList.events({
     matsParamUtils.collapseParams();
   },
   "click .reset"(event, template) {
-    const plotType = document.getElementById("plotTypes-selector").value;
     event.preventDefault();
     Session.set("paramWellColor", "rgb(245,245,245)");
-    const paramView = document.getElementById("paramList");
-    const plotView = document.getElementById("plotList");
-    document.getElementById("plotTypes-selector").value = plotType;
     matsMethods.refreshMetaData.call({}, function (error, result) {
       if (error !== undefined) {
         setError(new Error(error.message));

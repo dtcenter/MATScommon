@@ -1414,6 +1414,94 @@ const generatePerformanceDiagramPlotOptions = function () {
   return layout;
 };
 
+// sets plot options for grid scale probability plots
+const generateGridScaleProbPlotOptions = function (axisMap) {
+  const { xmin } = axisMap[Object.keys(axisMap)[0]];
+  const { xmax } = axisMap[Object.keys(axisMap)[0]];
+  const { ymin } = axisMap[Object.keys(axisMap)[0]];
+  const { ymax } = axisMap[Object.keys(axisMap)[0]];
+
+  // overall plot options
+  const layout = {
+    margin: {
+      l: 80,
+      r: 80,
+      b: 80,
+      t: 20,
+      pad: 4,
+    },
+    zeroline: false,
+    hovermode: "closest",
+    hoverlabel: {
+      font: {
+        size: 16,
+        color: "#FFFFFF",
+      },
+    },
+    legend: {
+      orientation: "h",
+      x: 0,
+      y: 1,
+      font: {
+        size: 12,
+        color: "#000000",
+      },
+    },
+  };
+
+  // x-axis options
+  layout.xaxis = {
+    title: "Probability Bin",
+    titlefont: {
+      size: 24,
+      color: "#000000",
+    },
+    tickfont: {
+      size: 18,
+      color: "#000000",
+    },
+    linecolor: "black",
+    linewidth: 2,
+    mirror: true,
+    showgrid: true,
+    gridwidth: 1,
+    gridcolor: "rgb(238,238,238)",
+    zeroline: false,
+  };
+
+  // x-axis options
+  layout.yaxis = {
+    title: "Number of Grid Points",
+    titlefont: {
+      size: 24,
+      color: "#000000",
+    },
+    tickfont: {
+      size: 18,
+      color: "#000000",
+    },
+    linecolor: "black",
+    linewidth: 2,
+    type: "log",
+    mirror: true,
+    showgrid: true,
+    gridwidth: 1,
+    gridcolor: "rgb(238,238,238)",
+    zeroline: false,
+  };
+
+  const xPad = (xmax - xmin) * 0.025 !== 0 ? (xmax - xmin) * 0.025 : 0.025;
+  layout.xaxis.range = [xmin - xPad, xmax + xPad];
+  const yPad = (ymax - ymin) * 0.025 !== 0 ? (ymax - ymin) * 0.025 : 0.025;
+  const newYmax = Math.log10(ymax + yPad * 100);
+  const newYmin =
+    Number.isNaN(Math.log10(ymin - yPad)) || Math.log10(ymin - yPad) < 1
+      ? 0
+      : Math.log10(ymin - yPad);
+  layout.yaxis.range = [newYmin, newYmax];
+  return layout;
+};
+
 // sets plot options for map plots
 const generateMapPlotOptions = function (extraLegendSpace) {
   const layout = {
@@ -1959,6 +2047,7 @@ export default matsDataPlotOpsUtils = {
   generateReliabilityPlotOptions,
   generateROCPlotOptions,
   generatePerformanceDiagramPlotOptions,
+  generateGridScaleProbPlotOptions,
   generateMapPlotOptions,
   generateHistogramPlotOptions,
   generateEnsembleHistogramPlotOptions,

@@ -160,14 +160,16 @@ const processDataXYCurve = function (
             .format("YYYY-MM-DD HH:mm")}`;
           break;
         case matsTypes.PlotTypes.dailyModelCycle:
-          var fhr =
-            ((data.x[di] / 1000) % (24 * 3600)) / 3600 -
-            curveInfoParams.utcCycleStarts[curveIndex];
-          fhr = fhr < 0 ? fhr + 24 : fhr;
-          data.text[di] = `${data.text[di]}<br>time: ${moment
-            .utc(data.x[di])
-            .format("YYYY-MM-DD HH:mm")}`;
-          data.text[di] = `${data.text[di]}<br>forecast hour: ${fhr}`;
+          {
+            let fhr =
+              ((data.x[di] / 1000) % (24 * 3600)) / 3600 -
+              curveInfoParams.utcCycleStarts[curveIndex];
+            fhr = fhr < 0 ? fhr + 24 : fhr;
+            data.text[di] = `${data.text[di]}<br>time: ${moment
+              .utc(data.x[di])
+              .format("YYYY-MM-DD HH:mm")}`;
+            data.text[di] = `${data.text[di]}<br>forecast hour: ${fhr}`;
+          }
           break;
         case matsTypes.PlotTypes.dieoff:
           data.text[di] = `${data.text[di]}<br>fhr: ${data.x[di]}`;
@@ -939,34 +941,51 @@ const processDataReliability = function (
 ) {
   const error = "";
 
-  // sort data statistics for each curve
-  for (let curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex++) {
-    var data = dataset[curveIndex];
-    const { label } = dataset[curveIndex];
-    var { sample_climo } = data;
+  const isMetexpress =
+    matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
 
-    let di = 0;
-    while (di < data.x.length) {
-      // store statistics for this di datapoint
+  // sort data statistics
+  const data = dataset[0];
+  const { label } = dataset[0];
+  const sampleClimo = data.sample_climo;
+
+  let di = 0;
+  while (di < data.x.length) {
+    // store statistics for this di datapoint
+    if (isMetexpress) {
       data.stats[di] = {
         prob_bin: data.x[di],
         hit_rate: data.y[di],
         obs_y: data.oy_all[di],
         obs_n: data.on_all[di],
       };
-      // the tooltip is stored in data.text
-      data.text[di] = label;
+    } else {
+      data.stats[di] = {
+        prob_bin: data.x[di],
+        obs_freq: data.y[di],
+        hit_count: data.hitCount[di],
+        fcst_count: data.fcstCount[di],
+      };
+    }
+    // the tooltip is stored in data.text
+    data.text[di] = label;
+    if (isMetexpress) {
       data.text[di] = `${data.text[di]}<br>probability bin: ${data.x[di]}`;
       data.text[di] = `${data.text[di]}<br>hit rate: ${data.y[di]}`;
       data.text[di] = `${data.text[di]}<br>oy: ${data.oy_all[di]}`;
       data.text[di] = `${data.text[di]}<br>on: ${data.on_all[di]}`;
-
-      di++;
+    } else {
+      data.text[di] = `${data.text[di]}<br>probability bin: ${data.x[di]}`;
+      data.text[di] = `${data.text[di]}<br>observed frequency: ${data.y[di]}`;
+      data.text[di] = `${data.text[di]}<br>hit count: ${data.hitCount[di]}`;
+      data.text[di] = `${data.text[di]}<br>fcst count: ${data.fcstCount[di]}`;
     }
-    dataset[curveIndex].glob_stats = {
-      sample_climo,
-    };
+
+    di += 1;
   }
+  dataset[0].glob_stats = {
+    sample_climo: sampleClimo,
+  };
 
   // generate plot options
   const resultOptions = matsDataPlotOpsUtils.generateReliabilityPlotOptions();
@@ -983,15 +1002,17 @@ const processDataReliability = function (
   );
   dataset.push(perfectLine);
 
-  if (sample_climo >= data.ymin) {
-    var skillmin = sample_climo - (sample_climo - data.xmin) / 2;
+  let skillmin;
+  let skillmax;
+  if (sampleClimo >= data.ymin) {
+    skillmin = sampleClimo - (sampleClimo - data.xmin) / 2;
   } else {
-    var skillmin = data.xmin - (data.xmin - sample_climo) / 2;
+    skillmin = data.xmin - (data.xmin - sampleClimo) / 2;
   }
-  if (sample_climo >= data.ymax) {
-    var skillmax = sample_climo - (sample_climo - data.xmax) / 2;
+  if (sampleClimo >= data.ymax) {
+    skillmax = sampleClimo - (sampleClimo - data.xmax) / 2;
   } else {
-    var skillmax = data.xmax - (data.xmax - sample_climo) / 2;
+    skillmax = data.xmax - (data.xmax - sampleClimo) / 2;
   }
 
   // add black no skill line curve
@@ -1010,7 +1031,7 @@ const processDataReliability = function (
   const xClimoLine = matsDataCurveOpsUtils.getHorizontalValueLine(
     resultOptions.xaxis.range[1],
     resultOptions.xaxis.range[0],
-    sample_climo,
+    sampleClimo,
     "top left",
     matsTypes.ReservedWords.zero
   );
@@ -1019,7 +1040,7 @@ const processDataReliability = function (
   const yClimoLine = matsDataCurveOpsUtils.getVerticalValueLine(
     resultOptions.yaxis.range[1],
     resultOptions.yaxis.range[0],
-    sample_climo,
+    sampleClimo,
     "bottom right",
     matsTypes.ReservedWords.zero
   );
@@ -1346,6 +1367,104 @@ const processDataPerformanceDiagram = function (
   for (curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex++) {
     // remove sub values and times to save space
     data = dataset[curveIndex];
+    data.subHit = [];
+    data.subFa = [];
+    data.subMiss = [];
+    data.subCn = [];
+    data.subSquareDiffSum = [];
+    data.subNSum = [];
+    data.subObsModelDiffSum = [];
+    data.subModelSum = [];
+    data.subObsSum = [];
+    data.subAbsSum = [];
+    data.subInterest = [];
+    data.subData = [];
+    data.subHeaders = [];
+    data.n_forecast = [];
+    data.n_matched = [];
+    data.n_simple = [];
+    data.n_total = [];
+    data.subVals = [];
+    data.subSecs = [];
+    data.subLevs = [];
+  }
+
+  const totalProcessingFinish = moment();
+  bookkeepingParams.dataRequests["total retrieval and processing time for curve set"] =
+    {
+      begin: bookkeepingParams.totalProcessingStart.format(),
+      finish: totalProcessingFinish.format(),
+      duration: `${moment
+        .duration(totalProcessingFinish.diff(bookkeepingParams.totalProcessingStart))
+        .asSeconds()} seconds`,
+    };
+
+  // pass result to client-side plotting functions
+  return {
+    error,
+    data: dataset,
+    options: resultOptions,
+    basis: {
+      plotParams,
+      queries: bookkeepingParams.dataRequests,
+    },
+  };
+};
+
+const processDataGridScaleProb = function (
+  dataset,
+  appParams,
+  curveInfoParams,
+  plotParams,
+  bookkeepingParams
+) {
+  const error = "";
+
+  const isMetexpress =
+    matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
+
+  // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
+  if (curveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
+    dataset = matsDataMatchUtils.getMatchedDataSet(
+      dataset,
+      curveInfoParams,
+      appParams,
+      {}
+    );
+  }
+
+  // sort data statistics for each curve
+  for (let curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
+    const data = dataset[curveIndex];
+    const { label } = dataset[curveIndex];
+
+    let di = 0;
+    while (di < data.x.length) {
+      // store statistics for this di datapoint
+      data.stats[di] = {
+        bin_value: data.x[di],
+        n_grid: data.y[di],
+        n: data.subVals[di].length,
+      };
+      // the tooltip is stored in data.text
+      data.text[di] = label;
+      data.text[di] = `${data.text[di]}<br>probability bin: ${data.x[di]}`;
+      data.text[di] = `${data.text[di]}<br>number of grid points: ${data.y[di]}`;
+      data.text[di] = `${data.text[di]}<br>n: ${data.subVals[di].length}`;
+
+      di += 1;
+    }
+    dataset[curveIndex].glob_stats = {};
+  }
+
+  // generate plot options
+  const resultOptions = matsDataPlotOpsUtils.generateGridScaleProbPlotOptions(
+    curveInfoParams.axisMap
+  );
+
+  for (let curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
+    // remove sub values and times to save space
+    const data = dataset[curveIndex];
     data.subHit = [];
     data.subFa = [];
     data.subMiss = [];
@@ -1933,15 +2052,11 @@ const processDataContour = function (
   // build the tooltip, and store it in data.text
   let i;
   let j;
-  let currX;
-  let currY;
   let currText;
   let currYTextArray;
   for (j = 0; j < data.y.length; j++) {
-    currY = data.y[j];
     currYTextArray = [];
     for (i = 0; i < data.x.length; i++) {
-      currX = data.x[i];
       currText = `${label}<br>${data.xAxisKey}: ${data.x[i]}<br>${data.yAxisKey}: ${
         data.y[j]
       }<br>${statisticSelect}: ${
@@ -2137,6 +2252,7 @@ export default matsDataProcessUtils = {
   processDataReliability,
   processDataROC,
   processDataPerformanceDiagram,
+  processDataGridScaleProb,
   processDataHistogram,
   processDataEnsembleHistogram,
   processDataContour,

@@ -508,6 +508,8 @@ const calculateStatCTC = function (hit, fa, miss, cn, n, statistic) {
     case "N times*levels(*stations if station plot) per graph point":
       queryVal = n;
       break;
+    default:
+      queryVal = null;
   }
   return queryVal;
 };
@@ -558,6 +560,8 @@ const calculateStatScalar = function (
     case "MAE":
       queryVal = absSum / NSum;
       break;
+    default:
+      queryVal = null;
   }
   if (isNaN(queryVal)) return null;
   // need to convert to correct units for surface data (variable names are capitalized in upper air

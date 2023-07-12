@@ -175,14 +175,11 @@ const restoreSettings = function (p) {
       // We have to set up the display without using click events because that would cause
       // the restored curves to be removed
       switch (ptElem.value) {
-        case matsTypes.PlotTypes.timeSeries:
-          matsCurveUtils.showTimeseriesFace();
-          break;
         case matsTypes.PlotTypes.profile:
           matsCurveUtils.showProfileFace();
           break;
         case matsTypes.PlotTypes.dieoff:
-          matsCurveUtils.showDieOffFace();
+          matsCurveUtils.showDieoffFace();
           break;
         case matsTypes.PlotTypes.threshold:
           matsCurveUtils.showThresholdFace();
@@ -208,6 +205,9 @@ const restoreSettings = function (p) {
         case matsTypes.PlotTypes.performanceDiagram:
           matsCurveUtils.showPerformanceDiagramFace();
           break;
+        case matsTypes.PlotTypes.gridscaleProb:
+          matsCurveUtils.showGridScaleProbFace();
+          break;
         case matsTypes.PlotTypes.map:
           matsCurveUtils.showMapFace();
           break;
@@ -226,6 +226,10 @@ const restoreSettings = function (p) {
           break;
         case matsTypes.PlotTypes.scatter2d:
           matsCurveUtils.showScatterFace();
+          break;
+        case matsTypes.PlotTypes.timeSeries:
+        default:
+          matsCurveUtils.showTimeseriesFace();
           break;
       }
     } else {

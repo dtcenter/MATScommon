@@ -66,7 +66,7 @@ const InputTypes = {
 const PlotTypes = {
   timeSeries: "TimeSeries",
   profile: "Profile",
-  dieoff: "DieOff",
+  dieoff: "Dieoff",
   threshold: "Threshold",
   validtime: "ValidTime",
   gridscale: "GridScale",
@@ -75,6 +75,7 @@ const PlotTypes = {
   reliability: "Reliability",
   roc: "ROC",
   performanceDiagram: "PerformanceDiagram",
+  gridscaleProb: "GridScaleProbability",
   map: "Map",
   histogram: "Histogram",
   ensembleHistogram: "EnsembleHistogram",

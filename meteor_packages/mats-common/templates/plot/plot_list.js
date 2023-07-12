@@ -503,7 +503,7 @@ Template.plotList.onRendered(function () {
         matsCurveUtils.showProfileFace();
         break;
       case matsTypes.PlotTypes.dieoff:
-        matsCurveUtils.showDieOffFace();
+        matsCurveUtils.showDieoffFace();
         break;
       case matsTypes.PlotTypes.threshold:
         matsCurveUtils.showThresholdFace();
@@ -528,6 +528,9 @@ Template.plotList.onRendered(function () {
         break;
       case matsTypes.PlotTypes.performanceDiagram:
         matsCurveUtils.showPerformanceDiagramFace();
+        break;
+      case matsTypes.PlotTypes.gridscaleProb:
+        matsCurveUtils.showGridScaleProbFace();
         break;
       case matsTypes.PlotTypes.map:
         matsCurveUtils.showMapFace();

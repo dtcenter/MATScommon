@@ -283,7 +283,7 @@ const generateSeriesCurveOptions = function (
       line: {
         dash: "solid",
         color: curve.color,
-        width: 2,
+        width: 3,
       },
       visible: true,
       showlegend: true,
@@ -384,7 +384,7 @@ const generateProfileCurveOptions = function (
       line: {
         dash: "solid",
         color: curve.color,
-        width: 2,
+        width: 3,
       },
       visible: true,
       showlegend: true,

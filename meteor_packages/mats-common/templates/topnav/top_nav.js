@@ -62,7 +62,7 @@ Template.topNav.helpers({
         return "https://www.weather.gov/";
         break;
       default:
-        return "http://esrl.noaa.gov/gsd/";
+        return "http://gsl.noaa.gov/";
     }
   },
   productText() {
@@ -84,10 +84,9 @@ Template.topNav.helpers({
     }
   },
   productLink() {
-    const location = document.location.href;
-    const locationArr = location.split("/");
-    locationArr.pop();
-    return locationArr.join("/");
+    return Meteor.settings.public.home === undefined
+      ? `https://${document.location.href.split("/")[2]}`
+      : Meteor.settings.public.home;
   },
   bugsText() {
     return "Bugs/Issues (GitHub)";
