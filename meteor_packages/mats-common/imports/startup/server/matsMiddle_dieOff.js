@@ -2,7 +2,7 @@ import { matsTypes, matsDataQueryUtils, matsMiddleCommon } from "meteor/randyp:m
 import { Meteor } from "meteor/meteor";
 import { memoryUsage } from 'node:process';
 
-class MatsMiddleDieOff
+class MatsMiddleDieoff
 {
   logToFile = true;
   logMemUsage = false;
@@ -604,6 +604,6 @@ class MatsMiddleDieOff
   }
 }
 
-export default matsMiddleDieOff = {
-  MatsMiddleDieOff: MatsMiddleDieOff
+export default matsMiddleDieoff = {
+  MatsMiddleDieoff: MatsMiddleDieoff
 };
