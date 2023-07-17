@@ -248,6 +248,25 @@ class MatsMiddleTimeSeries {
     await Promise.all([prObs, prModel]);
     this.generateCtc(threshold);
 
+    for (let i = 0; i < this.ctc.length; i++) {
+      this.ctc[i] = this.mmCommon.sumUpCtc(this.ctc[i]);
+    }
+
+    if (this.logToFile === true) {
+      this.mmCommon.writeToLocalFile(
+        "/scratch/matsMiddle/output/fveObs.json",
+        JSON.stringify(this.fveObs, null, 2)
+      );
+      this.mmCommon.writeToLocalFile(
+        "/scratch/matsMiddle/output/fveModels.json",
+        JSON.stringify(this.fveModels, null, 2)
+      );
+      this.mmCommon.writeToLocalFile(
+        "/scratch/matsMiddle/output/ctc.json",
+        JSON.stringify(this.ctc, null, 2)
+      );
+    }
+
     endTime = new Date().valueOf();
     console.log(`\tprocessStationQuery in ${endTime - startTime} ms.`);
 

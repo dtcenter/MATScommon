@@ -80,6 +80,43 @@ class MatsMiddleCommon {
 
     return fcstLenArray;
   };
+
+  sumUpCtc = (ctc) => {
+    const rv = JSON.parse(JSON.stringify(ctc));
+
+    rv.sub_data = [];
+
+    let prevFve = null;
+    const sumVals = [0, 0, 0, 0];
+    for (let i = 0; i < ctc.sub_data.length; i++) {
+      const sdiToks = ctc.sub_data[i].split(";");
+
+      if (i === 0) {
+        prevFve = sdiToks[0];
+      }
+      if (prevFve === sdiToks[0]) {
+        sumVals[0] += Number(sdiToks[1]);
+        sumVals[1] += Number(sdiToks[2]);
+        sumVals[2] += Number(sdiToks[3]);
+        sumVals[3] += Number(sdiToks[4]);
+      } else {
+        rv.sub_data.push(
+          `${sdiToks[0]};${sumVals[0]};${sumVals[1]};${sumVals[2]};${sumVals[3]}`
+        );
+        prevFve = sdiToks[0];
+        sumVals[0] = Number(sdiToks[1]);
+        sumVals[1] = Number(sdiToks[2]);
+        sumVals[2] = Number(sdiToks[3]);
+        sumVals[3] = Number(sdiToks[4]);
+      }
+      if (i === ctc.sub_data.length - 1) {
+        rv.sub_data.push(
+          `${sdiToks[0]};${sumVals[0]};${sumVals[1]};${sumVals[2]};${sumVals[3]}`
+        );
+      }
+    }
+    return rv;
+  };
 }
 
 export default matsMiddleCommon = {

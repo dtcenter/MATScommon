@@ -3,11 +3,12 @@ import {
   matsDataQueryUtils,
   matsMiddleCommon,
 } from "meteor/randyp:mats-common";
+
 import { Meteor } from "meteor/meteor";
 import { memoryUsage } from "node:process";
 
 class MatsMiddleDieoff {
-  logToFile = true;
+  logToFile = false;
 
   logMemUsage = false;
 
@@ -566,7 +567,7 @@ class MatsMiddleDieoff {
         }
       }
       try {
-        const stats_fcst_lead_summed = this.sumUpCtcForSingleFcstLead(stats_fcst_lead);
+        const stats_fcst_lead_summed = this.mmCommon.sumUpCtc(stats_fcst_lead);
         this.ctc.push(stats_fcst_lead_summed);
       } catch (ex) {
         console.log(ex);
@@ -575,38 +576,6 @@ class MatsMiddleDieoff {
 
     const endTime = new Date().valueOf();
     console.log(`generateCtc:` + ` in ${endTime - startTime} ms.`);
-  };
-
-  sumUpCtcForSingleFcstLead = (stats_fcst_lead) => {
-    const rv = JSON.parse(JSON.stringify(stats_fcst_lead));
-
-    rv.sub_data = [];
-
-    let prevFve = null;
-    const sumVals = [0, 0, 0, 0];
-    for (let i = 0; i < stats_fcst_lead.sub_data.length; i++) {
-      const sdiToks = stats_fcst_lead.sub_data[i].split(";");
-
-      if (i === 0) {
-        prevFve = sdiToks[0];
-      }
-      if (prevFve === sdiToks[0]) {
-        sumVals[0] += Number(sdiToks[1]);
-        sumVals[1] += Number(sdiToks[2]);
-        sumVals[2] += Number(sdiToks[3]);
-        sumVals[3] += Number(sdiToks[4]);
-      } else {
-        rv.sub_data.push(
-          `${sdiToks[0]};${sumVals[0]};${sumVals[1]};${sumVals[2]};${sumVals[3]}`
-        );
-        prevFve = sdiToks[0];
-        sumVals[0] = Number(sdiToks[1]);
-        sumVals[1] = Number(sdiToks[2]);
-        sumVals[2] = Number(sdiToks[3]);
-        sumVals[3] = Number(sdiToks[4]);
-      }
-    }
-    return rv;
   };
 }
 

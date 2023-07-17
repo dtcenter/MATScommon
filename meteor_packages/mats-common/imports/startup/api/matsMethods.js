@@ -750,7 +750,6 @@ const _dropScorecardInstance = async function (
                 AND sc.submitted=${submittedTime};`;
     const result = await cbScorecardPool.queryCB(statement);
     // delete this result from the mongo Scorecard collection
-    return;
   } catch (err) {
     console.log(`_dropScorecardInstance error : ${err.message}`);
     return {
