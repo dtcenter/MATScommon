@@ -1268,7 +1268,7 @@ const processDataPerformanceDiagram = function (
     0,
     1,
     0,
-    " 0.125",
+    " 8.0",
     "bottom right",
     matsTypes.ReservedWords.constantBias
   );
@@ -1278,7 +1278,7 @@ const processDataPerformanceDiagram = function (
     0,
     1,
     0,
-    " 0.25",
+    " 4.0",
     "bottom right",
     matsTypes.ReservedWords.constantBias
   );
@@ -1288,7 +1288,7 @@ const processDataPerformanceDiagram = function (
     0,
     1,
     0,
-    " 0.5",
+    " 2.0",
     "bottom right",
     matsTypes.ReservedWords.constantBias
   );
@@ -1308,7 +1308,7 @@ const processDataPerformanceDiagram = function (
     0,
     0.5,
     0,
-    "2.0",
+    "0.5",
     "bottom left",
     matsTypes.ReservedWords.constantBias
   );
@@ -1318,7 +1318,7 @@ const processDataPerformanceDiagram = function (
     0,
     0.25,
     0,
-    "4.0",
+    "0.25",
     "top left",
     matsTypes.ReservedWords.constantBias
   );
@@ -1328,7 +1328,7 @@ const processDataPerformanceDiagram = function (
     0,
     0.125,
     0,
-    "8.0",
+    "0.125",
     "top left",
     matsTypes.ReservedWords.constantBias
   );
