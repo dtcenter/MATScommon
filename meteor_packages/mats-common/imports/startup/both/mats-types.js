@@ -148,6 +148,7 @@ const ReservedWords = {
   perfectReliability: "Perfect Reliability",
   perfectForecast: "Perfect Forecast",
   noSkill: "No Skill",
+  noSkillNoLabel: "No Skill No Label",
   constantBias: "Constant Bias",
   constantCSI: "Constant CSI",
   centerLine: "X=Y",

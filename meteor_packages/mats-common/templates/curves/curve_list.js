@@ -25,7 +25,7 @@ Template.curveList.helpers({
     return "none";
   },
   displayPlotMatched() {
-    // don't allow plotting when editing, or for ROC / single contour / reliability curves
+    // don't allow plotting when editing, or for plot types without matching
     const mode = Session.get("editMode");
     const plotType = Session.get("plotType");
     if (mode === undefined || mode === "") {
@@ -36,14 +36,15 @@ Template.curveList.helpers({
         case matsTypes.PlotTypes.performanceDiagram:
         case matsTypes.PlotTypes.contour:
         case matsTypes.PlotTypes.scorecard:
-          // allow matching for non-metexpress ROCs and performance diagrams
+          // allow matching for non-metexpress Reliabilities, ROCs, and performance diagrams
           if (
             (matsCollections.Settings.findOne({}) !== undefined &&
               matsCollections.Settings.findOne({}).appType !== undefined &&
               matsCollections.Settings.findOne({}).appType ===
                 matsTypes.AppTypes.metexpress) ||
             (plotType !== matsTypes.PlotTypes.performanceDiagram &&
-              plotType !== matsTypes.PlotTypes.roc)
+              plotType !== matsTypes.PlotTypes.roc &&
+              plotType !== matsTypes.PlotTypes.reliability)
           ) {
             return "none";
           }

@@ -5,7 +5,15 @@
 import { matsPlotUtils, matsCollections, matsTypes } from "meteor/randyp:mats-common";
 
 // adds a horizontal black line along a specific y value
-const getHorizontalValueLine = function (xmax, xmin, yValue, textPos, cLabel) {
+const getHorizontalValueLine = function (
+  xmax,
+  xmin,
+  yValue,
+  textPos,
+  cLabel,
+  color,
+  weight
+) {
   const textLabel = yValue % 1 === 0 ? yValue.toString() : yValue.toFixed(2);
 
   return {
@@ -34,8 +42,8 @@ const getHorizontalValueLine = function (xmax, xmin, yValue, textPos, cLabel) {
     ymax: yValue,
     line: {
       dash: "solid",
-      color: "rgb(0,0,0)",
-      width: 1,
+      color,
+      width: weight,
     },
     marker: {
       symbol: "circle",
@@ -46,7 +54,15 @@ const getHorizontalValueLine = function (xmax, xmin, yValue, textPos, cLabel) {
 };
 
 // adds a vertical black line along a specific x value
-const getVerticalValueLine = function (ymax, ymin, xValue, textPos, cLabel) {
+const getVerticalValueLine = function (
+  ymax,
+  ymin,
+  xValue,
+  textPos,
+  cLabel,
+  color,
+  weight
+) {
   const textLabel = xValue % 1 === 0 ? xValue.toString() : xValue.toFixed(2);
 
   return {
@@ -74,8 +90,8 @@ const getVerticalValueLine = function (ymax, ymin, xValue, textPos, cLabel) {
     ymax,
     line: {
       dash: "solid",
-      color: "rgb(0,0,0)",
-      width: 1,
+      color,
+      width: weight,
     },
     marker: {
       symbol: "circle",
@@ -93,7 +109,9 @@ const getLinearValueLine = function (
   ymin,
   textLabel,
   textPos,
-  cLabel
+  cLabel,
+  color,
+  weight
 ) {
   return {
     label: cLabel,
@@ -106,7 +124,11 @@ const getLinearValueLine = function (
     y: [ymin, (ymin + ymax) / 2, ymax],
     error_x: [null, null, null],
     error_y: [null, null, null],
-    text: ["", textLabel, ""],
+    text: [
+      "",
+      textLabel === matsTypes.ReservedWords.noSkillNoLabel ? "" : textLabel,
+      "",
+    ],
     textposition: textPos,
     subVals: [],
     subSecs: [],
@@ -122,8 +144,8 @@ const getLinearValueLine = function (
     ymax,
     line: {
       dash: "solid",
-      color: "rgb(0,0,0)",
-      width: 1,
+      color,
+      width: weight,
     },
     marker: {
       symbol: "circle",
@@ -141,7 +163,9 @@ const getDashedLinearValueLine = function (
   ymin,
   textLabel,
   textPos,
-  cLabel
+  cLabel,
+  color,
+  weight
 ) {
   return {
     label: cLabel,
@@ -169,8 +193,8 @@ const getDashedLinearValueLine = function (
     ymax,
     line: {
       dash: "dot",
-      color: "rgb(0,0,0)",
-      width: 1,
+      color,
+      width: weight,
     },
     marker: {
       symbol: "circle",
@@ -181,7 +205,16 @@ const getDashedLinearValueLine = function (
 };
 
 // adds a linear line
-const getCurveLine = function (xvals, yvals, textVals, textLabel, textPos, cLabel) {
+const getCurveLine = function (
+  xvals,
+  yvals,
+  textVals,
+  textLabel,
+  textPos,
+  cLabel,
+  color,
+  weight
+) {
   return {
     label: cLabel,
     curveId: cLabel,
@@ -207,8 +240,8 @@ const getCurveLine = function (xvals, yvals, textVals, textLabel, textPos, cLabe
     ymax: Math.max(yvals),
     line: {
       dash: "solid",
-      color: "rgb(0,0,0)",
-      width: 1,
+      color,
+      width: weight,
     },
     marker: {
       symbol: "circle",

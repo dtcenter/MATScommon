@@ -477,7 +477,9 @@ const processDataXYCurve = function (
     resultOptions.xaxis.range[0],
     0,
     "top left",
-    matsTypes.ReservedWords.zero
+    matsTypes.ReservedWords.zero,
+    "rgb(0,0,0)",
+    1
   );
   dataset.push(zeroLine);
 
@@ -491,7 +493,9 @@ const processDataXYCurve = function (
       resultOptions.xaxis.range[0],
       curveInfoParams.idealValues[ivIdx],
       "bottom left",
-      matsTypes.ReservedWords[idealLabel]
+      matsTypes.ReservedWords[idealLabel],
+      "rgb(0,0,0)",
+      1
     );
     dataset.push(idealValueLine);
   }
@@ -891,7 +895,9 @@ const processDataProfile = function (
     resultOptions.yaxis.range[0],
     0,
     "bottom right",
-    matsTypes.ReservedWords.zero
+    matsTypes.ReservedWords.zero,
+    "rgb(0,0,0)",
+    1
   );
   dataset.push(zeroLine);
 
@@ -905,7 +911,9 @@ const processDataProfile = function (
       resultOptions.yaxis.range[0],
       curveInfoParams.idealValues[ivIdx],
       "bottom left",
-      matsTypes.ReservedWords[idealLabel]
+      matsTypes.ReservedWords[idealLabel],
+      "rgb(0,0,0)",
+      1
     );
     dataset.push(idealValueLine);
   }
@@ -944,48 +952,50 @@ const processDataReliability = function (
   const isMetexpress =
     matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
 
-  // sort data statistics
-  const data = dataset[0];
-  const { label } = dataset[0];
-  const sampleClimo = data.sample_climo;
+  // sort data statistics for each curve
+  for (let curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
+    const data = dataset[curveIndex];
+    const { label } = data;
+    const sampleClimo = data.sample_climo;
 
-  let di = 0;
-  while (di < data.x.length) {
-    // store statistics for this di datapoint
-    if (isMetexpress) {
-      data.stats[di] = {
-        prob_bin: data.x[di],
-        hit_rate: data.y[di],
-        obs_y: data.oy_all[di],
-        obs_n: data.on_all[di],
-      };
-    } else {
-      data.stats[di] = {
-        prob_bin: data.x[di],
-        obs_freq: data.y[di],
-        hit_count: data.hitCount[di],
-        fcst_count: data.fcstCount[di],
-      };
-    }
-    // the tooltip is stored in data.text
-    data.text[di] = label;
-    if (isMetexpress) {
-      data.text[di] = `${data.text[di]}<br>probability bin: ${data.x[di]}`;
-      data.text[di] = `${data.text[di]}<br>hit rate: ${data.y[di]}`;
-      data.text[di] = `${data.text[di]}<br>oy: ${data.oy_all[di]}`;
-      data.text[di] = `${data.text[di]}<br>on: ${data.on_all[di]}`;
-    } else {
-      data.text[di] = `${data.text[di]}<br>probability bin: ${data.x[di]}`;
-      data.text[di] = `${data.text[di]}<br>observed frequency: ${data.y[di]}`;
-      data.text[di] = `${data.text[di]}<br>hit count: ${data.hitCount[di]}`;
-      data.text[di] = `${data.text[di]}<br>fcst count: ${data.fcstCount[di]}`;
-    }
+    let di = 0;
+    while (di < data.x.length) {
+      // store statistics for this di datapoint
+      if (isMetexpress) {
+        data.stats[di] = {
+          prob_bin: data.x[di],
+          hit_rate: data.y[di],
+          obs_y: data.oy_all[di],
+          obs_n: data.on_all[di],
+        };
+      } else {
+        data.stats[di] = {
+          prob_bin: data.x[di],
+          obs_freq: data.y[di],
+          hit_count: data.hitCount[di],
+          fcst_count: data.fcstCount[di],
+        };
+      }
+      // the tooltip is stored in data.text
+      data.text[di] = label;
+      if (isMetexpress) {
+        data.text[di] = `${data.text[di]}<br>probability bin: ${data.x[di]}`;
+        data.text[di] = `${data.text[di]}<br>hit rate: ${data.y[di]}`;
+        data.text[di] = `${data.text[di]}<br>oy: ${data.oy_all[di]}`;
+        data.text[di] = `${data.text[di]}<br>on: ${data.on_all[di]}`;
+      } else {
+        data.text[di] = `${data.text[di]}<br>probability bin: ${data.x[di]}`;
+        data.text[di] = `${data.text[di]}<br>observed frequency: ${data.y[di]}`;
+        data.text[di] = `${data.text[di]}<br>hit count: ${data.hitCount[di]}`;
+        data.text[di] = `${data.text[di]}<br>fcst count: ${data.fcstCount[di]}`;
+      }
 
-    di += 1;
+      di += 1;
+    }
+    dataset[curveIndex].glob_stats = {
+      sample_climo: sampleClimo,
+    };
   }
-  dataset[0].glob_stats = {
-    sample_climo: sampleClimo,
-  };
 
   // generate plot options
   const resultOptions = matsDataPlotOpsUtils.generateReliabilityPlotOptions();
@@ -998,53 +1008,48 @@ const processDataReliability = function (
     resultOptions.yaxis.range[0],
     matsTypes.ReservedWords.perfectReliability,
     "top left",
-    matsTypes.ReservedWords.perfectReliability
+    matsTypes.ReservedWords.perfectReliability,
+    "rgb(0,0,0)",
+    1
   );
   dataset.push(perfectLine);
 
-  let skillmin;
-  let skillmax;
-  if (sampleClimo >= data.ymin) {
-    skillmin = sampleClimo - (sampleClimo - data.xmin) / 2;
-  } else {
-    skillmin = data.xmin - (data.xmin - sampleClimo) / 2;
+  // assign no skill lines for each curve
+  for (let curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
+    const data = dataset[curveIndex];
+    const { color } = data;
+    const sampleClimo = data.sample_climo;
+    let skillmin;
+    let skillmax;
+    if (sampleClimo >= data.ymin) {
+      skillmin = sampleClimo - (sampleClimo - data.xmin) / 2;
+    } else {
+      skillmin = data.xmin - (data.xmin - sampleClimo) / 2;
+    }
+    if (sampleClimo >= data.ymax) {
+      skillmax = sampleClimo - (sampleClimo - data.xmax) / 2;
+    } else {
+      skillmax = data.xmax - (data.xmax - sampleClimo) / 2;
+    }
+
+    // add black no skill line curve
+    const noSkillLine = matsDataCurveOpsUtils.getLinearValueLine(
+      resultOptions.xaxis.range[1],
+      resultOptions.xaxis.range[0],
+      skillmax,
+      skillmin,
+      curveIndex === 0
+        ? matsTypes.ReservedWords.noSkill
+        : matsTypes.ReservedWords.noSkillNoLabel,
+      "bottom right",
+      curveIndex === 0
+        ? matsTypes.ReservedWords.noSkill
+        : matsTypes.ReservedWords.noSkillNoLabel,
+      color,
+      1.5
+    );
+    dataset.push(noSkillLine);
   }
-  if (sampleClimo >= data.ymax) {
-    skillmax = sampleClimo - (sampleClimo - data.xmax) / 2;
-  } else {
-    skillmax = data.xmax - (data.xmax - sampleClimo) / 2;
-  }
-
-  // add black no skill line curve
-  const noSkillLine = matsDataCurveOpsUtils.getLinearValueLine(
-    resultOptions.xaxis.range[1],
-    resultOptions.xaxis.range[0],
-    skillmax,
-    skillmin,
-    matsTypes.ReservedWords.noSkill,
-    "bottom right",
-    matsTypes.ReservedWords.noSkill
-  );
-  dataset.push(noSkillLine);
-
-  // add sample climo lines
-  const xClimoLine = matsDataCurveOpsUtils.getHorizontalValueLine(
-    resultOptions.xaxis.range[1],
-    resultOptions.xaxis.range[0],
-    sampleClimo,
-    "top left",
-    matsTypes.ReservedWords.zero
-  );
-  dataset.push(xClimoLine);
-
-  const yClimoLine = matsDataCurveOpsUtils.getVerticalValueLine(
-    resultOptions.yaxis.range[1],
-    resultOptions.yaxis.range[0],
-    sampleClimo,
-    "bottom right",
-    matsTypes.ReservedWords.zero
-  );
-  dataset.push(yClimoLine);
 
   const totalProcessingFinish = moment();
   bookkeepingParams.dataRequests["total retrieval and processing time for curve set"] =
@@ -1149,7 +1154,9 @@ const processDataROC = function (
     data.ymin,
     matsTypes.ReservedWords.noSkill,
     "top left",
-    matsTypes.ReservedWords.noSkill
+    matsTypes.ReservedWords.noSkill,
+    "rgb(0,0,0)",
+    1
   );
   dataset.push(noSkillLine);
 
@@ -1159,7 +1166,9 @@ const processDataROC = function (
     resultOptions.xaxis.range[1],
     resultOptions.yaxis.range[1],
     "bottom right",
-    matsTypes.ReservedWords.perfectForecast
+    matsTypes.ReservedWords.perfectForecast,
+    "rgb(0,0,0)",
+    1
   );
   dataset.push(xPerfectLine);
 
@@ -1168,7 +1177,9 @@ const processDataROC = function (
     resultOptions.yaxis.range[1],
     resultOptions.xaxis.range[1],
     "top left",
-    matsTypes.ReservedWords.perfectForecast
+    matsTypes.ReservedWords.perfectForecast,
+    "rgb(0,0,0)",
+    1
   );
   dataset.push(yPerfectLine);
 
@@ -1270,7 +1281,9 @@ const processDataPerformanceDiagram = function (
     0,
     " 8.0",
     "bottom right",
-    matsTypes.ReservedWords.constantBias
+    matsTypes.ReservedWords.constantBias,
+    "rgb(0,0,0)",
+    1
   );
   dataset.push(biasLine);
   biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(
@@ -1280,7 +1293,9 @@ const processDataPerformanceDiagram = function (
     0,
     " 4.0",
     "bottom right",
-    matsTypes.ReservedWords.constantBias
+    matsTypes.ReservedWords.constantBias,
+    "rgb(0,0,0)",
+    1
   );
   dataset.push(biasLine);
   biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(
@@ -1290,7 +1305,9 @@ const processDataPerformanceDiagram = function (
     0,
     " 2.0",
     "bottom right",
-    matsTypes.ReservedWords.constantBias
+    matsTypes.ReservedWords.constantBias,
+    "rgb(0,0,0)",
+    1
   );
   dataset.push(biasLine);
   biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(
@@ -1300,7 +1317,9 @@ const processDataPerformanceDiagram = function (
     0,
     "1.0  ",
     "bottom left",
-    matsTypes.ReservedWords.constantBias
+    matsTypes.ReservedWords.constantBias,
+    "rgb(0,0,0)",
+    1
   );
   dataset.push(biasLine);
   biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(
@@ -1310,7 +1329,9 @@ const processDataPerformanceDiagram = function (
     0,
     "0.5",
     "bottom left",
-    matsTypes.ReservedWords.constantBias
+    matsTypes.ReservedWords.constantBias,
+    "rgb(0,0,0)",
+    1
   );
   dataset.push(biasLine);
   biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(
@@ -1320,7 +1341,9 @@ const processDataPerformanceDiagram = function (
     0,
     "0.25",
     "top left",
-    matsTypes.ReservedWords.constantBias
+    matsTypes.ReservedWords.constantBias,
+    "rgb(0,0,0)",
+    1
   );
   dataset.push(biasLine);
   biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(
@@ -1330,7 +1353,9 @@ const processDataPerformanceDiagram = function (
     0,
     "0.125",
     "top left",
-    matsTypes.ReservedWords.constantBias
+    matsTypes.ReservedWords.constantBias,
+    "rgb(0,0,0)",
+    1
   );
   dataset.push(biasLine);
 
@@ -1699,7 +1724,9 @@ const processDataEnsembleHistogram = function (
     resultOptions.xaxis.range[0],
     0,
     "top left",
-    matsTypes.ReservedWords.zero
+    matsTypes.ReservedWords.zero,
+    "rgb(0,0,0)",
+    1
   );
   dataset.push(zeroLine);
 
