@@ -50,6 +50,7 @@ const getHorizontalValueLine = function (
     },
     showlegend: false,
     hoverinfo: "none",
+    visible: true,
   };
 };
 
@@ -98,6 +99,7 @@ const getVerticalValueLine = function (
     },
     showlegend: false,
     hoverinfo: "none",
+    visible: true,
   };
 };
 
@@ -126,7 +128,7 @@ const getLinearValueLine = function (
     error_y: [null, null, null],
     text: [
       "",
-      textLabel === matsTypes.ReservedWords.noSkillNoLabel ? "" : textLabel,
+      textLabel.includes(matsTypes.ReservedWords.noSkillNoLabel) ? "" : textLabel,
       "",
     ],
     textposition: textPos,
@@ -152,6 +154,7 @@ const getLinearValueLine = function (
     },
     showlegend: false,
     hoverinfo: "none",
+    visible: true,
   };
 };
 
@@ -201,6 +204,7 @@ const getDashedLinearValueLine = function (
     },
     showlegend: false,
     hoverinfo: "none",
+    visible: true,
   };
 };
 
@@ -248,6 +252,7 @@ const getCurveLine = function (
     },
     showlegend: false,
     hoverinfo: "none",
+    visible: true,
   };
 };
 

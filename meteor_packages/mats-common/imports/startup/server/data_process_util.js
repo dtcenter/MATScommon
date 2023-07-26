@@ -1017,7 +1017,8 @@ const processDataReliability = function (
   // assign no skill lines for each curve
   for (let curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
     const data = dataset[curveIndex];
-    const { color } = data;
+    const { label } = data;
+    const color = data.annotateColor;
     const sampleClimo = data.sample_climo;
     let skillmin;
     let skillmax;
@@ -1031,20 +1032,23 @@ const processDataReliability = function (
     } else {
       skillmax = data.xmax - (data.xmax - sampleClimo) / 2;
     }
-
     // add black no skill line curve
     const noSkillLine = matsDataCurveOpsUtils.getLinearValueLine(
       resultOptions.xaxis.range[1],
       resultOptions.xaxis.range[0],
       skillmax,
       skillmin,
-      curveIndex === 0
-        ? matsTypes.ReservedWords.noSkill
-        : matsTypes.ReservedWords.noSkillNoLabel,
+      `${"  "}${
+        curveIndex === 0
+          ? matsTypes.ReservedWords.noSkill
+          : matsTypes.ReservedWords.noSkillNoLabel
+      }`,
       "bottom right",
-      curveIndex === 0
-        ? matsTypes.ReservedWords.noSkill
-        : matsTypes.ReservedWords.noSkillNoLabel,
+      `${label}-${
+        curveIndex === 0
+          ? matsTypes.ReservedWords.noSkill
+          : matsTypes.ReservedWords.noSkillNoLabel
+      }`,
       color,
       1.5
     );

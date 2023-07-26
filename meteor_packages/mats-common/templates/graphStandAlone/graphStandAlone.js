@@ -108,14 +108,16 @@ Template.GraphStandAlone.helpers({
               const updates = ret.curveOpsUpdate.curveOpsUpdate;
               for (let uidx = 0; uidx < updates.length; uidx++) {
                 const curveOpsUpdate = {};
-                const updatedKeys = Object.keys(updates[uidx]);
-                for (let kidx = 0; kidx < updatedKeys.length; kidx++) {
-                  const jsonHappyKey = updatedKeys[kidx];
-                  // turn the json placeholder back into .
-                  const updatedKey = jsonHappyKey.split("____").join(".");
-                  curveOpsUpdate[updatedKey] = updates[uidx][jsonHappyKey];
+                if (updates[uidx]) {
+                  const updatedKeys = Object.keys(updates[uidx]);
+                  for (let kidx = 0; kidx < updatedKeys.length; kidx++) {
+                    const jsonHappyKey = updatedKeys[kidx];
+                    // turn the json placeholder back into .
+                    const updatedKey = jsonHappyKey.split("____").join(".");
+                    curveOpsUpdate[updatedKey] = updates[uidx][jsonHappyKey];
+                  }
+                  Plotly.restyle($("#placeholder")[0], curveOpsUpdate, uidx);
                 }
-                Plotly.restyle($("#placeholder")[0], curveOpsUpdate, uidx);
               }
             }, mapLoadPause);
           }, 500);

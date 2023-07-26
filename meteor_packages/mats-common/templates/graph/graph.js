@@ -255,6 +255,7 @@ Template.graph.helpers({
         for (let i = 0; i < dataset.length; i++) {
           if (
             Object.values(matsTypes.ReservedWords).indexOf(dataset[i].label) >= 0 ||
+            dataset[i].label.includes(matsTypes.ReservedWords.noSkill) ||
             (plotType === matsTypes.PlotTypes.map &&
               Object.values(matsTypes.ReservedWords).indexOf(dataset[i].reserved) >=
                 0) ||
@@ -312,6 +313,7 @@ Template.graph.helpers({
       for (let i = 0; i < dataset.length; i++) {
         if (
           Object.values(matsTypes.ReservedWords).indexOf(dataset[i].label) >= 0 ||
+          dataset[i].label.includes(matsTypes.ReservedWords.noSkill) ||
           (plotType === matsTypes.PlotTypes.map &&
             Object.values(matsTypes.ReservedWords).indexOf(dataset[i].reserved) >= 0)
         ) {
@@ -1530,7 +1532,10 @@ Template.graph.events({
     if (!Session.get("axesCollapsed")) {
       // combine all x- or y-axes into the same axis
       for (didx = 0; didx < dataset.length; didx++) {
-        if (reservedWords.indexOf(dataset[didx].label) === -1) {
+        if (
+          reservedWords.indexOf(dataset[didx].label) === -1 &&
+          !dataset[didx].label.includes(matsTypes.ReservedWords.noSkill)
+        ) {
           if (plotType === matsTypes.PlotTypes.profile) {
             updates[didx] = {
               xaxis: "x1",
@@ -1589,7 +1594,10 @@ Template.graph.events({
       // separate x- or y-axes back out
       const lineTypeResetOpts = Session.get("lineTypeResetOpts");
       for (didx = 0; didx < dataset.length; didx++) {
-        if (reservedWords.indexOf(dataset[didx].label) === -1) {
+        if (
+          reservedWords.indexOf(dataset[didx].label) === -1 &&
+          !dataset[didx].label.includes(matsTypes.ReservedWords.noSkill)
+        ) {
           if (plotType === matsTypes.PlotTypes.profile) {
             updates[didx] = {
               xaxis: lineTypeResetOpts[didx].xaxis,
@@ -1663,7 +1671,10 @@ Template.graph.events({
 
         // create new array of equally-space x values
         const newX = [];
-        if (reservedWords.indexOf(dataset[didx].label) >= 0) {
+        if (
+          reservedWords.indexOf(dataset[didx].label) >= 0 ||
+          dataset[didx].label.includes(matsTypes.ReservedWords.noSkill)
+        ) {
           // for zero or max curves, the two x points should be the axis min and max
           newX.push(newOpts["xaxis.range[0]"]);
           newX.push(newOpts["xaxis.range[1]"]);
@@ -1852,8 +1863,22 @@ Template.graph.events({
     const myDataIdx = dataset.findIndex(function (d) {
       return d.curveId === label;
     });
+    let noSkillIdx;
+    if (plotType === matsTypes.PlotTypes.reliability) {
+      noSkillIdx = dataset.findIndex(function (d) {
+        return (
+          d.curveId ===
+          `${label}-${
+            myDataIdx === 0
+              ? matsTypes.ReservedWords.noSkill
+              : matsTypes.ReservedWords.noSkillNoLabel
+          }`
+        );
+      });
+    }
+    let update;
+    let noSkillUpdate;
     if (dataset[myDataIdx].x.length > 0) {
-      var update;
       if (dataset[myDataIdx].visible !== "legendonly") {
         if (dataset[myDataIdx].mode === "lines") {
           // in line mode, lines are visible, so make nothing visible
@@ -1861,6 +1886,11 @@ Template.graph.events({
             visible: "legendonly",
           };
           $(`#${id}`)[0].value = "show curve";
+          if (plotType === matsTypes.PlotTypes.reliability) {
+            noSkillUpdate = {
+              visible: false,
+            };
+          }
         } else if (dataset[myDataIdx].mode === "lines+markers") {
           // in line and point mode, lines and points are visible, so make nothing visible
           update = {
@@ -1868,6 +1898,11 @@ Template.graph.events({
           };
           $(`#${id}`)[0].value = "show curve";
           $(`#${id}-points`)[0].value = "show points";
+          if (plotType === matsTypes.PlotTypes.reliability) {
+            noSkillUpdate = {
+              visible: false,
+            };
+          }
         } else if (
           dataset[myDataIdx].mode === "markers" &&
           plotType !== matsTypes.PlotTypes.simpleScatter
@@ -1877,6 +1912,11 @@ Template.graph.events({
             mode: "lines+markers",
           };
           $(`#${id}`)[0].value = "hide curve";
+          if (plotType === matsTypes.PlotTypes.reliability) {
+            noSkillUpdate = {
+              visible: true,
+            };
+          }
         }
       } else if (dataset[myDataIdx].mode === "lines") {
         // in line mode, nothing is visible, so make lines visible
@@ -1884,16 +1924,29 @@ Template.graph.events({
           visible: true,
         };
         $(`#${id}`)[0].value = "hide curve";
+        if (plotType === matsTypes.PlotTypes.reliability) {
+          noSkillUpdate = {
+            visible: true,
+          };
+        }
       } else if (dataset[myDataIdx].mode === "lines+markers") {
         // in line and point mode, nothing is visible, so make lines and points visible
         update = {
           visible: true,
         };
+        if (plotType === matsTypes.PlotTypes.reliability) {
+          noSkillUpdate = {
+            visible: true,
+          };
+        }
         $(`#${id}`)[0].value = "hide curve";
         $(`#${id}-points`)[0].value = "hide points";
       }
     }
     Plotly.restyle($("#placeholder")[0], update, myDataIdx);
+    if (plotType === matsTypes.PlotTypes.reliability) {
+      Plotly.restyle($("#placeholder")[0], noSkillUpdate, noSkillIdx);
+    }
 
     // save the updates in case we want to pass them to a pop-out window.
     curveOpsUpdate[myDataIdx] =
@@ -1905,6 +1958,17 @@ Template.graph.events({
       const jsonHappyKey = updatedKey.split(".").join("____");
       curveOpsUpdate[myDataIdx][jsonHappyKey] = update[updatedKey];
     }
+    if (plotType === matsTypes.PlotTypes.reliability) {
+      curveOpsUpdate[noSkillIdx] =
+        curveOpsUpdate[noSkillIdx] === undefined ? {} : curveOpsUpdate[noSkillIdx];
+      const updatedKeys = Object.keys(noSkillUpdate);
+      for (let kidx = 0; kidx < updatedKeys.length; kidx++) {
+        const updatedKey = updatedKeys[kidx];
+        // json doesn't like . to be in keys, so replace it with a placeholder
+        const jsonHappyKey = updatedKey.split(".").join("____");
+        curveOpsUpdate[noSkillIdx][jsonHappyKey] = noSkillUpdate[updatedKey];
+      }
+    }
   },
   "click .pointsVisibility"(event) {
     event.preventDefault();
@@ -1915,8 +1979,22 @@ Template.graph.events({
     const myDataIdx = dataset.findIndex(function (d) {
       return d.curveId === label;
     });
+    let noSkillIdx;
+    if (plotType === matsTypes.PlotTypes.reliability) {
+      noSkillIdx = dataset.findIndex(function (d) {
+        return (
+          d.curveId ===
+          `${label}-${
+            myDataIdx === 0
+              ? matsTypes.ReservedWords.noSkill
+              : matsTypes.ReservedWords.noSkillNoLabel
+          }`
+        );
+      });
+    }
+    let update;
+    let noSkillUpdate;
     if (dataset[myDataIdx].x.length > 0) {
-      var update;
       if (dataset[myDataIdx].visible !== "legendonly") {
         if (dataset[myDataIdx].mode === "lines") {
           // lines are visible, so make lines and points visible
@@ -1939,6 +2017,11 @@ Template.graph.events({
             update.mode = "lines";
           }
           $(`#${id}`)[0].value = "show points";
+          if (plotType === matsTypes.PlotTypes.reliability) {
+            noSkillUpdate = {
+              visible: false,
+            };
+          }
         }
       } else {
         // nothing is visible, so make points visible
@@ -1947,9 +2030,17 @@ Template.graph.events({
           mode: "markers",
         };
         $(`#${id}`)[0].value = "hide points";
+        if (plotType === matsTypes.PlotTypes.reliability) {
+          noSkillUpdate = {
+            visible: true,
+          };
+        }
       }
     }
     Plotly.restyle($("#placeholder")[0], update, myDataIdx);
+    if (plotType === matsTypes.PlotTypes.reliability) {
+      Plotly.restyle($("#placeholder")[0], noSkillUpdate, noSkillIdx);
+    }
 
     // save the updates in case we want to pass them to a pop-out window.
     curveOpsUpdate[myDataIdx] =
@@ -1960,6 +2051,17 @@ Template.graph.events({
       // json doesn't like . to be in keys, so replace it with a placeholder
       const jsonHappyKey = updatedKey.split(".").join("____");
       curveOpsUpdate[myDataIdx][jsonHappyKey] = update[updatedKey];
+    }
+    if (plotType === matsTypes.PlotTypes.reliability) {
+      curveOpsUpdate[noSkillIdx] =
+        curveOpsUpdate[noSkillIdx] === undefined ? {} : curveOpsUpdate[noSkillIdx];
+      const updatedKeys = Object.keys(noSkillUpdate);
+      for (let kidx = 0; kidx < updatedKeys.length; kidx++) {
+        const updatedKey = updatedKeys[kidx];
+        // json doesn't like . to be in keys, so replace it with a placeholder
+        const jsonHappyKey = updatedKey.split(".").join("____");
+        curveOpsUpdate[noSkillIdx][jsonHappyKey] = noSkillUpdate[updatedKey];
+      }
     }
   },
   "click .errorBarVisibility"(event) {
@@ -2185,7 +2287,9 @@ Template.graph.events({
           for (let lidx = 0; lidx < lineTypeResetOpts.length; lidx++) {
             Plotly.restyle($("#placeholder")[0], lineTypeResetOpts[lidx], lidx);
             if (
-              Object.values(matsTypes.ReservedWords).indexOf(dataset[lidx].label) === -1
+              Object.values(matsTypes.ReservedWords).indexOf(dataset[lidx].label) ===
+                -1 &&
+              !dataset[lidx].label.includes(matsTypes.ReservedWords.noSkill)
             ) {
               $(`#${dataset[lidx].label}-curve-show-hide`)[0].value = "hide curve";
               $(`#${dataset[lidx].label}-curve-show-hide-points`)[0].value =
