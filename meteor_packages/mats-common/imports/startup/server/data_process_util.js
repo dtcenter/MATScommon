@@ -42,7 +42,7 @@ const processDataXYCurve = function (
   const axisLimitReprocessed = {};
 
   // calculate data statistics (including error bars) for each curve
-  for (var curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex++) {
+  for (var curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
     axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey] =
       axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey] !== undefined;
     const { diffFrom } = curveInfoParams.curves[curveIndex];
@@ -318,7 +318,7 @@ const processDataXYCurve = function (
         ).toPrecision(4)}`;
       }
 
-      di++;
+      di += 1;
     }
 
     // enable error bars if matching and they aren't null.
@@ -345,7 +345,7 @@ const processDataXYCurve = function (
 
     // recalculate axis options after QC and matching
     const filteredIndVars = [];
-    for (let vidx = 0; vidx < values.length; vidx++) {
+    for (let vidx = 0; vidx < values.length; vidx += 1) {
       if (values[vidx] !== null) filteredIndVars.push(indVars[vidx]);
     }
     const minx = Math.min(...filteredIndVars);
@@ -400,7 +400,7 @@ const processDataXYCurve = function (
     }
   }
 
-  for (curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex++) {
+  for (curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
     // remove sub values and times to save space
     data = dataset[curveIndex];
     data.subHit = [];
@@ -486,7 +486,7 @@ const processDataXYCurve = function (
   // add ideal value lines, if any
   let idealValueLine;
   let idealLabel;
-  for (let ivIdx = 0; ivIdx < curveInfoParams.idealValues.length; ivIdx++) {
+  for (let ivIdx = 0; ivIdx < curveInfoParams.idealValues.length; ivIdx += 1) {
     idealLabel = `ideal${ivIdx.toString()}`;
     idealValueLine = matsDataCurveOpsUtils.getHorizontalValueLine(
       resultOptions.xaxis.range[1],
@@ -551,7 +551,7 @@ const processDataProfile = function (
   const axisLimitReprocessed = {};
 
   // calculate data statistics (including error bars) for each curve
-  for (var curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex++) {
+  for (var curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
     axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey] =
       axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey] !== undefined;
     const { diffFrom } = curveInfoParams.curves[curveIndex];
@@ -780,7 +780,7 @@ const processDataProfile = function (
           ).toPrecision(4)}`;
       }
 
-      di++;
+      di += 1;
     }
 
     // enable error bars if matching and they aren't null.
@@ -812,7 +812,7 @@ const processDataProfile = function (
 
     // recalculate axis options after QC and matching
     const filteredLevels = [];
-    for (let vidx = 0; vidx < values.length; vidx++) {
+    for (let vidx = 0; vidx < values.length; vidx += 1) {
       if (values[vidx] !== null) filteredLevels.push(levels[vidx]);
     }
     const miny = Math.min(...filteredLevels);
@@ -857,7 +857,7 @@ const processDataProfile = function (
     }
   }
 
-  for (curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex++) {
+  for (curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
     // remove sub values and times to save space
     data = dataset[curveIndex];
     data.subHit = [];
@@ -904,7 +904,7 @@ const processDataProfile = function (
   // add ideal value lines, if any
   let idealValueLine;
   let idealLabel;
-  for (let ivIdx = 0; ivIdx < curveInfoParams.idealValues.length; ivIdx++) {
+  for (let ivIdx = 0; ivIdx < curveInfoParams.idealValues.length; ivIdx += 1) {
     idealLabel = `ideal${ivIdx.toString()}`;
     idealValueLine = matsDataCurveOpsUtils.getVerticalValueLine(
       resultOptions.yaxis.range[1],
@@ -951,6 +951,16 @@ const processDataReliability = function (
 
   const isMetexpress =
     matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
+
+  // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
+  if (curveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
+    dataset = matsDataMatchUtils.getMatchedDataSet(
+      dataset,
+      curveInfoParams,
+      appParams,
+      {}
+    );
+  }
 
   // sort data statistics for each curve
   for (let curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
@@ -1055,6 +1065,17 @@ const processDataReliability = function (
     dataset.push(noSkillLine);
   }
 
+  for (let curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
+    // remove sub values and times to save space
+    const data = dataset[curveIndex];
+    data.subRelHit = [];
+    data.subRelRawCount = [];
+    data.subRelCount = [];
+    data.subVals = [];
+    data.subSecs = [];
+    data.subLevs = [];
+  }
+
   const totalProcessingFinish = moment();
   bookkeepingParams.dataRequests["total retrieval and processing time for curve set"] =
     {
@@ -1100,7 +1121,7 @@ const processDataROC = function (
   }
 
   // sort data statistics for each curve
-  for (let curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex++) {
+  for (let curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
     var data = dataset[curveIndex];
     var statType;
     if (curveInfoParams.statType === undefined) {
@@ -1140,7 +1161,7 @@ const processDataROC = function (
       ] = `${data.text[di]}<br>probability of false detection: ${data.x[di]}`;
       data.text[di] = `${data.text[di]}<br>n: ${data.n[di]}`;
 
-      di++;
+      di += 1;
     }
     dataset[curveIndex].glob_stats = {
       auc,
@@ -1232,7 +1253,7 @@ const processDataPerformanceDiagram = function (
   }
 
   // sort data statistics for each curve
-  for (var curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex++) {
+  for (var curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
     var data = dataset[curveIndex];
     var statType;
     if (curveInfoParams.statType === undefined) {
@@ -1269,7 +1290,7 @@ const processDataPerformanceDiagram = function (
       data.text[di] = `${data.text[di]}<br>success ratio: ${data.x[di]}`;
       data.text[di] = `${data.text[di]}<br>n: ${data.n[di]}`;
 
-      di++;
+      di += 1;
     }
     dataset[curveIndex].glob_stats = {};
   }
@@ -1368,14 +1389,14 @@ const processDataPerformanceDiagram = function (
   let textVals;
   let cval;
   let csiLine;
-  for (let csiidx = 1; csiidx < 10; csiidx++) {
+  for (let csiidx = 1; csiidx < 10; csiidx += 1) {
     cval = csiidx / 10;
     xvals = _.range(cval, 1.01, 0.01);
     yvals = [];
     textVals = [];
     var xval;
     var yval;
-    for (let xidx = 0; xidx < xvals.length; xidx++) {
+    for (let xidx = 0; xidx < xvals.length; xidx += 1) {
       xval = xvals[xidx];
       yval = (xval * cval) / (xval + xval * cval - cval);
       yvals.push(yval);
@@ -1393,7 +1414,7 @@ const processDataPerformanceDiagram = function (
     dataset.push(csiLine);
   }
 
-  for (curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex++) {
+  for (curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
     // remove sub values and times to save space
     data = dataset[curveIndex];
     data.subHit = [];
@@ -1563,7 +1584,7 @@ const processDataEnsembleHistogram = function (
   const axisLimitReprocessed = {};
 
   // calculate data statistics (including error bars) for each curve
-  for (let curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex++) {
+  for (let curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
     axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey] =
       axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey] !== undefined;
     const { diffFrom } = curveInfoParams.curves[curveIndex];
@@ -1634,7 +1655,7 @@ const processDataEnsembleHistogram = function (
           data.y[di] === null ? null : Math.round(data.y[di])
         }`;
 
-      di++;
+      di += 1;
     }
 
     const valueTotal = values.reduce((a, b) => Math.abs(a) + Math.abs(b), 0);
@@ -1642,12 +1663,16 @@ const processDataEnsembleHistogram = function (
     // calculate the relative frequency for all the bins.
     // for diff curves, there's no good way to produce a diff of only matching data, so just diff the two parent curves.
     let diffIndexVal = 0;
-    for (let d_idx = 0; d_idx < data.y.length; d_idx++) {
+    for (let d_idx = 0; d_idx < data.y.length; d_idx += 1) {
       if (data.y[d_idx] !== null) {
         if (diffFrom === null || diffFrom === undefined) {
           data.bin_stats[d_idx].bin_rf = data.bin_stats[d_idx].bin_rf / valueTotal;
         } else {
-          for (let diffIndex = diffIndexVal; diffIndex < data.x.length; diffIndex++) {
+          for (
+            let diffIndex = diffIndexVal;
+            diffIndex < data.x.length;
+            diffIndex += 1
+          ) {
             if (dataset[diffFrom[0]].x[d_idx] === dataset[diffFrom[1]].x[diffIndex]) {
               data.bin_stats[d_idx].bin_rf =
                 dataset[diffFrom[0]].bin_stats[d_idx].bin_rf -
@@ -1799,7 +1824,7 @@ const processDataHistogram = function (
   const plotBins = {};
   plotBins.binMeans = [];
   plotBins.binLabels = [];
-  for (let b_idx = 0; b_idx < binStats.binMeans.length; b_idx++) {
+  for (let b_idx = 0; b_idx < binStats.binMeans.length; b_idx += 1) {
     plotBins.binMeans.push(binStats.binMeans[b_idx]);
     plotBins.binLabels.push(binStats.binLabels[b_idx]);
   }
@@ -1809,7 +1834,7 @@ const processDataHistogram = function (
   let curve;
   let diffFrom;
   let label;
-  for (var curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex++) {
+  for (var curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
     curve = curveInfoParams.curves[curveIndex];
     diffFrom = curve.diffFrom;
     label = curve.label;
@@ -1921,7 +1946,7 @@ const processDataHistogram = function (
       appParams
     ); // generate plot with data, curve annotation, axis labels, etc.
     dataset.push(cOptions);
-    curvesLengthSoFar++;
+    curvesLengthSoFar += 1;
   } // end for curves
 
   // if matching, pare down dataset to only matching data. Only do this if we didn't already do it while calculating diffs.
@@ -1939,7 +1964,7 @@ const processDataHistogram = function (
   }
 
   // calculate data statistics (including error bars) for each curve
-  for (curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex++) {
+  for (curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
     const statisticSelect = curveInfoParams.curves[curveIndex].statistic;
     diffFrom = curveInfoParams.curves[curveIndex].diffFrom;
     var data = dataset[curveIndex];
@@ -1982,7 +2007,7 @@ const processDataHistogram = function (
             : data.bin_stats[di].bin_sd.toPrecision(4)
         }`;
 
-      di++;
+      di += 1;
     }
   } // end curves
 
@@ -1992,7 +2017,7 @@ const processDataHistogram = function (
   curveInfoParams.axisMap[curveInfoParams.curves[0].axisKey].ymin = ymin;
   curveInfoParams.axisMap[curveInfoParams.curves[0].axisKey].ymax = ymax;
 
-  for (curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex++) {
+  for (curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
     // remove sub values and times to save space
     data = dataset[curveIndex];
     data.subHit = [];
@@ -2085,9 +2110,9 @@ const processDataContour = function (
   let j;
   let currText;
   let currYTextArray;
-  for (j = 0; j < data.y.length; j++) {
+  for (j = 0; j < data.y.length; j += 1) {
     currYTextArray = [];
-    for (i = 0; i < data.x.length; i++) {
+    for (i = 0; i < data.x.length; i += 1) {
       currText = `${label}<br>${data.xAxisKey}: ${data.x[i]}<br>${data.yAxisKey}: ${
         data.y[j]
       }<br>${statisticSelect}: ${
@@ -2169,7 +2194,7 @@ const processDataSimpleScatter = function (
   }
 
   // sort data statistics for each curve
-  for (var curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex++) {
+  for (var curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
     var data = dataset[curveIndex];
     var statType;
     if (curveInfoParams.statType === undefined) {
@@ -2217,12 +2242,12 @@ const processDataSimpleScatter = function (
       ] = `${data.text[di]}<br>${variableYSelect} ${statisticYSelect}: ${data.y[di]}`;
       data.text[di] = `${data.text[di]}<br>n: ${data.n[di]}`;
 
-      di++;
+      di += 1;
     }
     dataset[curveIndex].glob_stats = {};
   }
 
-  for (curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex++) {
+  for (curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
     // remove sub values and times to save space
     data = dataset[curveIndex];
     data.subSquareDiffSumX = [];

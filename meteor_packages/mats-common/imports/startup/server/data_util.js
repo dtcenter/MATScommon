@@ -1480,6 +1480,10 @@ const removePoint = function (
       data.subObsSum.splice(di, 1);
       data.subAbsSum.splice(di, 1);
     }
+  } else if (data.subRelHit !== undefined) {
+    data.subRelHit.splice(di, 1);
+    data.subRelCount.splice(di, 1);
+    data.subRelRawCount.splice(di, 1);
   }
   if (data.subValsX !== undefined) {
     data.subValsX.splice(di, 1);
@@ -1544,6 +1548,10 @@ const addNullPoint = function (
       data.subObsSum.splice(di, 0, []);
       data.subAbsSum.splice(di, 0, []);
     }
+  } else if (data.subRelHit !== undefined) {
+    data.subRelHit.splice(di, 0, []);
+    data.subRelCount.splice(di, 0, []);
+    data.subRelRawCount.splice(di, 0, []);
   }
   if (data.subValsX !== undefined) {
     data.subValsX.splice(di, 0, []);
@@ -1589,6 +1597,10 @@ const nullPoint = function (data, di, statVarName, isCTC, isScalar, hasLevels) {
       data.subObsSum[di] = [];
       data.subAbsSum[di] = [];
     }
+  } else if (data.subRelHit !== undefined) {
+    data.subRelHit[di] = [];
+    data.subRelCount[di] = [];
+    data.subRelRawCount[di] = [];
   }
   if (data.subValsX !== undefined) {
     data.subValsX[di] = [];

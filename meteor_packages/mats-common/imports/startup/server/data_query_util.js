@@ -614,7 +614,7 @@ const queryDBSpecialtyCurve = function (pool, statement, appParams, statisticStr
 };
 
 // this method queries the database for performance diagrams
-const queryDBReliability = function (pool, statement, kernel) {
+const queryDBReliability = function (pool, statement, appParams, kernel) {
   if (Meteor.isServer) {
     let d = {
       // d will contain the curve data
@@ -623,6 +623,7 @@ const queryDBReliability = function (pool, statement, kernel) {
       binVals: [],
       hitCount: [],
       fcstCount: [],
+      fcstRawCount: [],
       sample_climo: 0,
       n: [],
       subHit: [],
@@ -631,6 +632,9 @@ const queryDBReliability = function (pool, statement, kernel) {
       subCn: [],
       subData: [],
       subHeaders: [],
+      subRelHit: [],
+      subRelRawCount: [],
+      subRelCount: [],
       subVals: [],
       subSecs: [],
       subLevs: [],
@@ -664,7 +668,7 @@ const queryDBReliability = function (pool, statement, kernel) {
         } else if (rows.includes("queryCB ERROR: ")) {
           error = rows;
         } else {
-          parsedData = parseQueryDataReliability(rows, d, kernel);
+          parsedData = parseQueryDataReliability(rows, d, appParams, kernel);
           d = parsedData.d;
         }
         dFuture.return();
@@ -678,7 +682,7 @@ const queryDBReliability = function (pool, statement, kernel) {
         } else if (rows === undefined || rows === null || rows.length === 0) {
           error = matsTypes.Messages.NO_DATA_FOUND;
         } else {
-          parsedData = parseQueryDataReliability(rows, d, kernel);
+          parsedData = parseQueryDataReliability(rows, d, appParams, kernel);
           d = parsedData.d;
         }
         // done waiting - have results
@@ -1990,7 +1994,7 @@ const parseQueryDataXYCurve = function (
 };
 
 // this method parses the returned query data for performance diagrams
-const parseQueryDataReliability = function (rows, d, kernel) {
+const parseQueryDataReliability = function (rows, d, appParams, kernel) {
   /*
     let d = {
       // d will contain the curve data
@@ -1999,6 +2003,7 @@ const parseQueryDataReliability = function (rows, d, kernel) {
       binVals: [],
       hitCount: [],
       fcstCount: [],
+      fcstRawCount: [],
       sample_climo: 0,
       n: [],
       subHit: [],
@@ -2007,6 +2012,9 @@ const parseQueryDataReliability = function (rows, d, kernel) {
       subCn: [],
       subData: [],
       subHeaders: [],
+      subRelHit: [],
+      subRelRawCount: [],
+      subRelCount: [],
       subVals: [],
       subSecs: [],
       subLevs: [],
@@ -2023,12 +2031,21 @@ const parseQueryDataReliability = function (rows, d, kernel) {
     };
     */
 
+  const { hasLevels } = appParams;
+
   // initialize local variables
   const binVals = [];
   const hitCounts = [];
   const fcstCounts = [];
+  const fcstRawCounts = [];
   const observedFreqs = [];
   let totalForecastCount = 0;
+  const subRelCount = [];
+  const subRelRawCount = [];
+  const subRelHit = [];
+  const subVals = [];
+  const subSecs = [];
+  const subLevs = [];
   for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
     if (
       Number(rows[rowIndex].kernel) === 0 &&
@@ -2036,6 +2053,33 @@ const parseQueryDataReliability = function (rows, d, kernel) {
       rows[rowIndex].rawfcstcount !== "NULL"
     ) {
       totalForecastCount += Number(rows[rowIndex].rawfcstcount);
+      const fcstRawCount =
+        rows[rowIndex].rawfcstcount === "NULL"
+          ? null
+          : Number(rows[rowIndex].rawfcstcount);
+      let sub_raw_counts = []; // actually raw counts but I'm re-using fields
+      // parse the sub-data
+      if (rows[rowIndex].sub_data !== undefined && rows[rowIndex].sub_data !== null) {
+        try {
+          const sub_data = rows[rowIndex].sub_data.toString().split(",");
+          let curr_sub_data;
+          for (let sd_idx = 0; sd_idx < sub_data.length; sd_idx++) {
+            curr_sub_data = sub_data[sd_idx].split(";");
+            if (hasLevels) {
+              sub_raw_counts.push(Number(curr_sub_data[3]));
+            } else {
+              sub_raw_counts.push(Number(curr_sub_data[2]));
+            }
+          }
+        } catch (e) {
+          // this is an error produced by a bug in the query function, not an error returned by the mysql database
+          e.message = `Error in parseQueryDataReliability. The expected fields don't seem to be present in the results cache: ${e.message}`;
+          throw new Error(e.message);
+        }
+      } else {
+        sub_raw_counts = NaN;
+      }
+      subRelRawCount.push(sub_raw_counts);
     }
     if (Number(rows[rowIndex].kernel) === Number(kernel)) {
       const binVal = Number(rows[rowIndex].binValue);
@@ -2059,6 +2103,61 @@ const parseQueryDataReliability = function (rows, d, kernel) {
       hitCounts.push(hitCount);
       fcstCounts.push(fcstCount);
       observedFreqs.push(observedFreq);
+
+      let sub_rel_hit = [];
+      let sub_rel_counts = [];
+      const sub_values = [];
+      let sub_secs = [];
+      let sub_levs = [];
+      if (
+        hitCount !== null &&
+        rows[rowIndex].sub_data !== undefined &&
+        rows[rowIndex].sub_data !== null
+      ) {
+        // parse the sub-data
+        try {
+          const sub_data = rows[rowIndex].sub_data.toString().split(",");
+          let curr_sub_data;
+          for (let sd_idx = 0; sd_idx < sub_data.length; sd_idx++) {
+            curr_sub_data = sub_data[sd_idx].split(";");
+            sub_secs.push(Number(curr_sub_data[0]));
+            if (hasLevels) {
+              if (!isNaN(Number(curr_sub_data[1]))) {
+                sub_levs.push(Number(curr_sub_data[1]));
+              } else {
+                sub_levs.push(curr_sub_data[1]);
+              }
+              sub_rel_counts.push(Number(curr_sub_data[2]));
+              sub_rel_hit.push(Number(curr_sub_data[4]));
+              // this is a dummy to fit the expectations of common functions that xy line curves have a populated sub_values array. It isn't used for anything.
+              sub_values.push(0);
+            } else {
+              sub_rel_counts.push(Number(curr_sub_data[1]));
+              sub_rel_hit.push(Number(curr_sub_data[3]));
+              // this is a dummy to fit the expectations of common functions that xy line curves have a populated sub_values array. It isn't used for anything.
+              sub_values.push(0);
+            }
+          }
+        } catch (e) {
+          // this is an error produced by a bug in the query function, not an error returned by the mysql database
+          e.message = `Error in parseQueryDataReliability. The expected fields don't seem to be present in the results cache: ${e.message}`;
+          throw new Error(e.message);
+        }
+      } else {
+        sub_rel_counts = NaN;
+        sub_rel_hit = NaN;
+        sub_secs = NaN;
+        if (hasLevels) {
+          sub_levs = NaN;
+        }
+      }
+      subRelCount.push(sub_rel_counts);
+      subRelHit.push(sub_rel_hit);
+      subVals.push(sub_values);
+      subSecs.push(sub_secs);
+      if (hasLevels) {
+        subLevs.push(sub_levs);
+      }
     }
   }
 
@@ -2072,7 +2171,14 @@ const parseQueryDataReliability = function (rows, d, kernel) {
   d.binVals = binVals;
   d.hitCount = hitCounts;
   d.fcstCount = fcstCounts;
+  d.fcstRawCount = fcstRawCounts;
   d.sample_climo = sampleClimo;
+  d.subRelHit = subRelHit;
+  d.subRelCount = subRelCount;
+  d.subRelRawCount = subRelRawCount;
+  d.subVals = subVals;
+  d.subSecs = subSecs;
+  d.subLevs = subLevs;
 
   let xMin = Number.MAX_VALUE;
   let xMax = -1 * Number.MAX_VALUE;
