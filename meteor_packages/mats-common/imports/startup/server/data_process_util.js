@@ -1060,7 +1060,7 @@ const processDataReliability = function (
           : matsTypes.ReservedWords.noSkillNoLabel
       }`,
       color,
-      1.5
+      1
     );
     dataset.push(noSkillLine);
   }

@@ -382,10 +382,24 @@ const refresh = function (event, paramName) {
         elem.selectedIndex = 0;
       }
     }
-    const selectedText =
-      elem.selectedIndex >= 0
-        ? elem.options[elem.selectedIndex].text
-        : matsTypes.InputTypes.unused;
+    let selectedText;
+    if (param.multiple) {
+      selectedText =
+        elem.selectedIndex >= 0
+          ? $(elem.selectedOptions)
+              .map(function () {
+                return this.value;
+              })
+              .get()
+          : matsTypes.InputTypes.unused;
+      if (selectedText.includes(",")) selectedText = selectedText.split(",");
+    } else {
+      selectedText =
+        elem.selectedIndex >= 0
+          ? elem.options[elem.selectedIndex].text
+          : matsTypes.InputTypes.unused;
+    }
+
     const brothers = [];
     for (var i = 0; i < elems.length; i++) {
       if (elems[i].id.indexOf(name) >= 0 && elems[i].id !== elem.id)
@@ -547,11 +561,47 @@ const refresh = function (event, paramName) {
       $(`select[name="${name}"]`).empty().append(optionsAsString);
       // reset the selected index if it had been set prior (the list may have changed so the index may have changed)
       let selectedOptionIndex;
+      let selectedOptionOverlap = [];
       if (selectedText === "initial") {
-        selectedOptionIndex = myOptions.indexOf(param.default);
+        if (param.multiple && param.default instanceof Array) {
+          selectedOptionOverlap = _.intersection(param.default, myOptions);
+          selectedOptionIndex = selectedOptionOverlap.length > 0 ? 0 : -1;
+        } else {
+          selectedOptionIndex = myOptions.indexOf(param.default);
+        }
       } else if (name === "plot-type") {
         // the met apps have a hidden plot-type selector that needs to match the current selected plot type
         selectedOptionIndex = myOptions.indexOf(matsPlotUtils.getPlotType());
+      } else if (param.multiple) {
+        if (param.name === "probability-bins") {
+          // the prob bins behave differently with different kernels, so unfortuately we have to have translation code here
+          if (
+            _.intersection(selectedText, [
+              "20",
+              "30",
+              "40",
+              "50",
+              "60",
+              "70",
+              "80",
+              "90",
+            ]).length > 0 &&
+            _.intersection(myOptions, ["2", "3", "4", "5", "6", "7", "8", "9"]).length >
+              0
+          ) {
+            selectedText = selectedText.map((x) => String(Number(x) / 10));
+          }
+          if (
+            _.intersection(selectedText, ["2", "3", "4", "5", "6", "7", "8", "9"])
+              .length > 0 &&
+            _.intersection(myOptions, ["20", "30", "40", "50", "60", "70", "80", "90"])
+              .length > 0
+          ) {
+            selectedText = selectedText.map((x) => String(Number(x) * 10));
+          }
+        }
+        selectedOptionOverlap = _.intersection(selectedText, myOptions);
+        selectedOptionIndex = selectedOptionOverlap.length > 0 ? 0 : -1;
       } else {
         selectedOptionIndex = myOptions.indexOf(selectedText);
       }
@@ -600,6 +650,23 @@ const refresh = function (event, paramName) {
               elem.options[elem.selectedIndex].text
             );
         }
+      } else if (param.multiple && selectedOptionOverlap.length > 0) {
+        // need to manually select all the desired options
+        for (let idx = 0; idx < elem.options.length; idx += 1) {
+          elem.options[idx].selected = "";
+        }
+        for (
+          let overlapIdx = 0;
+          overlapIdx < selectedOptionOverlap.length;
+          overlapIdx += 1
+        ) {
+          for (let idx = 0; idx < elem.options.length; idx += 1) {
+            if (elem.options[idx].value === selectedOptionOverlap[overlapIdx]) {
+              elem.options[idx].selected = "selected";
+            }
+          }
+        }
+        matsParamUtils.setValueTextForParamName(name, selectedOptionOverlap);
       } else {
         elem.selectedIndex = selectedOptionIndex;
         elem &&
