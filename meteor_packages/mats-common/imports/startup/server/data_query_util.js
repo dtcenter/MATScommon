@@ -292,7 +292,7 @@ const queryDBPython = function (pool, queryArray)
 // this method queries the database for timeseries plots
 const queryDBTimeSeries = function (
   pool,
-  statement_or_mwRows,
+  statementOrMwRows,
   dataSource,
   forecastOffset,
   startDate,
@@ -382,39 +382,40 @@ const queryDBTimeSeries = function (
             for its result, so we use an anonymous async() function here to wrap the queryCB call
             */
       let rows = null;
-      if (Array.isArray(statement_or_mwRows))
+      if (Array.isArray(statementOrMwRows))
       {
-        rows = statement_or_mwRows;
+        rows = statementOrMwRows;
         dFuture.return();
       }
       else
       {
         (async () =>
         {
-          rows = await pool.queryCB(statement);
+          rows = await pool.queryCB(statementOrMwRows);
+          if (rows === undefined || rows === null || rows.length === 0)
+          {
+            error = matsTypes.Messages.NO_DATA_FOUND;
+          } else if (rows.includes("queryCB ERROR: "))
+          {
+            error = rows;
+          } else
+          {
+            parsedData = parseQueryDataXYCurve(
+              rows,
+              d,
+              appParams,
+              statisticStr,
+              forecastOffset,
+              cycles,
+              regular
+            );
+            d = parsedData.d;
+            N0 = parsedData.N0;
+            N_times = parsedData.N_times;
+          }
+          // done waiting - have results
           dFuture.return();
         })();
-      }
-      if (rows === undefined || rows === null || rows.length === 0)
-      {
-        error = matsTypes.Messages.NO_DATA_FOUND;
-      } else if (rows.includes("queryCB ERROR: "))
-      {
-        error = rows;
-      } else
-      {
-        parsedData = parseQueryDataXYCurve(
-          rows,
-          d,
-          appParams,
-          statisticStr,
-          forecastOffset,
-          cycles,
-          regular
-        );
-        d = parsedData.d;
-        N0 = parsedData.N0;
-        N_times = parsedData.N_times;
       }
     } else
     {
@@ -460,7 +461,7 @@ const queryDBTimeSeries = function (
 };
 
 // this method queries the database for specialty curves such as profiles, dieoffs, threshold plots, valid time plots, grid scale plots, and histograms
-const queryDBSpecialtyCurve = function (pool, statement_or_mwRows, appParams, statisticStr)
+const queryDBSpecialtyCurve = function (pool, statementOrMwRows, appParams, statisticStr)
 {
   if (Meteor.isServer)
   {
@@ -514,45 +515,46 @@ const queryDBSpecialtyCurve = function (pool, statement_or_mwRows, appParams, st
             for its result, so we use an anonymous async() function here to wrap the queryCB call
             */
       let rows = null;
-      if (Array.isArray(statement_or_mwRows))
+      if (Array.isArray(statementOrMwRows))
       {
-        rows = statement_or_mwRows;
+        rows = statementOrMwRows;
         dFuture.return();
       }
       else
       {
         (async () =>
         {
-          rows = await pool.queryCB(statement);
+          rows = await pool.queryCB(statementOrMwRows);
+
+          if (rows === undefined || rows === null || rows.length === 0)
+          {
+            error = matsTypes.Messages.NO_DATA_FOUND;
+          } else if (rows.includes("queryCB ERROR: "))
+          {
+            error = rows;
+          } else
+          {
+            if (appParams.plotType !== matsTypes.PlotTypes.histogram)
+            {
+              parsedData = parseQueryDataXYCurve(
+                rows,
+                d,
+                appParams,
+                statisticStr,
+                null,
+                null,
+                null
+              );
+            } else
+            {
+              parsedData = parseQueryDataHistogram(rows, d, appParams, statisticStr);
+            }
+            d = parsedData.d;
+            N0 = parsedData.N0;
+            N_times = parsedData.N_times;
+          }
           dFuture.return();
         })();
-      }
-      if (rows === undefined || rows === null || rows.length === 0)
-      {
-        error = matsTypes.Messages.NO_DATA_FOUND;
-      } else if (rows.includes("queryCB ERROR: "))
-      {
-        error = rows;
-      } else
-      {
-        if (appParams.plotType !== matsTypes.PlotTypes.histogram)
-        {
-          parsedData = parseQueryDataXYCurve(
-            rows,
-            d,
-            appParams,
-            statisticStr,
-            null,
-            null,
-            null
-          );
-        } else
-        {
-          parsedData = parseQueryDataHistogram(rows, d, appParams, statisticStr);
-        }
-        d = parsedData.d;
-        N0 = parsedData.N0;
-        N_times = parsedData.N_times;
       }
     } else
     {

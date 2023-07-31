@@ -102,6 +102,14 @@ class CBUtilities {
   queryCB = async (statement) => {
     const couchbase = require("couchbase");
     try {
+      // TODO - remove console log
+      console.log("queryCB():" + statement);
+      {
+        const fs = require("fs");
+        const homedir = require("os").homedir();
+        fs.writeFileSync(homedir + "/scratch/matsMiddle/output/queryCB.sql", statement);
+      }
+
       const conn = await this.getConnection();
       const result = await conn.cluster.query(statement);
       return result.rows;
@@ -151,11 +159,11 @@ class CBUtilities {
   };
 
   trfmSQLForDbTarget = (sqlstr) => {
-    let val = sqlstr.replace(/vxBUCKET/g, this.bucket);
-    val = val.replace(/vxSCOPE/g, this.scope);
-    val = val.replace(/vxCOLLECTION/g, this.collection);
+    let val = sqlstr.replace(/{{vxBUCKET}}/g, this.bucket);
+    val = val.replace(/{{vxSCOPE}}/g, this.scope);
+    val = val.replace(/{{vxCOLLECTION}}/g, this.collection);
     val = val.replace(
-      /vxDBTARGET/g,
+      /{{vxDBTARGET}}/g,
       `${this.bucketName}.${this.scope}.${this.collection}`
     );
     return val;

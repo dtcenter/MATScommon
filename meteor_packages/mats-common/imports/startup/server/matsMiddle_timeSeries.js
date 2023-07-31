@@ -1,6 +1,4 @@
 import {
-  matsTypes,
-  matsDataQueryUtils,
   matsMiddleCommon,
 } from "meteor/randyp:mats-common";
 import { Meteor } from "meteor/meteor";

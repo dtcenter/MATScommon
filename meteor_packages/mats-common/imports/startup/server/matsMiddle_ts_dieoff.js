@@ -5,7 +5,7 @@ import {
 import { Meteor } from "meteor/meteor";
 import { memoryUsage } from "node:process";
 
-class MatsMiddleDieoff {
+class MatsMiddleTsDieoff {
   logToFile = false;
 
   logMemUsage = false;
@@ -34,6 +34,8 @@ class MatsMiddleDieoff {
 
   threshold = null;
 
+  average = null;
+
   fromSecs = null;
 
   toSecs = null;
@@ -59,6 +61,7 @@ class MatsMiddleDieoff {
     model,
     fcstLen,
     threshold,
+    average,
     fromSecs,
     toSecs,
     validTimes,
@@ -76,6 +79,7 @@ class MatsMiddleDieoff {
         model,
         fcstLen,
         threshold,
+        average,
         fromSecs,
         toSecs,
         validTimes,
@@ -95,16 +99,19 @@ class MatsMiddleDieoff {
     model,
     fcstLen,
     threshold,
+    average,
     fromSecs,
     toSecs,
     validTimes,
     utcCycleStart,
     singleCycle
   ) => {
+    const fs = require("fs");
+    
     console.log(
       `processStationQuery(${varName},${
         stationNames.length
-      },${model},${fcstLen},${threshold},${fromSecs},${toSecs},${JSON.stringify(
+      },${model},${fcstLen},${threshold},${average},${fromSecs},${toSecs},${JSON.stringify(
         validTimes
       )})`
     );
@@ -114,9 +121,14 @@ class MatsMiddleDieoff {
     this.model = model;
     this.fcstLen = fcstLen;
     this.threshold = threshold;
+    this.average = average;
     this.fromSecs = fromSecs;
     this.toSecs = toSecs;
-    const fs = require("fs");
+    
+    if(this.average)
+    {
+        this.average = this.average.replace(/m0./g, "");
+    }
 
     if (validTimes && validTimes.length > 0) {
       for (let i = 0; i < validTimes.length; i++) {
@@ -236,7 +248,14 @@ class MatsMiddleDieoff {
             const varValStation = fveDataSingleEpoch[this.stationNames[i]];
             stationsSingleEpoch[this.stationNames[i]] = varValStation;
           }
-          dataSingleEpoch.fcst = fveDataSingleEpoch.fcst;
+          if(this.average)
+          {
+            dataSingleEpoch.avtime = fveDataSingleEpoch.avtime;
+          }
+          else
+          {
+              dataSingleEpoch.fcst = fveDataSingleEpoch.fcst;
+          }
           dataSingleEpoch.stations = stationsSingleEpoch;
           this.fveObs[fveDataSingleEpoch.fve] = dataSingleEpoch;
         }
@@ -499,6 +518,6 @@ class MatsMiddleDieoff {
   };
 }
 
-export default matsMiddleDieoff = {
-  MatsMiddleDieoff,
+export default matsMiddleTsDieoff = {
+    MatsMiddleTsDieoff,
 };
