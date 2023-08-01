@@ -90,8 +90,10 @@ Package.onUse(function (api) {
   api.export("matsCache", ["server"]);
   api.export("versionInfo", ["server", "client"]);
   api.export("matsMiddleCommon", ["server"]);
-  api.export("matsMiddleTimeSeries", ["server"]);
+  // TODO - remove orioginal MW TimeSeries
   api.export("matsMiddleDieoff", ["server"]);
+  api.export("matsMiddleTimeSeries", ["server"]);
+  api.export("matsMiddleTsDieoff", ["server"]);
 
   // add imports
   // both
@@ -130,8 +132,10 @@ Package.onUse(function (api) {
   api.addFiles("imports/startup/server/publications.js");
   api.addFiles("imports/startup/server/cache.js");
   api.addFiles("imports/startup/server/matsMiddle_common.js");
+  // TODO - remove orioginal MW TimeSeries
   api.addFiles("imports/startup/server/matsMiddle_timeSeries.js");
   api.addFiles("imports/startup/server/matsMiddle_dieoff.js");
+  api.addFiles("imports/startup/server/matsMiddle_ts_dieoff.js");
 
   // files outside of imports
   // client

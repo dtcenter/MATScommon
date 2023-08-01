@@ -392,30 +392,31 @@ const queryDBTimeSeries = function (
         (async () =>
         {
           rows = await pool.queryCB(statementOrMwRows);
-          if (rows === undefined || rows === null || rows.length === 0)
-          {
-            error = matsTypes.Messages.NO_DATA_FOUND;
-          } else if (rows.includes("queryCB ERROR: "))
-          {
-            error = rows;
-          } else
-          {
-            parsedData = parseQueryDataXYCurve(
-              rows,
-              d,
-              appParams,
-              statisticStr,
-              forecastOffset,
-              cycles,
-              regular
-            );
-            d = parsedData.d;
-            N0 = parsedData.N0;
-            N_times = parsedData.N_times;
-          }
           // done waiting - have results
           dFuture.return();
         })();
+      }
+      dFuture.wait();
+      if (rows === undefined || rows === null || rows.length === 0)
+      {
+        error = matsTypes.Messages.NO_DATA_FOUND;
+      } else if (rows.includes("queryCB ERROR: "))
+      {
+        error = rows;
+      } else
+      {
+        parsedData = parseQueryDataXYCurve(
+          rows,
+          d,
+          appParams,
+          statisticStr,
+          forecastOffset,
+          cycles,
+          regular
+        );
+        d = parsedData.d;
+        N0 = parsedData.N0;
+        N_times = parsedData.N_times;
       }
     } else
     {
@@ -513,7 +514,7 @@ const queryDBSpecialtyCurve = function (pool, statementOrMwRows, appParams, stat
             we have to call the couchbase utilities as async functions but this
             routine 'queryDBSpecialtyCurve' cannot itself be async because the graph page needs to wait
             for its result, so we use an anonymous async() function here to wrap the queryCB call
-            */
+      */
       let rows = null;
       if (Array.isArray(statementOrMwRows))
       {
@@ -525,36 +526,36 @@ const queryDBSpecialtyCurve = function (pool, statementOrMwRows, appParams, stat
         (async () =>
         {
           rows = await pool.queryCB(statementOrMwRows);
-
-          if (rows === undefined || rows === null || rows.length === 0)
-          {
-            error = matsTypes.Messages.NO_DATA_FOUND;
-          } else if (rows.includes("queryCB ERROR: "))
-          {
-            error = rows;
-          } else
-          {
-            if (appParams.plotType !== matsTypes.PlotTypes.histogram)
-            {
-              parsedData = parseQueryDataXYCurve(
-                rows,
-                d,
-                appParams,
-                statisticStr,
-                null,
-                null,
-                null
-              );
-            } else
-            {
-              parsedData = parseQueryDataHistogram(rows, d, appParams, statisticStr);
-            }
-            d = parsedData.d;
-            N0 = parsedData.N0;
-            N_times = parsedData.N_times;
-          }
           dFuture.return();
         })();
+      }
+      dFuture.wait();
+      if (rows === undefined || rows === null || rows.length === 0)
+      {
+        error = matsTypes.Messages.NO_DATA_FOUND;
+      } else if (rows.includes("queryCB ERROR: "))
+      {
+        error = rows;
+      } else
+      {
+        if (appParams.plotType !== matsTypes.PlotTypes.histogram)
+        {
+          parsedData = parseQueryDataXYCurve(
+            rows,
+            d,
+            appParams,
+            statisticStr,
+            null,
+            null,
+            null
+          );
+        } else
+        {
+          parsedData = parseQueryDataHistogram(rows, d, appParams, statisticStr);
+        }
+        d = parsedData.d;
+        N0 = parsedData.N0;
+        N_times = parsedData.N_times;
       }
     } else
     {
