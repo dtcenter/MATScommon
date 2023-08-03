@@ -313,14 +313,6 @@ class MatsMiddleTsDieoff
             "assets/app/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_model.sql",
             "utf-8"
         );
-        tmpl_get_N_stations_mfve_model = this.cbPool.trfmSQLRemoveClause(
-            tmpl_get_N_stations_mfve_model,
-            "{{vxFCST_LEN}}"
-        );
-        tmpl_get_N_stations_mfve_model = this.cbPool.trfmSQLRemoveClause(
-            tmpl_get_N_stations_mfve_model,
-            "{{vxAVERAGE}}"
-        );
         tmpl_get_N_stations_mfve_model = tmpl_get_N_stations_mfve_model.replace(
             /{{vxMODEL}}/g,
             `"${this.model}"`
@@ -332,10 +324,18 @@ class MatsMiddleTsDieoff
                 /{{vxFCST_LEN}}/g,
                 this.fcstLen
             );
+            tmpl_get_N_stations_mfve_model = tmpl_get_N_stations_mfve_model.replace(
+                /{{vxAVERAGE}}/g,
+                this.average
+              );
             tmpl_get_N_stations_mfve_model = this.cbPool.trfmSQLRemoveClause(
                 tmpl_get_N_stations_mfve_model,
                 "{{vxFCST_LEN_ARRAY}}"
             );
+            tmpl_get_N_stations_mfve_model = this.cbPool.trfmSQLRemoveClause(
+                tmpl_get_N_stations_mfve_model,
+                "fcstLen fcst_lead"
+              );
         }
         else
         {
@@ -343,6 +343,10 @@ class MatsMiddleTsDieoff
                 tmpl_get_N_stations_mfve_model,
                 "fcstLen = {{vxFCST_LEN}}"
             );
+            tmpl_get_N_stations_mfve_model = this.cbPool.trfmSQLRemoveClause(
+                tmpl_get_N_stations_mfve_model,
+                "{{vxAVERAGE}}"
+              );
         }
 
         let stationNames_models = "";
@@ -365,6 +369,7 @@ class MatsMiddleTsDieoff
         console.log(
             `\tmodel query:${stationNames_models.length} in ${endTime - startTime} ms.`
         );
+        console.log("tmplWithStationNames_models:\n" + tmplWithStationNames_models);
 
         const flaIncr = 3;
         for (let flai = 0; flai < this.fcstLenArray.length; flai += flaIncr)
