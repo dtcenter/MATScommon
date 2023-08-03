@@ -7,17 +7,14 @@ import { Meteor } from "meteor/meteor";
 
 // utility to get the cadence for a particular model, so that the query function
 // knows where to include null points for missing data.
-const getModelCadence = async function (pool, dataSource, startDate, endDate)
-{
+const getModelCadence = async function (pool, dataSource, startDate, endDate) {
   let rows = [];
   let cycles;
-  try
-  {
+  try {
     // this query should only return data if the model cadence is irregular.
     // otherwise, the cadence will be calculated later by the query function.
     let cycles_raw;
-    if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase)
-    {
+    if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
       /*
             we have to call the couchbase utilities as async functions but this
             routine  'queryDBTimeSeries' cannot itslef be async because the graph page needs to wait
@@ -28,15 +25,14 @@ const getModelCadence = async function (pool, dataSource, startDate, endDate)
       cycles_raw = doc.primaryModelOrders[newModel]
         ? doc.primaryModelOrders[newModel].cycleSecnds
         : undefined;
-    } else
-    {
+    } else {
       // we will default to mysql so old apps won't break
       rows = simplePoolQueryWrapSynchronous(
         pool,
         `select cycle_seconds ` +
-        `from mats_common.primary_model_orders ` +
-        `where model = ` +
-        `(select new_model as display_text from mats_common.standardized_model_list where old_model = '${dataSource}');`
+          `from mats_common.primary_model_orders ` +
+          `where model = ` +
+          `(select new_model as display_text from mats_common.standardized_model_list where old_model = '${dataSource}');`
       );
       cycles_raw = rows[0].cycle_seconds
         ? JSON.parse(rows[0].cycle_seconds)
@@ -46,8 +42,7 @@ const getModelCadence = async function (pool, dataSource, startDate, endDate)
     // there can be difference cadences for different time periods (each time period is a key in cycles_keys,
     // with the cadences for that period represented as values in cycles_raw), so this section identifies all
     // time periods relevant to the requested date range, and returns the union of their cadences.
-    if (cycles_keys.length !== 0)
-    {
+    if (cycles_keys.length !== 0) {
       let newTime;
       let chosenStartTime;
       let chosenEndTime;
@@ -55,42 +50,33 @@ const getModelCadence = async function (pool, dataSource, startDate, endDate)
       let chosenEndIdx;
       let foundStart = false;
       let foundEnd = false;
-      for (var ti = cycles_keys.length - 1; ti >= 0; ti--)
-      {
+      for (var ti = cycles_keys.length - 1; ti >= 0; ti--) {
         newTime = cycles_keys[ti];
-        if (startDate >= Number(newTime) && !foundStart)
-        {
+        if (startDate >= Number(newTime) && !foundStart) {
           chosenStartTime = newTime;
           chosenStartIdx = ti;
           foundStart = true;
         }
-        if (endDate >= Number(newTime) && !foundEnd)
-        {
+        if (endDate >= Number(newTime) && !foundEnd) {
           chosenEndTime = newTime;
           chosenEndIdx = ti;
           foundEnd = true;
         }
-        if (foundStart && foundEnd)
-        {
+        if (foundStart && foundEnd) {
           break;
         }
       }
-      if (chosenStartTime !== undefined && chosenEndTime !== undefined)
-      {
-        if (Number(chosenStartTime) === Number(chosenEndTime))
-        {
+      if (chosenStartTime !== undefined && chosenEndTime !== undefined) {
+        if (Number(chosenStartTime) === Number(chosenEndTime)) {
           cycles = cycles_raw[chosenStartTime];
-        } else if (chosenEndIdx - chosenStartIdx === 1)
-        {
+        } else if (chosenEndIdx - chosenStartIdx === 1) {
           const startCycles = cycles_raw[chosenStartTime];
           const endCycles = cycles_raw[chosenEndTime];
           cycles = _.union(startCycles, endCycles);
-        } else
-        {
+        } else {
           let middleCycles = [];
           let currCycles;
-          for (ti = chosenStartIdx + 1; ti < chosenEndIdx; ti++)
-          {
+          for (ti = chosenStartIdx + 1; ti < chosenEndIdx; ti++) {
             currCycles = cycles_raw[cycles_keys[ti]];
             middleCycles = _.union(middleCycles, currCycles);
           }
@@ -98,33 +84,27 @@ const getModelCadence = async function (pool, dataSource, startDate, endDate)
           const endCycles = cycles_raw[chosenEndTime];
           cycles = _.union(startCycles, endCycles, middleCycles);
         }
-        cycles.sort(function (a, b)
-        {
+        cycles.sort(function (a, b) {
           return a - b;
         });
       }
     }
-  } catch (e)
-  {
+  } catch (e) {
     // ignore - just a safety check, don't want to exit if there isn't a cycles_per_model entry
     // if there isn't a cycles_per_model entry, it just means that the model has a regular cadence
   }
-  if (cycles !== null && cycles !== undefined && cycles.length > 0)
-  {
-    for (let c = 0; c < cycles.length; c++)
-    {
+  if (cycles !== null && cycles !== undefined && cycles.length > 0) {
+    for (let c = 0; c < cycles.length; c++) {
       cycles[c] = cycles[c] * 1000; // convert to milliseconds
     }
-  } else
-  {
+  } else {
     cycles = []; // regular cadence model--cycles will be calculated later by the query function
   }
   return cycles;
 };
 
 // utility for querying the DB
-const simplePoolQueryWrapSynchronous = function (pool, statement)
-{
+const simplePoolQueryWrapSynchronous = function (pool, statement) {
   /*
      simple synchronous query of statement to the specified pool.
      params :
@@ -134,13 +114,10 @@ const simplePoolQueryWrapSynchronous = function (pool, statement)
      return: rowset - an array of rows
      throws: error
      */
-  if (Meteor.isServer)
-  {
+  if (Meteor.isServer) {
     const Future = require("fibers/future");
-    const queryWrap = Future.wrap(function (pool, statement, callback)
-    {
-      pool.query(statement, function (err, rows)
-      {
+    const queryWrap = Future.wrap(function (pool, statement, callback) {
+      pool.query(statement, function (err, rows) {
         return callback(err, rows);
       });
     });
@@ -149,10 +126,8 @@ const simplePoolQueryWrapSynchronous = function (pool, statement)
 };
 
 // utility for querying the DB via Python
-const queryDBPython = function (pool, queryArray)
-{
-  if (Meteor.isServer)
-  {
+const queryDBPython = function (pool, queryArray) {
+  if (Meteor.isServer) {
     // send the query statement to the python query function
     const pyOptions = {
       mode: "text",
@@ -191,15 +166,12 @@ const queryDBPython = function (pool, queryArray)
     let N_times = [];
 
     pyShell.PythonShell.run("python_query_util.py", pyOptions)
-      .then((results) =>
-      {
+      .then((results) => {
         // query callback - build the curve data from the results - or set an error
-        if (results === undefined || results === "undefined")
-        {
+        if (results === undefined || results === "undefined") {
           error =
             "Error thrown by python_query_util.py. Please write down exactly how you produced this error, and submit a ticket at mats.gsl@noaa.gov.";
-        } else
-        {
+        } else {
           // get the data back from the query
           const parsedData = JSON.parse(results);
           d = parsedData.data;
@@ -210,8 +182,7 @@ const queryDBPython = function (pool, queryArray)
         // done waiting - have results
         future.return();
       })
-      .catch((err) =>
-      {
+      .catch((err) => {
         error = err.message;
         future.return();
       });
@@ -219,29 +190,22 @@ const queryDBPython = function (pool, queryArray)
     // wait for future to finish
     future.wait();
     // check for nulls in output, since JSON only passes strings
-    for (let idx = 0; idx < d.length; idx++)
-    {
-      for (let didx = 0; didx < d[idx].y.length; didx++)
-      {
-        if (d[idx].y[didx] === "null")
-        {
+    for (let idx = 0; idx < d.length; idx++) {
+      for (let didx = 0; didx < d[idx].y.length; didx++) {
+        if (d[idx].y[didx] === "null") {
           d[idx].y[didx] = null;
-          if (d[idx].subVals.length > 0)
-          {
+          if (d[idx].subVals.length > 0) {
             d[idx].subData[didx] = NaN;
             d[idx].subHeaders[didx] = NaN;
             d[idx].subVals[didx] = NaN;
-            if (queryArray[idx].statLineType === "ctc")
-            {
+            if (queryArray[idx].statLineType === "ctc") {
               d[idx].subHit[didx] = NaN;
               d[idx].subFa[didx] = NaN;
               d[idx].subMiss[didx] = NaN;
               d[idx].subCn[didx] = NaN;
-            } else if (queryArray[idx].statLineType === "mode_pair")
-            {
+            } else if (queryArray[idx].statLineType === "mode_pair") {
               d[idx].subInterest[didx] = NaN;
-            } else if (queryArray[idx].statLineType === "mode_pair")
-            {
+            } else if (queryArray[idx].statLineType === "mode_pair") {
               d[idx].n_forecast[didx] = 0;
               d[idx].n_matched[didx] = 0;
               d[idx].n_simple[didx] = 0;
@@ -250,25 +214,20 @@ const queryDBPython = function (pool, queryArray)
           }
           d[idx].subSecs[didx] = NaN;
           d[idx].subLevs[didx] = NaN;
-        } else if (d[idx].x[didx] === "null")
-        {
+        } else if (d[idx].x[didx] === "null") {
           d[idx].x[didx] = null;
-          if (d[idx].subVals.length > 0)
-          {
+          if (d[idx].subVals.length > 0) {
             d[idx].subData[didx] = NaN;
             d[idx].subHeaders[didx] = NaN;
             d[idx].subVals[didx] = NaN;
-            if (queryArray[idx].statLineType === "ctc")
-            {
+            if (queryArray[idx].statLineType === "ctc") {
               d[idx].subHit[didx] = NaN;
               d[idx].subFa[didx] = NaN;
               d[idx].subMiss[didx] = NaN;
               d[idx].subCn[didx] = NaN;
-            } else if (queryArray[idx].statLineType === "mode_pair")
-            {
+            } else if (queryArray[idx].statLineType === "mode_pair") {
               d[idx].subInterest[didx] = NaN;
-            } else if (queryArray[idx].statLineType === "mode_pair")
-            {
+            } else if (queryArray[idx].statLineType === "mode_pair") {
               d[idx].n_forecast[didx] = 0;
               d[idx].n_matched[didx] = 0;
               d[idx].n_simple[didx] = 0;
@@ -302,28 +261,21 @@ const queryDBTimeSeries = function (
   validTimes,
   appParams,
   forceRegularCadence
-)
-{
-  if (Meteor.isServer)
-  {
+) {
+  if (Meteor.isServer) {
     // upper air is only verified at 00Z and 12Z, so you need to force irregular models to verify at that regular cadence
     let cycles = getModelCadence(pool, dataSource, startDate, endDate); // if irregular model cadence, get cycle times. If regular, get empty array.
-    if (validTimes.length > 0 && validTimes !== matsTypes.InputTypes.unused)
-    {
-      if (typeof validTimes === "string" || validTimes instanceof String)
-      {
+    if (validTimes.length > 0 && validTimes !== matsTypes.InputTypes.unused) {
+      if (typeof validTimes === "string" || validTimes instanceof String) {
         validTimes = validTimes.split(",");
       }
-      let vtCycles = validTimes.map(function (x)
-      {
+      let vtCycles = validTimes.map(function (x) {
         return (Number(x) - forecastOffset) * 3600 * 1000;
       }); // selecting validTimes makes the cadence irregular
-      vtCycles = vtCycles.map(function (x)
-      {
+      vtCycles = vtCycles.map(function (x) {
         return x < 0 ? x + 24 * 3600 * 1000 : x;
       }); // make sure no cycles are negative
-      vtCycles = vtCycles.sort(function (a, b)
-      {
+      vtCycles = vtCycles.sort(function (a, b) {
         return Number(a) - Number(b);
       }); // sort 'em
       cycles = cycles.length > 0 ? _.intersection(cycles, vtCycles) : vtCycles; // if we already had cycles get the ones that correspond to valid times
@@ -374,37 +326,29 @@ const queryDBTimeSeries = function (
     const Future = require("fibers/future");
     const dFuture = new Future();
 
-    if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase)
-    {
+    if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
       /*
             we have to call the couchbase utilities as async functions but this
             routine 'queryDBTimeSeries' cannot itself be async because the graph page needs to wait
             for its result, so we use an anonymous async() function here to wrap the queryCB call
             */
       let rows = null;
-      if (Array.isArray(statementOrMwRows))
-      {
+      if (Array.isArray(statementOrMwRows)) {
         rows = statementOrMwRows;
         dFuture.return();
-      }
-      else
-      {
-        (async () =>
-        {
+      } else {
+        (async () => {
           rows = await pool.queryCB(statementOrMwRows);
           // done waiting - have results
           dFuture.return();
         })();
       }
       dFuture.wait();
-      if (rows === undefined || rows === null || rows.length === 0)
-      {
+      if (rows === undefined || rows === null || rows.length === 0) {
         error = matsTypes.Messages.NO_DATA_FOUND;
-      } else if (rows.includes("queryCB ERROR: "))
-      {
+      } else if (rows.includes("queryCB ERROR: ")) {
         error = rows;
-      } else
-      {
+      } else {
         parsedData = parseQueryDataXYCurve(
           rows,
           d,
@@ -418,20 +362,15 @@ const queryDBTimeSeries = function (
         N0 = parsedData.N0;
         N_times = parsedData.N_times;
       }
-    } else
-    {
+    } else {
       // if this app isn't couchbase, use mysql
-      pool.query(statement, function (err, rows)
-      {
+      pool.query(statement, function (err, rows) {
         // query callback - build the curve data from the results - or set an error
-        if (err !== undefined && err !== null)
-        {
+        if (err !== undefined && err !== null) {
           error = err.message;
-        } else if (rows === undefined || rows === null || rows.length === 0)
-        {
+        } else if (rows === undefined || rows === null || rows.length === 0) {
           error = matsTypes.Messages.NO_DATA_FOUND;
-        } else
-        {
+        } else {
           parsedData = parseQueryDataXYCurve(
             rows,
             d,
@@ -462,10 +401,13 @@ const queryDBTimeSeries = function (
 };
 
 // this method queries the database for specialty curves such as profiles, dieoffs, threshold plots, valid time plots, grid scale plots, and histograms
-const queryDBSpecialtyCurve = function (pool, statementOrMwRows, appParams, statisticStr)
-{
-  if (Meteor.isServer)
-  {
+const queryDBSpecialtyCurve = function (
+  pool,
+  statementOrMwRows,
+  appParams,
+  statisticStr
+) {
+  if (Meteor.isServer) {
     let d = {
       // d will contain the curve data
       x: [],
@@ -508,38 +450,29 @@ const queryDBSpecialtyCurve = function (pool, statementOrMwRows, appParams, stat
     const Future = require("fibers/future");
     const dFuture = new Future();
 
-    if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase)
-    {
+    if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
       /*
             we have to call the couchbase utilities as async functions but this
             routine 'queryDBSpecialtyCurve' cannot itself be async because the graph page needs to wait
             for its result, so we use an anonymous async() function here to wrap the queryCB call
       */
       let rows = null;
-      if (Array.isArray(statementOrMwRows))
-      {
+      if (Array.isArray(statementOrMwRows)) {
         rows = statementOrMwRows;
         dFuture.return();
-      }
-      else
-      {
-        (async () =>
-        {
+      } else {
+        (async () => {
           rows = await pool.queryCB(statementOrMwRows);
           dFuture.return();
         })();
       }
       dFuture.wait();
-      if (rows === undefined || rows === null || rows.length === 0)
-      {
+      if (rows === undefined || rows === null || rows.length === 0) {
         error = matsTypes.Messages.NO_DATA_FOUND;
-      } else if (rows.includes("queryCB ERROR: "))
-      {
+      } else if (rows.includes("queryCB ERROR: ")) {
         error = rows;
-      } else
-      {
-        if (appParams.plotType !== matsTypes.PlotTypes.histogram)
-        {
+      } else {
+        if (appParams.plotType !== matsTypes.PlotTypes.histogram) {
           parsedData = parseQueryDataXYCurve(
             rows,
             d,
@@ -549,30 +482,23 @@ const queryDBSpecialtyCurve = function (pool, statementOrMwRows, appParams, stat
             null,
             null
           );
-        } else
-        {
+        } else {
           parsedData = parseQueryDataHistogram(rows, d, appParams, statisticStr);
         }
         d = parsedData.d;
         N0 = parsedData.N0;
         N_times = parsedData.N_times;
       }
-    } else
-    {
+    } else {
       // if this app isn't couchbase, use mysql
-      pool.query(statement, function (err, rows)
-      {
+      pool.query(statement, function (err, rows) {
         // query callback - build the curve data from the results - or set an error
-        if (err !== undefined && err !== null)
-        {
+        if (err !== undefined && err !== null) {
           error = err.message;
-        } else if (rows === undefined || rows === null || rows.length === 0)
-        {
+        } else if (rows === undefined || rows === null || rows.length === 0) {
           error = matsTypes.Messages.NO_DATA_FOUND;
-        } else
-        {
-          if (appParams.plotType !== matsTypes.PlotTypes.histogram)
-          {
+        } else {
+          if (appParams.plotType !== matsTypes.PlotTypes.histogram) {
             parsedData = parseQueryDataXYCurve(
               rows,
               d,
@@ -582,8 +508,7 @@ const queryDBSpecialtyCurve = function (pool, statementOrMwRows, appParams, stat
               null,
               null
             );
-          } else
-          {
+          } else {
             parsedData = parseQueryDataHistogram(rows, d, appParams, statisticStr);
           }
           d = parsedData.d;
@@ -607,10 +532,8 @@ const queryDBSpecialtyCurve = function (pool, statementOrMwRows, appParams, stat
 };
 
 // this method queries the database for performance diagrams
-const queryDBReliability = function (pool, statement, kernel)
-{
-  if (Meteor.isServer)
-  {
+const queryDBReliability = function (pool, statement, kernel) {
+  if (Meteor.isServer) {
     let d = {
       // d will contain the curve data
       x: [],
@@ -646,43 +569,33 @@ const queryDBReliability = function (pool, statement, kernel)
     const Future = require("fibers/future");
     const dFuture = new Future();
 
-    if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase)
-    {
+    if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
       /*
             we have to call the couchbase utilities as async functions but this
             routine 'queryDBReliability' cannot itself be async because the graph page needs to wait
             for its result, so we use an anonymous async() function here to wrap the queryCB call
             */
-      (async () =>
-      {
+      (async () => {
         const rows = await pool.queryCB(statement);
-        if (rows === undefined || rows === null || rows.length === 0)
-        {
+        if (rows === undefined || rows === null || rows.length === 0) {
           error = matsTypes.Messages.NO_DATA_FOUND;
-        } else if (rows.includes("queryCB ERROR: "))
-        {
+        } else if (rows.includes("queryCB ERROR: ")) {
           error = rows;
-        } else
-        {
+        } else {
           parsedData = parseQueryDataReliability(rows, d, kernel);
           d = parsedData.d;
         }
         dFuture.return();
       })();
-    } else
-    {
+    } else {
       // if this app isn't couchbase, use mysql
-      pool.query(statement, function (err, rows)
-      {
+      pool.query(statement, function (err, rows) {
         // query callback - build the curve data from the results - or set an error
-        if (err !== undefined && err !== null)
-        {
+        if (err !== undefined && err !== null) {
           error = err.message;
-        } else if (rows === undefined || rows === null || rows.length === 0)
-        {
+        } else if (rows === undefined || rows === null || rows.length === 0) {
           error = matsTypes.Messages.NO_DATA_FOUND;
-        } else
-        {
+        } else {
           parsedData = parseQueryDataReliability(rows, d, kernel);
           d = parsedData.d;
         }
@@ -701,10 +614,8 @@ const queryDBReliability = function (pool, statement, kernel)
 };
 
 // this method queries the database for performance diagrams
-const queryDBPerformanceDiagram = function (pool, statement, appParams)
-{
-  if (Meteor.isServer)
-  {
+const queryDBPerformanceDiagram = function (pool, statement, appParams) {
+  if (Meteor.isServer) {
     let d = {
       // d will contain the curve data
       x: [],
@@ -740,24 +651,19 @@ const queryDBPerformanceDiagram = function (pool, statement, appParams)
     const Future = require("fibers/future");
     const dFuture = new Future();
 
-    if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase)
-    {
+    if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
       /*
             we have to call the couchbase utilities as async functions but this
             routine 'queryDBSPerformanceDiagram' cannot itself be async because the graph page needs to wait
             for its result, so we use an anonymous async() function here to wrap the queryCB call
             */
-      (async () =>
-      {
+      (async () => {
         const rows = await pool.queryCB(statement);
-        if (rows === undefined || rows === null || rows.length === 0)
-        {
+        if (rows === undefined || rows === null || rows.length === 0) {
           error = matsTypes.Messages.NO_DATA_FOUND;
-        } else if (rows.includes("queryCB ERROR: "))
-        {
+        } else if (rows.includes("queryCB ERROR: ")) {
           error = rows;
-        } else
-        {
+        } else {
           parsedData = parseQueryDataPerformanceDiagram(rows, d, appParams);
           d = parsedData.d;
           N0 = parsedData.N0;
@@ -765,20 +671,15 @@ const queryDBPerformanceDiagram = function (pool, statement, appParams)
         }
         dFuture.return();
       })();
-    } else
-    {
+    } else {
       // if this app isn't couchbase, use mysql
-      pool.query(statement, function (err, rows)
-      {
+      pool.query(statement, function (err, rows) {
         // query callback - build the curve data from the results - or set an error
-        if (err !== undefined && err !== null)
-        {
+        if (err !== undefined && err !== null) {
           error = err.message;
-        } else if (rows === undefined || rows === null || rows.length === 0)
-        {
+        } else if (rows === undefined || rows === null || rows.length === 0) {
           error = matsTypes.Messages.NO_DATA_FOUND;
-        } else
-        {
+        } else {
           parsedData = parseQueryDataPerformanceDiagram(rows, d, appParams);
           d = parsedData.d;
           N0 = parsedData.N0;
@@ -807,10 +708,8 @@ const queryDBSimpleScatter = function (
   appParams,
   statisticXStr,
   statisticYStr
-)
-{
-  if (Meteor.isServer)
-  {
+) {
+  if (Meteor.isServer) {
     let d = {
       // d will contain the curve data
       x: [],
@@ -851,24 +750,19 @@ const queryDBSimpleScatter = function (
     const Future = require("fibers/future");
     const dFuture = new Future();
 
-    if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase)
-    {
+    if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
       /*
             we have to call the couchbase utilities as async functions but this
             routine 'queryDBSPerformanceDiagram' cannot itself be async because the graph page needs to wait
             for its result, so we use an anonymous async() function here to wrap the queryCB call
             */
-      (async () =>
-      {
+      (async () => {
         const rows = await pool.queryCB(statement);
-        if (rows === undefined || rows === null || rows.length === 0)
-        {
+        if (rows === undefined || rows === null || rows.length === 0) {
           error = matsTypes.Messages.NO_DATA_FOUND;
-        } else if (rows.includes("queryCB ERROR: "))
-        {
+        } else if (rows.includes("queryCB ERROR: ")) {
           error = rows;
-        } else
-        {
+        } else {
           parsedData = parseQueryDataSimpleScatter(
             rows,
             d,
@@ -882,20 +776,15 @@ const queryDBSimpleScatter = function (
         }
         dFuture.return();
       })();
-    } else
-    {
+    } else {
       // if this app isn't couchbase, use mysql
-      pool.query(statement, function (err, rows)
-      {
+      pool.query(statement, function (err, rows) {
         // query callback - build the curve data from the results - or set an error
-        if (err !== undefined && err !== null)
-        {
+        if (err !== undefined && err !== null) {
           error = err.message;
-        } else if (rows === undefined || rows === null || rows.length === 0)
-        {
+        } else if (rows === undefined || rows === null || rows.length === 0) {
           error = matsTypes.Messages.NO_DATA_FOUND;
-        } else
-        {
+        } else {
           parsedData = parseQueryDataSimpleScatter(
             rows,
             d,
@@ -933,10 +822,8 @@ const queryDBMapScalar = function (
   varUnits,
   siteMap,
   appParams
-)
-{
-  if (Meteor.isServer)
-  {
+) {
+  if (Meteor.isServer) {
     // d will contain the curve data
     let d = {
       siteName: [],
@@ -997,17 +884,13 @@ const queryDBMapScalar = function (
     let error = "";
     const Future = require("fibers/future");
     const pFuture = new Future();
-    pool.query(statement, function (err, rows)
-    {
+    pool.query(statement, function (err, rows) {
       // query callback - build the curve data from the results - or set an error
-      if (err !== undefined && err !== null)
-      {
+      if (err !== undefined && err !== null) {
         error = err.message;
-      } else if (rows === undefined || rows === null || rows.length === 0)
-      {
+      } else if (rows === undefined || rows === null || rows.length === 0) {
         error = matsTypes.Messages.NO_DATA_FOUND;
-      } else
-      {
+      } else {
         let parsedData;
         parsedData = parseQueryDataMapScalar(
           rows,
@@ -1059,10 +942,8 @@ const queryDBMapCTC = function (
   statistic,
   siteMap,
   appParams
-)
-{
-  if (Meteor.isServer)
-  {
+) {
+  if (Meteor.isServer) {
     // d will contain the curve data
     let d = {
       siteName: [],
@@ -1179,24 +1060,19 @@ const queryDBMapCTC = function (
     let parsedData;
     const Future = require("fibers/future");
     const pFuture = new Future();
-    if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase)
-    {
+    if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
       /*
             we have to call the couchbase utilities as async functions but this
             routine 'queryDBMapCTC' cannot itself be async because the graph page needs to wait
             for its result, so we use an anonymous async() function here to wrap the queryCB call
             */
-      (async () =>
-      {
+      (async () => {
         const rows = await pool.queryCB(statement);
-        if (rows === undefined || rows === null || rows.length === 0)
-        {
+        if (rows === undefined || rows === null || rows.length === 0) {
           error = matsTypes.Messages.NO_DATA_FOUND;
-        } else if (rows.includes("queryCB ERROR: "))
-        {
+        } else if (rows.includes("queryCB ERROR: ")) {
           error = rows;
-        } else
-        {
+        } else {
           parsedData = parseQueryDataMapCTC(
             rows,
             d,
@@ -1230,20 +1106,15 @@ const queryDBMapCTC = function (
         }
         pFuture.return();
       })();
-    } else
-    {
+    } else {
       // if this app isn't couchbase, use mysql
-      pool.query(statement, function (err, rows)
-      {
+      pool.query(statement, function (err, rows) {
         // query callback - build the curve data from the results - or set an error
-        if (err !== undefined && err !== null)
-        {
+        if (err !== undefined && err !== null) {
           error = err.message;
-        } else if (rows === undefined || rows === null || rows.length === 0)
-        {
+        } else if (rows === undefined || rows === null || rows.length === 0) {
           error = matsTypes.Messages.NO_DATA_FOUND;
-        } else
-        {
+        } else {
           parsedData = parseQueryDataMapCTC(
             rows,
             d,
@@ -1301,10 +1172,8 @@ const queryDBMapCTC = function (
 };
 
 // this method queries the database for contour plots
-const queryDBContour = function (pool, statement, appParams, statisticStr)
-{
-  if (Meteor.isServer)
-  {
+const queryDBContour = function (pool, statement, appParams, statisticStr) {
+  if (Meteor.isServer) {
     let d = {
       // d will contain the curve data
       x: [],
@@ -1363,43 +1232,33 @@ const queryDBContour = function (pool, statement, appParams, statisticStr)
     const Future = require("fibers/future");
     const dFuture = new Future();
 
-    if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase)
-    {
+    if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
       /*
             we have to call the couchbase utilities as async functions but this
             routine 'queryDBContour' cannot itself be async because the graph page needs to wait
             for its result, so we use an anonymous async() function here to wrap the queryCB call
             */
-      (async () =>
-      {
+      (async () => {
         const rows = await pool.queryCB(statement);
-        if (rows === undefined || rows === null || rows.length === 0)
-        {
+        if (rows === undefined || rows === null || rows.length === 0) {
           error = matsTypes.Messages.NO_DATA_FOUND;
-        } else if (rows.includes("queryCB ERROR: "))
-        {
+        } else if (rows.includes("queryCB ERROR: ")) {
           error = rows;
-        } else
-        {
+        } else {
           parsedData = parseQueryDataContour(rows, d, appParams, statisticStr);
           d = parsedData.d;
         }
         dFuture.return();
       })();
-    } else
-    {
+    } else {
       // if this app isn't couchbase, use mysql
-      pool.query(statement, function (err, rows)
-      {
+      pool.query(statement, function (err, rows) {
         // query callback - build the curve data from the results - or set an error
-        if (err !== undefined && err !== null)
-        {
+        if (err !== undefined && err !== null) {
           error = err.message;
-        } else if (rows === undefined || rows === null || rows.length === 0)
-        {
+        } else if (rows === undefined || rows === null || rows.length === 0) {
           error = matsTypes.Messages.NO_DATA_FOUND;
-        } else
-        {
+        } else {
           parsedData = parseQueryDataContour(rows, d, appParams, statisticStr);
           d = parsedData.d;
         }
@@ -1426,8 +1285,7 @@ const parseQueryDataXYCurve = function (
   forecastOffset,
   cycles,
   regular
-)
-{
+) {
   /*
         var d = {   // d will contain the curve data
             x: [],
@@ -1489,11 +1347,9 @@ const parseQueryDataXYCurve = function (
   const subLevs = [];
   let time_interval;
 
-  for (let rowIndex = 0; rowIndex < rows.length; rowIndex++)
-  {
+  for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
     var independentVar;
-    switch (plotType)
-    {
+    switch (plotType) {
       case matsTypes.PlotTypes.validtime:
         independentVar = Number(rows[rowIndex].hr_of_day);
         break;
@@ -1525,8 +1381,7 @@ const parseQueryDataXYCurve = function (
         independentVar = Number(rows[rowIndex].avtime);
     }
     var stat;
-    if (rows[rowIndex].stat === undefined && rows[rowIndex].hit !== undefined)
-    {
+    if (rows[rowIndex].stat === undefined && rows[rowIndex].hit !== undefined) {
       // this is a contingency table plot
       isCTC = true;
       const hit = Number(rows[rowIndex].hit);
@@ -1534,19 +1389,16 @@ const parseQueryDataXYCurve = function (
       const miss = Number(rows[rowIndex].miss);
       const cn = Number(rows[rowIndex].cn);
       const n = rows[rowIndex].sub_data.toString().split(",").length;
-      if (hit + fa + miss + cn > 0)
-      {
+      if (hit + fa + miss + cn > 0) {
         stat = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, n, statisticStr);
         stat = isNaN(Number(stat)) ? null : stat;
-      } else
-      {
+      } else {
         stat = null;
       }
     } else if (
       rows[rowIndex].stat === undefined &&
       rows[rowIndex].square_diff_sum !== undefined
-    )
-    {
+    ) {
       // this is a scalar partial sums plot
       isScalar = true;
       const squareDiffSum = Number(rows[rowIndex].square_diff_sum);
@@ -1555,8 +1407,7 @@ const parseQueryDataXYCurve = function (
       const modelSum = Number(rows[rowIndex].model_sum);
       const obsSum = Number(rows[rowIndex].obs_sum);
       const absSum = Number(rows[rowIndex].abs_sum);
-      if (NSum > 0)
-      {
+      if (NSum > 0) {
         stat = matsDataUtils.calculateStatScalar(
           squareDiffSum,
           NSum,
@@ -1567,27 +1418,22 @@ const parseQueryDataXYCurve = function (
           statisticStr
         );
         stat = isNaN(Number(stat)) ? null : stat;
-      } else
-      {
+      } else {
         stat = null;
       }
-    } else
-    {
+    } else {
       // not a contingency table plot or a scalar partial sums plot
       stat = rows[rowIndex].stat === "NULL" ? null : rows[rowIndex].stat;
     }
     N0.push(rows[rowIndex].N0); // number of values that go into a point on the graph
     N_times.push(rows[rowIndex].N_times); // number of times that go into a point on the graph
 
-    if (plotType === matsTypes.PlotTypes.timeSeries)
-    {
+    if (plotType === matsTypes.PlotTypes.timeSeries) {
       // Find the minimum time_interval to be sure we don't accidentally go past the next data point.
-      if (rowIndex < rows.length - 1)
-      {
+      if (rowIndex < rows.length - 1) {
         const time_diff =
           Number(rows[rowIndex + 1].avtime) - Number(rows[rowIndex].avtime);
-        if (time_diff < time_interval)
-        {
+        if (time_diff < time_interval) {
           time_interval = time_diff;
         }
       }
@@ -1614,26 +1460,19 @@ const parseQueryDataXYCurve = function (
       stat !== null &&
       rows[rowIndex].sub_data !== undefined &&
       rows[rowIndex].sub_data !== null
-    )
-    {
+    ) {
       // parse the sub-data
-      try
-      {
+      try {
         const sub_data = rows[rowIndex].sub_data.toString().split(",");
         var curr_sub_data;
-        for (let sd_idx = 0; sd_idx < sub_data.length; sd_idx++)
-        {
+        for (let sd_idx = 0; sd_idx < sub_data.length; sd_idx++) {
           curr_sub_data = sub_data[sd_idx].split(";");
-          if (isCTC)
-          {
+          if (isCTC) {
             sub_secs.push(Number(curr_sub_data[0]));
-            if (hasLevels)
-            {
-              if (!isNaN(Number(curr_sub_data[1])))
-              {
+            if (hasLevels) {
+              if (!isNaN(Number(curr_sub_data[1]))) {
                 sub_levs.push(Number(curr_sub_data[1]));
-              } else
-              {
+              } else {
                 sub_levs.push(curr_sub_data[1]);
               }
               sub_hit.push(Number(curr_sub_data[2]));
@@ -1650,8 +1489,7 @@ const parseQueryDataXYCurve = function (
                   statisticStr
                 )
               );
-            } else
-            {
+            } else {
               sub_hit.push(Number(curr_sub_data[1]));
               sub_fa.push(Number(curr_sub_data[2]));
               sub_miss.push(Number(curr_sub_data[3]));
@@ -1667,16 +1505,12 @@ const parseQueryDataXYCurve = function (
                 )
               );
             }
-          } else if (isScalar)
-          {
+          } else if (isScalar) {
             sub_secs.push(Number(curr_sub_data[0]));
-            if (hasLevels)
-            {
-              if (!isNaN(Number(curr_sub_data[1])))
-              {
+            if (hasLevels) {
+              if (!isNaN(Number(curr_sub_data[1]))) {
                 sub_levs.push(Number(curr_sub_data[1]));
-              } else
-              {
+              } else {
                 sub_levs.push(curr_sub_data[1]);
               }
               sub_square_diff_sum.push(Number(curr_sub_data[2]));
@@ -1696,8 +1530,7 @@ const parseQueryDataXYCurve = function (
                   statisticStr
                 )
               );
-            } else
-            {
+            } else {
               sub_square_diff_sum.push(Number(curr_sub_data[1]));
               sub_N_sum.push(Number(curr_sub_data[2]));
               sub_obs_model_diff_sum.push(Number(curr_sub_data[3]));
@@ -1716,43 +1549,33 @@ const parseQueryDataXYCurve = function (
                 )
               );
             }
-          } else
-          {
+          } else {
             sub_secs.push(Number(curr_sub_data[0]));
-            if (hasLevels)
-            {
-              if (!isNaN(Number(curr_sub_data[1])))
-              {
+            if (hasLevels) {
+              if (!isNaN(Number(curr_sub_data[1]))) {
                 sub_levs.push(Number(curr_sub_data[1]));
-              } else
-              {
+              } else {
                 sub_levs.push(curr_sub_data[1]);
               }
               sub_values.push(Number(curr_sub_data[2]));
-            } else
-            {
+            } else {
               sub_values.push(Number(curr_sub_data[1]));
             }
           }
         }
         // Now that we have all the sub-values, we can get the standard deviation and remove the ones that exceed it
-        if (outlierQCParam !== "all")
-        {
+        if (outlierQCParam !== "all") {
           sub_stdev = matsDataUtils.stdev(sub_values);
           sub_mean = matsDataUtils.average(sub_values);
           sd_limit = outlierQCParam * sub_stdev;
-          for (let svIdx = sub_values.length - 1; svIdx >= 0; svIdx--)
-          {
-            if (Math.abs(sub_values[svIdx] - sub_mean) > sd_limit)
-            {
-              if (isCTC)
-              {
+          for (let svIdx = sub_values.length - 1; svIdx >= 0; svIdx--) {
+            if (Math.abs(sub_values[svIdx] - sub_mean) > sd_limit) {
+              if (isCTC) {
                 sub_hit.splice(svIdx, 1);
                 sub_fa.splice(svIdx, 1);
                 sub_miss.splice(svIdx, 1);
                 sub_cn.splice(svIdx, 1);
-              } else if (isScalar)
-              {
+              } else if (isScalar) {
                 sub_square_diff_sum.splice(svIdx, 1);
                 sub_N_sum.splice(svIdx, 1);
                 sub_obs_model_diff_sum.splice(svIdx, 1);
@@ -1762,15 +1585,13 @@ const parseQueryDataXYCurve = function (
               }
               sub_values.splice(svIdx, 1);
               sub_secs.splice(svIdx, 1);
-              if (hasLevels)
-              {
+              if (hasLevels) {
                 sub_levs.splice(svIdx, 1);
               }
             }
           }
         }
-        if (isCTC)
-        {
+        if (isCTC) {
           const hit = matsDataUtils.sum(sub_hit);
           const fa = matsDataUtils.sum(sub_fa);
           const miss = matsDataUtils.sum(sub_miss);
@@ -1783,8 +1604,7 @@ const parseQueryDataXYCurve = function (
             sub_hit.length,
             statisticStr
           );
-        } else if (isScalar)
-        {
+        } else if (isScalar) {
           const squareDiffSum = matsDataUtils.sum(sub_square_diff_sum);
           const NSum = matsDataUtils.sum(sub_N_sum);
           const obsModelDiffSum = matsDataUtils.sum(sub_obs_model_diff_sum);
@@ -1800,29 +1620,23 @@ const parseQueryDataXYCurve = function (
             absSum,
             statisticStr
           );
-        } else if (statisticStr.toLowerCase().includes("count"))
-        {
+        } else if (statisticStr.toLowerCase().includes("count")) {
           stat = matsDataUtils.sum(sub_values);
-        } else
-        {
+        } else {
           stat = matsDataUtils.average(sub_values);
         }
-      } catch (e)
-      {
+      } catch (e) {
         // this is an error produced by a bug in the query function, not an error returned by the mysql database
         e.message = `Error in parseQueryDataXYCurve. The expected fields don't seem to be present in the results cache: ${e.message}`;
         throw new Error(e.message);
       }
-    } else
-    {
-      if (isCTC)
-      {
+    } else {
+      if (isCTC) {
         sub_hit = NaN;
         sub_fa = NaN;
         sub_miss = NaN;
         sub_cn = NaN;
-      } else if (isScalar)
-      {
+      } else if (isScalar) {
         sub_square_diff_sum = NaN;
         sub_N_sum = NaN;
         sub_obs_model_diff_sum = NaN;
@@ -1833,8 +1647,7 @@ const parseQueryDataXYCurve = function (
       }
       sub_values = NaN;
       sub_secs = NaN;
-      if (hasLevels)
-      {
+      if (hasLevels) {
         sub_levs = NaN;
       }
     }
@@ -1844,28 +1657,25 @@ const parseQueryDataXYCurve = function (
       plotType === matsTypes.PlotTypes.dailyModelCycle &&
       rowIndex > 0 &&
       Number(independentVar) - Number(rows[rowIndex - 1].avtime * 1000) >
-      3600 * 24 * 1000 &&
+        3600 * 24 * 1000 &&
       !hideGaps
-    )
-    {
+    ) {
       const cycles_missing =
         Math.ceil(
           (Number(independentVar) - Number(rows[rowIndex - 1].avtime * 1000)) /
-          (3600 * 24 * 1000)
+            (3600 * 24 * 1000)
         ) - 1;
       const offsetFromMidnight = Math.floor(
         (Number(independentVar) % (24 * 3600 * 1000)) / (3600 * 1000)
       );
-      for (var missingIdx = cycles_missing; missingIdx > 0; missingIdx--)
-      {
+      for (var missingIdx = cycles_missing; missingIdx > 0; missingIdx--) {
         curveIndependentVars.push(
           independentVar -
-          3600 * 24 * 1000 * missingIdx -
-          3600 * offsetFromMidnight * 1000
+            3600 * 24 * 1000 * missingIdx -
+            3600 * offsetFromMidnight * 1000
         );
         curveStats.push(null);
-        if (isCTC)
-        {
+        if (isCTC) {
           subHit.push(NaN);
           subFa.push(NaN);
           subMiss.push(NaN);
@@ -1876,8 +1686,7 @@ const parseQueryDataXYCurve = function (
           subModelSum.push([]);
           subObsSum.push([]);
           subAbsSum.push([]);
-        } else if (isScalar)
-        {
+        } else if (isScalar) {
           subHit.push([]);
           subFa.push([]);
           subMiss.push([]);
@@ -1888,8 +1697,7 @@ const parseQueryDataXYCurve = function (
           subModelSum.push(NaN);
           subObsSum.push(NaN);
           subAbsSum.push(NaN);
-        } else
-        {
+        } else {
           subHit.push([]);
           subFa.push([]);
           subMiss.push([]);
@@ -1903,8 +1711,7 @@ const parseQueryDataXYCurve = function (
         }
         subVals.push(NaN);
         subSecs.push(NaN);
-        if (hasLevels)
-        {
+        if (hasLevels) {
           subLevs.push(NaN);
         }
       }
@@ -1923,8 +1730,7 @@ const parseQueryDataXYCurve = function (
     subAbsSum.push(sub_abs_sum);
     subVals.push(sub_values);
     subSecs.push(sub_secs);
-    if (hasLevels)
-    {
+    if (hasLevels) {
       subLevs.push(sub_levs);
     }
   }
@@ -1938,27 +1744,22 @@ const parseQueryDataXYCurve = function (
   let depVarMax = -1 * Number.MAX_VALUE;
   let d_idx;
 
-  for (d_idx = 0; d_idx < curveIndependentVars.length; d_idx++)
-  {
+  for (d_idx = 0; d_idx < curveIndependentVars.length; d_idx++) {
     const this_N0 = N0[d_idx];
     const this_N_times = N_times[d_idx];
     // Make sure that we don't have any points with a smaller completeness value than specified by the user.
     if (
       curveStats[d_idx] === null ||
       this_N_times < completenessQCParam * N_times_max
-    )
-    {
-      if (!hideGaps)
-      {
-        if (plotType === matsTypes.PlotTypes.profile)
-        {
+    ) {
+      if (!hideGaps) {
+        if (plotType === matsTypes.PlotTypes.profile) {
           // profile has the stat first, and then the independent var. The others have independent var and then stat.
           // this is in the pattern of x-plotted-variable, y-plotted-variable.
           d.x.push(null);
           d.y.push(curveIndependentVars[d_idx]);
           d.error_x.push(null); // placeholder
-        } else
-        {
+        } else {
           d.x.push(curveIndependentVars[d_idx]);
           d.y.push(null);
           d.error_y.push(null); // placeholder
@@ -1975,24 +1776,20 @@ const parseQueryDataXYCurve = function (
         d.subAbsSum.push(NaN);
         d.subVals.push(NaN);
         d.subSecs.push(NaN);
-        if (hasLevels)
-        {
+        if (hasLevels) {
           d.subLevs.push(NaN);
         }
       }
-    } else
-    {
+    } else {
       // there's valid data at this point, so store it
       sum += curveStats[d_idx];
-      if (plotType === matsTypes.PlotTypes.profile)
-      {
+      if (plotType === matsTypes.PlotTypes.profile) {
         // profile has the stat first, and then the independent var. The others have independent var and then stat.
         // this is in the pattern of x-plotted-variable, y-plotted-variable.
         d.x.push(curveStats[d_idx]);
         d.y.push(curveIndependentVars[d_idx]);
         d.error_x.push(null); // placeholder
-      } else
-      {
+      } else {
         d.x.push(curveIndependentVars[d_idx]);
         d.y.push(curveStats[d_idx]);
         d.error_y.push(null); // placeholder
@@ -2009,8 +1806,7 @@ const parseQueryDataXYCurve = function (
       d.subAbsSum.push(subAbsSum[d_idx]);
       d.subVals.push(subVals[d_idx]);
       d.subSecs.push(subSecs[d_idx]);
-      if (hasLevels)
-      {
+      if (hasLevels) {
         d.subLevs.push(subLevs[d_idx]);
       }
       indVarMin =
@@ -2027,8 +1823,7 @@ const parseQueryDataXYCurve = function (
   }
 
   // add in any missing times in the time series
-  if (plotType === matsTypes.PlotTypes.timeSeries && !hideGaps)
-  {
+  if (plotType === matsTypes.PlotTypes.timeSeries && !hideGaps) {
     time_interval *= 1000;
     const dayInMilliSeconds = 24 * 3600 * 1000;
     let lowerIndependentVar;
@@ -2036,38 +1831,32 @@ const parseQueryDataXYCurve = function (
     let newTime;
     let thisCadence;
     let numberOfDaysBack;
-    for (d_idx = curveIndependentVars.length - 2; d_idx >= 0; d_idx--)
-    {
+    for (d_idx = curveIndependentVars.length - 2; d_idx >= 0; d_idx--) {
       lowerIndependentVar = curveIndependentVars[d_idx];
       upperIndependentVar = curveIndependentVars[d_idx + 1];
       const cycles_missing =
         Math.ceil(
           (Number(upperIndependentVar) - Number(lowerIndependentVar)) / time_interval
         ) - 1;
-      for (missingIdx = cycles_missing; missingIdx > 0; missingIdx--)
-      {
+      for (missingIdx = cycles_missing; missingIdx > 0; missingIdx--) {
         newTime = lowerIndependentVar + missingIdx * time_interval;
-        if (!regular)
-        {
+        if (!regular) {
           // if it's not a regular model, we only want to add a null point if this is an init time that should have had a forecast.
           thisCadence = newTime % dayInMilliSeconds; // current hour of day (valid time)
-          if (Number(thisCadence) - Number(forecastOffset) * 3600 * 1000 < 0)
-          {
+          if (Number(thisCadence) - Number(forecastOffset) * 3600 * 1000 < 0) {
             // check to see if cycle time was on a previous day -- if so, need to wrap around 00Z to get current hour of day (cycle time)
             numberOfDaysBack = Math.ceil(
               (-1 * (Number(thisCadence) - Number(forecastOffset) * 3600 * 1000)) /
-              dayInMilliSeconds
+                dayInMilliSeconds
             );
             thisCadence =
               Number(thisCadence) -
               Number(forecastOffset) * 3600 * 1000 +
               numberOfDaysBack * dayInMilliSeconds; // current hour of day (cycle time)
-          } else
-          {
+          } else {
             thisCadence = Number(thisCadence) - Number(forecastOffset) * 3600 * 1000; // current hour of day (cycle time)
           }
-          if (cycles.indexOf(thisCadence) !== -1)
-          {
+          if (cycles.indexOf(thisCadence) !== -1) {
             matsDataUtils.addNullPoint(
               d,
               d_idx + 1,
@@ -2080,8 +1869,7 @@ const parseQueryDataXYCurve = function (
               hasLevels
             );
           }
-        } else
-        {
+        } else {
           matsDataUtils.addNullPoint(
             d,
             d_idx + 1,
@@ -2098,14 +1886,12 @@ const parseQueryDataXYCurve = function (
     }
   }
 
-  if (plotType === matsTypes.PlotTypes.profile)
-  {
+  if (plotType === matsTypes.PlotTypes.profile) {
     d.xmin = depVarMin;
     d.xmax = depVarMax;
     d.ymin = indVarMin;
     d.ymax = indVarMax;
-  } else
-  {
+  } else {
     d.xmin = indVarMin;
     d.xmax = indVarMax;
     d.ymin = depVarMin;
@@ -2122,8 +1908,7 @@ const parseQueryDataXYCurve = function (
 };
 
 // this method parses the returned query data for performance diagrams
-const parseQueryDataReliability = function (rows, d, kernel)
-{
+const parseQueryDataReliability = function (rows, d, kernel) {
   /*
     let d = {
       // d will contain the curve data
@@ -2162,18 +1947,15 @@ const parseQueryDataReliability = function (rows, d, kernel)
   const fcstCounts = [];
   const observedFreqs = [];
   let totalForecastCount = 0;
-  for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1)
-  {
+  for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
     if (
       Number(rows[rowIndex].kernel) === 0 &&
       rows[rowIndex].rawfcstcount !== undefined &&
       rows[rowIndex].rawfcstcount !== "NULL"
-    )
-    {
+    ) {
       totalForecastCount += Number(rows[rowIndex].rawfcstcount);
     }
-    if (Number(rows[rowIndex].kernel) === Number(kernel))
-    {
+    if (Number(rows[rowIndex].kernel) === Number(kernel)) {
       const binVal = Number(rows[rowIndex].binValue);
       let hitCount;
       let fcstCount;
@@ -2181,15 +1963,13 @@ const parseQueryDataReliability = function (rows, d, kernel)
       if (
         rows[rowIndex].fcstcount !== undefined &&
         rows[rowIndex].hitcount !== undefined
-      )
-      {
+      ) {
         hitCount =
           rows[rowIndex].hitcount === "NULL" ? null : Number(rows[rowIndex].hitcount);
         fcstCount =
           rows[rowIndex].fcstcount === "NULL" ? null : Number(rows[rowIndex].fcstcount);
         observedFreq = hitCount / fcstCount;
-      } else
-      {
+      } else {
         hitCount = null;
         fcstCount = null;
       }
@@ -2217,8 +1997,7 @@ const parseQueryDataReliability = function (rows, d, kernel)
   let yMin = Number.MAX_VALUE;
   let yMax = -1 * Number.MAX_VALUE;
 
-  for (let didx = 0; didx < binVals.length; didx += 1)
-  {
+  for (let didx = 0; didx < binVals.length; didx += 1) {
     xMin = d.x[didx] !== null && d.x[didx] < xMin ? d.x[didx] : xMin;
     xMax = d.x[didx] !== null && d.x[didx] > xMax ? d.x[didx] : xMax;
     yMin = d.y[didx] !== null && d.y[didx] < yMin ? d.y[didx] : yMin;
@@ -2235,8 +2014,7 @@ const parseQueryDataReliability = function (rows, d, kernel)
 };
 
 // this method parses the returned query data for performance diagrams
-const parseQueryDataPerformanceDiagram = function (rows, d, appParams)
-{
+const parseQueryDataPerformanceDiagram = function (rows, d, appParams) {
   /*
         var d = {   // d will contain the curve data
             x: [],
@@ -2280,21 +2058,18 @@ const parseQueryDataPerformanceDiagram = function (rows, d, appParams)
   const subVals = [];
   const subSecs = [];
   const subLevs = [];
-  for (let rowIndex = 0; rowIndex < rows.length; rowIndex++)
-  {
+  for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
     const binVal = Number(rows[rowIndex].binVal);
     var pod;
     var success;
     var oy;
     var on;
-    if (rows[rowIndex].pod !== undefined && rows[rowIndex].far !== undefined)
-    {
+    if (rows[rowIndex].pod !== undefined && rows[rowIndex].far !== undefined) {
       pod = rows[rowIndex].pod === "NULL" ? null : Number(rows[rowIndex].pod);
       success = rows[rowIndex].far === "NULL" ? null : 1 - Number(rows[rowIndex].far);
       oy = rows[rowIndex].oy === "NULL" ? null : Number(rows[rowIndex].oy_all);
       on = rows[rowIndex].on === "NULL" ? null : Number(rows[rowIndex].on_all);
-    } else
-    {
+    } else {
       pod = null;
       success = null;
       oy = null;
@@ -2319,24 +2094,18 @@ const parseQueryDataPerformanceDiagram = function (rows, d, appParams)
       pod !== null &&
       rows[rowIndex].sub_data !== undefined &&
       rows[rowIndex].sub_data !== null
-    )
-    {
+    ) {
       // parse the sub-data
-      try
-      {
+      try {
         const sub_data = rows[rowIndex].sub_data.toString().split(",");
         var curr_sub_data;
-        for (let sd_idx = 0; sd_idx < sub_data.length; sd_idx++)
-        {
+        for (let sd_idx = 0; sd_idx < sub_data.length; sd_idx++) {
           curr_sub_data = sub_data[sd_idx].split(";");
           sub_secs.push(Number(curr_sub_data[0]));
-          if (hasLevels)
-          {
-            if (!isNaN(Number(curr_sub_data[1])))
-            {
+          if (hasLevels) {
+            if (!isNaN(Number(curr_sub_data[1]))) {
               sub_levs.push(Number(curr_sub_data[1]));
-            } else
-            {
+            } else {
               sub_levs.push(curr_sub_data[1]);
             }
             sub_hit.push(Number(curr_sub_data[2]));
@@ -2345,8 +2114,7 @@ const parseQueryDataPerformanceDiagram = function (rows, d, appParams)
             sub_cn.push(Number(curr_sub_data[5]));
             // this is a dummy to fit the expectations of common functions that xy line curves have a populated sub_values array. It isn't used for anything.
             sub_values.push(0);
-          } else
-          {
+          } else {
             sub_hit.push(Number(curr_sub_data[1]));
             sub_fa.push(Number(curr_sub_data[2]));
             sub_miss.push(Number(curr_sub_data[3]));
@@ -2355,21 +2123,18 @@ const parseQueryDataPerformanceDiagram = function (rows, d, appParams)
             sub_values.push(0);
           }
         }
-      } catch (e)
-      {
+      } catch (e) {
         // this is an error produced by a bug in the query function, not an error returned by the mysql database
         e.message = `Error in parseQueryDataPerformanceDiagram. The expected fields don't seem to be present in the results cache: ${e.message}`;
         throw new Error(e.message);
       }
-    } else
-    {
+    } else {
       sub_hit = NaN;
       sub_fa = NaN;
       sub_miss = NaN;
       sub_cn = NaN;
       sub_secs = NaN;
-      if (hasLevels)
-      {
+      if (hasLevels) {
         sub_levs = NaN;
       }
     }
@@ -2379,8 +2144,7 @@ const parseQueryDataPerformanceDiagram = function (rows, d, appParams)
     subCn.push(sub_cn);
     subVals.push(sub_values);
     subSecs.push(sub_secs);
-    if (hasLevels)
-    {
+    if (hasLevels) {
       subLevs.push(sub_levs);
     }
   }
@@ -2404,8 +2168,7 @@ const parseQueryDataPerformanceDiagram = function (rows, d, appParams)
   let podMin = Number.MAX_VALUE;
   let podMax = -1 * Number.MAX_VALUE;
 
-  for (let d_idx = 0; d_idx < binVals.length; d_idx++)
-  {
+  for (let d_idx = 0; d_idx < binVals.length; d_idx++) {
     successMin =
       successes[d_idx] !== null && successes[d_idx] < successMin
         ? successes[d_idx]
@@ -2437,8 +2200,7 @@ const parseQueryDataSimpleScatter = function (
   appParams,
   statisticXStr,
   statisticYStr
-)
-{
+) {
   /*
         var d = {   // d will contain the curve data
             x: [],
@@ -2494,16 +2256,14 @@ const parseQueryDataSimpleScatter = function (
   const subValsY = [];
   const subSecs = [];
   const subLevs = [];
-  for (let rowIndex = 0; rowIndex < rows.length; rowIndex++)
-  {
+  for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
     const binVal = Number(rows[rowIndex].binVal);
     var xStat;
     var yStat;
     if (
       rows[rowIndex].square_diff_sumX !== undefined &&
       rows[rowIndex].square_diff_sumY !== undefined
-    )
-    {
+    ) {
       // this is a scalar partial sums plot
       const squareDiffSumX = Number(rows[rowIndex].square_diff_sumX);
       const NSumX = Number(rows[rowIndex].N_sumX);
@@ -2517,8 +2277,7 @@ const parseQueryDataSimpleScatter = function (
       const modelSumY = Number(rows[rowIndex].model_sumY);
       const obsSumY = Number(rows[rowIndex].obs_sumY);
       const absSumY = Number(rows[rowIndex].abs_sumY);
-      if (NSumX > 0 && NSumY > 0)
-      {
+      if (NSumX > 0 && NSumY > 0) {
         xStat = matsDataUtils.calculateStatScalar(
           squareDiffSumX,
           NSumX,
@@ -2539,8 +2298,7 @@ const parseQueryDataSimpleScatter = function (
           statisticYStr
         );
         yStat = isNaN(Number(yStat)) ? null : yStat;
-      } else
-      {
+      } else {
         xStat = null;
         yStat = null;
       }
@@ -2570,24 +2328,18 @@ const parseQueryDataSimpleScatter = function (
       yStat !== null &&
       rows[rowIndex].sub_data !== undefined &&
       rows[rowIndex].sub_data !== null
-    )
-    {
+    ) {
       // parse the sub-data
-      try
-      {
+      try {
         const sub_data = rows[rowIndex].sub_data.toString().split(",");
         var curr_sub_data;
-        for (let sd_idx = 0; sd_idx < sub_data.length; sd_idx++)
-        {
+        for (let sd_idx = 0; sd_idx < sub_data.length; sd_idx++) {
           curr_sub_data = sub_data[sd_idx].split(";");
           sub_secs.push(Number(curr_sub_data[0]));
-          if (hasLevels)
-          {
-            if (!isNaN(Number(curr_sub_data[1])))
-            {
+          if (hasLevels) {
+            if (!isNaN(Number(curr_sub_data[1]))) {
               sub_levs.push(Number(curr_sub_data[1]));
-            } else
-            {
+            } else {
               sub_levs.push(curr_sub_data[1]);
             }
             sub_square_diff_sumX.push(Number(curr_sub_data[2]));
@@ -2624,8 +2376,7 @@ const parseQueryDataSimpleScatter = function (
                 statisticYStr
               )
             );
-          } else
-          {
+          } else {
             sub_square_diff_sumX.push(Number(curr_sub_data[1]));
             sub_N_sumX.push(Number(curr_sub_data[2]));
             sub_obs_model_diff_sumX.push(Number(curr_sub_data[3]));
@@ -2692,14 +2443,12 @@ const parseQueryDataSimpleScatter = function (
           absSumY,
           statisticYStr
         );
-      } catch (e)
-      {
+      } catch (e) {
         // this is an error produced by a bug in the query function, not an error returned by the mysql database
         e.message = `Error in parseQueryDataXYCurve. The expected fields don't seem to be present in the results cache: ${e.message}`;
         throw new Error(e.message);
       }
-    } else
-    {
+    } else {
       sub_square_diff_sumX = NaN;
       sub_N_sumX = NaN;
       sub_obs_model_diff_sumX = NaN;
@@ -2715,8 +2464,7 @@ const parseQueryDataSimpleScatter = function (
       sub_abs_sumY = NaN;
       sub_valuesY = NaN;
       sub_secs = NaN;
-      if (hasLevels)
-      {
+      if (hasLevels) {
         sub_levs = NaN;
       }
     }
@@ -2738,8 +2486,7 @@ const parseQueryDataSimpleScatter = function (
     subAbsSumY.push(sub_abs_sumY);
     subValsY.push(sub_valuesY);
     subSecs.push(sub_secs);
-    if (hasLevels)
-    {
+    if (hasLevels) {
       subLevs.push(sub_levs);
     }
   }
@@ -2770,8 +2517,7 @@ const parseQueryDataSimpleScatter = function (
   let ymin = Number.MAX_VALUE;
   let ymax = -1 * Number.MAX_VALUE;
 
-  for (let d_idx = 0; d_idx < binVals.length; d_idx++)
-  {
+  for (let d_idx = 0; d_idx < binVals.length; d_idx++) {
     xmin = xStats[d_idx] !== null && xStats[d_idx] < xmin ? xStats[d_idx] : xmin;
     xmax = xStats[d_idx] !== null && xStats[d_idx] > xmax ? xStats[d_idx] : xmax;
     ymin = yStats[d_idx] !== null && yStats[d_idx] < ymin ? yStats[d_idx] : ymin;
@@ -2805,8 +2551,7 @@ const parseQueryDataMapScalar = function (
   variable,
   varUnits,
   appParams
-)
-{
+) {
   const { hasLevels } = appParams;
   let highLimit = 10;
   let lowLimit = -10;
@@ -2819,32 +2564,27 @@ const parseQueryDataMapScalar = function (
   let colorModerate = "";
   let colorHigh = "";
   let colorHighest = "";
-  if (statistic.includes("Bias"))
-  {
-    if (variable.includes("RH") || variable.toLowerCase().includes("dewpoint"))
-    {
+  if (statistic.includes("Bias")) {
+    if (variable.includes("RH") || variable.toLowerCase().includes("dewpoint")) {
       colorLowest = "rgb(140,81,00)";
       colorLow = "rgb(191,129,45)";
       colorModerate = "rgb(125,125,125)";
       colorHigh = "rgb(53,151,143)";
       colorHighest = "rgb(1,102,95)";
-    } else if (variable.toLowerCase().includes("temp"))
-    {
+    } else if (variable.toLowerCase().includes("temp")) {
       colorLowest = "rgb(24,28,247)";
       colorLow = "rgb(67,147,195)";
       colorModerate = "rgb(125,125,125)";
       colorHigh = "rgb(255,120,86)";
       colorHighest = "rgb(216,21,47)";
-    } else
-    {
+    } else {
       colorLowest = "rgb(0,134,0)";
       colorLow = "rgb(80,255,80)";
       colorModerate = "rgb(125,125,125)";
       colorHigh = "rgb(255,80,255)";
       colorHighest = "rgb(134,0,134)";
     }
-  } else
-  {
+  } else {
     colorLowest = "rgb(125,125,125)";
     colorLow = "rgb(196,179,139)";
     colorModerate = "rgb(243,164,96)";
@@ -2858,8 +2598,7 @@ const parseQueryDataMapScalar = function (
   dHighest.color = colorHighest;
 
   let queryVal;
-  for (let rowIndex = 0; rowIndex < rows.length; rowIndex++)
-  {
+  for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
     const site = rows[rowIndex].sta_id;
     const squareDiffSum = Number(rows[rowIndex].square_diff_sum);
     const NSum = Number(rows[rowIndex].N_sum);
@@ -2867,8 +2606,7 @@ const parseQueryDataMapScalar = function (
     const modelSum = Number(rows[rowIndex].model_sum);
     const obsSum = Number(rows[rowIndex].obs_sum);
     const absSum = Number(rows[rowIndex].abs_sum);
-    if (NSum > 0)
-    {
+    if (NSum > 0) {
       queryVal = matsDataUtils.calculateStatScalar(
         squareDiffSum,
         NSum,
@@ -2879,8 +2617,7 @@ const parseQueryDataMapScalar = function (
         `${statistic}_${variable}`
       );
       queryVal = isNaN(Number(queryVal)) ? null : queryVal;
-    } else
-    {
+    } else {
       queryVal = null;
     }
     // store sub values to test them for stdev.
@@ -2900,24 +2637,18 @@ const parseQueryDataMapScalar = function (
       queryVal !== null &&
       rows[rowIndex].sub_data !== undefined &&
       rows[rowIndex].sub_data !== null
-    )
-    {
+    ) {
       // parse the sub-data
-      try
-      {
+      try {
         const sub_data = rows[rowIndex].sub_data.toString().split(",");
         var curr_sub_data;
-        for (let sd_idx = 0; sd_idx < sub_data.length; sd_idx++)
-        {
+        for (let sd_idx = 0; sd_idx < sub_data.length; sd_idx++) {
           curr_sub_data = sub_data[sd_idx].split(";");
           sub_secs.push(Number(curr_sub_data[0]));
-          if (hasLevels)
-          {
-            if (!isNaN(Number(curr_sub_data[1])))
-            {
+          if (hasLevels) {
+            if (!isNaN(Number(curr_sub_data[1]))) {
               sub_levs.push(Number(curr_sub_data[1]));
-            } else
-            {
+            } else {
               sub_levs.push(curr_sub_data[1]);
             }
             sub_square_diff_sum.push(Number(curr_sub_data[2]));
@@ -2937,8 +2668,7 @@ const parseQueryDataMapScalar = function (
                 `${statistic}_${variable}`
               )
             );
-          } else
-          {
+          } else {
             sub_square_diff_sum.push(Number(curr_sub_data[1]));
             sub_N_sum.push(Number(curr_sub_data[2]));
             sub_obs_model_diff_sum.push(Number(curr_sub_data[3]));
@@ -2959,15 +2689,12 @@ const parseQueryDataMapScalar = function (
           }
         }
         // Now that we have all the sub-values, we can get the standard deviation and remove the ones that exceed it
-        if (outlierQCParam !== "all")
-        {
+        if (outlierQCParam !== "all") {
           sub_stdev = matsDataUtils.stdev(sub_values);
           sub_mean = matsDataUtils.average(sub_values);
           sd_limit = outlierQCParam * sub_stdev;
-          for (let svIdx = sub_values.length - 1; svIdx >= 0; svIdx--)
-          {
-            if (Math.abs(sub_values[svIdx] - sub_mean) > sd_limit)
-            {
+          for (let svIdx = sub_values.length - 1; svIdx >= 0; svIdx--) {
+            if (Math.abs(sub_values[svIdx] - sub_mean) > sd_limit) {
               sub_square_diff_sum.splice(svIdx, 1);
               sub_N_sum.splice(svIdx, 1);
               sub_obs_model_diff_sum.splice(svIdx, 1);
@@ -2976,8 +2703,7 @@ const parseQueryDataMapScalar = function (
               sub_abs_sum.splice(svIdx, 1);
               sub_values.splice(svIdx, 1);
               sub_secs.splice(svIdx, 1);
-              if (hasLevels)
-              {
+              if (hasLevels) {
                 sub_levs.splice(svIdx, 1);
               }
             }
@@ -2999,8 +2725,7 @@ const parseQueryDataMapScalar = function (
           `${statistic}_${variable}`
         );
         queryVal = isNaN(Number(queryVal)) ? null : queryVal;
-      } catch (e)
-      {
+      } catch (e) {
         // this is an error produced by a bug in the query function, not an error returned by the mysql database
         e.message = `Error in parseQueryDataMapScalar. The expected fields don't seem to be present in the results cache: ${e.message}`;
         throw new Error(e.message);
@@ -3029,8 +2754,7 @@ const parseQueryDataMapScalar = function (
 
   // get range of values for colorscale, eliminating the highest and lowest as outliers
   let filteredValues = d.queryVal.filter((x) => x);
-  filteredValues = filteredValues.sort(function (a, b)
-  {
+  filteredValues = filteredValues.sort(function (a, b) {
     return Number(a) - Number(b);
   });
   highLimit = filteredValues[Math.floor(filteredValues.length * 0.98)];
@@ -3038,8 +2762,7 @@ const parseQueryDataMapScalar = function (
 
   const maxValue =
     Math.abs(highLimit) > Math.abs(lowLimit) ? Math.abs(highLimit) : Math.abs(lowLimit);
-  if (statistic === "Bias (Model - Obs)")
-  {
+  if (statistic === "Bias (Model - Obs)") {
     // bias colorscale needs to be symmetrical around 0
     highLimit = maxValue;
     lowLimit = -1 * maxValue;
@@ -3049,16 +2772,13 @@ const parseQueryDataMapScalar = function (
   const all_mean = matsDataUtils.average(filteredValues);
   const all_stdev = matsDataUtils.stdev(filteredValues);
   let all_sd_limit;
-  if (outlierQCParam !== "all")
-  {
+  if (outlierQCParam !== "all") {
     all_sd_limit = outlierQCParam * all_stdev;
   }
 
-  for (let didx = d.queryVal.length - 1; didx >= 0; didx--)
-  {
+  for (let didx = d.queryVal.length - 1; didx >= 0; didx--) {
     queryVal = d.queryVal[didx];
-    if (outlierQCParam !== "all" && Math.abs(queryVal - all_mean) > all_sd_limit)
-    {
+    if (outlierQCParam !== "all" && Math.abs(queryVal - all_mean) > all_sd_limit) {
       // this point is too far from the mean. Exclude it.
       d.queryVal.splice(didx, 1);
       d.stats.splice(didx, 1);
@@ -3070,48 +2790,41 @@ const parseQueryDataMapScalar = function (
       continue;
     }
     var textMarker;
-    if (variable.includes("2m") || variable.includes("10m"))
-    {
+    if (variable.includes("2m") || variable.includes("10m")) {
       textMarker = queryVal === null ? "" : queryVal.toFixed(0);
-    } else
-    {
+    } else {
       textMarker = queryVal === null ? "" : queryVal.toFixed(1);
     }
     // sort the data by the color it will appear on the map
-    if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.2)
-    {
+    if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.2) {
       d.color[didx] = colorLowest;
       dLowest.siteName.push(d.siteName[didx]);
       dLowest.queryVal.push(queryVal);
       dLowest.text.push(textMarker);
       dLowest.lat.push(d.lat[didx]);
       dLowest.lon.push(d.lon[didx]);
-    } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.4)
-    {
+    } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.4) {
       d.color[didx] = colorLow;
       dLow.siteName.push(d.siteName[didx]);
       dLow.queryVal.push(queryVal);
       dLow.text.push(textMarker);
       dLow.lat.push(d.lat[didx]);
       dLow.lon.push(d.lon[didx]);
-    } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.6)
-    {
+    } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.6) {
       d.color[didx] = colorModerate;
       dModerate.siteName.push(d.siteName[didx]);
       dModerate.queryVal.push(queryVal);
       dModerate.text.push(textMarker);
       dModerate.lat.push(d.lat[didx]);
       dModerate.lon.push(d.lon[didx]);
-    } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.8)
-    {
+    } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.8) {
       d.color[didx] = colorHigh;
       dHigh.siteName.push(d.siteName[didx]);
       dHigh.queryVal.push(queryVal);
       dHigh.text.push(textMarker);
       dHigh.lat.push(d.lat[didx]);
       dHigh.lon.push(d.lon[didx]);
-    } else
-    {
+    } else {
       d.color[didx] = colorHighest;
       dHighest.siteName.push(d.siteName[didx]);
       dHighest.queryVal.push(queryVal);
@@ -3153,8 +2866,7 @@ const parseQueryDataMapCTC = function (
   siteMap,
   statistic,
   appParams
-)
-{
+) {
   const { hasLevels } = appParams;
   let highLimit = 100;
   let lowLimit = -100;
@@ -3162,20 +2874,17 @@ const parseQueryDataMapCTC = function (
     appParams.outliers !== "all" ? Number(appParams.outliers) : appParams.outliers;
 
   let queryVal;
-  for (let rowIndex = 0; rowIndex < rows.length; rowIndex++)
-  {
+  for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
     const site = rows[rowIndex].sta_id;
     const hit = Number(rows[rowIndex].hit);
     const fa = Number(rows[rowIndex].fa);
     const miss = Number(rows[rowIndex].miss);
     const cn = Number(rows[rowIndex].cn);
     const n = rows[rowIndex].N_times;
-    if (hit + fa + miss + cn > 0)
-    {
+    if (hit + fa + miss + cn > 0) {
       queryVal = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, n, statistic);
       queryVal = isNaN(Number(queryVal)) ? null : queryVal;
-      switch (statistic)
-      {
+      switch (statistic) {
         case "TSS (True Skill Score)":
         case "HSS (Heidke Skill Score)":
           lowLimit = -100;
@@ -3206,8 +2915,7 @@ const parseQueryDataMapCTC = function (
           highLimit = 1;
           break;
       }
-    } else
-    {
+    } else {
       queryVal = null;
     }
 
@@ -3226,24 +2934,18 @@ const parseQueryDataMapCTC = function (
       queryVal !== null &&
       rows[rowIndex].sub_data !== undefined &&
       rows[rowIndex].sub_data !== null
-    )
-    {
+    ) {
       // parse the sub-data
-      try
-      {
+      try {
         const sub_data = rows[rowIndex].sub_data.toString().split(",");
         var curr_sub_data;
-        for (let sd_idx = 0; sd_idx < sub_data.length; sd_idx++)
-        {
+        for (let sd_idx = 0; sd_idx < sub_data.length; sd_idx++) {
           curr_sub_data = sub_data[sd_idx].split(";");
           sub_secs.push(Number(curr_sub_data[0]));
-          if (hasLevels)
-          {
-            if (!isNaN(Number(curr_sub_data[1])))
-            {
+          if (hasLevels) {
+            if (!isNaN(Number(curr_sub_data[1]))) {
               sub_levs.push(Number(curr_sub_data[1]));
-            } else
-            {
+            } else {
               sub_levs.push(curr_sub_data[1]);
             }
             sub_hit.push(Number(curr_sub_data[2]));
@@ -3260,8 +2962,7 @@ const parseQueryDataMapCTC = function (
                 statistic
               )
             );
-          } else
-          {
+          } else {
             sub_hit.push(Number(curr_sub_data[1]));
             sub_fa.push(Number(curr_sub_data[2]));
             sub_miss.push(Number(curr_sub_data[3]));
@@ -3279,23 +2980,19 @@ const parseQueryDataMapCTC = function (
           }
         }
         // Now that we have all the sub-values, we can get the standard deviation and remove the ones that exceed it
-        if (outlierQCParam !== "all")
-        {
+        if (outlierQCParam !== "all") {
           sub_stdev = matsDataUtils.stdev(sub_values);
           sub_mean = matsDataUtils.average(sub_values);
           sd_limit = outlierQCParam * sub_stdev;
-          for (let svIdx = sub_values.length - 1; svIdx >= 0; svIdx--)
-          {
-            if (Math.abs(sub_values[svIdx] - sub_mean) > sd_limit)
-            {
+          for (let svIdx = sub_values.length - 1; svIdx >= 0; svIdx--) {
+            if (Math.abs(sub_values[svIdx] - sub_mean) > sd_limit) {
               sub_hit.splice(svIdx, 1);
               sub_fa.splice(svIdx, 1);
               sub_miss.splice(svIdx, 1);
               sub_cn.splice(svIdx, 1);
               sub_values.splice(svIdx, 1);
               sub_secs.splice(svIdx, 1);
-              if (hasLevels)
-              {
+              if (hasLevels) {
                 sub_levs.splice(svIdx, 1);
               }
             }
@@ -3314,8 +3011,7 @@ const parseQueryDataMapCTC = function (
           statistic
         );
         queryVal = isNaN(Number(queryVal)) ? null : queryVal;
-      } catch (e)
-      {
+      } catch (e) {
         // this is an error produced by a bug in the query function, not an error returned by the mysql database
         e.message = `Error in parseQueryDataMapCTC. The expected fields don't seem to be present in the results cache: ${e.message}`;
         throw new Error(e.message);
@@ -3332,11 +3028,9 @@ const parseQueryDataMapCTC = function (
       });
 
       let thisSite;
-      if (appParams.isCouchbase)
-      {
+      if (appParams.isCouchbase) {
         thisSite = siteMap.find((obj) => obj.name === site);
-      } else
-      {
+      } else {
         thisSite = siteMap.find((obj) => obj.options.id === site);
       }
 
@@ -3355,80 +3049,70 @@ const parseQueryDataMapCTC = function (
 
       // sort the data by the color it will appear on the map
       const textMarker = queryVal === null ? "" : queryVal.toFixed(0);
-      if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.1)
-      {
+      if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.1) {
         d.color.push("rgb(128,0,255)");
         dPurple.siteName.push(thisSite.origName);
         dPurple.queryVal.push(queryVal);
         dPurple.text.push(textMarker);
         dPurple.lat.push(thisSite.point[0]);
         dPurple.lon.push(thisSite.point[1]);
-      } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.2)
-      {
+      } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.2) {
         d.color.push("rgb(64,0,255)");
         dPurpleBlue.siteName.push(thisSite.origName);
         dPurpleBlue.queryVal.push(queryVal);
         dPurpleBlue.text.push(textMarker);
         dPurpleBlue.lat.push(thisSite.point[0]);
         dPurpleBlue.lon.push(thisSite.point[1]);
-      } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.3)
-      {
+      } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.3) {
         d.color.push("rgb(0,0,255)");
         dBlue.siteName.push(thisSite.origName);
         dBlue.queryVal.push(queryVal);
         dBlue.text.push(textMarker);
         dBlue.lat.push(thisSite.point[0]);
         dBlue.lon.push(thisSite.point[1]);
-      } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.4)
-      {
+      } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.4) {
         d.color.push("rgb(64,128,128)");
         dBlueGreen.siteName.push(thisSite.origName);
         dBlueGreen.queryVal.push(queryVal);
         dBlueGreen.text.push(textMarker);
         dBlueGreen.lat.push(thisSite.point[0]);
         dBlueGreen.lon.push(thisSite.point[1]);
-      } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.5)
-      {
+      } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.5) {
         d.color.push("rgb(128,255,0)");
         dGreen.siteName.push(thisSite.origName);
         dGreen.queryVal.push(queryVal);
         dGreen.text.push(textMarker);
         dGreen.lat.push(thisSite.point[0]);
         dGreen.lon.push(thisSite.point[1]);
-      } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.6)
-      {
+      } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.6) {
         d.color.push("rgb(160,224,0)");
         dGreenYellow.siteName.push(thisSite.origName);
         dGreenYellow.queryVal.push(queryVal);
         dGreenYellow.text.push(textMarker);
         dGreenYellow.lat.push(thisSite.point[0]);
         dGreenYellow.lon.push(thisSite.point[1]);
-      } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.7)
-      {
+      } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.7) {
         d.color.push("rgb(192,192,0)");
         dYellow.siteName.push(thisSite.origName);
         dYellow.queryVal.push(queryVal);
         dYellow.text.push(textMarker);
         dYellow.lat.push(thisSite.point[0]);
         dYellow.lon.push(thisSite.point[1]);
-      } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.8)
-      {
+      } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.8) {
         d.color.push("rgb(255,128,0)");
         dOrange.siteName.push(thisSite.origName);
         dOrange.queryVal.push(queryVal);
         dOrange.text.push(textMarker);
         dOrange.lat.push(thisSite.point[0]);
         dOrange.lon.push(thisSite.point[1]);
-      } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.9)
-      {
+      } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.9) {
         d.color.push("rgb(255,64,0)");
         dOrangeRed.siteName.push(thisSite.origName);
         dOrangeRed.queryVal.push(queryVal);
         dOrangeRed.text.push(textMarker);
         dOrangeRed.lat.push(thisSite.point[0]);
         dOrangeRed.lon.push(thisSite.point[1]);
-      } else
-      {
+      } else {
         d.color.push("rgb(255,0,0)");
         dRed.siteName.push(thisSite.origName);
         dRed.queryVal.push(queryVal);
@@ -3460,8 +3144,7 @@ const parseQueryDataMapCTC = function (
 };
 
 // this method parses the returned query data for histograms
-const parseQueryDataHistogram = function (rows, d, appParams, statisticStr)
-{
+const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
   /*
         var d = {   // d will contain the curve data
             x: [],
@@ -3504,11 +3187,9 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr)
   const curveSubLevsRaw = [];
 
   // parse the data returned from the query
-  for (let rowIndex = 0; rowIndex < rows.length; rowIndex++)
-  {
+  for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
     var stat;
-    if (rows[rowIndex].stat === undefined && rows[rowIndex].hit !== undefined)
-    {
+    if (rows[rowIndex].stat === undefined && rows[rowIndex].hit !== undefined) {
       // this is a contingency table plot
       isCTC = true;
       const hit = Number(rows[rowIndex].hit);
@@ -3516,19 +3197,16 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr)
       const miss = Number(rows[rowIndex].miss);
       const cn = Number(rows[rowIndex].cn);
       const n = rows[rowIndex].sub_data.toString().split(",").length;
-      if (hit + fa + miss + cn > 0)
-      {
+      if (hit + fa + miss + cn > 0) {
         stat = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, n, statisticStr);
         stat = isNaN(Number(stat)) ? null : stat;
-      } else
-      {
+      } else {
         stat = null;
       }
     } else if (
       rows[rowIndex].stat === undefined &&
       rows[rowIndex].square_diff_sum !== undefined
-    )
-    {
+    ) {
       // this is a scalar partial sums plot
       isScalar = true;
       const squareDiffSum = Number(rows[rowIndex].square_diff_sum);
@@ -3537,8 +3215,7 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr)
       const modelSum = Number(rows[rowIndex].model_sum);
       const obsSum = Number(rows[rowIndex].obs_sum);
       const absSum = Number(rows[rowIndex].abs_sum);
-      if (NSum > 0)
-      {
+      if (NSum > 0) {
         stat = matsDataUtils.calculateStatScalar(
           squareDiffSum,
           NSum,
@@ -3549,12 +3226,10 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr)
           statisticStr
         );
         stat = isNaN(Number(stat)) ? null : stat;
-      } else
-      {
+      } else {
         stat = null;
       }
-    } else
-    {
+    } else {
       // not a contingency table plot or a scalar partial sums plot
       stat = rows[rowIndex].stat === "NULL" ? null : rows[rowIndex].stat;
     }
@@ -3565,26 +3240,19 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr)
       stat !== null &&
       rows[rowIndex].sub_data !== undefined &&
       rows[rowIndex].sub_data !== null
-    )
-    {
+    ) {
       // parse the sub-data
-      try
-      {
+      try {
         const sub_data = rows[rowIndex].sub_data.toString().split(",");
         var curr_sub_data;
-        for (let sd_idx = 0; sd_idx < sub_data.length; sd_idx++)
-        {
+        for (let sd_idx = 0; sd_idx < sub_data.length; sd_idx++) {
           curr_sub_data = sub_data[sd_idx].split(";");
-          if (isCTC)
-          {
+          if (isCTC) {
             sub_secs.push(Number(curr_sub_data[0]));
-            if (hasLevels)
-            {
-              if (!isNaN(Number(curr_sub_data[1])))
-              {
+            if (hasLevels) {
+              if (!isNaN(Number(curr_sub_data[1]))) {
                 sub_levs.push(Number(curr_sub_data[1]));
-              } else
-              {
+              } else {
                 sub_levs.push(curr_sub_data[1]);
               }
               sub_stats.push(
@@ -3597,8 +3265,7 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr)
                   statisticStr
                 )
               );
-            } else
-            {
+            } else {
               sub_stats.push(
                 matsDataUtils.calculateStatCTC(
                   Number(curr_sub_data[1]),
@@ -3610,16 +3277,12 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr)
                 )
               );
             }
-          } else if (isScalar)
-          {
+          } else if (isScalar) {
             sub_secs.push(Number(curr_sub_data[0]));
-            if (hasLevels)
-            {
-              if (!isNaN(Number(curr_sub_data[1])))
-              {
+            if (hasLevels) {
+              if (!isNaN(Number(curr_sub_data[1]))) {
                 sub_levs.push(Number(curr_sub_data[1]));
-              } else
-              {
+              } else {
                 sub_levs.push(curr_sub_data[1]);
               }
               sub_stats.push(
@@ -3633,8 +3296,7 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr)
                   statisticStr
                 )
               );
-            } else
-            {
+            } else {
               sub_stats.push(
                 matsDataUtils.calculateStatScalar(
                   Number(curr_sub_data[1]),
@@ -3647,21 +3309,16 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr)
                 )
               );
             }
-          } else
-          {
+          } else {
             sub_secs.push(Number(curr_sub_data[0]));
-            if (hasLevels)
-            {
-              if (!isNaN(Number(curr_sub_data[1])))
-              {
+            if (hasLevels) {
+              if (!isNaN(Number(curr_sub_data[1]))) {
                 sub_levs.push(Number(curr_sub_data[1]));
-              } else
-              {
+              } else {
                 sub_levs.push(curr_sub_data[1]);
               }
               sub_stats.push(Number(curr_sub_data[2]));
-            } else
-            {
+            } else {
               sub_stats.push(Number(curr_sub_data[1]));
             }
           }
@@ -3669,8 +3326,7 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr)
         curveSubStatsRaw.push(sub_stats);
         curveSubSecsRaw.push(sub_secs);
         curveSubLevsRaw.push(sub_levs);
-      } catch (e)
-      {
+      } catch (e) {
         // this is an error produced by a bug in the query function, not an error returned by the mysql database
         e.message = `Error in parseQueryDataHistogram. The expected fields don't seem to be present in the results cache: ${e.message}`;
         throw new Error(e.message);
@@ -3682,8 +3338,7 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr)
   const subVals = [].concat.apply([], curveSubStatsRaw);
   const subSecs = [].concat.apply([], curveSubSecsRaw);
   let subLevs;
-  if (hasLevels)
-  {
+  if (hasLevels) {
     subLevs = [].concat.apply([], curveSubLevsRaw);
   }
 
@@ -3699,8 +3354,7 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr)
 };
 
 // this method parses the returned query data for contour plots
-const parseQueryDataContour = function (rows, d, appParams, statisticStr)
-{
+const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
   /*
         var d = {   // d will contain the curve data
             x: [],
@@ -3774,8 +3428,7 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr)
   const curveSubLevLookup = {};
 
   // get all the data out of the query array
-  for (let rowIndex = 0; rowIndex < rows.length; rowIndex++)
-  {
+  for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
     const rowXVal = rows[rowIndex].xVal;
     const rowYVal = rows[rowIndex].yVal;
     const statKey = `${rowXVal.toString()}_${rowYVal.toString()}`;
@@ -3795,24 +3448,21 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr)
     let obsSum = null;
     let absSum = null;
     let stdev = null;
-    if (rows[rowIndex].stat === undefined && rows[rowIndex].hit !== undefined)
-    {
+    if (rows[rowIndex].stat === undefined && rows[rowIndex].hit !== undefined) {
       // this is a contingency table plot
       isCTC = true;
       hit = Number(rows[rowIndex].hit);
       fa = Number(rows[rowIndex].fa);
       miss = Number(rows[rowIndex].miss);
       cn = Number(rows[rowIndex].cn);
-      if (hit + fa + miss + cn > 0)
-      {
+      if (hit + fa + miss + cn > 0) {
         stat = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, n, statisticStr);
         stat = isNaN(Number(stat)) ? null : stat;
       }
     } else if (
       rows[rowIndex].stat === undefined &&
       rows[rowIndex].square_diff_sum !== undefined
-    )
-    {
+    ) {
       // this is a scalar partial sums plot
       isScalar = true;
       squareDiffSum = Number(rows[rowIndex].square_diff_sum);
@@ -3821,8 +3471,7 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr)
       modelSum = Number(rows[rowIndex].model_sum);
       obsSum = Number(rows[rowIndex].obs_sum);
       absSum = Number(rows[rowIndex].abs_sum);
-      if (NSum > 0)
-      {
+      if (NSum > 0) {
         stat = matsDataUtils.calculateStatScalar(
           squareDiffSum,
           NSum,
@@ -3844,16 +3493,14 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr)
           `Std deviation_${variable}`
         );
       }
-    } else
-    {
+    } else {
       // not a contingency table plot
       stat = rows[rowIndex].stat === "NULL" ? null : rows[rowIndex].stat;
       stdev = rows[rowIndex].stdev !== undefined ? rows[rowIndex].stdev : null;
     }
     let minDate = rows[rowIndex].min_secs;
     let maxDate = rows[rowIndex].max_secs;
-    if (stat === undefined || stat === null)
-    {
+    if (stat === undefined || stat === null) {
       stat = null;
       stdev = 0;
       n = 0;
@@ -3877,49 +3524,37 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr)
       stat !== null &&
       rows[rowIndex].sub_data !== undefined &&
       rows[rowIndex].sub_data !== null
-    )
-    {
+    ) {
       // parse the sub-data
-      try
-      {
+      try {
         const sub_data = rows[rowIndex].sub_data.toString().split(",");
         var curr_sub_data;
-        for (let sd_idx = 0; sd_idx < sub_data.length; sd_idx++)
-        {
+        for (let sd_idx = 0; sd_idx < sub_data.length; sd_idx++) {
           curr_sub_data = sub_data[sd_idx].split(";");
-          if (isCTC)
-          {
+          if (isCTC) {
             sub_secs.push(Number(curr_sub_data[0]));
-            if (hasLevels)
-            {
-              if (!isNaN(Number(curr_sub_data[1])))
-              {
+            if (hasLevels) {
+              if (!isNaN(Number(curr_sub_data[1]))) {
                 sub_levs.push(Number(curr_sub_data[1]));
-              } else
-              {
+              } else {
                 sub_levs.push(curr_sub_data[1]);
               }
               sub_hit.push(Number(curr_sub_data[2]));
               sub_fa.push(Number(curr_sub_data[3]));
               sub_miss.push(Number(curr_sub_data[4]));
               sub_cn.push(Number(curr_sub_data[5]));
-            } else
-            {
+            } else {
               sub_hit.push(Number(curr_sub_data[1]));
               sub_fa.push(Number(curr_sub_data[2]));
               sub_miss.push(Number(curr_sub_data[3]));
               sub_cn.push(Number(curr_sub_data[4]));
             }
-          } else if (isScalar)
-          {
+          } else if (isScalar) {
             sub_secs.push(Number(curr_sub_data[0]));
-            if (hasLevels)
-            {
-              if (!isNaN(Number(curr_sub_data[1])))
-              {
+            if (hasLevels) {
+              if (!isNaN(Number(curr_sub_data[1]))) {
                 sub_levs.push(Number(curr_sub_data[1]));
-              } else
-              {
+              } else {
                 sub_levs.push(curr_sub_data[1]);
               }
               sub_square_diff_sum.push(Number(curr_sub_data[2]));
@@ -3928,8 +3563,7 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr)
               sub_model_sum.push(Number(curr_sub_data[5]));
               sub_obs_sum.push(Number(curr_sub_data[6]));
               sub_abs_sum.push(Number(curr_sub_data[7]));
-            } else
-            {
+            } else {
               sub_square_diff_sum.push(Number(curr_sub_data[1]));
               sub_N_sum.push(Number(curr_sub_data[2]));
               sub_obs_model_diff_sum.push(Number(curr_sub_data[3]));
@@ -3937,54 +3571,43 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr)
               sub_obs_sum.push(Number(curr_sub_data[5]));
               sub_abs_sum.push(Number(curr_sub_data[6]));
             }
-          } else
-          {
+          } else {
             sub_secs.push(Number(curr_sub_data[0]));
-            if (hasLevels)
-            {
-              if (!isNaN(Number(curr_sub_data[1])))
-              {
+            if (hasLevels) {
+              if (!isNaN(Number(curr_sub_data[1]))) {
                 sub_levs.push(Number(curr_sub_data[1]));
-              } else
-              {
+              } else {
                 sub_levs.push(curr_sub_data[1]);
               }
               sub_values.push(Number(curr_sub_data[2]));
-            } else
-            {
+            } else {
               sub_values.push(Number(curr_sub_data[1]));
             }
           }
         }
-      } catch (e)
-      {
+      } catch (e) {
         // this is an error produced by a bug in the query function, not an error returned by the mysql database
         e.message = `Error in parseQueryDataContour. The expected fields don't seem to be present in the results cache: ${e.message}`;
         throw new Error(e.message);
       }
-    } else
-    {
-      if (isCTC)
-      {
+    } else {
+      if (isCTC) {
         sub_hit = NaN;
         sub_fa = NaN;
         sub_miss = NaN;
         sub_cn = NaN;
-      } else if (isScalar)
-      {
+      } else if (isScalar) {
         sub_square_diff_sum = NaN;
         sub_N_sum = NaN;
         sub_obs_model_diff_sum = NaN;
         sub_model_sum = NaN;
         sub_obs_sum = NaN;
         sub_abs_sum = NaN;
-      } else
-      {
+      } else {
         sub_values = NaN;
       }
       sub_secs = NaN;
-      if (hasLevels)
-      {
+      if (hasLevels) {
         sub_levs = NaN;
       }
     }
@@ -4008,38 +3631,32 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr)
     curveStatLookup[statKey] = stat;
     curveStdevLookup[statKey] = stdev;
     curveNLookup[statKey] = n;
-    if (isCTC)
-    {
+    if (isCTC) {
       curveSubHitLookup[statKey] = sub_hit;
       curveSubFaLookup[statKey] = sub_fa;
       curveSubMissLookup[statKey] = sub_miss;
       curveSubCnLookup[statKey] = sub_cn;
-    } else if (isScalar)
-    {
+    } else if (isScalar) {
       curveSubSquareDiffSumLookup[statKey] = sub_square_diff_sum;
       curveSubNSumLookup[statKey] = sub_N_sum;
       curveSubObsModelDiffSumLookup[statKey] = sub_obs_model_diff_sum;
       curveSubModelSumLookup[statKey] = sub_model_sum;
       curveSubObsSumLookup[statKey] = sub_obs_sum;
       curveSubAbsSumLookup[statKey] = sub_abs_sum;
-    } else
-    {
+    } else {
       curveSubValLookup[statKey] = sub_values;
     }
     curveSubSecLookup[statKey] = sub_secs;
-    if (hasLevels)
-    {
+    if (hasLevels) {
       curveSubLevLookup[statKey] = sub_levs;
     }
   }
 
   // get the unique x and y values and sort the stats into the 2D z array accordingly
-  d.x = matsDataUtils.arrayUnique(d.xTextOutput).sort(function (a, b)
-  {
+  d.x = matsDataUtils.arrayUnique(d.xTextOutput).sort(function (a, b) {
     return a - b;
   });
-  d.y = matsDataUtils.arrayUnique(d.yTextOutput).sort(function (a, b)
-  {
+  d.y = matsDataUtils.arrayUnique(d.yTextOutput).sort(function (a, b) {
     return a - b;
   });
   let i;
@@ -4084,121 +3701,101 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr)
   let zmin = Number.MAX_VALUE;
   let zmax = -1 * Number.MAX_VALUE;
 
-  for (j = 0; j < d.y.length; j++)
-  {
+  for (j = 0; j < d.y.length; j++) {
     currY = d.y[j];
     currYStatArray = [];
     currYStdevArray = [];
     currYNArray = [];
-    if (isCTC)
-    {
+    if (isCTC) {
       currYSubHitArray = [];
       currYSubFaArray = [];
       currYSubMissArray = [];
       currYSubCnArray = [];
-    } else if (isScalar)
-    {
+    } else if (isScalar) {
       currYSubSquareDiffSumArray = [];
       currYSubNSumArray = [];
       currYSubObsModelDiffSumArray = [];
       currYSubModelSumArray = [];
       currYSubObsSumArray = [];
       currYSubAbsSumArray = [];
-    } else
-    {
+    } else {
       currYSubValArray = [];
     }
     currYSubSecArray = [];
-    if (hasLevels)
-    {
+    if (hasLevels) {
       currYSubLevArray = [];
     }
-    for (i = 0; i < d.x.length; i++)
-    {
+    for (i = 0; i < d.x.length; i++) {
       currX = d.x[i];
       currStatKey = `${currX.toString()}_${currY.toString()}`;
       currStat = curveStatLookup[currStatKey];
       currStdev = curveStdevLookup[currStatKey];
       currN = curveNLookup[currStatKey];
-      if (isCTC)
-      {
+      if (isCTC) {
         currSubHit = curveSubHitLookup[currStatKey];
         currSubFa = curveSubFaLookup[currStatKey];
         currSubMiss = curveSubMissLookup[currStatKey];
         currSubCn = curveSubCnLookup[currStatKey];
-      } else if (isScalar)
-      {
+      } else if (isScalar) {
         currSubSquareDiffSum = curveSubSquareDiffSumLookup[currStatKey];
         currSubNSum = curveSubNSumLookup[currStatKey];
         currSubObsModelDiffSum = curveSubObsModelDiffSumLookup[currStatKey];
         currSubModelSum = curveSubModelSumLookup[currStatKey];
         currSubObsSum = curveSubObsSumLookup[currStatKey];
         currSubAbsSum = curveSubAbsSumLookup[currStatKey];
-      } else
-      {
+      } else {
         currSubVal = curveSubValLookup[currStatKey];
       }
       currSubSec = curveSubSecLookup[currStatKey];
-      if (hasLevels)
-      {
+      if (hasLevels) {
         currSubLev = curveSubLevLookup[currStatKey];
       }
-      if (currStat === undefined)
-      {
+      if (currStat === undefined) {
         currYStatArray.push(null);
         currYStdevArray.push(null);
         currYNArray.push(0);
-        if (isCTC)
-        {
+        if (isCTC) {
           currYSubHitArray.push(null);
           currYSubFaArray.push(null);
           currYSubMissArray.push(null);
           currYSubCnArray.push(null);
-        } else if (isScalar)
-        {
+        } else if (isScalar) {
           currYSubSquareDiffSumArray.push(null);
           currYSubNSumArray.push(null);
           currYSubObsModelDiffSumArray.push(null);
           currYSubModelSumArray.push(null);
           currYSubObsSumArray.push(null);
           currYSubAbsSumArray.push(null);
-        } else
-        {
+        } else {
           currYSubValArray.push(null);
         }
         currYSubSecArray.push(null);
-        if (hasLevels)
-        {
+        if (hasLevels) {
           currYSubLevArray.push(null);
         }
-      } else
-      {
+      } else {
         sum += currStat;
         nPoints += 1;
         currYStatArray.push(currStat);
         currYStdevArray.push(currStdev);
         currYNArray.push(currN);
-        if (isCTC)
-        {
+        if (isCTC) {
           currYSubHitArray.push(currSubHit);
           currYSubFaArray.push(currSubFa);
           currYSubMissArray.push(currSubMiss);
           currYSubCnArray.push(currSubCn);
-        } else if (isScalar)
-        {
+        } else if (isScalar) {
           currYSubSquareDiffSumArray.push(currSubSquareDiffSum);
           currYSubNSumArray.push(currSubNSum);
           currYSubObsModelDiffSumArray.push(currSubObsModelDiffSum);
           currYSubModelSumArray.push(currSubModelSum);
           currYSubObsSumArray.push(currSubObsSum);
           currYSubAbsSumArray.push(currSubAbsSum);
-        } else
-        {
+        } else {
           currYSubValArray.push(currSubVal);
         }
         currYSubSecArray.push(currSubSec);
-        if (hasLevels)
-        {
+        if (hasLevels) {
           currYSubLevArray.push(currSubLev);
         }
         zmin = currStat < zmin ? currStat : zmin;
@@ -4208,27 +3805,23 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr)
     d.z.push(currYStatArray);
     d.stdev.push(currYStdevArray);
     d.n.push(currYNArray);
-    if (isCTC)
-    {
+    if (isCTC) {
       d.subHit.push(currYSubHitArray);
       d.subFa.push(currYSubFaArray);
       d.subMiss.push(currYSubMissArray);
       d.subCn.push(currYSubCnArray);
-    } else if (isScalar)
-    {
+    } else if (isScalar) {
       d.subSquareDiffSum.push(currYSubSquareDiffSumArray);
       d.subNSum.push(currYSubNSumArray);
       d.subObsModelDiffSum.push(currYSubObsModelDiffSumArray);
       d.subModelSum.push(currYSubModelSumArray);
       d.subObsSum.push(currYSubObsSumArray);
       d.subAbsSum.push(currYSubAbsSumArray);
-    } else
-    {
+    } else {
       d.subVals.push(currYSubValArray);
     }
     d.subSecs.push(currYSubSecArray);
-    if (hasLevels)
-    {
+    if (hasLevels) {
       d.subLevs.push(currYSubLevArray);
     }
   }

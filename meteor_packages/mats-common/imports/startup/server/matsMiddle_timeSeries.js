@@ -1,6 +1,4 @@
-import {
-  matsMiddleCommon,
-} from "meteor/randyp:mats-common";
+import { matsMiddleCommon } from "meteor/randyp:mats-common";
 import { Meteor } from "meteor/meteor";
 
 class MatsMiddleTimeSeries {
@@ -79,7 +77,6 @@ class MatsMiddleTimeSeries {
     dFuture.wait();
     return rv;
   };
-
 
   processStationQuery_int = async (
     varName,
