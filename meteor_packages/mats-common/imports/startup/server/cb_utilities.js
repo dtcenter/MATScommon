@@ -102,14 +102,6 @@ class CBUtilities {
   queryCB = async (statement) => {
     const couchbase = require("couchbase");
     try {
-      // TODO - remove console log
-      console.log("queryCB():" + statement);
-      {
-        const fs = require("fs");
-        const homedir = require("os").homedir();
-        fs.writeFileSync(homedir + "/scratch/matsMiddle/output/queryCB.sql", statement);
-      }
-
       const conn = await this.getConnection();
       const result = await conn.cluster.query(statement);
       return result.rows;
