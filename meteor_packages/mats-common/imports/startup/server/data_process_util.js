@@ -42,7 +42,7 @@ const processDataXYCurve = function (
   const axisLimitReprocessed = {};
 
   // calculate data statistics (including error bars) for each curve
-  for (var curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex++) {
+  for (var curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
     axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey] =
       axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey] !== undefined;
     const { diffFrom } = curveInfoParams.curves[curveIndex];
@@ -318,7 +318,7 @@ const processDataXYCurve = function (
         ).toPrecision(4)}`;
       }
 
-      di++;
+      di += 1;
     }
 
     // enable error bars if matching and they aren't null.
@@ -345,7 +345,7 @@ const processDataXYCurve = function (
 
     // recalculate axis options after QC and matching
     const filteredIndVars = [];
-    for (let vidx = 0; vidx < values.length; vidx++) {
+    for (let vidx = 0; vidx < values.length; vidx += 1) {
       if (values[vidx] !== null) filteredIndVars.push(indVars[vidx]);
     }
     const minx = Math.min(...filteredIndVars);
@@ -400,7 +400,7 @@ const processDataXYCurve = function (
     }
   }
 
-  for (curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex++) {
+  for (curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
     // remove sub values and times to save space
     data = dataset[curveIndex];
     data.subHit = [];
@@ -477,21 +477,25 @@ const processDataXYCurve = function (
     resultOptions.xaxis.range[0],
     0,
     "top left",
-    matsTypes.ReservedWords.zero
+    matsTypes.ReservedWords.zero,
+    "rgb(0,0,0)",
+    1
   );
   dataset.push(zeroLine);
 
   // add ideal value lines, if any
   let idealValueLine;
   let idealLabel;
-  for (let ivIdx = 0; ivIdx < curveInfoParams.idealValues.length; ivIdx++) {
+  for (let ivIdx = 0; ivIdx < curveInfoParams.idealValues.length; ivIdx += 1) {
     idealLabel = `ideal${ivIdx.toString()}`;
     idealValueLine = matsDataCurveOpsUtils.getHorizontalValueLine(
       resultOptions.xaxis.range[1],
       resultOptions.xaxis.range[0],
       curveInfoParams.idealValues[ivIdx],
       "bottom left",
-      matsTypes.ReservedWords[idealLabel]
+      matsTypes.ReservedWords[idealLabel],
+      "rgb(0,0,0)",
+      1
     );
     dataset.push(idealValueLine);
   }
@@ -547,7 +551,7 @@ const processDataProfile = function (
   const axisLimitReprocessed = {};
 
   // calculate data statistics (including error bars) for each curve
-  for (var curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex++) {
+  for (var curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
     axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey] =
       axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey] !== undefined;
     const { diffFrom } = curveInfoParams.curves[curveIndex];
@@ -776,7 +780,7 @@ const processDataProfile = function (
           ).toPrecision(4)}`;
       }
 
-      di++;
+      di += 1;
     }
 
     // enable error bars if matching and they aren't null.
@@ -808,7 +812,7 @@ const processDataProfile = function (
 
     // recalculate axis options after QC and matching
     const filteredLevels = [];
-    for (let vidx = 0; vidx < values.length; vidx++) {
+    for (let vidx = 0; vidx < values.length; vidx += 1) {
       if (values[vidx] !== null) filteredLevels.push(levels[vidx]);
     }
     const miny = Math.min(...filteredLevels);
@@ -853,7 +857,7 @@ const processDataProfile = function (
     }
   }
 
-  for (curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex++) {
+  for (curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
     // remove sub values and times to save space
     data = dataset[curveIndex];
     data.subHit = [];
@@ -891,21 +895,25 @@ const processDataProfile = function (
     resultOptions.yaxis.range[0],
     0,
     "bottom right",
-    matsTypes.ReservedWords.zero
+    matsTypes.ReservedWords.zero,
+    "rgb(0,0,0)",
+    1
   );
   dataset.push(zeroLine);
 
   // add ideal value lines, if any
   let idealValueLine;
   let idealLabel;
-  for (let ivIdx = 0; ivIdx < curveInfoParams.idealValues.length; ivIdx++) {
+  for (let ivIdx = 0; ivIdx < curveInfoParams.idealValues.length; ivIdx += 1) {
     idealLabel = `ideal${ivIdx.toString()}`;
     idealValueLine = matsDataCurveOpsUtils.getVerticalValueLine(
       resultOptions.yaxis.range[1],
       resultOptions.yaxis.range[0],
       curveInfoParams.idealValues[ivIdx],
       "bottom left",
-      matsTypes.ReservedWords[idealLabel]
+      matsTypes.ReservedWords[idealLabel],
+      "rgb(0,0,0)",
+      1
     );
     dataset.push(idealValueLine);
   }
@@ -944,48 +952,60 @@ const processDataReliability = function (
   const isMetexpress =
     matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
 
-  // sort data statistics
-  const data = dataset[0];
-  const { label } = dataset[0];
-  const sampleClimo = data.sample_climo;
-
-  let di = 0;
-  while (di < data.x.length) {
-    // store statistics for this di datapoint
-    if (isMetexpress) {
-      data.stats[di] = {
-        prob_bin: data.x[di],
-        hit_rate: data.y[di],
-        obs_y: data.oy_all[di],
-        obs_n: data.on_all[di],
-      };
-    } else {
-      data.stats[di] = {
-        prob_bin: data.x[di],
-        obs_freq: data.y[di],
-        hit_count: data.hitCount[di],
-        fcst_count: data.fcstCount[di],
-      };
-    }
-    // the tooltip is stored in data.text
-    data.text[di] = label;
-    if (isMetexpress) {
-      data.text[di] = `${data.text[di]}<br>probability bin: ${data.x[di]}`;
-      data.text[di] = `${data.text[di]}<br>hit rate: ${data.y[di]}`;
-      data.text[di] = `${data.text[di]}<br>oy: ${data.oy_all[di]}`;
-      data.text[di] = `${data.text[di]}<br>on: ${data.on_all[di]}`;
-    } else {
-      data.text[di] = `${data.text[di]}<br>probability bin: ${data.x[di]}`;
-      data.text[di] = `${data.text[di]}<br>observed frequency: ${data.y[di]}`;
-      data.text[di] = `${data.text[di]}<br>hit count: ${data.hitCount[di]}`;
-      data.text[di] = `${data.text[di]}<br>fcst count: ${data.fcstCount[di]}`;
-    }
-
-    di += 1;
+  // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
+  if (curveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
+    dataset = matsDataMatchUtils.getMatchedDataSet(
+      dataset,
+      curveInfoParams,
+      appParams,
+      {}
+    );
   }
-  dataset[0].glob_stats = {
-    sample_climo: sampleClimo,
-  };
+
+  // sort data statistics for each curve
+  for (let curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
+    const data = dataset[curveIndex];
+    const { label } = data;
+    const sampleClimo = data.sample_climo;
+
+    let di = 0;
+    while (di < data.x.length) {
+      // store statistics for this di datapoint
+      if (isMetexpress) {
+        data.stats[di] = {
+          prob_bin: data.x[di],
+          hit_rate: data.y[di],
+          obs_y: data.oy_all[di],
+          obs_n: data.on_all[di],
+        };
+      } else {
+        data.stats[di] = {
+          prob_bin: data.x[di],
+          obs_freq: data.y[di],
+          hit_count: data.hitCount[di],
+          fcst_count: data.fcstCount[di],
+        };
+      }
+      // the tooltip is stored in data.text
+      data.text[di] = label;
+      if (isMetexpress) {
+        data.text[di] = `${data.text[di]}<br>probability bin: ${data.x[di]}`;
+        data.text[di] = `${data.text[di]}<br>hit rate: ${data.y[di]}`;
+        data.text[di] = `${data.text[di]}<br>oy: ${data.oy_all[di]}`;
+        data.text[di] = `${data.text[di]}<br>on: ${data.on_all[di]}`;
+      } else {
+        data.text[di] = `${data.text[di]}<br>probability bin: ${data.x[di]}`;
+        data.text[di] = `${data.text[di]}<br>observed frequency: ${data.y[di]}`;
+        data.text[di] = `${data.text[di]}<br>hit count: ${data.hitCount[di]}`;
+        data.text[di] = `${data.text[di]}<br>fcst count: ${data.fcstCount[di]}`;
+      }
+
+      di += 1;
+    }
+    dataset[curveIndex].glob_stats = {
+      sample_climo: sampleClimo,
+    };
+  }
 
   // generate plot options
   const resultOptions = matsDataPlotOpsUtils.generateReliabilityPlotOptions();
@@ -998,53 +1018,63 @@ const processDataReliability = function (
     resultOptions.yaxis.range[0],
     matsTypes.ReservedWords.perfectReliability,
     "top left",
-    matsTypes.ReservedWords.perfectReliability
+    matsTypes.ReservedWords.perfectReliability,
+    "rgb(0,0,0)",
+    1
   );
   dataset.push(perfectLine);
 
-  let skillmin;
-  let skillmax;
-  if (sampleClimo >= data.ymin) {
-    skillmin = sampleClimo - (sampleClimo - data.xmin) / 2;
-  } else {
-    skillmin = data.xmin - (data.xmin - sampleClimo) / 2;
+  // assign no skill lines for each curve
+  for (let curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
+    const data = dataset[curveIndex];
+    const { label } = data;
+    const color = data.annotateColor;
+    const sampleClimo = data.sample_climo;
+    let skillmin;
+    let skillmax;
+    if (sampleClimo >= data.ymin) {
+      skillmin = sampleClimo - (sampleClimo - data.xmin) / 2;
+    } else {
+      skillmin = data.xmin - (data.xmin - sampleClimo) / 2;
+    }
+    if (sampleClimo >= data.ymax) {
+      skillmax = sampleClimo - (sampleClimo - data.xmax) / 2;
+    } else {
+      skillmax = data.xmax - (data.xmax - sampleClimo) / 2;
+    }
+    // add black no skill line curve
+    const noSkillLine = matsDataCurveOpsUtils.getLinearValueLine(
+      resultOptions.xaxis.range[1],
+      resultOptions.xaxis.range[0],
+      skillmax,
+      skillmin,
+      `${"  "}${
+        curveIndex === 0
+          ? matsTypes.ReservedWords.noSkill
+          : matsTypes.ReservedWords.noSkillNoLabel
+      }`,
+      "bottom right",
+      `${label}-${
+        curveIndex === 0
+          ? matsTypes.ReservedWords.noSkill
+          : matsTypes.ReservedWords.noSkillNoLabel
+      }`,
+      color,
+      1
+    );
+    dataset.push(noSkillLine);
   }
-  if (sampleClimo >= data.ymax) {
-    skillmax = sampleClimo - (sampleClimo - data.xmax) / 2;
-  } else {
-    skillmax = data.xmax - (data.xmax - sampleClimo) / 2;
+
+  for (let curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
+    // remove sub values and times to save space
+    const data = dataset[curveIndex];
+    data.subRelHit = [];
+    data.subRelRawCount = [];
+    data.subRelCount = [];
+    data.subVals = [];
+    data.subSecs = [];
+    data.subLevs = [];
   }
-
-  // add black no skill line curve
-  const noSkillLine = matsDataCurveOpsUtils.getLinearValueLine(
-    resultOptions.xaxis.range[1],
-    resultOptions.xaxis.range[0],
-    skillmax,
-    skillmin,
-    matsTypes.ReservedWords.noSkill,
-    "bottom right",
-    matsTypes.ReservedWords.noSkill
-  );
-  dataset.push(noSkillLine);
-
-  // add sample climo lines
-  const xClimoLine = matsDataCurveOpsUtils.getHorizontalValueLine(
-    resultOptions.xaxis.range[1],
-    resultOptions.xaxis.range[0],
-    sampleClimo,
-    "top left",
-    matsTypes.ReservedWords.zero
-  );
-  dataset.push(xClimoLine);
-
-  const yClimoLine = matsDataCurveOpsUtils.getVerticalValueLine(
-    resultOptions.yaxis.range[1],
-    resultOptions.yaxis.range[0],
-    sampleClimo,
-    "bottom right",
-    matsTypes.ReservedWords.zero
-  );
-  dataset.push(yClimoLine);
 
   const totalProcessingFinish = moment();
   bookkeepingParams.dataRequests["total retrieval and processing time for curve set"] =
@@ -1091,7 +1121,7 @@ const processDataROC = function (
   }
 
   // sort data statistics for each curve
-  for (let curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex++) {
+  for (let curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
     var data = dataset[curveIndex];
     var statType;
     if (curveInfoParams.statType === undefined) {
@@ -1131,7 +1161,7 @@ const processDataROC = function (
       ] = `${data.text[di]}<br>probability of false detection: ${data.x[di]}`;
       data.text[di] = `${data.text[di]}<br>n: ${data.n[di]}`;
 
-      di++;
+      di += 1;
     }
     dataset[curveIndex].glob_stats = {
       auc,
@@ -1149,7 +1179,9 @@ const processDataROC = function (
     data.ymin,
     matsTypes.ReservedWords.noSkill,
     "top left",
-    matsTypes.ReservedWords.noSkill
+    matsTypes.ReservedWords.noSkill,
+    "rgb(0,0,0)",
+    1
   );
   dataset.push(noSkillLine);
 
@@ -1159,7 +1191,9 @@ const processDataROC = function (
     resultOptions.xaxis.range[1],
     resultOptions.yaxis.range[1],
     "bottom right",
-    matsTypes.ReservedWords.perfectForecast
+    matsTypes.ReservedWords.perfectForecast,
+    "rgb(0,0,0)",
+    1
   );
   dataset.push(xPerfectLine);
 
@@ -1168,7 +1202,9 @@ const processDataROC = function (
     resultOptions.yaxis.range[1],
     resultOptions.xaxis.range[1],
     "top left",
-    matsTypes.ReservedWords.perfectForecast
+    matsTypes.ReservedWords.perfectForecast,
+    "rgb(0,0,0)",
+    1
   );
   dataset.push(yPerfectLine);
 
@@ -1217,7 +1253,7 @@ const processDataPerformanceDiagram = function (
   }
 
   // sort data statistics for each curve
-  for (var curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex++) {
+  for (var curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
     var data = dataset[curveIndex];
     var statType;
     if (curveInfoParams.statType === undefined) {
@@ -1254,7 +1290,7 @@ const processDataPerformanceDiagram = function (
       data.text[di] = `${data.text[di]}<br>success ratio: ${data.x[di]}`;
       data.text[di] = `${data.text[di]}<br>n: ${data.n[di]}`;
 
-      di++;
+      di += 1;
     }
     dataset[curveIndex].glob_stats = {};
   }
@@ -1268,9 +1304,11 @@ const processDataPerformanceDiagram = function (
     0,
     1,
     0,
-    " 0.125",
+    " 8.0",
     "bottom right",
-    matsTypes.ReservedWords.constantBias
+    matsTypes.ReservedWords.constantBias,
+    "rgb(0,0,0)",
+    1
   );
   dataset.push(biasLine);
   biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(
@@ -1278,9 +1316,11 @@ const processDataPerformanceDiagram = function (
     0,
     1,
     0,
-    " 0.25",
+    " 4.0",
     "bottom right",
-    matsTypes.ReservedWords.constantBias
+    matsTypes.ReservedWords.constantBias,
+    "rgb(0,0,0)",
+    1
   );
   dataset.push(biasLine);
   biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(
@@ -1288,9 +1328,11 @@ const processDataPerformanceDiagram = function (
     0,
     1,
     0,
-    " 0.5",
+    " 2.0",
     "bottom right",
-    matsTypes.ReservedWords.constantBias
+    matsTypes.ReservedWords.constantBias,
+    "rgb(0,0,0)",
+    1
   );
   dataset.push(biasLine);
   biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(
@@ -1300,7 +1342,9 @@ const processDataPerformanceDiagram = function (
     0,
     "1.0  ",
     "bottom left",
-    matsTypes.ReservedWords.constantBias
+    matsTypes.ReservedWords.constantBias,
+    "rgb(0,0,0)",
+    1
   );
   dataset.push(biasLine);
   biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(
@@ -1308,9 +1352,11 @@ const processDataPerformanceDiagram = function (
     0,
     0.5,
     0,
-    "2.0",
+    "0.5",
     "bottom left",
-    matsTypes.ReservedWords.constantBias
+    matsTypes.ReservedWords.constantBias,
+    "rgb(0,0,0)",
+    1
   );
   dataset.push(biasLine);
   biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(
@@ -1318,9 +1364,11 @@ const processDataPerformanceDiagram = function (
     0,
     0.25,
     0,
-    "4.0",
+    "0.25",
     "top left",
-    matsTypes.ReservedWords.constantBias
+    matsTypes.ReservedWords.constantBias,
+    "rgb(0,0,0)",
+    1
   );
   dataset.push(biasLine);
   biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(
@@ -1328,9 +1376,11 @@ const processDataPerformanceDiagram = function (
     0,
     0.125,
     0,
-    "8.0",
+    "0.125",
     "top left",
-    matsTypes.ReservedWords.constantBias
+    matsTypes.ReservedWords.constantBias,
+    "rgb(0,0,0)",
+    1
   );
   dataset.push(biasLine);
 
@@ -1339,14 +1389,14 @@ const processDataPerformanceDiagram = function (
   let textVals;
   let cval;
   let csiLine;
-  for (let csiidx = 1; csiidx < 10; csiidx++) {
+  for (let csiidx = 1; csiidx < 10; csiidx += 1) {
     cval = csiidx / 10;
     xvals = _.range(cval, 1.01, 0.01);
     yvals = [];
     textVals = [];
     var xval;
     var yval;
-    for (let xidx = 0; xidx < xvals.length; xidx++) {
+    for (let xidx = 0; xidx < xvals.length; xidx += 1) {
       xval = xvals[xidx];
       yval = (xval * cval) / (xval + xval * cval - cval);
       yvals.push(yval);
@@ -1364,7 +1414,7 @@ const processDataPerformanceDiagram = function (
     dataset.push(csiLine);
   }
 
-  for (curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex++) {
+  for (curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
     // remove sub values and times to save space
     data = dataset[curveIndex];
     data.subHit = [];
@@ -1534,7 +1584,7 @@ const processDataEnsembleHistogram = function (
   const axisLimitReprocessed = {};
 
   // calculate data statistics (including error bars) for each curve
-  for (let curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex++) {
+  for (let curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
     axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey] =
       axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey] !== undefined;
     const { diffFrom } = curveInfoParams.curves[curveIndex];
@@ -1605,7 +1655,7 @@ const processDataEnsembleHistogram = function (
           data.y[di] === null ? null : Math.round(data.y[di])
         }`;
 
-      di++;
+      di += 1;
     }
 
     const valueTotal = values.reduce((a, b) => Math.abs(a) + Math.abs(b), 0);
@@ -1613,12 +1663,16 @@ const processDataEnsembleHistogram = function (
     // calculate the relative frequency for all the bins.
     // for diff curves, there's no good way to produce a diff of only matching data, so just diff the two parent curves.
     let diffIndexVal = 0;
-    for (let d_idx = 0; d_idx < data.y.length; d_idx++) {
+    for (let d_idx = 0; d_idx < data.y.length; d_idx += 1) {
       if (data.y[d_idx] !== null) {
         if (diffFrom === null || diffFrom === undefined) {
           data.bin_stats[d_idx].bin_rf = data.bin_stats[d_idx].bin_rf / valueTotal;
         } else {
-          for (let diffIndex = diffIndexVal; diffIndex < data.x.length; diffIndex++) {
+          for (
+            let diffIndex = diffIndexVal;
+            diffIndex < data.x.length;
+            diffIndex += 1
+          ) {
             if (dataset[diffFrom[0]].x[d_idx] === dataset[diffFrom[1]].x[diffIndex]) {
               data.bin_stats[d_idx].bin_rf =
                 dataset[diffFrom[0]].bin_stats[d_idx].bin_rf -
@@ -1699,7 +1753,9 @@ const processDataEnsembleHistogram = function (
     resultOptions.xaxis.range[0],
     0,
     "top left",
-    matsTypes.ReservedWords.zero
+    matsTypes.ReservedWords.zero,
+    "rgb(0,0,0)",
+    1
   );
   dataset.push(zeroLine);
 
@@ -1768,7 +1824,7 @@ const processDataHistogram = function (
   const plotBins = {};
   plotBins.binMeans = [];
   plotBins.binLabels = [];
-  for (let b_idx = 0; b_idx < binStats.binMeans.length; b_idx++) {
+  for (let b_idx = 0; b_idx < binStats.binMeans.length; b_idx += 1) {
     plotBins.binMeans.push(binStats.binMeans[b_idx]);
     plotBins.binLabels.push(binStats.binLabels[b_idx]);
   }
@@ -1778,7 +1834,7 @@ const processDataHistogram = function (
   let curve;
   let diffFrom;
   let label;
-  for (var curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex++) {
+  for (var curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
     curve = curveInfoParams.curves[curveIndex];
     diffFrom = curve.diffFrom;
     label = curve.label;
@@ -1890,7 +1946,7 @@ const processDataHistogram = function (
       appParams
     ); // generate plot with data, curve annotation, axis labels, etc.
     dataset.push(cOptions);
-    curvesLengthSoFar++;
+    curvesLengthSoFar += 1;
   } // end for curves
 
   // if matching, pare down dataset to only matching data. Only do this if we didn't already do it while calculating diffs.
@@ -1908,7 +1964,7 @@ const processDataHistogram = function (
   }
 
   // calculate data statistics (including error bars) for each curve
-  for (curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex++) {
+  for (curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
     const statisticSelect = curveInfoParams.curves[curveIndex].statistic;
     diffFrom = curveInfoParams.curves[curveIndex].diffFrom;
     var data = dataset[curveIndex];
@@ -1951,7 +2007,7 @@ const processDataHistogram = function (
             : data.bin_stats[di].bin_sd.toPrecision(4)
         }`;
 
-      di++;
+      di += 1;
     }
   } // end curves
 
@@ -1961,7 +2017,7 @@ const processDataHistogram = function (
   curveInfoParams.axisMap[curveInfoParams.curves[0].axisKey].ymin = ymin;
   curveInfoParams.axisMap[curveInfoParams.curves[0].axisKey].ymax = ymax;
 
-  for (curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex++) {
+  for (curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
     // remove sub values and times to save space
     data = dataset[curveIndex];
     data.subHit = [];
@@ -2054,9 +2110,9 @@ const processDataContour = function (
   let j;
   let currText;
   let currYTextArray;
-  for (j = 0; j < data.y.length; j++) {
+  for (j = 0; j < data.y.length; j += 1) {
     currYTextArray = [];
-    for (i = 0; i < data.x.length; i++) {
+    for (i = 0; i < data.x.length; i += 1) {
       currText = `${label}<br>${data.xAxisKey}: ${data.x[i]}<br>${data.yAxisKey}: ${
         data.y[j]
       }<br>${statisticSelect}: ${
@@ -2138,7 +2194,7 @@ const processDataSimpleScatter = function (
   }
 
   // sort data statistics for each curve
-  for (var curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex++) {
+  for (var curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
     var data = dataset[curveIndex];
     var statType;
     if (curveInfoParams.statType === undefined) {
@@ -2186,12 +2242,12 @@ const processDataSimpleScatter = function (
       ] = `${data.text[di]}<br>${variableYSelect} ${statisticYSelect}: ${data.y[di]}`;
       data.text[di] = `${data.text[di]}<br>n: ${data.n[di]}`;
 
-      di++;
+      di += 1;
     }
     dataset[curveIndex].glob_stats = {};
   }
 
-  for (curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex++) {
+  for (curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
     // remove sub values and times to save space
     data = dataset[curveIndex];
     data.subSquareDiffSumX = [];

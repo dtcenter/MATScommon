@@ -1582,7 +1582,10 @@ const _getFlattenedResultData = function (rk, p, np) {
             // for each curve
             // if the curve label is a reserved word do not process the curve (its a zero or max curve)
             var reservedWords = Object.values(matsTypes.ReservedWords);
-            if (reservedWords.indexOf(data[ci].label) >= 0) {
+            if (
+              reservedWords.indexOf(data[ci].label) >= 0 ||
+              data[ci].label.includes(matsTypes.ReservedWords.noSkill)
+            ) {
               continue; // don't process the zero or max curves
             }
             var stats = {};

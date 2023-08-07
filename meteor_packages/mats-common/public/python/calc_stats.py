@@ -237,7 +237,7 @@ def calculate_stat(statistic, stat_line_type, agg_method, outlier_qc_param, nump
         sub_stats = np.nan
         stat = 'null'
     except ValueError as e:
-        error = "Error calculating statistic: " + str(e)
+        # error = "Error calculating statistic: " + str(e) --- removed, it's okay to get a nan back, we don't need the whole plot to fail
         sub_stats = np.nan
         stat = 'null'
     return sub_stats, sub_secs, sub_levs, numpy_data, stat, error

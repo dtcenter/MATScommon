@@ -35,6 +35,9 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
   let subModelSumY = [];
   let subObsSumY = [];
   let subAbsSumY = [];
+  let subRelCount = [];
+  let subRelRawCount = [];
+  let subRelHit = [];
   let newSubSecs = [];
   let newSubLevs = [];
   let newSubHit = [];
@@ -62,6 +65,9 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
   let newSubObsSumY = [];
   let newSubAbsSumY = [];
   let newSubValuesY = [];
+  let newSubRelCount = [];
+  let newSubRelRawCount = [];
+  let newSubRelHit = [];
   let newCurveData = {};
   const independentVarGroups = [];
   const independentVarHasPoint = [];
@@ -88,6 +94,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
     curveInfoParams.statType === "scalar" &&
     plotType !== matsTypes.PlotTypes.histogram;
   const isSimpleScatter = plotType === matsTypes.PlotTypes.simpleScatter;
+  const isReliability = plotType === matsTypes.PlotTypes.reliability;
   let curveXStats;
   let curveXVars;
   let curveYStats;
@@ -149,7 +156,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
   }
 
   // find the matching independentVars shared across all curves
-  for (curveIndex = 0; curveIndex < curvesLength; curveIndex++) {
+  for (curveIndex = 0; curveIndex < curvesLength; curveIndex += 1) {
     independentVarGroups[curveIndex] = []; // array for the independentVars for each curve that are not null
     independentVarHasPoint[curveIndex] = []; // array for the *all* of the independentVars for each curve
     subSecs[curveIndex] = {}; // map of the individual record times (subSecs) going into each independentVar for each curve
@@ -158,7 +165,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
     }
     data = dataset[curveIndex];
     // loop over every independentVar value in this curve
-    for (di = 0; di < data[independentVarName].length; di++) {
+    for (di = 0; di < data[independentVarName].length; di += 1) {
       currIndependentVar = data[independentVarName][di];
       if (data[statVarName][di] !== null) {
         // store raw secs for this independentVar value, since it's not a null point
@@ -180,11 +187,11 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
   if (removeNonMatchingIndVars) {
     if (hasLevels) {
       // loop over each common non-null independentVar value
-      for (fi = 0; fi < matchingIndependentVars.length; fi++) {
+      for (fi = 0; fi < matchingIndependentVars.length; fi += 1) {
         currIndependentVar = matchingIndependentVars[fi];
         subIntersections[currIndependentVar] = [];
         let currSubIntersections = [];
-        for (si = 0; si < subSecs[0][currIndependentVar].length; si++) {
+        for (si = 0; si < subSecs[0][currIndependentVar].length; si += 1) {
           // fill current intersection array with sec-lev pairs from the first curve
           currSubIntersections.push([
             subSecs[0][currIndependentVar][si],
@@ -192,9 +199,9 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
           ]);
         }
         // loop over every curve after the first
-        for (curveIndex = 1; curveIndex < curvesLength; curveIndex++) {
+        for (curveIndex = 1; curveIndex < curvesLength; curveIndex += 1) {
           tempSubIntersections = [];
-          for (si = 0; si < subSecs[curveIndex][currIndependentVar].length; si++) {
+          for (si = 0; si < subSecs[curveIndex][currIndependentVar].length; si += 1) {
             // create an individual sec-lev pair for each index in the subSecs and subLevs arrays
             tempPair = [
               subSecs[curveIndex][currIndependentVar][si],
@@ -214,12 +221,12 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
       }
     } else {
       // loop over each common non-null independentVar value
-      for (fi = 0; fi < matchingIndependentVars.length; fi++) {
+      for (fi = 0; fi < matchingIndependentVars.length; fi += 1) {
         currIndependentVar = matchingIndependentVars[fi];
         // fill current subSecs intersection array with subSecs from the first curve
         let currSubSecIntersection = subSecs[0][currIndependentVar];
         // loop over every curve after the first
-        for (curveIndex = 1; curveIndex < curvesLength; curveIndex++) {
+        for (curveIndex = 1; curveIndex < curvesLength; curveIndex += 1) {
           // keep taking the intersection of the current subSecs intersection array with each curve's subSecs array for this independentVar value
           currSubSecIntersection = _.intersection(
             currSubSecIntersection,
@@ -232,7 +239,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
     }
   } else {
     // pull all subSecs and subLevs out of their bins, and back into one main array
-    for (curveIndex = 0; curveIndex < curvesLength; curveIndex++) {
+    for (curveIndex = 0; curveIndex < curvesLength; curveIndex += 1) {
       data = dataset[curveIndex];
       subSecsRaw[curveIndex] = [];
       subSecs[curveIndex] = [];
@@ -240,7 +247,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
         subLevsRaw[curveIndex] = [];
         subLevs[curveIndex] = [];
       }
-      for (di = 0; di < data.x.length; di++) {
+      for (di = 0; di < data.x.length; di += 1) {
         subSecsRaw[curveIndex].push(data.subSecs[di]);
         if (hasLevels) {
           subLevsRaw[curveIndex].push(data.subLevs[di]);
@@ -254,14 +261,14 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
 
     if (hasLevels) {
       // determine which seconds and levels are present in all curves
-      for (si = 0; si < subSecs[0].length; si++) {
+      for (si = 0; si < subSecs[0].length; si += 1) {
         // fill current intersection array with sec-lev pairs from the first curve
         subIntersections.push([subSecs[0][si], subLevs[0][si]]);
       }
       // loop over every curve after the first
-      for (curveIndex = 1; curveIndex < curvesLength; curveIndex++) {
+      for (curveIndex = 1; curveIndex < curvesLength; curveIndex += 1) {
         tempSubIntersections = [];
-        for (si = 0; si < subSecs[curveIndex].length; si++) {
+        for (si = 0; si < subSecs[curveIndex].length; si += 1) {
           // create an individual sec-lev pair for each index in the subSecs and subLevs arrays
           tempPair = [subSecs[curveIndex][si], subLevs[curveIndex][si]];
           // see if the individual sec-lev pair matches a pair from the current intersection array
@@ -278,7 +285,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
       // fill current subSecs intersection array with subSecs from the first curve
       subSecIntersection = subSecs[0];
       // loop over every curve after the first
-      for (curveIndex = 1; curveIndex < curvesLength; curveIndex++) {
+      for (curveIndex = 1; curveIndex < curvesLength; curveIndex += 1) {
         // keep taking the intersection of the current subSecs intersection array with each curve's subSecs array
         subSecIntersection = _.intersection(subSecIntersection, subSecs[curveIndex]);
       }
@@ -286,13 +293,13 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
   }
 
   // remove non-matching independentVars and subSecs
-  for (curveIndex = 0; curveIndex < curvesLength; curveIndex++) {
+  for (curveIndex = 0; curveIndex < curvesLength; curveIndex += 1) {
     // loop over every curve
     data = dataset[curveIndex];
     // need to loop backwards through the data array so that we can splice non-matching indices
     // while still having the remaining indices in the correct order
     let dataLength = data[independentVarName].length;
-    for (di = dataLength - 1; di >= 0; di--) {
+    for (di = dataLength - 1; di >= 0; di -= 1) {
       if (removeNonMatchingIndVars) {
         if (matchingIndependentVars.indexOf(data[independentVarName][di]) === -1) {
           // if this is not a common non-null independentVar value, we'll have to remove some data
@@ -345,6 +352,10 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
           subObsSum = data.subObsSum[di];
           subAbsSum = data.subAbsSum[di];
         }
+      } else if (isReliability) {
+        subRelHit = data.subRelHit[di];
+        subRelRawCount = data.subRelRawCount[di];
+        subRelCount = data.subRelCount[di];
       }
       if (isSimpleScatter) {
         subValuesX = data.subValsX[di];
@@ -386,12 +397,15 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
         newSubObsSumY = [];
         newSubAbsSumY = [];
         newSubValuesY = [];
+        newSubRelCount = [];
+        newSubRelRawCount = [];
+        newSubRelHit = [];
         newSubSecs = [];
         if (hasLevels) {
           newSubLevs = [];
         }
         // loop over all subSecs for this independentVar
-        for (si = 0; si < subSecs.length; si++) {
+        for (si = 0; si < subSecs.length; si += 1) {
           if (hasLevels) {
             // create sec-lev pair for each sub value
             tempPair = [subSecs[si], subLevs[si]];
@@ -438,6 +452,10 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                 var newObsSum = subObsSum[si];
                 var newAbsSum = subAbsSum[si];
               }
+            } else if (isReliability) {
+              var newRelCount = subRelCount[si];
+              var newRelRawCount = subRelRawCount[si];
+              var newRelHit = subRelHit[si];
             }
             if (isSimpleScatter) {
               var newValX = subValuesX[si];
@@ -494,6 +512,17 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
               if (hasLevels) {
                 newSubLevs.push(newLev);
               }
+            } else if (isReliability) {
+              if (newRelHit !== undefined) {
+                newSubRelCount.push(newRelCount);
+                newSubRelRawCount.push(newRelRawCount);
+                newSubRelHit.push(newRelHit);
+                newSubValues.push(newVal);
+                newSubSecs.push(newSec);
+                if (hasLevels) {
+                  newSubLevs.push(newLev);
+                }
+              }
             } else if (newVal !== undefined) {
               newSubValues.push(newVal);
               newSubSecs.push(newSec);
@@ -535,6 +564,10 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
               data.subObsSum[di] = newSubObsSum;
               data.subAbsSum[di] = newSubAbsSum;
             }
+          } else if (isReliability) {
+            data.subRelCount[di] = newSubRelCount;
+            data.subRelRawCount[di] = newSubRelRawCount;
+            data.subRelHit[di] = newSubRelHit;
           }
           if (isSimpleScatter) {
             data.subValsX[di] = newSubValuesX;
@@ -559,7 +592,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
     ) {
       // need to recalculate the primary statistic with the newly matched hits, false alarms, etc.
       dataLength = data[independentVarName].length;
-      for (di = 0; di < dataLength; di++) {
+      for (di = 0; di < dataLength; di += 1) {
         if (data.subHit[di] instanceof Array) {
           const hit = matsDataUtils.sum(data.subHit[di]);
           const fa = matsDataUtils.sum(data.subFa[di]);
@@ -673,7 +706,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
     ) {
       // need to recalculate the primary statistic with the newly matched partial sums.
       dataLength = data[independentVarName].length;
-      for (di = 0; di < dataLength; di++) {
+      for (di = 0; di < dataLength; di += 1) {
         if (plotType === matsTypes.PlotTypes.simpleScatter) {
           if (data.subSquareDiffSumX[di] instanceof Array) {
             const squareDiffSumX = matsDataUtils.sum(data.subSquareDiffSumX[di]);
@@ -725,6 +758,15 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
           );
         }
       }
+    } else if (isReliability) {
+      for (di = 0; di < dataLength; di += 1) {
+        data.y[di] =
+          matsDataUtils.sum(data.subRelHit[di]) /
+          matsDataUtils.sum(data.subRelCount[di]);
+        data.hitCount[di] = matsDataUtils.sum(data.subRelHit[di]);
+        data.fcstCount[di] = matsDataUtils.sum(data.subRelCount[di]);
+        data.fcstRawCount[di] = matsDataUtils.sum(data.subRelRawCount[di]);
+      }
     } else if (plotType === matsTypes.PlotTypes.histogram) {
       const d = {
         // relevant fields to recalculate
@@ -768,10 +810,15 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
         newCurveData = d;
       }
       const newCurveDataKeys = Object.keys(newCurveData);
-      for (let didx = 0; didx < newCurveDataKeys.length; didx++) {
+      for (let didx = 0; didx < newCurveDataKeys.length; didx += 1) {
         dataset[curveIndex][newCurveDataKeys[didx]] =
           newCurveData[newCurveDataKeys[didx]];
       }
+    }
+
+    if (isReliability) {
+      data.sample_climo =
+        matsDataUtils.sum(data.hitCount) / matsDataUtils.sum(data.fcstRawCount);
     }
 
     // save matched data and recalculate the max and min for this curve
