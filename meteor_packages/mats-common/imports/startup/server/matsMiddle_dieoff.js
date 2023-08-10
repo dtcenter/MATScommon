@@ -1,7 +1,6 @@
 import { matsMiddleCommon } from "meteor/randyp:mats-common";
 
 import { Meteor } from "meteor/meteor";
-import { memoryUsage } from "node:process";
 
 class MatsMiddleDieoff {
   logToFile = false;
@@ -348,7 +347,6 @@ class MatsMiddleDieoff {
 
           if (this.logMemUsage === true) {
             try {
-              console.log(memoryUsage());
               const obsSize =
                 new TextEncoder().encode(JSON.stringify(this.fveObs)).length /
                 (1024 * 1024);
