@@ -113,18 +113,19 @@ class MatsMiddleValidTime
         );
 
         // create distinct hour of day array
-        hrOfDay_prev = null;
-        for (let iofve = 0; iofve < this.fcstValidEpoch_Array.length; iofve += 100)
+        for (let iofve = 0; iofve < this.fcstValidEpoch_Array.length; ++iofve)
         {
-            if (!hrOfDay_prev || hrOfDay_prev !== this.fcstValidEpoch_Array[iofve])
+            let ofve = this.fcstValidEpoch_Array[iofve];
+            let hod = ofve%(24*3600)/3600;
+            if (!this.hrOfDay_Array.includes(hod))
             {
-                this.hrOfDay_Array.push(this.fcstValidEpoch_Array[iofve]);
-                hrOfDay_prev = this.fcstValidEpoch_Array[iofve];
+                this.hrOfDay_Array.push(hod);
             }
         }
+        this.hrOfDay_Array.sort((a, b) => a - b);
         if (this.logToFile === true)
         {
-            console.log("fcstValidEpoch_Array:\n" + JSON.stringify(this.fcstValidEpoch_Array));
+            console.log("hrOfDay_Array:\n" + JSON.stringify(this.hrOfDay_Array));
         }
 
         let endTime = new Date().valueOf();
@@ -213,10 +214,11 @@ class MatsMiddleValidTime
                 {
 
                     const fveDataSingleEpoch = qr.rows[jmfve];
-                    let hod = fveDataSingleEpoch.fcst % (24 * 3600) / 3600;
-                    if (!this.fveObs.hod)
+                    let hod = fveDataSingleEpoch.fve % (24 * 3600) / 3600;
+                    let hodKey = hod.toString();
+                    if (!this.fveObs[hodKey])
                     {
-                        this.fveObs[hod] = {};
+                        this.fveObs[hodKey] = {};
                     }
                     const dataSingleEpoch = {};
                     const stationsSingleEpoch = {};
@@ -227,7 +229,7 @@ class MatsMiddleValidTime
                     }
                     dataSingleEpoch.fcst = fveDataSingleEpoch.fcst;
                     dataSingleEpoch.stations = stationsSingleEpoch;
-                    this.fveObs[hod][fveDataSingleEpoch.fve] = dataSingleEpoch;
+                    this.fveObs[hodKey][fveDataSingleEpoch.fve] = dataSingleEpoch;
                 }
                 if (iofve % 100 == 0)
                 {
@@ -316,10 +318,11 @@ class MatsMiddleValidTime
                 for (let jmfve = 0; jmfve < qr.rows.length; jmfve++)
                 {
                     const fveDataSingleEpoch = qr.rows[jmfve];
-                    let hod = fveDataSingleEpoch.fcst % (24 * 3600) / 3600;
-                    if (!this.fveModels.hod)
+                    let hod = fveDataSingleEpoch.fve % (24 * 3600) / 3600;
+                    let hodKey = hod.toString();
+                    if (!this.fveModels[hodKey])
                     {
-                        this.fveModels[hod] = {};
+                        this.fveModels[hodKey] = {};
                     }
                     const dataSingleEpoch = {};
                     const stationsSingleEpoch = {};
@@ -329,7 +332,7 @@ class MatsMiddleValidTime
                         stationsSingleEpoch[this.stationNames[i]] = varValStation;
                     }
                     dataSingleEpoch.stations = stationsSingleEpoch;
-                    this.fveModels[hod][fveDataSingleEpoch.fve] =
+                    this.fveModels[hodKey][fveDataSingleEpoch.fve] =
                         dataSingleEpoch;
                 }
 
@@ -377,72 +380,37 @@ class MatsMiddleValidTime
 
         const startTime = new Date().valueOf();
 
-        const fcst_lead_array = Object.keys(this.fveModels);
-        fcst_lead_array.sort(function (a, b)
+        for (let ihod = 0; ihod < this.hrOfDay_Array.length; ihod++)
         {
-            return a - b;
-        });
-        for (let flai = 0; flai < fcst_lead_array.length; flai++)
-        {
-            const stats_fcst_lead = {};
+            const  stats_hod= {};
 
-            const fcst_lead = Number(fcst_lead_array[flai]);
-            stats_fcst_lead.fcst_lead = fcst_lead;
-            stats_fcst_lead.hit = 0;
-            stats_fcst_lead.miss = 0;
-            stats_fcst_lead.fa = 0;
-            stats_fcst_lead.cn = 0;
-            stats_fcst_lead.N0 = 0;
-            stats_fcst_lead.N_times = new Set(fcst_lead_array).size;
-            stats_fcst_lead.sub_data = [];
+            const hod = this.hrOfDay_Array[ihod];
+            let hodKey = hod.toString();
+            stats_hod.hr_of_day = hod;
+            stats_hod.hit = 0;
+            stats_hod.miss = 0;
+            stats_hod.fa = 0;
+            stats_hod.cn = 0;
+            stats_hod.N0 = 0;
+            stats_hod.N_times = new Set(this.hrOfDay_Array).size;
+            stats_hod.sub_data = [];
 
-            // get all the fve for this fcst_lead
-            const fcst_lead_single = this.fveModels[fcst_lead_array[flai]];
-            const fve_array = Object.keys(fcst_lead_single);
+            // get all the fve for this hod
+            const hod_single = this.fveModels[hodKey];
+            const fve_array = Object.keys(hod_single);
             fve_array.sort();
 
-            stats_fcst_lead.min_secs = fve_array[0];
-            stats_fcst_lead.max_secs = fve_array[fve_array.length - 1];
+            stats_hod.min_secs = fve_array[0];
+            stats_hod.max_secs = fve_array[fve_array.length - 1];
             for (let imfve = 0; imfve < fve_array.length; imfve++)
             {
                 const fve = fve_array[imfve];
-                const obsSingleFve = this.fveObs[fve];
-                const modelSingleFve = fcst_lead_single[fve];
+                const obsSingleFve = this.fveObs[hodKey][fve];
+                const modelSingleFve = hod_single[fve];
 
                 if (!obsSingleFve || !modelSingleFve)
                 {
                     continue;
-                }
-
-                if (this.validTimes && this.validTimes.length > 0)
-                {
-                    // m0.fcstValidEpoch%(24*3600)/3600 IN[vxVALID_TIMES]
-                    if (this.validTimes.includes((fve % (24 * 3600)) / 3600) == false)
-                    {
-                        continue;
-                    }
-                }
-
-                if (this.utcCycleStart && this.utcCycleStart.length > 0)
-                {
-                    // (obs.fcstValidEpoch - obs.fcstLen*3600)%(24*3600)/3600 IN[vxUTC_CYCLE_START])
-                    if (
-                        this.utcCycleStart.includes(
-                            ((fve - fcst_lead * 3600) % (24 * 3600)) / 3600
-                        ) == false
-                    )
-                    {
-                        continue;
-                    }
-                }
-
-                if (this.singleCycle !== null)
-                {
-                    // obs.fcstValidEpoch-obs.fcstLen*3600 = vxFROM_SECS
-                    if (fve - fcst_lead * 3600 == this.singleCycle)
-                    {
-                        continue;
-                    }
                 }
 
                 for (let i = 0; i < this.stationNames.length; i++)
@@ -453,11 +421,11 @@ class MatsMiddleValidTime
 
                     if (varVal_o && varVal_m)
                     {
-                        stats_fcst_lead.N0 += 1;
+                        stats_hod.N0 += 1;
                         let sub = `${fve};`;
                         if (varVal_o < threshold && varVal_m < threshold)
                         {
-                            stats_fcst_lead.hit += 1;
+                            stats_hod.hit += 1;
                             sub += "1;";
                         } else
                         {
@@ -466,7 +434,7 @@ class MatsMiddleValidTime
 
                         if (varVal_o >= threshold && varVal_m < threshold)
                         {
-                            stats_fcst_lead.fa += 1;
+                            stats_hod.fa += 1;
                             sub += "1;";
                         } else
                         {
@@ -475,7 +443,7 @@ class MatsMiddleValidTime
 
                         if (varVal_o < threshold && varVal_m >= threshold)
                         {
-                            stats_fcst_lead.miss += 1;
+                            stats_hod.miss += 1;
                             sub += "1;";
                         } else
                         {
@@ -484,19 +452,19 @@ class MatsMiddleValidTime
 
                         if (varVal_o >= threshold && varVal_m >= threshold)
                         {
-                            stats_fcst_lead.cn += 1;
+                            stats_hod.cn += 1;
                             sub += "1";
                         } else
                         {
                             sub += "0";
                         }
-                        stats_fcst_lead.sub_data.push(sub);
+                        stats_hod.sub_data.push(sub);
                     }
                 }
             }
             try
             {
-                const stats_fcst_lead_summed = this.mmCommon.sumUpCtc(stats_fcst_lead);
+                const stats_fcst_lead_summed = this.mmCommon.sumUpCtc(stats_hod);
                 this.ctc.push(stats_fcst_lead_summed);
             } catch (ex)
             {
