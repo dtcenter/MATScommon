@@ -364,7 +364,7 @@ const queryDBTimeSeries = function (
       }
     } else {
       // if this app isn't couchbase, use mysql
-      pool.query(statement, function (err, rows) {
+      pool.query(statementOrMwRows, function (err, rows) {
         // query callback - build the curve data from the results - or set an error
         if (err !== undefined && err !== null) {
           error = err.message;
@@ -491,7 +491,7 @@ const queryDBSpecialtyCurve = function (
       }
     } else {
       // if this app isn't couchbase, use mysql
-      pool.query(statement, function (err, rows) {
+      pool.query(statementOrMwRows, function (err, rows) {
         // query callback - build the curve data from the results - or set an error
         if (err !== undefined && err !== null) {
           error = err.message;
