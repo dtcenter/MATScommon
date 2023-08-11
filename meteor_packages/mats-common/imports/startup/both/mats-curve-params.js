@@ -72,6 +72,7 @@ export const curveParamsByApp = {
     "variable",
     "data-source",
     "region",
+    "plot-type",
     "statistic",
     "threshold",
     "members",

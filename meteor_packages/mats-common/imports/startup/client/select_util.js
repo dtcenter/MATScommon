@@ -229,11 +229,7 @@ const checkHideOther = function (param, firstRender) {
             `${controlledSelectors[i]}-item`
           );
           if (selectorControlElem && selectorControlElem.style) {
-            if (
-              param.controlButtonVisibility !== "none" &&
-              !doNotShow &&
-              (elem.offsetParent !== null || param.name === "plot-type")
-            ) {
+            if (param.controlButtonVisibility !== "none" && !doNotShow) {
               selectorControlElem.style.display = "block";
               selectorControlElem.purposelyHidden = false;
             }
