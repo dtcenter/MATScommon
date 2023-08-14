@@ -63,12 +63,19 @@ const matchPlotTypeSelector = function (plotType) {
     matsCollections["plot-type"] !== undefined &&
     matsCollections["plot-type"].findOne({ name: "plot-type" }) !== undefined
   ) {
+    const isMetexpress =
+      matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
     const currentDatabase = matsParamUtils.getValueForParamName("database");
     const currentDataSource = matsParamUtils.getValueForParamName("data-source");
     if (
-      matsCollections["plot-type"]
-        .findOne({ name: "plot-type" })
-        .optionsMap[currentDatabase][currentDataSource].indexOf(plotType) !== -1
+      (isMetexpress &&
+        matsCollections["plot-type"]
+          .findOne({ name: "plot-type" })
+          .optionsMap[currentDatabase][currentDataSource].indexOf(plotType) !== -1) ||
+      (!isMetexpress &&
+        matsCollections["plot-type"]
+          .findOne({ name: "plot-type" })
+          .options.indexOf(plotType) !== -1)
     ) {
       matsParamUtils.setInputValueForParamAndTriggerChange("plot-type", plotType);
     } else {
