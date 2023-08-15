@@ -1,7 +1,7 @@
 import { matsMiddleCommon } from "meteor/randyp:mats-common";
 import { Meteor } from "meteor/meteor";
 
-class MatsMiddleTimeSeries {
+class MatsMiddleDailyModelCycle {
   logToFile = false;
 
   logMemUsage = false;
@@ -24,8 +24,6 @@ class MatsMiddleTimeSeries {
 
   model = null;
 
-  fcstLen = null;
-
   threshold = null;
 
   average = null;
@@ -34,7 +32,7 @@ class MatsMiddleTimeSeries {
 
   toSecs = null;
 
-  validTimes = [];
+  utcCycleStart = [];
 
   writeOutput = false;
 
@@ -49,12 +47,10 @@ class MatsMiddleTimeSeries {
     varName,
     stationNames,
     model,
-    fcstLen,
     threshold,
-    average,
     fromSecs,
     toSecs,
-    validTimes
+    utcCycleStart
   ) => {
     const Future = require("fibers/future");
 
@@ -65,12 +61,10 @@ class MatsMiddleTimeSeries {
         varName,
         stationNames,
         model,
-        fcstLen,
         threshold,
-        average,
         fromSecs,
         toSecs,
-        validTimes
+        utcCycleStart
       );
       dFuture.return();
     })();
@@ -82,40 +76,33 @@ class MatsMiddleTimeSeries {
     varName,
     stationNames,
     model,
-    fcstLen,
     threshold,
-    average,
     fromSecs,
     toSecs,
-    validTimes
+    utcCycleStart
   ) => {
     const fs = require("fs");
 
     console.log(
       `processStationQuery(${varName},${
         stationNames.length
-      },${model},${fcstLen},${threshold},${average},${fromSecs},${toSecs},${JSON.stringify(
-        validTimes
-      )})`
+      },${model},${threshold},${fromSecs},${toSecs},${JSON.stringify(utcCycleStart)})`
     );
 
     this.varName = varName;
     this.stationNames = stationNames;
     this.model = model;
-    this.fcstLen = fcstLen;
     this.threshold = threshold;
-    this.average = average;
     this.fromSecs = fromSecs;
     this.toSecs = toSecs;
 
-    this.average = this.average.replace(/m0./g, "");
-    if (validTimes && validTimes.length > 0) {
-      for (let i = 0; i < validTimes.length; i++) {
-        if (validTimes[i] != null && Number(validTimes[i]) > 0) {
-          this.validTimes.push(Number(validTimes[i]));
+    if (utcCycleStart && utcCycleStart.length > 0) {
+      for (let i = 0; i < utcCycleStart.length; i++) {
+        if (utcCycleStart[i] != null && Number(utcCycleStart[i]) > 0) {
+          this.utcCycleStart.push(Number(utcCycleStart[i]));
         }
       }
-      console.log(`validTimes:${JSON.stringify(this.validTimes)}`);
+      console.log(`utcCycleStart:${JSON.stringify(this.utcCycleStart)}`);
     }
 
     this.conn = await cbPool.getConnection();
@@ -253,17 +240,17 @@ class MatsMiddleTimeSeries {
       tmpl_get_N_stations_mfve_model,
       "{{vxFCST_LEN_ARRAY}}"
     );
+    tmpl_get_N_stations_mfve_model = this.cbPool.trfmSQLRemoveClause(
+      tmpl_get_N_stations_mfve_model,
+      "{{vxAVERAGE}}"
+    );
     tmpl_get_N_stations_mfve_model = tmpl_get_N_stations_mfve_model.replace(
       /{{vxMODEL}}/g,
       `"${this.model}"`
     );
     tmpl_get_N_stations_mfve_model = tmpl_get_N_stations_mfve_model.replace(
-      /{{vxFCST_LEN}}/g,
-      this.fcstLen
-    );
-    tmpl_get_N_stations_mfve_model = tmpl_get_N_stations_mfve_model.replace(
-      /{{vxAVERAGE}}/g,
-      this.average
+      /fcstLen = {{vxFCST_LEN}}/g,
+      "fcstLen < 24"
     );
 
     let stationNames_models = "";
@@ -339,14 +326,19 @@ class MatsMiddleTimeSeries {
         continue;
       }
 
-      if (this.validTimes && this.validTimes.length > 0) {
-        if (this.validTimes.includes((fve % (24 * 3600)) / 3600) == false) {
+      if (this.utcCycleStart && this.utcCycleStart.length > 0) {
+        // (obs.fcstValidEpoch - obs.fcstLen*3600)%(24*3600)/3600 IN[vxUTC_CYCLE_START])
+        if (
+          this.utcCycleStart.includes(
+            ((fve - fcst_lead * 3600) % (24 * 3600)) / 3600
+          ) == false
+        ) {
           continue;
         }
       }
 
       const stats_fve = {};
-      stats_fve.avtime = obsSingleFve.avtime;
+      stats_fve.avtime = fve;
       stats_fve.hit = 0;
       stats_fve.miss = 0;
       stats_fve.fa = 0;
@@ -401,6 +393,6 @@ class MatsMiddleTimeSeries {
   };
 }
 
-export default matsMiddleTimeSeries = {
-  MatsMiddleTimeSeries,
+export default matsMiddleDailyModelCycle = {
+  MatsMiddleDailyModelCycle,
 };

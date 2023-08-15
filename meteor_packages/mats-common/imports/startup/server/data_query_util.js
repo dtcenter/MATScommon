@@ -339,6 +339,15 @@ const queryDBTimeSeries = function (
       } else {
         (async () => {
           rows = await pool.queryCB(statementOrMwRows);
+          // TODO - remove log to file
+          {
+            const fs = require("fs");
+            const homedir = require("os").homedir();
+            fs.writeFileSync(
+              `${homedir}/scratch/matsMiddle/output/rowsOrg_dmc.json`,
+              JSON.stringify(rows, null, 2)
+            );
+          }
           // done waiting - have results
           dFuture.return();
         })();
@@ -463,6 +472,15 @@ const queryDBSpecialtyCurve = function (
       } else {
         (async () => {
           rows = await pool.queryCB(statementOrMwRows);
+          // TODO - remove log to file
+          {
+            const fs = require("fs");
+            const homedir = require("os").homedir();
+            fs.writeFileSync(
+              `${homedir}/scratch/matsMiddle/output/rowsOrg_dmc.json`,
+              JSON.stringify(rows, null, 2)
+            );
+          }
           dFuture.return();
         })();
       }
