@@ -477,6 +477,10 @@ const queryDBSpecialtyCurve = function (
             const fs = require("fs");
             const homedir = require("os").homedir();
             fs.writeFileSync(
+              `${homedir}/scratch/matsMiddle/output/statementOrMwRows.sql`,
+              statementOrMwRows
+            );
+            fs.writeFileSync(
               `${homedir}/scratch/matsMiddle/output/rowsOrg_dmc.json`,
               JSON.stringify(rows, null, 2)
             );
