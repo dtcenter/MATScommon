@@ -94,6 +94,7 @@ Package.onUse(function (api) {
   api.export("matsMiddleTimeSeries", ["server"]);
   api.export("matsMiddleValidTime", ["server"]);
   api.export("matsMiddleDailyModelCycle", ["server"]);
+  api.export("matsMiddleMap", ["server"]);
 
   // add imports
   // both
@@ -136,6 +137,7 @@ Package.onUse(function (api) {
   api.addFiles("imports/startup/server/matsMiddle_dieoff.js");
   api.addFiles("imports/startup/server/matsMiddle_validTime.js");
   api.addFiles("imports/startup/server/matsMiddle_dailyModelCycle.js");
+  api.addFiles("imports/startup/server/matsMiddle_map.js");
 
   // files outside of imports
   // client
