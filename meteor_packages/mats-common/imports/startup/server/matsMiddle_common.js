@@ -31,7 +31,6 @@ class MatsMiddleCommon {
     queryTemplate = queryTemplate.replace(/{{vxFROM_SECS}}/g, fromSecs);
     queryTemplate = queryTemplate.replace(/{{vxTO_SECS}}/g, toSecs);
     console.log(`fromSecs:${fromSecs},toSecs:${toSecs}`);
-    console.log(`queryTemplate:\n${queryTemplate}`);
 
     const qr_fcstValidEpoch = await this.conn.cluster.query(queryTemplate);
 
@@ -65,7 +64,6 @@ class MatsMiddleCommon {
     queryTemplate = queryTemplate.replace(/{{vxFROM_SECS}}/g, fromSecs);
     queryTemplate = queryTemplate.replace(/{{vxTO_SECS}}/g, toSecs);
     console.log(`model:${model},fromSecs:${fromSecs},toSecs:${toSecs}`);
-    console.log(`queryTemplate:\n${queryTemplate}`);
 
     const qr_distinct_fcstLen = await this.conn.cluster.query(queryTemplate);
 
