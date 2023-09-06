@@ -1,7 +1,8 @@
 import { matsMiddleCommon } from "meteor/randyp:mats-common";
 import { Meteor } from "meteor/meteor";
 
-class MatsMiddleDailyModelCycle {
+class MatsMiddleDailyModelCycle
+{
   logToFile = false;
 
   logMemUsage = false;
@@ -38,7 +39,8 @@ class MatsMiddleDailyModelCycle {
 
   mmCommon = null;
 
-  constructor(cbPool) {
+  constructor(cbPool)
+  {
     this.cbPool = cbPool;
     this.mmCommon = new matsMiddleCommon.MatsMiddleCommon(cbPool);
   }
@@ -51,12 +53,14 @@ class MatsMiddleDailyModelCycle {
     fromSecs,
     toSecs,
     utcCycleStart
-  ) => {
+  ) =>
+  {
     const Future = require("fibers/future");
 
     let rv = [];
     const dFuture = new Future();
-    (async () => {
+    (async () =>
+    {
       rv = await this.processStationQuery_int(
         varName,
         stationNames,
@@ -80,12 +84,12 @@ class MatsMiddleDailyModelCycle {
     fromSecs,
     toSecs,
     utcCycleStart
-  ) => {
+  ) =>
+  {
     const fs = require("fs");
 
     console.log(
-      `processStationQuery(${varName},${
-        stationNames.length
+      `processStationQuery(${varName},${stationNames.length
       },${model},${threshold},${fromSecs},${toSecs},${JSON.stringify(utcCycleStart)})`
     );
 
@@ -107,8 +111,7 @@ class MatsMiddleDailyModelCycle {
 
     let endTime = new Date().valueOf();
     console.log(
-      `\tfcstValidEpoch_Array:${this.fcstValidEpoch_Array.length} in ${
-        endTime - startTime
+      `\tfcstValidEpoch_Array:${this.fcstValidEpoch_Array.length} in ${endTime - startTime
       } ms.`
     );
 
@@ -117,11 +120,13 @@ class MatsMiddleDailyModelCycle {
     await Promise.all([prObs, prModel]);
     this.generateCtc(threshold);
 
-    for (let i = 0; i < this.ctc.length; i++) {
+    for (let i = 0; i < this.ctc.length; i++)
+    {
       this.ctc[i] = this.mmCommon.sumUpCtc(this.ctc[i]);
     }
 
-    if (this.logToFile === true) {
+    if (this.logToFile === true)
+    {
       this.mmCommon.writeToLocalFile(
         "/scratch/matsMiddle/output/fveObs.json",
         JSON.stringify(this.fveObs, null, 2)
@@ -142,7 +147,8 @@ class MatsMiddleDailyModelCycle {
     return this.ctc;
   };
 
-  createObsData = async () => {
+  createObsData = async () =>
+  {
     console.log("createObsData()");
     const fs = require("fs");
 
@@ -154,10 +160,13 @@ class MatsMiddleDailyModelCycle {
     );
 
     let stationNames_obs = "";
-    for (let i = 0; i < this.stationNames.length; i++) {
-      if (i === 0) {
+    for (let i = 0; i < this.stationNames.length; i++)
+    {
+      if (i === 0)
+      {
         stationNames_obs = `obs.data.${this.stationNames[i]}.${this.varName} ${this.stationNames[i]}`;
-      } else {
+      } else
+      {
         stationNames_obs += `,obs.data.${this.stationNames[i]}.${this.varName} ${this.stationNames[i]}`;
       }
     }
@@ -173,24 +182,29 @@ class MatsMiddleDailyModelCycle {
     console.log(`\tobs query:${stationNames_obs.length} in ${endTime - startTime} ms.`);
 
     const promises = [];
-    for (let iofve = 0; iofve < this.fcstValidEpoch_Array.length; iofve += 100) {
+    for (let iofve = 0; iofve < this.fcstValidEpoch_Array.length; iofve += 100)
+    {
       const fveArraySlice = this.fcstValidEpoch_Array.slice(iofve, iofve + 100);
       const sql = tmplWithStationNames_obs.replace(
         /{{fcstValidEpoch}}/g,
         JSON.stringify(fveArraySlice)
       );
-      if (this.logToFile === true && iofve === 0) {
+      if (this.logToFile === true && iofve === 0)
+      {
         this.mmCommon.writeToLocalFile("/scratch/matsMiddle/output/obs.sql", sql);
       }
       const prSlice = this.conn.cluster.query(sql);
       promises.push(prSlice);
-      prSlice.then((qr) => {
+      prSlice.then((qr) =>
+      {
         console.log(`qr:\n${qr.rows.length}`);
-        for (let jmfve = 0; jmfve < qr.rows.length; jmfve++) {
+        for (let jmfve = 0; jmfve < qr.rows.length; jmfve++)
+        {
           const fveDataSingleEpoch = qr.rows[jmfve];
           const dataSingleEpoch = {};
           const stationsSingleEpoch = {};
-          for (let i = 0; i < this.stationNames.length; i++) {
+          for (let i = 0; i < this.stationNames.length; i++)
+          {
             const varValStation = fveDataSingleEpoch[this.stationNames[i]];
             stationsSingleEpoch[this.stationNames[i]] = varValStation;
           }
@@ -198,11 +212,11 @@ class MatsMiddleDailyModelCycle {
           dataSingleEpoch.stations = stationsSingleEpoch;
           this.fveObs[fveDataSingleEpoch.fve] = dataSingleEpoch;
         }
-        if (iofve % 100 == 0) {
+        if (iofve % 100 == 0)
+        {
           endTime = new Date().valueOf();
           console.log(
-            `iofve:${iofve}/${this.fcstValidEpoch_Array.length} in ${
-              endTime - startTime
+            `iofve:${iofve}/${this.fcstValidEpoch_Array.length} in ${endTime - startTime
             } ms.`
           );
         }
@@ -214,7 +228,8 @@ class MatsMiddleDailyModelCycle {
     console.log(`fveObs:` + ` in ${endTime - startTime} ms.`);
   };
 
-  createModelData = async () => {
+  createModelData = async () =>
+  {
     console.log("createModelData()");
     const fs = require("fs");
 
@@ -248,10 +263,13 @@ class MatsMiddleDailyModelCycle {
     );
 
     let stationNames_models = "";
-    for (let i = 0; i < this.stationNames.length; i++) {
-      if (i === 0) {
+    for (let i = 0; i < this.stationNames.length; i++)
+    {
+      if (i === 0)
+      {
         stationNames_models = `models.data.${this.stationNames[i]}.${this.varName} ${this.stationNames[i]}`;
-      } else {
+      } else
+      {
         stationNames_models += `,models.data.${this.stationNames[i]}.${this.varName} ${this.stationNames[i]}`;
       }
     }
@@ -266,24 +284,29 @@ class MatsMiddleDailyModelCycle {
     );
 
     const promises = [];
-    for (let imfve = 0; imfve < this.fcstValidEpoch_Array.length; imfve += 100) {
+    for (let imfve = 0; imfve < this.fcstValidEpoch_Array.length; imfve += 100)
+    {
       const fveArraySlice = this.fcstValidEpoch_Array.slice(imfve, imfve + 100);
       const sql = tmplWithStationNames_models.replace(
         /{{fcstValidEpoch}}/g,
         JSON.stringify(fveArraySlice)
       );
-      if (this.logToFile === true && imfve === 0) {
+      if (this.logToFile === true && imfve === 0)
+      {
         this.mmCommon.writeToLocalFile("/scratch/matsMiddle/output/model.sql", sql);
       }
       const prSlice = this.conn.cluster.query(sql);
 
       promises.push(prSlice);
-      prSlice.then((qr) => {
-        for (let jmfve = 0; jmfve < qr.rows.length; jmfve++) {
+      prSlice.then((qr) =>
+      {
+        for (let jmfve = 0; jmfve < qr.rows.length; jmfve++)
+        {
           const fveDataSingleEpoch = qr.rows[jmfve];
           const dataSingleEpoch = {};
           const stationsSingleEpoch = {};
-          for (let i = 0; i < this.stationNames.length; i++) {
+          for (let i = 0; i < this.stationNames.length; i++)
+          {
             const varValStation = fveDataSingleEpoch[this.stationNames[i]];
             stationsSingleEpoch[this.stationNames[i]] = varValStation;
           }
@@ -292,11 +315,11 @@ class MatsMiddleDailyModelCycle {
           dataSingleEpoch.stations = stationsSingleEpoch;
           this.fveModels[fveDataSingleEpoch.fve] = dataSingleEpoch;
         }
-        if (imfve % 100 == 0) {
+        if (imfve % 100 == 0)
+        {
           endTime = new Date().valueOf();
           console.log(
-            `imfve:${imfve}/${this.fcstValidEpoch_Array.length} in ${
-              endTime - startTime
+            `imfve:${imfve}/${this.fcstValidEpoch_Array.length} in ${endTime - startTime
             } ms.`
           );
         }
@@ -307,86 +330,39 @@ class MatsMiddleDailyModelCycle {
     console.log(`fveModel:` + ` in ${endTime - startTime} ms.`);
   };
 
-  generateCtc = async (threshold) => {
+  generateCtc = async (threshold) =>
+  {
     console.log(`generateCtc(${threshold})`);
 
     const startTime = new Date().valueOf();
 
-    for (let imfve = 0; imfve < this.fcstValidEpoch_Array.length; imfve++) {
+    for (let imfve = 0; imfve < this.fcstValidEpoch_Array.length; imfve++)
+    {
       const fve = this.fcstValidEpoch_Array[imfve];
       const obsSingleFve = this.fveObs[fve];
       const modelSingleFve = this.fveModels[fve];
 
-      if (!obsSingleFve || !modelSingleFve) {
+      if (!obsSingleFve || !modelSingleFve)
+      {
         continue;
       }
 
       const { fcst_lead } = modelSingleFve;
 
-      /*
-            if (this.utcCycleStart)
-            {
-                // (obs.fcstValidEpoch - obs.fcstLen*3600)%(24*3600)/3600 IN[vxUTC_CYCLE_START])
-                let v0 = ((fve - fcst_lead * 3600) % (24 * 3600)) / 3600;
-                console.log(this.utcCycleStart + " " + v0 + " " + (this.utcCycleStart !== v0));
-                if (this.utcCycleStart !== v0)
-                {
-                    continue;
-                }
-            }
-            */
+      const ctc_fve = {};
+      ctc_fve.avtime = fve;
+      ctc_fve.min_secs = fve;
+      ctc_fve.max_secs = fve;
+      ctc_fve.hit = 0;
+      ctc_fve.miss = 0;
+      ctc_fve.fa = 0;
+      ctc_fve.cn = 0;
+      ctc_fve.N0 = 0;
+      ctc_fve.N_times = 1;
+      ctc_fve.sub_data = [];
 
-      const stats_fve = {};
-      stats_fve.avtime = fve;
-      stats_fve.min_secs = fve;
-      stats_fve.max_secs = fve;
-      stats_fve.hit = 0;
-      stats_fve.miss = 0;
-      stats_fve.fa = 0;
-      stats_fve.cn = 0;
-      stats_fve.N0 = 0;
-      stats_fve.N_times = 1;
-      stats_fve.sub_data = [];
-
-      for (let i = 0; i < this.stationNames.length; i++) {
-        const station = this.stationNames[i];
-        const varVal_o = obsSingleFve.stations[station];
-        const varVal_m = modelSingleFve.stations[station];
-
-        if (varVal_o && varVal_m) {
-          stats_fve.N0 += 1;
-          let sub = `${fve};`;
-          if (varVal_o < threshold && varVal_m < threshold) {
-            stats_fve.hit += 1;
-            sub += "1;";
-          } else {
-            sub += "0;";
-          }
-
-          if (varVal_o >= threshold && varVal_m < threshold) {
-            stats_fve.fa += 1;
-            sub += "1;";
-          } else {
-            sub += "0;";
-          }
-
-          if (varVal_o < threshold && varVal_m >= threshold) {
-            stats_fve.miss += 1;
-            sub += "1;";
-          } else {
-            sub += "0;";
-          }
-
-          if (varVal_o >= threshold && varVal_m >= threshold) {
-            stats_fve.cn += 1;
-            sub += "1";
-          } else {
-            sub += "0";
-          }
-          stats_fve.sub_data.push(sub);
-        }
-      }
-      this.ctc.push(stats_fve);
+      this.mmCommon.computeCtcForStations(fve, threshold, ctc_fve, this.stationNames, obsSingleFve, modelSingleFve);
+      this.ctc.push(ctc_fve);
     }
 
     const endTime = new Date().valueOf();
