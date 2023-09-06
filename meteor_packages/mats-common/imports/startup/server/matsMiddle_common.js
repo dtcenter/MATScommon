@@ -1,26 +1,22 @@
 import { matsTypes, matsDataQueryUtils } from "meteor/randyp:mats-common";
 import { Meteor } from "meteor/meteor";
 
-class MatsMiddleCommon
-{
+class MatsMiddleCommon {
   cbPool = null;
 
   conn = null;
 
-  constructor(cbPool)
-  {
+  constructor(cbPool) {
     this.cbPool = cbPool;
   }
 
-  writeToLocalFile(filePath, contentStr)
-  {
+  writeToLocalFile(filePath, contentStr) {
     const fs = require("fs");
     const homedir = require("os").homedir();
     fs.writeFileSync(homedir + filePath, contentStr);
   }
 
-  get_fcstValidEpoch_Array = async (fromSecs, toSecs) =>
-  {
+  get_fcstValidEpoch_Array = async (fromSecs, toSecs) => {
     console.log(`get_fcstValidEpoch_Array(${fromSecs},${toSecs})`);
 
     const fs = require("fs");
@@ -39,21 +35,20 @@ class MatsMiddleCommon
     const qr_fcstValidEpoch = await this.conn.cluster.query(queryTemplate);
 
     const fcstValidEpoch_Array = [];
-    for (let imfve = 0; imfve < qr_fcstValidEpoch.rows.length; imfve++)
-    {
+    for (let imfve = 0; imfve < qr_fcstValidEpoch.rows.length; imfve++) {
       fcstValidEpoch_Array.push(qr_fcstValidEpoch.rows[imfve].fcstValidEpoch);
     }
     const endTime = new Date().valueOf();
     console.log(
-      `\tget_fcstValidEpoch_Array():${fcstValidEpoch_Array.length} in ${endTime - startTime
+      `\tget_fcstValidEpoch_Array():${fcstValidEpoch_Array.length} in ${
+        endTime - startTime
       } ms.`
     );
 
     return fcstValidEpoch_Array;
   };
 
-  get_fcstLen_Array = async (model, fromSecs, toSecs) =>
-  {
+  get_fcstLen_Array = async (model, fromSecs, toSecs) => {
     console.log(`get_fcstLen_Array(${model},${fromSecs},${toSecs})`);
 
     const fs = require("fs");
@@ -73,8 +68,7 @@ class MatsMiddleCommon
     const qr_distinct_fcstLen = await this.conn.cluster.query(queryTemplate);
 
     const fcstLenArray = [];
-    for (let ifcstLen = 0; ifcstLen < qr_distinct_fcstLen.rows.length; ifcstLen++)
-    {
+    for (let ifcstLen = 0; ifcstLen < qr_distinct_fcstLen.rows.length; ifcstLen++) {
       fcstLenArray.push(qr_distinct_fcstLen.rows[ifcstLen].fcstLen);
     }
     endTime = new Date().valueOf();
@@ -85,30 +79,25 @@ class MatsMiddleCommon
     return fcstLenArray;
   };
 
-  sumUpCtc = (ctc) =>
-  {
+  sumUpCtc = (ctc) => {
     const rv = JSON.parse(JSON.stringify(ctc));
 
     rv.sub_data = [];
 
     let prevFve = null;
     const sumVals = [0, 0, 0, 0];
-    for (let i = 0; i < ctc.sub_data.length; i++)
-    {
+    for (let i = 0; i < ctc.sub_data.length; i++) {
       const sdiToks = ctc.sub_data[i].split(";");
 
-      if (i === 0)
-      {
+      if (i === 0) {
         prevFve = sdiToks[0];
       }
-      if (prevFve === sdiToks[0])
-      {
+      if (prevFve === sdiToks[0]) {
         sumVals[0] += Number(sdiToks[1]);
         sumVals[1] += Number(sdiToks[2]);
         sumVals[2] += Number(sdiToks[3]);
         sumVals[3] += Number(sdiToks[4]);
-      } else
-      {
+      } else {
         rv.sub_data.push(
           `${sdiToks[0]};${sumVals[0]};${sumVals[1]};${sumVals[2]};${sumVals[3]}`
         );
@@ -118,61 +107,56 @@ class MatsMiddleCommon
         sumVals[2] = Number(sdiToks[3]);
         sumVals[3] = Number(sdiToks[4]);
       }
-      if (i === ctc.sub_data.length - 1)
-      {
+      if (i === ctc.sub_data.length - 1) {
         rv.sub_data.push(
           `${sdiToks[0]};${sumVals[0]};${sumVals[1]};${sumVals[2]};${sumVals[3]}`
         );
       }
     }
     return rv;
-  }
+  };
 
-  computeCtcForStations(fve, threshold, ctc, stationNames, obsSingleFve, modelSingleFve)
-  {
-    for (let i = 0; i < stationNames.length; i++)
-    {
+  computeCtcForStations(
+    fve,
+    threshold,
+    ctc,
+    stationNames,
+    obsSingleFve,
+    modelSingleFve
+  ) {
+    for (let i = 0; i < stationNames.length; i++) {
       const station = stationNames[i];
       const varVal_o = obsSingleFve.stations[station];
       const varVal_m = modelSingleFve.stations[station];
 
-      if (varVal_o && varVal_m)
-      {
+      if (varVal_o && varVal_m) {
         ctc.N0 += 1;
         let sub = `${fve};`;
-        if (varVal_o < threshold && varVal_m < threshold)
-        {
+        if (varVal_o < threshold && varVal_m < threshold) {
           ctc.hit += 1;
           sub += "1;";
-        } else
-        {
+        } else {
           sub += "0;";
         }
 
-        if (varVal_o >= threshold && varVal_m < threshold)
-        {
+        if (varVal_o >= threshold && varVal_m < threshold) {
           ctc.fa += 1;
           sub += "1;";
-        } else
-        {
+        } else {
           sub += "0;";
         }
 
-        if (varVal_o < threshold && varVal_m >= threshold)
-        {
+        if (varVal_o < threshold && varVal_m >= threshold) {
           ctc.miss += 1;
           sub += "1;";
-        } else
-        {
+        } else {
           sub += "0;";
         }
 
-        if (varVal_o >= threshold && varVal_m >= threshold)
-        {
+        if (varVal_o >= threshold && varVal_m >= threshold) {
           ctc.cn += 1;
           sub += "1";
-        } else
-        {
+        } else {
           sub += "0";
         }
         ctc.sub_data.push(sub);
