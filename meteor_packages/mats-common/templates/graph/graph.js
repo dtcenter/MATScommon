@@ -1438,7 +1438,7 @@ Template.graph.events({
       `${window.location}/preview/${Session.get("graphFunction")}/${Session.get(
         "plotResultKey"
       )}/${Session.get("plotParameter")}/${
-        matsCollections.Settings.findOne({}, { fields: { Title: 1 } }).Title
+        matsCollections.Settings.findOne({}, { fields: { appName: 1 } }).appName
       }`,
       "_blank",
       "status=no,titlebar=no,toolbar=no,scrollbars=no,menubar=no,resizable=yes",
@@ -1495,7 +1495,7 @@ Template.graph.events({
       `${window.location}/JSON/${Session.get("graphFunction")}/${Session.get(
         "plotResultKey"
       )}/${Session.get("plotParameter")}/${
-        matsCollections.Settings.findOne({}, { fields: { Title: 1 } }).Title
+        matsCollections.Settings.findOne({}, { fields: { appName: 1 } }).appName
       }`,
       "_blank",
       "resizable=yes"

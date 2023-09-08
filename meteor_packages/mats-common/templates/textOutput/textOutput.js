@@ -1161,7 +1161,7 @@ Template.textOutput.events({
       `${window.location}/CSV/${Session.get("graphFunction")}/${Session.get(
         "plotResultKey"
       )}/${Session.get("plotParameter")}/${
-        matsCollections.Settings.findOne({}, { fields: { Title: 1 } }).Title
+        matsCollections.Settings.findOne({}, { fields: { appName: 1 } }).appName
       }`
     );
   },
