@@ -1409,7 +1409,9 @@ const processDataPerformanceDiagram = function (
       textVals,
       cval.toFixed(1),
       "bottom left",
-      matsTypes.ReservedWords.constantCSI
+      matsTypes.ReservedWords.constantCSI,
+      "rgb(0,0,0)",
+      1
     );
     dataset.push(csiLine);
   }
