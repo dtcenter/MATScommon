@@ -1,7 +1,6 @@
 import { matsMiddleCommon } from "meteor/randyp:mats-common";
 
 import { Meteor } from "meteor/meteor";
-import { memoryUsage } from "node:process";
 
 class MatsMiddleTsDieoff {
   logToFile = false;
@@ -386,26 +385,6 @@ class MatsMiddleTsDieoff {
               endTime - startTime
             } ms.`
           );
-
-          if (this.logMemUsage === true) {
-            try {
-              console.log(memoryUsage());
-              const obsSize =
-                new TextEncoder().encode(JSON.stringify(this.fveObs)).length /
-                (1024 * 1024);
-              const modelsSize =
-                new TextEncoder().encode(JSON.stringify(this.fveModels)).length /
-                (1024 * 1024);
-              const ctcSize =
-                new TextEncoder().encode(JSON.stringify(this.ctc)).length /
-                (1024 * 1024);
-              console.log(
-                `sizes (MB), obs:${obsSize},model:${modelsSize},ctc:${ctcSize}`
-              );
-            } catch (ex) {
-              console.log(`exception getting sizes:${ex}`);
-            }
-          }
         });
       }
       await Promise.all(promises);
