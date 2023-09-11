@@ -133,7 +133,13 @@ Template.GraphStandAlone.helpers({
     return "block";
   },
   Title() {
-    return Session.get("appName");
+    if (
+      matsCollections.Settings === undefined ||
+      matsCollections.Settings.findOne({}, { fields: { Title: 1 } }) === undefined
+    ) {
+      return "";
+    }
+    return matsCollections.Settings.findOne({}, { fields: { Title: 1 } }).Title;
   },
   width() {
     const plotType = Session.get("plotType");
