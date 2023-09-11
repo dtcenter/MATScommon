@@ -1,7 +1,7 @@
 import { matsMiddleCommon } from "meteor/randyp:mats-common";
 import { Meteor } from "meteor/meteor";
 
-class MatsMiddleTimeSeries {
+class MatsMiddleDailyModelCycle {
   logToFile = false;
 
   logMemUsage = false;
@@ -24,8 +24,6 @@ class MatsMiddleTimeSeries {
 
   model = null;
 
-  fcstLen = null;
-
   threshold = null;
 
   average = null;
@@ -34,7 +32,7 @@ class MatsMiddleTimeSeries {
 
   toSecs = null;
 
-  validTimes = [];
+  utcCycleStart = null;
 
   writeOutput = false;
 
@@ -49,12 +47,10 @@ class MatsMiddleTimeSeries {
     varName,
     stationNames,
     model,
-    fcstLen,
     threshold,
-    average,
     fromSecs,
     toSecs,
-    validTimes
+    utcCycleStart
   ) => {
     const Future = require("fibers/future");
 
@@ -65,12 +61,10 @@ class MatsMiddleTimeSeries {
         varName,
         stationNames,
         model,
-        fcstLen,
         threshold,
-        average,
         fromSecs,
         toSecs,
-        validTimes
+        utcCycleStart
       );
       dFuture.return();
     })();
@@ -82,48 +76,33 @@ class MatsMiddleTimeSeries {
     varName,
     stationNames,
     model,
-    fcstLen,
     threshold,
-    average,
     fromSecs,
     toSecs,
-    validTimes
+    utcCycleStart
   ) => {
     const fs = require("fs");
 
     console.log(
       `processStationQuery(${varName},${
         stationNames.length
-      },${model},${fcstLen},${threshold},${average},${fromSecs},${toSecs},${JSON.stringify(
-        validTimes
-      )})`
+      },${model},${threshold},${fromSecs},${toSecs},${JSON.stringify(utcCycleStart)})`
     );
 
     this.varName = varName;
     this.stationNames = stationNames;
     this.model = model;
-    this.fcstLen = fcstLen;
     this.threshold = threshold;
-    this.average = average;
     this.fromSecs = fromSecs;
     this.toSecs = toSecs;
-
-    this.average = this.average.replace(/m0./g, "");
-    if (validTimes && validTimes.length > 0) {
-      for (let i = 0; i < validTimes.length; i++) {
-        if (validTimes[i] != null && Number(validTimes[i]) > 0) {
-          this.validTimes.push(Number(validTimes[i]));
-        }
-      }
-      console.log(`validTimes:${JSON.stringify(this.validTimes)}`);
-    }
+    this.utcCycleStart = utcCycleStart;
 
     this.conn = await cbPool.getConnection();
 
     const startTime = new Date().valueOf();
     this.fcstValidEpoch_Array = await this.mmCommon.get_fcstValidEpoch_Array(
-      fromSecs,
-      toSecs
+      this.fromSecs,
+      this.toSecs
     );
 
     let endTime = new Date().valueOf();
@@ -182,9 +161,9 @@ class MatsMiddleTimeSeries {
         stationNames_obs += `,obs.data.${this.stationNames[i]}.${this.varName} ${this.stationNames[i]}`;
       }
     }
-    let tmplWithStationNames_obs = tmpl_get_N_stations_mfve_obs.replace(
-      /{{vxAVERAGE}}/g,
-      this.average
+    let tmplWithStationNames_obs = this.cbPool.trfmSQLRemoveClause(
+      tmpl_get_N_stations_mfve_obs,
+      "{{vxAVERAGE}}"
     );
     tmplWithStationNames_obs = tmplWithStationNames_obs.replace(
       /{{stationNamesList}}/g,
@@ -215,7 +194,7 @@ class MatsMiddleTimeSeries {
             const varValStation = fveDataSingleEpoch[this.stationNames[i]];
             stationsSingleEpoch[this.stationNames[i]] = varValStation;
           }
-          dataSingleEpoch.avtime = fveDataSingleEpoch.avtime;
+          dataSingleEpoch.avtime = fveDataSingleEpoch.fve;
           dataSingleEpoch.stations = stationsSingleEpoch;
           this.fveObs[fveDataSingleEpoch.fve] = dataSingleEpoch;
         }
@@ -245,25 +224,27 @@ class MatsMiddleTimeSeries {
       "assets/app/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_model.sql",
       "utf-8"
     );
-    tmpl_get_N_stations_mfve_model = this.cbPool.trfmSQLRemoveClause(
-      tmpl_get_N_stations_mfve_model,
-      "fcstLen fcst_lead"
-    );
+    /*
+        tmpl_get_N_stations_mfve_model = this.cbPool.trfmSQLRemoveClause(
+          tmpl_get_N_stations_mfve_model,
+          "fcstLen fcst_lead"
+        );
+        */
     tmpl_get_N_stations_mfve_model = this.cbPool.trfmSQLRemoveClause(
       tmpl_get_N_stations_mfve_model,
       "{{vxFCST_LEN_ARRAY}}"
+    );
+    tmpl_get_N_stations_mfve_model = this.cbPool.trfmSQLRemoveClause(
+      tmpl_get_N_stations_mfve_model,
+      "{{vxAVERAGE}}"
     );
     tmpl_get_N_stations_mfve_model = tmpl_get_N_stations_mfve_model.replace(
       /{{vxMODEL}}/g,
       `"${this.model}"`
     );
     tmpl_get_N_stations_mfve_model = tmpl_get_N_stations_mfve_model.replace(
-      /{{vxFCST_LEN}}/g,
-      this.fcstLen
-    );
-    tmpl_get_N_stations_mfve_model = tmpl_get_N_stations_mfve_model.replace(
-      /{{vxAVERAGE}}/g,
-      this.average
+      /fcstLen = {{vxFCST_LEN}}/g,
+      `fcstLen < 24 AND (models.fcstValidEpoch - models.fcstLen*3600)%(24*3600)/3600 IN [${this.utcCycleStart}]`
     );
 
     let stationNames_models = "";
@@ -306,7 +287,8 @@ class MatsMiddleTimeSeries {
             const varValStation = fveDataSingleEpoch[this.stationNames[i]];
             stationsSingleEpoch[this.stationNames[i]] = varValStation;
           }
-          dataSingleEpoch.avtime = fveDataSingleEpoch.avtime;
+          dataSingleEpoch.avtime = fveDataSingleEpoch.fve;
+          dataSingleEpoch.fcst_lead = fveDataSingleEpoch.fcst_lead;
           dataSingleEpoch.stations = stationsSingleEpoch;
           this.fveModels[fveDataSingleEpoch.fve] = dataSingleEpoch;
         }
@@ -339,14 +321,12 @@ class MatsMiddleTimeSeries {
         continue;
       }
 
-      if (this.validTimes && this.validTimes.length > 0) {
-        if (this.validTimes.includes((fve % (24 * 3600)) / 3600) == false) {
-          continue;
-        }
-      }
+      const { fcst_lead } = modelSingleFve;
 
       const ctc_fve = {};
-      ctc_fve.avtime = obsSingleFve.avtime;
+      ctc_fve.avtime = fve;
+      ctc_fve.min_secs = fve;
+      ctc_fve.max_secs = fve;
       ctc_fve.hit = 0;
       ctc_fve.miss = 0;
       ctc_fve.fa = 0;
@@ -371,6 +351,6 @@ class MatsMiddleTimeSeries {
   };
 }
 
-export default matsMiddleTimeSeries = {
-  MatsMiddleTimeSeries,
+export default matsMiddleDailyModelCycle = {
+  MatsMiddleDailyModelCycle,
 };

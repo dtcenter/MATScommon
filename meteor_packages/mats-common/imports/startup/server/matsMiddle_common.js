@@ -31,7 +31,6 @@ class MatsMiddleCommon {
     queryTemplate = queryTemplate.replace(/{{vxFROM_SECS}}/g, fromSecs);
     queryTemplate = queryTemplate.replace(/{{vxTO_SECS}}/g, toSecs);
     console.log(`fromSecs:${fromSecs},toSecs:${toSecs}`);
-    console.log(`queryTemplate:\n${queryTemplate}`);
 
     const qr_fcstValidEpoch = await this.conn.cluster.query(queryTemplate);
 
@@ -65,7 +64,6 @@ class MatsMiddleCommon {
     queryTemplate = queryTemplate.replace(/{{vxFROM_SECS}}/g, fromSecs);
     queryTemplate = queryTemplate.replace(/{{vxTO_SECS}}/g, toSecs);
     console.log(`model:${model},fromSecs:${fromSecs},toSecs:${toSecs}`);
-    console.log(`queryTemplate:\n${queryTemplate}`);
 
     const qr_distinct_fcstLen = await this.conn.cluster.query(queryTemplate);
 
@@ -117,6 +115,54 @@ class MatsMiddleCommon {
     }
     return rv;
   };
+
+  computeCtcForStations(
+    fve,
+    threshold,
+    ctc,
+    stationNames,
+    obsSingleFve,
+    modelSingleFve
+  ) {
+    for (let i = 0; i < stationNames.length; i++) {
+      const station = stationNames[i];
+      const varVal_o = obsSingleFve.stations[station];
+      const varVal_m = modelSingleFve.stations[station];
+
+      if (varVal_o && varVal_m) {
+        ctc.N0 += 1;
+        let sub = `${fve};`;
+        if (varVal_o < threshold && varVal_m < threshold) {
+          ctc.hit += 1;
+          sub += "1;";
+        } else {
+          sub += "0;";
+        }
+
+        if (varVal_o >= threshold && varVal_m < threshold) {
+          ctc.fa += 1;
+          sub += "1;";
+        } else {
+          sub += "0;";
+        }
+
+        if (varVal_o < threshold && varVal_m >= threshold) {
+          ctc.miss += 1;
+          sub += "1;";
+        } else {
+          sub += "0;";
+        }
+
+        if (varVal_o >= threshold && varVal_m >= threshold) {
+          ctc.cn += 1;
+          sub += "1";
+        } else {
+          sub += "0";
+        }
+        ctc.sub_data.push(sub);
+      }
+    }
+  }
 }
 
 export default matsMiddleCommon = {

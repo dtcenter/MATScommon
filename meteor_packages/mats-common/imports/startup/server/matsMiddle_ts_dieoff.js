@@ -1,7 +1,6 @@
 import { matsMiddleCommon } from "meteor/randyp:mats-common";
 
 import { Meteor } from "meteor/meteor";
-import { memoryUsage } from "node:process";
 
 class MatsMiddleTsDieoff {
   logToFile = false;
@@ -386,26 +385,6 @@ class MatsMiddleTsDieoff {
               endTime - startTime
             } ms.`
           );
-
-          if (this.logMemUsage === true) {
-            try {
-              console.log(memoryUsage());
-              const obsSize =
-                new TextEncoder().encode(JSON.stringify(this.fveObs)).length /
-                (1024 * 1024);
-              const modelsSize =
-                new TextEncoder().encode(JSON.stringify(this.fveModels)).length /
-                (1024 * 1024);
-              const ctcSize =
-                new TextEncoder().encode(JSON.stringify(this.ctc)).length /
-                (1024 * 1024);
-              console.log(
-                `sizes (MB), obs:${obsSize},model:${modelsSize},ctc:${ctcSize}`
-              );
-            } catch (ex) {
-              console.log(`exception getting sizes:${ex}`);
-            }
-          }
         });
       }
       await Promise.all(promises);
@@ -427,25 +406,25 @@ class MatsMiddleTsDieoff {
       return a - b;
     });
     for (let flai = 0; flai < fcst_lead_array.length; flai++) {
-      const stats_fcst_lead = {};
+      const ctc_fcst_lead = {};
 
       const fcst_lead = Number(fcst_lead_array[flai]);
-      stats_fcst_lead.fcst_lead = fcst_lead;
-      stats_fcst_lead.hit = 0;
-      stats_fcst_lead.miss = 0;
-      stats_fcst_lead.fa = 0;
-      stats_fcst_lead.cn = 0;
-      stats_fcst_lead.N0 = 0;
-      stats_fcst_lead.N_times = new Set(fcst_lead_array).size;
-      stats_fcst_lead.sub_data = [];
+      ctc_fcst_lead.fcst_lead = fcst_lead;
+      ctc_fcst_lead.hit = 0;
+      ctc_fcst_lead.miss = 0;
+      ctc_fcst_lead.fa = 0;
+      ctc_fcst_lead.cn = 0;
+      ctc_fcst_lead.N0 = 0;
+      ctc_fcst_lead.N_times = new Set(fcst_lead_array).size;
+      ctc_fcst_lead.sub_data = [];
 
       // get all the fve for this fcst_lead
       const fcst_lead_single = this.fveModels[fcst_lead_array[flai]];
       const fve_array = Object.keys(fcst_lead_single);
       fve_array.sort();
 
-      stats_fcst_lead.min_secs = fve_array[0];
-      stats_fcst_lead.max_secs = fve_array[fve_array.length - 1];
+      ctc_fcst_lead.min_secs = fve_array[0];
+      ctc_fcst_lead.max_secs = fve_array[fve_array.length - 1];
       for (let imfve = 0; imfve < fve_array.length; imfve++) {
         const fve = fve_array[imfve];
         const obsSingleFve = this.fveObs[fve];
@@ -479,48 +458,17 @@ class MatsMiddleTsDieoff {
             continue;
           }
         }
-
-        for (let i = 0; i < this.stationNames.length; i++) {
-          const station = this.stationNames[i];
-          const varVal_o = obsSingleFve.stations[station];
-          const varVal_m = modelSingleFve.stations[station];
-
-          if (varVal_o && varVal_m) {
-            stats_fcst_lead.N0 += 1;
-            let sub = `${fve};`;
-            if (varVal_o < threshold && varVal_m < threshold) {
-              stats_fcst_lead.hit += 1;
-              sub += "1;";
-            } else {
-              sub += "0;";
-            }
-
-            if (varVal_o >= threshold && varVal_m < threshold) {
-              stats_fcst_lead.fa += 1;
-              sub += "1;";
-            } else {
-              sub += "0;";
-            }
-
-            if (varVal_o < threshold && varVal_m >= threshold) {
-              stats_fcst_lead.miss += 1;
-              sub += "1;";
-            } else {
-              sub += "0;";
-            }
-
-            if (varVal_o >= threshold && varVal_m >= threshold) {
-              stats_fcst_lead.cn += 1;
-              sub += "1";
-            } else {
-              sub += "0";
-            }
-            stats_fcst_lead.sub_data.push(sub);
-          }
-        }
+        this.mmCommon.computeCtcForStations(
+          fve,
+          threshold,
+          ctc_fcst_lead,
+          this.stationNames,
+          obsSingleFve,
+          modelSingleFve
+        );
       }
       try {
-        const stats_fcst_lead_summed = this.mmCommon.sumUpCtc(stats_fcst_lead);
+        const stats_fcst_lead_summed = this.mmCommon.sumUpCtc(ctc_fcst_lead);
         this.ctc.push(stats_fcst_lead_summed);
       } catch (ex) {
         console.log(ex);
