@@ -3543,8 +3543,8 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
 
   // get all the data out of the query array
   for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
-    const rowXVal = rows[rowIndex].xVal;
-    const rowYVal = rows[rowIndex].yVal;
+    const rowXVal = Number(rows[rowIndex].xVal);
+    const rowYVal = Number(rows[rowIndex].yVal);
     const statKey = `${rowXVal.toString()}_${rowYVal.toString()}`;
     let stat = null;
     let hit = null;
@@ -3726,8 +3726,8 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
       }
     }
     // store flat arrays of all the parsed data, used by the text output and for some calculations later
-    d.xTextOutput.push(Number(rowXVal));
-    d.yTextOutput.push(Number(rowYVal));
+    d.xTextOutput.push(rowXVal);
+    d.yTextOutput.push(rowYVal);
     d.zTextOutput.push(stat);
     d.nTextOutput.push(n);
     d.hitTextOutput.push(hit);
