@@ -579,6 +579,95 @@ const calculateStatScalar = function (
   return queryVal;
 };
 
+// function to build a contour plot with multiple queries
+const consolidateContour = function (d, dTemp, statType, xAxisParam, yAxisParam) {
+  let dReturn = d;
+  if (Object.keys(d).length === 0) {
+    dReturn = dTemp;
+  } else {
+    if (xAxisParam === "Threshold") {
+      dReturn.x.push(dTemp.x[0]);
+      dReturn.y = dTemp.y;
+      for (let didx = 0; didx < dTemp.y.length; didx += 1) {
+        dReturn.z[didx].push(dTemp.z[didx][0]);
+        dReturn.n[didx].push(dTemp.n[didx][0]);
+        if (statType === "ctc") {
+          dReturn.subHit[didx].push(dTemp.subHit[didx][0]);
+          dReturn.subFa[didx].push(dTemp.subFa[didx][0]);
+          dReturn.subMiss[didx].push(dTemp.subMiss[didx][0]);
+          dReturn.subCn[didx].push(dTemp.subCn[didx][0]);
+        } else if (statType === "scalar") {
+          dReturn.subSquareDiffSum[didx].push(dTemp.subSquareDiffSum[didx][0]);
+          dReturn.subObsModelDiffSum[didx].push(dTemp.subObsModelDiffSum[didx][0]);
+          dReturn.subNSum[didx].push(dTemp.subNSum[didx][0]);
+          dReturn.subModelSum[didx].push(dTemp.subModelSum[didx][0]);
+          dReturn.subObsSum[didx].push(dTemp.subObsSum[didx][0]);
+          dReturn.subAbsSum[didx].push(dTemp.subAbsSum[didx][0]);
+        }
+        dReturn.stdev[didx].push(dTemp.stdev[didx]);
+        dReturn.subSecs[didx].push(dTemp.subSecs[didx]);
+      }
+    } else if (yAxisParam === "Threshold") {
+      dReturn.x = dTemp.x;
+      dReturn.y.push(dTemp.y[0]);
+      for (let didx = 0; didx < dTemp.y.length; didx += 1) {
+        dReturn.z.push(dTemp.z[didx]);
+        dReturn.n.push(dTemp.n[didx]);
+        if (statType === "ctc") {
+          dReturn.subHit.push(dTemp.subHit[didx]);
+          dReturn.subFa.push(dTemp.subFa[didx]);
+          dReturn.subMiss.push(dTemp.subMiss[didx]);
+          dReturn.subCn.push(dTemp.subCn[didx]);
+        } else if (statType === "scalar") {
+          dReturn.subSquareDiffSum.push(dTemp.subSquareDiffSum[didx]);
+          dReturn.subObsModelDiffSum.push(dTemp.subObsModelDiffSum[didx]);
+          dReturn.subNSum.push(dTemp.subNSum[didx]);
+          dReturn.subModelSum.push(dTemp.subModelSum[didx]);
+          dReturn.subObsSum.push(dTemp.subAbsSum[didx]);
+        }
+        dReturn.stdev.push(dTemp.stdev[didx]);
+        dReturn.subSecs.push(dTemp.subSecs[didx]);
+      }
+    }
+    dReturn.xTextOutput = [...d.xTextOutput, ...dTemp.xTextOutput];
+    dReturn.yTextOutput = [...d.yTextOutput, ...dTemp.yTextOutput];
+    dReturn.zTextOutput = [...d.zTextOutput, ...dTemp.zTextOutput];
+    dReturn.nTextOutput = [...d.nTextOutput, ...dTemp.nTextOutput];
+    dReturn.hitTextOutput = [...d.hitTextOutput, ...dTemp.hitTextOutput];
+    dReturn.faTextOutput = [...d.faTextOutput, ...dTemp.faTextOutput];
+    dReturn.missTextOutput = [...d.missTextOutput, ...dTemp.missTextOutput];
+    dReturn.cnTextOutput = [...d.cnTextOutput, ...dTemp.cnTextOutput];
+    dReturn.squareDiffSumTextOutput = [
+      ...d.squareDiffSumTextOutput,
+      ...dTemp.squareDiffSumTextOutput,
+    ];
+    dReturn.obsModelDiffSumTextOutput = [
+      ...d.obsModelDiffSumTextOutput,
+      ...dTemp.obsModelDiffSumTextOutput,
+    ];
+    dReturn.NSumTextOutput = [...d.NSumTextOutput, ...dTemp.NSumTextOutput];
+    dReturn.modelSumTextOutput = [...d.modelSumTextOutput, ...dTemp.modelSumTextOutput];
+    dReturn.obsSumTextOutput = [...d.obsSumTextOutput, ...dTemp.obsSumTextOutput];
+    dReturn.absSumTextOutput = [...d.absSumTextOutput, ...dTemp.absSumTextOutput];
+    dReturn.glob_stats.minDate =
+      d.glob_stats.minDate < dTemp.glob_stats.minDate
+        ? d.glob_stats.minDate
+        : dTemp.glob_stats.minDate;
+    dReturn.glob_stats.maxDate =
+      d.glob_stats.maxDate > dTemp.glob_stats.maxDate
+        ? d.glob_stats.maxDate
+        : dTemp.glob_stats.maxDate;
+    dReturn.glob_stats.n += dTemp.glob_stats.n;
+    dReturn.xmin = d.xmin < dTemp.xmin ? d.xmin : dTemp.xmin;
+    dReturn.xmax = d.xmax > dTemp.xmax ? d.xmax : dTemp.xmax;
+    dReturn.ymin = d.ymin < dTemp.ymin ? d.ymin : dTemp.ymin;
+    dReturn.ymax = d.ymax > dTemp.ymax ? d.ymax : dTemp.ymax;
+    dReturn.zmin = d.zmin < dTemp.zmin ? d.zmin : dTemp.zmin;
+    dReturn.zmax = d.zmax > dTemp.zmax ? d.zmax : dTemp.zmax;
+  }
+  return dReturn;
+};
+
 // which statistics are excluded from scorecards?
 const excludeStatFromScorecard = function (stat) {
   const statsToExclude = [
@@ -1645,6 +1734,7 @@ export default matsDataUtils = {
   callMetadataAPI,
   calculateStatCTC,
   calculateStatScalar,
+  consolidateContour,
   excludeStatFromScorecard,
   get_err,
   ctcErrorPython,
