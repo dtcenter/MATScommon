@@ -12,7 +12,7 @@ export const curveParamsByApp = {
     "level",
     "curve-dates",
   ],
-  "cb-ceiling": [
+  "cb-metar": [
     "label",
     "variable",
     "region-type",
