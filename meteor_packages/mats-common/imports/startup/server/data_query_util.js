@@ -3142,7 +3142,7 @@ const parseQueryDataMapCTC = function (
       });
 
       let thisSite;
-      if (appParams.isCouchbase) {
+      if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
         thisSite = siteMap.find((obj) => obj.name === site);
       } else {
         thisSite = siteMap.find((obj) => obj.options.id === site);
