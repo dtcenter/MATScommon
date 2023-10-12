@@ -24,9 +24,8 @@ class MatsMiddleCommon {
 
     const startTime = new Date().valueOf();
 
-    let queryTemplate = fs.readFileSync(
-      "assets/app/matsMiddle/sqlTemplates/tmpl_distinct_fcstValidEpoch_obs.sql",
-      "utf-8"
+    let queryTemplate = Assets.getText(
+      "matsMiddle/sqlTemplates/tmpl_distinct_fcstValidEpoch_obs.sql"
     );
     queryTemplate = queryTemplate.replace(/{{vxFROM_SECS}}/g, fromSecs);
     queryTemplate = queryTemplate.replace(/{{vxTO_SECS}}/g, toSecs);
@@ -56,9 +55,8 @@ class MatsMiddleCommon {
 
     const startTime = new Date().valueOf();
 
-    let queryTemplate = fs.readFileSync(
-      "assets/app/matsMiddle/sqlTemplates/tmpl_get_distinct_fcstLen.sql",
-      "utf-8"
+    let queryTemplate = Assets.getText(
+      "matsMiddle/sqlTemplates/tmpl_get_distinct_fcstLen.sql"
     );
     queryTemplate = queryTemplate.replace(/{{vxMODEL}}/g, `"${model}"`);
     queryTemplate = queryTemplate.replace(/{{vxFROM_SECS}}/g, fromSecs);
