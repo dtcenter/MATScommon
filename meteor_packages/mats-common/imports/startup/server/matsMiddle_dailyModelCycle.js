@@ -149,7 +149,7 @@ class MatsMiddleDailyModelCycle {
     const startTime = new Date().valueOf();
 
     const tmpl_get_N_stations_mfve_obs = Assets.getText(
-      "public/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_obs.sql"
+      "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_obs.sql"
     );
 
     let stationNames_obs = "";
@@ -220,7 +220,7 @@ class MatsMiddleDailyModelCycle {
     const startTime = new Date().valueOf();
 
     let tmpl_get_N_stations_mfve_model = Assets.getText(
-      "public/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_model.sql"
+      "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_model.sql"
     );
     /*
         tmpl_get_N_stations_mfve_model = this.cbPool.trfmSQLRemoveClause(
