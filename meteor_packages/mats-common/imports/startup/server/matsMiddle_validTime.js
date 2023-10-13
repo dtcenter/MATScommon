@@ -160,7 +160,7 @@ class MatsMiddleValidTime {
     const startTime = new Date().valueOf();
 
     const tmpl_get_N_stations_mfve_obs = Assets.getText(
-      "matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_obs.sql"
+      "private/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_obs.sql"
     );
 
     let stationNames_obs = "";
@@ -236,7 +236,7 @@ class MatsMiddleValidTime {
     const startTime = new Date().valueOf();
 
     let tmpl_get_N_stations_mfve_model = Assets.getText(
-      "matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_model.sql"
+      "private/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_model.sql"
     );
     tmpl_get_N_stations_mfve_model = this.cbPool.trfmSQLRemoveClause(
       tmpl_get_N_stations_mfve_model,

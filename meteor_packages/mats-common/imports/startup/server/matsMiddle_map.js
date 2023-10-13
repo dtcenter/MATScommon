@@ -178,7 +178,7 @@ class MatsMiddleMap {
     const startTime = new Date().valueOf();
 
     const tmpl_get_N_stations_mfve_obs = Assets.getText(
-      "matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_obs.sql"
+      "private/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_obs.sql"
     );
 
     this.fveObs = {};
@@ -254,7 +254,7 @@ class MatsMiddleMap {
     this.fveModels = {};
 
     let tmpl_get_N_stations_mfve_model = Assets.getText(
-      "matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_model.sql"
+      "private/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_model.sql"
     );
     tmpl_get_N_stations_mfve_model = this.cbPool.trfmSQLRemoveClause(
       tmpl_get_N_stations_mfve_model,

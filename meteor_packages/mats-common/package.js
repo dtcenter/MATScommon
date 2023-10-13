@@ -325,6 +325,22 @@ Package.onUse(function (api) {
   api.addAssets("public/help/StdErrorcalculationonEMBverificationpages.html", "client");
   api.addAssets("public/help/top-help.html", "client");
   api.addAssets("public/help/wfip2-statistic.html", "client");
+  api.addAssets(
+    "private/matsMiddle/sqlTemplates/tmpl_distinct_fcstValidEpoch_obs.sql",
+    "server"
+  );
+  api.addAssets(
+    "private/matsMiddle/sqlTemplates/tmpl_get_distinct_fcstLen.sql",
+    "server"
+  );
+  api.addAssets(
+    "private/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_model.sql",
+    "server"
+  );
+  api.addAssets(
+    "private/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_obs.sql",
+    "server"
+  );
 });
 
 Package.onTest(function (api) {
