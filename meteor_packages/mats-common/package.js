@@ -270,24 +270,6 @@ Package.onUse(function (api) {
   api.addFiles("templates/version/version.html", "client");
   api.addFiles("templates/version/version.js", "client");
 
-  // middleware
-  api.addFiles(
-    "imports/startup/server/matsMiddle/sqlTemplates/tmpl_distinct_fcstValidEpoch_obs.sql",
-    "server"
-  );
-  api.addFiles(
-    "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_distinct_fcstLen.sql",
-    "server"
-  );
-  api.addFiles(
-    "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_model.sql",
-    "server"
-  );
-  api.addFiles(
-    "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_obs.sql",
-    "server"
-  );
-
   // static assets
   api.addAssets("public/img/bootstrap-colorpicker/alpha-horizontal.png", "client");
   api.addAssets("public/img/bootstrap-colorpicker/alpha.png", "client");
