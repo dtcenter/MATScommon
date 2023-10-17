@@ -1103,7 +1103,8 @@ const queryDBMapCTC = function (
           dataSource,
           siteMap,
           statistic,
-          appParams
+          appParams,
+          true
         );
         d = parsedData.d;
         dPurple = parsedData.dPurple;
@@ -1143,7 +1144,8 @@ const queryDBMapCTC = function (
             dataSource,
             siteMap,
             statistic,
-            appParams
+            appParams,
+            false
           );
           d = parsedData.d;
           dPurple = parsedData.dPurple;
@@ -2979,7 +2981,8 @@ const parseQueryDataMapCTC = function (
   dataSource,
   siteMap,
   statistic,
-  appParams
+  appParams,
+  isCouchbase
 ) {
   const { hasLevels } = appParams;
   let highLimit = 100;
@@ -3142,7 +3145,7 @@ const parseQueryDataMapCTC = function (
       });
 
       let thisSite;
-      if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
+      if (isCouchbase) {
         thisSite = siteMap.find((obj) => obj.name === site);
       } else {
         thisSite = siteMap.find((obj) => obj.options.id === site);
