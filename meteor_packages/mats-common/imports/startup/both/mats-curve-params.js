@@ -14,6 +14,7 @@ export const curveParamsByApp = {
   ],
   "cb-metar": [
     "label",
+    "plot-type",
     "variable",
     "region-type",
     "data-source",
