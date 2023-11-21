@@ -535,7 +535,7 @@ const calculateStatScalar = function (
     return null;
   let queryVal;
   const variable = statistic.split("_")[1];
-  statistic = statistic.split("_")[0];
+  [statistic] = statistic.split("_");
   switch (statistic) {
     case "RMSE":
       queryVal = Math.sqrt(squareDiffSum / NSum);
@@ -564,15 +564,22 @@ const calculateStatScalar = function (
       queryVal = null;
   }
   if (isNaN(queryVal)) return null;
-  // need to convert to correct units for surface data (variable names are capitalized in upper air
-  // ("2m temperature" vs "Temperature"), so that should not trigger this if statement).
+  // need to convert to correct units for surface data but not upperair
   if (statistic !== "N") {
-    if (variable.includes("temperature") || variable.includes("dewpoint")) {
+    if (
+      variable.includes("2m") &&
+      (variable.toLowerCase().includes("temperature") ||
+        variable.toLowerCase().includes("dewpoint"))
+    ) {
       if (statistic.includes("average")) {
         queryVal -= 32;
       }
       queryVal /= 1.8;
-    } else if (variable.includes("wind")) {
+    } else if (
+      variable.includes("10m") &&
+      variable.toLowerCase().includes("wind") &&
+      variable.toLowerCase().includes("speed")
+    ) {
       queryVal /= 2.23693629;
     }
   }
