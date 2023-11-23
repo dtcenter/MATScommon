@@ -35,7 +35,7 @@ const getLargeIntervalCurveData = function (dataset, diffFrom, independentVarNam
 };
 
 // generates diff curves for all plot types that have diff curves.
-const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC, isScalar) {
+const getDataForDiffCurve = function (dataset, diffFrom, appParams, allStatTypes) {
   /*
      DATASET ELEMENTS:
         series: [data,data,data ...... ]   each data is itself an object
@@ -81,6 +81,10 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC, isSca
 
   const { plotType } = appParams;
   const { hasLevels } = appParams;
+  const minuendIsCTC = allStatTypes[1] === "ctc";
+  const subtrahendIsCTC = allStatTypes[0] === "ctc";
+  const minuendIsScalar = allStatTypes[1] === "scalar";
+  const subtrahendIsScalar = allStatTypes[0] === "scalar";
 
   // determine whether data[0] or data[1] is the independent variable, and which is the stat value
   let independentVarName;
@@ -294,16 +298,12 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC, isSca
             subtrahendData.subInterest.length === 0)
         ) {
           if (plotType !== matsTypes.PlotTypes.histogram) {
-            if (isCTC) {
+            if (minuendIsCTC) {
               minuendDataSubHit = minuendData.subHit[minuendIndex];
               minuendDataSubFa = minuendData.subFa[minuendIndex];
               minuendDataSubMiss = minuendData.subMiss[minuendIndex];
               minuendDataSubCn = minuendData.subCn[minuendIndex];
-              subtrahendDataSubHit = subtrahendData.subHit[subtrahendIndex];
-              subtrahendDataSubFa = subtrahendData.subFa[subtrahendIndex];
-              subtrahendDataSubMiss = subtrahendData.subMiss[subtrahendIndex];
-              subtrahendDataSubCn = subtrahendData.subCn[subtrahendIndex];
-            } else if (isScalar) {
+            } else if (minuendIsScalar) {
               minuendDataSubSquareDiffSum = minuendData.subSquareDiffSum[minuendIndex];
               minuendDataSubNSum = minuendData.subNSum[minuendIndex];
               minuendDataSubObsModelDiffSum =
@@ -311,6 +311,26 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC, isSca
               minuendDataSubModelSum = minuendData.subModelSum[minuendIndex];
               minuendDataSubObsSum = minuendData.subObsSum[minuendIndex];
               minuendDataSubAbsSum = minuendData.subAbsSum[minuendIndex];
+            } else if (
+              minuendData.n_total.length > 0 &&
+              subtrahendData.n_total.length
+            ) {
+              minuendDataNForecast = minuendData.n_forecast[minuendIndex];
+              minuendDataNMatched = minuendData.n_matched[minuendIndex];
+              minuendDataNSimple = minuendData.n_simple[minuendIndex];
+              minuendDataNTotal = minuendData.n_total[minuendIndex];
+            }
+            minuendDataSubValues = minuendData.subVals[minuendIndex];
+            minuendDataSubSeconds = minuendData.subSecs[minuendIndex];
+            if (hasLevels) {
+              minuendDataSubLevels = minuendData.subLevs[minuendIndex];
+            }
+            if (subtrahendIsCTC) {
+              subtrahendDataSubHit = subtrahendData.subHit[subtrahendIndex];
+              subtrahendDataSubFa = subtrahendData.subFa[subtrahendIndex];
+              subtrahendDataSubMiss = subtrahendData.subMiss[subtrahendIndex];
+              subtrahendDataSubCn = subtrahendData.subCn[subtrahendIndex];
+            } else if (subtrahendIsScalar) {
               subtrahendDataSubSquareDiffSum =
                 subtrahendData.subSquareDiffSum[subtrahendIndex];
               subtrahendDataSubNSum = subtrahendData.subNSum[subtrahendIndex];
@@ -323,21 +343,14 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC, isSca
               minuendData.n_total.length > 0 &&
               subtrahendData.n_total.length
             ) {
-              minuendDataNForecast = minuendData.n_forecast[minuendIndex];
-              minuendDataNMatched = minuendData.n_matched[minuendIndex];
-              minuendDataNSimple = minuendData.n_simple[minuendIndex];
-              minuendDataNTotal = minuendData.n_total[minuendIndex];
               subtrahendDataNForecast = subtrahendData.n_forecast[subtrahendIndex];
               subtrahendDataNMatched = subtrahendData.n_matched[subtrahendIndex];
               subtrahendDataNSimple = subtrahendData.n_simple[subtrahendIndex];
               subtrahendDataNTotal = subtrahendData.n_total[subtrahendIndex];
             }
-            minuendDataSubValues = minuendData.subVals[minuendIndex];
             subtrahendDataSubValues = subtrahendData.subVals[subtrahendIndex];
-            minuendDataSubSeconds = minuendData.subSecs[minuendIndex];
             subtrahendDataSubSeconds = subtrahendData.subSecs[subtrahendIndex];
             if (hasLevels) {
-              minuendDataSubLevels = minuendData.subLevs[minuendIndex];
               subtrahendDataSubLevels = subtrahendData.subLevs[subtrahendIndex];
             }
 
@@ -362,7 +375,7 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC, isSca
                     minuendDataSubSeconds[mvalIdx] ===
                       subtrahendDataSubSeconds[svalIdx])
                 ) {
-                  if (isCTC) {
+                  if (minuendIsCTC && subtrahendIsCTC) {
                     tempSubHitArray.push(
                       minuendDataSubHit[mvalIdx] - subtrahendDataSubHit[svalIdx]
                     );
@@ -375,7 +388,7 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC, isSca
                     tempSubCnArray.push(
                       minuendDataSubCn[mvalIdx] - subtrahendDataSubCn[svalIdx]
                     );
-                  } else if (isScalar) {
+                  } else if (minuendIsScalar && subtrahendIsScalar) {
                     tempSubSquareDiffSumArray.push(
                       minuendDataSubSquareDiffSum[mvalIdx] -
                         subtrahendDataSubSquareDiffSum[svalIdx]
