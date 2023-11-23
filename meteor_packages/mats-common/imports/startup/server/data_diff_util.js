@@ -3,13 +3,14 @@
  */
 
 import { matsTypes, matsDataUtils } from "meteor/randyp:mats-common";
+import { _ } from "meteor/underscore";
 
 // returns the data for whichever curve has the larger interval in its independent variable
 const getLargeIntervalCurveData = function (dataset, diffFrom, independentVarName) {
   let dataMaxInterval = Number.MIN_VALUE;
   let largeIntervalCurveData = dataset[diffFrom[0]];
   // set up the indexes and determine the minimum independentVarName value for the dataset
-  for (let ci = 0; ci < dataset.length; ci++) {
+  for (let ci = 0; ci < dataset.length; ci += 1) {
     if (
       dataset[ci][independentVarName] === undefined ||
       dataset[ci][independentVarName].length === 0
@@ -18,8 +19,8 @@ const getLargeIntervalCurveData = function (dataset, diffFrom, independentVarNam
       break;
     }
     if (dataset[ci][independentVarName].length > 1) {
-      var diff;
-      for (let di = 0; di < dataset[ci][independentVarName].length - 1; di++) {
+      let diff;
+      for (let di = 0; di < dataset[ci][independentVarName].length - 1; di += 1) {
         // don't go all the way to the end - one shy
         diff =
           dataset[ci][independentVarName][di + 1] - dataset[ci][independentVarName][di];
@@ -158,7 +159,7 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC, isSca
   for (
     let largeIntervalCurveIndex = 0;
     largeIntervalCurveIndex < largeIntervalCurveData[independentVarName].length;
-    largeIntervalCurveIndex++
+    largeIntervalCurveIndex += 1
   ) {
     // make sure that we are actually on the same independentVarName value for each curve
     let subtrahendIndependentVar = subtrahendData[independentVarName][subtrahendIndex];
@@ -172,12 +173,13 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC, isSca
       largeIntervalIndependentVar > minuendIndependentVar &&
       minuendIndex < minuendData[independentVarName].length - 1
     ) {
-      minuendIndependentVar = minuendData[independentVarName][++minuendIndex];
+      minuendIndex += 1;
+      minuendIndependentVar = minuendData[independentVarName][minuendIndex];
       minuendChanged = true;
     }
     // if the end of the curve was reached without finding the largeIntervalIndependentVar, increase the minuendIndex to trigger the end conditions.
     if (!minuendChanged && minuendIndex >= minuendData[independentVarName].length - 1) {
-      ++minuendIndex;
+      minuendIndex += 1;
     }
 
     // increment the subtrahendIndex until it reaches this iteration's largeIntervalIndependentVar
@@ -186,7 +188,8 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC, isSca
       largeIntervalIndependentVar > subtrahendIndependentVar &&
       subtrahendIndex < subtrahendData[independentVarName].length - 1
     ) {
-      subtrahendIndependentVar = subtrahendData[independentVarName][++subtrahendIndex];
+      subtrahendIndex += 1;
+      subtrahendIndependentVar = subtrahendData[independentVarName][subtrahendIndex];
       subtrahendChanged = true;
     }
     // if the end of the curve was reached without finding the largeIntervalIndependentVar, increase the subtrahendIndex to trigger the end conditions.
@@ -194,23 +197,23 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC, isSca
       !subtrahendChanged &&
       subtrahendIndex >= subtrahendData[independentVarName].length - 1
     ) {
-      ++subtrahendIndex;
+      subtrahendIndex += 1;
     }
 
     let diffValue = null;
-    var tempSubHitArray;
-    var tempSubFaArray;
-    var tempSubMissArray;
-    var tempSubCnArray;
-    var tempSubSquareDiffSumArray;
-    var tempSubNSumArray;
-    var tempSubObsModelDiffSumArray;
-    var tempSubModelSumArray;
-    var tempSubObsSumArray;
-    var tempSubAbsSumArray;
-    var tempSubValsArray;
-    var tempSubSecsArray;
-    var tempSubLevsArray;
+    let tempSubHitArray;
+    let tempSubFaArray;
+    let tempSubMissArray;
+    let tempSubCnArray;
+    let tempSubSquareDiffSumArray;
+    let tempSubNSumArray;
+    let tempSubObsModelDiffSumArray;
+    let tempSubModelSumArray;
+    let tempSubObsSumArray;
+    let tempSubAbsSumArray;
+    let tempSubValsArray;
+    let tempSubSecsArray;
+    let tempSubLevsArray;
 
     // make sure both curves actually have data at this index
     if (
@@ -249,6 +252,40 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC, isSca
           tempSubLevsArray = [];
         }
 
+        let minuendDataSubHit;
+        let minuendDataSubFa;
+        let minuendDataSubMiss;
+        let minuendDataSubCn;
+        let subtrahendDataSubHit;
+        let subtrahendDataSubFa;
+        let subtrahendDataSubMiss;
+        let subtrahendDataSubCn;
+        let minuendDataSubSquareDiffSum;
+        let minuendDataSubNSum;
+        let minuendDataSubObsModelDiffSum;
+        let minuendDataSubModelSum;
+        let minuendDataSubObsSum;
+        let minuendDataSubAbsSum;
+        let subtrahendDataSubSquareDiffSum;
+        let subtrahendDataSubNSum;
+        let subtrahendDataSubObsModelDiffSum;
+        let subtrahendDataSubModelSum;
+        let subtrahendDataSubObsSum;
+        let subtrahendDataSubAbsSum;
+        let minuendDataNForecast;
+        let minuendDataNMatched;
+        let minuendDataNSimple;
+        let minuendDataNTotal;
+        let subtrahendDataNForecast;
+        let subtrahendDataNMatched;
+        let subtrahendDataNSimple;
+        let subtrahendDataNTotal;
+        let minuendDataSubValues;
+        let subtrahendDataSubValues;
+        let minuendDataSubSeconds;
+        let subtrahendDataSubSeconds;
+        let minuendDataSubLevels;
+        let subtrahendDataSubLevels;
         // calculate the differences in sub values. If it's a MODE curve we don't care.
         if (
           (minuendData.subInterest === undefined ||
@@ -258,60 +295,62 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC, isSca
         ) {
           if (plotType !== matsTypes.PlotTypes.histogram) {
             if (isCTC) {
-              var minuendDataSubHit = minuendData.subHit[minuendIndex];
-              var minuendDataSubFa = minuendData.subFa[minuendIndex];
-              var minuendDataSubMiss = minuendData.subMiss[minuendIndex];
-              var minuendDataSubCn = minuendData.subCn[minuendIndex];
-              var subtrahendDataSubHit = subtrahendData.subHit[subtrahendIndex];
-              var subtrahendDataSubFa = subtrahendData.subFa[subtrahendIndex];
-              var subtrahendDataSubMiss = subtrahendData.subMiss[subtrahendIndex];
-              var subtrahendDataSubCn = subtrahendData.subCn[subtrahendIndex];
+              minuendDataSubHit = minuendData.subHit[minuendIndex];
+              minuendDataSubFa = minuendData.subFa[minuendIndex];
+              minuendDataSubMiss = minuendData.subMiss[minuendIndex];
+              minuendDataSubCn = minuendData.subCn[minuendIndex];
+              subtrahendDataSubHit = subtrahendData.subHit[subtrahendIndex];
+              subtrahendDataSubFa = subtrahendData.subFa[subtrahendIndex];
+              subtrahendDataSubMiss = subtrahendData.subMiss[subtrahendIndex];
+              subtrahendDataSubCn = subtrahendData.subCn[subtrahendIndex];
             } else if (isScalar) {
-              var minuendDataSubSquareDiffSum =
-                minuendData.subSquareDiffSum[minuendIndex];
-              var minuendDataSubNSum = minuendData.subNSum[minuendIndex];
-              var minuendDataSubObsModelDiffSum =
+              minuendDataSubSquareDiffSum = minuendData.subSquareDiffSum[minuendIndex];
+              minuendDataSubNSum = minuendData.subNSum[minuendIndex];
+              minuendDataSubObsModelDiffSum =
                 minuendData.subObsModelDiffSum[minuendIndex];
-              var minuendDataSubModelSum = minuendData.subModelSum[minuendIndex];
-              var minuendDataSubObsSum = minuendData.subObsSum[minuendIndex];
-              var minuendDataSubAbsSum = minuendData.subAbsSum[minuendIndex];
-              var subtrahendDataSubSquareDiffSum =
+              minuendDataSubModelSum = minuendData.subModelSum[minuendIndex];
+              minuendDataSubObsSum = minuendData.subObsSum[minuendIndex];
+              minuendDataSubAbsSum = minuendData.subAbsSum[minuendIndex];
+              subtrahendDataSubSquareDiffSum =
                 subtrahendData.subSquareDiffSum[subtrahendIndex];
-              var subtrahendDataSubNSum = subtrahendData.subNSum[subtrahendIndex];
-              var subtrahendDataSubObsModelDiffSum =
+              subtrahendDataSubNSum = subtrahendData.subNSum[subtrahendIndex];
+              subtrahendDataSubObsModelDiffSum =
                 subtrahendData.subObsModelDiffSum[subtrahendIndex];
-              var subtrahendDataSubModelSum =
-                subtrahendData.subModelSum[subtrahendIndex];
-              var subtrahendDataSubObsSum = subtrahendData.subObsSum[subtrahendIndex];
-              var subtrahendDataSubAbsSum = subtrahendData.subAbsSum[subtrahendIndex];
+              subtrahendDataSubModelSum = subtrahendData.subModelSum[subtrahendIndex];
+              subtrahendDataSubObsSum = subtrahendData.subObsSum[subtrahendIndex];
+              subtrahendDataSubAbsSum = subtrahendData.subAbsSum[subtrahendIndex];
             } else if (
               minuendData.n_total.length > 0 &&
               subtrahendData.n_total.length
             ) {
-              var minuendDataNForecast = minuendData.n_forecast[minuendIndex];
-              var minuendDataNMatched = minuendData.n_matched[minuendIndex];
-              var minuendDataNSimple = minuendData.n_simple[minuendIndex];
-              var minuendDataNTotal = minuendData.n_total[minuendIndex];
-              var subtrahendDataNForecast = subtrahendData.n_forecast[subtrahendIndex];
-              var subtrahendDataNMatched = subtrahendData.n_matched[subtrahendIndex];
-              var subtrahendDataNSimple = subtrahendData.n_simple[subtrahendIndex];
-              var subtrahendDataNTotal = subtrahendData.n_total[subtrahendIndex];
+              minuendDataNForecast = minuendData.n_forecast[minuendIndex];
+              minuendDataNMatched = minuendData.n_matched[minuendIndex];
+              minuendDataNSimple = minuendData.n_simple[minuendIndex];
+              minuendDataNTotal = minuendData.n_total[minuendIndex];
+              subtrahendDataNForecast = subtrahendData.n_forecast[subtrahendIndex];
+              subtrahendDataNMatched = subtrahendData.n_matched[subtrahendIndex];
+              subtrahendDataNSimple = subtrahendData.n_simple[subtrahendIndex];
+              subtrahendDataNTotal = subtrahendData.n_total[subtrahendIndex];
             }
-            const minuendDataSubValues = minuendData.subVals[minuendIndex];
-            const subtrahendDataSubValues = subtrahendData.subVals[subtrahendIndex];
-            const minuendDataSubSeconds = minuendData.subSecs[minuendIndex];
-            const subtrahendDataSubSeconds = subtrahendData.subSecs[subtrahendIndex];
+            minuendDataSubValues = minuendData.subVals[minuendIndex];
+            subtrahendDataSubValues = subtrahendData.subVals[subtrahendIndex];
+            minuendDataSubSeconds = minuendData.subSecs[minuendIndex];
+            subtrahendDataSubSeconds = subtrahendData.subSecs[subtrahendIndex];
             if (hasLevels) {
-              var minuendDataSubLevels = minuendData.subLevs[minuendIndex];
-              var subtrahendDataSubLevels = subtrahendData.subLevs[subtrahendIndex];
+              minuendDataSubLevels = minuendData.subLevs[minuendIndex];
+              subtrahendDataSubLevels = subtrahendData.subLevs[subtrahendIndex];
             }
 
             // find matching sub values and diff those
-            for (let mvalIdx = 0; mvalIdx < minuendDataSubSeconds.length; mvalIdx++) {
+            for (
+              let mvalIdx = 0;
+              mvalIdx < minuendDataSubSeconds.length;
+              mvalIdx += 1
+            ) {
               for (
                 let svalIdx = 0;
                 svalIdx < subtrahendDataSubSeconds.length;
-                svalIdx++
+                svalIdx += 1
               ) {
                 if (
                   (hasLevels &&
@@ -366,7 +405,7 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, isCTC, isSca
                   if (hasLevels) {
                     tempSubLevsArray.push(minuendDataSubLevels[mvalIdx]);
                   }
-                  d.glob_stats.glob_n++;
+                  d.glob_stats.glob_n += 1;
                 }
               }
             }
@@ -479,9 +518,8 @@ const getDataForDiffContour = function (
   appParams,
   showSignificance,
   sigType,
-  statistic,
-  isCTC,
-  isScalar
+  allStatistics,
+  allStatTypes
 ) {
   /*
      DATASET ELEMENTS:
@@ -591,6 +629,12 @@ const getDataForDiffContour = function (
   const isMatching = appParams.matching;
   const minuendData = dataset[1];
   const subtrahendData = dataset[0];
+  const minuendIsCTC = allStatTypes[1] === "ctc";
+  const subtrahendIsCTC = allStatTypes[0] === "ctc";
+  const minuendIsScalar = allStatTypes[1] === "scalar";
+  const subtrahendIsScalar = allStatTypes[0] === "scalar";
+  const minuendStatistic = allStatistics[1];
+  const subtrahendStatistic = allStatistics[0];
 
   // get common x and y
   diffDataset.x = _.intersection(minuendData.x, subtrahendData.x).sort(function (a, b) {
@@ -623,9 +667,9 @@ const getDataForDiffContour = function (
 
   // loop through common Ys
   for (
-    var diffDataYIndex = 0;
+    let diffDataYIndex = 0;
     diffDataYIndex < diffDataset.y.length;
-    diffDataYIndex++
+    diffDataYIndex += 1
   ) {
     // make sure that we are actually on the same y value for each curve
     const diffDataY = diffDataset.y[diffDataYIndex];
@@ -634,12 +678,14 @@ const getDataForDiffContour = function (
 
     // increment the minuendYIndex until it reaches this iteration's diffDataY
     while (diffDataY > minuendY && minuendYIndex < minuendData.y.length - 1) {
-      minuendY = minuendData.y[++minuendYIndex];
+      minuendYIndex += 1;
+      minuendY = minuendData.y[minuendYIndex];
     }
 
     // increment the subtrahendYIndex until it reaches this iteration's diffDataY
     while (diffDataY > subtrahendY && subtrahendYIndex < subtrahendData.y.length - 1) {
-      subtrahendY = subtrahendData.y[++subtrahendYIndex];
+      subtrahendYIndex += 1;
+      subtrahendY = subtrahendData.y[subtrahendYIndex];
     }
 
     // initialize n and z arrays for this Y
@@ -652,7 +698,7 @@ const getDataForDiffContour = function (
     for (
       let diffDataXIndex = 0;
       diffDataXIndex < diffDataset.x.length;
-      diffDataXIndex++
+      diffDataXIndex += 1
     ) {
       // make sure that we are actually on the same x value for each curve
       const diffDataX = diffDataset.x[diffDataXIndex];
@@ -661,7 +707,8 @@ const getDataForDiffContour = function (
 
       // increment the minuendXIndex until it reaches this iteration's diffDataX
       while (diffDataX > minuendX && minuendXIndex < minuendData.x.length - 1) {
-        minuendX = minuendData.x[++minuendXIndex];
+        minuendXIndex += 1;
+        minuendX = minuendData.x[minuendXIndex];
       }
 
       // increment the subtrahendXIndex until it reaches this iteration's diffDataX
@@ -669,7 +716,8 @@ const getDataForDiffContour = function (
         diffDataX > subtrahendX &&
         subtrahendXIndex < subtrahendData.x.length - 1
       ) {
-        subtrahendX = subtrahendData.x[++subtrahendXIndex];
+        subtrahendXIndex += 1;
+        subtrahendX = subtrahendData.x[subtrahendXIndex];
       }
 
       let diffValue = null;
@@ -689,32 +737,58 @@ const getDataForDiffContour = function (
       let isDiffSignificant = null;
       let matchingSeconds = [];
       let matchingSecLevs = [];
-      var newMinuendSubHitArray;
-      var newMinuendSubFaArray;
-      var newMinuendSubMissArray;
-      var newMinuendSubCnArray;
-      var newMinuendSubSquareDiffSumArray;
-      var newMinuendSubNSumArray;
-      var newMinuendSubObsModelDiffSumArray;
-      var newMinuendSubModelSumArray;
-      var newMinuendSubObsSumArray;
-      var newMinuendSubAbsSumArray;
-      var newMinuendSubValsArray;
-      var newMinuendSubSecsArray;
-      var newMinuendSubLevsArray;
-      var newSubtrahendSubHitArray;
-      var newSubtrahendSubFaArray;
-      var newSubtrahendSubMissArray;
-      var newSubtrahendSubCnArray;
-      var newSubtrahendSubSquareDiffSumArray;
-      var newSubtrahendSubNSumArray;
-      var newSubtrahendSubObsModelDiffSumArray;
-      var newSubtrahendSubModelSumArray;
-      var newSubtrahendSubObsSumArray;
-      var newSubtrahendSubAbsSumArray;
-      var newSubtrahendSubValsArray;
-      var newSubtrahendSubSecsArray;
-      var newSubtrahendSubLevsArray;
+      let newMinuendSubHitArray;
+      let newMinuendSubFaArray;
+      let newMinuendSubMissArray;
+      let newMinuendSubCnArray;
+      let newMinuendSubSquareDiffSumArray;
+      let newMinuendSubNSumArray;
+      let newMinuendSubObsModelDiffSumArray;
+      let newMinuendSubModelSumArray;
+      let newMinuendSubObsSumArray;
+      let newMinuendSubAbsSumArray;
+      let newMinuendSubValsArray;
+      let newMinuendSubSecsArray;
+      let newMinuendSubLevsArray;
+      let newSubtrahendSubHitArray;
+      let newSubtrahendSubFaArray;
+      let newSubtrahendSubMissArray;
+      let newSubtrahendSubCnArray;
+      let newSubtrahendSubSquareDiffSumArray;
+      let newSubtrahendSubNSumArray;
+      let newSubtrahendSubObsModelDiffSumArray;
+      let newSubtrahendSubModelSumArray;
+      let newSubtrahendSubObsSumArray;
+      let newSubtrahendSubAbsSumArray;
+      let newSubtrahendSubValsArray;
+      let newSubtrahendSubSecsArray;
+      let newSubtrahendSubLevsArray;
+      let minuendDataSubHit;
+      let minuendDataSubFa;
+      let minuendDataSubMiss;
+      let minuendDataSubCn;
+      let subtrahendDataSubHit;
+      let subtrahendDataSubFa;
+      let subtrahendDataSubMiss;
+      let subtrahendDataSubCn;
+      let minuendDataSubSquareDiffSum;
+      let minuendDataSubNSum;
+      let minuendDataSubObsModelDiffSum;
+      let minuendDataSubModelSum;
+      let minuendDataSubObsSum;
+      let minuendDataSubAbsSum;
+      let subtrahendDataSubSquareDiffSum;
+      let subtrahendDataSubNSum;
+      let subtrahendDataSubObsModelDiffSum;
+      let subtrahendDataSubModelSum;
+      let subtrahendDataSubObsSum;
+      let subtrahendDataSubAbsSum;
+      let minuendDataSubValues;
+      let subtrahendDataSubValues;
+      let minuendDataSubSeconds;
+      let subtrahendDataSubSeconds;
+      let minuendDataSubLevels;
+      let subtrahendDataSubLevels;
 
       if (
         minuendData.z[minuendYIndex][minuendXIndex] !== undefined &&
@@ -757,71 +831,70 @@ const getDataForDiffContour = function (
             newSubtrahendSubLevsArray = [];
           }
 
-          if (isCTC) {
-            var minuendDataSubHit = minuendData.subHit[minuendYIndex][minuendXIndex];
-            var minuendDataSubFa = minuendData.subFa[minuendYIndex][minuendXIndex];
-            var minuendDataSubMiss = minuendData.subMiss[minuendYIndex][minuendXIndex];
-            var minuendDataSubCn = minuendData.subCn[minuendYIndex][minuendXIndex];
-            var subtrahendDataSubHit =
-              subtrahendData.subHit[subtrahendYIndex][subtrahendXIndex];
-            var subtrahendDataSubFa =
-              subtrahendData.subFa[subtrahendYIndex][subtrahendXIndex];
-            var subtrahendDataSubMiss =
-              subtrahendData.subMiss[subtrahendYIndex][subtrahendXIndex];
-            var subtrahendDataSubCn =
-              subtrahendData.subCn[subtrahendYIndex][subtrahendXIndex];
-          } else if (isScalar) {
-            var minuendDataSubSquareDiffSum =
+          if (minuendIsCTC) {
+            minuendDataSubHit = minuendData.subHit[minuendYIndex][minuendXIndex];
+            minuendDataSubFa = minuendData.subFa[minuendYIndex][minuendXIndex];
+            minuendDataSubMiss = minuendData.subMiss[minuendYIndex][minuendXIndex];
+            minuendDataSubCn = minuendData.subCn[minuendYIndex][minuendXIndex];
+          } else if (minuendIsScalar) {
+            minuendDataSubSquareDiffSum =
               minuendData.subSquareDiffSum[minuendYIndex][minuendXIndex];
-            var minuendDataSubNSum = minuendData.subNSum[minuendYIndex][minuendXIndex];
-            var minuendDataSubObsModelDiffSum =
+            minuendDataSubNSum = minuendData.subNSum[minuendYIndex][minuendXIndex];
+            minuendDataSubObsModelDiffSum =
               minuendData.subObsModelDiffSum[minuendYIndex][minuendXIndex];
-            var minuendDataSubModelSum =
+            minuendDataSubModelSum =
               minuendData.subModelSum[minuendYIndex][minuendXIndex];
-            var minuendDataSubObsSum =
-              minuendData.subObsSum[minuendYIndex][minuendXIndex];
-            var minuendDataSubAbsSum =
-              minuendData.subAbsSum[minuendYIndex][minuendXIndex];
-            var subtrahendDataSubSquareDiffSum =
+            minuendDataSubObsSum = minuendData.subObsSum[minuendYIndex][minuendXIndex];
+            minuendDataSubAbsSum = minuendData.subAbsSum[minuendYIndex][minuendXIndex];
+          } else {
+            minuendDataSubValues = minuendData.subVals[minuendYIndex][minuendXIndex];
+          }
+          if (subtrahendIsCTC) {
+            subtrahendDataSubHit =
+              subtrahendData.subHit[subtrahendYIndex][subtrahendXIndex];
+            subtrahendDataSubFa =
+              subtrahendData.subFa[subtrahendYIndex][subtrahendXIndex];
+            subtrahendDataSubMiss =
+              subtrahendData.subMiss[subtrahendYIndex][subtrahendXIndex];
+            subtrahendDataSubCn =
+              subtrahendData.subCn[subtrahendYIndex][subtrahendXIndex];
+          } else if (subtrahendIsScalar) {
+            subtrahendDataSubSquareDiffSum =
               subtrahendData.subSquareDiffSum[subtrahendYIndex][subtrahendXIndex];
-            var subtrahendDataSubNSum =
+            subtrahendDataSubNSum =
               subtrahendData.subNSum[subtrahendYIndex][subtrahendXIndex];
-            var subtrahendDataSubObsModelDiffSum =
+            subtrahendDataSubObsModelDiffSum =
               subtrahendData.subObsModelDiffSum[subtrahendYIndex][subtrahendXIndex];
-            var subtrahendDataSubModelSum =
+            subtrahendDataSubModelSum =
               subtrahendData.subModelSum[subtrahendYIndex][subtrahendXIndex];
-            var subtrahendDataSubObsSum =
+            subtrahendDataSubObsSum =
               subtrahendData.subObsSum[subtrahendYIndex][subtrahendXIndex];
-            var subtrahendDataSubAbsSum =
+            subtrahendDataSubAbsSum =
               subtrahendData.subAbsSum[subtrahendYIndex][subtrahendXIndex];
           } else {
-            var minuendDataSubValues =
-              minuendData.subVals[minuendYIndex][minuendXIndex];
-            var subtrahendDataSubValues =
+            subtrahendDataSubValues =
               subtrahendData.subVals[subtrahendYIndex][subtrahendXIndex];
           }
-          const minuendDataSubSeconds =
-            minuendData.subSecs[minuendYIndex][minuendXIndex];
-          const subtrahendDataSubSeconds =
+          minuendDataSubSeconds = minuendData.subSecs[minuendYIndex][minuendXIndex];
+          subtrahendDataSubSeconds =
             subtrahendData.subSecs[subtrahendYIndex][subtrahendXIndex];
           if (hasLevels) {
-            var minuendDataSubLevels =
-              minuendData.subLevs[minuendYIndex][minuendXIndex];
-            var subtrahendDataSubLevels =
+            minuendDataSubLevels = minuendData.subLevs[minuendYIndex][minuendXIndex];
+            subtrahendDataSubLevels =
               subtrahendData.subLevs[subtrahendYIndex][subtrahendXIndex];
           }
 
           // find matching sub values and diff those
           if (hasLevels) {
             const minuendSecLevs = [];
-            for (let midx = 0; midx < minuendDataSubSeconds.length; midx++) {
+            for (let midx = 0; midx < minuendDataSubSeconds.length; midx += 1) {
               minuendSecLevs.push([
                 minuendDataSubSeconds[midx],
                 minuendDataSubLevels[midx],
               ]);
             }
             matchingSecLevs = [];
-            for (let sidx = 0; sidx < subtrahendDataSubSeconds.length; sidx++) {
+            for (let sidx = 0; sidx < subtrahendDataSubSeconds.length; sidx += 1) {
               if (
                 matsDataUtils.arrayContainsSubArray(minuendSecLevs, [
                   subtrahendDataSubSeconds[sidx],
@@ -841,7 +914,7 @@ const getDataForDiffContour = function (
             );
           }
 
-          for (let mvalIdx = 0; mvalIdx < minuendDataSubSeconds.length; mvalIdx++) {
+          for (let mvalIdx = 0; mvalIdx < minuendDataSubSeconds.length; mvalIdx += 1) {
             if (
               (hasLevels &&
                 matsDataUtils.arrayContainsSubArray(matchingSecLevs, [
@@ -850,12 +923,12 @@ const getDataForDiffContour = function (
                 ])) ||
               (!hasLevels && matchingSeconds.includes(minuendDataSubSeconds[mvalIdx]))
             ) {
-              if (isCTC) {
+              if (minuendIsCTC) {
                 newMinuendSubHitArray.push(minuendDataSubHit[mvalIdx]);
                 newMinuendSubFaArray.push(minuendDataSubFa[mvalIdx]);
                 newMinuendSubMissArray.push(minuendDataSubMiss[mvalIdx]);
                 newMinuendSubCnArray.push(minuendDataSubCn[mvalIdx]);
-              } else if (isScalar) {
+              } else if (minuendIsScalar) {
                 newMinuendSubSquareDiffSumArray.push(
                   minuendDataSubSquareDiffSum[mvalIdx]
                 );
@@ -875,7 +948,11 @@ const getDataForDiffContour = function (
               }
             }
           }
-          for (let svalIdx = 0; svalIdx < subtrahendDataSubSeconds.length; svalIdx++) {
+          for (
+            let svalIdx = 0;
+            svalIdx < subtrahendDataSubSeconds.length;
+            svalIdx += 1
+          ) {
             if (
               (hasLevels &&
                 matsDataUtils.arrayContainsSubArray(matchingSecLevs, [
@@ -885,12 +962,12 @@ const getDataForDiffContour = function (
               (!hasLevels &&
                 matchingSeconds.includes(subtrahendDataSubSeconds[svalIdx]))
             ) {
-              if (isCTC) {
+              if (subtrahendIsCTC) {
                 newSubtrahendSubHitArray.push(subtrahendDataSubHit[svalIdx]);
                 newSubtrahendSubFaArray.push(subtrahendDataSubFa[svalIdx]);
                 newSubtrahendSubMissArray.push(subtrahendDataSubMiss[svalIdx]);
                 newSubtrahendSubCnArray.push(subtrahendDataSubCn[svalIdx]);
-              } else if (isScalar) {
+              } else if (subtrahendIsScalar) {
                 newSubtrahendSubSquareDiffSumArray.push(
                   subtrahendDataSubSquareDiffSum[svalIdx]
                 );
@@ -910,19 +987,11 @@ const getDataForDiffContour = function (
               }
             }
           }
-          if (isCTC) {
+          if (minuendIsCTC) {
             minuendData.subHit[minuendYIndex][minuendXIndex] = newMinuendSubHitArray;
             minuendData.subFa[minuendYIndex][minuendXIndex] = newMinuendSubFaArray;
             minuendData.subMiss[minuendYIndex][minuendXIndex] = newMinuendSubMissArray;
             minuendData.subCn[minuendYIndex][minuendXIndex] = newMinuendSubCnArray;
-            subtrahendData.subHit[subtrahendYIndex][subtrahendXIndex] =
-              newSubtrahendSubHitArray;
-            subtrahendData.subFa[subtrahendYIndex][subtrahendXIndex] =
-              newSubtrahendSubFaArray;
-            subtrahendData.subMiss[subtrahendYIndex][subtrahendXIndex] =
-              newSubtrahendSubMissArray;
-            subtrahendData.subCn[subtrahendYIndex][subtrahendXIndex] =
-              newSubtrahendSubCnArray;
 
             const mHit = matsDataUtils.sum(newMinuendSubHitArray);
             const mFa = matsDataUtils.sum(newMinuendSubFaArray);
@@ -935,23 +1004,9 @@ const getDataForDiffContour = function (
                 mMiss,
                 mCn,
                 newMinuendSubHitArray.length,
-                statistic
+                minuendStatistic
               );
-
-            const sHit = matsDataUtils.sum(newSubtrahendSubHitArray);
-            const sFa = matsDataUtils.sum(newSubtrahendSubFaArray);
-            const sMiss = matsDataUtils.sum(newSubtrahendSubMissArray);
-            const sCn = matsDataUtils.sum(newSubtrahendSubCnArray);
-            subtrahendData.z[subtrahendYIndex][subtrahendXIndex] =
-              matsDataUtils.calculateStatCTC(
-                sHit,
-                sFa,
-                sMiss,
-                sCn,
-                newSubtrahendSubHitArray.length,
-                statistic
-              );
-          } else if (isScalar) {
+          } else if (minuendIsScalar) {
             minuendData.subSquareDiffSum[minuendYIndex][minuendXIndex] =
               newMinuendSubSquareDiffSumArray;
             minuendData.subNSum[minuendYIndex][minuendXIndex] = newMinuendSubNSumArray;
@@ -963,18 +1018,6 @@ const getDataForDiffContour = function (
               newMinuendSubObsSumArray;
             minuendData.subAbsSum[minuendYIndex][minuendXIndex] =
               newMinuendSubAbsSumArray;
-            subtrahendData.subSquareDiffSum[subtrahendYIndex][subtrahendXIndex] =
-              newSubtrahendSubSquareDiffSumArray;
-            subtrahendData.subNSum[subtrahendYIndex][subtrahendXIndex] =
-              newSubtrahendSubNSumArray;
-            subtrahendData.subObsModelDiffSum[subtrahendYIndex][subtrahendXIndex] =
-              newSubtrahendSubObsModelDiffSumArray;
-            subtrahendData.subModelSum[subtrahendYIndex][subtrahendXIndex] =
-              newSubtrahendSubModelSumArray;
-            subtrahendData.subObsSum[subtrahendYIndex][subtrahendXIndex] =
-              newSubtrahendSubObsSumArray;
-            subtrahendData.subAbsSum[subtrahendYIndex][subtrahendXIndex] =
-              newSubtrahendSubAbsSumArray;
 
             const mSquareDiffSum = matsDataUtils.sum(newMinuendSubSquareDiffSumArray);
             const mNSum = matsDataUtils.sum(newMinuendSubNSumArray);
@@ -992,13 +1035,13 @@ const getDataForDiffContour = function (
                 mModelSum,
                 mObsSum,
                 mAbsSum,
-                statistic
+                minuendStatistic
               );
             // need to populate subVals so stdev of them can be taken (Bill's method for determining significance)
             for (
               let msvIdx = 0;
               msvIdx < newMinuendSubSquareDiffSumArray.length;
-              msvIdx++
+              msvIdx += 1
             ) {
               newMinuendSubValsArray.push(
                 matsDataUtils.calculateStatScalar(
@@ -1008,7 +1051,7 @@ const getDataForDiffContour = function (
                   newMinuendSubModelSumArray[msvIdx],
                   newMinuendSubObsSumArray[msvIdx],
                   newMinuendSubAbsSumArray[msvIdx],
-                  statistic
+                  minuendStatistic
                 )
               );
             }
@@ -1016,6 +1059,53 @@ const getDataForDiffContour = function (
               newMinuendSubValsArray.length > 0
                 ? matsDataUtils.stdev(newMinuendSubValsArray)
                 : 0;
+          } else {
+            minuendData.subVals[minuendYIndex][minuendXIndex] = newMinuendSubValsArray;
+            minuendData.z[minuendYIndex][minuendXIndex] =
+              newMinuendSubValsArray.length > 0
+                ? matsDataUtils.average(newMinuendSubValsArray)
+                : null;
+            minuendData.stdev[minuendYIndex][minuendXIndex] =
+              newMinuendSubValsArray.length > 0
+                ? matsDataUtils.stdev(newMinuendSubValsArray)
+                : 0;
+          }
+          if (subtrahendIsCTC) {
+            subtrahendData.subHit[subtrahendYIndex][subtrahendXIndex] =
+              newSubtrahendSubHitArray;
+            subtrahendData.subFa[subtrahendYIndex][subtrahendXIndex] =
+              newSubtrahendSubFaArray;
+            subtrahendData.subMiss[subtrahendYIndex][subtrahendXIndex] =
+              newSubtrahendSubMissArray;
+            subtrahendData.subCn[subtrahendYIndex][subtrahendXIndex] =
+              newSubtrahendSubCnArray;
+
+            const sHit = matsDataUtils.sum(newSubtrahendSubHitArray);
+            const sFa = matsDataUtils.sum(newSubtrahendSubFaArray);
+            const sMiss = matsDataUtils.sum(newSubtrahendSubMissArray);
+            const sCn = matsDataUtils.sum(newSubtrahendSubCnArray);
+            subtrahendData.z[subtrahendYIndex][subtrahendXIndex] =
+              matsDataUtils.calculateStatCTC(
+                sHit,
+                sFa,
+                sMiss,
+                sCn,
+                newSubtrahendSubHitArray.length,
+                subtrahendStatistic
+              );
+          } else if (subtrahendIsScalar) {
+            subtrahendData.subSquareDiffSum[subtrahendYIndex][subtrahendXIndex] =
+              newSubtrahendSubSquareDiffSumArray;
+            subtrahendData.subNSum[subtrahendYIndex][subtrahendXIndex] =
+              newSubtrahendSubNSumArray;
+            subtrahendData.subObsModelDiffSum[subtrahendYIndex][subtrahendXIndex] =
+              newSubtrahendSubObsModelDiffSumArray;
+            subtrahendData.subModelSum[subtrahendYIndex][subtrahendXIndex] =
+              newSubtrahendSubModelSumArray;
+            subtrahendData.subObsSum[subtrahendYIndex][subtrahendXIndex] =
+              newSubtrahendSubObsSumArray;
+            subtrahendData.subAbsSum[subtrahendYIndex][subtrahendXIndex] =
+              newSubtrahendSubAbsSumArray;
 
             const sSquareDiffSum = matsDataUtils.sum(
               newSubtrahendSubSquareDiffSumArray
@@ -1035,13 +1125,13 @@ const getDataForDiffContour = function (
                 sModelSum,
                 sObsSum,
                 sAbsSum,
-                statistic
+                subtrahendStatistic
               );
             // need to populate subVals so stdev of them can be taken (Bill's method for determining significance)
             for (
               let ssvIdx = 0;
               ssvIdx < newSubtrahendSubSquareDiffSumArray.length;
-              ssvIdx++
+              ssvIdx += 1
             ) {
               newSubtrahendSubValsArray.push(
                 matsDataUtils.calculateStatScalar(
@@ -1051,7 +1141,7 @@ const getDataForDiffContour = function (
                   newSubtrahendSubModelSumArray[ssvIdx],
                   newSubtrahendSubObsSumArray[ssvIdx],
                   newSubtrahendSubAbsSumArray[ssvIdx],
-                  statistic
+                  subtrahendStatistic
                 )
               );
             }
@@ -1060,15 +1150,6 @@ const getDataForDiffContour = function (
                 ? matsDataUtils.stdev(newSubtrahendSubValsArray)
                 : 0;
           } else {
-            minuendData.subVals[minuendYIndex][minuendXIndex] = newMinuendSubValsArray;
-            minuendData.z[minuendYIndex][minuendXIndex] =
-              newMinuendSubValsArray.length > 0
-                ? matsDataUtils.average(newMinuendSubValsArray)
-                : null;
-            minuendData.stdev[minuendYIndex][minuendXIndex] =
-              newMinuendSubValsArray.length > 0
-                ? matsDataUtils.stdev(newMinuendSubValsArray)
-                : 0;
             subtrahendData.subVals[subtrahendYIndex][subtrahendXIndex] =
               newSubtrahendSubValsArray;
             subtrahendData.z[subtrahendYIndex][subtrahendXIndex] =
@@ -1104,7 +1185,7 @@ const getDataForDiffContour = function (
           subtrahendData.n[subtrahendYIndex][subtrahendXIndex]
             ? minuendData.n[minuendYIndex][minuendXIndex]
             : subtrahendData.n[subtrahendYIndex][subtrahendXIndex];
-        if (isCTC) {
+        if (minuendIsCTC && subtrahendIsCTC) {
           diffHit =
             matsDataUtils.sum(minuendData.subHit[minuendYIndex][minuendXIndex]) -
             matsDataUtils.sum(
@@ -1121,7 +1202,7 @@ const getDataForDiffContour = function (
           diffCn =
             matsDataUtils.sum(minuendData.subCn[minuendYIndex][minuendXIndex]) -
             matsDataUtils.sum(subtrahendData.subCn[subtrahendYIndex][subtrahendXIndex]);
-        } else if (isScalar) {
+        } else if (minuendIsScalar && subtrahendIsScalar) {
           diffSquareDiffSum =
             matsDataUtils.sum(
               minuendData.subSquareDiffSum[minuendYIndex][minuendXIndex]
@@ -1162,40 +1243,55 @@ const getDataForDiffContour = function (
           ((diffNumber > 1 &&
             minuendData.stdev[minuendYIndex][minuendXIndex] !== null &&
             subtrahendData.stdev[subtrahendYIndex][subtrahendXIndex] !== null) ||
-            (isCTC && diffValue !== null))
+            ((minuendIsCTC || subtrahendIsCTC) && diffValue !== null))
         ) {
           switch (sigType) {
+            case "95th percentile -- bootstrapping (SKILL SCORES ONLY)":
             case "significance at 95th percentile":
-              isDiffSignificant = matsDataUtils.checkDiffContourSignificanceCTC(
-                diffValue,
-                minuendData.subHit[minuendYIndex][minuendXIndex],
-                minuendData.subFa[minuendYIndex][minuendXIndex],
-                minuendData.subMiss[minuendYIndex][minuendXIndex],
-                minuendData.subCn[minuendYIndex][minuendXIndex],
-                subtrahendData.subHit[minuendYIndex][minuendXIndex],
-                subtrahendData.subFa[minuendYIndex][minuendXIndex],
-                subtrahendData.subMiss[minuendYIndex][minuendXIndex],
-                subtrahendData.subCn[minuendYIndex][minuendXIndex],
-                sigType,
-                statistic
-              )
-                ? 1
-                : null;
+              if (minuendIsCTC && subtrahendIsCTC) {
+                isDiffSignificant = matsDataUtils.checkDiffContourSignificanceCTC(
+                  diffValue,
+                  minuendData.subHit[minuendYIndex][minuendXIndex],
+                  minuendData.subFa[minuendYIndex][minuendXIndex],
+                  minuendData.subMiss[minuendYIndex][minuendXIndex],
+                  minuendData.subCn[minuendYIndex][minuendXIndex],
+                  subtrahendData.subHit[minuendYIndex][minuendXIndex],
+                  subtrahendData.subFa[minuendYIndex][minuendXIndex],
+                  subtrahendData.subMiss[minuendYIndex][minuendXIndex],
+                  subtrahendData.subCn[minuendYIndex][minuendXIndex],
+                  sigType,
+                  minuendStatistic
+                )
+                  ? 1
+                  : null;
+              } else {
+                throw new Error(
+                  "INFO: For this type of statistical significance, both of your component curves need to be skill score statistics, and both need to be the same statistic."
+                );
+              }
               break;
+            case "95th percentile -- standard t-test (CONTINUOUS VARIABLES ONLY)":
+            case "95th percentile -- t-test with infinite degrees of freedom (CONTINUOUS VARIABLES ONLY)":
             case "standard":
             case "assume infinite degrees of freedom":
             default:
-              isDiffSignificant = matsDataUtils.checkDiffContourSignificance(
-                minuendData.z[minuendYIndex][minuendXIndex],
-                subtrahendData.z[subtrahendYIndex][subtrahendXIndex],
-                minuendData.stdev[minuendYIndex][minuendXIndex],
-                subtrahendData.stdev[subtrahendYIndex][subtrahendXIndex],
-                minuendData.n[minuendYIndex][minuendXIndex],
-                subtrahendData.n[subtrahendYIndex][subtrahendXIndex],
-                sigType
-              )
-                ? 1
-                : null;
+              if (minuendIsScalar && subtrahendIsScalar) {
+                isDiffSignificant = matsDataUtils.checkDiffContourSignificance(
+                  minuendData.z[minuendYIndex][minuendXIndex],
+                  subtrahendData.z[subtrahendYIndex][subtrahendXIndex],
+                  minuendData.stdev[minuendYIndex][minuendXIndex],
+                  subtrahendData.stdev[subtrahendYIndex][subtrahendXIndex],
+                  minuendData.n[minuendYIndex][minuendXIndex],
+                  subtrahendData.n[subtrahendYIndex][subtrahendXIndex],
+                  sigType
+                )
+                  ? 1
+                  : null;
+              } else {
+                throw new Error(
+                  "INFO: For this type of statistical significance, both of your component curves need to be continuous variables."
+                );
+              }
               break;
           }
         }
@@ -1235,12 +1331,12 @@ const getDataForDiffContour = function (
       diffDataset.yTextOutput.push(diffDataY);
       diffDataset.zTextOutput.push(diffValue);
       diffDataset.nTextOutput.push(diffNumber);
-      if (isCTC) {
+      if (minuendIsCTC && subtrahendIsCTC) {
         diffDataset.hitTextOutput.push(diffHit);
         diffDataset.faTextOutput.push(diffFa);
         diffDataset.missTextOutput.push(diffMiss);
         diffDataset.cnTextOutput.push(diffCn);
-      } else if (isScalar) {
+      } else if (minuendIsScalar && subtrahendIsScalar) {
         diffDataset.squareDiffSumTextOutput.push(diffSquareDiffSum);
         diffDataset.NSumTextOutput.push(diffNSum);
         diffDataset.obsModelDiffSumTextOutput.push(diffObsModelDiffSum);
@@ -1255,7 +1351,7 @@ const getDataForDiffContour = function (
 
   // trim empty points at the bottom of the plot
   let dataLength = diffDataset.y.length;
-  for (diffDataYIndex = 0; diffDataYIndex < dataLength; diffDataYIndex++) {
+  for (let diffDataYIndex = 0; diffDataYIndex < dataLength; diffDataYIndex += 1) {
     // always check the 0-index, if points were previously removed something new will become 0-index.
     if (
       !diffDataset.z[0].some(function (m) {
@@ -1273,7 +1369,7 @@ const getDataForDiffContour = function (
 
   // trim empty points at the end of the curve
   dataLength = diffDataset.y.length;
-  for (diffDataYIndex = dataLength - 1; diffDataYIndex >= 0; diffDataYIndex--) {
+  for (let diffDataYIndex = dataLength - 1; diffDataYIndex >= 0; diffDataYIndex -= 1) {
     // always check the 0-index, if points were previously removed something new will become 0-index.
     if (
       !diffDataset.z[diffDataYIndex].some(function (m) {
@@ -1295,42 +1391,42 @@ const getDataForDiffContour = function (
   const filteredz = diffDataset.zTextOutput.filter((z) => z);
   diffDataset.xmin = Math.min(...filteredx);
   if (
-    !isFinite(diffDataset.xmin) ||
+    !Number.isFinite(diffDataset.xmin) ||
     (diffDataset.x.indexOf(0) !== -1 && diffDataset.xmin > 0)
   ) {
     diffDataset.xmin = 0;
   }
   diffDataset.xmax = Math.max(...filteredx);
   if (
-    !isFinite(diffDataset.xmax) ||
+    !Number.isFinite(diffDataset.xmax) ||
     (diffDataset.x.indexOf(0) !== -1 && diffDataset.xmax < 0)
   ) {
     diffDataset.xmax = 0;
   }
   diffDataset.ymin = Math.min(...filteredy);
   if (
-    !isFinite(diffDataset.ymin) ||
+    !Number.isFinite(diffDataset.ymin) ||
     (diffDataset.y.indexOf(0) !== -1 && diffDataset.ymin > 0)
   ) {
     diffDataset.ymin = 0;
   }
   diffDataset.ymax = Math.max(...filteredy);
   if (
-    !isFinite(diffDataset.ymax) ||
+    !Number.isFinite(diffDataset.ymax) ||
     (diffDataset.y.indexOf(0) !== -1 && diffDataset.ymax < 0)
   ) {
     diffDataset.ymax = 0;
   }
   diffDataset.zmin = Math.min(...filteredz);
   if (
-    !isFinite(diffDataset.zmin) ||
+    !Number.isFinite(diffDataset.zmin) ||
     (diffDataset.z.indexOf(0) !== -1 && diffDataset.zmin > 0)
   ) {
     diffDataset.zmin = 0;
   }
   diffDataset.zmax = Math.max(...filteredz);
   if (
-    !isFinite(diffDataset.zmax) ||
+    !Number.isFinite(diffDataset.zmax) ||
     (diffDataset.z.indexOf(0) !== -1 && diffDataset.zmax < 0)
   ) {
     diffDataset.zmax = 0;
@@ -1370,6 +1466,7 @@ const getDataForDiffContour = function (
   return [diffDataset];
 };
 
+// eslint-disable-next-line no-undef
 export default matsDataDiffUtils = {
   getDataForDiffCurve,
   getDataForDiffContour,
