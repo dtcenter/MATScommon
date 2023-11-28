@@ -1261,7 +1261,11 @@ const getDataForDiffContour = function (
           switch (sigType) {
             case "95th percentile -- bootstrapping (SKILL SCORES ONLY)":
             case "significance at 95th percentile":
-              if (minuendIsCTC && subtrahendIsCTC) {
+              if (
+                minuendIsCTC &&
+                subtrahendIsCTC &&
+                minuendStatistic === subtrahendStatistic
+              ) {
                 isDiffSignificant = matsDataUtils.checkDiffContourSignificanceCTC(
                   diffValue,
                   minuendData.subHit[minuendYIndex][minuendXIndex],
