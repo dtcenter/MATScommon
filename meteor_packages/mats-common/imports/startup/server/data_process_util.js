@@ -1907,13 +1907,12 @@ const processDataHistogram = function (
         bookkeepingParams.alreadyMatched = true;
       }
 
-      // then take diffs. isCTC and isScalar are always false, as histograms show distribution of sub-values and not overall stat
+      // then take diffs
       const diffResult = matsDataDiffUtils.getDataForDiffCurve(
         dataset,
         diffFrom,
         appParams,
-        false,
-        false
+        ["histogram", "histogram"]
       );
 
       // adjust axis stats based on new data from diff curve
