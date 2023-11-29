@@ -819,7 +819,7 @@ const queryDBSimpleScatter = function (
 // this method queries the database for map plots
 const queryDBMapScalar = function (
   pool,
-  statement,
+  statementOrMwRows,
   dataSource,
   statistic,
   variable,
@@ -886,16 +886,32 @@ const queryDBMapScalar = function (
     let valueLimits = {};
 
     let error = "";
+    let parsedData;
     const Future = require("fibers/future");
-    const pFuture = new Future();
-    pool.query(statement, function (err, rows) {
-      // query callback - build the curve data from the results - or set an error
-      if (err !== undefined && err !== null) {
-        error = err.message;
-      } else if (rows === undefined || rows === null || rows.length === 0) {
-        error = matsTypes.Messages.NO_DATA_FOUND;
+    const dFuture = new Future();
+
+    if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
+      /*
+            we have to call the couchbase utilities as async functions but this
+            routine 'queryDBSpecialtyCurve' cannot itself be async because the graph page needs to wait
+            for its result, so we use an anonymous async() function here to wrap the queryCB call
+      */
+      let rows = null;
+      if (Array.isArray(statementOrMwRows)) {
+        rows = statementOrMwRows;
+        dFuture.return();
       } else {
-        let parsedData;
+        (async () => {
+          rows = await pool.queryCB(statementOrMwRows);
+          dFuture.return();
+        })();
+      }
+      dFuture.wait();
+      if (rows === undefined || rows === null || rows.length === 0) {
+        error = matsTypes.Messages.NO_DATA_FOUND;
+      } else if (rows.includes("queryCB ERROR: ")) {
+        error = rows;
+      } else {
         parsedData = parseQueryDataMapScalar(
           rows,
           d,
@@ -909,7 +925,8 @@ const queryDBMapScalar = function (
           statistic,
           variable,
           varUnits,
-          appParams
+          appParams,
+          true
         );
         d = parsedData.d;
         dLowest = parsedData.dLowest;
@@ -919,12 +936,46 @@ const queryDBMapScalar = function (
         dHighest = parsedData.dHighest;
         valueLimits = parsedData.valueLimits;
       }
-      // done waiting - have results
-      pFuture.return();
-    });
+    } else {
+      // if this app isn't couchbase, use mysql
+      pool.query(statementOrMwRows, function (err, rows) {
+        // query callback - build the curve data from the results - or set an error
+        if (err !== undefined && err !== null) {
+          error = err.message;
+        } else if (rows === undefined || rows === null || rows.length === 0) {
+          error = matsTypes.Messages.NO_DATA_FOUND;
+        } else {
+          parsedData = parseQueryDataMapScalar(
+            rows,
+            d,
+            dLowest,
+            dLow,
+            dModerate,
+            dHigh,
+            dHighest,
+            dataSource,
+            siteMap,
+            statistic,
+            variable,
+            varUnits,
+            appParams,
+            false
+          );
+          d = parsedData.d;
+          dLowest = parsedData.dLowest;
+          dLow = parsedData.dLow;
+          dModerate = parsedData.dModerate;
+          dHigh = parsedData.dHigh;
+          dHighest = parsedData.dHighest;
+          valueLimits = parsedData.valueLimits;
+        }
+        // done waiting - have results
+        dFuture.return();
+      });
+      // wait for future to finish
+      dFuture.wait();
+    }
 
-    // wait for future to finish
-    pFuture.wait();
     return {
       data: d,
       dataLowest: dLowest,
@@ -1163,10 +1214,10 @@ const queryDBMapCTC = function (
         // done waiting - have results
         dFuture.return();
       });
+      // wait for future to finish
+      dFuture.wait();
     }
 
-    // wait for future to finish
-    dFuture.wait();
     return {
       data: d,
       dataPurple: dPurple,
@@ -2666,7 +2717,8 @@ const parseQueryDataMapScalar = function (
   statistic,
   variable,
   varUnits,
-  appParams
+  appParams,
+  isCouchbase
 ) {
   const { hasLevels } = appParams;
   let highLimit = 10;
@@ -2853,7 +2905,12 @@ const parseQueryDataMapScalar = function (
         max_time: rows[rowIndex].max_secs,
       });
 
-      const thisSite = siteMap.find((obj) => obj.options.id === site);
+      let thisSite;
+      if (isCouchbase) {
+        thisSite = siteMap.find((obj) => obj.name === site);
+      } else {
+        thisSite = siteMap.find((obj) => obj.options.id === site);
+      }
 
       const tooltips =
         `${thisSite.origName}<br>${variable} ${statistic}<br>` +

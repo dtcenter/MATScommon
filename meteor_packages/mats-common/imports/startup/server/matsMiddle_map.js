@@ -234,10 +234,6 @@ class MatsMiddleMap {
       /{{vxFCST_LEN}}/g,
       this.fcstLen
     );
-    tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
-      /{{vxAVERAGE}}/g,
-      this.average
-    );
 
     let stationNamesModels = "";
     for (let i = 0; i < stationNamesSlice.length; i += 1) {
@@ -353,9 +349,11 @@ class MatsMiddleMap {
             // stats_fve.sub_data.push(sub);
           }
         }
-        const sub = `${this.fcstValidEpoch_Array[0]};${ctcFve.hit};${ctcFve.fa};${ctcFve.miss};${ctcFve.cn}`;
-        ctcFve.sub_data.push(sub);
-        this.stats.push(ctcFve);
+        if (ctcFve.N0 > 0) {
+          const sub = `${this.fcstValidEpoch_Array[0]};${ctcFve.hit};${ctcFve.fa};${ctcFve.miss};${ctcFve.cn}`;
+          ctcFve.sub_data.push(sub);
+          this.stats.push(ctcFve);
+        }
       }
     }
   };
@@ -410,9 +408,11 @@ class MatsMiddleMap {
             }
           }
         }
-        const sub = `${this.fcstValidEpoch_Array[0]};${sumsFve.square_diff_sum};${sumsFve.N_sum};${sumsFve.obs_model_diff_sum};${sumsFve.model_sum};${sumsFve.obs_sum};${sumsFve.abs_sum}`;
-        sumsFve.sub_data.push(sub);
-        this.stats.push(JSON.parse(JSON.stringify(sumsFve)));
+        if (sumsFve.N0 > 0) {
+          const sub = `${this.fcstValidEpoch_Array[0]};${sumsFve.square_diff_sum};${sumsFve.N_sum};${sumsFve.obs_model_diff_sum};${sumsFve.model_sum};${sumsFve.obs_sum};${sumsFve.abs_sum}`;
+          sumsFve.sub_data.push(sub);
+          this.stats.push(sumsFve);
+        }
       }
     }
   };
