@@ -1,5 +1,10 @@
-import { matsMiddleCommon } from "meteor/randyp:mats-common";
-import { Meteor } from "meteor/meteor";
+/*
+ * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
+ */
+
+/* global cbPool, Assets */
+
+import { matsTypes, matsMiddleCommon } from "meteor/randyp:mats-common";
 
 class MatsMiddleTimeSeries {
   logToFile = false;
@@ -16,7 +21,9 @@ class MatsMiddleTimeSeries {
 
   fveModels = {};
 
-  ctc = [];
+  stats = [];
+
+  statType = null;
 
   varName = null;
 
@@ -46,6 +53,7 @@ class MatsMiddleTimeSeries {
   }
 
   processStationQuery = (
+    statType,
     varName,
     stationNames,
     model,
@@ -62,6 +70,7 @@ class MatsMiddleTimeSeries {
     const dFuture = new Future();
     (async () => {
       rv = await this.processStationQuery_int(
+        statType,
         varName,
         stationNames,
         model,
@@ -79,6 +88,7 @@ class MatsMiddleTimeSeries {
   };
 
   processStationQuery_int = async (
+    statType,
     varName,
     stationNames,
     model,
@@ -91,55 +101,39 @@ class MatsMiddleTimeSeries {
   ) => {
     const fs = require("fs");
 
-    console.log(
-      `processStationQuery(${varName},${
-        stationNames.length
-      },${model},${fcstLen},${threshold},${average},${fromSecs},${toSecs},${JSON.stringify(
-        validTimes
-      )})`
-    );
-
+    this.statType = statType;
     this.varName = varName;
     this.stationNames = stationNames;
     this.model = model;
     this.fcstLen = fcstLen;
     this.threshold = threshold;
-    this.average = average;
+    this.average = average.replace(/m0./g, "");
     this.fromSecs = fromSecs;
     this.toSecs = toSecs;
-
-    this.average = this.average.replace(/m0./g, "");
-    if (validTimes && validTimes.length > 0) {
-      for (let i = 0; i < validTimes.length; i++) {
-        if (validTimes[i] != null && Number(validTimes[i]) > 0) {
-          this.validTimes.push(Number(validTimes[i]));
-        }
-      }
-      console.log(`validTimes:${JSON.stringify(this.validTimes)}`);
+    if (validTimes.length !== 0 && validTimes !== matsTypes.InputTypes.unused) {
+      this.validTimes = validTimes.map(function (vt) {
+        return Number(vt);
+      });
     }
 
     this.conn = await cbPool.getConnection();
 
-    const startTime = new Date().valueOf();
     this.fcstValidEpoch_Array = await this.mmCommon.get_fcstValidEpoch_Array(
       fromSecs,
       toSecs
     );
 
-    let endTime = new Date().valueOf();
-    console.log(
-      `\tfcstValidEpoch_Array:${this.fcstValidEpoch_Array.length} in ${
-        endTime - startTime
-      } ms.`
-    );
-
     const prObs = this.createObsData();
     const prModel = this.createModelData();
     await Promise.all([prObs, prModel]);
-    this.generateCtc(threshold);
+    if (statType === "ctc") {
+      this.generateCtc(threshold);
+    } else {
+      this.generateSums();
+    }
 
-    for (let i = 0; i < this.ctc.length; i++) {
-      this.ctc[i] = this.mmCommon.sumUpCtc(this.ctc[i]);
+    for (let i = 0; i < this.stats.length; i += 1) {
+      this.stats[i] = this.mmCommon.sumUpCtc(this.stats[i]);
     }
 
     if (this.logToFile === true) {
@@ -152,50 +146,42 @@ class MatsMiddleTimeSeries {
         JSON.stringify(this.fveModels, null, 2)
       );
       this.mmCommon.writeToLocalFile(
-        "/scratch/matsMiddle/output/ctc.json",
-        JSON.stringify(this.ctc, null, 2)
+        "/scratch/matsMiddle/output/stats.json",
+        JSON.stringify(this.stats, null, 2)
       );
     }
 
-    endTime = new Date().valueOf();
-    console.log(`\tprocessStationQuery in ${endTime - startTime} ms.`);
-
-    return this.ctc;
+    return this.stats;
   };
 
   createObsData = async () => {
-    console.log("createObsData()");
     const fs = require("fs");
 
-    const startTime = new Date().valueOf();
-
-    const tmpl_get_N_stations_mfve_obs = Assets.getText(
+    const tmplGetNStationsMfveObs = Assets.getText(
       "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_obs.sql"
     );
 
-    let stationNames_obs = "";
-    for (let i = 0; i < this.stationNames.length; i++) {
+    let stationNamesObs = "";
+    for (let i = 0; i < this.stationNames.length; i += 1) {
       if (i === 0) {
-        stationNames_obs = `obs.data.${this.stationNames[i]}.${this.varName} ${this.stationNames[i]}`;
+        stationNamesObs = `obs.data.${this.stationNames[i]}.${this.varName} ${this.stationNames[i]}`;
       } else {
-        stationNames_obs += `,obs.data.${this.stationNames[i]}.${this.varName} ${this.stationNames[i]}`;
+        stationNamesObs += `,obs.data.${this.stationNames[i]}.${this.varName} ${this.stationNames[i]}`;
       }
     }
-    let tmplWithStationNames_obs = tmpl_get_N_stations_mfve_obs.replace(
+    let tmplWithStationNamesObs = tmplGetNStationsMfveObs.replace(
       /{{vxAVERAGE}}/g,
       this.average
     );
-    tmplWithStationNames_obs = tmplWithStationNames_obs.replace(
+    tmplWithStationNamesObs = tmplWithStationNamesObs.replace(
       /{{stationNamesList}}/g,
-      stationNames_obs
+      stationNamesObs
     );
-    let endTime = new Date().valueOf();
-    console.log(`\tobs query:${stationNames_obs.length} in ${endTime - startTime} ms.`);
 
     const promises = [];
     for (let iofve = 0; iofve < this.fcstValidEpoch_Array.length; iofve += 100) {
       const fveArraySlice = this.fcstValidEpoch_Array.slice(iofve, iofve + 100);
-      const sql = tmplWithStationNames_obs.replace(
+      const sql = tmplWithStationNamesObs.replace(
         /{{fcstValidEpoch}}/g,
         JSON.stringify(fveArraySlice)
       );
@@ -205,8 +191,7 @@ class MatsMiddleTimeSeries {
       const prSlice = this.conn.cluster.query(sql);
       promises.push(prSlice);
       prSlice.then((qr) => {
-        console.log(`qr:\n${qr.rows.length}`);
-        for (let jmfve = 0; jmfve < qr.rows.length; jmfve++) {
+        for (let jmfve = 0; jmfve < qr.rows.length; jmfve += 1) {
           const fveDataSingleEpoch = qr.rows[jmfve];
           const dataSingleEpoch = {};
           const stationsSingleEpoch = {};
@@ -218,74 +203,57 @@ class MatsMiddleTimeSeries {
           dataSingleEpoch.stations = stationsSingleEpoch;
           this.fveObs[fveDataSingleEpoch.fve] = dataSingleEpoch;
         }
-        if (iofve % 100 == 0) {
-          endTime = new Date().valueOf();
-          console.log(
-            `iofve:${iofve}/${this.fcstValidEpoch_Array.length} in ${
-              endTime - startTime
-            } ms.`
-          );
-        }
       });
     }
 
     await Promise.all(promises);
-    endTime = new Date().valueOf();
-    console.log(`fveObs:` + ` in ${endTime - startTime} ms.`);
   };
 
   createModelData = async () => {
-    console.log("createModelData()");
     const fs = require("fs");
 
-    const startTime = new Date().valueOf();
-
-    let tmpl_get_N_stations_mfve_model = Assets.getText(
+    let tmplGetNStationsMfveModel = Assets.getText(
       "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_model.sql"
     );
-    tmpl_get_N_stations_mfve_model = this.cbPool.trfmSQLRemoveClause(
-      tmpl_get_N_stations_mfve_model,
+    tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
+      tmplGetNStationsMfveModel,
       "fcstLen fcst_lead"
     );
-    tmpl_get_N_stations_mfve_model = this.cbPool.trfmSQLRemoveClause(
-      tmpl_get_N_stations_mfve_model,
+    tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
+      tmplGetNStationsMfveModel,
       "{{vxFCST_LEN_ARRAY}}"
     );
-    tmpl_get_N_stations_mfve_model = tmpl_get_N_stations_mfve_model.replace(
-      /{{vxMODEL}}/g,
-      `"${this.model}"`
-    );
-    tmpl_get_N_stations_mfve_model = tmpl_get_N_stations_mfve_model.replace(
-      /{{vxFCST_LEN}}/g,
-      this.fcstLen
-    );
-    tmpl_get_N_stations_mfve_model = tmpl_get_N_stations_mfve_model.replace(
+    tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
       /{{vxAVERAGE}}/g,
       this.average
     );
+    tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
+      /{{vxMODEL}}/g,
+      `"${this.model}"`
+    );
+    tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
+      /{{vxFCST_LEN}}/g,
+      this.fcstLen
+    );
 
-    let stationNames_models = "";
-    for (let i = 0; i < this.stationNames.length; i++) {
+    let stationNamesModels = "";
+    for (let i = 0; i < this.stationNames.length; i += 1) {
       if (i === 0) {
-        stationNames_models = `models.data.${this.stationNames[i]}.${this.varName} ${this.stationNames[i]}`;
+        stationNamesModels = `models.data.${this.stationNames[i]}.${this.varName} ${this.stationNames[i]}`;
       } else {
-        stationNames_models += `,models.data.${this.stationNames[i]}.${this.varName} ${this.stationNames[i]}`;
+        stationNamesModels += `,models.data.${this.stationNames[i]}.${this.varName} ${this.stationNames[i]}`;
       }
     }
 
-    const tmplWithStationNames_models = tmpl_get_N_stations_mfve_model.replace(
+    const tmplWithStationNamesModels = tmplGetNStationsMfveModel.replace(
       /{{stationNamesList}}/g,
-      stationNames_models
-    );
-    let endTime = new Date().valueOf();
-    console.log(
-      `\tmodel query:${stationNames_models.length} in ${endTime - startTime} ms.`
+      stationNamesModels
     );
 
     const promises = [];
     for (let imfve = 0; imfve < this.fcstValidEpoch_Array.length; imfve += 100) {
       const fveArraySlice = this.fcstValidEpoch_Array.slice(imfve, imfve + 100);
-      const sql = tmplWithStationNames_models.replace(
+      const sql = tmplWithStationNamesModels.replace(
         /{{fcstValidEpoch}}/g,
         JSON.stringify(fveArraySlice)
       );
@@ -296,7 +264,7 @@ class MatsMiddleTimeSeries {
 
       promises.push(prSlice);
       prSlice.then((qr) => {
-        for (let jmfve = 0; jmfve < qr.rows.length; jmfve++) {
+        for (let jmfve = 0; jmfve < qr.rows.length; jmfve += 1) {
           const fveDataSingleEpoch = qr.rows[jmfve];
           const dataSingleEpoch = {};
           const stationsSingleEpoch = {};
@@ -308,64 +276,92 @@ class MatsMiddleTimeSeries {
           dataSingleEpoch.stations = stationsSingleEpoch;
           this.fveModels[fveDataSingleEpoch.fve] = dataSingleEpoch;
         }
-        if (imfve % 100 == 0) {
-          endTime = new Date().valueOf();
-          console.log(
-            `imfve:${imfve}/${this.fcstValidEpoch_Array.length} in ${
-              endTime - startTime
-            } ms.`
-          );
-        }
       });
     }
     await Promise.all(promises);
-    endTime = new Date().valueOf();
-    console.log(`fveModel:` + ` in ${endTime - startTime} ms.`);
   };
 
   generateCtc = async (threshold) => {
-    console.log(`generateCtc(${threshold})`);
-
-    const startTime = new Date().valueOf();
-
-    for (let imfve = 0; imfve < this.fcstValidEpoch_Array.length; imfve++) {
+    for (let imfve = 0; imfve < this.fcstValidEpoch_Array.length; imfve += 1) {
       const fve = this.fcstValidEpoch_Array[imfve];
+
       const obsSingleFve = this.fveObs[fve];
       const modelSingleFve = this.fveModels[fve];
 
-      if (!obsSingleFve || !modelSingleFve) {
-        continue;
-      }
+      if (
+        obsSingleFve &&
+        modelSingleFve &&
+        (!this.validTimes ||
+          this.validTimes.length === 0 ||
+          (this.validTimes &&
+            this.validTimes.length > 0 &&
+            this.validTimes.includes((fve % (24 * 3600)) / 3600)))
+      ) {
+        const ctcFve = {};
+        ctcFve.avtime = obsSingleFve.avtime;
+        ctcFve.hit = 0;
+        ctcFve.miss = 0;
+        ctcFve.fa = 0;
+        ctcFve.cn = 0;
+        ctcFve.N0 = 0;
+        ctcFve.N_times = 1;
+        ctcFve.sub_data = [];
 
-      if (this.validTimes && this.validTimes.length > 0) {
-        if (this.validTimes.includes((fve % (24 * 3600)) / 3600) == false) {
-          continue;
+        this.mmCommon.computeCtcForStations(
+          fve,
+          threshold,
+          ctcFve,
+          this.stationNames,
+          obsSingleFve,
+          modelSingleFve
+        );
+        if (ctcFve.N0 > 0) {
+          this.stats.push(ctcFve);
         }
       }
-
-      const ctc_fve = {};
-      ctc_fve.avtime = obsSingleFve.avtime;
-      ctc_fve.hit = 0;
-      ctc_fve.miss = 0;
-      ctc_fve.fa = 0;
-      ctc_fve.cn = 0;
-      ctc_fve.N0 = 0;
-      ctc_fve.N_times = 1;
-      ctc_fve.sub_data = [];
-
-      this.mmCommon.computeCtcForStations(
-        fve,
-        threshold,
-        ctc_fve,
-        this.stationNames,
-        obsSingleFve,
-        modelSingleFve
-      );
-      this.ctc.push(ctc_fve);
     }
+  };
 
-    const endTime = new Date().valueOf();
-    console.log(`generateCtc:` + ` in ${endTime - startTime} ms.`);
+  generateSums = async () => {
+    for (let imfve = 0; imfve < this.fcstValidEpoch_Array.length; imfve += 1) {
+      const fve = this.fcstValidEpoch_Array[imfve];
+
+      const obsSingleFve = this.fveObs[fve];
+      const modelSingleFve = this.fveModels[fve];
+
+      if (
+        obsSingleFve &&
+        modelSingleFve &&
+        (!this.validTimes ||
+          this.validTimes.length === 0 ||
+          (this.validTimes &&
+            this.validTimes.length > 0 &&
+            this.validTimes.includes((fve % (24 * 3600)) / 3600)))
+      ) {
+        const sumsFve = {};
+        sumsFve.avtime = obsSingleFve.avtime;
+        sumsFve.square_diff_sum = 0;
+        sumsFve.N_sum = 0;
+        sumsFve.obs_model_diff_sum = 0;
+        sumsFve.model_sum = 0;
+        sumsFve.obs_sum = 0;
+        sumsFve.abs_sum = 0;
+        sumsFve.N0 = 0;
+        sumsFve.N_times = 1;
+        sumsFve.sub_data = [];
+
+        this.mmCommon.computeSumsForStations(
+          fve,
+          sumsFve,
+          this.stationNames,
+          obsSingleFve,
+          modelSingleFve
+        );
+        if (sumsFve.N0 > 0) {
+          this.stats.push(sumsFve);
+        }
+      }
+    }
   };
 }
 

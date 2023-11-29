@@ -122,42 +122,70 @@ class MatsMiddleCommon {
     obsSingleFve,
     modelSingleFve
   ) {
-    for (let i = 0; i < stationNames.length; i++) {
+    for (let i = 0; i < stationNames.length; i += 1) {
       const station = stationNames[i];
-      const varVal_o = obsSingleFve.stations[station];
-      const varVal_m = modelSingleFve.stations[station];
+      const varValO = obsSingleFve.stations[station];
+      const varValM = modelSingleFve.stations[station];
 
-      if (varVal_o && varVal_m) {
+      if (varValO && varValM) {
         ctc.N0 += 1;
         let sub = `${fve};`;
-        if (varVal_o < threshold && varVal_m < threshold) {
+        if (varValO < threshold && varValM < threshold) {
           ctc.hit += 1;
           sub += "1;";
         } else {
           sub += "0;";
         }
 
-        if (varVal_o >= threshold && varVal_m < threshold) {
+        if (varValO >= threshold && varValM < threshold) {
           ctc.fa += 1;
           sub += "1;";
         } else {
           sub += "0;";
         }
 
-        if (varVal_o < threshold && varVal_m >= threshold) {
+        if (varValO < threshold && varValM >= threshold) {
           ctc.miss += 1;
           sub += "1;";
         } else {
           sub += "0;";
         }
 
-        if (varVal_o >= threshold && varVal_m >= threshold) {
+        if (varValO >= threshold && varValM >= threshold) {
           ctc.cn += 1;
           sub += "1";
         } else {
           sub += "0";
         }
         ctc.sub_data.push(sub);
+      }
+    }
+  }
+
+  computeSumsForStations(fve, sums, stationNames, obsSingleFve, modelSingleFve) {
+    for (let i = 0; i < stationNames.length; i += 1) {
+      const station = stationNames[i];
+      const varValO = obsSingleFve.stations[station];
+      const varValM = modelSingleFve.stations[station];
+
+      if (varValO && varValM) {
+        const squareDiffSum = (varValO - varValM) ** 2;
+        const nSum = 1;
+        const obsModelDiffSum = varValO - varValM;
+        const modelSum = varValM;
+        const obsSum = varValO;
+        const absSum = Math.abs(varValO - varValM);
+
+        sums.N0 += 1;
+        sums.square_diff_sum += squareDiffSum;
+        sums.N_sum += nSum;
+        sums.obs_model_diff_sum += obsModelDiffSum;
+        sums.model_sum += modelSum;
+        sums.obs_sum += obsSum;
+        sums.abs_sum += absSum;
+
+        const sub = `${fve};${squareDiffSum};${nSum};${obsModelDiffSum};${modelSum};${obsSum};${absSum};`;
+        sums.sub_data.push(sub);
       }
     }
   }
