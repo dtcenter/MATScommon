@@ -84,11 +84,11 @@ class MatsMiddleCommon {
 
     let prevFve = null;
     const sumVals = [0, 0, 0, 0];
-    for (let i = 0; i < ctc.sub_data.length; i++) {
+    for (let i = 0; i < ctc.sub_data.length; i += 1) {
       const sdiToks = ctc.sub_data[i].split(";");
 
       if (i === 0) {
-        prevFve = sdiToks[0];
+        [prevFve] = sdiToks;
       }
       if (prevFve === sdiToks[0]) {
         sumVals[0] += Number(sdiToks[1]);
@@ -99,7 +99,7 @@ class MatsMiddleCommon {
         rv.sub_data.push(
           `${sdiToks[0]};${sumVals[0]};${sumVals[1]};${sumVals[2]};${sumVals[3]}`
         );
-        prevFve = sdiToks[0];
+        [prevFve] = sdiToks;
         sumVals[0] = Number(sdiToks[1]);
         sumVals[1] = Number(sdiToks[2]);
         sumVals[2] = Number(sdiToks[3]);
@@ -108,6 +108,47 @@ class MatsMiddleCommon {
       if (i === ctc.sub_data.length - 1) {
         rv.sub_data.push(
           `${sdiToks[0]};${sumVals[0]};${sumVals[1]};${sumVals[2]};${sumVals[3]}`
+        );
+      }
+    }
+    return rv;
+  };
+
+  sumUpSums = (sum) => {
+    const rv = JSON.parse(JSON.stringify(sum));
+
+    rv.sub_data = [];
+
+    let prevFve = null;
+    const sumVals = [0, 0, 0, 0, 0, 0];
+    for (let i = 0; i < sum.sub_data.length; i += 1) {
+      const sdiToks = sum.sub_data[i].split(";");
+
+      if (i === 0) {
+        [prevFve] = sdiToks;
+      }
+      if (prevFve === sdiToks[0]) {
+        sumVals[0] += Number(sdiToks[1]);
+        sumVals[1] += Number(sdiToks[2]);
+        sumVals[2] += Number(sdiToks[3]);
+        sumVals[3] += Number(sdiToks[4]);
+        sumVals[4] += Number(sdiToks[5]);
+        sumVals[5] += Number(sdiToks[6]);
+      } else {
+        rv.sub_data.push(
+          `${sdiToks[0]};${sumVals[0]};${sumVals[1]};${sumVals[2]};${sumVals[3]};${sumVals[4]};${sumVals[5]}`
+        );
+        [prevFve] = sdiToks;
+        sumVals[0] = Number(sdiToks[1]);
+        sumVals[1] = Number(sdiToks[2]);
+        sumVals[2] = Number(sdiToks[3]);
+        sumVals[3] = Number(sdiToks[4]);
+        sumVals[4] = Number(sdiToks[5]);
+        sumVals[5] = Number(sdiToks[6]);
+      }
+      if (i === sum.sub_data.length - 1) {
+        rv.sub_data.push(
+          `${sdiToks[0]};${sumVals[0]};${sumVals[1]};${sumVals[2]};${sumVals[3]};${sumVals[4]};${sumVals[5]}`
         );
       }
     }

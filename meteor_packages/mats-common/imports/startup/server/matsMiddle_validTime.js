@@ -1,6 +1,10 @@
-import { matsMiddleCommon } from "meteor/randyp:mats-common";
+/*
+ * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
+ */
 
-import { Meteor } from "meteor/meteor";
+/* global cbPool, Assets */
+
+import { matsTypes, matsMiddleCommon } from "meteor/randyp:mats-common";
 
 class MatsMiddleValidTime {
   logToFile = false;
@@ -19,7 +23,9 @@ class MatsMiddleValidTime {
 
   fveModels = {};
 
-  ctc = [];
+  stats = [];
+
+  statType = null;
 
   varName = null;
 
@@ -39,14 +45,13 @@ class MatsMiddleValidTime {
 
   mmCommon = null;
 
-  ctcTime = 0;
-
   constructor(cbPool) {
     this.cbPool = cbPool;
     this.mmCommon = new matsMiddleCommon.MatsMiddleCommon(cbPool);
   }
 
   processStationQuery = (
+    statType,
     varName,
     stationNames,
     model,
@@ -61,6 +66,7 @@ class MatsMiddleValidTime {
     const dFuture = new Future();
     (async () => {
       rv = await this.processStationQuery_int(
+        statType,
         varName,
         stationNames,
         model,
@@ -76,6 +82,7 @@ class MatsMiddleValidTime {
   };
 
   processStationQuery_int = async (
+    statType,
     varName,
     stationNames,
     model,
@@ -84,11 +91,9 @@ class MatsMiddleValidTime {
     fromSecs,
     toSecs
   ) => {
-    console.log(
-      `processStationQuery(${varName},${stationNames.length},${model},${fcstLen},${threshold},${fromSecs},${toSecs}
-      )})`
-    );
+    const fs = require("fs");
 
+    this.statType = statType;
     this.varName = varName;
     this.stationNames = stationNames;
     this.model = model;
@@ -96,11 +101,8 @@ class MatsMiddleValidTime {
     this.threshold = threshold;
     this.fromSecs = fromSecs;
     this.toSecs = toSecs;
-    const fs = require("fs");
 
     this.conn = await cbPool.getConnection();
-
-    const startTime = new Date().valueOf();
 
     this.fcstValidEpoch_Array = await this.mmCommon.get_fcstValidEpoch_Array(
       fromSecs,
@@ -108,7 +110,7 @@ class MatsMiddleValidTime {
     );
 
     // create distinct hour of day array
-    for (let iofve = 0; iofve < this.fcstValidEpoch_Array.length; ++iofve) {
+    for (let iofve = 0; iofve < this.fcstValidEpoch_Array.length; iofve += 1) {
       const ofve = this.fcstValidEpoch_Array[iofve];
       const hod = (ofve % (24 * 3600)) / 3600;
       if (!this.hrOfDay_Array.includes(hod)) {
@@ -116,16 +118,6 @@ class MatsMiddleValidTime {
       }
     }
     this.hrOfDay_Array.sort((a, b) => a - b);
-    if (this.logToFile === true) {
-      console.log(`hrOfDay_Array:\n${JSON.stringify(this.hrOfDay_Array)}`);
-    }
-
-    let endTime = new Date().valueOf();
-    console.log(
-      `\tfcstValidEpoch_Array:${this.fcstValidEpoch_Array.length} in ${
-        endTime - startTime
-      } ms.`
-    );
 
     await this.createObsData();
     await this.createModelData();
@@ -140,52 +132,42 @@ class MatsMiddleValidTime {
         JSON.stringify(this.fveModels, null, 2)
       );
       this.mmCommon.writeToLocalFile(
-        "/scratch/matsMiddle/output/ctc.json",
-        JSON.stringify(this.ctc, null, 2)
+        "/scratch/matsMiddle/output/stats.json",
+        JSON.stringify(this.stats, null, 2)
       );
     }
 
-    endTime = new Date().valueOf();
-
-    console.log(`\tctcTime: ${this.ctcTime} ms.`);
-    console.log(`\tprocessStationQuery in ${endTime - startTime} ms.`);
-
-    return this.ctc;
+    return this.stats;
   };
 
   createObsData = async () => {
-    console.log("createObsData()");
     const fs = require("fs");
 
-    const startTime = new Date().valueOf();
-
-    const tmpl_get_N_stations_mfve_obs = Assets.getText(
+    const tmplGetNStationsMfveObs = Assets.getText(
       "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_obs.sql"
     );
 
-    let stationNames_obs = "";
-    for (let i = 0; i < this.stationNames.length; i++) {
+    let stationNamesObs = "";
+    for (let i = 0; i < this.stationNames.length; i += 1) {
       if (i === 0) {
-        stationNames_obs = `obs.data.${this.stationNames[i]}.${this.varName} ${this.stationNames[i]}`;
+        stationNamesObs = `obs.data.${this.stationNames[i]}.${this.varName} ${this.stationNames[i]}`;
       } else {
-        stationNames_obs += `,obs.data.${this.stationNames[i]}.${this.varName} ${this.stationNames[i]}`;
+        stationNamesObs += `,obs.data.${this.stationNames[i]}.${this.varName} ${this.stationNames[i]}`;
       }
     }
-    let tmplWithStationNames_obs = cbPool.trfmSQLRemoveClause(
-      tmpl_get_N_stations_mfve_obs,
+    let tmplWithStationNamesObs = cbPool.trfmSQLRemoveClause(
+      tmplGetNStationsMfveObs,
       "{{vxAVERAGE}}"
     );
-    tmplWithStationNames_obs = tmplWithStationNames_obs.replace(
+    tmplWithStationNamesObs = tmplWithStationNamesObs.replace(
       /{{stationNamesList}}/g,
-      stationNames_obs
+      stationNamesObs
     );
-    let endTime = new Date().valueOf();
-    console.log(`\tobs query:${stationNames_obs.length} in ${endTime - startTime} ms.`);
 
     const promises = [];
     for (let iofve = 0; iofve < this.fcstValidEpoch_Array.length; iofve += 100) {
       const fveArraySlice = this.fcstValidEpoch_Array.slice(iofve, iofve + 100);
-      const sql = tmplWithStationNames_obs.replace(
+      const sql = tmplWithStationNamesObs.replace(
         /{{fcstValidEpoch}}/g,
         JSON.stringify(fveArraySlice)
       );
@@ -195,8 +177,7 @@ class MatsMiddleValidTime {
       const prSlice = this.conn.cluster.query(sql);
       promises.push(prSlice);
       prSlice.then((qr) => {
-        console.log(`qr:\n${qr.rows.length}`);
-        for (let jmfve = 0; jmfve < qr.rows.length; jmfve++) {
+        for (let jmfve = 0; jmfve < qr.rows.length; jmfve += 1) {
           const fveDataSingleEpoch = qr.rows[jmfve];
           const hod = (fveDataSingleEpoch.fve % (24 * 3600)) / 3600;
           const hodKey = hod.toString();
@@ -213,68 +194,52 @@ class MatsMiddleValidTime {
           dataSingleEpoch.stations = stationsSingleEpoch;
           this.fveObs[hodKey][fveDataSingleEpoch.fve] = dataSingleEpoch;
         }
-        if (iofve % 100 == 0) {
-          endTime = new Date().valueOf();
-          console.log(
-            `iofve:${iofve}/${this.fcstValidEpoch_Array.length} in ${
-              endTime - startTime
-            } ms.`
-          );
-        }
       });
     }
 
     await Promise.all(promises);
-    endTime = new Date().valueOf();
-    console.log(`fveObs:` + ` in ${endTime - startTime} ms.`);
   };
 
   createModelData = async () => {
-    console.log("createModelData()");
     const fs = require("fs");
 
-    const startTime = new Date().valueOf();
-
-    let tmpl_get_N_stations_mfve_model = Assets.getText(
+    let tmplGetNStationsMfveModel = Assets.getText(
       "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_model.sql"
     );
-    tmpl_get_N_stations_mfve_model = this.cbPool.trfmSQLRemoveClause(
-      tmpl_get_N_stations_mfve_model,
+    tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
+      tmplGetNStationsMfveModel,
       "{{vxFCST_LEN_ARRAY}}"
     );
-    tmpl_get_N_stations_mfve_model = this.cbPool.trfmSQLRemoveClause(
-      tmpl_get_N_stations_mfve_model,
+    tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
+      tmplGetNStationsMfveModel,
       "{{vxAVERAGE}}"
     );
-    tmpl_get_N_stations_mfve_model = this.cbPool.trfmSQLRemoveClause(
-      tmpl_get_N_stations_mfve_model,
+    tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
+      tmplGetNStationsMfveModel,
       "fcstLen fcst_lead"
     );
 
-    tmpl_get_N_stations_mfve_model = tmpl_get_N_stations_mfve_model.replace(
+    tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
       /{{vxMODEL}}/g,
       `"${this.model}"`
     );
-    tmpl_get_N_stations_mfve_model = tmpl_get_N_stations_mfve_model.replace(
+    tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
       /{{vxFCST_LEN}}/g,
       this.fcstLen
     );
-    let stationNames_models = "";
-    for (let i = 0; i < this.stationNames.length; i++) {
+
+    let stationNamesModels = "";
+    for (let i = 0; i < this.stationNames.length; i += 1) {
       if (i === 0) {
-        stationNames_models = `models.data.${this.stationNames[i]}.${this.varName} ${this.stationNames[i]}`;
+        stationNamesModels = `models.data.${this.stationNames[i]}.${this.varName} ${this.stationNames[i]}`;
       } else {
-        stationNames_models += `,models.data.${this.stationNames[i]}.${this.varName} ${this.stationNames[i]}`;
+        stationNamesModels += `,models.data.${this.stationNames[i]}.${this.varName} ${this.stationNames[i]}`;
       }
     }
 
-    const tmplWithStationNames_models = tmpl_get_N_stations_mfve_model.replace(
+    const tmplWithStationNamesModels = tmplGetNStationsMfveModel.replace(
       /{{stationNamesList}}/g,
-      stationNames_models
-    );
-    let endTime = new Date().valueOf();
-    console.log(
-      `\tmodel query:${stationNames_models.length} in ${endTime - startTime} ms.`
+      stationNamesModels
     );
 
     const flaIncr = 3;
@@ -282,7 +247,7 @@ class MatsMiddleValidTime {
     const promises = [];
     for (let imfve = 0; imfve < this.fcstValidEpoch_Array.length; imfve += 100) {
       const fveArraySlice = this.fcstValidEpoch_Array.slice(imfve, imfve + 100);
-      const sql = tmplWithStationNames_models.replace(
+      const sql = tmplWithStationNamesModels.replace(
         /{{fcstValidEpoch}}/g,
         JSON.stringify(fveArraySlice)
       );
@@ -293,8 +258,7 @@ class MatsMiddleValidTime {
 
       promises.push(prSlice);
       prSlice.then((qr) => {
-        const idx = imfve / 100;
-        for (let jmfve = 0; jmfve < qr.rows.length; jmfve++) {
+        for (let jmfve = 0; jmfve < qr.rows.length; jmfve += 1) {
           const fveDataSingleEpoch = qr.rows[jmfve];
           const hod = (fveDataSingleEpoch.fve % (24 * 3600)) / 3600;
           const hodKey = hod.toString();
@@ -310,78 +274,113 @@ class MatsMiddleValidTime {
           dataSingleEpoch.stations = stationsSingleEpoch;
           this.fveModels[hodKey][fveDataSingleEpoch.fve] = dataSingleEpoch;
         }
-
-        endTime = new Date().valueOf();
-        console.log(
-          `imfve:${imfve}/${this.fcstValidEpoch_Array.length} idx: ${idx} in ${
-            endTime - startTime
-          } ms.`
-        );
       });
     }
     await Promise.all(promises);
-    this.ctcTime += this.generateCtc();
-    endTime = new Date().valueOf();
-    console.log(`fveModel:` + ` in ${endTime - startTime} ms.`);
+    if (this.statType === "ctc") {
+      this.generateCtc();
+    } else {
+      this.generateSums();
+    }
   };
 
   generateCtc = () => {
-    console.log("generateCtc()");
-
     const { threshold } = this;
 
-    const startTime = new Date().valueOf();
-
-    for (let ihod = 0; ihod < this.hrOfDay_Array.length; ihod++) {
-      const ctc_hod = {};
+    for (let ihod = 0; ihod < this.hrOfDay_Array.length; ihod += 1) {
+      const ctcHod = {};
 
       const hod = this.hrOfDay_Array[ihod];
       const hodKey = hod.toString();
-      ctc_hod.hr_of_day = hod;
-      ctc_hod.hit = 0;
-      ctc_hod.miss = 0;
-      ctc_hod.fa = 0;
-      ctc_hod.cn = 0;
-      ctc_hod.N0 = 0;
-      ctc_hod.N_times = new Set(this.hrOfDay_Array).size;
-      ctc_hod.sub_data = [];
+      ctcHod.hr_of_day = hod;
+      ctcHod.hit = 0;
+      ctcHod.miss = 0;
+      ctcHod.fa = 0;
+      ctcHod.cn = 0;
+      ctcHod.N0 = 0;
+      ctcHod.N_times = new Set(this.hrOfDay_Array).size;
+      ctcHod.sub_data = [];
 
       // get all the fve for this hod
-      const hod_single = this.fveModels[hodKey];
-      const fve_array = Object.keys(hod_single);
-      fve_array.sort();
+      const hodSingle = this.fveModels[hodKey];
+      const fveArray = Object.keys(hodSingle);
+      fveArray.sort();
 
-      ctc_hod.min_secs = fve_array[0];
-      ctc_hod.max_secs = fve_array[fve_array.length - 1];
-      for (let imfve = 0; imfve < fve_array.length; imfve++) {
-        const fve = fve_array[imfve];
+      [ctcHod.min_secs] = fveArray;
+      ctcHod.max_secs = fveArray[fveArray.length - 1];
+      for (let imfve = 0; imfve < fveArray.length; imfve += 1) {
+        const fve = fveArray[imfve];
         const obsSingleFve = this.fveObs[hodKey][fve];
-        const modelSingleFve = hod_single[fve];
+        const modelSingleFve = hodSingle[fve];
 
-        if (!obsSingleFve || !modelSingleFve) {
-          continue;
+        if (obsSingleFve && modelSingleFve) {
+          this.mmCommon.computeCtcForStations(
+            fve,
+            threshold,
+            ctcHod,
+            this.stationNames,
+            obsSingleFve,
+            modelSingleFve
+          );
         }
-        this.mmCommon.computeCtcForStations(
-          fve,
-          threshold,
-          ctc_hod,
-          this.stationNames,
-          obsSingleFve,
-          modelSingleFve
-        );
       }
 
       try {
-        const stats_fcst_lead_summed = this.mmCommon.sumUpCtc(ctc_hod);
-        this.ctc.push(stats_fcst_lead_summed);
+        const statsFcstLeadSummed = this.mmCommon.sumUpCtc(ctcHod);
+        this.stats.push(statsFcstLeadSummed);
       } catch (ex) {
-        console.log(ex);
+        throw new Error(ex);
       }
     }
+  };
 
-    const endTime = new Date().valueOf();
-    console.log(`generateCtc:` + ` in ${endTime - startTime} ms.`);
-    return endTime - startTime;
+  generateSums = () => {
+    for (let ihod = 0; ihod < this.hrOfDay_Array.length; ihod += 1) {
+      const sumsHod = {};
+
+      const hod = this.hrOfDay_Array[ihod];
+      const hodKey = hod.toString();
+      sumsHod.hr_of_day = hod;
+      sumsHod.square_diff_sum = 0;
+      sumsHod.N_sum = 0;
+      sumsHod.obs_model_diff_sum = 0;
+      sumsHod.model_sum = 0;
+      sumsHod.obs_sum = 0;
+      sumsHod.abs_sum = 0;
+      sumsHod.N0 = 0;
+      sumsHod.N_times = new Set(this.hrOfDay_Array).size;
+      sumsHod.sub_data = [];
+
+      // get all the fve for this hod
+      const hodSingle = this.fveModels[hodKey];
+      const fveArray = Object.keys(hodSingle);
+      fveArray.sort();
+
+      [sumsHod.min_secs] = fveArray;
+      sumsHod.max_secs = fveArray[fveArray.length - 1];
+      for (let imfve = 0; imfve < fveArray.length; imfve += 1) {
+        const fve = fveArray[imfve];
+        const obsSingleFve = this.fveObs[hodKey][fve];
+        const modelSingleFve = hodSingle[fve];
+
+        if (obsSingleFve && modelSingleFve) {
+          this.mmCommon.computeSumsForStations(
+            fve,
+            sumsHod,
+            this.stationNames,
+            obsSingleFve,
+            modelSingleFve
+          );
+        }
+      }
+
+      try {
+        const statsFcstLeadSummed = this.mmCommon.sumUpSums(sumsHod);
+        this.stats.push(statsFcstLeadSummed);
+      } catch (ex) {
+        throw new Error(ex);
+      }
+    }
   };
 }
 
