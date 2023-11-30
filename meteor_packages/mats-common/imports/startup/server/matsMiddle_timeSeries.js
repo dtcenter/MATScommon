@@ -128,12 +128,14 @@ class MatsMiddleTimeSeries {
     await Promise.all([prObs, prModel]);
     if (statType === "ctc") {
       this.generateCtc(threshold);
+      for (let i = 0; i < this.stats.length; i += 1) {
+        this.stats[i] = this.mmCommon.sumUpCtc(this.stats[i]);
+      }
     } else {
       this.generateSums();
-    }
-
-    for (let i = 0; i < this.stats.length; i += 1) {
-      this.stats[i] = this.mmCommon.sumUpCtc(this.stats[i]);
+      for (let i = 0; i < this.stats.length; i += 1) {
+        this.stats[i] = this.mmCommon.sumUpSums(this.stats[i]);
+      }
     }
 
     if (this.logToFile === true) {
