@@ -1291,7 +1291,6 @@ const getDataForDiffContour = function (
             case "95th percentile -- t-test with infinite degrees of freedom (CONTINUOUS VARIABLES ONLY)":
             case "standard":
             case "assume infinite degrees of freedom":
-            default:
               if (minuendIsScalar && subtrahendIsScalar) {
                 isDiffSignificant = matsDataUtils.checkDiffContourSignificance(
                   minuendData.z[minuendYIndex][minuendXIndex],
@@ -1309,6 +1308,9 @@ const getDataForDiffContour = function (
                   "INFO: For this type of statistical significance, both of your component curves need to be continuous variables."
                 );
               }
+              break;
+            default:
+              // no significance option for this plot
               break;
           }
         }
