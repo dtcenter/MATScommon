@@ -29,6 +29,9 @@ export const curveParamsByApp = {
     "sites",
     "sitesMap",
     "bin-parameter",
+    "filter-by",
+    "filter-max",
+    "filter-min",
     "curve-dates",
   ],
   "ceil-vis": [
