@@ -87,15 +87,18 @@ Template.curveParamGroup.helpers({
     const lastUpdate = Session.get("lastUpdate");
     const plotType = Session.get("plotType");
     let isMetexpress = false;
+    let isCouchbase = false;
     if (
       matsCollections.Settings.findOne({}) !== undefined &&
       matsCollections.Settings.findOne({}).appType !== undefined
     ) {
       isMetexpress =
         matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
+      isCouchbase =
+        matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase;
     }
     const params = getParams(num);
-    if (isMetexpress) {
+    if (isMetexpress || isCouchbase) {
       for (let i = 0; i < params.length; i++) {
         if (params[i].gapAbove) {
           if (params[i].name === "aggregation-method") {
