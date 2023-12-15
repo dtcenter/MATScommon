@@ -47,6 +47,8 @@ class MatsMiddleDieoff {
 
   singleCycle = null;
 
+  filterInfo = {};
+
   writeOutput = false;
 
   mmCommon = null;
@@ -67,7 +69,8 @@ class MatsMiddleDieoff {
     toSecs,
     validTimes,
     utcCycleStart,
-    singleCycle
+    singleCycle,
+    filterInfo
   ) => {
     const Future = require("fibers/future");
 
@@ -85,7 +88,8 @@ class MatsMiddleDieoff {
         toSecs,
         validTimes,
         utcCycleStart,
-        singleCycle
+        singleCycle,
+        filterInfo
       );
       dFuture.return();
     })();
@@ -104,7 +108,8 @@ class MatsMiddleDieoff {
     toSecs,
     validTimes,
     utcCycleStart,
-    singleCycle
+    singleCycle,
+    filterInfo
   ) => {
     const fs = require("fs");
 
@@ -137,6 +142,7 @@ class MatsMiddleDieoff {
     }
 
     this.singleCycle = singleCycle;
+    this.filterInfo = filterInfo;
 
     this.conn = await cbPool.getConnection();
 
@@ -183,9 +189,15 @@ class MatsMiddleDieoff {
     let stationNamesObs = "";
     for (let i = 0; i < this.stationNames.length; i += 1) {
       if (i === 0) {
-        stationNamesObs = `obs.data.${this.stationNames[i]}.${this.varName} ${this.stationNames[i]}`;
+        if (this.filterInfo.filterObsBy) {
+          stationNamesObs = `CASE WHEN obs.data.${this.stationNames[i]}.\`${this.filterInfo.filterObsBy}\` >= ${this.filterInfo.filterObsMin} AND obs.data.${this.stationNames[i]}.\`${this.filterInfo.filterObsBy}\` <= ${this.filterInfo.filterObsMax} THEN obs.data.${this.stationNames[i]}.\`${this.varName}\` ELSE "NULL" END ${this.stationNames[i]}`;
+        } else {
+          stationNamesObs = `obs.data.${this.stationNames[i]}.\`${this.varName}\` ${this.stationNames[i]}`;
+        }
+      } else if (this.filterInfo.filterObsBy) {
+        stationNamesObs += `, CASE WHEN obs.data.${this.stationNames[i]}.\`${this.filterInfo.filterObsBy}\` >= ${this.filterInfo.filterObsMin} AND obs.data.${this.stationNames[i]}.\`${this.filterInfo.filterObsBy}\` <= ${this.filterInfo.filterObsMax} THEN obs.data.${this.stationNames[i]}.\`${this.varName}\` ELSE "NULL" END ${this.stationNames[i]}`;
       } else {
-        stationNamesObs += `,obs.data.${this.stationNames[i]}.${this.varName} ${this.stationNames[i]}`;
+        stationNamesObs += `, obs.data.${this.stationNames[i]}.\`${this.varName}\` ${this.stationNames[i]}`;
       }
     }
     let tmplWithStationNamesObs = cbPool.trfmSQLRemoveClause(
@@ -215,7 +227,10 @@ class MatsMiddleDieoff {
           const dataSingleEpoch = {};
           const stationsSingleEpoch = {};
           for (let i = 0; i < this.stationNames.length; i++) {
-            const varValStation = fveDataSingleEpoch[this.stationNames[i]];
+            const varValStation =
+              fveDataSingleEpoch[this.stationNames[i]] === "NULL"
+                ? null
+                : fveDataSingleEpoch[this.stationNames[i]];
             stationsSingleEpoch[this.stationNames[i]] = varValStation;
           }
           dataSingleEpoch.fcst = fveDataSingleEpoch.fcst;
@@ -249,9 +264,15 @@ class MatsMiddleDieoff {
     let stationNamesModels = "";
     for (let i = 0; i < this.stationNames.length; i += 1) {
       if (i === 0) {
-        stationNamesModels = `models.data.${this.stationNames[i]}.${this.varName} ${this.stationNames[i]}`;
+        if (this.filterInfo.filterModelBy) {
+          stationNamesModels = `CASE WHEN models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.${this.stationNames[i]}.\`${this.varName}\` ELSE "NULL" END ${this.stationNames[i]}`;
+        } else {
+          stationNamesModels = `models.data.${this.stationNames[i]}.\`${this.varName}\` ${this.stationNames[i]}`;
+        }
+      } else if (this.filterInfo.filterModelBy) {
+        stationNamesModels += `, CASE WHEN models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.${this.stationNames[i]}.\`${this.varName}\` ELSE "NULL" END ${this.stationNames[i]}`;
       } else {
-        stationNamesModels += `,models.data.${this.stationNames[i]}.${this.varName} ${this.stationNames[i]}`;
+        stationNamesModels += `, models.data.${this.stationNames[i]}.\`${this.varName}\` ${this.stationNames[i]}`;
       }
     }
 
@@ -287,7 +308,10 @@ class MatsMiddleDieoff {
             const dataSingleEpoch = {};
             const stationsSingleEpoch = {};
             for (let i = 0; i < this.stationNames.length; i++) {
-              const varValStation = fveDataSingleEpoch[this.stationNames[i]];
+              const varValStation =
+                fveDataSingleEpoch[this.stationNames[i]] === "NULL"
+                  ? null
+                  : fveDataSingleEpoch[this.stationNames[i]];
               stationsSingleEpoch[this.stationNames[i]] = varValStation;
             }
             dataSingleEpoch.stations = stationsSingleEpoch;
