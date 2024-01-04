@@ -341,6 +341,10 @@ Package.onUse(function (api) {
     "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_obs.sql",
     "server"
   );
+  api.addAssets(
+    "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_stations_for_region.sql",
+    "server"
+  );
 });
 
 Package.onTest(function (api) {

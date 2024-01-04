@@ -125,6 +125,27 @@ const simplePoolQueryWrapSynchronous = function (pool, statement) {
   }
 };
 
+// get stations in a predefined region
+const getStationsInCouchbaseRegion = function (pool, region) {
+  if (Meteor.isServer) {
+    let sitesList = [];
+    let statement = Assets.getText(
+      "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_stations_for_region.sql"
+    );
+    statement = statement.replace(/{{vxREGION}}/g, region);
+
+    const Future = require("fibers/future");
+    const dFuture = new Future();
+    (async () => {
+      sitesList = await pool.queryCB(pool.trfmSQLForDbTarget(statement));
+      // done waiting - have results
+      dFuture.return();
+    })();
+    dFuture.wait();
+    return sitesList;
+  }
+};
+
 // utility for querying the DB via Python
 const queryDBPython = function (pool, queryArray) {
   if (Meteor.isServer) {
@@ -4023,6 +4044,7 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
 
 export default matsDataQueryUtils = {
   simplePoolQueryWrapSynchronous,
+  getStationsInCouchbaseRegion,
   queryDBPython,
   queryDBTimeSeries,
   queryDBSpecialtyCurve,
