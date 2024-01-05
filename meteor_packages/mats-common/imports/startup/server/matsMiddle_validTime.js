@@ -263,8 +263,6 @@ class MatsMiddleValidTime {
       stationNamesModels
     );
 
-    const flaIncr = 3;
-    this.fveModels = {};
     const promises = [];
     for (let imfve = 0; imfve < this.fcstValidEpoch_Array.length; imfve += 100) {
       const fveArraySlice = this.fcstValidEpoch_Array.slice(imfve, imfve + 100);

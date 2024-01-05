@@ -5,13 +5,14 @@
 /* global cbPool, Assets */
 
 import { matsTypes, matsMiddleCommon } from "meteor/randyp:mats-common";
+import { _ } from "meteor/underscore";
 
 class MatsMiddleTimeSeries {
   logToFile = false;
 
   logMemUsage = false;
 
-  fcstValidEpoch_Array = [];
+  avtime_Array = [];
 
   cbPool = null;
 
@@ -129,20 +130,24 @@ class MatsMiddleTimeSeries {
       toSecs
     );
 
-    const prObs = this.createObsData();
-    const prModel = this.createModelData();
-    await Promise.all([prObs, prModel]);
-    if (statType === "ctc") {
-      this.generateCtc(threshold);
-      for (let i = 0; i < this.stats.length; i += 1) {
-        this.stats[i] = this.mmCommon.sumUpCtc(this.stats[i]);
+    // create distinct avtime array
+    for (let iofve = 0; iofve < this.fcstValidEpoch_Array.length; iofve += 1) {
+      const ofve = this.fcstValidEpoch_Array[iofve];
+      let avtime;
+      if (this.average === "m0.fcstValidEpoch") {
+        avtime = ofve;
+      } else {
+        const avgConst = Number(this.average.substring(5, this.average.indexOf("*")));
+        avtime = Math.ceil(avgConst * Math.floor((ofve + avgConst / 2) / avgConst));
       }
-    } else {
-      this.generateSums();
-      for (let i = 0; i < this.stats.length; i += 1) {
-        this.stats[i] = this.mmCommon.sumUpSums(this.stats[i]);
+      if (!this.avtime_Array.includes(avtime)) {
+        this.avtime_Array.push(avtime);
       }
     }
+    this.avtime_Array.sort((a, b) => a - b);
+
+    await this.createObsData();
+    await this.createModelData();
 
     if (this.logToFile === true) {
       this.mmCommon.writeToLocalFile(
@@ -207,6 +212,11 @@ class MatsMiddleTimeSeries {
       prSlice.then((qr) => {
         for (let jmfve = 0; jmfve < qr.rows.length; jmfve += 1) {
           const fveDataSingleEpoch = qr.rows[jmfve];
+          const { avtime } = fveDataSingleEpoch;
+          const avtimeKey = avtime.toString();
+          if (!this.fveObs[avtimeKey]) {
+            this.fveObs[avtimeKey] = {};
+          }
           const dataSingleEpoch = {};
           const stationsSingleEpoch = {};
           for (let i = 0; i < this.stationNames.length; i++) {
@@ -216,9 +226,8 @@ class MatsMiddleTimeSeries {
                 : fveDataSingleEpoch[this.stationNames[i]];
             stationsSingleEpoch[this.stationNames[i]] = varValStation;
           }
-          dataSingleEpoch.avtime = fveDataSingleEpoch.avtime;
           dataSingleEpoch.stations = stationsSingleEpoch;
-          this.fveObs[fveDataSingleEpoch.fve] = dataSingleEpoch;
+          this.fveObs[avtimeKey][fveDataSingleEpoch.fve] = dataSingleEpoch;
         }
       });
     }
@@ -289,6 +298,11 @@ class MatsMiddleTimeSeries {
       prSlice.then((qr) => {
         for (let jmfve = 0; jmfve < qr.rows.length; jmfve += 1) {
           const fveDataSingleEpoch = qr.rows[jmfve];
+          const { avtime } = fveDataSingleEpoch;
+          const avtimeKey = avtime.toString();
+          if (!this.fveModels[avtimeKey]) {
+            this.fveModels[avtimeKey] = {};
+          }
           const dataSingleEpoch = {};
           const stationsSingleEpoch = {};
           for (let i = 0; i < this.stationNames.length; i++) {
@@ -298,94 +312,141 @@ class MatsMiddleTimeSeries {
                 : fveDataSingleEpoch[this.stationNames[i]];
             stationsSingleEpoch[this.stationNames[i]] = varValStation;
           }
-          dataSingleEpoch.avtime = fveDataSingleEpoch.avtime;
           dataSingleEpoch.stations = stationsSingleEpoch;
-          this.fveModels[fveDataSingleEpoch.fve] = dataSingleEpoch;
+          this.fveModels[avtimeKey][fveDataSingleEpoch.fve] = dataSingleEpoch;
         }
       });
     }
     await Promise.all(promises);
+    if (this.statType === "ctc") {
+      this.generateCtc();
+    } else {
+      this.generateSums();
+    }
   };
 
-  generateCtc = async (threshold) => {
-    for (let imfve = 0; imfve < this.fcstValidEpoch_Array.length; imfve += 1) {
-      const fve = this.fcstValidEpoch_Array[imfve];
+  generateCtc = () => {
+    const { threshold } = this;
+    const avtimesWithData = _.intersection(
+      Object.keys(this.fveObs),
+      Object.keys(this.fveModels)
+    );
 
-      const obsSingleFve = this.fveObs[fve];
-      const modelSingleFve = this.fveModels[fve];
+    for (let iavt = 0; iavt < avtimesWithData.length; iavt += 1) {
+      const ctcAvtime = {};
 
-      if (
-        obsSingleFve &&
-        modelSingleFve &&
-        (!this.validTimes ||
-          this.validTimes.length === 0 ||
-          (this.validTimes &&
-            this.validTimes.length > 0 &&
-            this.validTimes.includes((fve % (24 * 3600)) / 3600)))
-      ) {
-        const ctcFve = {};
-        ctcFve.avtime = obsSingleFve.avtime;
-        ctcFve.hit = 0;
-        ctcFve.miss = 0;
-        ctcFve.fa = 0;
-        ctcFve.cn = 0;
-        ctcFve.N0 = 0;
-        ctcFve.N_times = 1;
-        ctcFve.sub_data = [];
+      const avtime = avtimesWithData[iavt];
+      const avtimeKey = avtime.toString();
+      ctcAvtime.avtime = avtime;
+      ctcAvtime.hit = 0;
+      ctcAvtime.miss = 0;
+      ctcAvtime.fa = 0;
+      ctcAvtime.cn = 0;
+      ctcAvtime.N0 = 0;
+      ctcAvtime.N_times = 0;
+      ctcAvtime.sub_data = [];
 
-        this.mmCommon.computeCtcForStations(
-          fve,
-          threshold,
-          ctcFve,
-          this.stationNames,
-          obsSingleFve,
-          modelSingleFve
-        );
-        if (ctcFve.N0 > 0) {
-          this.stats.push(ctcFve);
+      // get all the fve for this avtime
+      const avtimeSingle = this.fveModels[avtimeKey];
+      const fveArray = Object.keys(avtimeSingle);
+      fveArray.sort();
+
+      [ctcAvtime.min_secs] = fveArray;
+      ctcAvtime.max_secs = fveArray[fveArray.length - 1];
+      ctcAvtime.N_times = fveArray.length;
+      for (let imfve = 0; imfve < fveArray.length; imfve += 1) {
+        const fve = fveArray[imfve];
+        const obsSingleFve = this.fveObs[avtimeKey][fve];
+        const modelSingleFve = avtimeSingle[fve];
+
+        if (
+          obsSingleFve &&
+          modelSingleFve &&
+          (!this.validTimes ||
+            this.validTimes.length === 0 ||
+            (this.validTimes &&
+              this.validTimes.length > 0 &&
+              this.validTimes.includes((fve % (24 * 3600)) / 3600)))
+        ) {
+          this.mmCommon.computeCtcForStations(
+            fve,
+            threshold,
+            ctcAvtime,
+            this.stationNames,
+            obsSingleFve,
+            modelSingleFve
+          );
         }
+      }
+
+      try {
+        const statsFcstLeadSummed = this.mmCommon.sumUpCtc(ctcAvtime);
+        this.stats.push(statsFcstLeadSummed);
+      } catch (ex) {
+        throw new Error(ex);
       }
     }
   };
 
-  generateSums = async () => {
-    for (let imfve = 0; imfve < this.fcstValidEpoch_Array.length; imfve += 1) {
-      const fve = this.fcstValidEpoch_Array[imfve];
+  generateSums = () => {
+    const avtimesWithData = _.intersection(
+      Object.keys(this.fveObs),
+      Object.keys(this.fveModels)
+    );
 
-      const obsSingleFve = this.fveObs[fve];
-      const modelSingleFve = this.fveModels[fve];
+    for (let iavt = 0; iavt < avtimesWithData.length; iavt += 1) {
+      const sumsAvtime = {};
 
-      if (
-        obsSingleFve &&
-        modelSingleFve &&
-        (!this.validTimes ||
-          this.validTimes.length === 0 ||
-          (this.validTimes &&
-            this.validTimes.length > 0 &&
-            this.validTimes.includes((fve % (24 * 3600)) / 3600)))
-      ) {
-        const sumsFve = {};
-        sumsFve.avtime = obsSingleFve.avtime;
-        sumsFve.square_diff_sum = 0;
-        sumsFve.N_sum = 0;
-        sumsFve.obs_model_diff_sum = 0;
-        sumsFve.model_sum = 0;
-        sumsFve.obs_sum = 0;
-        sumsFve.abs_sum = 0;
-        sumsFve.N0 = 0;
-        sumsFve.N_times = 1;
-        sumsFve.sub_data = [];
+      const avtime = avtimesWithData[iavt];
+      const avtimeKey = avtime.toString();
+      sumsAvtime.avtime = avtime;
+      sumsAvtime.square_diff_sum = 0;
+      sumsAvtime.N_sum = 0;
+      sumsAvtime.obs_model_diff_sum = 0;
+      sumsAvtime.model_sum = 0;
+      sumsAvtime.obs_sum = 0;
+      sumsAvtime.abs_sum = 0;
+      sumsAvtime.N0 = 0;
+      sumsAvtime.N_times = 0;
+      sumsAvtime.sub_data = [];
 
-        this.mmCommon.computeSumsForStations(
-          fve,
-          sumsFve,
-          this.stationNames,
-          obsSingleFve,
-          modelSingleFve
-        );
-        if (sumsFve.N0 > 0) {
-          this.stats.push(sumsFve);
+      // get all the fve for this avtime
+      const avtimeSingle = this.fveModels[avtimeKey];
+      const fveArray = Object.keys(avtimeSingle);
+      fveArray.sort();
+
+      [sumsAvtime.min_secs] = fveArray;
+      sumsAvtime.max_secs = fveArray[fveArray.length - 1];
+      sumsAvtime.N_times = fveArray.length;
+      for (let imfve = 0; imfve < fveArray.length; imfve += 1) {
+        const fve = fveArray[imfve];
+        const obsSingleFve = this.fveObs[avtimeKey][fve];
+        const modelSingleFve = avtimeSingle[fve];
+
+        if (
+          obsSingleFve &&
+          modelSingleFve &&
+          (!this.validTimes ||
+            this.validTimes.length === 0 ||
+            (this.validTimes &&
+              this.validTimes.length > 0 &&
+              this.validTimes.includes((fve % (24 * 3600)) / 3600)))
+        ) {
+          this.mmCommon.computeSumsForStations(
+            fve,
+            sumsAvtime,
+            this.stationNames,
+            obsSingleFve,
+            modelSingleFve
+          );
         }
+      }
+
+      try {
+        const statsFcstLeadSummed = this.mmCommon.sumUpSums(sumsAvtime);
+        this.stats.push(statsFcstLeadSummed);
+      } catch (ex) {
+        throw new Error(ex);
       }
     }
   };
