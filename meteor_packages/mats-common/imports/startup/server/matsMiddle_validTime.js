@@ -12,7 +12,7 @@ class MatsMiddleValidTime {
 
   logMemUsage = false;
 
-  hrOfDay_Array = [];
+  indVar_Array = [];
 
   cbPool = null;
 
@@ -114,15 +114,15 @@ class MatsMiddleValidTime {
       toSecs
     );
 
-    // create distinct hour of day array
+    // create distinct indVar array
     for (let iofve = 0; iofve < this.fcstValidEpoch_Array.length; iofve += 1) {
       const ofve = this.fcstValidEpoch_Array[iofve];
-      const hod = (ofve % (24 * 3600)) / 3600;
-      if (!this.hrOfDay_Array.includes(hod)) {
-        this.hrOfDay_Array.push(hod);
+      const indVar = (ofve % (24 * 3600)) / 3600;
+      if (!this.indVar_Array.includes(indVar)) {
+        this.indVar_Array.push(indVar);
       }
     }
-    this.hrOfDay_Array.sort((a, b) => a - b);
+    this.indVar_Array.sort((a, b) => a - b);
 
     await this.createObsData();
     await this.createModelData();
@@ -190,23 +190,21 @@ class MatsMiddleValidTime {
       prSlice.then((qr) => {
         for (let jmfve = 0; jmfve < qr.rows.length; jmfve += 1) {
           const fveDataSingleEpoch = qr.rows[jmfve];
-          const hod = (fveDataSingleEpoch.fve % (24 * 3600)) / 3600;
-          const hodKey = hod.toString();
-          if (!this.fveObs[hodKey]) {
-            this.fveObs[hodKey] = {};
+          const indVarKey = ((fveDataSingleEpoch.fve % (24 * 3600)) / 3600).toString();
+          if (!this.fveObs[indVarKey]) {
+            this.fveObs[indVarKey] = {};
           }
           const dataSingleEpoch = {};
           const stationsSingleEpoch = {};
-          for (let i = 0; i < this.stationNames.length; i++) {
+          for (let i = 0; i < this.stationNames.length; i += 1) {
             const varValStation =
               fveDataSingleEpoch[this.stationNames[i]] === "NULL"
                 ? null
                 : fveDataSingleEpoch[this.stationNames[i]];
             stationsSingleEpoch[this.stationNames[i]] = varValStation;
           }
-          dataSingleEpoch.fcst = fveDataSingleEpoch.fcst;
           dataSingleEpoch.stations = stationsSingleEpoch;
-          this.fveObs[hodKey][fveDataSingleEpoch.fve] = dataSingleEpoch;
+          this.fveObs[indVarKey][fveDataSingleEpoch.fve] = dataSingleEpoch;
         }
       });
     }
@@ -278,14 +276,13 @@ class MatsMiddleValidTime {
       prSlice.then((qr) => {
         for (let jmfve = 0; jmfve < qr.rows.length; jmfve += 1) {
           const fveDataSingleEpoch = qr.rows[jmfve];
-          const hod = (fveDataSingleEpoch.fve % (24 * 3600)) / 3600;
-          const hodKey = hod.toString();
-          if (!this.fveModels[hodKey]) {
-            this.fveModels[hodKey] = {};
+          const indVarKey = ((fveDataSingleEpoch.fve % (24 * 3600)) / 3600).toString();
+          if (!this.fveModels[indVarKey]) {
+            this.fveModels[indVarKey] = {};
           }
           const dataSingleEpoch = {};
           const stationsSingleEpoch = {};
-          for (let i = 0; i < this.stationNames.length; i++) {
+          for (let i = 0; i < this.stationNames.length; i += 1) {
             const varValStation =
               fveDataSingleEpoch[this.stationNames[i]] === "NULL"
                 ? null
@@ -293,7 +290,7 @@ class MatsMiddleValidTime {
             stationsSingleEpoch[this.stationNames[i]] = varValStation;
           }
           dataSingleEpoch.stations = stationsSingleEpoch;
-          this.fveModels[hodKey][fveDataSingleEpoch.fve] = dataSingleEpoch;
+          this.fveModels[indVarKey][fveDataSingleEpoch.fve] = dataSingleEpoch;
         }
       });
     }
@@ -307,42 +304,42 @@ class MatsMiddleValidTime {
 
   generateCtc = () => {
     const { threshold } = this;
-    const hodsWithData = _.intersection(
+    const indVarsWithData = _.intersection(
       Object.keys(this.fveObs),
       Object.keys(this.fveModels)
     );
 
-    for (let ihod = 0; ihod < hodsWithData.length; ihod += 1) {
-      const ctcHod = {};
+    for (let idx = 0; idx < indVarsWithData.length; idx += 1) {
+      const ctcStats = {};
 
-      const hod = hodsWithData[ihod];
-      const hodKey = hod.toString();
-      ctcHod.hr_of_day = hod;
-      ctcHod.hit = 0;
-      ctcHod.miss = 0;
-      ctcHod.fa = 0;
-      ctcHod.cn = 0;
-      ctcHod.N0 = 0;
-      ctcHod.sub_data = [];
+      const indVar = indVarsWithData[idx];
+      const indVarKey = indVar.toString();
+      ctcStats.hr_of_day = indVar;
+      ctcStats.hit = 0;
+      ctcStats.miss = 0;
+      ctcStats.fa = 0;
+      ctcStats.cn = 0;
+      ctcStats.N0 = 0;
+      ctcStats.sub_data = [];
 
-      // get all the fve for this hod
-      const hodSingle = this.fveModels[hodKey];
-      const fveArray = Object.keys(hodSingle);
+      // get all the fve for this indVar
+      const indVarSingle = this.fveModels[indVarKey];
+      const fveArray = Object.keys(indVarSingle);
       fveArray.sort();
 
-      [ctcHod.min_secs] = fveArray;
-      ctcHod.max_secs = fveArray[fveArray.length - 1];
-      ctcHod.N_times = fveArray.length;
+      [ctcStats.min_secs] = fveArray;
+      ctcStats.max_secs = fveArray[fveArray.length - 1];
+      ctcStats.N_times = fveArray.length;
       for (let imfve = 0; imfve < fveArray.length; imfve += 1) {
         const fve = fveArray[imfve];
-        const obsSingleFve = this.fveObs[hodKey][fve];
-        const modelSingleFve = hodSingle[fve];
+        const obsSingleFve = this.fveObs[indVarKey][fve];
+        const modelSingleFve = indVarSingle[fve];
 
         if (obsSingleFve && modelSingleFve) {
           this.mmCommon.computeCtcForStations(
             fve,
             threshold,
-            ctcHod,
+            ctcStats,
             this.stationNames,
             obsSingleFve,
             modelSingleFve
@@ -351,8 +348,8 @@ class MatsMiddleValidTime {
       }
 
       try {
-        const statsFcstLeadSummed = this.mmCommon.sumUpCtc(ctcHod);
-        this.stats.push(statsFcstLeadSummed);
+        const statsSummedByIndVar = this.mmCommon.sumUpCtc(ctcStats);
+        this.stats.push(statsSummedByIndVar);
       } catch (ex) {
         throw new Error(ex);
       }
@@ -360,43 +357,43 @@ class MatsMiddleValidTime {
   };
 
   generateSums = () => {
-    const hodsWithData = _.intersection(
+    const indVarsWithData = _.intersection(
       Object.keys(this.fveObs),
       Object.keys(this.fveModels)
     );
 
-    for (let ihod = 0; ihod < hodsWithData.length; ihod += 1) {
-      const sumsHod = {};
+    for (let idx = 0; idx < indVarsWithData.length; idx += 1) {
+      const sumsStats = {};
 
-      const hod = hodsWithData[ihod];
-      const hodKey = hod.toString();
-      sumsHod.hr_of_day = hod;
-      sumsHod.square_diff_sum = 0;
-      sumsHod.N_sum = 0;
-      sumsHod.obs_model_diff_sum = 0;
-      sumsHod.model_sum = 0;
-      sumsHod.obs_sum = 0;
-      sumsHod.abs_sum = 0;
-      sumsHod.N0 = 0;
-      sumsHod.sub_data = [];
+      const indVar = indVarsWithData[idx];
+      const indVarKey = indVar.toString();
+      sumsStats.hr_of_day = indVar;
+      sumsStats.square_diff_sum = 0;
+      sumsStats.N_sum = 0;
+      sumsStats.obs_model_diff_sum = 0;
+      sumsStats.model_sum = 0;
+      sumsStats.obs_sum = 0;
+      sumsStats.abs_sum = 0;
+      sumsStats.N0 = 0;
+      sumsStats.sub_data = [];
 
-      // get all the fve for this hod
-      const hodSingle = this.fveModels[hodKey];
-      const fveArray = Object.keys(hodSingle);
+      // get all the fve for this indVar
+      const indVarSingle = this.fveModels[indVarKey];
+      const fveArray = Object.keys(indVarSingle);
       fveArray.sort();
 
-      [sumsHod.min_secs] = fveArray;
-      sumsHod.max_secs = fveArray[fveArray.length - 1];
-      sumsHod.N_times = fveArray.length;
+      [sumsStats.min_secs] = fveArray;
+      sumsStats.max_secs = fveArray[fveArray.length - 1];
+      sumsStats.N_times = fveArray.length;
       for (let imfve = 0; imfve < fveArray.length; imfve += 1) {
         const fve = fveArray[imfve];
-        const obsSingleFve = this.fveObs[hodKey][fve];
-        const modelSingleFve = hodSingle[fve];
+        const obsSingleFve = this.fveObs[indVarKey][fve];
+        const modelSingleFve = indVarSingle[fve];
 
         if (obsSingleFve && modelSingleFve) {
           this.mmCommon.computeSumsForStations(
             fve,
-            sumsHod,
+            sumsStats,
             this.stationNames,
             obsSingleFve,
             modelSingleFve
@@ -405,8 +402,8 @@ class MatsMiddleValidTime {
       }
 
       try {
-        const statsFcstLeadSummed = this.mmCommon.sumUpSums(sumsHod);
-        this.stats.push(statsFcstLeadSummed);
+        const statsSummedByIndVar = this.mmCommon.sumUpSums(sumsStats);
+        this.stats.push(statsSummedByIndVar);
       } catch (ex) {
         throw new Error(ex);
       }

@@ -12,7 +12,7 @@ class MatsMiddleTimeSeries {
 
   logMemUsage = false;
 
-  avtime_Array = [];
+  indVar_Array = [];
 
   cbPool = null;
 
@@ -130,21 +130,21 @@ class MatsMiddleTimeSeries {
       toSecs
     );
 
-    // create distinct avtime array
+    // create distinct indVar array
     for (let iofve = 0; iofve < this.fcstValidEpoch_Array.length; iofve += 1) {
       const ofve = this.fcstValidEpoch_Array[iofve];
-      let avtime;
+      let indVar;
       if (this.average === "m0.fcstValidEpoch") {
-        avtime = ofve;
+        indVar = ofve;
       } else {
         const avgConst = Number(this.average.substring(5, this.average.indexOf("*")));
-        avtime = Math.ceil(avgConst * Math.floor((ofve + avgConst / 2) / avgConst));
+        indVar = Math.ceil(avgConst * Math.floor((ofve + avgConst / 2) / avgConst));
       }
-      if (!this.avtime_Array.includes(avtime)) {
-        this.avtime_Array.push(avtime);
+      if (!this.indVar_Array.includes(indVar)) {
+        this.indVar_Array.push(indVar);
       }
     }
-    this.avtime_Array.sort((a, b) => a - b);
+    this.indVar_Array.sort((a, b) => a - b);
 
     await this.createObsData();
     await this.createModelData();
@@ -212,14 +212,13 @@ class MatsMiddleTimeSeries {
       prSlice.then((qr) => {
         for (let jmfve = 0; jmfve < qr.rows.length; jmfve += 1) {
           const fveDataSingleEpoch = qr.rows[jmfve];
-          const { avtime } = fveDataSingleEpoch;
-          const avtimeKey = avtime.toString();
-          if (!this.fveObs[avtimeKey]) {
-            this.fveObs[avtimeKey] = {};
+          const indVarKey = fveDataSingleEpoch.avtime.toString();
+          if (!this.fveObs[indVarKey]) {
+            this.fveObs[indVarKey] = {};
           }
           const dataSingleEpoch = {};
           const stationsSingleEpoch = {};
-          for (let i = 0; i < this.stationNames.length; i++) {
+          for (let i = 0; i < this.stationNames.length; i += 1) {
             const varValStation =
               fveDataSingleEpoch[this.stationNames[i]] === "NULL"
                 ? null
@@ -227,7 +226,7 @@ class MatsMiddleTimeSeries {
             stationsSingleEpoch[this.stationNames[i]] = varValStation;
           }
           dataSingleEpoch.stations = stationsSingleEpoch;
-          this.fveObs[avtimeKey][fveDataSingleEpoch.fve] = dataSingleEpoch;
+          this.fveObs[indVarKey][fveDataSingleEpoch.fve] = dataSingleEpoch;
         }
       });
     }
@@ -299,14 +298,13 @@ class MatsMiddleTimeSeries {
       prSlice.then((qr) => {
         for (let jmfve = 0; jmfve < qr.rows.length; jmfve += 1) {
           const fveDataSingleEpoch = qr.rows[jmfve];
-          const { avtime } = fveDataSingleEpoch;
-          const avtimeKey = avtime.toString();
-          if (!this.fveModels[avtimeKey]) {
-            this.fveModels[avtimeKey] = {};
+          const indVarKey = fveDataSingleEpoch.avtime.toString();
+          if (!this.fveModels[indVarKey]) {
+            this.fveModels[indVarKey] = {};
           }
           const dataSingleEpoch = {};
           const stationsSingleEpoch = {};
-          for (let i = 0; i < this.stationNames.length; i++) {
+          for (let i = 0; i < this.stationNames.length; i += 1) {
             const varValStation =
               fveDataSingleEpoch[this.stationNames[i]] === "NULL"
                 ? null
@@ -314,7 +312,7 @@ class MatsMiddleTimeSeries {
             stationsSingleEpoch[this.stationNames[i]] = varValStation;
           }
           dataSingleEpoch.stations = stationsSingleEpoch;
-          this.fveModels[avtimeKey][fveDataSingleEpoch.fve] = dataSingleEpoch;
+          this.fveModels[indVarKey][fveDataSingleEpoch.fve] = dataSingleEpoch;
         }
       });
     }
@@ -328,36 +326,36 @@ class MatsMiddleTimeSeries {
 
   generateCtc = () => {
     const { threshold } = this;
-    const avtimesWithData = _.intersection(
+    const indVarsWithData = _.intersection(
       Object.keys(this.fveObs),
       Object.keys(this.fveModels)
     );
 
-    for (let iavt = 0; iavt < avtimesWithData.length; iavt += 1) {
-      const ctcAvtime = {};
+    for (let idx = 0; idx < indVarsWithData.length; idx += 1) {
+      const ctcStats = {};
 
-      const avtime = avtimesWithData[iavt];
-      const avtimeKey = avtime.toString();
-      ctcAvtime.avtime = avtime;
-      ctcAvtime.hit = 0;
-      ctcAvtime.miss = 0;
-      ctcAvtime.fa = 0;
-      ctcAvtime.cn = 0;
-      ctcAvtime.N0 = 0;
-      ctcAvtime.sub_data = [];
+      const indVar = indVarsWithData[idx];
+      const indVarKey = indVar.toString();
+      ctcStats.avtime = indVar;
+      ctcStats.hit = 0;
+      ctcStats.miss = 0;
+      ctcStats.fa = 0;
+      ctcStats.cn = 0;
+      ctcStats.N0 = 0;
+      ctcStats.sub_data = [];
 
-      // get all the fve for this avtime
-      const avtimeSingle = this.fveModels[avtimeKey];
-      const fveArray = Object.keys(avtimeSingle);
+      // get all the fve for this indVar
+      const indVarSingle = this.fveModels[indVarKey];
+      const fveArray = Object.keys(indVarSingle);
       fveArray.sort();
 
-      [ctcAvtime.min_secs] = fveArray;
-      ctcAvtime.max_secs = fveArray[fveArray.length - 1];
-      ctcAvtime.N_times = fveArray.length;
+      [ctcStats.min_secs] = fveArray;
+      ctcStats.max_secs = fveArray[fveArray.length - 1];
+      ctcStats.N_times = fveArray.length;
       for (let imfve = 0; imfve < fveArray.length; imfve += 1) {
         const fve = fveArray[imfve];
-        const obsSingleFve = this.fveObs[avtimeKey][fve];
-        const modelSingleFve = avtimeSingle[fve];
+        const obsSingleFve = this.fveObs[indVarKey][fve];
+        const modelSingleFve = indVarSingle[fve];
 
         if (
           obsSingleFve &&
@@ -371,7 +369,7 @@ class MatsMiddleTimeSeries {
           this.mmCommon.computeCtcForStations(
             fve,
             threshold,
-            ctcAvtime,
+            ctcStats,
             this.stationNames,
             obsSingleFve,
             modelSingleFve
@@ -380,8 +378,8 @@ class MatsMiddleTimeSeries {
       }
 
       try {
-        const statsFcstLeadSummed = this.mmCommon.sumUpCtc(ctcAvtime);
-        this.stats.push(statsFcstLeadSummed);
+        const statsSummedByIndVar = this.mmCommon.sumUpCtc(ctcStats);
+        this.stats.push(statsSummedByIndVar);
       } catch (ex) {
         throw new Error(ex);
       }
@@ -389,38 +387,38 @@ class MatsMiddleTimeSeries {
   };
 
   generateSums = () => {
-    const avtimesWithData = _.intersection(
+    const indVarsWithData = _.intersection(
       Object.keys(this.fveObs),
       Object.keys(this.fveModels)
     );
 
-    for (let iavt = 0; iavt < avtimesWithData.length; iavt += 1) {
-      const sumsAvtime = {};
+    for (let idx = 0; idx < indVarsWithData.length; idx += 1) {
+      const sumsStats = {};
 
-      const avtime = avtimesWithData[iavt];
-      const avtimeKey = avtime.toString();
-      sumsAvtime.avtime = avtime;
-      sumsAvtime.square_diff_sum = 0;
-      sumsAvtime.N_sum = 0;
-      sumsAvtime.obs_model_diff_sum = 0;
-      sumsAvtime.model_sum = 0;
-      sumsAvtime.obs_sum = 0;
-      sumsAvtime.abs_sum = 0;
-      sumsAvtime.N0 = 0;
-      sumsAvtime.sub_data = [];
+      const indVar = indVarsWithData[idx];
+      const indVarKey = indVar.toString();
+      sumsStats.avtime = indVar;
+      sumsStats.square_diff_sum = 0;
+      sumsStats.N_sum = 0;
+      sumsStats.obs_model_diff_sum = 0;
+      sumsStats.model_sum = 0;
+      sumsStats.obs_sum = 0;
+      sumsStats.abs_sum = 0;
+      sumsStats.N0 = 0;
+      sumsStats.sub_data = [];
 
-      // get all the fve for this avtime
-      const avtimeSingle = this.fveModels[avtimeKey];
-      const fveArray = Object.keys(avtimeSingle);
+      // get all the fve for this indVar
+      const indVarSingle = this.fveModels[indVarKey];
+      const fveArray = Object.keys(indVarSingle);
       fveArray.sort();
 
-      [sumsAvtime.min_secs] = fveArray;
-      sumsAvtime.max_secs = fveArray[fveArray.length - 1];
-      sumsAvtime.N_times = fveArray.length;
+      [sumsStats.min_secs] = fveArray;
+      sumsStats.max_secs = fveArray[fveArray.length - 1];
+      sumsStats.N_times = fveArray.length;
       for (let imfve = 0; imfve < fveArray.length; imfve += 1) {
         const fve = fveArray[imfve];
-        const obsSingleFve = this.fveObs[avtimeKey][fve];
-        const modelSingleFve = avtimeSingle[fve];
+        const obsSingleFve = this.fveObs[indVarKey][fve];
+        const modelSingleFve = indVarSingle[fve];
 
         if (
           obsSingleFve &&
@@ -433,7 +431,7 @@ class MatsMiddleTimeSeries {
         ) {
           this.mmCommon.computeSumsForStations(
             fve,
-            sumsAvtime,
+            sumsStats,
             this.stationNames,
             obsSingleFve,
             modelSingleFve
@@ -442,8 +440,8 @@ class MatsMiddleTimeSeries {
       }
 
       try {
-        const statsFcstLeadSummed = this.mmCommon.sumUpSums(sumsAvtime);
-        this.stats.push(statsFcstLeadSummed);
+        const statsSummedByIndVar = this.mmCommon.sumUpSums(sumsStats);
+        this.stats.push(statsSummedByIndVar);
       } catch (ex) {
         throw new Error(ex);
       }
