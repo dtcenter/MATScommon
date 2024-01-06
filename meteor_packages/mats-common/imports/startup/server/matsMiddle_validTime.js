@@ -5,6 +5,7 @@
 /* global cbPool, Assets */
 
 import { matsTypes, matsMiddleCommon } from "meteor/randyp:mats-common";
+import { _ } from "meteor/underscore";
 
 class MatsMiddleValidTime {
   logToFile = false;
@@ -16,8 +17,6 @@ class MatsMiddleValidTime {
   cbPool = null;
 
   conn = null;
-
-  fcstLenArray = [];
 
   fveObs = {};
 
@@ -223,15 +222,15 @@ class MatsMiddleValidTime {
     );
     tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
       tmplGetNStationsMfveModel,
+      "fcstLen fcst_lead"
+    );
+    tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
+      tmplGetNStationsMfveModel,
       "{{vxFCST_LEN_ARRAY}}"
     );
     tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
       tmplGetNStationsMfveModel,
       "{{vxAVERAGE}}"
-    );
-    tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
-      tmplGetNStationsMfveModel,
-      "fcstLen fcst_lead"
     );
 
     tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
@@ -308,11 +307,15 @@ class MatsMiddleValidTime {
 
   generateCtc = () => {
     const { threshold } = this;
+    const hodsWithData = _.intersection(
+      Object.keys(this.fveObs),
+      Object.keys(this.fveModels)
+    );
 
-    for (let ihod = 0; ihod < this.hrOfDay_Array.length; ihod += 1) {
+    for (let ihod = 0; ihod < hodsWithData.length; ihod += 1) {
       const ctcHod = {};
 
-      const hod = this.hrOfDay_Array[ihod];
+      const hod = hodsWithData[ihod];
       const hodKey = hod.toString();
       ctcHod.hr_of_day = hod;
       ctcHod.hit = 0;
@@ -320,7 +323,6 @@ class MatsMiddleValidTime {
       ctcHod.fa = 0;
       ctcHod.cn = 0;
       ctcHod.N0 = 0;
-      ctcHod.N_times = new Set(this.hrOfDay_Array).size;
       ctcHod.sub_data = [];
 
       // get all the fve for this hod
@@ -330,6 +332,7 @@ class MatsMiddleValidTime {
 
       [ctcHod.min_secs] = fveArray;
       ctcHod.max_secs = fveArray[fveArray.length - 1];
+      ctcHod.N_times = fveArray.length;
       for (let imfve = 0; imfve < fveArray.length; imfve += 1) {
         const fve = fveArray[imfve];
         const obsSingleFve = this.fveObs[hodKey][fve];
@@ -357,10 +360,15 @@ class MatsMiddleValidTime {
   };
 
   generateSums = () => {
-    for (let ihod = 0; ihod < this.hrOfDay_Array.length; ihod += 1) {
+    const hodsWithData = _.intersection(
+      Object.keys(this.fveObs),
+      Object.keys(this.fveModels)
+    );
+
+    for (let ihod = 0; ihod < hodsWithData.length; ihod += 1) {
       const sumsHod = {};
 
-      const hod = this.hrOfDay_Array[ihod];
+      const hod = hodsWithData[ihod];
       const hodKey = hod.toString();
       sumsHod.hr_of_day = hod;
       sumsHod.square_diff_sum = 0;
@@ -370,7 +378,6 @@ class MatsMiddleValidTime {
       sumsHod.obs_sum = 0;
       sumsHod.abs_sum = 0;
       sumsHod.N0 = 0;
-      sumsHod.N_times = new Set(this.hrOfDay_Array).size;
       sumsHod.sub_data = [];
 
       // get all the fve for this hod
@@ -380,6 +387,7 @@ class MatsMiddleValidTime {
 
       [sumsHod.min_secs] = fveArray;
       sumsHod.max_secs = fveArray[fveArray.length - 1];
+      sumsHod.N_times = fveArray.length;
       for (let imfve = 0; imfve < fveArray.length; imfve += 1) {
         const fve = fveArray[imfve];
         const obsSingleFve = this.fveObs[hodKey][fve];

@@ -253,6 +253,7 @@ class MatsMiddleTimeSeries {
       /{{vxAVERAGE}}/g,
       this.average
     );
+
     tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
       /{{vxMODEL}}/g,
       `"${this.model}"`
@@ -343,7 +344,6 @@ class MatsMiddleTimeSeries {
       ctcAvtime.fa = 0;
       ctcAvtime.cn = 0;
       ctcAvtime.N0 = 0;
-      ctcAvtime.N_times = 0;
       ctcAvtime.sub_data = [];
 
       // get all the fve for this avtime
@@ -407,7 +407,6 @@ class MatsMiddleTimeSeries {
       sumsAvtime.obs_sum = 0;
       sumsAvtime.abs_sum = 0;
       sumsAvtime.N0 = 0;
-      sumsAvtime.N_times = 0;
       sumsAvtime.sub_data = [];
 
       // get all the fve for this avtime
