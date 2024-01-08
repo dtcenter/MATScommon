@@ -12,6 +12,8 @@ class MatsMiddleValidTime {
 
   logMemUsage = false;
 
+  fcstValidEpoch_Array = [];
+
   indVar_Array = [];
 
   cbPool = null;
@@ -166,7 +168,7 @@ class MatsMiddleValidTime {
         stationNamesObs += `, obs.data.${this.stationNames[i]}.\`${this.varName}\` ${this.stationNames[i]}`;
       }
     }
-    let tmplWithStationNamesObs = cbPool.trfmSQLRemoveClause(
+    let tmplWithStationNamesObs = this.cbPool.trfmSQLRemoveClause(
       tmplGetNStationsMfveObs,
       "{{vxAVERAGE}}"
     );
@@ -220,20 +222,19 @@ class MatsMiddleValidTime {
     );
     tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
       tmplGetNStationsMfveModel,
-      "fcstLen fcst_lead"
-    );
-    tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
-      tmplGetNStationsMfveModel,
       "{{vxFCST_LEN_ARRAY}}"
     );
     tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
       tmplGetNStationsMfveModel,
       "{{vxAVERAGE}}"
     );
-
     tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
       /{{vxMODEL}}/g,
       `"${this.model}"`
+    );
+    tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
+      tmplGetNStationsMfveModel,
+      "fcstLen fcst_lead"
     );
     tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
       /{{vxFCST_LEN}}/g,

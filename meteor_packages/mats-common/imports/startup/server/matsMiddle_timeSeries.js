@@ -12,6 +12,8 @@ class MatsMiddleTimeSeries {
 
   logMemUsage = false;
 
+  fcstValidEpoch_Array = [];
+
   indVar_Array = [];
 
   cbPool = null;
@@ -242,20 +244,19 @@ class MatsMiddleTimeSeries {
     );
     tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
       tmplGetNStationsMfveModel,
-      "fcstLen fcst_lead"
-    );
-    tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
-      tmplGetNStationsMfveModel,
       "{{vxFCST_LEN_ARRAY}}"
     );
     tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
       /{{vxAVERAGE}}/g,
       this.average
     );
-
     tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
       /{{vxMODEL}}/g,
       `"${this.model}"`
+    );
+    tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
+      tmplGetNStationsMfveModel,
+      "fcstLen fcst_lead"
     );
     tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
       /{{vxFCST_LEN}}/g,
