@@ -221,10 +221,6 @@ class MatsMiddleDailyModelCycle {
     );
     tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
       tmplGetNStationsMfveModel,
-      "{{vxFCST_LEN_ARRAY}}"
-    );
-    tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
-      tmplGetNStationsMfveModel,
       "{{vxAVERAGE}}"
     );
     tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
@@ -234,6 +230,10 @@ class MatsMiddleDailyModelCycle {
     tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
       /fcstLen = {{vxFCST_LEN}}/g,
       `fcstLen < 24 AND (models.fcstValidEpoch - models.fcstLen*3600)%(24*3600)/3600 IN [${this.utcCycleStart}]`
+    );
+    tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
+      tmplGetNStationsMfveModel,
+      "{{vxFCST_LEN_ARRAY}}"
     );
 
     let stationNamesModels = "";

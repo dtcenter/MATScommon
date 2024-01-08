@@ -242,10 +242,6 @@ class MatsMiddleTimeSeries {
     let tmplGetNStationsMfveModel = Assets.getText(
       "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_model.sql"
     );
-    tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
-      tmplGetNStationsMfveModel,
-      "{{vxFCST_LEN_ARRAY}}"
-    );
     tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
       /{{vxAVERAGE}}/g,
       this.average
@@ -261,6 +257,10 @@ class MatsMiddleTimeSeries {
     tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
       /{{vxFCST_LEN}}/g,
       this.fcstLen
+    );
+    tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
+      tmplGetNStationsMfveModel,
+      "{{vxFCST_LEN_ARRAY}}"
     );
 
     let stationNamesModels = "";

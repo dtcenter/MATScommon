@@ -222,10 +222,6 @@ class MatsMiddleValidTime {
     );
     tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
       tmplGetNStationsMfveModel,
-      "{{vxFCST_LEN_ARRAY}}"
-    );
-    tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
-      tmplGetNStationsMfveModel,
       "{{vxAVERAGE}}"
     );
     tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
@@ -239,6 +235,10 @@ class MatsMiddleValidTime {
     tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
       /{{vxFCST_LEN}}/g,
       this.fcstLen
+    );
+    tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
+      tmplGetNStationsMfveModel,
+      "{{vxFCST_LEN_ARRAY}}"
     );
 
     let stationNamesModels = "";
