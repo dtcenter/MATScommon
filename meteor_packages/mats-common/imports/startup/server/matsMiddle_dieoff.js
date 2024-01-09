@@ -5,6 +5,7 @@
 /* global cbPool, Assets */
 
 import { matsTypes, matsMiddleCommon } from "meteor/randyp:mats-common";
+import { _ } from "meteor/underscore";
 
 class MatsMiddleDieoff {
   logToFile = false;
@@ -13,11 +14,11 @@ class MatsMiddleDieoff {
 
   fcstValidEpoch_Array = [];
 
+  indVar_Array = [];
+
   cbPool = null;
 
   conn = null;
-
-  fcstLenArray = [];
 
   fveObs = {};
 
@@ -151,13 +152,14 @@ class MatsMiddleDieoff {
       toSecs
     );
 
-    // =============== get distinct fcstLen in time frame ==================
-    this.fcstLenArray = await this.mmCommon.get_fcstLen_Array(
+    // create distinct indVar array
+    this.indVar_Array = await this.mmCommon.get_fcstLen_Array(
       this.model,
       this.fcstValidEpoch_Array[0],
       this.fcstValidEpoch_Array[this.fcstValidEpoch_Array.length - 1]
     );
-    this.fcstLenArray = this.fcstLenArray.filter((fl) => Number(fl) % 3 === 0);
+    this.indVar_Array = this.indVar_Array.filter((fl) => Number(fl) % 3 === 0);
+
     await this.createObsData();
     await this.createModelData();
 
@@ -200,7 +202,7 @@ class MatsMiddleDieoff {
         stationNamesObs += `, obs.data.${this.stationNames[i]}.\`${this.varName}\` ${this.stationNames[i]}`;
       }
     }
-    let tmplWithStationNamesObs = cbPool.trfmSQLRemoveClause(
+    let tmplWithStationNamesObs = this.cbPool.trfmSQLRemoveClause(
       tmplGetNStationsMfveObs,
       "{{vxAVERAGE}}"
     );
@@ -224,18 +226,21 @@ class MatsMiddleDieoff {
       prSlice.then((qr) => {
         for (let jmfve = 0; jmfve < qr.rows.length; jmfve += 1) {
           const fveDataSingleEpoch = qr.rows[jmfve];
+!!!!!!!          const indVarKey = fveDataSingleEpoch.fcst_lead.toString();
+          if (!this.fveObs[indVarKey]) {
+            this.fveObs[indVarKey] = {};
+          }
           const dataSingleEpoch = {};
           const stationsSingleEpoch = {};
-          for (let i = 0; i < this.stationNames.length; i++) {
+          for (let i = 0; i < this.stationNames.length; i += 1) {
             const varValStation =
               fveDataSingleEpoch[this.stationNames[i]] === "NULL"
                 ? null
                 : fveDataSingleEpoch[this.stationNames[i]];
             stationsSingleEpoch[this.stationNames[i]] = varValStation;
           }
-          dataSingleEpoch.fcst = fveDataSingleEpoch.fcst;
           dataSingleEpoch.stations = stationsSingleEpoch;
-          this.fveObs[fveDataSingleEpoch.fve] = dataSingleEpoch;
+          this.fveObs[indVarKey][fveDataSingleEpoch.fve] = dataSingleEpoch;
         }
       });
     }
@@ -251,15 +256,15 @@ class MatsMiddleDieoff {
     );
     tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
       tmplGetNStationsMfveModel,
-      "{{vxFCST_LEN}}"
-    );
-    tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
-      tmplGetNStationsMfveModel,
       "{{vxAVERAGE}}"
     );
     tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
       /{{vxMODEL}}/g,
       `"${this.model}"`
+    );
+    tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
+      tmplGetNStationsMfveModel,
+      "{{vxFCST_LEN}}"
     );
     let stationNamesModels = "";
     for (let i = 0; i < this.stationNames.length; i += 1) {
@@ -282,9 +287,9 @@ class MatsMiddleDieoff {
     );
 
     const flaIncr = 3;
-    for (let flai = 0; flai < this.fcstLenArray.length; flai += flaIncr) {
+    for (let flai = 0; flai < this.indVar_Array.length; flai += flaIncr) {
       this.fveModels = {};
-      const flaSlice = this.fcstLenArray.slice(flai, flai + flaIncr);
+      const flaSlice = this.indVar_Array.slice(flai, flai + flaIncr);
       const tmplWithStationNamesModelsFcstArray = tmplWithStationNamesModels.replace(
         /{{vxFCST_LEN_ARRAY}}/g,
         JSON.stringify(flaSlice)
@@ -305,9 +310,13 @@ class MatsMiddleDieoff {
         prSlice.then((qr) => {
           for (let jmfve = 0; jmfve < qr.rows.length; jmfve += 1) {
             const fveDataSingleEpoch = qr.rows[jmfve];
+            const indVarKey = fveDataSingleEpoch.fcst_lead.toString();
+            if (!this.fveModels[indVarKey]) {
+              this.fveModels[indVarKey] = {};
+            }
             const dataSingleEpoch = {};
             const stationsSingleEpoch = {};
-            for (let i = 0; i < this.stationNames.length; i++) {
+            for (let i = 0; i < this.stationNames.length; i += 1) {
               const varValStation =
                 fveDataSingleEpoch[this.stationNames[i]] === "NULL"
                   ? null
@@ -315,30 +324,7 @@ class MatsMiddleDieoff {
               stationsSingleEpoch[this.stationNames[i]] = varValStation;
             }
             dataSingleEpoch.stations = stationsSingleEpoch;
-            if (!this.fveModels[fveDataSingleEpoch.fcst_lead]) {
-              this.fveModels[fveDataSingleEpoch.fcst_lead] = {};
-            }
-            this.fveModels[fveDataSingleEpoch.fcst_lead][fveDataSingleEpoch.fve] =
-              dataSingleEpoch;
-          }
-
-          if (this.logMemUsage === true) {
-            try {
-              const obsSize =
-                new TextEncoder().encode(JSON.stringify(this.fveObs)).length /
-                (1024 * 1024);
-              const modelsSize =
-                new TextEncoder().encode(JSON.stringify(this.fveModels)).length /
-                (1024 * 1024);
-              const statsSize =
-                new TextEncoder().encode(JSON.stringify(this.stats)).length /
-                (1024 * 1024);
-              console.log(
-                `sizes (MB), obs:${obsSize},model:${modelsSize},stats:${statsSize}`
-              );
-            } catch (ex) {
-              console.log(`exception getting sizes:${ex}`);
-            }
+            this.fveModels[indVarKey][fveDataSingleEpoch.fve] = dataSingleEpoch;
           }
         });
       }
@@ -353,74 +339,69 @@ class MatsMiddleDieoff {
 
   generateCtc = () => {
     const { threshold } = this;
+    const indVarsWithData = _.intersection(
+      Object.keys(this.fveObs),
+      Object.keys(this.fveModels)
+    );
 
-    const fcstLeadArray = Object.keys(this.fveModels);
-    fcstLeadArray.sort(function (a, b) {
-      return a - b;
-    });
-    for (let flai = 0; flai < fcstLeadArray.length; flai += 1) {
-      const ctcFcstLead = {};
+    for (let idx = 0; idx < indVarsWithData.length; idx += 1) {
+      const ctcStats = {};
 
-      const fcstLead = Number(fcstLeadArray[flai]);
-      ctcFcstLead.fcst_lead = fcstLead;
-      ctcFcstLead.hit = 0;
-      ctcFcstLead.miss = 0;
-      ctcFcstLead.fa = 0;
-      ctcFcstLead.cn = 0;
-      ctcFcstLead.N0 = 0;
-      ctcFcstLead.N_times = new Set(fcstLeadArray).size;
-      ctcFcstLead.sub_data = [];
+      const indVar = indVarsWithData[idx];
+      const indVarKey = indVar.toString();
+      ctcStats.fcst_lead = indVar;
+      ctcStats.hit = 0;
+      ctcStats.miss = 0;
+      ctcStats.fa = 0;
+      ctcStats.cn = 0;
+      ctcStats.N0 = 0;
+      ctcStats.sub_data = [];
 
-      // get all the fve for this fcst_lead
-      const fcstLeadSingle = this.fveModels[fcstLeadArray[flai]];
-      const fveArray = Object.keys(fcstLeadSingle);
+      // get all the fve for this indVar
+      const indVarSingle = this.fveModels[indVarKey];
+      const fveArray = Object.keys(indVarSingle);
       fveArray.sort();
 
-      [ctcFcstLead.min_secs] = fveArray;
-      ctcFcstLead.max_secs = fveArray[fveArray.length - 1];
+      [ctcStats.min_secs] = fveArray;
+      ctcStats.max_secs = fveArray[fveArray.length - 1];
+      ctcStats.N_times = fveArray.length;
       for (let imfve = 0; imfve < fveArray.length; imfve += 1) {
         const fve = fveArray[imfve];
-        const obsSingleFve = this.fveObs[fve];
-        const modelSingleFve = fcstLeadSingle[fve];
+        const obsSingleFve = this.fveObs[indVarKey][fve];
+        const modelSingleFve = indVarSingle[fve];
 
-        if (!obsSingleFve || !modelSingleFve) {
-          continue;
+        if (
+          obsSingleFve &&
+          modelSingleFve &&
+          (!this.validTimes ||
+            this.validTimes.length === 0 ||
+            (this.validTimes &&
+              this.validTimes.length > 0 &&
+              this.validTimes.includes((fve % (24 * 3600)) / 3600))) &&
+          (!this.utcCycleStart ||
+            this.utcCycleStart.length === 0 ||
+            (this.utcCycleStart &&
+              this.utcCycleStart.length > 0 &&
+              this.utcCycleStart.includes(
+                ((fve - indVar * 3600) % (24 * 3600)) / 3600
+              ))) &&
+          (!this.singleCycle ||
+            (this.singleCycle && fve - indVar * 3600 === this.singleCycle))
+        ) {
+          this.mmCommon.computeCtcForStations(
+            fve,
+            threshold,
+            ctcStats,
+            this.stationNames,
+            obsSingleFve,
+            modelSingleFve
+          );
         }
-
-        if (this.validTimes && this.validTimes.length > 0) {
-          // m0.fcstValidEpoch%(24*3600)/3600 IN[vxVALID_TIMES]
-          if (!this.validTimes.includes((fve % (24 * 3600)) / 3600)) {
-            continue;
-          }
-        }
-
-        if (this.utcCycleStart && this.utcCycleStart.length > 0) {
-          // (obs.fcstValidEpoch - obs.fcstLen*3600)%(24*3600)/3600 IN[vxUTC_CYCLE_START])
-          if (
-            !this.utcCycleStart.includes(((fve - fcstLead * 3600) % (24 * 3600)) / 3600)
-          ) {
-            continue;
-          }
-        }
-
-        if (this.singleCycle !== null) {
-          // obs.fcstValidEpoch-obs.fcstLen*3600 = vxFROM_SECS
-          if (fve - fcstLead * 3600 === this.singleCycle) {
-            continue;
-          }
-        }
-        this.mmCommon.computeCtcForStations(
-          fve,
-          threshold,
-          ctcFcstLead,
-          this.stationNames,
-          obsSingleFve,
-          modelSingleFve
-        );
       }
+
       try {
-        const statsFcstLeadSummed = this.mmCommon.sumUpCtc(ctcFcstLead);
-        this.stats.push(statsFcstLeadSummed);
+        const statsSummedByIndVar = this.mmCommon.sumUpCtc(ctcStats);
+        this.stats.push(statsSummedByIndVar);
       } catch (ex) {
         throw new Error(ex);
       }
@@ -428,74 +409,70 @@ class MatsMiddleDieoff {
   };
 
   generateSums = () => {
-    const fcstLeadArray = Object.keys(this.fveModels);
-    fcstLeadArray.sort(function (a, b) {
-      return a - b;
-    });
-    for (let flai = 0; flai < fcstLeadArray.length; flai += 1) {
-      const sumsFcstLead = {};
+    const indVarsWithData = _.intersection(
+      Object.keys(this.fveObs),
+      Object.keys(this.fveModels)
+    );
 
-      const fcstLead = Number(fcstLeadArray[flai]);
-      sumsFcstLead.fcst_lead = fcstLead;
-      sumsFcstLead.square_diff_sum = 0;
-      sumsFcstLead.N_sum = 0;
-      sumsFcstLead.obs_model_diff_sum = 0;
-      sumsFcstLead.model_sum = 0;
-      sumsFcstLead.obs_sum = 0;
-      sumsFcstLead.abs_sum = 0;
-      sumsFcstLead.N0 = 0;
-      sumsFcstLead.N_times = new Set(fcstLeadArray).size;
-      sumsFcstLead.sub_data = [];
+    for (let idx = 0; idx < indVarsWithData.length; idx += 1) {
+      const sumsStats = {};
 
-      // get all the fve for this fcst_lead
-      const fcstLeadSingle = this.fveModels[fcstLeadArray[flai]];
-      const fveArray = Object.keys(fcstLeadSingle);
+      const indVar = indVarsWithData[idx];
+      const indVarKey = indVar.toString();
+      sumsStats.fcst_lead = indVar;
+      sumsStats.square_diff_sum = 0;
+      sumsStats.N_sum = 0;
+      sumsStats.obs_model_diff_sum = 0;
+      sumsStats.model_sum = 0;
+      sumsStats.obs_sum = 0;
+      sumsStats.abs_sum = 0;
+      sumsStats.N0 = 0;
+      sumsStats.sub_data = [];
+
+      // get all the fve for this indVar
+      const indVarSingle = this.fveModels[indVarKey];
+      const fveArray = Object.keys(indVarSingle);
       fveArray.sort();
 
-      [sumsFcstLead.min_secs] = fveArray;
-      sumsFcstLead.max_secs = fveArray[fveArray.length - 1];
+      [sumsStats.min_secs] = fveArray;
+      sumsStats.max_secs = fveArray[fveArray.length - 1];
+      sumsStats.N_times = fveArray.length;
       for (let imfve = 0; imfve < fveArray.length; imfve += 1) {
         const fve = fveArray[imfve];
-        const obsSingleFve = this.fveObs[fve];
-        const modelSingleFve = fcstLeadSingle[fve];
+        const obsSingleFve = this.fveObs[indVarKey][fve];
+        const modelSingleFve = indVarSingle[fve];
 
-        if (!obsSingleFve || !modelSingleFve) {
-          continue;
+        if (
+          obsSingleFve &&
+          modelSingleFve &&
+          (!this.validTimes ||
+            this.validTimes.length === 0 ||
+            (this.validTimes &&
+              this.validTimes.length > 0 &&
+              this.validTimes.includes((fve % (24 * 3600)) / 3600))) &&
+          (!this.utcCycleStart ||
+            this.utcCycleStart.length === 0 ||
+            (this.utcCycleStart &&
+              this.utcCycleStart.length > 0 &&
+              this.utcCycleStart.includes(
+                ((fve - indVar * 3600) % (24 * 3600)) / 3600
+              ))) &&
+          (!this.singleCycle ||
+            (this.singleCycle && fve - indVar * 3600 === this.singleCycle))
+        ) {
+          this.mmCommon.computeSumsForStations(
+            fve,
+            sumsStats,
+            this.stationNames,
+            obsSingleFve,
+            modelSingleFve
+          );
         }
-
-        if (this.validTimes && this.validTimes.length > 0) {
-          // m0.fcstValidEpoch%(24*3600)/3600 IN[vxVALID_TIMES]
-          if (!this.validTimes.includes((fve % (24 * 3600)) / 3600)) {
-            continue;
-          }
-        }
-
-        if (this.utcCycleStart && this.utcCycleStart.length > 0) {
-          // (obs.fcstValidEpoch - obs.fcstLen*3600)%(24*3600)/3600 IN[vxUTC_CYCLE_START])
-          if (
-            !this.utcCycleStart.includes(((fve - fcstLead * 3600) % (24 * 3600)) / 3600)
-          ) {
-            continue;
-          }
-        }
-
-        if (this.singleCycle !== null) {
-          // obs.fcstValidEpoch-obs.fcstLen*3600 = vxFROM_SECS
-          if (fve - fcstLead * 3600 === this.singleCycle) {
-            continue;
-          }
-        }
-        this.mmCommon.computeSumsForStations(
-          fve,
-          sumsFcstLead,
-          this.stationNames,
-          obsSingleFve,
-          modelSingleFve
-        );
       }
+
       try {
-        const statsFcstLeadSummed = this.mmCommon.sumUpSums(sumsFcstLead);
-        this.stats.push(statsFcstLeadSummed);
+        const statsSummedByIndVar = this.mmCommon.sumUpSums(sumsStats);
+        this.stats.push(statsSummedByIndVar);
       } catch (ex) {
         throw new Error(ex);
       }
