@@ -867,6 +867,9 @@ const generateContourCurveOptions = function (curve, axisMap, dataset, appParams
   if (
     variable.includes("RH") ||
     variable.includes("rh") ||
+    variable.includes("Relative Humidity") ||
+    variable.includes("Relative humidity") ||
+    variable.includes("relative rumidity") ||
     variable.includes("Dewpoint") ||
     variable.includes("dewpoint") ||
     variable.includes("DPT") ||
