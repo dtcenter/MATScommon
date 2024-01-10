@@ -865,16 +865,11 @@ const generateContourCurveOptions = function (curve, axisMap, dataset, appParams
 
   let colorscale = "RdBu";
   if (
-    variable.includes("RH") ||
-    variable.includes("rh") ||
-    variable.includes("Relative Humidity") ||
-    variable.includes("Relative humidity") ||
-    variable.includes("relative rumidity") ||
-    variable.includes("Dewpoint") ||
-    variable.includes("dewpoint") ||
-    variable.includes("DPT") ||
-    variable.includes("Td") ||
-    variable.includes("TD")
+    variable.toLowerCase().includes("rh") ||
+    variable.toLowerCase().includes("relative humidity") ||
+    variable.toLowerCase().includes("dewpoint") ||
+    variable.toLowerCase().includes("dpt") ||
+    variable.toLowerCase().includes("td")
   ) {
     if (
       statistic === "Bias (Model - Obs)" ||
