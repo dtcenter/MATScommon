@@ -1,17 +1,4 @@
 export const curveParamsByApp = {
-  anomalycor: [
-    "label",
-    "data-source",
-    "region",
-    "variable",
-    "forecast-length",
-    "dieoff-type",
-    "valid-time",
-    "utc-cycle-start",
-    "average",
-    "level",
-    "curve-dates",
-  ],
   "cb-metar": [
     "label",
     "plot-type",
