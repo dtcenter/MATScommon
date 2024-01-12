@@ -4,7 +4,7 @@
 
 Package.describe({
   name: "randyp:mats-common",
-  version: "5.1.3",
+  version: "5.2.1",
   // Brief, one-line summary of the package.
   summary: "MATScommon files provides common functionality for MATS/METexpress apps",
   // URL to the Git repository containing the source code for this package.
@@ -15,21 +15,21 @@ Package.describe({
 });
 
 Package.onUse(function (api) {
-  api.versionsFrom("2.13");
+  api.versionsFrom("2.14");
   Npm.depends({
-    "@fortawesome/fontawesome-free": "6.4.2",
-    "fs-extra": "11.1.1",
-    "@babel/runtime": "7.23.2",
-    "meteor-node-stubs": "1.2.5",
+    "@fortawesome/fontawesome-free": "6.5.1",
+    "fs-extra": "11.2.0",
+    "@babel/runtime": "7.23.8",
+    "meteor-node-stubs": "1.2.7",
     url: "0.11.3",
     jquery: "3.7.1",
-    "datatables.net-bs": "1.13.6",
-    "datatables.net-dt": "1.13.6",
+    "datatables.net-bs": "1.13.8",
+    "datatables.net-dt": "1.13.8",
     "jquery-ui": "1.13.2",
-    "csv-stringify": "6.4.4",
+    "csv-stringify": "6.4.5",
     "node-file-cache": "1.0.2",
     "python-shell": "5.0.0",
-    couchbase: "4.2.7",
+    couchbase: "4.2.9",
     "simpl-schema": "3.4.1",
     "vanillajs-datepicker": "1.3.4",
     daterangepicker: "3.1.0",

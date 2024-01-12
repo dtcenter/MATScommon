@@ -2754,7 +2754,13 @@ const parseQueryDataMapScalar = function (
   let colorHigh = "";
   let colorHighest = "";
   if (statistic.includes("Bias")) {
-    if (variable.includes("RH") || variable.toLowerCase().includes("dewpoint")) {
+    if (
+      variable.toLowerCase().includes("rh") ||
+      variable.toLowerCase().includes("relative humidity") ||
+      variable.toLowerCase().includes("dewpoint") ||
+      variable.toLowerCase().includes("dpt") ||
+      variable.toLowerCase().includes("td")
+    ) {
       colorLowest = "rgb(140,81,00)";
       colorLow = "rgb(191,129,45)";
       colorModerate = "rgb(125,125,125)";
