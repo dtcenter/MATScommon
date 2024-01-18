@@ -689,10 +689,8 @@ const _checkMetaDataRefresh = async function () {
     if (refresh === true) {
       // refresh the app metadata
       // app specific routines
-      // const asrKeys = Object.keys(appSpecificResetRoutines);
-      const asrKeys = appSpecificResetRoutines;
-      for (let ai = 0; ai < asrKeys.length; ai++) {
-        global.appSpecificResetRoutines[ai]();
+      for (let ai = 0; ai < appSpecificResetRoutines.length; ai += 1) {
+        await global.appSpecificResetRoutines[ai]();
       }
       // remember that we updated ALL the metadata tables just now
       metaDataTableUpdates.update(
@@ -3630,10 +3628,8 @@ const resetApp = async function (appRef) {
       }
     }
     // invoke the app specific routines
-    // const asrKeys = Object.keys(appSpecificResetRoutines);
-    const asrKeys = appSpecificResetRoutines;
-    for (let ai = 0; ai < asrKeys.length; ai++) {
-      global.appSpecificResetRoutines[ai]();
+    for (let ai = 0; ai < appSpecificResetRoutines.length; ai += 1) {
+      await global.appSpecificResetRoutines[ai]();
     }
     matsCache.clear();
   }
