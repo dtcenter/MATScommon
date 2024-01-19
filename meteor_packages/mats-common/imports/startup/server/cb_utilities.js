@@ -101,9 +101,17 @@ class CBUtilities {
 
   queryCB = async (statement) => {
     const couchbase = require("couchbase");
+    const Future = require("fibers/future");
     try {
+      let result;
       const conn = await this.getConnection();
-      const result = await conn.cluster.query(statement);
+      const dFuture = new Future();
+      (async () => {
+        result = await conn.cluster.query(statement);
+        // done waiting - have results
+        dFuture.return();
+      })();
+      dFuture.wait();
       return result.rows;
     } catch (err) {
       return `queryCB ERROR: ${err}`;

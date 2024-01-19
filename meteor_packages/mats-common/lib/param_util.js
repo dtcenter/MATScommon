@@ -94,6 +94,7 @@ const setValueTextForParamName = function (paramName, text) {
       document.getElementById(`${paramName}-dateRange`) !== undefined &&
       document.getElementById(`${paramName}-dateRange`) !== null
     ) {
+      delete document.getElementById(`${paramName}-dateRange`).value;
       document.getElementById(`${paramName}-dateRange`).value = text;
     }
   } catch (error) {
@@ -433,7 +434,10 @@ const getDefaultDateRange = function (name) {
     typeof dateParam.stopDate === "string"
       ? dateParam.stopDate
       : moment.utc(dateParam.stopDate).locale("en").format("MM/DD/YYYY HH:mm");
-  const dstr = dateParam.default;
+  const dstr =
+    typeof dateParam.default === "string"
+      ? dateParam.default
+      : `${startInit} - ${stopInit}`;
   return { startDate: startInit, stopDate: stopInit, dstr };
 };
 
@@ -470,7 +474,7 @@ const setAllParamsToDefault = function () {
     } else if (param !== undefined && param.superiorNames !== undefined) {
       dependents.push(param);
       // everything else
-    } else {
+    } else if (param !== undefined) {
       params.push(param);
     }
   }
@@ -511,7 +515,7 @@ const setAllParamsToDefault = function () {
         },
       });
       targetElem.dispatchEvent(resetMapEvent);
-    } else {
+    } else if (param !== undefined) {
       setDefaultForParamName(param);
     }
   });
@@ -521,7 +525,7 @@ const setAllParamsToDefault = function () {
       if (param !== undefined && param.type === matsTypes.InputTypes.dateRange) {
         const { dstr } = getDefaultDateRange(param.name);
         setValueTextForParamName(param.name, dstr);
-      } else {
+      } else if (param !== undefined) {
         setDefaultForParamName(param);
       }
     });
