@@ -700,6 +700,59 @@ const excludeStatFromScorecard = function (stat) {
   return statsToExclude.indexOf(stat) !== -1;
 };
 
+// turn METexpress regions into readable text
+const readableStandardRegions = function () {
+  return {
+    // EMC regions
+    FULL: "FULL: Full Domain",
+    APL: "APL: Appalachia",
+    ATC: "ATC: North American Arctic",
+    CAM: "CAM: Central America",
+    CAR: "CAR: Caribbean",
+    CONUS: "CONUS: Continental US",
+    EAST: "EAST: Eastern US",
+    ECA: "ECA: Eastern Canada",
+    GLF: "GLF: Gulf of Mexico",
+    GMC: "GMC: Gulf of Mexico Coast",
+    GRB: "GRB: Great Basin",
+    HWI: "HWI: Hawaii",
+    LMV: "LMV: Lower Mississippi Valley",
+    MDW: "MDW: Midwest US",
+    MEX: "MEX: Mexico",
+    N60: "N60: Northern Polar Latitudes",
+    NAK: "NAK: Northern Alaska",
+    NAO: "NAO: Northern North Atlantic Ocean",
+    NEC: "NEC: Northeastern US Coast",
+    NHX: "NHX: Northern Hemisphere (20N <= lat <= 80N)",
+    NMT: "NMT: Northern Rocky Mountains",
+    NPL: "NPL: Northern Great Plains",
+    NPO: "NPO: Northern North Pacific Ocean",
+    NSA: "NSA: Northern South America",
+    NWC: "NWC: Northwestern US Coast",
+    PNA: "PNA: Pacific / North America",
+    PRI: "PRI: Puerto Rico",
+    S60: "S60: Southern Polar Latitudes",
+    SAC: "SAC: Southern Alaska",
+    SAO: "SAO: Southern North Atlantic Ocean",
+    SEC: "SEC: Southeastern US Coast",
+    SHX: "SHX: Southern Hemisphere (20S >= lat >= 80S)",
+    SMT: "SMT: Southern Rocky Mountains",
+    SPL: "SPL: Southern Great Plains",
+    SPO: "SPO: Southern North Pacific Ocean",
+    SWC: "SWC: Southwestern US Coast",
+    SWD: "SWD: Southwestern US Desert",
+    TRO: "TRO: Global Tropics (20N >= lat >= 20S)",
+    WCA: "WCA: Western Canada",
+    WEST: "WEST: Western US",
+    // GSL additions
+    AAK: "AAK: Alaska",
+    ALL_HRRR: "HRRR Domain",
+    E_HRRR: "Eastern HRRR Domain",
+    W_HRRR: "Western HRRR Domain",
+    GtLk: "Great Lakes",
+  };
+};
+
 // calculates mean, stdev, and other statistics for curve data points in all apps and plot types
 const get_err = function (sVals, sSecs, sLevs, appParams) {
   /* refer to perl error_library.pl sub  get_stats
@@ -1743,6 +1796,7 @@ export default matsDataUtils = {
   calculateStatScalar,
   consolidateContour,
   excludeStatFromScorecard,
+  readableStandardRegions,
   get_err,
   ctcErrorPython,
   checkDiffContourSignificance,
