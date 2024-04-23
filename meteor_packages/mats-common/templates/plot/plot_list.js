@@ -30,6 +30,18 @@ import {
     is what sets up the graph page.
 */
 
+const _setApplication = async (app) => {
+  // application usually refers to either database or variable in MATS
+  if (document.getElementById("database-item")) {
+    matsParamUtils.setValueTextForParamName("database", app);
+  } else if (
+    document.getElementById("variable-item") &&
+    document.getElementById("threshold-item")
+  ) {
+    matsParamUtils.setValueTextForParamName("variable", app);
+  }
+};
+
 const _changeParameter = async (parameter, newValue) => {
   matsParamUtils.setValueTextForParamName(parameter, newValue);
 };
@@ -44,6 +56,10 @@ const _setCommonParams = async (commonParamKeys, commonParams) => {
       } else if (thisKey === "region" && document.getElementById("vgtyp-item")) {
         // landuse regions go in the vgtyp selector
         matsParamUtils.setValueTextForParamName("vgtyp", thisValue);
+      } else if (thisKey === "level" && document.getElementById("top-item")) {
+        // some apps don't actually have a level selector
+        matsParamUtils.setValueTextForParamName("top", thisValue);
+        matsParamUtils.setValueTextForParamName("bottom", thisValue);
       }
     }
   }
@@ -58,10 +74,12 @@ const _plotGraph = async () => {
 };
 
 const addCurvesAndPlot = async (parsedSettings, commonParamKeys, commonParams) => {
+  await _setApplication(parsedSettings.appName);
   await _changeParameter("data-source", parsedSettings.curve0DataSource);
   await _setCommonParams(commonParamKeys, commonParams);
   await _addCurve();
   await _changeParameter("data-source", parsedSettings.curve1DataSource);
+  await _setCommonParams(commonParamKeys, commonParams);
   await _addCurve();
   await _changeParameter("dates", parsedSettings.dateRange);
   await _plotGraph();
