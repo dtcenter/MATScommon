@@ -109,14 +109,42 @@ Template.ScorecardHome.events({
   },
   "change #scorecard-color-theme-radioGroup-RedGreen"(event) {
     document.querySelector('[name="major-truth-color-icon"]').style.color = "#ff0000";
+    document.getElementById("major-truth-color-color").value = "#ff0000";
     document.querySelector('[name="minor-truth-color-icon"]').style.color = "#ff0000";
+    document.getElementById("minor-truth-color-color").value = "#ff0000";
     document.querySelector('[name="major-source-color-icon"]').style.color = "#00ff00";
+    document.getElementById("major-source-color-color").value = "#00ff00";
     document.querySelector('[name="minor-source-color-icon"]').style.color = "#00ff00";
+    document.getElementById("minor-source-color-color").value = "#00ff00";
   },
   "change #scorecard-color-theme-radioGroup-RedBlue"(event) {
     document.querySelector('[name="major-truth-color-icon"]').style.color = "#ff0000";
+    document.getElementById("major-truth-color-color").value = "#ff0000";
     document.querySelector('[name="minor-truth-color-icon"]').style.color = "#ff0000";
+    document.getElementById("minor-truth-color-color").value = "#ff0000";
     document.querySelector('[name="major-source-color-icon"]').style.color = "#0000ff";
+    document.getElementById("major-source-color-color").value = "#0000ff";
     document.querySelector('[name="minor-source-color-icon"]').style.color = "#0000ff";
+    document.getElementById("minor-source-color-color").value = "#0000ff";
+  },
+  "change [name='major-truth-color-icon']"(event) {
+    document.getElementById("major-truth-color-color").value = document.querySelector(
+      '[name="major-truth-color-icon"]'
+    ).style.color;
+  },
+  "change [name='minor-truth-color-icon']"(event) {
+    document.getElementById("minor-truth-color-color").value = document.querySelector(
+      '[name="minor-truth-color-icon"]'
+    ).style.color;
+  },
+  "change [name='major-source-color-icon']"(event) {
+    document.getElementById("major-source-color-color").value = document.querySelector(
+      '[name="major-source-color-icon"]'
+    ).style.color;
+  },
+  "change [name='minor-source-color-icon']"(event) {
+    document.getElementById("minor-source-color-color").value = document.querySelector(
+      '[name="minor-source-color-icon"]'
+    ).style.color;
   },
 });

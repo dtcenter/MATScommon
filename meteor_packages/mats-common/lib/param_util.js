@@ -255,6 +255,8 @@ const getElementValues = function () {
           return $(el).val();
         })
         .get();
+    } else if (param.type === matsTypes.InputTypes.color) {
+      val = document.querySelector(`[name='${param.name}-icon']`).style.color;
     } else {
       const idSelect = `#${getInputIdForParamName(param.name)}`;
       val = $(idSelect).val();
@@ -275,6 +277,8 @@ const getElementValues = function () {
           return $(el).val();
         })
         .get();
+    } else if (param.type === matsTypes.InputTypes.color) {
+      val = document.querySelector(`[name='${param.name}-icon']`).style.color;
     } else {
       var idSelect = `#${getInputIdForParamName(param.name)}`;
       val = $(idSelect).val();
@@ -295,6 +299,8 @@ const getElementValues = function () {
               return $(el).val();
             })
             .get();
+        } else if (param.type === matsTypes.InputTypes.color) {
+          val = document.querySelector(`[name='${param.name}-icon']`).style.color;
         } else {
           var idSelect = `#${getInputIdForParamName(name)}`;
           val = $(idSelect).val();
