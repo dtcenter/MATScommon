@@ -175,7 +175,7 @@ Template.scorecardStatusPage.events({
     const userName = e.currentTarget.dataset.user_name;
     const { name } = e.currentTarget.dataset;
     const submitted = e.currentTarget.dataset.submit_time;
-    const { processedAt } = e.currentTarget.dataset;
+    const processedAt = e.currentTarget.dataset.run_time;
 
     matsMethods.dropScorecardInstance.call(
       {
