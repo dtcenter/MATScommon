@@ -334,16 +334,8 @@ const processDataXYCurve = function (
     // get the overall stats for the text output.
     const stats = matsDataUtils.get_err(values, indVars, [], appParams);
     const filteredValues = values.filter((x) => x || x === 0);
-    let miny = Math.min(...filteredValues);
-    let maxy = Math.max(...filteredValues);
-    if (values.indexOf(0) !== -1 && miny > 0) {
-      miny = 0;
-    }
-    if (values.indexOf(0) !== -1 && maxy < 0) {
-      maxy = 0;
-    }
-    stats.miny = miny;
-    stats.maxy = maxy;
+    stats.miny = Math.min(...filteredValues);
+    stats.maxy = Math.max(...filteredValues);
     dataset[curveIndex].glob_stats = stats;
 
     // recalculate axis options after QC and matching
@@ -354,14 +346,14 @@ const processDataXYCurve = function (
     const minx = Math.min(...filteredIndVars);
     const maxx = Math.max(...filteredIndVars);
     curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].ymax =
-      curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].ymax < maxy ||
-      !axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey]
-        ? maxy
+      curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].ymax <
+        stats.maxy || !axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey]
+        ? stats.maxy
         : curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].ymax;
     curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].ymin =
-      curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].ymin > miny ||
-      !axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey]
-        ? miny
+      curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].ymin >
+        stats.miny || !axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey]
+        ? stats.miny
         : curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].ymin;
     curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].xmax =
       curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].xmax < maxx ||
@@ -826,14 +818,14 @@ const processDataProfile = function (
         ? miny
         : curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].ymin;
     curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].xmax =
-      curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].xmax < maxx ||
-      !axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey]
-        ? maxx
+      curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].xmax <
+        stats.maxx || !axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey]
+        ? stats.maxx
         : curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].xmax;
     curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].xmin =
-      curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].xmin > minx ||
-      !axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey]
-        ? minx
+      curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].xmin >
+        stats.minx || !axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey]
+        ? stats.minx
         : curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].xmin;
 
     // recalculate curve annotation after QC and matching
@@ -1711,14 +1703,14 @@ const processDataEnsembleHistogram = function (
     const minx = Math.min(...indVars);
     const maxx = Math.max(...indVars);
     curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].ymax =
-      curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].ymax < maxy ||
-      !axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey]
-        ? maxy
+      curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].ymax <
+        stats.maxy || !axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey]
+        ? stats.maxy
         : curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].ymax;
     curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].ymin =
-      curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].ymin > miny ||
-      !axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey]
-        ? miny
+      curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].ymin >
+        stats.miny || !axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey]
+        ? stats.miny
         : curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].ymin;
     curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].xmax =
       curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].xmax < maxx ||
