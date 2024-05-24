@@ -503,24 +503,12 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, allStatTypes
   }
 
   // calculate the max and min for this curve
-  const filteredx = d.x.filter((x) => x);
-  const filteredy = d.y.filter((y) => y);
+  const filteredx = d.x.filter((x) => x || x === 0);
+  const filteredy = d.y.filter((y) => y || y === 0);
   d.xmin = Math.min(...filteredx);
-  if (d.x.indexOf(0) !== -1 && d.xmin > 0) {
-    d.xmin = 0;
-  }
   d.xmax = Math.max(...filteredx);
-  if (d.x.indexOf(0) !== -1 && d.xmax < 0) {
-    d.xmax = 0;
-  }
   d.ymin = Math.min(...filteredy);
-  if (d.y.indexOf(0) !== -1 && d.ymin > 0) {
-    d.ymin = 0;
-  }
   d.ymax = Math.max(...filteredy);
-  if (d.y.indexOf(0) !== -1 && d.ymax < 0) {
-    d.ymax = 0;
-  }
 
   return { dataset: d };
 };
@@ -1405,54 +1393,18 @@ const getDataForDiffContour = function (
   }
 
   // calculate statistics
-  const filteredx = diffDataset.x.filter((x) => x);
-  const filteredy = diffDataset.y.filter((y) => y);
-  const filteredz = diffDataset.zTextOutput.filter((z) => z);
+  const filteredx = diffDataset.x.filter((x) => x || x === 0);
+  const filteredy = diffDataset.y.filter((y) => y || y === 0);
+  const filteredz = diffDataset.zTextOutput.filter((z) => z || z === 0);
   diffDataset.xmin = Math.min(...filteredx);
-  if (
-    !Number.isFinite(diffDataset.xmin) ||
-    (diffDataset.x.indexOf(0) !== -1 && diffDataset.xmin > 0)
-  ) {
-    diffDataset.xmin = 0;
-  }
   diffDataset.xmax = Math.max(...filteredx);
-  if (
-    !Number.isFinite(diffDataset.xmax) ||
-    (diffDataset.x.indexOf(0) !== -1 && diffDataset.xmax < 0)
-  ) {
-    diffDataset.xmax = 0;
-  }
   diffDataset.ymin = Math.min(...filteredy);
-  if (
-    !Number.isFinite(diffDataset.ymin) ||
-    (diffDataset.y.indexOf(0) !== -1 && diffDataset.ymin > 0)
-  ) {
-    diffDataset.ymin = 0;
-  }
   diffDataset.ymax = Math.max(...filteredy);
-  if (
-    !Number.isFinite(diffDataset.ymax) ||
-    (diffDataset.y.indexOf(0) !== -1 && diffDataset.ymax < 0)
-  ) {
-    diffDataset.ymax = 0;
-  }
   diffDataset.zmin = Math.min(...filteredz);
-  if (
-    !Number.isFinite(diffDataset.zmin) ||
-    (diffDataset.z.indexOf(0) !== -1 && diffDataset.zmin > 0)
-  ) {
-    diffDataset.zmin = 0;
-  }
   diffDataset.zmax = Math.max(...filteredz);
-  if (
-    !Number.isFinite(diffDataset.zmax) ||
-    (diffDataset.z.indexOf(0) !== -1 && diffDataset.zmax < 0)
-  ) {
-    diffDataset.zmax = 0;
-  }
 
-  const filteredMinDate = diffDataset.minDateTextOutput.filter((t) => t);
-  const filteredMaxDate = diffDataset.maxDateTextOutput.filter((t) => t);
+  const filteredMinDate = diffDataset.minDateTextOutput.filter((t) => t || t === 0);
+  const filteredMaxDate = diffDataset.maxDateTextOutput.filter((t) => t || t === 0);
   diffDataset.glob_stats.mean = diffDataset.sum / nPoints;
   diffDataset.glob_stats.minDate = Math.min(...filteredMinDate);
   diffDataset.glob_stats.maxDate = Math.max(...filteredMaxDate);

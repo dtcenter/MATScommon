@@ -822,24 +822,12 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
     }
 
     // save matched data and recalculate the max and min for this curve
-    const filteredx = data.x.filter((x) => x);
-    const filteredy = data.y.filter((y) => y);
+    const filteredx = data.x.filter((x) => x || x === 0);
+    const filteredy = data.y.filter((y) => y || y === 0);
     data.xmin = Math.min(...filteredx);
-    if (data.x.indexOf(0) !== -1 && data.xmin > 0) {
-      data.xmin = 0;
-    }
     data.xmax = Math.max(...filteredx);
-    if (data.x.indexOf(0) !== -1 && data.xmax < 0) {
-      data.xmax = 0;
-    }
     data.ymin = Math.min(...filteredy);
-    if (data.y.indexOf(0) !== -1 && data.ymin > 0) {
-      data.ymin = 0;
-    }
     data.ymax = Math.max(...filteredy);
-    if (data.y.indexOf(0) !== -1 && data.ymax < 0) {
-      data.ymax = 0;
-    }
     dataset[curveIndex] = data;
   }
 

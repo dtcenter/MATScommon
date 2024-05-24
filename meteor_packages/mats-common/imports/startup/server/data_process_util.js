@@ -322,7 +322,10 @@ const processDataXYCurve = function (
     }
 
     // enable error bars if matching and they aren't null.
-    if (appParams.matching && data.error_y.array.filter((x) => x).length > 0) {
+    if (
+      appParams.matching &&
+      data.error_y.array.filter((x) => x || x === 0).length > 0
+    ) {
       if (statType !== "ctc" || (diffFrom !== undefined && diffFrom !== null)) {
         data.error_y.visible = true;
       }
@@ -330,7 +333,7 @@ const processDataXYCurve = function (
 
     // get the overall stats for the text output.
     const stats = matsDataUtils.get_err(values, indVars, [], appParams);
-    const filteredValues = values.filter((x) => x);
+    const filteredValues = values.filter((x) => x || x === 0);
     let miny = Math.min(...filteredValues);
     let maxy = Math.max(...filteredValues);
     if (values.indexOf(0) !== -1 && miny > 0) {
@@ -784,7 +787,10 @@ const processDataProfile = function (
     }
 
     // enable error bars if matching and they aren't null.
-    if (appParams.matching && data.error_x.array.filter((x) => x).length > 0) {
+    if (
+      appParams.matching &&
+      data.error_x.array.filter((x) => x || x === 0).length > 0
+    ) {
       if (statType !== "ctc" || (diffFrom !== undefined && diffFrom !== null)) {
         data.error_x.visible = true;
       }
@@ -797,17 +803,9 @@ const processDataProfile = function (
       [],
       appParams
     ); // have to reverse because of data inversion
-    const filteredValues = values.filter((x) => x);
-    let minx = Math.min(...filteredValues);
-    let maxx = Math.max(...filteredValues);
-    if (values.indexOf(0) !== -1 && minx > 0) {
-      minx = 0;
-    }
-    if (values.indexOf(0) !== -1 && maxx < 0) {
-      maxx = 0;
-    }
-    stats.minx = minx;
-    stats.maxx = maxx;
+    const filteredValues = values.filter((x) => x || x === 0);
+    stats.minx = Math.min(...filteredValues);
+    stats.maxx = Math.max(...filteredValues);
     dataset[curveIndex].glob_stats = stats;
 
     // recalculate axis options after QC and matching
@@ -1704,17 +1702,9 @@ const processDataEnsembleHistogram = function (
 
     // get the overall stats for the text output - this uses the means not the stats.
     const stats = matsDataUtils.get_err(values, indVars, [], appParams);
-    const filteredValues = values.filter((x) => x);
-    let miny = Math.min(...filteredValues);
-    let maxy = Math.max(...filteredValues);
-    if (values.indexOf(0) !== -1 && miny > 0) {
-      miny = 0;
-    }
-    if (values.indexOf(0) !== -1 && maxy < 0) {
-      maxy = 0;
-    }
-    stats.miny = miny;
-    stats.maxy = maxy;
+    const filteredValues = values.filter((x) => x || x === 0);
+    stats.miny = Math.min(...filteredValues);
+    stats.maxy = Math.max(...filteredValues);
     dataset[curveIndex].glob_stats = stats;
 
     // recalculate axis options after QC and matching

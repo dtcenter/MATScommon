@@ -2953,7 +2953,7 @@ const parseQueryDataMapScalar = function (
   }
 
   // get range of values for colorscale, eliminating the highest and lowest as outliers
-  let filteredValues = d.queryVal.filter((x) => x);
+  let filteredValues = d.queryVal.filter((x) => x || x === 0);
   filteredValues = filteredValues.sort(function (a, b) {
     return Number(a) - Number(b);
   });
@@ -4036,8 +4036,8 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
   d.zmax = zmax;
   d.sum = sum;
 
-  const filteredMinDate = d.minDateTextOutput.filter((t) => t);
-  const filteredMaxDate = d.maxDateTextOutput.filter((t) => t);
+  const filteredMinDate = d.minDateTextOutput.filter((t) => t || t === 0);
+  const filteredMaxDate = d.maxDateTextOutput.filter((t) => t || t === 0);
   d.glob_stats.mean = sum / nPoints;
   d.glob_stats.minDate = Math.min(...filteredMinDate);
   d.glob_stats.maxDate = Math.max(...filteredMaxDate);
