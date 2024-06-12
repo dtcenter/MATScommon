@@ -58,7 +58,15 @@ const refreshDependents = function (event, param) {
           selectAllbool = document.getElementById("selectAll").checked;
         }
         try {
-          targetElem.dispatchEvent(new CustomEvent("refresh"));
+          if (
+            !(
+              Session.get("confirmPlotChange") &&
+              targetParam.type === matsTypes.InputTypes.dateRange
+            )
+          ) {
+            // don't refresh the dates if we're just changing the plot type
+            targetElem.dispatchEvent(new CustomEvent("refresh"));
+          }
         } catch (re) {
           re.message = `INFO: refreshDependents of: ${param.name} dependent: ${targetParam.name} - error: ${re.message}`;
           setInfo(re.message);
