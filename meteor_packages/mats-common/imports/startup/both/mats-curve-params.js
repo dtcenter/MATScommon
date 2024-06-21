@@ -387,6 +387,7 @@ export const curveParamsByApp = {
     "y-variable",
     "scale",
     "forecast-length",
+    "dieoff-type",
     "valid-time",
     "utc-cycle-start",
     "average",
