@@ -1324,6 +1324,32 @@ const _getDates = function (params, req, res, next) {
   }
 };
 
+// helper function for _getCSV
+const stringifyCurveData = function (stringify, dataArray, res) {
+  const thisDataArray = dataArray[0];
+  stringify.stringify(
+    thisDataArray,
+    {
+      header: true,
+    },
+    function (err, output) {
+      if (err) {
+        console.log("error in _getCSV:", err);
+        res.write(`error,${err.toLocaleString()}`);
+        res.end(`<body><h1>_getCSV Error! ${err.toLocaleString()}</h1></body>`);
+        return;
+      }
+      res.write(output);
+      if (dataArray.length > 1) {
+        const newDataArray = dataArray.slice(1);
+        stringifyCurveData(stringify, newDataArray, res);
+      } else {
+        res.end();
+      }
+    }
+  );
+};
+
 // private middleware for _getCSV route
 const _getCSV = function (params, req, res, next) {
   if (Meteor.isServer) {
@@ -1333,42 +1359,12 @@ const _getCSV = function (params, req, res, next) {
       const result = _getFlattenedResultData(params.key, 0, -1000);
       const statArray = Object.values(result.stats);
       const dataArray = Object.values(result.data);
-      const statResultArray = [];
-      const dataResultArray = [];
-      for (let si = 0; si < statArray.length; si++) {
-        statResultArray.push(Object.keys(statArray[si])); // push the stat header for this curve(keys)
-        statResultArray.push(
-          statArray[si].n === 0 ? [statArray[si].label] : Object.values(statArray[si])
-        ); // push the stats for this curve
-      }
 
-      for (let di = 0; di < dataArray.length; di++) {
-        const dataSubArray = Object.values(dataArray[di]);
-        const dataHeader =
-          dataSubArray[0] === undefined
-            ? statArray[di].label
-            : Object.keys(dataSubArray[0]);
-        // dataHeader[0] = 'label';
-        dataHeader[0] =
-          dataSubArray[0] === undefined
-            ? "NO DATA"
-            : Object.keys(dataSubArray[0]).filter(
-                (key) => key.indexOf("Curve") !== -1
-              )[0];
-        dataResultArray.push(dataHeader); // push this curve data header (keys)
-        if (dataSubArray[0] === undefined) {
-          continue;
-        }
-        for (let dsi = 0; dsi < dataSubArray.length; dsi++) {
-          // push this curves data
-          dataResultArray.push(Object.values(dataSubArray[dsi]));
-        }
-      }
       const fileName = `matsplot-${moment.utc().format("YYYYMMDD-HH.mm.ss")}.csv`;
       res.setHeader("Content-disposition", `attachment; filename=${fileName}`);
       res.setHeader("Content-Type", "attachment.ContentType");
-      stringify(
-        statResultArray,
+      stringify.stringify(
+        statArray,
         {
           header: true,
         },
@@ -1380,22 +1376,7 @@ const _getCSV = function (params, req, res, next) {
             return;
           }
           res.write(output);
-          stringify(
-            dataResultArray,
-            {
-              header: true,
-            },
-            function (err, output) {
-              if (err) {
-                console.log("error in _getCSV:", err);
-                res.write(`error,${err.toLocaleString()}`);
-                res.end(`<body><h1>_getCSV Error! ${err.toLocaleString()}</h1></body>`);
-                return;
-              }
-              res.write(output);
-              res.end();
-            }
-          );
+          stringifyCurveData(stringify, dataArray, res);
         }
       );
     } catch (e) {
