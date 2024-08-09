@@ -42,7 +42,6 @@ Template.topNav.helpers({
     switch (getRunEnvironment()) {
       case "metexpress":
         return "METexpress";
-        break;
       default:
         if (
           matsCollections.Settings.findOne({}) !== undefined &&
@@ -58,7 +57,6 @@ Template.topNav.helpers({
     switch (getRunEnvironment()) {
       case "metexpress":
         return "National Weather Service";
-        break;
       default:
         return "Global Systems Laboratory";
     }
@@ -67,7 +65,6 @@ Template.topNav.helpers({
     switch (getRunEnvironment()) {
       case "metexpress":
         return "https://www.weather.gov/";
-        break;
       default:
         return "http://gsl.noaa.gov/";
     }
@@ -76,7 +73,6 @@ Template.topNav.helpers({
     switch (getRunEnvironment()) {
       case "metexpress":
         return "METexpress";
-        break;
       default:
         if (
           matsCollections.Settings.findOne({}) !== undefined &&
