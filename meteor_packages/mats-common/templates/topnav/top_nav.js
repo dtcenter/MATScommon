@@ -1,6 +1,8 @@
 /*
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
+import { Meteor } from "meteor/meteor";
+import { matsCollections, matsTypes } from "meteor/randyp:mats-common";
 import matsMethods from "../../imports/startup/api/matsMethods";
 
 const getRunEnvironment = function () {
@@ -20,16 +22,21 @@ const getRunEnvironment = function () {
 
 Template.topNav.helpers({
   transparentGif() {
+    const urlComponents = document.location.href.split("/");
     const baseURL =
       Meteor.settings.public.home === undefined
-        ? `https://${document.location.href.split("/")[2]}`
+        ? `https://${urlComponents[2]}`
         : Meteor.settings.public.home;
+    const appName =
+      matsCollections.Settings === undefined ||
+      matsCollections.Settings.findOne({}) === undefined ||
+      matsCollections.Settings.findOne({}).appName === undefined
+        ? `${urlComponents[urlComponents.length - 1]}`
+        : matsCollections.Settings.findOne({}).appName;
     if (baseURL.includes("localhost")) {
       return `${baseURL}/packages/randyp_mats-common/public/img/noaa_transparent.png`;
     }
-    return `${baseURL}/${
-      matsCollections.Settings.findOne({}).appName
-    }/packages/randyp_mats-common/public/img/noaa_transparent.png`;
+    return `${baseURL}/${appName}/packages/randyp_mats-common/public/img/noaa_transparent.png`;
   },
   emailText() {
     switch (getRunEnvironment()) {
