@@ -319,8 +319,8 @@ class MatsMiddleMap {
         ctcFve.miss = 0;
         ctcFve.fa = 0;
         ctcFve.cn = 0;
-        ctcFve.N0 = 0;
-        ctcFve.N_times = 0;
+        ctcFve.n0 = 0;
+        ctcFve.nTimes = 0;
         ctcFve.sub_data = [];
         [ctcFve.min_secs] = this.fcstValidEpoch_Array;
         ctcFve.max_secs =
@@ -341,8 +341,8 @@ class MatsMiddleMap {
                 this.validTimes.length > 0 &&
                 this.validTimes.includes((fve % (24 * 3600)) / 3600)))
           ) {
-            ctcFve.N0 += 1;
-            ctcFve.N_times += 1;
+            ctcFve.n0 += 1;
+            ctcFve.nTimes += 1;
 
             let sub = `${fve};`;
             if (varValO < threshold && varValM < threshold) {
@@ -375,7 +375,7 @@ class MatsMiddleMap {
             // stats_fve.sub_data.push(sub);
           }
         }
-        if (ctcFve.N0 > 0) {
+        if (ctcFve.n0 > 0) {
           const sub = `${this.fcstValidEpoch_Array[0]};${ctcFve.hit};${ctcFve.fa};${ctcFve.miss};${ctcFve.cn}`;
           ctcFve.sub_data.push(sub);
           this.stats.push(ctcFve);
@@ -399,8 +399,8 @@ class MatsMiddleMap {
         sumsFve.model_sum = 0;
         sumsFve.obs_sum = 0;
         sumsFve.abs_sum = 0;
-        sumsFve.N0 = 0;
-        sumsFve.N_times = 0;
+        sumsFve.n0 = 0;
+        sumsFve.nTimes = 0;
         sumsFve.sub_data = [];
         [sumsFve.min_secs] = this.fcstValidEpoch_Array;
         sumsFve.max_secs =
@@ -421,8 +421,8 @@ class MatsMiddleMap {
                 this.validTimes.length > 0 &&
                 this.validTimes.includes((fve % (24 * 3600)) / 3600)))
           ) {
-            sumsFve.N0 += 1;
-            sumsFve.N_times += 1;
+            sumsFve.n0 += 1;
+            sumsFve.nTimes += 1;
 
             if (varValO && varValM) {
               sumsFve.square_diff_sum += (varValO - varValM) ** 2;
@@ -434,7 +434,7 @@ class MatsMiddleMap {
             }
           }
         }
-        if (sumsFve.N0 > 0) {
+        if (sumsFve.n0 > 0) {
           const sub = `${this.fcstValidEpoch_Array[0]};${sumsFve.square_diff_sum};${sumsFve.N_sum};${sumsFve.obs_model_diff_sum};${sumsFve.model_sum};${sumsFve.obs_sum};${sumsFve.abs_sum}`;
           sumsFve.sub_data.push(sub);
           this.stats.push(sumsFve);

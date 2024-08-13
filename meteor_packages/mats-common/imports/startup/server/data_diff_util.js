@@ -62,10 +62,10 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, allStatTypes
             subLevs: [],
             stats: [],
             text: [],
-            n_forecast: [],
-            n_matched: [],
-            n_simple: [],
-            n_total: [],
+            nForecast: [],
+            nMatched: [],
+            nSimple: [],
+            nTotal: [],
             glob_stats: {},
             xmin: Number.MAX_VALUE,
             xmax: Number.MIN_VALUE,
@@ -134,10 +134,10 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, allStatTypes
       glob_max: null,
       glob_min: null,
     },
-    n_forecast: [],
-    n_matched: [],
-    n_simple: [],
-    n_total: [],
+    nForecast: [],
+    nMatched: [],
+    nSimple: [],
+    nTotal: [],
     xmin: Number.MAX_VALUE,
     xmax: Number.MIN_VALUE,
     ymin: Number.MAX_VALUE,
@@ -312,13 +312,13 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, allStatTypes
               minuendDataSubObsSum = minuendData.subObsSum[minuendIndex];
               minuendDataSubAbsSum = minuendData.subAbsSum[minuendIndex];
             } else if (
-              minuendData.n_total.length > 0 &&
-              subtrahendData.n_total.length
+              minuendData.nTotal.length > 0 &&
+              subtrahendData.nTotal.length
             ) {
-              minuendDataNForecast = minuendData.n_forecast[minuendIndex];
-              minuendDataNMatched = minuendData.n_matched[minuendIndex];
-              minuendDataNSimple = minuendData.n_simple[minuendIndex];
-              minuendDataNTotal = minuendData.n_total[minuendIndex];
+              minuendDataNForecast = minuendData.nForecast[minuendIndex];
+              minuendDataNMatched = minuendData.nMatched[minuendIndex];
+              minuendDataNSimple = minuendData.nSimple[minuendIndex];
+              minuendDataNTotal = minuendData.nTotal[minuendIndex];
             }
             minuendDataSubValues = minuendData.subVals[minuendIndex];
             minuendDataSubSeconds = minuendData.subSecs[minuendIndex];
@@ -340,13 +340,13 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, allStatTypes
               subtrahendDataSubObsSum = subtrahendData.subObsSum[subtrahendIndex];
               subtrahendDataSubAbsSum = subtrahendData.subAbsSum[subtrahendIndex];
             } else if (
-              minuendData.n_total.length > 0 &&
-              subtrahendData.n_total.length
+              minuendData.nTotal.length > 0 &&
+              subtrahendData.nTotal.length
             ) {
-              subtrahendDataNForecast = subtrahendData.n_forecast[subtrahendIndex];
-              subtrahendDataNMatched = subtrahendData.n_matched[subtrahendIndex];
-              subtrahendDataNSimple = subtrahendData.n_simple[subtrahendIndex];
-              subtrahendDataNTotal = subtrahendData.n_total[subtrahendIndex];
+              subtrahendDataNForecast = subtrahendData.nForecast[subtrahendIndex];
+              subtrahendDataNMatched = subtrahendData.nMatched[subtrahendIndex];
+              subtrahendDataNSimple = subtrahendData.nSimple[subtrahendIndex];
+              subtrahendDataNTotal = subtrahendData.nTotal[subtrahendIndex];
             }
             subtrahendDataSubValues = subtrahendData.subVals[subtrahendIndex];
             subtrahendDataSubSeconds = subtrahendData.subSecs[subtrahendIndex];
@@ -438,11 +438,11 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, allStatTypes
             if (hasLevels) {
               d.subLevs.push(tempSubLevsArray);
             }
-            if (minuendData.n_total.length > 0 && subtrahendData.n_total.length) {
-              d.n_forecast.push(minuendDataNForecast - subtrahendDataNForecast);
-              d.n_matched.push(minuendDataNMatched - subtrahendDataNMatched);
-              d.n_simple.push(minuendDataNSimple - subtrahendDataNSimple);
-              d.n_total.push(minuendDataNTotal - subtrahendDataNTotal);
+            if (minuendData.nTotal.length > 0 && subtrahendData.nTotal.length) {
+              d.nForecast.push(minuendDataNForecast - subtrahendDataNForecast);
+              d.nMatched.push(minuendDataNMatched - subtrahendDataNMatched);
+              d.nSimple.push(minuendDataNSimple - subtrahendDataNSimple);
+              d.nTotal.push(minuendDataNTotal - subtrahendDataNTotal);
             }
             d.sum += d[independentVarName][largeIntervalCurveIndex];
           } else {

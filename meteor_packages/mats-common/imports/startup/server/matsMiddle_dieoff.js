@@ -367,8 +367,8 @@ class MatsMiddleDieoff {
       ctcFcstLead.miss = 0;
       ctcFcstLead.fa = 0;
       ctcFcstLead.cn = 0;
-      ctcFcstLead.N0 = 0;
-      ctcFcstLead.N_times = new Set(fcstLeadArray).size;
+      ctcFcstLead.n0 = 0;
+      ctcFcstLead.nTimes = new Set(fcstLeadArray).size;
       ctcFcstLead.sub_data = [];
 
       // get all the fve for this fcst_lead
@@ -443,8 +443,8 @@ class MatsMiddleDieoff {
       sumsFcstLead.model_sum = 0;
       sumsFcstLead.obs_sum = 0;
       sumsFcstLead.abs_sum = 0;
-      sumsFcstLead.N0 = 0;
-      sumsFcstLead.N_times = new Set(fcstLeadArray).size;
+      sumsFcstLead.n0 = 0;
+      sumsFcstLead.nTimes = new Set(fcstLeadArray).size;
       sumsFcstLead.sub_data = [];
 
       // get all the fve for this fcst_lead

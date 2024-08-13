@@ -306,8 +306,8 @@ class MatsMiddleDailyModelCycle {
         ctcFve.miss = 0;
         ctcFve.fa = 0;
         ctcFve.cn = 0;
-        ctcFve.N0 = 0;
-        ctcFve.N_times = 1;
+        ctcFve.n0 = 0;
+        ctcFve.nTimes = 1;
         ctcFve.sub_data = [];
 
         this.mmCommon.computeCtcForStations(
@@ -318,7 +318,7 @@ class MatsMiddleDailyModelCycle {
           obsSingleFve,
           modelSingleFve
         );
-        if (ctcFve.N0 > 0) {
+        if (ctcFve.n0 > 0) {
           this.stats.push(ctcFve);
         }
       }
@@ -343,8 +343,8 @@ class MatsMiddleDailyModelCycle {
         sumsFve.model_sum = 0;
         sumsFve.obs_sum = 0;
         sumsFve.abs_sum = 0;
-        sumsFve.N0 = 0;
-        sumsFve.N_times = 1;
+        sumsFve.n0 = 0;
+        sumsFve.nTimes = 1;
         sumsFve.sub_data = [];
 
         this.mmCommon.computeSumsForStations(
@@ -354,7 +354,7 @@ class MatsMiddleDailyModelCycle {
           obsSingleFve,
           modelSingleFve
         );
-        if (sumsFve.N0 > 0) {
+        if (sumsFve.n0 > 0) {
           this.stats.push(sumsFve);
         }
       }

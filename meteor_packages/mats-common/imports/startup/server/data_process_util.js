@@ -272,21 +272,21 @@ const processDataXYCurve = function (
       } else if (statType === "met-mode_single") {
         data.stats[di] = {
           stat: data.y[di],
-          n_forecast: data.n_forecast[di],
-          n_matched: data.n_matched[di],
-          n_simple: data.n_simple[di],
-          n_total: data.n_total[di],
+          nForecast: data.nForecast[di],
+          nMatched: data.nMatched[di],
+          nSimple: data.nSimple[di],
+          nTotal: data.nTotal[di],
         };
         data.text[di] = `${data.text[di]}<br>${statisticSelect}: ${
           data.y[di] === null ? null : data.y[di].toPrecision(4)
         }<br>Forecast objects: ${
-          data.n_forecast[di] === null ? null : data.n_forecast[di].toString()
+          data.nForecast[di] === null ? null : data.nForecast[di].toString()
         }<br>Matched objects: ${
-          data.n_matched[di] === null ? null : data.n_matched[di].toString()
+          data.nMatched[di] === null ? null : data.nMatched[di].toString()
         }<br>Simple objects: ${
-          data.n_simple[di] === null ? null : data.n_simple[di].toString()
+          data.nSimple[di] === null ? null : data.nSimple[di].toString()
         }<br>Total objects: ${
-          data.n_total[di] === null ? null : data.n_total[di].toString()
+          data.nTotal[di] === null ? null : data.nTotal[di].toString()
         }`;
       } else {
         data.stats[di] = {
@@ -411,10 +411,10 @@ const processDataXYCurve = function (
     data.subInterest = [];
     data.subData = [];
     data.subHeaders = [];
-    data.n_forecast = [];
-    data.n_matched = [];
-    data.n_simple = [];
-    data.n_total = [];
+    data.nForecast = [];
+    data.nMatched = [];
+    data.nSimple = [];
+    data.nTotal = [];
     data.subVals = [];
     data.subSecs = [];
     data.subLevs = [];
@@ -727,21 +727,21 @@ const processDataProfile = function (
       } else if (statType === "met-mode_single") {
         data.stats[di] = {
           stat: data.x[di],
-          n_forecast: data.n_forecast[di],
-          n_matched: data.n_matched[di],
-          n_simple: data.n_simple[di],
-          n_total: data.n_total[di],
+          nForecast: data.nForecast[di],
+          nMatched: data.nMatched[di],
+          nSimple: data.nSimple[di],
+          nTotal: data.nTotal[di],
         };
         data.text[di] = `${data.text[di]}<br>${statisticSelect}: ${
           data.x[di] === null ? null : data.x[di].toPrecision(4)
         }<br>Forecast objects: ${
-          data.n_forecast[di] === null ? null : data.n_forecast[di].toString()
+          data.nForecast[di] === null ? null : data.nForecast[di].toString()
         }<br>Matched objects: ${
-          data.n_matched[di] === null ? null : data.n_matched[di].toString()
+          data.nMatched[di] === null ? null : data.nMatched[di].toString()
         }<br>Simple objects: ${
-          data.n_simple[di] === null ? null : data.n_simple[di].toString()
+          data.nSimple[di] === null ? null : data.nSimple[di].toString()
         }<br>Total objects: ${
-          data.n_total[di] === null ? null : data.n_total[di].toString()
+          data.nTotal[di] === null ? null : data.nTotal[di].toString()
         }`;
       } else {
         data.stats[di] = {
@@ -863,10 +863,10 @@ const processDataProfile = function (
     data.subInterest = [];
     data.subData = [];
     data.subHeaders = [];
-    data.n_forecast = [];
-    data.n_matched = [];
-    data.n_simple = [];
-    data.n_total = [];
+    data.nForecast = [];
+    data.nMatched = [];
+    data.nSimple = [];
+    data.nTotal = [];
     data.subVals = [];
     data.subSecs = [];
     data.subLevs = [];
@@ -1422,10 +1422,10 @@ const processDataPerformanceDiagram = function (
     data.subInterest = [];
     data.subData = [];
     data.subHeaders = [];
-    data.n_forecast = [];
-    data.n_matched = [];
-    data.n_simple = [];
-    data.n_total = [];
+    data.nForecast = [];
+    data.nMatched = [];
+    data.nSimple = [];
+    data.nTotal = [];
     data.subVals = [];
     data.subSecs = [];
     data.subLevs = [];
@@ -1520,10 +1520,10 @@ const processDataGridScaleProb = function (
     data.subInterest = [];
     data.subData = [];
     data.subHeaders = [];
-    data.n_forecast = [];
-    data.n_matched = [];
-    data.n_simple = [];
-    data.n_total = [];
+    data.nForecast = [];
+    data.nMatched = [];
+    data.nSimple = [];
+    data.nTotal = [];
     data.subVals = [];
     data.subSecs = [];
     data.subLevs = [];
@@ -1846,10 +1846,10 @@ const processDataHistogram = function (
       subLevs: [],
       stats: [],
       text: [],
-      n_forecast: [],
-      n_matched: [],
-      n_simple: [],
-      n_total: [],
+      nForecast: [],
+      nMatched: [],
+      nSimple: [],
+      nTotal: [],
       glob_stats: {},
       bin_stats: [],
       xmin: Number.MAX_VALUE,
@@ -2016,10 +2016,10 @@ const processDataHistogram = function (
     data.subInterest = [];
     data.subData = [];
     data.subHeaders = [];
-    data.n_forecast = [];
-    data.n_matched = [];
-    data.n_simple = [];
-    data.n_total = [];
+    data.nForecast = [];
+    data.nMatched = [];
+    data.nSimple = [];
+    data.nTotal = [];
     data.subVals = [];
     data.subSecs = [];
     data.subLevs = [];
@@ -2121,10 +2121,10 @@ const processDataContour = function (
   data.subAbsSum = [];
   data.subData = [];
   data.subHeaders = [];
-  data.n_forecast = [];
-  data.n_matched = [];
-  data.n_simple = [];
-  data.n_total = [];
+  data.nForecast = [];
+  data.nMatched = [];
+  data.nSimple = [];
+  data.nTotal = [];
   data.subVals = [];
   data.subSecs = [];
   data.subLevs = [];

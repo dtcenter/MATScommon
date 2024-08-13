@@ -343,7 +343,7 @@ class MatsMiddleTimeSeries {
       ctcAvtime.miss = 0;
       ctcAvtime.fa = 0;
       ctcAvtime.cn = 0;
-      ctcAvtime.N0 = 0;
+      ctcAvtime.n0 = 0;
       ctcAvtime.sub_data = [];
 
       // get all the fve for this avtime
@@ -353,7 +353,7 @@ class MatsMiddleTimeSeries {
 
       [ctcAvtime.min_secs] = fveArray;
       ctcAvtime.max_secs = fveArray[fveArray.length - 1];
-      ctcAvtime.N_times = fveArray.length;
+      ctcAvtime.nTimes = fveArray.length;
       for (let imfve = 0; imfve < fveArray.length; imfve += 1) {
         const fve = fveArray[imfve];
         const obsSingleFve = this.fveObs[avtimeKey][fve];
@@ -406,7 +406,7 @@ class MatsMiddleTimeSeries {
       sumsAvtime.model_sum = 0;
       sumsAvtime.obs_sum = 0;
       sumsAvtime.abs_sum = 0;
-      sumsAvtime.N0 = 0;
+      sumsAvtime.n0 = 0;
       sumsAvtime.sub_data = [];
 
       // get all the fve for this avtime
@@ -416,7 +416,7 @@ class MatsMiddleTimeSeries {
 
       [sumsAvtime.min_secs] = fveArray;
       sumsAvtime.max_secs = fveArray[fveArray.length - 1];
-      sumsAvtime.N_times = fveArray.length;
+      sumsAvtime.nTimes = fveArray.length;
       for (let imfve = 0; imfve < fveArray.length; imfve += 1) {
         const fve = fveArray[imfve];
         const obsSingleFve = this.fveObs[avtimeKey][fve];

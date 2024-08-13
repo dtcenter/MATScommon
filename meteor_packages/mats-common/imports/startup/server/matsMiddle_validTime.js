@@ -322,7 +322,7 @@ class MatsMiddleValidTime {
       ctcHod.miss = 0;
       ctcHod.fa = 0;
       ctcHod.cn = 0;
-      ctcHod.N0 = 0;
+      ctcHod.n0 = 0;
       ctcHod.sub_data = [];
 
       // get all the fve for this hod
@@ -332,7 +332,7 @@ class MatsMiddleValidTime {
 
       [ctcHod.min_secs] = fveArray;
       ctcHod.max_secs = fveArray[fveArray.length - 1];
-      ctcHod.N_times = fveArray.length;
+      ctcHod.nTimes = fveArray.length;
       for (let imfve = 0; imfve < fveArray.length; imfve += 1) {
         const fve = fveArray[imfve];
         const obsSingleFve = this.fveObs[hodKey][fve];
@@ -377,7 +377,7 @@ class MatsMiddleValidTime {
       sumsHod.model_sum = 0;
       sumsHod.obs_sum = 0;
       sumsHod.abs_sum = 0;
-      sumsHod.N0 = 0;
+      sumsHod.n0 = 0;
       sumsHod.sub_data = [];
 
       // get all the fve for this hod
@@ -387,7 +387,7 @@ class MatsMiddleValidTime {
 
       [sumsHod.min_secs] = fveArray;
       sumsHod.max_secs = fveArray[fveArray.length - 1];
-      sumsHod.N_times = fveArray.length;
+      sumsHod.nTimes = fveArray.length;
       for (let imfve = 0; imfve < fveArray.length; imfve += 1) {
         const fve = fveArray[imfve];
         const obsSingleFve = this.fveObs[hodKey][fve];

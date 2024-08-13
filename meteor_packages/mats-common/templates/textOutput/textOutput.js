@@ -159,7 +159,7 @@ Template.textOutput.helpers({
     const isModeSingle =
       curveData !== undefined &&
       curveData[0] !== undefined &&
-      Object.keys(curveData[0]).indexOf("n_forecast") !== -1;
+      Object.keys(curveData[0]).indexOf("nForecast") !== -1;
     const isModePairs =
       curveData !== undefined &&
       curveData[0] !== undefined &&
@@ -398,7 +398,7 @@ Template.textOutput.helpers({
     let line = "";
     const isCTC = element.hit !== undefined && element.hit !== null;
     const isModeSingle =
-      element.n_forecast !== undefined && element.n_forecast !== null;
+      element.nForecast !== undefined && element.nForecast !== null;
     const isModePairs =
       element.avgInterest !== undefined && element.avgInterest !== null;
     const plotType = Session.get("plotType");
@@ -472,23 +472,23 @@ Template.textOutput.helpers({
                 : fillStr
             }</td>` +
             `<td>${
-              element.n_forecast !== undefined && element.n_forecast !== null
-                ? element.n_forecast.toString()
+              element.nForecast !== undefined && element.nForecast !== null
+                ? element.nForecast.toString()
                 : fillStr
             }</td>` +
             `<td>${
-              element.n_matched !== undefined && element.n_matched !== null
-                ? element.n_matched.toString()
+              element.nMatched !== undefined && element.nMatched !== null
+                ? element.nMatched.toString()
                 : fillStr
             }</td>` +
             `<td>${
-              element.n_simple !== undefined && element.n_simple !== null
-                ? element.n_simple.toString()
+              element.nSimple !== undefined && element.nSimple !== null
+                ? element.nSimple.toString()
                 : fillStr
             }</td>` +
             `<td>${
-              element.n_total !== undefined && element.n_total !== null
-                ? element.n_total.toString()
+              element.nTotal !== undefined && element.nTotal !== null
+                ? element.nTotal.toString()
                 : fillStr
             }</td>`;
         } else if (isModePairs) {
@@ -588,23 +588,23 @@ Template.textOutput.helpers({
                 : fillStr
             }</td>` +
             `<td>${
-              element.n_forecast !== undefined && element.n_forecast !== null
-                ? element.n_forecast.toString()
+              element.nForecast !== undefined && element.nForecast !== null
+                ? element.nForecast.toString()
                 : fillStr
             }</td>` +
             `<td>${
-              element.n_matched !== undefined && element.n_matched !== null
-                ? element.n_matched.toString()
+              element.nMatched !== undefined && element.nMatched !== null
+                ? element.nMatched.toString()
                 : fillStr
             }</td>` +
             `<td>${
-              element.n_simple !== undefined && element.n_simple !== null
-                ? element.n_simple.toString()
+              element.nSimple !== undefined && element.nSimple !== null
+                ? element.nSimple.toString()
                 : fillStr
             }</td>` +
             `<td>${
-              element.n_total !== undefined && element.n_total !== null
-                ? element.n_total.toString()
+              element.nTotal !== undefined && element.nTotal !== null
+                ? element.nTotal.toString()
                 : fillStr
             }</td>`;
         } else if (isModePairs) {
