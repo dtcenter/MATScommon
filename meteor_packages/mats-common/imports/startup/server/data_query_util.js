@@ -316,7 +316,7 @@ const parseQueryDataXYCurve = function (
             sum: 0
         };
     */
-  const returnD = d;
+  let returnD = d;
   const { plotType } = appParams;
   const { hasLevels } = appParams;
   const completenessQCParam = Number(appParams.completeness) / 100;
@@ -848,7 +848,7 @@ const parseQueryDataXYCurve = function (
             thisCadence = Number(thisCadence) - Number(forecastOffset) * 3600 * 1000; // current hour of day (cycle time)
           }
           if (cycles.indexOf(thisCadence) !== -1) {
-            matsDataUtils.addNullPoint(
+            returnD = matsDataUtils.addNullPoint(
               returnD,
               dIdx + 1,
               matsTypes.PlotTypes.timeSeries,
@@ -861,7 +861,7 @@ const parseQueryDataXYCurve = function (
             );
           }
         } else {
-          matsDataUtils.addNullPoint(
+          returnD = matsDataUtils.addNullPoint(
             returnD,
             dIdx + 1,
             matsTypes.PlotTypes.timeSeries,

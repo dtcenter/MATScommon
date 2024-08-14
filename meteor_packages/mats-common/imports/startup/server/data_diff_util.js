@@ -311,10 +311,7 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, allStatTypes
               minuendDataSubModelSum = minuendData.subModelSum[minuendIndex];
               minuendDataSubObsSum = minuendData.subObsSum[minuendIndex];
               minuendDataSubAbsSum = minuendData.subAbsSum[minuendIndex];
-            } else if (
-              minuendData.nTotal.length > 0 &&
-              subtrahendData.nTotal.length
-            ) {
+            } else if (minuendData.nTotal.length > 0 && subtrahendData.nTotal.length) {
               minuendDataNForecast = minuendData.nForecast[minuendIndex];
               minuendDataNMatched = minuendData.nMatched[minuendIndex];
               minuendDataNSimple = minuendData.nSimple[minuendIndex];
@@ -339,10 +336,7 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, allStatTypes
               subtrahendDataSubModelSum = subtrahendData.subModelSum[subtrahendIndex];
               subtrahendDataSubObsSum = subtrahendData.subObsSum[subtrahendIndex];
               subtrahendDataSubAbsSum = subtrahendData.subAbsSum[subtrahendIndex];
-            } else if (
-              minuendData.nTotal.length > 0 &&
-              subtrahendData.nTotal.length
-            ) {
+            } else if (minuendData.nTotal.length > 0 && subtrahendData.nTotal.length) {
               subtrahendDataNForecast = subtrahendData.nForecast[subtrahendIndex];
               subtrahendDataNMatched = subtrahendData.nMatched[subtrahendIndex];
               subtrahendDataNSimple = subtrahendData.nSimple[subtrahendIndex];

@@ -1493,14 +1493,14 @@ const _getFlattenedResultData = function (rk, p, np) {
             }
             var stats = {};
             stats.label = data[ci].label;
-            stats.mean = data[ci].glob_stats.d_mean;
+            stats.mean = data[ci].glob_stats.dMean;
             stats["standard deviation"] = data[ci].glob_stats.sd;
-            stats.n = data[ci].glob_stats.n_good;
+            stats.n = data[ci].glob_stats.nGood;
             if (
               plotType === matsTypes.PlotTypes.timeSeries ||
               plotType === matsTypes.PlotTypes.profile
             ) {
-              stats["standard error"] = data[ci].glob_stats.stde_betsy;
+              stats["standard error"] = data[ci].glob_stats.stdeBetsy;
               stats.lag1 = data[ci].glob_stats.lag1;
             }
             stats.minimum = data[ci].glob_stats.minVal;
@@ -1541,10 +1541,10 @@ const _getFlattenedResultData = function (rk, p, np) {
                   plotType === matsTypes.PlotTypes.timeSeries ||
                   plotType === matsTypes.PlotTypes.profile
                 ) {
-                  curveDataElement["std error"] = data[ci].stats[cdi].stde_betsy;
+                  curveDataElement["std error"] = data[ci].stats[cdi].stdeBetsy;
                   curveDataElement.lag1 = data[ci].stats[cdi].lag1;
                 }
-                curveDataElement.n = data[ci].stats[cdi].n_good;
+                curveDataElement.n = data[ci].stats[cdi].nGood;
               }
               curveData.push(curveDataElement);
             }
@@ -1774,9 +1774,9 @@ const _getFlattenedResultData = function (rk, p, np) {
             }
             var stats = {};
             stats.label = data[ci].label;
-            stats.mean = data[ci].glob_stats.d_mean;
+            stats.mean = data[ci].glob_stats.dMean;
             stats["standard deviation"] = data[ci].glob_stats.sd;
-            stats.n = data[ci].glob_stats.n_good;
+            stats.n = data[ci].glob_stats.nGood;
             stats.minimum = data[ci].glob_stats.minVal;
             stats.maximum = data[ci].glob_stats.maxVal;
             returnData.stats[data[ci].label] = stats;

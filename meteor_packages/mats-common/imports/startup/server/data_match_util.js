@@ -3,6 +3,7 @@
  */
 
 import { matsDataUtils, matsTypes } from "meteor/randyp:mats-common";
+import { _ } from "meteor/underscore";
 
 // function for removing unmatched data from a dataset containing multiple curves
 const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStats) {
@@ -82,6 +83,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
   let fi;
   let si;
 
+  const returnDataset = dataset;
   const { plotType } = appParams;
   const { hasLevels } = appParams;
   const { curvesLength } = curveInfoParams;
@@ -163,7 +165,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
     if (hasLevels) {
       subLevs[curveIndex] = {}; // map of the individual record levels (subLevs) going into each independentVar for each curve
     }
-    data = dataset[curveIndex];
+    data = returnDataset[curveIndex];
     // loop over every independentVar value in this curve
     for (di = 0; di < data[independentVarName].length; di += 1) {
       currIndependentVar = data[independentVarName][di];
@@ -182,8 +184,13 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
     }
   }
 
-  const matchingIndependentVars = _.intersection.apply(_, independentVarGroups); // all of the non-null independentVar values common across all the curves
-  const matchingIndependentHasPoint = _.intersection.apply(_, independentVarHasPoint); // all of the independentVar values common across all the curves, regardless of whether or not they're null
+  const matchingIndependentVars = independentVarGroups.reduce((a, b) =>
+    a.filter((c) => b.includes(c))
+  ); // all of the non-null independentVar values common across all the curves
+  const matchingIndependentHasPoint = independentVarHasPoint.reduce((a, b) =>
+    a.filter((c) => b.includes(c))
+  ); // all of the independentVar values common across all the curves, regardless of whether or not they're null
+
   if (removeNonMatchingIndVars) {
     if (hasLevels) {
       // loop over each common non-null independentVar value
@@ -240,7 +247,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
   } else {
     // pull all subSecs and subLevs out of their bins, and back into one main array
     for (curveIndex = 0; curveIndex < curvesLength; curveIndex += 1) {
-      data = dataset[curveIndex];
+      data = returnDataset[curveIndex];
       subSecsRaw[curveIndex] = [];
       subSecs[curveIndex] = [];
       if (hasLevels) {
@@ -253,9 +260,13 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
           subLevsRaw[curveIndex].push(data.subLevs[di]);
         }
       }
-      subSecs[curveIndex] = [].concat.apply([], subSecsRaw[curveIndex]);
+      subSecs[curveIndex] = subSecsRaw[curveIndex].reduce(function (a, b) {
+        return a.concat(b);
+      });
       if (hasLevels) {
-        subLevs[curveIndex] = [].concat.apply([], subLevsRaw[curveIndex]);
+        subLevs[curveIndex] = subLevsRaw[curveIndex].reduce(function (a, b) {
+          return a.concat(b);
+        });
       }
     }
 
@@ -283,7 +294,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
     } else {
       // determine which seconds are present in all curves
       // fill current subSecs intersection array with subSecs from the first curve
-      subSecIntersection = subSecs[0];
+      [subSecIntersection] = subSecs;
       // loop over every curve after the first
       for (curveIndex = 1; curveIndex < curvesLength; curveIndex += 1) {
         // keep taking the intersection of the current subSecs intersection array with each curve's subSecs array
@@ -295,11 +306,12 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
   // remove non-matching independentVars and subSecs
   for (curveIndex = 0; curveIndex < curvesLength; curveIndex += 1) {
     // loop over every curve
-    data = dataset[curveIndex];
+    data = returnDataset[curveIndex];
     // need to loop backwards through the data array so that we can splice non-matching indices
     // while still having the remaining indices in the correct order
     let dataLength = data[independentVarName].length;
     for (di = dataLength - 1; di >= 0; di -= 1) {
+      let processSubData = true;
       if (removeNonMatchingIndVars) {
         if (matchingIndependentVars.indexOf(data[independentVarName][di]) === -1) {
           // if this is not a common non-null independentVar value, we'll have to remove some data
@@ -307,7 +319,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
             matchingIndependentHasPoint.indexOf(data[independentVarName][di]) === -1
           ) {
             // if at least one curve doesn't even have a null here, much less a matching value (because of the cadence), just drop this independentVar
-            matsDataUtils.removePoint(
+            data = matsDataUtils.removePoint(
               data,
               di,
               plotType,
@@ -318,271 +330,328 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
             );
           } else {
             // if all of the curves have either data or nulls at this independentVar, and there is at least one null, ensure all of the curves are null
-            matsDataUtils.nullPoint(data, di, statVarName, isCTC, isScalar, hasLevels);
+            data = matsDataUtils.nullPoint(
+              data,
+              di,
+              statVarName,
+              isCTC,
+              isScalar,
+              hasLevels
+            );
           }
           // then move on to the next independentVar. There's no need to mess with the subSecs or subLevs
-          continue;
+          processSubData = false;
         }
       }
-      subSecs = data.subSecs[di];
-      if (isCTC) {
-        subHit = data.subHit[di];
-        subFa = data.subFa[di];
-        subMiss = data.subMiss[di];
-        subCn = data.subCn[di];
-      } else if (isScalar) {
-        if (isSimpleScatter) {
-          subSquareDiffSumX = data.subSquareDiffSumX[di];
-          subNSumX = data.subNSumX[di];
-          subObsModelDiffSumX = data.subObsModelDiffSumX[di];
-          subModelSumX = data.subModelSumX[di];
-          subObsSumX = data.subObsSumX[di];
-          subAbsSumX = data.subAbsSumX[di];
-          subSquareDiffSumY = data.subSquareDiffSumY[di];
-          subNSumY = data.subNSumY[di];
-          subObsModelDiffSumY = data.subObsModelDiffSumY[di];
-          subModelSumY = data.subModelSumY[di];
-          subObsSumY = data.subObsSumY[di];
-          subAbsSumY = data.subAbsSumY[di];
-        } else {
-          subSquareDiffSum = data.subSquareDiffSum[di];
-          subNSum = data.subNSum[di];
-          subObsModelDiffSum = data.subObsModelDiffSum[di];
-          subModelSum = data.subModelSum[di];
-          subObsSum = data.subObsSum[di];
-          subAbsSum = data.subAbsSum[di];
-        }
-      } else if (isReliability) {
-        subRelHit = data.subRelHit[di];
-        subRelRawCount = data.subRelRawCount[di];
-        subRelCount = data.subRelCount[di];
-      }
-      if (isSimpleScatter) {
-        subValuesX = data.subValsX[di];
-        subValuesY = data.subValsY[di];
-      } else {
-        subValues = data.subVals[di];
-      }
-      if (hasLevels) {
-        subLevs = data.subLevs[di];
-      }
-
-      if (
-        (!hasLevels && subSecs.length > 0) ||
-        (hasLevels && subSecs.length > 0 && subLevs.length > 0)
-      ) {
-        currIndependentVar = data[independentVarName][di];
-        newSubHit = [];
-        newSubFa = [];
-        newSubMiss = [];
-        newSubCn = [];
-        newSubSquareDiffSum = [];
-        newSubNSum = [];
-        newSubObsModelDiffSum = [];
-        newSubModelSum = [];
-        newSubObsSum = [];
-        newSubAbsSum = [];
-        newSubValues = [];
-        newSubSquareDiffSumX = [];
-        newSubNSumX = [];
-        newSubObsModelDiffSumX = [];
-        newSubModelSumX = [];
-        newSubObsSumX = [];
-        newSubAbsSumX = [];
-        newSubValuesX = [];
-        newSubSquareDiffSumY = [];
-        newSubNSumY = [];
-        newSubObsModelDiffSumY = [];
-        newSubModelSumY = [];
-        newSubObsSumY = [];
-        newSubAbsSumY = [];
-        newSubValuesY = [];
-        newSubRelCount = [];
-        newSubRelRawCount = [];
-        newSubRelHit = [];
-        newSubSecs = [];
-        if (hasLevels) {
-          newSubLevs = [];
-        }
-        // loop over all subSecs for this independentVar
-        for (si = 0; si < subSecs.length; si += 1) {
-          if (hasLevels) {
-            // create sec-lev pair for each sub value
-            tempPair = [subSecs[si], subLevs[si]];
-          }
-          // keep the subValue only if its associated subSec/subLev is common to all curves for this independentVar
-          if (
-            (!removeNonMatchingIndVars &&
-              ((!hasLevels && subSecIntersection.indexOf(subSecs[si]) !== -1) ||
-                (hasLevels &&
-                  matsDataUtils.arrayContainsSubArray(subIntersections, tempPair)))) ||
-            (removeNonMatchingIndVars &&
-              ((!hasLevels &&
-                subSecIntersection[currIndependentVar].indexOf(subSecs[si]) !== -1) ||
-                (hasLevels &&
-                  matsDataUtils.arrayContainsSubArray(
-                    subIntersections[currIndependentVar],
-                    tempPair
-                  ))))
-          ) {
-            if (isCTC) {
-              var newHit = subHit[si];
-              var newFa = subFa[si];
-              var newMiss = subMiss[si];
-              var newCn = subCn[si];
-            } else if (isScalar) {
-              if (isSimpleScatter) {
-                var newSquareDiffSumX = subSquareDiffSumX[si];
-                var newNSumX = subNSumX[si];
-                var newObsModelDiffSumX = subObsModelDiffSumX[si];
-                var newModelSumX = subModelSumX[si];
-                var newObsSumX = subObsSumX[si];
-                var newAbsSumX = subAbsSumX[si];
-                var newSquareDiffSumY = subSquareDiffSumY[si];
-                var newNSumY = subNSumY[si];
-                var newObsModelDiffSumY = subObsModelDiffSumY[si];
-                var newModelSumY = subModelSumY[si];
-                var newObsSumY = subObsSumY[si];
-                var newAbsSumY = subAbsSumY[si];
-              } else {
-                var newSquareDiffSum = subSquareDiffSum[si];
-                var newNSum = subNSum[si];
-                var newObsModelDiffSum = subObsModelDiffSum[si];
-                var newModelSum = subModelSum[si];
-                var newObsSum = subObsSum[si];
-                var newAbsSum = subAbsSum[si];
-              }
-            } else if (isReliability) {
-              var newRelCount = subRelCount[si];
-              var newRelRawCount = subRelRawCount[si];
-              var newRelHit = subRelHit[si];
-            }
-            if (isSimpleScatter) {
-              var newValX = subValuesX[si];
-              var newValY = subValuesY[si];
-            } else {
-              var newVal = subValues[si];
-            }
-            const newSec = subSecs[si];
-            if (hasLevels) {
-              var newLev = subLevs[si];
-            }
-            if (isCTC) {
-              if (newHit !== undefined) {
-                newSubHit.push(newHit);
-                newSubFa.push(newFa);
-                newSubMiss.push(newMiss);
-                newSubCn.push(newCn);
-                newSubValues.push(newVal);
-                newSubSecs.push(newSec);
-                if (hasLevels) {
-                  newSubLevs.push(newLev);
-                }
-              }
-            } else if (isScalar) {
-              if (isSimpleScatter) {
-                if (newSquareDiffSumX !== undefined) {
-                  newSubSquareDiffSumX.push(newSquareDiffSumX);
-                  newSubNSumX.push(newNSumX);
-                  newSubObsModelDiffSumX.push(newObsModelDiffSumX);
-                  newSubModelSumX.push(newModelSumX);
-                  newSubObsSumX.push(newObsSumX);
-                  newSubAbsSumX.push(newAbsSumX);
-                  newSubValuesX.push(newValX);
-                }
-                if (newSquareDiffSumY !== undefined) {
-                  newSubSquareDiffSumY.push(newSquareDiffSumY);
-                  newSubNSumY.push(newNSumY);
-                  newSubObsModelDiffSumY.push(newObsModelDiffSumY);
-                  newSubModelSumY.push(newModelSumY);
-                  newSubObsSumY.push(newObsSumY);
-                  newSubAbsSumY.push(newAbsSumY);
-                  newSubValuesY.push(newValY);
-                }
-              } else if (newSquareDiffSum !== undefined) {
-                newSubSquareDiffSum.push(newSquareDiffSum);
-                newSubNSum.push(newNSum);
-                newSubObsModelDiffSum.push(newObsModelDiffSum);
-                newSubModelSum.push(newModelSum);
-                newSubObsSum.push(newObsSum);
-                newSubAbsSum.push(newAbsSum);
-                newSubValues.push(newVal);
-              }
-              newSubSecs.push(newSec);
-              if (hasLevels) {
-                newSubLevs.push(newLev);
-              }
-            } else if (isReliability) {
-              if (newRelHit !== undefined) {
-                newSubRelCount.push(newRelCount);
-                newSubRelRawCount.push(newRelRawCount);
-                newSubRelHit.push(newRelHit);
-                newSubValues.push(newVal);
-                newSubSecs.push(newSec);
-                if (hasLevels) {
-                  newSubLevs.push(newLev);
-                }
-              }
-            } else if (newVal !== undefined) {
-              newSubValues.push(newVal);
-              newSubSecs.push(newSec);
-              if (hasLevels) {
-                newSubLevs.push(newLev);
-              }
-            }
-          }
-        }
-        if (newSubSecs.length === 0) {
-          // no matching sub-values, so null the point
-          matsDataUtils.nullPoint(data, di, statVarName, isCTC, isScalar, hasLevels);
-        } else {
-          // store the filtered data
-          if (isCTC) {
-            data.subHit[di] = newSubHit;
-            data.subFa[di] = newSubFa;
-            data.subMiss[di] = newSubMiss;
-            data.subCn[di] = newSubCn;
-          } else if (isScalar) {
-            if (isSimpleScatter) {
-              data.subSquareDiffSumX[di] = newSubSquareDiffSumX;
-              data.subNSumX[di] = newSubNSumX;
-              data.subObsModelDiffSumX[di] = newSubObsModelDiffSumX;
-              data.subModelSumX[di] = newSubModelSumX;
-              data.subObsSumX[di] = newSubObsSumX;
-              data.subAbsSumX[di] = newSubAbsSumX;
-              data.subSquareDiffSumY[di] = newSubSquareDiffSumY;
-              data.subNSumY[di] = newSubNSumY;
-              data.subObsModelDiffSumY[di] = newSubObsModelDiffSumY;
-              data.subModelSumY[di] = newSubModelSumY;
-              data.subObsSumY[di] = newSubObsSumY;
-              data.subAbsSumY[di] = newSubAbsSumY;
-            } else {
-              data.subSquareDiffSum[di] = newSubSquareDiffSum;
-              data.subNSum[di] = newSubNSum;
-              data.subObsModelDiffSum[di] = newSubObsModelDiffSum;
-              data.subModelSum[di] = newSubModelSum;
-              data.subObsSum[di] = newSubObsSum;
-              data.subAbsSum[di] = newSubAbsSum;
-            }
-          } else if (isReliability) {
-            data.subRelCount[di] = newSubRelCount;
-            data.subRelRawCount[di] = newSubRelRawCount;
-            data.subRelHit[di] = newSubRelHit;
-          }
+      if (processSubData) {
+        subSecs = data.subSecs[di];
+        if (isCTC) {
+          subHit = data.subHit[di];
+          subFa = data.subFa[di];
+          subMiss = data.subMiss[di];
+          subCn = data.subCn[di];
+        } else if (isScalar) {
           if (isSimpleScatter) {
-            data.subValsX[di] = newSubValuesX;
-            data.subValsY[di] = newSubValuesY;
+            subSquareDiffSumX = data.subSquareDiffSumX[di];
+            subNSumX = data.subNSumX[di];
+            subObsModelDiffSumX = data.subObsModelDiffSumX[di];
+            subModelSumX = data.subModelSumX[di];
+            subObsSumX = data.subObsSumX[di];
+            subAbsSumX = data.subAbsSumX[di];
+            subSquareDiffSumY = data.subSquareDiffSumY[di];
+            subNSumY = data.subNSumY[di];
+            subObsModelDiffSumY = data.subObsModelDiffSumY[di];
+            subModelSumY = data.subModelSumY[di];
+            subObsSumY = data.subObsSumY[di];
+            subAbsSumY = data.subAbsSumY[di];
           } else {
-            data.subVals[di] = newSubValues;
+            subSquareDiffSum = data.subSquareDiffSum[di];
+            subNSum = data.subNSum[di];
+            subObsModelDiffSum = data.subObsModelDiffSum[di];
+            subModelSum = data.subModelSum[di];
+            subObsSum = data.subObsSum[di];
+            subAbsSum = data.subAbsSum[di];
           }
-          data.subSecs[di] = newSubSecs;
-          if (hasLevels) {
-            data.subLevs[di] = newSubLevs;
-          }
+        } else if (isReliability) {
+          subRelHit = data.subRelHit[di];
+          subRelRawCount = data.subRelRawCount[di];
+          subRelCount = data.subRelCount[di];
         }
-      } else {
-        // no sub-values to begin with, so null the point
-        matsDataUtils.nullPoint(data, di, statVarName, isCTC, isScalar, hasLevels);
+        if (isSimpleScatter) {
+          subValuesX = data.subValsX[di];
+          subValuesY = data.subValsY[di];
+        } else {
+          subValues = data.subVals[di];
+        }
+        if (hasLevels) {
+          subLevs = data.subLevs[di];
+        }
+
+        if (
+          (!hasLevels && subSecs.length > 0) ||
+          (hasLevels && subSecs.length > 0 && subLevs.length > 0)
+        ) {
+          currIndependentVar = data[independentVarName][di];
+          newSubHit = [];
+          newSubFa = [];
+          newSubMiss = [];
+          newSubCn = [];
+          newSubSquareDiffSum = [];
+          newSubNSum = [];
+          newSubObsModelDiffSum = [];
+          newSubModelSum = [];
+          newSubObsSum = [];
+          newSubAbsSum = [];
+          newSubValues = [];
+          newSubSquareDiffSumX = [];
+          newSubNSumX = [];
+          newSubObsModelDiffSumX = [];
+          newSubModelSumX = [];
+          newSubObsSumX = [];
+          newSubAbsSumX = [];
+          newSubValuesX = [];
+          newSubSquareDiffSumY = [];
+          newSubNSumY = [];
+          newSubObsModelDiffSumY = [];
+          newSubModelSumY = [];
+          newSubObsSumY = [];
+          newSubAbsSumY = [];
+          newSubValuesY = [];
+          newSubRelCount = [];
+          newSubRelRawCount = [];
+          newSubRelHit = [];
+          newSubSecs = [];
+          if (hasLevels) {
+            newSubLevs = [];
+          }
+          // loop over all subSecs for this independentVar
+          for (si = 0; si < subSecs.length; si += 1) {
+            let newHit;
+            let newFa;
+            let newMiss;
+            let newCn;
+            let newSquareDiffSumX;
+            let newNSumX;
+            let newObsModelDiffSumX;
+            let newModelSumX;
+            let newObsSumX;
+            let newAbsSumX;
+            let newSquareDiffSumY;
+            let newNSumY;
+            let newObsModelDiffSumY;
+            let newModelSumY;
+            let newObsSumY;
+            let newAbsSumY;
+            let newSquareDiffSum;
+            let newNSum;
+            let newObsModelDiffSum;
+            let newModelSum;
+            let newObsSum;
+            let newAbsSum;
+            let newRelCount;
+            let newRelRawCount;
+            let newRelHit;
+            let newValX;
+            let newValY;
+            let newVal;
+            let newSec;
+            let newLev;
+
+            if (hasLevels) {
+              // create sec-lev pair for each sub value
+              tempPair = [subSecs[si], subLevs[si]];
+            }
+            // keep the subValue only if its associated subSec/subLev is common to all curves for this independentVar
+            if (
+              (!removeNonMatchingIndVars &&
+                ((!hasLevels && subSecIntersection.indexOf(subSecs[si]) !== -1) ||
+                  (hasLevels &&
+                    matsDataUtils.arrayContainsSubArray(
+                      subIntersections,
+                      tempPair
+                    )))) ||
+              (removeNonMatchingIndVars &&
+                ((!hasLevels &&
+                  subSecIntersection[currIndependentVar].indexOf(subSecs[si]) !== -1) ||
+                  (hasLevels &&
+                    matsDataUtils.arrayContainsSubArray(
+                      subIntersections[currIndependentVar],
+                      tempPair
+                    ))))
+            ) {
+              if (isCTC) {
+                newHit = subHit[si];
+                newFa = subFa[si];
+                newMiss = subMiss[si];
+                newCn = subCn[si];
+              } else if (isScalar) {
+                if (isSimpleScatter) {
+                  newSquareDiffSumX = subSquareDiffSumX[si];
+                  newNSumX = subNSumX[si];
+                  newObsModelDiffSumX = subObsModelDiffSumX[si];
+                  newModelSumX = subModelSumX[si];
+                  newObsSumX = subObsSumX[si];
+                  newAbsSumX = subAbsSumX[si];
+                  newSquareDiffSumY = subSquareDiffSumY[si];
+                  newNSumY = subNSumY[si];
+                  newObsModelDiffSumY = subObsModelDiffSumY[si];
+                  newModelSumY = subModelSumY[si];
+                  newObsSumY = subObsSumY[si];
+                  newAbsSumY = subAbsSumY[si];
+                } else {
+                  newSquareDiffSum = subSquareDiffSum[si];
+                  newNSum = subNSum[si];
+                  newObsModelDiffSum = subObsModelDiffSum[si];
+                  newModelSum = subModelSum[si];
+                  newObsSum = subObsSum[si];
+                  newAbsSum = subAbsSum[si];
+                }
+              } else if (isReliability) {
+                newRelCount = subRelCount[si];
+                newRelRawCount = subRelRawCount[si];
+                newRelHit = subRelHit[si];
+              }
+              if (isSimpleScatter) {
+                newValX = subValuesX[si];
+                newValY = subValuesY[si];
+              } else {
+                newVal = subValues[si];
+              }
+              newSec = subSecs[si];
+              if (hasLevels) {
+                newLev = subLevs[si];
+              }
+              if (isCTC) {
+                if (newHit !== undefined) {
+                  newSubHit.push(newHit);
+                  newSubFa.push(newFa);
+                  newSubMiss.push(newMiss);
+                  newSubCn.push(newCn);
+                  newSubValues.push(newVal);
+                  newSubSecs.push(newSec);
+                  if (hasLevels) {
+                    newSubLevs.push(newLev);
+                  }
+                }
+              } else if (isScalar) {
+                if (isSimpleScatter) {
+                  if (newSquareDiffSumX !== undefined) {
+                    newSubSquareDiffSumX.push(newSquareDiffSumX);
+                    newSubNSumX.push(newNSumX);
+                    newSubObsModelDiffSumX.push(newObsModelDiffSumX);
+                    newSubModelSumX.push(newModelSumX);
+                    newSubObsSumX.push(newObsSumX);
+                    newSubAbsSumX.push(newAbsSumX);
+                    newSubValuesX.push(newValX);
+                  }
+                  if (newSquareDiffSumY !== undefined) {
+                    newSubSquareDiffSumY.push(newSquareDiffSumY);
+                    newSubNSumY.push(newNSumY);
+                    newSubObsModelDiffSumY.push(newObsModelDiffSumY);
+                    newSubModelSumY.push(newModelSumY);
+                    newSubObsSumY.push(newObsSumY);
+                    newSubAbsSumY.push(newAbsSumY);
+                    newSubValuesY.push(newValY);
+                  }
+                } else if (newSquareDiffSum !== undefined) {
+                  newSubSquareDiffSum.push(newSquareDiffSum);
+                  newSubNSum.push(newNSum);
+                  newSubObsModelDiffSum.push(newObsModelDiffSum);
+                  newSubModelSum.push(newModelSum);
+                  newSubObsSum.push(newObsSum);
+                  newSubAbsSum.push(newAbsSum);
+                  newSubValues.push(newVal);
+                }
+                newSubSecs.push(newSec);
+                if (hasLevels) {
+                  newSubLevs.push(newLev);
+                }
+              } else if (isReliability) {
+                if (newRelHit !== undefined) {
+                  newSubRelCount.push(newRelCount);
+                  newSubRelRawCount.push(newRelRawCount);
+                  newSubRelHit.push(newRelHit);
+                  newSubValues.push(newVal);
+                  newSubSecs.push(newSec);
+                  if (hasLevels) {
+                    newSubLevs.push(newLev);
+                  }
+                }
+              } else if (newVal !== undefined) {
+                newSubValues.push(newVal);
+                newSubSecs.push(newSec);
+                if (hasLevels) {
+                  newSubLevs.push(newLev);
+                }
+              }
+            }
+          }
+          if (newSubSecs.length === 0) {
+            // no matching sub-values, so null the point
+            data = matsDataUtils.nullPoint(
+              data,
+              di,
+              statVarName,
+              isCTC,
+              isScalar,
+              hasLevels
+            );
+          } else {
+            // store the filtered data
+            if (isCTC) {
+              data.subHit[di] = newSubHit;
+              data.subFa[di] = newSubFa;
+              data.subMiss[di] = newSubMiss;
+              data.subCn[di] = newSubCn;
+            } else if (isScalar) {
+              if (isSimpleScatter) {
+                data.subSquareDiffSumX[di] = newSubSquareDiffSumX;
+                data.subNSumX[di] = newSubNSumX;
+                data.subObsModelDiffSumX[di] = newSubObsModelDiffSumX;
+                data.subModelSumX[di] = newSubModelSumX;
+                data.subObsSumX[di] = newSubObsSumX;
+                data.subAbsSumX[di] = newSubAbsSumX;
+                data.subSquareDiffSumY[di] = newSubSquareDiffSumY;
+                data.subNSumY[di] = newSubNSumY;
+                data.subObsModelDiffSumY[di] = newSubObsModelDiffSumY;
+                data.subModelSumY[di] = newSubModelSumY;
+                data.subObsSumY[di] = newSubObsSumY;
+                data.subAbsSumY[di] = newSubAbsSumY;
+              } else {
+                data.subSquareDiffSum[di] = newSubSquareDiffSum;
+                data.subNSum[di] = newSubNSum;
+                data.subObsModelDiffSum[di] = newSubObsModelDiffSum;
+                data.subModelSum[di] = newSubModelSum;
+                data.subObsSum[di] = newSubObsSum;
+                data.subAbsSum[di] = newSubAbsSum;
+              }
+            } else if (isReliability) {
+              data.subRelCount[di] = newSubRelCount;
+              data.subRelRawCount[di] = newSubRelRawCount;
+              data.subRelHit[di] = newSubRelHit;
+            }
+            if (isSimpleScatter) {
+              data.subValsX[di] = newSubValuesX;
+              data.subValsY[di] = newSubValuesY;
+            } else {
+              data.subVals[di] = newSubValues;
+            }
+            data.subSecs[di] = newSubSecs;
+            if (hasLevels) {
+              data.subLevs[di] = newSubLevs;
+            }
+          }
+        } else {
+          // no sub-values to begin with, so null the point
+          data = matsDataUtils.nullPoint(
+            data,
+            di,
+            statVarName,
+            isCTC,
+            isScalar,
+            hasLevels
+          );
+        }
       }
     }
 
@@ -787,11 +856,17 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
       };
       if (data.x.length > 0) {
         // need to recalculate bins and stats
-        const curveSubVals = [].concat.apply([], data.subVals);
-        const curveSubSecs = [].concat.apply([], data.subSecs);
-        var curveSubLevs;
+        const curveSubVals = data.subVals.reduce(function (a, b) {
+          return a.concat(b);
+        });
+        const curveSubSecs = data.subSecs.reduce(function (a, b) {
+          return a.concat(b);
+        });
+        let curveSubLevs;
         if (hasLevels) {
-          curveSubLevs = [].concat.apply([], data.subLevs);
+          curveSubLevs = data.subLevs.reduce(function (a, b) {
+            return a.concat(b);
+          });
         } else {
           curveSubLevs = [];
         }
@@ -811,7 +886,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
       }
       const newCurveDataKeys = Object.keys(newCurveData);
       for (let didx = 0; didx < newCurveDataKeys.length; didx += 1) {
-        dataset[curveIndex][newCurveDataKeys[didx]] =
+        returnDataset[curveIndex][newCurveDataKeys[didx]] =
           newCurveData[newCurveDataKeys[didx]];
       }
     }
@@ -828,12 +903,13 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
     data.xmax = Math.max(...filteredx);
     data.ymin = Math.min(...filteredy);
     data.ymax = Math.max(...filteredy);
-    dataset[curveIndex] = data;
+    returnDataset[curveIndex] = data;
   }
 
-  return dataset;
+  return returnDataset;
 };
 
+// eslint-disable-next-line no-undef
 export default matsDataMatchUtils = {
   getMatchedDataSet,
 };

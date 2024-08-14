@@ -397,8 +397,7 @@ Template.textOutput.helpers({
     const elementLabel = "";
     let line = "";
     const isCTC = element.hit !== undefined && element.hit !== null;
-    const isModeSingle =
-      element.nForecast !== undefined && element.nForecast !== null;
+    const isModeSingle = element.nForecast !== undefined && element.nForecast !== null;
     const isModePairs =
       element.avgInterest !== undefined && element.avgInterest !== null;
     const plotType = Session.get("plotType");

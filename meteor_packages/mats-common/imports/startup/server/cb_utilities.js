@@ -9,6 +9,10 @@ class CBUtilities {
     this.conn = undefined;
   }
 
+  /* eslint-disable global-require */
+  /* eslint-disable no-console */
+  /* eslint-disable class-methods-use-this */
+
   // The app doesn't directly require couchbase, but it does need to know about the DurabilityLevel enum
   // Follow the pattern below to define other enums that are needed by the app.
   // see https://docs.couchbase.com/sdk-api/couchbase-node-client/enums/DurabilityLevel.html
@@ -63,12 +67,9 @@ class CBUtilities {
   };
 
   upsertCB = async (key, doc, options = {}) => {
-    const couchbase = require("couchbase");
     try {
       const conn = await this.getConnection();
-      let result;
-      result = await conn.collection.upsert(key, doc, options);
-      return result;
+      return await conn.collection.upsert(key, doc, options);
     } catch (err) {
       console.log("upsertCB ERROR: ", err);
       throw new Error(`upsertCB ERROR: ${err}`);
@@ -76,7 +77,6 @@ class CBUtilities {
   };
 
   removeCB = async (key) => {
-    const couchbase = require("couchbase");
     try {
       const conn = await this.getConnection();
       const result = await conn.collection.remove(key);
@@ -88,7 +88,6 @@ class CBUtilities {
   };
 
   getCB = async (key) => {
-    const couchbase = require("couchbase");
     try {
       const conn = await this.getConnection();
       const result = await conn.collection.get(key);
@@ -100,7 +99,6 @@ class CBUtilities {
   };
 
   queryCB = async (statement) => {
-    const couchbase = require("couchbase");
     const Future = require("fibers/future");
     try {
       let result;
@@ -132,20 +130,20 @@ class CBUtilities {
   };
 
   searchStationsByBoundingBox = async (
-    topleft_lon,
-    topleft_lat,
-    bottomright_lon,
-    bottomright_lat
+    topLeftLon,
+    topLeftLat,
+    bottomRightLon,
+    bottomRightLat
   ) => {
     const couchbase = require("couchbase");
     const index = "station_geo";
     try {
       const conn = await this.getConnection();
       const geoBoundingBoxQuery = couchbase.SearchQuery.geoBoundingBox(
-        topleft_lon,
-        topleft_lat,
-        bottomright_lon,
-        bottomright_lat
+        topLeftLon,
+        topLeftLat,
+        bottomRightLon,
+        bottomRightLat
       );
       const results = await conn.cluster.searchQuery(index, geoBoundingBoxQuery, {
         fields: ["*"],
@@ -188,8 +186,8 @@ class CBUtilities {
   trfmSQLRemoveClause = (sqlstr, clauseFragment) => {
     const lines = sqlstr.split("\n");
     let rv = "";
-    for (let i = 0; i < lines.length; i++) {
-      if (lines[i].includes(clauseFragment) == false) {
+    for (let i = 0; i < lines.length; i += 1) {
+      if (!lines[i].includes(clauseFragment)) {
         rv = `${rv + lines[i]}\n`;
       }
     }
@@ -197,8 +195,9 @@ class CBUtilities {
   };
 }
 
-test = async () => {};
+const test = async () => {};
 
+// eslint-disable-next-line no-undef
 export default matsCouchbaseUtils = {
   CBUtilities,
   test,

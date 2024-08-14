@@ -12,6 +12,7 @@ import {
   matsDataPlotOpsUtils,
 } from "meteor/randyp:mats-common";
 import { moment } from "meteor/momentjs:moment";
+import { _ } from "meteor/underscore";
 
 const processDataXYCurve = function (
   dataset,
@@ -21,6 +22,9 @@ const processDataXYCurve = function (
   bookkeepingParams
 ) {
   // variable to store maximum error bar length
+  let returnDataset = dataset;
+  const returnCurveInfoParams = curveInfoParams;
+  const returnBookkeepingParams = bookkeepingParams;
   let errorMax = Number.MIN_VALUE;
   const error = "";
 
@@ -29,10 +33,10 @@ const processDataXYCurve = function (
     matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
 
   // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
-  if (curveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
-    dataset = matsDataMatchUtils.getMatchedDataSet(
-      dataset,
-      curveInfoParams,
+  if (returnCurveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
+    returnDataset = matsDataMatchUtils.getMatchedDataSet(
+      returnDataset,
+      returnCurveInfoParams,
       appParams,
       {}
     );
@@ -42,24 +46,29 @@ const processDataXYCurve = function (
   const axisLimitReprocessed = {};
 
   // calculate data statistics (including error bars) for each curve
-  for (var curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
-    axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey] =
-      axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey] !== undefined;
-    const { diffFrom } = curveInfoParams.curves[curveIndex];
+  for (
+    let curveIndex = 0;
+    curveIndex < returnCurveInfoParams.curvesLength;
+    curveIndex += 1
+  ) {
+    axisLimitReprocessed[returnCurveInfoParams.curves[curveIndex].axisKey] =
+      axisLimitReprocessed[returnCurveInfoParams.curves[curveIndex].axisKey] !==
+      undefined;
+    const { diffFrom } = returnCurveInfoParams.curves[curveIndex];
     const statisticSelect =
       appName.indexOf("anomalycor") !== -1
         ? "ACC"
-        : curveInfoParams.curves[curveIndex].statistic;
-    var data = dataset[curveIndex];
-    var statType;
-    if (curveInfoParams.statType === undefined) {
+        : returnCurveInfoParams.curves[curveIndex].statistic;
+    const data = returnDataset[curveIndex];
+    let statType;
+    if (returnCurveInfoParams.statType === undefined) {
       statType = "default"; // dummy stat type
-    } else if (Array.isArray(curveInfoParams.statType)) {
-      statType = curveInfoParams.statType[curveIndex];
+    } else if (Array.isArray(returnCurveInfoParams.statType)) {
+      statType = returnCurveInfoParams.statType[curveIndex];
     } else {
-      statType = curveInfoParams.statType;
+      statType = returnCurveInfoParams.statType;
     }
-    const { label } = dataset[curveIndex];
+    const { label } = returnDataset[curveIndex];
 
     let di = 0;
     const values = [];
@@ -68,17 +77,17 @@ const processDataXYCurve = function (
     while (di < data.x.length) {
       // errorResult holds all the calculated curve stats like mean, sd, etc.
       // These don't make sense for aggregated MODE stats, so skip for them.
-      var errorResult;
+      let errorResult;
       if (!statType.includes("met-mode")) {
         if (appParams.hasLevels) {
-          errorResult = matsDataUtils.get_err(
+          errorResult = matsDataUtils.getErr(
             data.subVals[di],
             data.subSecs[di],
             data.subLevs[di],
             appParams
           );
         } else {
-          errorResult = matsDataUtils.get_err(
+          errorResult = matsDataUtils.getErr(
             data.subVals[di],
             data.subSecs[di],
             [],
@@ -89,12 +98,13 @@ const processDataXYCurve = function (
 
       if (diffFrom !== null && diffFrom !== undefined) {
         if (
-          dataset[diffFrom[0]].y[di] !== null &&
-          dataset[diffFrom[1]].y[di] !== null
+          returnDataset[diffFrom[0]].y[di] !== null &&
+          returnDataset[diffFrom[1]].y[di] !== null
         ) {
           // make sure that the diff curve actually shows the difference when matching.
           // otherwise outlier filtering etc. can make it slightly off.
-          data.y[di] = dataset[diffFrom[0]].y[di] - dataset[diffFrom[1]].y[di];
+          data.y[di] =
+            returnDataset[diffFrom[0]].y[di] - returnDataset[diffFrom[1]].y[di];
         } else {
           // keep the null for no data at this point
           data.y[di] = null;
@@ -114,27 +124,27 @@ const processDataXYCurve = function (
           diffFrom === undefined ||
           diffFrom === null ||
           !(
-            Array.isArray(dataset[diffFrom[0]].subHit[di]) ||
-            !isNaN(dataset[diffFrom[0]].subHit[di])
+            Array.isArray(returnDataset[diffFrom[0]].subHit[di]) ||
+            !Number.isNaN(returnDataset[diffFrom[0]].subHit[di])
           ) ||
           !(
-            Array.isArray(dataset[diffFrom[1]].subHit[di]) ||
-            !isNaN(dataset[diffFrom[1]].subHit[di])
+            Array.isArray(returnDataset[diffFrom[1]].subHit[di]) ||
+            !Number.isNaN(returnDataset[diffFrom[1]].subHit[di])
           )
         ) {
           data.error_y.array[di] = null;
         } else {
           const minuendData = {
-            hit: dataset[diffFrom[0]].subHit[di],
-            fa: dataset[diffFrom[0]].subFa[di],
-            miss: dataset[diffFrom[0]].subMiss[di],
-            cn: dataset[diffFrom[0]].subCn[di],
+            hit: returnDataset[diffFrom[0]].subHit[di],
+            fa: returnDataset[diffFrom[0]].subFa[di],
+            miss: returnDataset[diffFrom[0]].subMiss[di],
+            cn: returnDataset[diffFrom[0]].subCn[di],
           };
           const subtrahendData = {
-            hit: dataset[diffFrom[1]].subHit[di],
-            fa: dataset[diffFrom[1]].subFa[di],
-            miss: dataset[diffFrom[1]].subMiss[di],
-            cn: dataset[diffFrom[1]].subCn[di],
+            hit: returnDataset[diffFrom[1]].subHit[di],
+            fa: returnDataset[diffFrom[1]].subFa[di],
+            miss: returnDataset[diffFrom[1]].subMiss[di],
+            cn: returnDataset[diffFrom[1]].subCn[di],
           };
           errorLength = matsDataUtils.ctcErrorPython(
             statisticSelect,
@@ -145,7 +155,7 @@ const processDataXYCurve = function (
           data.error_y.array[di] = errorLength;
         }
       } else {
-        const errorBar = errorResult.stde_betsy * 1.96;
+        const errorBar = errorResult.stdeBetsy * 1.96;
         errorMax = errorMax > errorBar ? errorMax : errorBar;
         data.error_y.array[di] = errorBar;
       }
@@ -163,7 +173,7 @@ const processDataXYCurve = function (
           {
             let fhr =
               ((data.x[di] / 1000) % (24 * 3600)) / 3600 -
-              curveInfoParams.utcCycleStarts[curveIndex];
+              returnCurveInfoParams.utcCycleStarts[curveIndex];
             fhr = fhr < 0 ? fhr + 24 : fhr;
             data.text[di] = `${data.text[di]}<br>time: ${moment
               .utc(data.x[di])
@@ -196,46 +206,46 @@ const processDataXYCurve = function (
         data.stats[di] = {
           stat: data.y[di],
           n:
-            Array.isArray(data.subHit[di]) || !isNaN(data.subHit[di])
+            Array.isArray(data.subHit[di]) || !Number.isNaN(data.subHit[di])
               ? data.subHit[di].length
               : 0,
           hit:
-            Array.isArray(data.subHit[di]) || !isNaN(data.subHit[di])
+            Array.isArray(data.subHit[di]) || !Number.isNaN(data.subHit[di])
               ? matsDataUtils.sum(data.subHit[di])
               : null,
           fa:
-            Array.isArray(data.subFa[di]) || !isNaN(data.subFa[di])
+            Array.isArray(data.subFa[di]) || !Number.isNaN(data.subFa[di])
               ? matsDataUtils.sum(data.subFa[di])
               : null,
           miss:
-            Array.isArray(data.subMiss[di]) || !isNaN(data.subMiss[di])
+            Array.isArray(data.subMiss[di]) || !Number.isNaN(data.subMiss[di])
               ? matsDataUtils.sum(data.subMiss[di])
               : null,
           cn:
-            Array.isArray(data.subCn[di]) || !isNaN(data.subCn[di])
+            Array.isArray(data.subCn[di]) || !Number.isNaN(data.subCn[di])
               ? matsDataUtils.sum(data.subCn[di])
               : null,
         };
         data.text[di] = `${data.text[di]}<br>${statisticSelect}: ${
           data.y[di] === null ? null : data.y[di].toPrecision(4)
         }<br>n: ${
-          Array.isArray(data.subHit[di]) || !isNaN(data.subHit[di])
+          Array.isArray(data.subHit[di]) || !Number.isNaN(data.subHit[di])
             ? data.subHit[di].length
             : 0
         }<br>Hits: ${
-          Array.isArray(data.subHit[di]) || !isNaN(data.subHit[di])
+          Array.isArray(data.subHit[di]) || !Number.isNaN(data.subHit[di])
             ? matsDataUtils.sum(data.subHit[di])
             : null
         }<br>False alarms: ${
-          Array.isArray(data.subFa[di]) || !isNaN(data.subFa[di])
+          Array.isArray(data.subFa[di]) || !Number.isNaN(data.subFa[di])
             ? matsDataUtils.sum(data.subFa[di])
             : null
         }<br>Misses: ${
-          Array.isArray(data.subMiss[di]) || !isNaN(data.subMiss[di])
+          Array.isArray(data.subMiss[di]) || !Number.isNaN(data.subMiss[di])
             ? matsDataUtils.sum(data.subMiss[di])
             : null
         }<br>Correct Nulls: ${
-          Array.isArray(data.subCn[di]) || !isNaN(data.subCn[di])
+          Array.isArray(data.subCn[di]) || !Number.isNaN(data.subCn[di])
             ? matsDataUtils.sum(data.subCn[di])
             : null
         }<br>Errorbars: ${Number(data.y[di] - errorLength).toPrecision(4)} to ${Number(
@@ -245,27 +255,27 @@ const processDataXYCurve = function (
         data.stats[di] = {
           stat: data.y[di],
           n:
-            Array.isArray(data.subInterest[di]) || !isNaN(data.subInterest[di])
+            Array.isArray(data.subInterest[di]) || !Number.isNaN(data.subInterest[di])
               ? data.subInterest[di].length
               : 0,
           raw_stat: data.y[di],
-          n_good:
-            Array.isArray(data.subInterest[di]) || !isNaN(data.subInterest[di])
+          nGood:
+            Array.isArray(data.subInterest[di]) || !Number.isNaN(data.subInterest[di])
               ? data.subInterest[di].length
               : 0,
           avgInterest:
-            Array.isArray(data.subInterest[di]) || !isNaN(data.subInterest[di])
+            Array.isArray(data.subInterest[di]) || !Number.isNaN(data.subInterest[di])
               ? matsDataUtils.average(data.subInterest[di]).toPrecision(4)
               : null,
         };
         data.text[di] = `${data.text[di]}<br>${statisticSelect}: ${
           data.y[di] === null ? null : data.y[di].toPrecision(4)
         }<br>n: ${
-          Array.isArray(data.subInterest[di]) || !isNaN(data.subInterest[di])
+          Array.isArray(data.subInterest[di]) || !Number.isNaN(data.subInterest[di])
             ? data.subInterest[di].length
             : 0
         }<br>Average Interest: ${
-          Array.isArray(data.subInterest[di]) || !isNaN(data.subInterest[di])
+          Array.isArray(data.subInterest[di]) || !Number.isNaN(data.subInterest[di])
             ? matsDataUtils.average(data.subInterest[di]).toPrecision(4)
             : null
         }`;
@@ -291,31 +301,29 @@ const processDataXYCurve = function (
       } else {
         data.stats[di] = {
           stat: data.y[di],
-          n: errorResult.n_good,
+          n: errorResult.nGood,
           mean:
             statisticSelect === "N" ||
             statisticSelect ===
               "N times*levels(*stations if station plot) per graph point"
               ? errorResult.sum
-              : errorResult.d_mean,
+              : errorResult.dMean,
           sd: errorResult.sd,
-          n_good: errorResult.n_good,
+          nGood: errorResult.nGood,
           lag1: errorResult.lag1,
-          stde_betsy: errorResult.stde_betsy,
+          stdeBetsy: errorResult.stdeBetsy,
         };
         data.text[di] = `${data.text[di]}<br>${statisticSelect}: ${
           data.y[di] === null ? null : data.y[di].toPrecision(4)
         }<br>sd: ${
           errorResult.sd === null ? null : errorResult.sd.toPrecision(4)
         }<br>mean: ${
-          errorResult.d_mean === null ? null : errorResult.d_mean.toPrecision(4)
-        }<br>n: ${errorResult.n_good}<br>stde: ${
-          errorResult.stde_betsy
-        }<br>errorbars: ${Number(
-          data.y[di] - errorResult.stde_betsy * 1.96
-        ).toPrecision(4)} to ${Number(
-          data.y[di] + errorResult.stde_betsy * 1.96
-        ).toPrecision(4)}`;
+          errorResult.dMean === null ? null : errorResult.dMean.toPrecision(4)
+        }<br>n: ${errorResult.nGood}<br>stde: ${
+          errorResult.stdeBetsy
+        }<br>errorbars: ${Number(data.y[di] - errorResult.stdeBetsy * 1.96).toPrecision(
+          4
+        )} to ${Number(data.y[di] + errorResult.stdeBetsy * 1.96).toPrecision(4)}`;
       }
 
       di += 1;
@@ -332,11 +340,11 @@ const processDataXYCurve = function (
     }
 
     // get the overall stats for the text output.
-    const stats = matsDataUtils.get_err(values, indVars, [], appParams);
+    const stats = matsDataUtils.getErr(values, indVars, [], appParams);
     const filteredValues = values.filter((x) => x || x === 0);
     stats.miny = Math.min(...filteredValues);
     stats.maxy = Math.max(...filteredValues);
-    dataset[curveIndex].glob_stats = stats;
+    returnDataset[curveIndex].glob_stats = stats;
 
     // recalculate axis options after QC and matching
     const filteredIndVars = [];
@@ -345,41 +353,63 @@ const processDataXYCurve = function (
     }
     const minx = Math.min(...filteredIndVars);
     const maxx = Math.max(...filteredIndVars);
-    curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].ymax =
-      curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].ymax <
-        stats.maxy || !axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey]
+    returnCurveInfoParams.axisMap[
+      returnCurveInfoParams.curves[curveIndex].axisKey
+    ].ymax =
+      returnCurveInfoParams.axisMap[returnCurveInfoParams.curves[curveIndex].axisKey]
+        .ymax < stats.maxy ||
+      !axisLimitReprocessed[returnCurveInfoParams.curves[curveIndex].axisKey]
         ? stats.maxy
-        : curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].ymax;
-    curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].ymin =
-      curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].ymin >
-        stats.miny || !axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey]
+        : returnCurveInfoParams.axisMap[
+            returnCurveInfoParams.curves[curveIndex].axisKey
+          ].ymax;
+    returnCurveInfoParams.axisMap[
+      returnCurveInfoParams.curves[curveIndex].axisKey
+    ].ymin =
+      returnCurveInfoParams.axisMap[returnCurveInfoParams.curves[curveIndex].axisKey]
+        .ymin > stats.miny ||
+      !axisLimitReprocessed[returnCurveInfoParams.curves[curveIndex].axisKey]
         ? stats.miny
-        : curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].ymin;
-    curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].xmax =
-      curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].xmax < maxx ||
-      !axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey]
+        : returnCurveInfoParams.axisMap[
+            returnCurveInfoParams.curves[curveIndex].axisKey
+          ].ymin;
+    returnCurveInfoParams.axisMap[
+      returnCurveInfoParams.curves[curveIndex].axisKey
+    ].xmax =
+      returnCurveInfoParams.axisMap[returnCurveInfoParams.curves[curveIndex].axisKey]
+        .xmax < maxx ||
+      !axisLimitReprocessed[returnCurveInfoParams.curves[curveIndex].axisKey]
         ? maxx
-        : curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].xmax;
-    curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].xmin =
-      curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].xmin > minx ||
-      !axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey]
+        : returnCurveInfoParams.axisMap[
+            returnCurveInfoParams.curves[curveIndex].axisKey
+          ].xmax;
+    returnCurveInfoParams.axisMap[
+      returnCurveInfoParams.curves[curveIndex].axisKey
+    ].xmin =
+      returnCurveInfoParams.axisMap[returnCurveInfoParams.curves[curveIndex].axisKey]
+        .xmin > minx ||
+      !axisLimitReprocessed[returnCurveInfoParams.curves[curveIndex].axisKey]
         ? minx
-        : curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].xmin;
+        : returnCurveInfoParams.axisMap[
+            returnCurveInfoParams.curves[curveIndex].axisKey
+          ].xmin;
 
     // recalculate curve annotation after QC and matching
     const newMean = matsDataUtils.average(filteredValues);
     const newMedian = matsDataUtils.median(filteredValues);
     const newStdev = matsDataUtils.stdev(filteredValues);
     if (newMean !== undefined && newMean !== null) {
-      dataset[curveIndex].annotation = `${label} mean = ${newMean.toPrecision(4)}`;
-      dataset[curveIndex].annotation = `${
-        dataset[curveIndex].annotation
+      returnDataset[curveIndex].annotation = `${label} mean = ${newMean.toPrecision(
+        4
+      )}`;
+      returnDataset[curveIndex].annotation = `${
+        returnDataset[curveIndex].annotation
       }, median = ${newMedian.toPrecision(4)}`;
-      dataset[curveIndex].annotation = `${
-        dataset[curveIndex].annotation
+      returnDataset[curveIndex].annotation = `${
+        returnDataset[curveIndex].annotation
       }, stdev = ${newStdev.toPrecision(4)}`;
     } else {
-      dataset[
+      returnDataset[
         curveIndex
       ].annotation = `${label} mean = NoData, median = NoData, stdev = NoData`;
     }
@@ -395,9 +425,13 @@ const processDataXYCurve = function (
     }
   }
 
-  for (curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
+  for (
+    let curveIndex = 0;
+    curveIndex < returnCurveInfoParams.curvesLength;
+    curveIndex += 1
+  ) {
     // remove sub values and times to save space
-    data = dataset[curveIndex];
+    const data = returnDataset[curveIndex];
     data.subHit = [];
     data.subFa = [];
     data.subMiss = [];
@@ -426,38 +460,38 @@ const processDataXYCurve = function (
     case matsTypes.PlotTypes.timeSeries:
     case matsTypes.PlotTypes.dailyModelCycle:
       resultOptions = matsDataPlotOpsUtils.generateSeriesPlotOptions(
-        curveInfoParams.axisMap,
+        returnCurveInfoParams.axisMap,
         errorMax
       );
       break;
     case matsTypes.PlotTypes.dieoff:
       resultOptions = matsDataPlotOpsUtils.generateDieoffPlotOptions(
-        curveInfoParams.axisMap,
+        returnCurveInfoParams.axisMap,
         errorMax
       );
       break;
     case matsTypes.PlotTypes.threshold:
       resultOptions = matsDataPlotOpsUtils.generateThresholdPlotOptions(
-        dataset,
-        curveInfoParams.axisMap,
+        returnDataset,
+        returnCurveInfoParams.axisMap,
         errorMax
       );
       break;
     case matsTypes.PlotTypes.validtime:
       resultOptions = matsDataPlotOpsUtils.generateValidTimePlotOptions(
-        curveInfoParams.axisMap,
+        returnCurveInfoParams.axisMap,
         errorMax
       );
       break;
     case matsTypes.PlotTypes.gridscale:
       resultOptions = matsDataPlotOpsUtils.generateGridScalePlotOptions(
-        curveInfoParams.axisMap,
+        returnCurveInfoParams.axisMap,
         errorMax
       );
       break;
     case matsTypes.PlotTypes.yearToYear:
       resultOptions = matsDataPlotOpsUtils.generateYearToYearPlotOptions(
-        curveInfoParams.axisMap,
+        returnCurveInfoParams.axisMap,
         errorMax
       );
       break;
@@ -476,43 +510,46 @@ const processDataXYCurve = function (
     "rgb(0,0,0)",
     1
   );
-  dataset.push(zeroLine);
+  returnDataset.push(zeroLine);
 
   // add ideal value lines, if any
   let idealValueLine;
   let idealLabel;
-  for (let ivIdx = 0; ivIdx < curveInfoParams.idealValues.length; ivIdx += 1) {
+  for (let ivIdx = 0; ivIdx < returnCurveInfoParams.idealValues.length; ivIdx += 1) {
     idealLabel = `ideal${ivIdx.toString()}`;
     idealValueLine = matsDataCurveOpsUtils.getHorizontalValueLine(
       resultOptions.xaxis.range[1],
       resultOptions.xaxis.range[0],
-      curveInfoParams.idealValues[ivIdx],
+      returnCurveInfoParams.idealValues[ivIdx],
       "bottom left",
       matsTypes.ReservedWords[idealLabel],
       "rgb(0,0,0)",
       1
     );
-    dataset.push(idealValueLine);
+    returnDataset.push(idealValueLine);
   }
 
   const totalProcessingFinish = moment();
-  bookkeepingParams.dataRequests["total retrieval and processing time for curve set"] =
-    {
-      begin: bookkeepingParams.totalProcessingStart.format(),
-      finish: totalProcessingFinish.format(),
-      duration: `${moment
-        .duration(totalProcessingFinish.diff(bookkeepingParams.totalProcessingStart))
-        .asSeconds()} seconds`,
-    };
+  returnBookkeepingParams.dataRequests[
+    "total retrieval and processing time for curve set"
+  ] = {
+    begin: returnBookkeepingParams.totalProcessingStart.format(),
+    finish: totalProcessingFinish.format(),
+    duration: `${moment
+      .duration(
+        totalProcessingFinish.diff(returnBookkeepingParams.totalProcessingStart)
+      )
+      .asSeconds()} seconds`,
+  };
 
   // pass result to client-side plotting functions
   return {
     error,
-    data: dataset,
+    data: returnDataset,
     options: resultOptions,
     basis: {
       plotParams,
-      queries: bookkeepingParams.dataRequests,
+      queries: returnBookkeepingParams.dataRequests,
     },
   };
 };
@@ -525,6 +562,9 @@ const processDataProfile = function (
   bookkeepingParams
 ) {
   // variable to store maximum error bar length
+  let returnDataset = dataset;
+  const returnCurveInfoParams = curveInfoParams;
+  const returnBookkeepingParams = bookkeepingParams;
   let errorMax = Number.MIN_VALUE;
   const error = "";
 
@@ -533,10 +573,10 @@ const processDataProfile = function (
     matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
 
   // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
-  if (curveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
-    dataset = matsDataMatchUtils.getMatchedDataSet(
-      dataset,
-      curveInfoParams,
+  if (returnCurveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
+    returnDataset = matsDataMatchUtils.getMatchedDataSet(
+      returnDataset,
+      returnCurveInfoParams,
       appParams,
       {}
     );
@@ -546,24 +586,29 @@ const processDataProfile = function (
   const axisLimitReprocessed = {};
 
   // calculate data statistics (including error bars) for each curve
-  for (var curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
-    axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey] =
-      axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey] !== undefined;
-    const { diffFrom } = curveInfoParams.curves[curveIndex];
+  for (
+    let curveIndex = 0;
+    curveIndex < returnCurveInfoParams.curvesLength;
+    curveIndex += 1
+  ) {
+    axisLimitReprocessed[returnCurveInfoParams.curves[curveIndex].axisKey] =
+      axisLimitReprocessed[returnCurveInfoParams.curves[curveIndex].axisKey] !==
+      undefined;
+    const { diffFrom } = returnCurveInfoParams.curves[curveIndex];
     const statisticSelect =
       appName.indexOf("anomalycor") !== -1
         ? "ACC"
-        : curveInfoParams.curves[curveIndex].statistic;
-    var data = dataset[curveIndex];
-    var statType;
-    if (curveInfoParams.statType === undefined) {
+        : returnCurveInfoParams.curves[curveIndex].statistic;
+    const data = returnDataset[curveIndex];
+    let statType;
+    if (returnCurveInfoParams.statType === undefined) {
       statType = "default"; // dummy stat type
-    } else if (Array.isArray(curveInfoParams.statType)) {
-      statType = curveInfoParams.statType[curveIndex];
+    } else if (Array.isArray(returnCurveInfoParams.statType)) {
+      statType = returnCurveInfoParams.statType[curveIndex];
     } else {
-      statType = curveInfoParams.statType;
+      statType = returnCurveInfoParams.statType;
     }
-    const { label } = dataset[curveIndex];
+    const { label } = returnDataset[curveIndex];
 
     let di = 0;
     const values = [];
@@ -572,8 +617,9 @@ const processDataProfile = function (
     while (di < data.y.length) {
       // errorResult holds all the calculated curve stats like mean, sd, etc.
       // These don't make sense for aggregated MODE stats, so skip for them.
+      let errorResult;
       if (!statType.includes("met-mode")) {
-        var errorResult = matsDataUtils.get_err(
+        errorResult = matsDataUtils.getErr(
           data.subVals[di],
           data.subSecs[di],
           data.subLevs[di],
@@ -583,12 +629,13 @@ const processDataProfile = function (
 
       if (diffFrom !== null && diffFrom !== undefined) {
         if (
-          dataset[diffFrom[0]].x[di] !== null &&
-          dataset[diffFrom[1]].x[di] !== null
+          returnDataset[diffFrom[0]].x[di] !== null &&
+          returnDataset[diffFrom[1]].x[di] !== null
         ) {
           // make sure that the diff curve actually shows the difference when matching.
           // otherwise outlier filtering etc. can make it slightly off.
-          data.x[di] = dataset[diffFrom[0]].x[di] - dataset[diffFrom[1]].x[di];
+          data.x[di] =
+            returnDataset[diffFrom[0]].x[di] - returnDataset[diffFrom[1]].x[di];
         } else {
           // keep the null for no data at this point
           data.x[di] = null;
@@ -608,27 +655,27 @@ const processDataProfile = function (
           diffFrom === undefined ||
           diffFrom === null ||
           !(
-            Array.isArray(dataset[diffFrom[0]].subHit[di]) ||
-            !isNaN(dataset[diffFrom[0]].subHit[di])
+            Array.isArray(returnDataset[diffFrom[0]].subHit[di]) ||
+            !Number.isNaN(returnDataset[diffFrom[0]].subHit[di])
           ) ||
           !(
-            Array.isArray(dataset[diffFrom[1]].subHit[di]) ||
-            !isNaN(dataset[diffFrom[1]].subHit[di])
+            Array.isArray(returnDataset[diffFrom[1]].subHit[di]) ||
+            !Number.isNaN(returnDataset[diffFrom[1]].subHit[di])
           )
         ) {
           data.error_x.array[di] = null;
         } else {
           const minuendData = {
-            hit: dataset[diffFrom[0]].subHit[di],
-            fa: dataset[diffFrom[0]].subFa[di],
-            miss: dataset[diffFrom[0]].subMiss[di],
-            cn: dataset[diffFrom[0]].subCn[di],
+            hit: returnDataset[diffFrom[0]].subHit[di],
+            fa: returnDataset[diffFrom[0]].subFa[di],
+            miss: returnDataset[diffFrom[0]].subMiss[di],
+            cn: returnDataset[diffFrom[0]].subCn[di],
           };
           const subtrahendData = {
-            hit: dataset[diffFrom[1]].subHit[di],
-            fa: dataset[diffFrom[1]].subFa[di],
-            miss: dataset[diffFrom[1]].subMiss[di],
-            cn: dataset[diffFrom[1]].subCn[di],
+            hit: returnDataset[diffFrom[1]].subHit[di],
+            fa: returnDataset[diffFrom[1]].subFa[di],
+            miss: returnDataset[diffFrom[1]].subMiss[di],
+            cn: returnDataset[diffFrom[1]].subCn[di],
           };
           errorLength = matsDataUtils.ctcErrorPython(
             statisticSelect,
@@ -639,7 +686,7 @@ const processDataProfile = function (
           data.error_x.array[di] = errorLength;
         }
       } else {
-        const errorBar = errorResult.stde_betsy * 1.96;
+        const errorBar = errorResult.stdeBetsy * 1.96;
         errorMax = errorMax > errorBar ? errorMax : errorBar;
         data.error_x.array[di] = errorBar;
       }
@@ -649,23 +696,23 @@ const processDataProfile = function (
         data.stats[di] = {
           stat: data.x[di],
           n:
-            Array.isArray(data.subHit[di]) || !isNaN(data.subHit[di])
+            Array.isArray(data.subHit[di]) || !Number.isNaN(data.subHit[di])
               ? data.subHit[di].length
               : 0,
           hit:
-            Array.isArray(data.subHit[di]) || !isNaN(data.subHit[di])
+            Array.isArray(data.subHit[di]) || !Number.isNaN(data.subHit[di])
               ? matsDataUtils.sum(data.subHit[di])
               : null,
           fa:
-            Array.isArray(data.subFa[di]) || !isNaN(data.subFa[di])
+            Array.isArray(data.subFa[di]) || !Number.isNaN(data.subFa[di])
               ? matsDataUtils.sum(data.subFa[di])
               : null,
           miss:
-            Array.isArray(data.subMiss[di]) || !isNaN(data.subMiss[di])
+            Array.isArray(data.subMiss[di]) || !Number.isNaN(data.subMiss[di])
               ? matsDataUtils.sum(data.subMiss[di])
               : null,
           cn:
-            Array.isArray(data.subCn[di]) || !isNaN(data.subCn[di])
+            Array.isArray(data.subCn[di]) || !Number.isNaN(data.subCn[di])
               ? matsDataUtils.sum(data.subCn[di])
               : null,
         };
@@ -674,23 +721,23 @@ const processDataProfile = function (
           `<br>${statisticSelect}: ${
             data.x[di] === null ? null : data.x[di].toPrecision(4)
           }<br>n: ${
-            Array.isArray(data.subHit[di]) || !isNaN(data.subHit[di])
+            Array.isArray(data.subHit[di]) || !Number.isNaN(data.subHit[di])
               ? data.subHit[di].length
               : 0
           }<br>Hits: ${
-            Array.isArray(data.subHit[di]) || !isNaN(data.subHit[di])
+            Array.isArray(data.subHit[di]) || !Number.isNaN(data.subHit[di])
               ? matsDataUtils.sum(data.subHit[di])
               : null
           }<br>False alarms: ${
-            Array.isArray(data.subFa[di]) || !isNaN(data.subFa[di])
+            Array.isArray(data.subFa[di]) || !Number.isNaN(data.subFa[di])
               ? matsDataUtils.sum(data.subFa[di])
               : null
           }<br>Misses: ${
-            Array.isArray(data.subMiss[di]) || !isNaN(data.subMiss[di])
+            Array.isArray(data.subMiss[di]) || !Number.isNaN(data.subMiss[di])
               ? matsDataUtils.sum(data.subMiss[di])
               : null
           }<br>Correct Nulls: ${
-            Array.isArray(data.subCn[di]) || !isNaN(data.subCn[di])
+            Array.isArray(data.subCn[di]) || !Number.isNaN(data.subCn[di])
               ? matsDataUtils.sum(data.subCn[di])
               : null
           }<br>Errorbars: ${Number(data.x[di] - errorLength).toPrecision(
@@ -700,27 +747,27 @@ const processDataProfile = function (
         data.stats[di] = {
           stat: data.x[di],
           n:
-            Array.isArray(data.subInterest[di]) || !isNaN(data.subInterest[di])
+            Array.isArray(data.subInterest[di]) || !Number.isNaN(data.subInterest[di])
               ? data.subInterest[di].length
               : 0,
           raw_stat: data.x[di],
-          n_good:
-            Array.isArray(data.subInterest[di]) || !isNaN(data.subInterest[di])
+          nGood:
+            Array.isArray(data.subInterest[di]) || !Number.isNaN(data.subInterest[di])
               ? data.subInterest[di].length
               : 0,
           avgInterest:
-            Array.isArray(data.subInterest[di]) || !isNaN(data.subInterest[di])
+            Array.isArray(data.subInterest[di]) || !Number.isNaN(data.subInterest[di])
               ? matsDataUtils.average(data.subInterest[di]).toPrecision(4)
               : null,
         };
         data.text[di] = `${data.text[di]}<br>${statisticSelect}: ${
           data.x[di] === null ? null : data.x[di].toPrecision(4)
         }<br>n: ${
-          Array.isArray(data.subInterest[di]) || !isNaN(data.subInterest[di])
+          Array.isArray(data.subInterest[di]) || !Number.isNaN(data.subInterest[di])
             ? data.subInterest[di].length
             : 0
         }<br>Average Interest: ${
-          Array.isArray(data.subInterest[di]) || !isNaN(data.subInterest[di])
+          Array.isArray(data.subInterest[di]) || !Number.isNaN(data.subInterest[di])
             ? matsDataUtils.average(data.subInterest[di]).toPrecision(4)
             : null
         }`;
@@ -746,17 +793,17 @@ const processDataProfile = function (
       } else {
         data.stats[di] = {
           stat: data.x[di],
-          n: errorResult.n_good,
+          n: errorResult.nGood,
           mean:
             statisticSelect === "N" ||
             statisticSelect ===
               "N times*levels(*stations if station plot) per graph point"
               ? errorResult.sum
-              : errorResult.d_mean,
+              : errorResult.dMean,
           sd: errorResult.sd,
-          n_good: errorResult.n_good,
+          nGood: errorResult.nGood,
           lag1: errorResult.lag1,
-          stde_betsy: errorResult.stde_betsy,
+          stdeBetsy: errorResult.stdeBetsy,
         };
         data.text[di] =
           `${label}<br>${data.y[di]}mb` +
@@ -765,13 +812,13 @@ const processDataProfile = function (
           }<br>sd: ${
             errorResult.sd === null ? null : errorResult.sd.toPrecision(4)
           }<br>mean: ${
-            errorResult.d_mean === null ? null : errorResult.d_mean.toPrecision(4)
-          }<br>n: ${errorResult.n_good}<br>stde: ${
-            errorResult.stde_betsy
+            errorResult.dMean === null ? null : errorResult.dMean.toPrecision(4)
+          }<br>n: ${errorResult.nGood}<br>stde: ${
+            errorResult.stdeBetsy
           }<br>errorbars: ${Number(
-            data.x[di] - errorResult.stde_betsy * 1.96
+            data.x[di] - errorResult.stdeBetsy * 1.96
           ).toPrecision(4)} to ${Number(
-            data.x[di] + errorResult.stde_betsy * 1.96
+            data.x[di] + errorResult.stdeBetsy * 1.96
           ).toPrecision(4)}`;
       }
 
@@ -789,7 +836,7 @@ const processDataProfile = function (
     }
 
     // get the overall stats for the text output.
-    const stats = matsDataUtils.get_err(
+    const stats = matsDataUtils.getErr(
       values.reverse(),
       levels.reverse(),
       [],
@@ -798,7 +845,7 @@ const processDataProfile = function (
     const filteredValues = values.filter((x) => x || x === 0);
     stats.minx = Math.min(...filteredValues);
     stats.maxx = Math.max(...filteredValues);
-    dataset[curveIndex].glob_stats = stats;
+    returnDataset[curveIndex].glob_stats = stats;
 
     // recalculate axis options after QC and matching
     const filteredLevels = [];
@@ -807,49 +854,75 @@ const processDataProfile = function (
     }
     const miny = Math.min(...filteredLevels);
     const maxy = Math.max(...filteredLevels);
-    curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].ymax =
-      curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].ymax < maxy ||
-      !axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey]
+    returnCurveInfoParams.axisMap[
+      returnCurveInfoParams.curves[curveIndex].axisKey
+    ].ymax =
+      returnCurveInfoParams.axisMap[returnCurveInfoParams.curves[curveIndex].axisKey]
+        .ymax < maxy ||
+      !axisLimitReprocessed[returnCurveInfoParams.curves[curveIndex].axisKey]
         ? maxy
-        : curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].ymax;
-    curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].ymin =
-      curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].ymin > miny ||
-      !axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey]
+        : returnCurveInfoParams.axisMap[
+            returnCurveInfoParams.curves[curveIndex].axisKey
+          ].ymax;
+    returnCurveInfoParams.axisMap[
+      returnCurveInfoParams.curves[curveIndex].axisKey
+    ].ymin =
+      returnCurveInfoParams.axisMap[returnCurveInfoParams.curves[curveIndex].axisKey]
+        .ymin > miny ||
+      !axisLimitReprocessed[returnCurveInfoParams.curves[curveIndex].axisKey]
         ? miny
-        : curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].ymin;
-    curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].xmax =
-      curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].xmax <
-        stats.maxx || !axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey]
+        : returnCurveInfoParams.axisMap[
+            returnCurveInfoParams.curves[curveIndex].axisKey
+          ].ymin;
+    returnCurveInfoParams.axisMap[
+      returnCurveInfoParams.curves[curveIndex].axisKey
+    ].xmax =
+      returnCurveInfoParams.axisMap[returnCurveInfoParams.curves[curveIndex].axisKey]
+        .xmax < stats.maxx ||
+      !axisLimitReprocessed[returnCurveInfoParams.curves[curveIndex].axisKey]
         ? stats.maxx
-        : curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].xmax;
-    curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].xmin =
-      curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].xmin >
-        stats.minx || !axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey]
+        : returnCurveInfoParams.axisMap[
+            returnCurveInfoParams.curves[curveIndex].axisKey
+          ].xmax;
+    returnCurveInfoParams.axisMap[
+      returnCurveInfoParams.curves[curveIndex].axisKey
+    ].xmin =
+      returnCurveInfoParams.axisMap[returnCurveInfoParams.curves[curveIndex].axisKey]
+        .xmin > stats.minx ||
+      !axisLimitReprocessed[returnCurveInfoParams.curves[curveIndex].axisKey]
         ? stats.minx
-        : curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].xmin;
+        : returnCurveInfoParams.axisMap[
+            returnCurveInfoParams.curves[curveIndex].axisKey
+          ].xmin;
 
     // recalculate curve annotation after QC and matching
     const newMean = matsDataUtils.average(filteredValues);
     const newMedian = matsDataUtils.median(filteredValues);
     const newStdev = matsDataUtils.stdev(filteredValues);
     if (newMean !== undefined && newMean !== null) {
-      dataset[curveIndex].annotation = `${label} mean = ${newMean.toPrecision(4)}`;
-      dataset[curveIndex].annotation = `${
-        dataset[curveIndex].annotation
+      returnDataset[curveIndex].annotation = `${label} mean = ${newMean.toPrecision(
+        4
+      )}`;
+      returnDataset[curveIndex].annotation = `${
+        returnDataset[curveIndex].annotation
       }, median = ${newMedian.toPrecision(4)}`;
-      dataset[curveIndex].annotation = `${
-        dataset[curveIndex].annotation
+      returnDataset[curveIndex].annotation = `${
+        returnDataset[curveIndex].annotation
       }, stdev = ${newStdev.toPrecision(4)}`;
     } else {
-      dataset[
+      returnDataset[
         curveIndex
       ].annotation = `${label} mean = NoData, median = NoData, stdev = NoData`;
     }
   }
 
-  for (curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
+  for (
+    let curveIndex = 0;
+    curveIndex < returnCurveInfoParams.curvesLength;
+    curveIndex += 1
+  ) {
     // remove sub values and times to save space
-    data = dataset[curveIndex];
+    const data = returnDataset[curveIndex];
     data.subHit = [];
     data.subFa = [];
     data.subMiss = [];
@@ -874,7 +947,7 @@ const processDataProfile = function (
 
   // generate plot options
   const resultOptions = matsDataPlotOpsUtils.generateProfilePlotOptions(
-    curveInfoParams.axisMap,
+    returnCurveInfoParams.axisMap,
     errorMax
   );
 
@@ -889,43 +962,46 @@ const processDataProfile = function (
     "rgb(0,0,0)",
     1
   );
-  dataset.push(zeroLine);
+  returnDataset.push(zeroLine);
 
   // add ideal value lines, if any
   let idealValueLine;
   let idealLabel;
-  for (let ivIdx = 0; ivIdx < curveInfoParams.idealValues.length; ivIdx += 1) {
+  for (let ivIdx = 0; ivIdx < returnCurveInfoParams.idealValues.length; ivIdx += 1) {
     idealLabel = `ideal${ivIdx.toString()}`;
     idealValueLine = matsDataCurveOpsUtils.getVerticalValueLine(
       resultOptions.yaxis.range[1],
       resultOptions.yaxis.range[0],
-      curveInfoParams.idealValues[ivIdx],
+      returnCurveInfoParams.idealValues[ivIdx],
       "bottom left",
       matsTypes.ReservedWords[idealLabel],
       "rgb(0,0,0)",
       1
     );
-    dataset.push(idealValueLine);
+    returnDataset.push(idealValueLine);
   }
 
   const totalProcessingFinish = moment();
-  bookkeepingParams.dataRequests["total retrieval and processing time for curve set"] =
-    {
-      begin: bookkeepingParams.totalProcessingStart.format(),
-      finish: totalProcessingFinish.format(),
-      duration: `${moment
-        .duration(totalProcessingFinish.diff(bookkeepingParams.totalProcessingStart))
-        .asSeconds()} seconds`,
-    };
+  returnBookkeepingParams.dataRequests[
+    "total retrieval and processing time for curve set"
+  ] = {
+    begin: returnBookkeepingParams.totalProcessingStart.format(),
+    finish: totalProcessingFinish.format(),
+    duration: `${moment
+      .duration(
+        totalProcessingFinish.diff(returnBookkeepingParams.totalProcessingStart)
+      )
+      .asSeconds()} seconds`,
+  };
 
   // pass result to client-side plotting functions
   return {
     error,
-    data: dataset,
+    data: returnDataset,
     options: resultOptions,
     basis: {
       plotParams,
-      queries: bookkeepingParams.dataRequests,
+      queries: returnBookkeepingParams.dataRequests,
     },
   };
 };
@@ -937,24 +1013,31 @@ const processDataReliability = function (
   plotParams,
   bookkeepingParams
 ) {
+  let returnDataset = dataset;
+  const returnCurveInfoParams = curveInfoParams;
+  const returnBookkeepingParams = bookkeepingParams;
   const error = "";
 
   const isMetexpress =
     matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
 
   // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
-  if (curveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
-    dataset = matsDataMatchUtils.getMatchedDataSet(
-      dataset,
-      curveInfoParams,
+  if (returnCurveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
+    returnDataset = matsDataMatchUtils.getMatchedDataSet(
+      returnDataset,
+      returnCurveInfoParams,
       appParams,
       {}
     );
   }
 
   // sort data statistics for each curve
-  for (let curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
-    const data = dataset[curveIndex];
+  for (
+    let curveIndex = 0;
+    curveIndex < returnCurveInfoParams.curvesLength;
+    curveIndex += 1
+  ) {
+    const data = returnDataset[curveIndex];
     const { label } = data;
     const sampleClimo = data.sample_climo;
 
@@ -992,7 +1075,7 @@ const processDataReliability = function (
 
       di += 1;
     }
-    dataset[curveIndex].glob_stats = {
+    returnDataset[curveIndex].glob_stats = {
       sample_climo: sampleClimo,
     };
   }
@@ -1012,11 +1095,15 @@ const processDataReliability = function (
     "rgb(0,0,0)",
     1
   );
-  dataset.push(perfectLine);
+  returnDataset.push(perfectLine);
 
   // assign no skill lines for each curve
-  for (let curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
-    const data = dataset[curveIndex];
+  for (
+    let curveIndex = 0;
+    curveIndex < returnCurveInfoParams.curvesLength;
+    curveIndex += 1
+  ) {
+    const data = returnDataset[curveIndex];
     const { label } = data;
     const color = data.annotateColor;
     const sampleClimo = data.sample_climo;
@@ -1052,12 +1139,16 @@ const processDataReliability = function (
       color,
       1
     );
-    dataset.push(noSkillLine);
+    returnDataset.push(noSkillLine);
   }
 
-  for (let curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
+  for (
+    let curveIndex = 0;
+    curveIndex < returnCurveInfoParams.curvesLength;
+    curveIndex += 1
+  ) {
     // remove sub values and times to save space
-    const data = dataset[curveIndex];
+    const data = returnDataset[curveIndex];
     data.subRelHit = [];
     data.subRelRawCount = [];
     data.subRelCount = [];
@@ -1067,23 +1158,26 @@ const processDataReliability = function (
   }
 
   const totalProcessingFinish = moment();
-  bookkeepingParams.dataRequests["total retrieval and processing time for curve set"] =
-    {
-      begin: bookkeepingParams.totalProcessingStart.format(),
-      finish: totalProcessingFinish.format(),
-      duration: `${moment
-        .duration(totalProcessingFinish.diff(bookkeepingParams.totalProcessingStart))
-        .asSeconds()} seconds`,
-    };
+  returnBookkeepingParams.dataRequests[
+    "total retrieval and processing time for curve set"
+  ] = {
+    begin: returnBookkeepingParams.totalProcessingStart.format(),
+    finish: totalProcessingFinish.format(),
+    duration: `${moment
+      .duration(
+        totalProcessingFinish.diff(returnBookkeepingParams.totalProcessingStart)
+      )
+      .asSeconds()} seconds`,
+  };
 
   // pass result to client-side plotting functions
   return {
     error,
-    data: dataset,
+    data: returnDataset,
     options: resultOptions,
     basis: {
       plotParams,
-      queries: bookkeepingParams.dataRequests,
+      queries: returnBookkeepingParams.dataRequests,
     },
   };
 };
@@ -1095,33 +1189,40 @@ const processDataROC = function (
   plotParams,
   bookkeepingParams
 ) {
+  let returnDataset = dataset;
+  const returnCurveInfoParams = curveInfoParams;
+  const returnBookkeepingParams = bookkeepingParams;
   const error = "";
 
   const isMetexpress =
     matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
 
   // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
-  if (curveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
-    dataset = matsDataMatchUtils.getMatchedDataSet(
-      dataset,
-      curveInfoParams,
+  if (returnCurveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
+    returnDataset = matsDataMatchUtils.getMatchedDataSet(
+      returnDataset,
+      returnCurveInfoParams,
       appParams,
       {}
     );
   }
 
   // sort data statistics for each curve
-  for (let curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
-    var data = dataset[curveIndex];
-    var statType;
-    if (curveInfoParams.statType === undefined) {
+  for (
+    let curveIndex = 0;
+    curveIndex < returnCurveInfoParams.curvesLength;
+    curveIndex += 1
+  ) {
+    const data = returnDataset[curveIndex];
+    let statType;
+    if (returnCurveInfoParams.statType === undefined) {
       statType = "scalar";
-    } else if (Array.isArray(curveInfoParams.statType)) {
-      statType = curveInfoParams.statType[curveIndex];
+    } else if (Array.isArray(returnCurveInfoParams.statType)) {
+      statType = returnCurveInfoParams.statType[curveIndex];
     } else {
-      statType = curveInfoParams.statType;
+      statType = returnCurveInfoParams.statType;
     }
-    const { label } = dataset[curveIndex];
+    const { label } = returnDataset[curveIndex];
     const { auc } = data;
 
     let di = 0;
@@ -1153,7 +1254,7 @@ const processDataROC = function (
 
       di += 1;
     }
-    dataset[curveIndex].glob_stats = {
+    returnDataset[curveIndex].glob_stats = {
       auc,
     };
   }
@@ -1166,14 +1267,14 @@ const processDataROC = function (
     resultOptions.xaxis.range[1],
     resultOptions.xaxis.range[0],
     resultOptions.yaxis.range[1],
-    data.ymin,
+    returnDataset.ymin,
     matsTypes.ReservedWords.noSkill,
     "top left",
     matsTypes.ReservedWords.noSkill,
     "rgb(0,0,0)",
     1
   );
-  dataset.push(noSkillLine);
+  returnDataset.push(noSkillLine);
 
   // add perfect forecast lines
   const xPerfectLine = matsDataCurveOpsUtils.getHorizontalValueLine(
@@ -1185,7 +1286,7 @@ const processDataROC = function (
     "rgb(0,0,0)",
     1
   );
-  dataset.push(xPerfectLine);
+  returnDataset.push(xPerfectLine);
 
   const yPerfectLine = matsDataCurveOpsUtils.getVerticalValueLine(
     resultOptions.yaxis.range[0],
@@ -1196,26 +1297,29 @@ const processDataROC = function (
     "rgb(0,0,0)",
     1
   );
-  dataset.push(yPerfectLine);
+  returnDataset.push(yPerfectLine);
 
   const totalProcessingFinish = moment();
-  bookkeepingParams.dataRequests["total retrieval and processing time for curve set"] =
-    {
-      begin: bookkeepingParams.totalProcessingStart.format(),
-      finish: totalProcessingFinish.format(),
-      duration: `${moment
-        .duration(totalProcessingFinish.diff(bookkeepingParams.totalProcessingStart))
-        .asSeconds()} seconds`,
-    };
+  returnBookkeepingParams.dataRequests[
+    "total retrieval and processing time for curve set"
+  ] = {
+    begin: returnBookkeepingParams.totalProcessingStart.format(),
+    finish: totalProcessingFinish.format(),
+    duration: `${moment
+      .duration(
+        totalProcessingFinish.diff(returnBookkeepingParams.totalProcessingStart)
+      )
+      .asSeconds()} seconds`,
+  };
 
   // pass result to client-side plotting functions
   return {
     error,
-    data: dataset,
+    data: returnDataset,
     options: resultOptions,
     basis: {
       plotParams,
-      queries: bookkeepingParams.dataRequests,
+      queries: returnBookkeepingParams.dataRequests,
     },
   };
 };
@@ -1227,33 +1331,40 @@ const processDataPerformanceDiagram = function (
   plotParams,
   bookkeepingParams
 ) {
+  let returnDataset = dataset;
+  const returnCurveInfoParams = curveInfoParams;
+  const returnBookkeepingParams = bookkeepingParams;
   const error = "";
 
   const isMetexpress =
     matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
 
   // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
-  if (curveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
-    dataset = matsDataMatchUtils.getMatchedDataSet(
-      dataset,
-      curveInfoParams,
+  if (returnCurveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
+    returnDataset = matsDataMatchUtils.getMatchedDataSet(
+      returnDataset,
+      returnCurveInfoParams,
       appParams,
       {}
     );
   }
 
   // sort data statistics for each curve
-  for (var curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
-    var data = dataset[curveIndex];
-    var statType;
-    if (curveInfoParams.statType === undefined) {
+  for (
+    let curveIndex = 0;
+    curveIndex < returnCurveInfoParams.curvesLength;
+    curveIndex += 1
+  ) {
+    const data = returnDataset[curveIndex];
+    let statType;
+    if (returnCurveInfoParams.statType === undefined) {
       statType = "scalar";
-    } else if (Array.isArray(curveInfoParams.statType)) {
-      statType = curveInfoParams.statType[curveIndex];
+    } else if (Array.isArray(returnCurveInfoParams.statType)) {
+      statType = returnCurveInfoParams.statType[curveIndex];
     } else {
-      statType = curveInfoParams.statType;
+      statType = returnCurveInfoParams.statType;
     }
-    const { label } = dataset[curveIndex];
+    const { label } = returnDataset[curveIndex];
 
     let di = 0;
     while (di < data.x.length) {
@@ -1282,7 +1393,7 @@ const processDataPerformanceDiagram = function (
 
       di += 1;
     }
-    dataset[curveIndex].glob_stats = {};
+    returnDataset[curveIndex].glob_stats = {};
   }
 
   // generate plot options
@@ -1300,7 +1411,7 @@ const processDataPerformanceDiagram = function (
     "rgb(0,0,0)",
     1
   );
-  dataset.push(biasLine);
+  returnDataset.push(biasLine);
   biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(
     0.25,
     0,
@@ -1312,7 +1423,7 @@ const processDataPerformanceDiagram = function (
     "rgb(0,0,0)",
     1
   );
-  dataset.push(biasLine);
+  returnDataset.push(biasLine);
   biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(
     0.5,
     0,
@@ -1324,7 +1435,7 @@ const processDataPerformanceDiagram = function (
     "rgb(0,0,0)",
     1
   );
-  dataset.push(biasLine);
+  returnDataset.push(biasLine);
   biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(
     1,
     0,
@@ -1336,7 +1447,7 @@ const processDataPerformanceDiagram = function (
     "rgb(0,0,0)",
     1
   );
-  dataset.push(biasLine);
+  returnDataset.push(biasLine);
   biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(
     1,
     0,
@@ -1348,7 +1459,7 @@ const processDataPerformanceDiagram = function (
     "rgb(0,0,0)",
     1
   );
-  dataset.push(biasLine);
+  returnDataset.push(biasLine);
   biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(
     1,
     0,
@@ -1360,7 +1471,7 @@ const processDataPerformanceDiagram = function (
     "rgb(0,0,0)",
     1
   );
-  dataset.push(biasLine);
+  returnDataset.push(biasLine);
   biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(
     1,
     0,
@@ -1372,7 +1483,7 @@ const processDataPerformanceDiagram = function (
     "rgb(0,0,0)",
     1
   );
-  dataset.push(biasLine);
+  returnDataset.push(biasLine);
 
   let xvals;
   let yvals;
@@ -1384,8 +1495,8 @@ const processDataPerformanceDiagram = function (
     xvals = _.range(cval, 1.01, 0.01);
     yvals = [];
     textVals = [];
-    var xval;
-    var yval;
+    let xval;
+    let yval;
     for (let xidx = 0; xidx < xvals.length; xidx += 1) {
       xval = xvals[xidx];
       yval = (xval * cval) / (xval + xval * cval - cval);
@@ -1403,12 +1514,16 @@ const processDataPerformanceDiagram = function (
       "rgb(0,0,0)",
       1
     );
-    dataset.push(csiLine);
+    returnDataset.push(csiLine);
   }
 
-  for (curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
+  for (
+    let curveIndex = 0;
+    curveIndex < returnCurveInfoParams.curvesLength;
+    curveIndex += 1
+  ) {
     // remove sub values and times to save space
-    data = dataset[curveIndex];
+    const data = returnDataset[curveIndex];
     data.subHit = [];
     data.subFa = [];
     data.subMiss = [];
@@ -1432,23 +1547,26 @@ const processDataPerformanceDiagram = function (
   }
 
   const totalProcessingFinish = moment();
-  bookkeepingParams.dataRequests["total retrieval and processing time for curve set"] =
-    {
-      begin: bookkeepingParams.totalProcessingStart.format(),
-      finish: totalProcessingFinish.format(),
-      duration: `${moment
-        .duration(totalProcessingFinish.diff(bookkeepingParams.totalProcessingStart))
-        .asSeconds()} seconds`,
-    };
+  returnBookkeepingParams.dataRequests[
+    "total retrieval and processing time for curve set"
+  ] = {
+    begin: returnBookkeepingParams.totalProcessingStart.format(),
+    finish: totalProcessingFinish.format(),
+    duration: `${moment
+      .duration(
+        totalProcessingFinish.diff(returnBookkeepingParams.totalProcessingStart)
+      )
+      .asSeconds()} seconds`,
+  };
 
   // pass result to client-side plotting functions
   return {
     error,
-    data: dataset,
+    data: returnDataset,
     options: resultOptions,
     basis: {
       plotParams,
-      queries: bookkeepingParams.dataRequests,
+      queries: returnBookkeepingParams.dataRequests,
     },
   };
 };
@@ -1460,25 +1578,32 @@ const processDataGridScaleProb = function (
   plotParams,
   bookkeepingParams
 ) {
+  let returnDataset = dataset;
+  const returnCurveInfoParams = curveInfoParams;
+  const returnBookkeepingParams = bookkeepingParams;
   const error = "";
 
   const isMetexpress =
     matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
 
   // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
-  if (curveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
-    dataset = matsDataMatchUtils.getMatchedDataSet(
-      dataset,
-      curveInfoParams,
+  if (returnCurveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
+    returnDataset = matsDataMatchUtils.getMatchedDataSet(
+      returnDataset,
+      returnCurveInfoParams,
       appParams,
       {}
     );
   }
 
   // sort data statistics for each curve
-  for (let curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
-    const data = dataset[curveIndex];
-    const { label } = dataset[curveIndex];
+  for (
+    let curveIndex = 0;
+    curveIndex < returnCurveInfoParams.curvesLength;
+    curveIndex += 1
+  ) {
+    const data = returnDataset[curveIndex];
+    const { label } = returnDataset[curveIndex];
 
     let di = 0;
     while (di < data.x.length) {
@@ -1496,17 +1621,21 @@ const processDataGridScaleProb = function (
 
       di += 1;
     }
-    dataset[curveIndex].glob_stats = {};
+    returnDataset[curveIndex].glob_stats = {};
   }
 
   // generate plot options
   const resultOptions = matsDataPlotOpsUtils.generateGridScaleProbPlotOptions(
-    curveInfoParams.axisMap
+    returnCurveInfoParams.axisMap
   );
 
-  for (let curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
+  for (
+    let curveIndex = 0;
+    curveIndex < returnCurveInfoParams.curvesLength;
+    curveIndex += 1
+  ) {
     // remove sub values and times to save space
-    const data = dataset[curveIndex];
+    const data = returnDataset[curveIndex];
     data.subHit = [];
     data.subFa = [];
     data.subMiss = [];
@@ -1530,23 +1659,26 @@ const processDataGridScaleProb = function (
   }
 
   const totalProcessingFinish = moment();
-  bookkeepingParams.dataRequests["total retrieval and processing time for curve set"] =
-    {
-      begin: bookkeepingParams.totalProcessingStart.format(),
-      finish: totalProcessingFinish.format(),
-      duration: `${moment
-        .duration(totalProcessingFinish.diff(bookkeepingParams.totalProcessingStart))
-        .asSeconds()} seconds`,
-    };
+  returnBookkeepingParams.dataRequests[
+    "total retrieval and processing time for curve set"
+  ] = {
+    begin: returnBookkeepingParams.totalProcessingStart.format(),
+    finish: totalProcessingFinish.format(),
+    duration: `${moment
+      .duration(
+        totalProcessingFinish.diff(returnBookkeepingParams.totalProcessingStart)
+      )
+      .asSeconds()} seconds`,
+  };
 
   // pass result to client-side plotting functions
   return {
     error,
-    data: dataset,
+    data: returnDataset,
     options: resultOptions,
     basis: {
       plotParams,
-      queries: bookkeepingParams.dataRequests,
+      queries: returnBookkeepingParams.dataRequests,
     },
   };
 };
@@ -1558,15 +1690,19 @@ const processDataEnsembleHistogram = function (
   plotParams,
   bookkeepingParams
 ) {
+  let returnDataset = dataset;
+  const returnCurveInfoParams = curveInfoParams;
+  const returnBookkeepingParams = bookkeepingParams;
   const error = "";
+
   const isMetexpress =
     matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
 
   // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
-  if (curveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
-    dataset = matsDataMatchUtils.getMatchedDataSet(
-      dataset,
-      curveInfoParams,
+  if (returnCurveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
+    returnDataset = matsDataMatchUtils.getMatchedDataSet(
+      returnDataset,
+      returnCurveInfoParams,
       appParams,
       {}
     );
@@ -1576,30 +1712,34 @@ const processDataEnsembleHistogram = function (
   const axisLimitReprocessed = {};
 
   // calculate data statistics (including error bars) for each curve
-  for (let curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
-    axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey] =
-      axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey] !== undefined;
-    const { diffFrom } = curveInfoParams.curves[curveIndex];
-    const data = dataset[curveIndex];
-    const { label } = dataset[curveIndex];
+  for (
+    let curveIndex = 0;
+    curveIndex < returnCurveInfoParams.curvesLength;
+    curveIndex += 1
+  ) {
+    axisLimitReprocessed[returnCurveInfoParams.curves[curveIndex].axisKey] =
+      axisLimitReprocessed[returnCurveInfoParams.curves[curveIndex].axisKey] !==
+      undefined;
+    const { diffFrom } = returnCurveInfoParams.curves[curveIndex];
+    const data = returnDataset[curveIndex];
+    const { label } = returnDataset[curveIndex];
 
     let di = 0;
     const values = [];
     const indVars = [];
-    var rawStat;
 
     while (di < data.x.length) {
       // errorResult holds all the calculated curve stats like mean, sd, etc.
-      var errorResult;
+      let errorResult;
       if (appParams.hasLevels) {
-        errorResult = matsDataUtils.get_err(
+        errorResult = matsDataUtils.getErr(
           data.subVals[di],
           data.subSecs[di],
           data.subLevs[di],
           appParams
         );
       } else {
-        errorResult = matsDataUtils.get_err(
+        errorResult = matsDataUtils.getErr(
           data.subVals[di],
           data.subSecs[di],
           [],
@@ -1608,18 +1748,17 @@ const processDataEnsembleHistogram = function (
       }
 
       // store raw statistic from query before recalculating that statistic to account for data removed due to matching, QC, etc.
-      rawStat = data.y[di];
       if (diffFrom === null || diffFrom === undefined || !appParams.matching) {
         // assign recalculated statistic to data[di][1], which is the value to be plotted
         data.y[di] = errorResult.sum;
       } else if (
-        dataset[diffFrom[0]].y[di] !== null &&
-        dataset[diffFrom[1]].y[di] !== null
+        returnDataset[diffFrom[0]].y[di] !== null &&
+        returnDataset[diffFrom[1]].y[di] !== null
       ) {
         // make sure that the diff curve actually shows the difference. Otherwise outlier filtering etc. can make it slightly off.
         data.y[di] =
-          dataset[diffFrom[0]].bin_stats[di].bin_n -
-          dataset[diffFrom[1]].bin_stats[di].bin_n;
+          returnDataset[diffFrom[0]].bin_stats[di].bin_n -
+          returnDataset[diffFrom[1]].bin_stats[di].bin_n;
       } else {
         // keep the null for no data at this point
         data.y[di] = null;
@@ -1655,79 +1794,102 @@ const processDataEnsembleHistogram = function (
     // calculate the relative frequency for all the bins.
     // for diff curves, there's no good way to produce a diff of only matching data, so just diff the two parent curves.
     let diffIndexVal = 0;
-    for (let d_idx = 0; d_idx < data.y.length; d_idx += 1) {
-      if (data.y[d_idx] !== null) {
+    for (let didx = 0; didx < data.y.length; didx += 1) {
+      if (data.y[didx] !== null) {
         if (diffFrom === null || diffFrom === undefined) {
-          data.bin_stats[d_idx].bin_rf = data.bin_stats[d_idx].bin_rf / valueTotal;
+          data.bin_stats[didx].bin_rf /= valueTotal;
         } else {
           for (
             let diffIndex = diffIndexVal;
             diffIndex < data.x.length;
             diffIndex += 1
           ) {
-            if (dataset[diffFrom[0]].x[d_idx] === dataset[diffFrom[1]].x[diffIndex]) {
-              data.bin_stats[d_idx].bin_rf =
-                dataset[diffFrom[0]].bin_stats[d_idx].bin_rf -
-                dataset[diffFrom[1]].bin_stats[diffIndex].bin_rf;
+            if (
+              returnDataset[diffFrom[0]].x[didx] ===
+              returnDataset[diffFrom[1]].x[diffIndex]
+            ) {
+              data.bin_stats[didx].bin_rf =
+                returnDataset[diffFrom[0]].bin_stats[didx].bin_rf -
+                returnDataset[diffFrom[1]].bin_stats[diffIndex].bin_rf;
               diffIndexVal = diffIndex;
               break;
             }
-            data.bin_stats[d_idx].bin_rf = null;
+            data.bin_stats[didx].bin_rf = null;
           }
         }
       } else {
-        data.bin_stats[d_idx].bin_rf = null;
+        data.bin_stats[didx].bin_rf = null;
       }
-      if (curveInfoParams.yAxisFormat === "Relative frequency") {
+      if (returnCurveInfoParams.yAxisFormat === "Relative frequency") {
         // replace the bin number with the bin relative frequency for the plotted statistic
-        data.y[d_idx] = data.bin_stats[d_idx].bin_rf;
-        values[d_idx] = data.y[d_idx];
+        data.y[didx] = data.bin_stats[didx].bin_rf;
+        values[didx] = data.y[didx];
       }
-      data.text[d_idx] =
-        `${data.text[d_idx]}<br>` +
+      data.text[didx] =
+        `${data.text[didx]}<br>` +
         `bin rel freq for this curve: ${
-          data.bin_stats[d_idx].bin_rf === null
+          data.bin_stats[didx].bin_rf === null
             ? null
-            : data.bin_stats[d_idx].bin_rf.toPrecision(4)
+            : data.bin_stats[didx].bin_rf.toPrecision(4)
         }`;
     }
 
     // get the overall stats for the text output - this uses the means not the stats.
-    const stats = matsDataUtils.get_err(values, indVars, [], appParams);
+    const stats = matsDataUtils.getErr(values, indVars, [], appParams);
     const filteredValues = values.filter((x) => x || x === 0);
     stats.miny = Math.min(...filteredValues);
     stats.maxy = Math.max(...filteredValues);
-    dataset[curveIndex].glob_stats = stats;
+    returnDataset[curveIndex].glob_stats = stats;
 
     // recalculate axis options after QC and matching
     const minx = Math.min(...indVars);
     const maxx = Math.max(...indVars);
-    curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].ymax =
-      curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].ymax <
-        stats.maxy || !axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey]
+    returnCurveInfoParams.axisMap[
+      returnCurveInfoParams.curves[curveIndex].axisKey
+    ].ymax =
+      returnCurveInfoParams.axisMap[returnCurveInfoParams.curves[curveIndex].axisKey]
+        .ymax < stats.maxy ||
+      !axisLimitReprocessed[returnCurveInfoParams.curves[curveIndex].axisKey]
         ? stats.maxy
-        : curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].ymax;
-    curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].ymin =
-      curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].ymin >
-        stats.miny || !axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey]
+        : returnCurveInfoParams.axisMap[
+            returnCurveInfoParams.curves[curveIndex].axisKey
+          ].ymax;
+    returnCurveInfoParams.axisMap[
+      returnCurveInfoParams.curves[curveIndex].axisKey
+    ].ymin =
+      returnCurveInfoParams.axisMap[returnCurveInfoParams.curves[curveIndex].axisKey]
+        .ymin > stats.miny ||
+      !axisLimitReprocessed[returnCurveInfoParams.curves[curveIndex].axisKey]
         ? stats.miny
-        : curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].ymin;
-    curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].xmax =
-      curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].xmax < maxx ||
-      !axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey]
+        : returnCurveInfoParams.axisMap[
+            returnCurveInfoParams.curves[curveIndex].axisKey
+          ].ymin;
+    returnCurveInfoParams.axisMap[
+      returnCurveInfoParams.curves[curveIndex].axisKey
+    ].xmax =
+      returnCurveInfoParams.axisMap[returnCurveInfoParams.curves[curveIndex].axisKey]
+        .xmax < maxx ||
+      !axisLimitReprocessed[returnCurveInfoParams.curves[curveIndex].axisKey]
         ? maxx
-        : curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].xmax;
-    curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].xmin =
-      curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].xmin > minx ||
-      !axisLimitReprocessed[curveInfoParams.curves[curveIndex].axisKey]
+        : returnCurveInfoParams.axisMap[
+            returnCurveInfoParams.curves[curveIndex].axisKey
+          ].xmax;
+    returnCurveInfoParams.axisMap[
+      returnCurveInfoParams.curves[curveIndex].axisKey
+    ].xmin =
+      returnCurveInfoParams.axisMap[returnCurveInfoParams.curves[curveIndex].axisKey]
+        .xmin > minx ||
+      !axisLimitReprocessed[returnCurveInfoParams.curves[curveIndex].axisKey]
         ? minx
-        : curveInfoParams.axisMap[curveInfoParams.curves[curveIndex].axisKey].xmin;
+        : returnCurveInfoParams.axisMap[
+            returnCurveInfoParams.curves[curveIndex].axisKey
+          ].xmin;
   } // end curves
 
   const resultOptions = matsDataPlotOpsUtils.generateEnsembleHistogramPlotOptions(
-    dataset,
-    curveInfoParams.curves,
-    curveInfoParams.axisMap
+    returnDataset,
+    returnCurveInfoParams.curves,
+    returnCurveInfoParams.axisMap
   );
 
   // add black 0 line curve
@@ -1741,26 +1903,29 @@ const processDataEnsembleHistogram = function (
     "rgb(0,0,0)",
     1
   );
-  dataset.push(zeroLine);
+  returnDataset.push(zeroLine);
 
   const totalProcessingFinish = moment();
-  bookkeepingParams.dataRequests["total retrieval and processing time for curve set"] =
-    {
-      begin: bookkeepingParams.totalProcessingStart.format(),
-      finish: totalProcessingFinish.format(),
-      duration: `${moment
-        .duration(totalProcessingFinish.diff(bookkeepingParams.totalProcessingStart))
-        .asSeconds()} seconds`,
-    };
+  returnBookkeepingParams.dataRequests[
+    "total retrieval and processing time for curve set"
+  ] = {
+    begin: returnBookkeepingParams.totalProcessingStart.format(),
+    finish: totalProcessingFinish.format(),
+    duration: `${moment
+      .duration(
+        totalProcessingFinish.diff(returnBookkeepingParams.totalProcessingStart)
+      )
+      .asSeconds()} seconds`,
+  };
 
   // pass result to client-side plotting functions
   return {
     error,
-    data: dataset,
+    data: returnDataset,
     options: resultOptions,
     basis: {
       plotParams,
-      queries: bookkeepingParams.dataRequests,
+      queries: returnBookkeepingParams.dataRequests,
     },
   };
 };
@@ -1776,6 +1941,9 @@ const processDataHistogram = function (
   binParams,
   bookkeepingParams
 ) {
+  let returnDataset = dataset;
+  const returnCurveInfoParams = curveInfoParams;
+  const returnBookkeepingParams = bookkeepingParams;
   const error = "";
   let curvesLengthSoFar = 0;
   let xmax = -1 * Number.MAX_VALUE;
@@ -1784,8 +1952,12 @@ const processDataHistogram = function (
   let ymin = Number.MAX_VALUE;
 
   // flatten all the returned data into one stats array and one secs array in order to calculate histogram bins over the whole range.
-  const curveSubStats = [].concat.apply([], allReturnedSubStats);
-  const curveSubSecs = [].concat.apply([], allReturnedSubSecs);
+  const curveSubStats = allReturnedSubStats.reduce(function (a, b) {
+    return a.concat(b);
+  });
+  const curveSubSecs = allReturnedSubSecs.reduce(function (a, b) {
+    return a.concat(b);
+  });
 
   let binStats;
   if (binParams.binBounds.length === 0) {
@@ -1808,9 +1980,9 @@ const processDataHistogram = function (
   const plotBins = {};
   plotBins.binMeans = [];
   plotBins.binLabels = [];
-  for (let b_idx = 0; b_idx < binStats.binMeans.length; b_idx += 1) {
-    plotBins.binMeans.push(binStats.binMeans[b_idx]);
-    plotBins.binLabels.push(binStats.binLabels[b_idx]);
+  for (let bidx = 0; bidx < binStats.binMeans.length; bidx += 1) {
+    plotBins.binMeans.push(binStats.binMeans[bidx]);
+    plotBins.binLabels.push(binStats.binLabels[bidx]);
   }
 
   // post process curves
@@ -1818,8 +1990,12 @@ const processDataHistogram = function (
   let curve;
   let diffFrom;
   let label;
-  for (var curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
-    curve = curveInfoParams.curves[curveIndex];
+  for (
+    let curveIndex = 0;
+    curveIndex < returnCurveInfoParams.curvesLength;
+    curveIndex += 1
+  ) {
+    curve = returnCurveInfoParams.curves[curveIndex];
     diffFrom = curve.diffFrom;
     label = curve.label;
 
@@ -1860,7 +2036,7 @@ const processDataHistogram = function (
     };
 
     if (!diffFrom) {
-      if (curveInfoParams.dataFoundForCurve[curveIndex]) {
+      if (returnCurveInfoParams.dataFoundForCurve[curveIndex]) {
         // sort queried data into the full set of histogram bins
         sortedData = matsDataUtils.sortHistogramBins(
           allReturnedSubStats[curveIndex],
@@ -1876,22 +2052,22 @@ const processDataHistogram = function (
     } else {
       // this is a difference curve, so we're done with regular curves.
       // do any matching that needs to be done.
-      if (appParams.matching && !bookkeepingParams.alreadyMatched) {
-        const originalCurvesLength = curveInfoParams.curvesLength;
-        curveInfoParams.curvesLength = curvesLengthSoFar;
-        dataset = matsDataMatchUtils.getMatchedDataSet(
-          dataset,
-          curveInfoParams,
+      if (appParams.matching && !returnBookkeepingParams.alreadyMatched) {
+        const originalCurvesLength = returnCurveInfoParams.curvesLength;
+        returnCurveInfoParams.curvesLength = curvesLengthSoFar;
+        returnDataset = matsDataMatchUtils.getMatchedDataSet(
+          returnDataset,
+          returnCurveInfoParams,
           appParams,
           binStats
         );
-        curveInfoParams.curvesLength = originalCurvesLength;
-        bookkeepingParams.alreadyMatched = true;
+        returnCurveInfoParams.curvesLength = originalCurvesLength;
+        returnBookkeepingParams.alreadyMatched = true;
       }
 
       // then take diffs
       const diffResult = matsDataDiffUtils.getDataForDiffCurve(
-        dataset,
+        returnDataset,
         diffFrom,
         appParams,
         ["histogram", "histogram"]
@@ -1904,17 +2080,17 @@ const processDataHistogram = function (
     // set curve annotation to be the curve mean -- may be recalculated later
     // also pass previously calculated axis stats to curve options
     curve.annotation = "";
-    curve.axisKey = curveInfoParams.curves[curveIndex].axisKey;
+    curve.axisKey = returnCurveInfoParams.curves[curveIndex].axisKey;
     if (d.length > 0) {
       d.xmin = d.bin_stats[0].binUpBound;
       d.xmax = d.bin_stats[d.bin_stats.length - 1].binLowBound;
     }
     d.ymin =
-      curveInfoParams.yAxisFormat === "Relative frequency"
+      returnCurveInfoParams.yAxisFormat === "Relative frequency"
         ? (d.ymin / d.glob_stats.glob_n) * 100
         : d.ymin;
     d.ymax =
-      curveInfoParams.yAxisFormat === "Relative frequency"
+      returnCurveInfoParams.yAxisFormat === "Relative frequency"
         ? (d.ymax / d.glob_stats.glob_n) * 100
         : d.ymax;
     xmin = d.xmin < xmin ? d.xmin : xmin;
@@ -1924,38 +2100,42 @@ const processDataHistogram = function (
     const cOptions = matsDataCurveOpsUtils.generateBarChartCurveOptions(
       curve,
       curveIndex,
-      curveInfoParams.axisMap,
+      returnCurveInfoParams.axisMap,
       d,
       appParams
     ); // generate plot with data, curve annotation, axis labels, etc.
-    dataset.push(cOptions);
+    returnDataset.push(cOptions);
     curvesLengthSoFar += 1;
   } // end for curves
 
-  // if matching, pare down dataset to only matching data. Only do this if we didn't already do it while calculating diffs.
+  // if matching, pare down returnDataset to only matching data. Only do this if we didn't already do it while calculating diffs.
   if (
-    curveInfoParams.curvesLength > 1 &&
+    returnCurveInfoParams.curvesLength > 1 &&
     appParams.matching &&
-    !bookkeepingParams.alreadyMatched
+    !returnBookkeepingParams.alreadyMatched
   ) {
-    dataset = matsDataMatchUtils.getMatchedDataSet(
-      dataset,
-      curveInfoParams,
+    returnDataset = matsDataMatchUtils.getMatchedDataSet(
+      returnDataset,
+      returnCurveInfoParams,
       appParams,
       binStats
     );
   }
 
   // calculate data statistics (including error bars) for each curve
-  for (curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
-    const statisticSelect = curveInfoParams.curves[curveIndex].statistic;
-    diffFrom = curveInfoParams.curves[curveIndex].diffFrom;
-    var data = dataset[curveIndex];
-    label = dataset[curveIndex].label;
+  for (
+    let curveIndex = 0;
+    curveIndex < returnCurveInfoParams.curvesLength;
+    curveIndex += 1
+  ) {
+    const statisticSelect = returnCurveInfoParams.curves[curveIndex].statistic;
+    diffFrom = returnCurveInfoParams.curves[curveIndex].diffFrom;
+    const data = returnDataset[curveIndex];
+    label = returnDataset[curveIndex].label;
 
     let di = 0;
     while (di < data.x.length) {
-      if (curveInfoParams.yAxisFormat === "Relative frequency") {
+      if (returnCurveInfoParams.yAxisFormat === "Relative frequency") {
         // replace the bin number with the bin relative frequency for the plotted statistic
         data.y[di] = data.bin_stats[di].bin_rf * 100;
       }
@@ -1995,14 +2175,18 @@ const processDataHistogram = function (
   } // end curves
 
   // generate plot options
-  curveInfoParams.axisMap[curveInfoParams.curves[0].axisKey].xmin = xmin;
-  curveInfoParams.axisMap[curveInfoParams.curves[0].axisKey].xmax = xmax;
-  curveInfoParams.axisMap[curveInfoParams.curves[0].axisKey].ymin = ymin;
-  curveInfoParams.axisMap[curveInfoParams.curves[0].axisKey].ymax = ymax;
+  returnCurveInfoParams.axisMap[returnCurveInfoParams.curves[0].axisKey].xmin = xmin;
+  returnCurveInfoParams.axisMap[returnCurveInfoParams.curves[0].axisKey].xmax = xmax;
+  returnCurveInfoParams.axisMap[returnCurveInfoParams.curves[0].axisKey].ymin = ymin;
+  returnCurveInfoParams.axisMap[returnCurveInfoParams.curves[0].axisKey].ymax = ymax;
 
-  for (curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
+  for (
+    let curveIndex = 0;
+    curveIndex < returnCurveInfoParams.curvesLength;
+    curveIndex += 1
+  ) {
     // remove sub values and times to save space
-    data = dataset[curveIndex];
+    const data = returnDataset[curveIndex];
     data.subHit = [];
     data.subFa = [];
     data.subMiss = [];
@@ -2026,29 +2210,32 @@ const processDataHistogram = function (
   }
 
   const resultOptions = matsDataPlotOpsUtils.generateHistogramPlotOptions(
-    curveInfoParams.curves,
-    curveInfoParams.axisMap,
-    curveInfoParams.varUnits,
+    returnCurveInfoParams.curves,
+    returnCurveInfoParams.axisMap,
+    returnCurveInfoParams.varUnits,
     plotBins
   );
   const totalProcessingFinish = moment();
-  bookkeepingParams.dataRequests["total retrieval and processing time for curve set"] =
-    {
-      begin: bookkeepingParams.totalProcessingStart.format(),
-      finish: totalProcessingFinish.format(),
-      duration: `${moment
-        .duration(totalProcessingFinish.diff(bookkeepingParams.totalProcessingStart))
-        .asSeconds()} seconds`,
-    };
+  returnBookkeepingParams.dataRequests[
+    "total retrieval and processing time for curve set"
+  ] = {
+    begin: returnBookkeepingParams.totalProcessingStart.format(),
+    finish: totalProcessingFinish.format(),
+    duration: `${moment
+      .duration(
+        totalProcessingFinish.diff(returnBookkeepingParams.totalProcessingStart)
+      )
+      .asSeconds()} seconds`,
+  };
 
   // pass result to client-side plotting functions
   return {
     error,
-    data: dataset,
+    data: returnDataset,
     options: resultOptions,
     basis: {
       plotParams,
-      queries: bookkeepingParams.dataRequests,
+      queries: returnBookkeepingParams.dataRequests,
     },
   };
 };
@@ -2059,12 +2246,17 @@ const processDataContour = function (
   plotParams,
   bookkeepingParams
 ) {
+  const returnDataset = dataset;
+  const returnCurveInfoParams = curveInfoParams;
+  const returnBookkeepingParams = bookkeepingParams;
   const error = "";
   const { appName } = matsCollections.Settings.findOne({});
   const statisticSelect =
-    appName.indexOf("anomalycor") !== -1 ? "ACC" : curveInfoParams.curve[0].statistic;
-  const data = dataset[0];
-  const { label } = dataset[0];
+    appName.indexOf("anomalycor") !== -1
+      ? "ACC"
+      : returnCurveInfoParams.curve[0].statistic;
+  const data = returnDataset[0];
+  const { label } = returnDataset[0];
 
   // if we have dates on one axis, make sure they're formatted correctly
   if (data.xAxisKey.indexOf("Date") !== -1) {
@@ -2130,26 +2322,29 @@ const processDataContour = function (
   data.subLevs = [];
 
   // generate plot options
-  const resultOptions = matsDataPlotOpsUtils.generateContourPlotOptions(dataset);
+  const resultOptions = matsDataPlotOpsUtils.generateContourPlotOptions(returnDataset);
 
   const totalProcessingFinish = moment();
-  bookkeepingParams.dataRequests["total retrieval and processing time for curve set"] =
-    {
-      begin: bookkeepingParams.totalProcessingStart.format(),
-      finish: totalProcessingFinish.format(),
-      duration: `${moment
-        .duration(totalProcessingFinish.diff(bookkeepingParams.totalProcessingStart))
-        .asSeconds()} seconds`,
-    };
+  returnBookkeepingParams.dataRequests[
+    "total retrieval and processing time for curve set"
+  ] = {
+    begin: returnBookkeepingParams.totalProcessingStart.format(),
+    finish: totalProcessingFinish.format(),
+    duration: `${moment
+      .duration(
+        totalProcessingFinish.diff(returnBookkeepingParams.totalProcessingStart)
+      )
+      .asSeconds()} seconds`,
+  };
 
   // pass result to client-side plotting functions
   return {
     error,
-    data: dataset,
+    data: returnDataset,
     options: resultOptions,
     basis: {
       plotParams,
-      queries: bookkeepingParams.dataRequests,
+      queries: returnBookkeepingParams.dataRequests,
     },
   };
 };
@@ -2161,44 +2356,43 @@ const processDataSimpleScatter = function (
   plotParams,
   bookkeepingParams
 ) {
+  let returnDataset = dataset;
+  const returnCurveInfoParams = curveInfoParams;
+  const returnBookkeepingParams = bookkeepingParams;
   const error = "";
 
   const isMetexpress =
     matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
 
   // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
-  if (curveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
-    dataset = matsDataMatchUtils.getMatchedDataSet(
-      dataset,
-      curveInfoParams,
+  if (returnCurveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
+    returnDataset = matsDataMatchUtils.getMatchedDataSet(
+      returnDataset,
+      returnCurveInfoParams,
       appParams,
       {}
     );
   }
 
   // sort data statistics for each curve
-  for (var curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
-    var data = dataset[curveIndex];
-    var statType;
-    if (curveInfoParams.statType === undefined) {
-      statType = "scalar";
-    } else if (Array.isArray(curveInfoParams.statType)) {
-      statType = curveInfoParams.statType[curveIndex];
-    } else {
-      statType = curveInfoParams.statType;
-    }
-    const { label } = dataset[curveIndex];
+  for (
+    let curveIndex = 0;
+    curveIndex < returnCurveInfoParams.curvesLength;
+    curveIndex += 1
+  ) {
+    const data = returnDataset[curveIndex];
+    const { label } = returnDataset[curveIndex];
 
     const statisticXSelect =
-      curveInfoParams.curves[curveIndex]["x-statistic"] === undefined
-        ? curveInfoParams.curves[curveIndex].statistic
-        : curveInfoParams.curves[curveIndex]["x-statistic"];
-    const statisticYSelect = curveInfoParams.curves[curveIndex]["y-statistic"];
+      returnCurveInfoParams.curves[curveIndex]["x-statistic"] === undefined
+        ? returnCurveInfoParams.curves[curveIndex].statistic
+        : returnCurveInfoParams.curves[curveIndex]["x-statistic"];
+    const statisticYSelect = returnCurveInfoParams.curves[curveIndex]["y-statistic"];
     const variableXSelect =
-      curveInfoParams.curves[curveIndex]["x-variable"] === undefined
-        ? curveInfoParams.curves[curveIndex].variable
-        : curveInfoParams.curves[curveIndex]["x-variable"];
-    const variableYSelect = curveInfoParams.curves[curveIndex]["y-variable"];
+      returnCurveInfoParams.curves[curveIndex]["x-variable"] === undefined
+        ? returnCurveInfoParams.curves[curveIndex].variable
+        : returnCurveInfoParams.curves[curveIndex]["x-variable"];
+    const variableYSelect = returnCurveInfoParams.curves[curveIndex]["y-variable"];
 
     let di = 0;
     while (di < data.x.length) {
@@ -2227,12 +2421,16 @@ const processDataSimpleScatter = function (
 
       di += 1;
     }
-    dataset[curveIndex].glob_stats = {};
+    returnDataset[curveIndex].glob_stats = {};
   }
 
-  for (curveIndex = 0; curveIndex < curveInfoParams.curvesLength; curveIndex += 1) {
+  for (
+    let curveIndex = 0;
+    curveIndex < returnCurveInfoParams.curvesLength;
+    curveIndex += 1
+  ) {
     // remove sub values and times to save space
-    data = dataset[curveIndex];
+    const data = returnDataset[curveIndex];
     data.subSquareDiffSumX = [];
     data.subNSumX = [];
     data.subObsModelDiffSumX = [];
@@ -2259,32 +2457,36 @@ const processDataSimpleScatter = function (
 
   // generate plot options
   const resultOptions = matsDataPlotOpsUtils.generateScatterPlotOptions(
-    curveInfoParams.axisXMap,
-    curveInfoParams.axisYMap
+    returnCurveInfoParams.axisXMap,
+    returnCurveInfoParams.axisYMap
   );
 
   const totalProcessingFinish = moment();
-  bookkeepingParams.dataRequests["total retrieval and processing time for curve set"] =
-    {
-      begin: bookkeepingParams.totalProcessingStart.format(),
-      finish: totalProcessingFinish.format(),
-      duration: `${moment
-        .duration(totalProcessingFinish.diff(bookkeepingParams.totalProcessingStart))
-        .asSeconds()} seconds`,
-    };
+  returnBookkeepingParams.dataRequests[
+    "total retrieval and processing time for curve set"
+  ] = {
+    begin: returnBookkeepingParams.totalProcessingStart.format(),
+    finish: totalProcessingFinish.format(),
+    duration: `${moment
+      .duration(
+        totalProcessingFinish.diff(returnBookkeepingParams.totalProcessingStart)
+      )
+      .asSeconds()} seconds`,
+  };
 
   // pass result to client-side plotting functions
   return {
     error,
-    data: dataset,
+    data: returnDataset,
     options: resultOptions,
     basis: {
       plotParams,
-      queries: bookkeepingParams.dataRequests,
+      queries: returnBookkeepingParams.dataRequests,
     },
   };
 };
 
+// eslint-disable-next-line no-undef
 export default matsDataProcessUtils = {
   processDataXYCurve,
   processDataProfile,

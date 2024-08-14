@@ -33,8 +33,8 @@ const getHorizontalValueLine = function (
     subSecs: [],
     subLevs: [],
     stats: [
-      { d_mean: 0, sd: 0, n_good: 0, lag1: 0, stde: 0 },
-      { d_mean: 0, sd: 0, n_good: 0, lag1: 0, stde: 0 },
+      { dMean: 0, sd: 0, nGood: 0, lag1: 0, stde: 0 },
+      { dMean: 0, sd: 0, nGood: 0, lag1: 0, stde: 0 },
     ],
     xmin,
     xmax,
@@ -82,8 +82,8 @@ const getVerticalValueLine = function (
     subSecs: [],
     subLevs: [],
     stats: [
-      { d_mean: 0, sd: 0, n_good: 0, lag1: 0, stde: 0 },
-      { d_mean: 0, sd: 0, n_good: 0, lag1: 0, stde: 0 },
+      { dMean: 0, sd: 0, nGood: 0, lag1: 0, stde: 0 },
+      { dMean: 0, sd: 0, nGood: 0, lag1: 0, stde: 0 },
     ],
     xmin: xValue,
     xmax: xValue,
@@ -136,9 +136,9 @@ const getLinearValueLine = function (
     subSecs: [],
     subLevs: [],
     stats: [
-      { d_mean: 0, sd: 0, n_good: 0, lag1: 0, stde: 0 },
-      { d_mean: 0, sd: 0, n_good: 0, lag1: 0, stde: 0 },
-      { d_mean: 0, sd: 0, n_good: 0, lag1: 0, stde: 0 },
+      { dMean: 0, sd: 0, nGood: 0, lag1: 0, stde: 0 },
+      { dMean: 0, sd: 0, nGood: 0, lag1: 0, stde: 0 },
+      { dMean: 0, sd: 0, nGood: 0, lag1: 0, stde: 0 },
     ],
     xmin,
     xmax,
@@ -187,8 +187,8 @@ const getDashedLinearValueLine = function (
     subSecs: [],
     subLevs: [],
     stats: [
-      { d_mean: 0, sd: 0, n_good: 0, lag1: 0, stde: 0 },
-      { d_mean: 0, sd: 0, n_good: 0, lag1: 0, stde: 0 },
+      { dMean: 0, sd: 0, nGood: 0, lag1: 0, stde: 0 },
+      { dMean: 0, sd: 0, nGood: 0, lag1: 0, stde: 0 },
     ],
     xmin,
     xmax,
@@ -235,8 +235,8 @@ const getCurveLine = function (
     subSecs: [],
     subLevs: [],
     stats: [
-      { d_mean: 0, sd: 0, n_good: 0, lag1: 0, stde: 0 },
-      { d_mean: 0, sd: 0, n_good: 0, lag1: 0, stde: 0 },
+      { dMean: 0, sd: 0, nGood: 0, lag1: 0, stde: 0 },
+      { dMean: 0, sd: 0, nGood: 0, lag1: 0, stde: 0 },
     ],
     xmin: Math.min(xvals),
     xmax: Math.max(xvals),
@@ -264,6 +264,7 @@ const generateSeriesCurveOptions = function (
   dataSeries,
   appParams
 ) {
+  const thisAxisMap = axisMap;
   const { label } = curve;
   const longLabel = matsPlotUtils.getCurveText(appParams.plotType, curve);
   const { annotation } = curve;
@@ -274,15 +275,19 @@ const generateSeriesCurveOptions = function (
   const { xmin } = curve;
   const { xmax } = curve;
   const { axisKey } = curve;
-  if (axisKey in axisMap) {
-    axisMap[axisKey].axisLabel = axisKey;
-    axisMap[axisKey].ymin = ymin < axisMap[axisKey].ymin ? ymin : axisMap[axisKey].ymin;
-    axisMap[axisKey].ymax = ymax > axisMap[axisKey].ymax ? ymax : axisMap[axisKey].ymax;
-    axisMap[axisKey].xmin = xmin < axisMap[axisKey].xmin ? xmin : axisMap[axisKey].xmin;
-    axisMap[axisKey].xmax = xmax > axisMap[axisKey].xmax ? xmax : axisMap[axisKey].xmax;
+  if (axisKey in thisAxisMap) {
+    thisAxisMap[axisKey].axisLabel = axisKey;
+    thisAxisMap[axisKey].ymin =
+      ymin < thisAxisMap[axisKey].ymin ? ymin : thisAxisMap[axisKey].ymin;
+    thisAxisMap[axisKey].ymax =
+      ymax > thisAxisMap[axisKey].ymax ? ymax : thisAxisMap[axisKey].ymax;
+    thisAxisMap[axisKey].xmin =
+      xmin < thisAxisMap[axisKey].xmin ? xmin : thisAxisMap[axisKey].xmin;
+    thisAxisMap[axisKey].xmax =
+      xmax > thisAxisMap[axisKey].xmax ? xmax : thisAxisMap[axisKey].xmax;
   } else {
-    axisMap[axisKey] = {
-      index: Object.keys(axisMap).length + 1,
+    thisAxisMap[axisKey] = {
+      index: Object.keys(thisAxisMap).length + 1,
       xmin,
       xmax,
       ymin,
@@ -291,9 +296,9 @@ const generateSeriesCurveOptions = function (
     };
   }
 
-  const axisNumber = Object.keys(axisMap).indexOf(axisKey);
+  const axisNumber = Object.keys(thisAxisMap).indexOf(axisKey);
 
-  const error_y_temp = {
+  const errorYTemp = {
     error_y: {
       array: dataSeries.error_y,
       thickness: 1, // set the thickness of the error bars
@@ -331,7 +336,7 @@ const generateSeriesCurveOptions = function (
 
   delete curveOptions.error_y;
 
-  curveOptions.error_y = error_y_temp.error_y;
+  curveOptions.error_y = errorYTemp.error_y;
 
   // for performance diagram point filtering, need to know what we're plotting
   if (
@@ -366,6 +371,7 @@ const generateProfileCurveOptions = function (
   dataProfile,
   appParams
 ) {
+  const thisAxisMap = axisMap;
   const { label } = curve;
   const longLabel = matsPlotUtils.getCurveText(appParams.plotType, curve);
   const { annotation } = curve;
@@ -376,15 +382,19 @@ const generateProfileCurveOptions = function (
   const { xmin } = curve;
   const { xmax } = curve;
   const { axisKey } = curve;
-  if (axisKey in axisMap) {
-    axisMap[axisKey].axisLabel = axisKey;
-    axisMap[axisKey].ymin = ymin < axisMap[axisKey].ymin ? ymin : axisMap[axisKey].ymin;
-    axisMap[axisKey].ymax = ymax > axisMap[axisKey].ymax ? ymax : axisMap[axisKey].ymax;
-    axisMap[axisKey].xmin = xmin < axisMap[axisKey].xmin ? xmin : axisMap[axisKey].xmin;
-    axisMap[axisKey].xmax = xmax > axisMap[axisKey].xmax ? xmax : axisMap[axisKey].xmax;
+  if (axisKey in thisAxisMap) {
+    thisAxisMap[axisKey].axisLabel = axisKey;
+    thisAxisMap[axisKey].ymin =
+      ymin < thisAxisMap[axisKey].ymin ? ymin : thisAxisMap[axisKey].ymin;
+    thisAxisMap[axisKey].ymax =
+      ymax > thisAxisMap[axisKey].ymax ? ymax : thisAxisMap[axisKey].ymax;
+    thisAxisMap[axisKey].xmin =
+      xmin < thisAxisMap[axisKey].xmin ? xmin : thisAxisMap[axisKey].xmin;
+    thisAxisMap[axisKey].xmax =
+      xmax > thisAxisMap[axisKey].xmax ? xmax : thisAxisMap[axisKey].xmax;
   } else {
-    axisMap[axisKey] = {
-      index: Object.keys(axisMap).length + 1,
+    thisAxisMap[axisKey] = {
+      index: Object.keys(thisAxisMap).length + 1,
       xmin,
       xmax,
       ymin,
@@ -393,9 +403,9 @@ const generateProfileCurveOptions = function (
     };
   }
 
-  const axisNumber = Object.keys(axisMap).indexOf(axisKey);
+  const axisNumber = Object.keys(thisAxisMap).indexOf(axisKey);
 
-  const error_x_temp = {
+  const errorXTemp = {
     error_x: {
       array: dataProfile.error_x,
       thickness: 1, // set the thickness of the error bars
@@ -432,7 +442,7 @@ const generateProfileCurveOptions = function (
 
   delete curveOptions.error_x;
 
-  curveOptions.error_x = error_x_temp.error_x;
+  curveOptions.error_x = errorXTemp.error_x;
 
   return curveOptions;
 };
@@ -445,6 +455,7 @@ const generateBarChartCurveOptions = function (
   dataBars,
   appParams
 ) {
+  const thisAxisMap = axisMap;
   const { label } = curve;
   const longLabel = matsPlotUtils.getCurveText(appParams.plotType, curve);
   const { annotation } = curve;
@@ -455,15 +466,19 @@ const generateBarChartCurveOptions = function (
   const { xmin } = dataBars;
   const { xmax } = dataBars;
   const { axisKey } = curve;
-  if (axisKey in axisMap) {
-    axisMap[axisKey].axisLabel = axisKey;
-    axisMap[axisKey].ymin = ymin < axisMap[axisKey].ymin ? ymin : axisMap[axisKey].ymin;
-    axisMap[axisKey].ymax = ymax > axisMap[axisKey].ymax ? ymax : axisMap[axisKey].ymax;
-    axisMap[axisKey].xmin = xmin < axisMap[axisKey].xmin ? xmin : axisMap[axisKey].xmin;
-    axisMap[axisKey].xmax = xmax > axisMap[axisKey].xmax ? xmax : axisMap[axisKey].xmax;
+  if (axisKey in thisAxisMap) {
+    thisAxisMap[axisKey].axisLabel = axisKey;
+    thisAxisMap[axisKey].ymin =
+      ymin < thisAxisMap[axisKey].ymin ? ymin : thisAxisMap[axisKey].ymin;
+    thisAxisMap[axisKey].ymax =
+      ymax > thisAxisMap[axisKey].ymax ? ymax : thisAxisMap[axisKey].ymax;
+    thisAxisMap[axisKey].xmin =
+      xmin < thisAxisMap[axisKey].xmin ? xmin : thisAxisMap[axisKey].xmin;
+    thisAxisMap[axisKey].xmax =
+      xmax > thisAxisMap[axisKey].xmax ? xmax : thisAxisMap[axisKey].xmax;
   } else {
-    axisMap[axisKey] = {
-      index: Object.keys(axisMap).length + 1,
+    thisAxisMap[axisKey] = {
+      index: Object.keys(thisAxisMap).length + 1,
       xmin,
       xmax,
       ymin,
@@ -530,7 +545,7 @@ const generateMapCurveOptions = function (curve, dataSeries, appParams, maxValue
 };
 
 const generateCTCMapCurveOptions = function (curve, dataSeries, appParams) {
-  const markerSizes = dataSeries.queryVal.map(function (val) {
+  const markerSizes = dataSeries.queryVal.map(function () {
     return 10;
   });
 
@@ -605,7 +620,7 @@ const generateContourCurveOptions = function (curve, axisMap, dataset, appParams
     [0.7, "rgb(230,145,90)"],
     [1, "rgb(178,10,28)"],
   ];
-  const MPL_BrBG = [
+  const mplBrBG = [
     [0, "rgb(86,49,5)"],
     [0.008, "rgb(91,52,6)"],
     [0.016, "rgb(95,54,6)"],
@@ -735,7 +750,7 @@ const generateContourCurveOptions = function (curve, axisMap, dataset, appParams
     [0.984, "rgb(0,63,52)"],
     [1, "rgb(0,60,48)"],
   ];
-  const MPL_BrBWG = [
+  const mplBrBWG = [
     [0, "rgb(86,49,5)"],
     [0.008, "rgb(91,52,6)"],
     [0.016, "rgb(95,54,6)"],
@@ -875,9 +890,9 @@ const generateContourCurveOptions = function (curve, axisMap, dataset, appParams
       statistic === "Bias (Model - Obs)" ||
       appParams.plotType === matsTypes.PlotTypes.contourDiff
     ) {
-      colorscale = MPL_BrBWG;
+      colorscale = mplBrBWG;
     } else {
-      colorscale = MPL_BrBG;
+      colorscale = mplBrBG;
     }
   } else if (
     statistic === "Bias (Model - Obs)" ||
@@ -961,9 +976,9 @@ const getContourSignificanceLayer = function (dataset) {
   let yidx;
   let currX;
   let currY;
-  for (xidx = 0; xidx < xs.length; xidx++) {
+  for (xidx = 0; xidx < xs.length; xidx += 1) {
     currX = xs[xidx];
-    for (yidx = 0; yidx < ys.length; yidx++) {
+    for (yidx = 0; yidx < ys.length; yidx += 1) {
       currY = ys[yidx];
       if (sigMask[yidx][xidx] === 1) {
         curveOptions.x.push(currX);
@@ -984,6 +999,8 @@ const generateScatterCurveOptions = function (
   dataSeries,
   appParams
 ) {
+  const thisAxisXMap = axisXMap;
+  const thisAxisYMap = axisYMap;
   const { label } = curve;
   const longLabel = matsPlotUtils.getCurveText(appParams.plotType, curve);
   const { annotation } = curve;
@@ -995,35 +1012,35 @@ const generateScatterCurveOptions = function (
   const { xmax } = curve;
   const { axisXKey } = curve;
   const { axisYKey } = curve;
-  if (axisXKey in axisXMap) {
-    axisXMap[axisXKey].xmin =
-      xmin < axisXMap[axisXKey].xmin ? xmin : axisXMap[axisXKey].xmin;
-    axisXMap[axisXKey].xmax =
-      xmax > axisXMap[axisXKey].xmax ? xmax : axisXMap[axisXKey].xmax;
+  if (axisXKey in thisAxisXMap) {
+    thisAxisXMap[axisXKey].xmin =
+      xmin < thisAxisXMap[axisXKey].xmin ? xmin : thisAxisXMap[axisXKey].xmin;
+    thisAxisXMap[axisXKey].xmax =
+      xmax > thisAxisXMap[axisXKey].xmax ? xmax : thisAxisXMap[axisXKey].xmax;
   } else {
-    axisXMap[axisXKey] = {
-      index: Object.keys(axisXMap).length + 1,
+    thisAxisXMap[axisXKey] = {
+      index: Object.keys(thisAxisXMap).length + 1,
       xmin,
       xmax,
       axisLabel: axisXKey,
     };
   }
-  if (axisYKey in axisYMap) {
-    axisYMap[axisYKey].ymin =
-      ymin < axisYMap[axisYKey].ymin ? ymin : axisYMap[axisYKey].ymin;
-    axisYMap[axisYKey].ymax =
-      ymax > axisYMap[axisYKey].ymax ? ymax : axisYMap[axisYKey].ymax;
+  if (axisYKey in thisAxisYMap) {
+    thisAxisYMap[axisYKey].ymin =
+      ymin < thisAxisYMap[axisYKey].ymin ? ymin : thisAxisYMap[axisYKey].ymin;
+    thisAxisYMap[axisYKey].ymax =
+      ymax > thisAxisYMap[axisYKey].ymax ? ymax : thisAxisYMap[axisYKey].ymax;
   } else {
-    axisYMap[axisYKey] = {
-      index: Object.keys(axisYMap).length + 1,
+    thisAxisYMap[axisYKey] = {
+      index: Object.keys(thisAxisYMap).length + 1,
       ymin,
       ymax,
       axisLabel: axisYKey,
     };
   }
 
-  const axisXNumber = Object.keys(axisXMap).indexOf(axisXKey);
-  const axisYNumber = Object.keys(axisYMap).indexOf(axisYKey);
+  const axisXNumber = Object.keys(thisAxisXMap).indexOf(axisXKey);
+  const axisYNumber = Object.keys(thisAxisYMap).indexOf(axisYKey);
 
   const curveOptions = {
     ...{
@@ -1050,6 +1067,7 @@ const generateScatterCurveOptions = function (
   return curveOptions;
 };
 
+// eslint-disable-next-line no-undef
 export default matsDataCurveOpsUtils = {
   getHorizontalValueLine,
   getVerticalValueLine,

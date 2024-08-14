@@ -3,7 +3,9 @@
  */
 
 import { matsCollections, matsTypes } from "meteor/randyp:mats-common";
+import { Meteor } from "meteor/meteor";
 import { moment } from "meteor/momentjs:moment";
+import { _ } from "meteor/underscore";
 
 // sets plot options for timeseries plots
 const generateSeriesPlotOptions = function (axisMap, errorMax) {
@@ -86,7 +88,7 @@ const generateSeriesPlotOptions = function (axisMap, errorMax) {
   let axisKey;
   let axisIdx;
   let axisLabel;
-  for (axisIdx = 0; axisIdx < yAxisNumber; axisIdx++) {
+  for (axisIdx = 0; axisIdx < yAxisNumber; axisIdx += 1) {
     // get max and min values and label for curves on this y-axis
     axisKey = Object.keys(axisMap)[axisIdx];
     let { ymin } = axisMap[axisKey];
@@ -97,7 +99,7 @@ const generateSeriesPlotOptions = function (axisMap, errorMax) {
     xmin = axisMap[axisKey].xmin < xmin ? axisMap[axisKey].xmin : xmin;
     xmax = axisMap[axisKey].xmax > xmax ? axisMap[axisKey].xmax : xmax;
     axisLabel = axisMap[axisKey].axisLabel;
-    var axisObjectKey;
+    let axisObjectKey;
     const axisObjectBegin = {
       title: axisLabel,
       titlefont: {
@@ -252,7 +254,7 @@ const generateProfilePlotOptions = function (axisMap, errorMax) {
   let axisKey;
   let axisIdx;
   let axisLabel;
-  for (axisIdx = 0; axisIdx < xAxisNumber; axisIdx++) {
+  for (axisIdx = 0; axisIdx < xAxisNumber; axisIdx += 1) {
     // get max and min values and label for curves on this x-axis
     axisKey = Object.keys(axisMap)[axisIdx];
     let { xmin } = axisMap[axisKey];
@@ -261,7 +263,7 @@ const generateProfilePlotOptions = function (axisMap, errorMax) {
     xmin -= errorMax;
     const xPad = (xmax - xmin) * 0.025 !== 0 ? (xmax - xmin) * 0.025 : 0.025;
     axisLabel = axisMap[axisKey].axisLabel;
-    var axisObjectKey;
+    let axisObjectKey;
     const axisObjectBegin = {
       title: axisLabel,
       titlefont: {
@@ -405,7 +407,7 @@ const generateDieoffPlotOptions = function (axisMap, errorMax) {
   let axisKey;
   let axisIdx;
   let axisLabel;
-  for (axisIdx = 0; axisIdx < yAxisNumber; axisIdx++) {
+  for (axisIdx = 0; axisIdx < yAxisNumber; axisIdx += 1) {
     // get max and min values and label for curves on this y-axis
     axisKey = Object.keys(axisMap)[axisIdx];
     let { ymin } = axisMap[axisKey];
@@ -416,7 +418,7 @@ const generateDieoffPlotOptions = function (axisMap, errorMax) {
     xmin = axisMap[axisKey].xmin < xmin ? axisMap[axisKey].xmin : xmin;
     xmax = axisMap[axisKey].xmax > xmax ? axisMap[axisKey].xmax : xmax;
     axisLabel = axisMap[axisKey].axisLabel;
-    var axisObjectKey;
+    let axisObjectKey;
     const axisObjectBegin = {
       title: axisLabel,
       titlefont: {
@@ -477,7 +479,7 @@ const generateThresholdPlotOptions = function (dataset, axisMap, errorMax) {
   let xLabel = "";
   let xUnits;
   let tickvals = [];
-  for (let didx = 0; didx < dataset.length; didx++) {
+  for (let didx = 0; didx < dataset.length; didx += 1) {
     xUnits = dataset[didx].thresholdAxisLabel;
     if (!xLabel.includes(xUnits) && xUnits !== undefined) {
       xLabel = xLabel.length === 0 ? xUnits : `${xLabel},${xUnits}`;
@@ -566,7 +568,7 @@ const generateThresholdPlotOptions = function (dataset, axisMap, errorMax) {
   let axisKey;
   let axisIdx;
   let axisLabel;
-  for (axisIdx = 0; axisIdx < yAxisNumber; axisIdx++) {
+  for (axisIdx = 0; axisIdx < yAxisNumber; axisIdx += 1) {
     // get max and min values and label for curves on this y-axis
     axisKey = Object.keys(axisMap)[axisIdx];
     let { ymin } = axisMap[axisKey];
@@ -577,7 +579,7 @@ const generateThresholdPlotOptions = function (dataset, axisMap, errorMax) {
     xmin = axisMap[axisKey].xmin < xmin ? axisMap[axisKey].xmin : xmin;
     xmax = axisMap[axisKey].xmax > xmax ? axisMap[axisKey].xmax : xmax;
     axisLabel = axisMap[axisKey].axisLabel;
-    var axisObjectKey;
+    let axisObjectKey;
     const axisObjectBegin = {
       title: axisLabel,
       titlefont: {
@@ -738,7 +740,7 @@ const generateValidTimePlotOptions = function (axisMap, errorMax) {
   let axisKey;
   let axisIdx;
   let axisLabel;
-  for (axisIdx = 0; axisIdx < yAxisNumber; axisIdx++) {
+  for (axisIdx = 0; axisIdx < yAxisNumber; axisIdx += 1) {
     // get max and min values and label for curves on this y-axis
     axisKey = Object.keys(axisMap)[axisIdx];
     let { ymin } = axisMap[axisKey];
@@ -747,7 +749,7 @@ const generateValidTimePlotOptions = function (axisMap, errorMax) {
     ymin -= errorMax;
     const yPad = (ymax - ymin) * 0.025 !== 0 ? (ymax - ymin) * 0.025 : 0.025;
     axisLabel = axisMap[axisKey].axisLabel;
-    var axisObjectKey;
+    let axisObjectKey;
     const axisObjectBegin = {
       title: axisLabel,
       titlefont: {
@@ -886,7 +888,7 @@ const generateGridScalePlotOptions = function (axisMap, errorMax) {
   let axisKey;
   let axisIdx;
   let axisLabel;
-  for (axisIdx = 0; axisIdx < yAxisNumber; axisIdx++) {
+  for (axisIdx = 0; axisIdx < yAxisNumber; axisIdx += 1) {
     // get max and min values and label for curves on this y-axis
     axisKey = Object.keys(axisMap)[axisIdx];
     let { ymin } = axisMap[axisKey];
@@ -897,7 +899,7 @@ const generateGridScalePlotOptions = function (axisMap, errorMax) {
     xmin = axisMap[axisKey].xmin < xmin ? axisMap[axisKey].xmin : xmin;
     xmax = axisMap[axisKey].xmax > xmax ? axisMap[axisKey].xmax : xmax;
     axisLabel = axisMap[axisKey].axisLabel;
-    var axisObjectKey;
+    let axisObjectKey;
     const axisObjectBegin = {
       title: axisLabel,
       titlefont: {
@@ -1032,7 +1034,7 @@ const generateYearToYearPlotOptions = function (axisMap, errorMax) {
   let axisKey;
   let axisIdx;
   let axisLabel;
-  for (axisIdx = 0; axisIdx < yAxisNumber; axisIdx++) {
+  for (axisIdx = 0; axisIdx < yAxisNumber; axisIdx += 1) {
     // get max and min values and label for curves on this y-axis
     axisKey = Object.keys(axisMap)[axisIdx];
     let { ymin } = axisMap[axisKey];
@@ -1043,7 +1045,7 @@ const generateYearToYearPlotOptions = function (axisMap, errorMax) {
     xmin = axisMap[axisKey].xmin < xmin ? axisMap[axisKey].xmin : xmin;
     xmax = axisMap[axisKey].xmax > xmax ? axisMap[axisKey].xmax : xmax;
     axisLabel = axisMap[axisKey].axisLabel;
-    var axisObjectKey;
+    let axisObjectKey;
     const axisObjectBegin = {
       title: axisLabel,
       titlefont: {
@@ -1649,7 +1651,7 @@ const generateEnsembleHistogramPlotOptions = function (dataset, curves, axisMap)
 
   // get actual bins from the query to place on the x-axis
   let tickvals = [];
-  for (let didx = 0; didx < dataset.length; didx++) {
+  for (let didx = 0; didx < dataset.length; didx += 1) {
     tickvals = _.union(tickvals, dataset[didx].x);
   }
   tickvals = tickvals.sort(function (a, b) {
@@ -1932,15 +1934,15 @@ const generateScatterPlotOptions = function (axisXMap, axisYMap) {
   let axisKey;
   let axisIdx;
   let axisLabel;
-  for (axisIdx = 0; axisIdx < xAxisNumber; axisIdx++) {
+  for (axisIdx = 0; axisIdx < xAxisNumber; axisIdx += 1) {
     // get max and min values and label for curves on this x-axis
     axisKey = Object.keys(axisXMap)[axisIdx];
     const { xmin } = axisXMap[axisKey];
     const { xmax } = axisXMap[axisKey];
     const xPad = (xmax - xmin) * 0.025 !== 0 ? (xmax - xmin) * 0.025 : 0.025;
     axisLabel = axisXMap[axisKey].axisLabel;
-    var axisObjectKey;
-    var axisObjectBegin = {
+    let axisObjectKey;
+    const axisObjectBegin = {
       title: axisLabel,
       titlefont: {
         size: 24,
@@ -1984,14 +1986,15 @@ const generateScatterPlotOptions = function (axisXMap, axisYMap) {
   }
 
   // loop over all y-axes
-  for (axisIdx = 0; axisIdx < yAxisNumber; axisIdx++) {
+  for (axisIdx = 0; axisIdx < yAxisNumber; axisIdx += 1) {
     // get max and min values and label for curves on this y-axis
     axisKey = Object.keys(axisYMap)[axisIdx];
     const { ymin } = axisYMap[axisKey];
     const { ymax } = axisYMap[axisKey];
     const yPad = (ymax - ymin) * 0.025 !== 0 ? (ymax - ymin) * 0.025 : 0.025;
     axisLabel = axisYMap[axisKey].axisLabel;
-    axisObjectBegin = {
+    let axisObjectKey;
+    const axisObjectBegin = {
       title: axisLabel,
       titlefont: {
         size: 24,
@@ -2036,6 +2039,7 @@ const generateScatterPlotOptions = function (axisXMap, axisYMap) {
   return layout;
 };
 
+// eslint-disable-next-line no-undef
 export default matsDataPlotOpsUtils = {
   generateSeriesPlotOptions,
   generateProfilePlotOptions,

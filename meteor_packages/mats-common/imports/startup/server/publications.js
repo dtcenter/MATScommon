@@ -6,6 +6,8 @@ import { Meteor } from "meteor/meteor";
 import { matsCollections } from "meteor/randyp:mats-common";
 import { curveParamsByApp } from "../both/mats-curve-params";
 
+/* eslint-disable no-console */
+
 const _publishField = function (field) {
   Meteor.publish(field, function () {
     const data = matsCollections[field].find({});
@@ -27,7 +29,7 @@ if (Meteor.isServer) {
     );
   }
   let currParam;
-  for (let i = 0; i < params.length; i++) {
+  for (let i = 0; i < params.length; i += 1) {
     currParam = params[i];
     _publishField(currParam);
   }
