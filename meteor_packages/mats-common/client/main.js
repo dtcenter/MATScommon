@@ -6,6 +6,8 @@
  * Created by pierce on 8/31/16.
  */
 
+/* eslint-disable import/no-unresolved */
+
 import "../imports/startup/client";
 import "../imports/startup/both";
 import "@fortawesome/fontawesome-free";

@@ -2,18 +2,12 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import { matsTypes, matsCollections } from "meteor/randyp:mats-common";
+import { matsTypes, matsCollections, matsMethods } from "meteor/randyp:mats-common";
 import { Meteor } from "meteor/meteor";
 import { HTTP } from "meteor/jkuester:http";
 
 /* eslint-disable global-require */
 /* eslint-disable no-console */
-
-// wrapper for NaN check
-const isThisANaN = function (val) {
-  // eslint-disable-next-line no-restricted-globals
-  return !val || isNaN(val);
-};
 
 // this function checks if two JSON objects are identical
 const areObjectsEqual = function (o, p) {
@@ -284,26 +278,12 @@ const doColorScheme = function () {
         "rgb(255,0,0)",
         "rgb(0,0,255)",
         "rgb(255,165,0)",
-        "rgb(128,128,128)",
-        "rgb(238,130,238)",
-
+        "rgb(95,95,95)",
         "rgb(238,130,238)",
         "rgb(0,0,139)",
         "rgb(148,0,211)",
-        "rgb(105,105,105)",
-        "rgb(255,140,0)",
-
-        "rgb(235,92,92)",
-        "rgb(82,92,245)",
-        "rgb(133,143,143)",
-        "rgb(235,143,92)",
+        "rgb(135,135,135)",
         "rgb(190,120,120)",
-
-        "rgb(225,82,92)",
-        "rgb(72,82,245)",
-        "rgb(123,133,143)",
-        "rgb(225,133,92)",
-        "rgb(180,120,120)",
       ],
     });
   }
@@ -465,7 +445,12 @@ const callMetadataAPI = function (
 
 // calculates the statistic for ctc plots
 const calculateStatCTC = function (hit, fa, miss, cn, n, statistic) {
-  if (isThisANaN(hit) || isThisANaN(fa) || isThisANaN(miss) || isThisANaN(cn))
+  if (
+    matsMethods.isThisANaN(hit) ||
+    matsMethods.isThisANaN(fa) ||
+    matsMethods.isThisANaN(miss) ||
+    matsMethods.isThisANaN(cn)
+  )
     return null;
   let queryVal;
   switch (statistic) {
@@ -547,12 +532,12 @@ const calculateStatScalar = function (
   statisticAndVariable
 ) {
   if (
-    isThisANaN(squareDiffSum) ||
-    isThisANaN(NSum) ||
-    isThisANaN(obsModelDiffSum) ||
-    isThisANaN(modelSum) ||
-    isThisANaN(obsSum) ||
-    isThisANaN(absSum)
+    matsMethods.isThisANaN(squareDiffSum) ||
+    matsMethods.isThisANaN(NSum) ||
+    matsMethods.isThisANaN(obsModelDiffSum) ||
+    matsMethods.isThisANaN(modelSum) ||
+    matsMethods.isThisANaN(obsSum) ||
+    matsMethods.isThisANaN(absSum)
   )
     return null;
   let queryVal;
@@ -585,7 +570,7 @@ const calculateStatScalar = function (
     default:
       queryVal = null;
   }
-  if (isThisANaN(queryVal)) return null;
+  if (matsMethods.isThisANaN(queryVal)) return null;
   // need to convert to correct units for surface data but not upperair
   if (statistic !== "N") {
     if (
@@ -1198,7 +1183,7 @@ const getErr = function (sVals, sSecs, sLevs, appParams) {
   let secs;
   let delta;
   for (i = 0; i < sSecs.length; i += 1) {
-    if (isThisANaN(sVals[i])) {
+    if (matsMethods.isThisANaN(sVals[i])) {
       n -= 1;
     } else {
       secs = sSecs[i];
@@ -1221,7 +1206,7 @@ const getErr = function (sVals, sSecs, sLevs, appParams) {
     console.log(`matsDataUtil.getErr: ${error}`);
   }
   for (i = 0; i < sVals.length; i += 1) {
-    if (!isThisANaN(sVals[i])) {
+    if (!matsMethods.isThisANaN(sVals[i])) {
       minVal = minVal < sVals[i] ? minVal : sVals[i];
       maxVal = maxVal > sVals[i] ? maxVal : sVals[i];
       dataSum += sVals[i];
@@ -1254,7 +1239,7 @@ const getErr = function (sVals, sSecs, sLevs, appParams) {
   let nDeltas = 0;
 
   for (i = 0; i < sSecs.length; i += 1) {
-    if (!isThisANaN(sVals[i])) {
+    if (!matsMethods.isThisANaN(sVals[i])) {
       let sec = sSecs[i];
       if (typeof sec === "string" || sec instanceof String) sec = Number(sec);
       let lev;
@@ -1551,7 +1536,7 @@ const setHistogramParameters = function (plotParams) {
     case "Set number of bins":
       // get the user's chosen number of bins
       binNum = Number(plotParams["bin-number"]);
-      if (isThisANaN(binNum)) {
+      if (matsMethods.isThisANaN(binNum)) {
         throw new Error(
           "Error parsing bin number: please enter the desired number of bins."
         );
@@ -1566,7 +1551,7 @@ const setHistogramParameters = function (plotParams) {
     case "Choose a bin bound":
       // let the histogram routine know that we want the bins shifted over to whatever was input
       pivotVal = Number(plotParams["bin-pivot"]);
-      if (isThisANaN(pivotVal)) {
+      if (matsMethods.isThisANaN(pivotVal)) {
         throw new Error("Error parsing bin pivot: please enter the desired bin pivot.");
       }
       break;
@@ -1574,7 +1559,7 @@ const setHistogramParameters = function (plotParams) {
     case "Set number of bins and make zero a bin bound":
       // get the user's chosen number of bins and let the histogram routine know that we want the bins shifted over to zero
       binNum = Number(plotParams["bin-number"]);
-      if (isThisANaN(binNum)) {
+      if (matsMethods.isThisANaN(binNum)) {
         throw new Error(
           "Error parsing bin number: please enter the desired number of bins."
         );
@@ -1585,13 +1570,13 @@ const setHistogramParameters = function (plotParams) {
     case "Set number of bins and choose a bin bound":
       // get the user's chosen number of bins and let the histogram routine know that we want the bins shifted over to whatever was input
       binNum = Number(plotParams["bin-number"]);
-      if (isThisANaN(binNum)) {
+      if (matsMethods.isThisANaN(binNum)) {
         throw new Error(
           "Error parsing bin number: please enter the desired number of bins."
         );
       }
       pivotVal = Number(plotParams["bin-pivot"]);
-      if (isThisANaN(pivotVal)) {
+      if (matsMethods.isThisANaN(pivotVal)) {
         throw new Error("Error parsing bin pivot: please enter the desired bin pivot.");
       }
       break;
@@ -1602,7 +1587,7 @@ const setHistogramParameters = function (plotParams) {
         binBounds = plotParams["bin-bounds"].split(",").map(function (item) {
           let thisItem = item.trim();
           thisItem = Number(thisItem);
-          if (!isThisANaN(thisItem)) {
+          if (!matsMethods.isThisANaN(thisItem)) {
             return thisItem;
           }
           throw new Error(
@@ -1626,17 +1611,17 @@ const setHistogramParameters = function (plotParams) {
     case "Manual bin start, number, and stride":
       // get the bin start, number, and stride.
       binNum = Number(plotParams["bin-number"]);
-      if (isThisANaN(binNum)) {
+      if (matsMethods.isThisANaN(binNum)) {
         throw new Error(
           "Error parsing bin number: please enter the desired number of bins."
         );
       }
       binStart = Number(plotParams["bin-start"]);
-      if (isThisANaN(binStart)) {
+      if (matsMethods.isThisANaN(binStart)) {
         throw new Error("Error parsing bin start: please enter the desired bin start.");
       }
       binStride = Number(plotParams["bin-stride"]);
-      if (isThisANaN(binStride)) {
+      if (matsMethods.isThisANaN(binStride)) {
         throw new Error(
           "Error parsing bin stride: please enter the desired bin stride."
         );
@@ -1715,7 +1700,7 @@ const calculateHistogramBins = function (
   binLowBounds[binParams.binNum - 1] = fullUpBound;
   binMeans[binParams.binNum - 1] = fullUpBound + binInterval / 2;
 
-  if (binParams.pivotVal !== undefined && !isThisANaN(binParams.pivotVal)) {
+  if (binParams.pivotVal !== undefined && !matsMethods.isThisANaN(binParams.pivotVal)) {
     // need to shift the bounds and means over so that one of the bounds is on the chosen pivot
     const closestBoundToPivot = binLowBounds.reduce(function (prev, curr) {
       return Math.abs(curr - binParams.pivotVal) < Math.abs(prev - binParams.pivotVal)
@@ -2187,7 +2172,6 @@ export default matsDataUtils = {
   average,
   median,
   stdev,
-  isThisANaN,
   dateConvert,
   getDateRange,
   secsConvert,

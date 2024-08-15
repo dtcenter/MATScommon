@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-undef, import/prefer-default-export
 export const curveParamsByApp = {
   "cb-metar": [
     "label",

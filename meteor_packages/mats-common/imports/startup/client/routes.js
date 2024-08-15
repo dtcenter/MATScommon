@@ -5,6 +5,8 @@
 import { Meteor } from "meteor/meteor";
 import { FlowRouter } from "meteor/ostrio:flow-router-extra";
 
+/* global Session */
+
 // localhost routes
 
 FlowRouter.route("/", {
@@ -27,14 +29,14 @@ FlowRouter.route("/", {
 
 FlowRouter.route("/CSV/:graphFunction/:key/:matching/:appName", {
   name: "csv",
-  action(params) {
+  action() {
     window.location.href = FlowRouter.path;
   },
 });
 
 FlowRouter.route("/JSON/:graphFunction/:key/:matching/:appName", {
   name: "json",
-  action(params) {
+  action() {
     window.location.href = FlowRouter.path;
   },
 });
@@ -88,7 +90,7 @@ FlowRouter.route(
   `${Meteor.settings.public.proxy_prefix_path}/CSV/:graphFunction/:key/:matching/:appName`,
   {
     name: "csv",
-    action(params) {
+    action() {
       window.location.href = FlowRouter.path;
     },
   }
@@ -98,7 +100,7 @@ FlowRouter.route(
   `${Meteor.settings.public.proxy_prefix_path}/JSON/:graphFunction/:key/:matching/:appName`,
   {
     name: "json",
-    action(params) {
+    action() {
       window.location.href = FlowRouter.path;
     },
   }
@@ -162,7 +164,7 @@ FlowRouter.route(
   `${Meteor.settings.public.proxy_prefix_path}/*/CSV/:graphFunction/:key/:matching/:appName`,
   {
     name: "csv",
-    action(params) {
+    action() {
       window.location.href = FlowRouter.path;
     },
   }
@@ -172,7 +174,7 @@ FlowRouter.route(
   `${Meteor.settings.public.proxy_prefix_path}/*/JSON/:graphFunction/:key/:matching/:appName`,
   {
     name: "json",
-    action(params) {
+    action() {
       window.location.href = FlowRouter.path;
     },
   }
@@ -223,7 +225,6 @@ FlowRouter.route(`${Meteor.settings.public.proxy_prefix_path}/*/`, {
 
 FlowRouter.route("/*", {
   action() {
-    console.log("route: " + " not found");
     this.render("notFound");
   },
 });

@@ -52,6 +52,12 @@ const status = function (res) {
   }
 };
 
+// wrapper for NaN check
+const isThisANaN = function (val) {
+  // eslint-disable-next-line no-restricted-globals
+  return !val || isNaN(val);
+};
+
 // private - used to see if the main page needs to update its selectors
 const checkMetaDataRefresh = async function () {
   // This routine compares the current last modified time of the tables (MYSQL) or documents (Couchbase)
@@ -3946,6 +3952,7 @@ if (Meteor.isServer) {
 
 // eslint-disable-next-line no-undef
 export default matsMethods = {
+  isThisANaN,
   addSentAddress,
   applyAuthorization,
   applyDatabaseSettings,

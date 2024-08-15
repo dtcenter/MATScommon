@@ -82,7 +82,7 @@
     "no-prototype-builtins": "warn",
     "no-await-in-loop": "warn",
     "no-dupe-else-if": "warn",
-    "meteor/no-session": "warn",
+    "meteor/no-session": "off",
     "meteor/template-names": "warn",
     "meteor/eventmap-params": "warn",
     "meteor/no-template-lifecycle-assignments": "warn",

@@ -2,6 +2,9 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
+/* global setInfo, Session, $ */
+/* eslint-disable no-undef */
+
 setError = function (error) {
   let myError = "";
   let myStackTrace = "";
@@ -27,7 +30,7 @@ setError = function (error) {
   $("#error").modal("show");
 };
 
-clearError = function (message) {
+clearError = function () {
   Session.set("errorMessage", "");
   Session.set("stackTrace", "");
   $("#error").modal("hide");
