@@ -4,7 +4,8 @@
 
 import { Meteor } from "meteor/meteor";
 import { ValidatedMethod } from "meteor/mdg:validated-method";
-import SimpleSchema from "simpl-schema";
+import SimpleSchema from "meteor/aldeed:simple-schema";
+import { Picker } from "meteor/meteorhacks:picker";
 import {
   matsCache,
   matsCollections,
@@ -15,9 +16,16 @@ import {
   versionInfo,
 } from "meteor/randyp:mats-common";
 import { mysql } from "meteor/pcel:mysql";
-import { url } from "url";
+import { moment } from "meteor/momentjs:moment";
+import { _ } from "meteor/underscore";
 import { Mongo } from "meteor/mongo";
 import { curveParamsByApp } from "../both/mats-curve-params";
+
+/* global cbPool, cbScorecardPool, cbScorecardSettingsPool, appSpecificResetRoutines */
+
+/* eslint-disable no-await-in-loop */
+/* eslint-disable no-console */
+/* eslint-disable global-require */
 
 // PRIVATE
 
@@ -30,582 +38,22 @@ const DownSampleResults = new Mongo.Collection("DownSampleResults");
 
 // utility to check for empty object
 const isEmpty = function (map) {
-  for (const key in map) {
-    if (map.hasOwnProperty(key)) {
-      return false;
-    }
-  }
-  return true;
+  const mapKeys = Object.keys(map);
+  return mapKeys.length === 0;
 };
-// Define routes for server
-if (Meteor.isServer) {
-  // add indexes to result and axes collections
-  DownSampleResults.rawCollection().createIndex(
-    {
-      createdAt: 1,
-    },
-    {
-      expireAfterSeconds: 3600 * 8,
-    }
-  ); // 8 hour expiration
-  LayoutStoreCollection.rawCollection().createIndex(
-    {
-      createdAt: 1,
-    },
-    {
-      expireAfterSeconds: 900,
-    }
-  ); // 15 min expiration
 
-  // set the default proxy prefix path to ""
-  // If the settings are not complete, they will be set by the configuration and written out, which will cause the app to reset
-  if (Meteor.settings.public && !Meteor.settings.public.proxy_prefix_path) {
-    Meteor.settings.public.proxy_prefix_path = "";
+// private middleware for getting the status - think health check
+const status = function (res) {
+  if (Meteor.isServer) {
+    const settings = matsCollections.Settings.findOne();
+    res.end(
+      `<body><div id='status'>Running: version - ${settings.appVersion} </div></body>`
+    );
   }
-
-  Picker.route("/status", function (params, req, res, next) {
-    Picker.middleware(_status(params, req, res, next));
-  });
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/status`,
-    function (params, req, res, next) {
-      Picker.middleware(_status(params, req, res, next));
-    }
-  );
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/status`,
-    function (params, req, res, next) {
-      Picker.middleware(_status(params, req, res, next));
-    }
-  );
-
-  Picker.route("/_getCSV/:key", function (params, req, res, next) {
-    Picker.middleware(_getCSV(params, req, res, next));
-  });
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/_getCSV/:key`,
-    function (params, req, res, next) {
-      Picker.middleware(_getCSV(params, req, res, next));
-    }
-  );
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/app:/_getCSV/:key`,
-    function (params, req, res, next) {
-      Picker.middleware(_getCSV(params, req, res, next));
-    }
-  );
-
-  Picker.route("/CSV/:f/:key/:m/:a", function (params, req, res, next) {
-    Picker.middleware(_getCSV(params, req, res, next));
-  });
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/CSV/:f/:key/:m/:a`,
-    function (params, req, res, next) {
-      Picker.middleware(_getCSV(params, req, res, next));
-    }
-  );
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/CSV/:f/:key/:m/:a`,
-    function (params, req, res, next) {
-      Picker.middleware(_getCSV(params, req, res, next));
-    }
-  );
-
-  Picker.route("/_getJSON/:key", function (params, req, res, next) {
-    Picker.middleware(_getJSON(params, req, res, next));
-  });
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/_getJSON/:key`,
-    function (params, req, res, next) {
-      Picker.middleware(_getJSON(params, req, res, next));
-    }
-  );
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/app:/_getJSON/:key`,
-    function (params, req, res, next) {
-      Picker.middleware(_getJSON(params, req, res, next));
-    }
-  );
-
-  Picker.route("/JSON/:f/:key/:m/:a", function (params, req, res, next) {
-    Picker.middleware(_getJSON(params, req, res, next));
-  });
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/JSON/:f/:key/:m/:a`,
-    function (params, req, res, next) {
-      Picker.middleware(_getJSON(params, req, res, next));
-    }
-  );
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/JSON/:f/:key/:m/:a`,
-    function (params, req, res, next) {
-      Picker.middleware(_getJSON(params, req, res, next));
-    }
-  );
-
-  Picker.route("/clearCache", function (params, req, res, next) {
-    Picker.middleware(_clearCache(params, req, res, next));
-  });
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/clearCache`,
-    function (params, req, res, next) {
-      Picker.middleware(_clearCache(params, req, res, next));
-    }
-  );
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/clearCache`,
-    function (params, req, res, next) {
-      Picker.middleware(_clearCache(params, req, res, next));
-    }
-  );
-
-  Picker.route("/getApps", function (params, req, res, next) {
-    Picker.middleware(_getApps(params, req, res, next));
-  });
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/getApps`,
-    function (params, req, res, next) {
-      Picker.middleware(_getApps(params, req, res, next));
-    }
-  );
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getApps`,
-    function (params, req, res, next) {
-      Picker.middleware(_getApps(params, req, res, next));
-    }
-  );
-
-  Picker.route("/getAppSumsDBs", function (params, req, res, next) {
-    Picker.middleware(_getAppSumsDBs(params, req, res, next));
-  });
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/getAppSumsDBs`,
-    function (params, req, res, next) {
-      Picker.middleware(_getAppSumsDBs(params, req, res, next));
-    }
-  );
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getAppSumsDBs`,
-    function (params, req, res, next) {
-      Picker.middleware(_getAppSumsDBs(params, req, res, next));
-    }
-  );
-
-  Picker.route("/getModels", function (params, req, res, next) {
-    Picker.middleware(_getModels(params, req, res, next));
-  });
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/getModels`,
-    function (params, req, res, next) {
-      Picker.middleware(_getModels(params, req, res, next));
-    }
-  );
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getModels`,
-    function (params, req, res, next) {
-      Picker.middleware(_getModels(params, req, res, next));
-    }
-  );
-
-  Picker.route("/getRegions", function (params, req, res, next) {
-    Picker.middleware(_getRegions(params, req, res, next));
-  });
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/getRegions`,
-    function (params, req, res, next) {
-      Picker.middleware(_getRegions(params, req, res, next));
-    }
-  );
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getRegions`,
-    function (params, req, res, next) {
-      Picker.middleware(_getRegions(params, req, res, next));
-    }
-  );
-
-  Picker.route("/getRegionsValuesMap", function (params, req, res, next) {
-    Picker.middleware(_getRegionsValuesMap(params, req, res, next));
-  });
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/getRegionsValuesMap`,
-    function (params, req, res, next) {
-      Picker.middleware(_getRegionsValuesMap(params, req, res, next));
-    }
-  );
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getRegionsValuesMap`,
-    function (params, req, res, next) {
-      Picker.middleware(_getRegionsValuesMap(params, req, res, next));
-    }
-  );
-
-  Picker.route("/getStatistics", function (params, req, res, next) {
-    Picker.middleware(_getStatistics(params, req, res, next));
-  });
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/getStatistics`,
-    function (params, req, res, next) {
-      Picker.middleware(_getStatistics(params, req, res, next));
-    }
-  );
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getStatistics`,
-    function (params, req, res, next) {
-      Picker.middleware(_getStatistics(params, req, res, next));
-    }
-  );
-
-  Picker.route("/getStatisticsValuesMap", function (params, req, res, next) {
-    Picker.middleware(_getStatisticsValuesMap(params, req, res, next));
-  });
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/getStatisticsValuesMap`,
-    function (params, req, res, next) {
-      Picker.middleware(_getStatisticsValuesMap(params, req, res, next));
-    }
-  );
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getStatisticsValuesMap`,
-    function (params, req, res, next) {
-      Picker.middleware(_getStatisticsValuesMap(params, req, res, next));
-    }
-  );
-
-  Picker.route("/getVariables", function (params, req, res, next) {
-    Picker.middleware(_getVariables(params, req, res, next));
-  });
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/getVariables`,
-    function (params, req, res, next) {
-      Picker.middleware(_getVariables(params, req, res, next));
-    }
-  );
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getVariables`,
-    function (params, req, res, next) {
-      Picker.middleware(_getVariables(params, req, res, next));
-    }
-  );
-
-  Picker.route("/getVariablesValuesMap", function (params, req, res, next) {
-    Picker.middleware(_getVariablesValuesMap(params, req, res, next));
-  });
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/getVariablesValuesMap`,
-    function (params, req, res, next) {
-      Picker.middleware(_getVariablesValuesMap(params, req, res, next));
-    }
-  );
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getVariablesValuesMap`,
-    function (params, req, res, next) {
-      Picker.middleware(_getVariablesValuesMap(params, req, res, next));
-    }
-  );
-
-  Picker.route("/getThresholds", function (params, req, res, next) {
-    Picker.middleware(_getThresholds(params, req, res, next));
-  });
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/getThresholds`,
-    function (params, req, res, next) {
-      Picker.middleware(_getThresholds(params, req, res, next));
-    }
-  );
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getThresholds`,
-    function (params, req, res, next) {
-      Picker.middleware(_getThresholds(params, req, res, next));
-    }
-  );
-
-  Picker.route("/getThresholdsValuesMap", function (params, req, res, next) {
-    Picker.middleware(_getThresholdsValuesMap(params, req, res, next));
-  });
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/getThresholdsValuesMap`,
-    function (params, req, res, next) {
-      Picker.middleware(_getThresholdsValuesMap(params, req, res, next));
-    }
-  );
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getThresholdsValuesMap`,
-    function (params, req, res, next) {
-      Picker.middleware(_getThresholdsValuesMap(params, req, res, next));
-    }
-  );
-
-  Picker.route("/getScales", function (params, req, res, next) {
-    Picker.middleware(_getScales(params, req, res, next));
-  });
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/getScales`,
-    function (params, req, res, next) {
-      Picker.middleware(_getScales(params, req, res, next));
-    }
-  );
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getScales`,
-    function (params, req, res, next) {
-      Picker.middleware(_getScales(params, req, res, next));
-    }
-  );
-
-  Picker.route("/getScalesValuesMap", function (params, req, res, next) {
-    Picker.middleware(_getScalesValuesMap(params, req, res, next));
-  });
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/getScalesValuesMap`,
-    function (params, req, res, next) {
-      Picker.middleware(_getScalesValuesMap(params, req, res, next));
-    }
-  );
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getScalesValuesMap`,
-    function (params, req, res, next) {
-      Picker.middleware(_getScalesValuesMap(params, req, res, next));
-    }
-  );
-
-  Picker.route("/getTruths", function (params, req, res, next) {
-    Picker.middleware(_getTruths(params, req, res, next));
-  });
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/getTruths`,
-    function (params, req, res, next) {
-      Picker.middleware(_getTruths(params, req, res, next));
-    }
-  );
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getTruths`,
-    function (params, req, res, next) {
-      Picker.middleware(_getTruths(params, req, res, next));
-    }
-  );
-
-  Picker.route("/getTruthsValuesMap", function (params, req, res, next) {
-    Picker.middleware(_getTruthsValuesMap(params, req, res, next));
-  });
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/getTruthsValuesMap`,
-    function (params, req, res, next) {
-      Picker.middleware(_getTruthsValuesMap(params, req, res, next));
-    }
-  );
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getTruthsValuesMap`,
-    function (params, req, res, next) {
-      Picker.middleware(_getTruthsValuesMap(params, req, res, next));
-    }
-  );
-
-  Picker.route("/getFcstLengths", function (params, req, res, next) {
-    Picker.middleware(_getFcstLengths(params, req, res, next));
-  });
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/getFcstLengths`,
-    function (params, req, res, next) {
-      Picker.middleware(_getFcstLengths(params, req, res, next));
-    }
-  );
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getFcstLengths`,
-    function (params, req, res, next) {
-      Picker.middleware(_getFcstLengths(params, req, res, next));
-    }
-  );
-
-  Picker.route("/getFcstTypes", function (params, req, res, next) {
-    Picker.middleware(_getFcstTypes(params, req, res, next));
-  });
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/getFcstTypes`,
-    function (params, req, res, next) {
-      Picker.middleware(_getFcstTypes(params, req, res, next));
-    }
-  );
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getFcstTypes`,
-    function (params, req, res, next) {
-      Picker.middleware(_getFcstTypes(params, req, res, next));
-    }
-  );
-
-  Picker.route("/getFcstTypesValuesMap", function (params, req, res, next) {
-    Picker.middleware(_getFcstTypesValuesMap(params, req, res, next));
-  });
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/getFcstTypesValuesMap`,
-    function (params, req, res, next) {
-      Picker.middleware(_getFcstTypesValuesMap(params, req, res, next));
-    }
-  );
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getFcstTypesValuesMap`,
-    function (params, req, res, next) {
-      Picker.middleware(_getFcstTypesValuesMap(params, req, res, next));
-    }
-  );
-
-  Picker.route("/getValidTimes", function (params, req, res, next) {
-    Picker.middleware(_getValidTimes(params, req, res, next));
-  });
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/getValidTimes`,
-    function (params, req, res, next) {
-      Picker.middleware(_getValidTimes(params, req, res, next));
-    }
-  );
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getValidTimes`,
-    function (params, req, res, next) {
-      Picker.middleware(_getValidTimes(params, req, res, next));
-    }
-  );
-
-  Picker.route("/getLevels", function (params, req, res, next) {
-    Picker.middleware(_getLevels(params, req, res, next));
-  });
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/getLevels`,
-    function (params, req, res, next) {
-      Picker.middleware(_getLevels(params, req, res, next));
-    }
-  );
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getLevels`,
-    function (params, req, res, next) {
-      Picker.middleware(_getLevels(params, req, res, next));
-    }
-  );
-
-  Picker.route("/getDates", function (params, req, res, next) {
-    Picker.middleware(_getDates(params, req, res, next));
-  });
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/getDates`,
-    function (params, req, res, next) {
-      Picker.middleware(_getDates(params, req, res, next));
-    }
-  );
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getDates`,
-    function (params, req, res, next) {
-      Picker.middleware(_getDates(params, req, res, next));
-    }
-  );
-
-  // create picker routes for refreshMetaData
-  Picker.route("/refreshMetadata", function (params, req, res, next) {
-    Picker.middleware(_refreshMetadataMWltData(params, req, res, next));
-  });
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/refreshMetadata`,
-    function (params, req, res, next) {
-      Picker.middleware(_refreshMetadataMWltData(params, req, res, next));
-    }
-  );
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/refreshMetadata`,
-    function (params, req, res, next) {
-      Picker.middleware(_refreshMetadataMWltData(params, req, res, next));
-    }
-  );
-  Picker.route("/refreshScorecard/:docId", function (params, req, res, next) {
-    Picker.middleware(_refreshScorecard(params, req, res, next));
-  });
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/refreshScorecard/:docId`,
-    function (params, req, res, next) {
-      Picker.middleware(_refreshScorecard(params, req, res, next));
-    }
-  );
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/refreshScorecard/:docId`,
-    function (params, req, res, next) {
-      Picker.middleware(_refreshScorecard(params, req, res, next));
-    }
-  );
-
-  Picker.route("/setStatusScorecard/:docId", function (params, req, res, next) {
-    Picker.middleware(_setStatusScorecard(params, req, res, next));
-  });
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/setStatusScorecard/:docId`,
-    function (params, req, res, next) {
-      Picker.middleware(_setStatusScorecard(params, req, res, next));
-    }
-  );
-
-  Picker.route(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/setStatusScorecard/:docId`,
-    function (params, req, res, next) {
-      Picker.middleware(_setStatusScorecard(params, req, res, next));
-    }
-  );
-}
+};
 
 // private - used to see if the main page needs to update its selectors
-const _checkMetaDataRefresh = async function () {
+const checkMetaDataRefresh = async function () {
   // This routine compares the current last modified time of the tables (MYSQL) or documents (Couchbase)
   // used for curveParameter metadata with the last update time to determine if an update is necessary.
   // We really only do this for Curveparams
@@ -624,20 +72,22 @@ const _checkMetaDataRefresh = async function () {
     matsCollections.Settings.findOne() !== undefined
       ? matsCollections.Settings.findOne().dbType
       : matsTypes.DbTypes.mysql;
-  for (let tui = 0; tui < tableUpdates.length; tui++) {
+  for (let tui = 0; tui < tableUpdates.length; tui += 1) {
     const id = tableUpdates[tui]._id;
     const poolName = tableUpdates[tui].pool;
     const dbName = tableUpdates[tui].name;
     const tableNames = tableUpdates[tui].tables;
     const { lastRefreshed } = tableUpdates[tui];
     let updatedEpoch = Number.MAX_VALUE;
-    for (let ti = 0; ti < tableNames.length; ti++) {
+    let rows;
+    let doc;
+    for (let ti = 0; ti < tableNames.length; ti += 1) {
       const tName = tableNames[ti];
       try {
         if (Meteor.isServer) {
           switch (dbType) {
             case matsTypes.DbTypes.mysql:
-              var rows = matsDataQueryUtils.simplePoolQueryWrapSynchronous(
+              rows = matsDataQueryUtils.simplePoolQueryWrapSynchronous(
                 global[poolName],
                 `SELECT UNIX_TIMESTAMP(UPDATE_TIME)` +
                   `    FROM   information_schema.tables` +
@@ -648,7 +98,7 @@ const _checkMetaDataRefresh = async function () {
               break;
             case matsTypes.DbTypes.couchbase:
               // the tName for couchbase is supposed to be the document id
-              var doc = await cbPool.getCB(tName);
+              doc = await cbPool.getCB(tName);
               updatedEpoch = doc.updated;
               break;
             default:
@@ -708,18 +158,8 @@ const _checkMetaDataRefresh = async function () {
   return true;
 };
 
-// private middleware for getting the status - think health check
-const _status = function (params, req, res, next) {
-  if (Meteor.isServer) {
-    const settings = matsCollections.Settings.findOne();
-    res.end(
-      `<body><div id='status'>Running: version - ${settings.appVersion} </div></body>`
-    );
-  }
-};
-
 // private middleware for clearing the cache
-const _clearCache = function (params, req, res, next) {
+const clearCache = function (res) {
   if (Meteor.isServer) {
     matsCache.clear();
     res.end("<body><h1>clearCache Done!</h1></body>");
@@ -727,7 +167,7 @@ const _clearCache = function (params, req, res, next) {
 };
 
 // private middleware for dropping a distinct instance (a single run) of a scorecard
-const _dropScorecardInstance = async function (
+const dropThisScorecardInstance = async function (
   userName,
   name,
   submittedTime,
@@ -735,7 +175,7 @@ const _dropScorecardInstance = async function (
 ) {
   try {
     if (cbScorecardPool === undefined) {
-      throw new Meteor.Error("_dropScorecardInstance: No cbScorecardPool defined");
+      throw new Meteor.Error("dropThisScorecardInstance: No cbScorecardPool defined");
     }
     const statement = `DELETE
             From
@@ -746,50 +186,18 @@ const _dropScorecardInstance = async function (
                 AND sc.name='${name}'
                 AND sc.processedAt=${processedAt}
                 AND sc.submitted=${submittedTime};`;
-    const result = await cbScorecardPool.queryCB(statement);
+    return await cbScorecardPool.queryCB(statement);
     // delete this result from the mongo Scorecard collection
   } catch (err) {
-    console.log(`_dropScorecardInstance error : ${err.message}`);
+    console.log(`dropThisScorecardInstance error : ${err.message}`);
     return {
       error: err.message,
     };
   }
 };
 
-// helper function to map a results array to specific apps
-function _mapArrayToApps(result) {
-  // put results in a map keyed by app
-  const newResult = {};
-  const apps = _getListOfApps();
-  for (let aidx = 0; aidx < apps.length; aidx++) {
-    if (result[aidx] === apps[aidx]) {
-      newResult[apps[aidx]] = [result[aidx]];
-    } else {
-      newResult[apps[aidx]] = result;
-    }
-  }
-  return newResult;
-}
-
-// helper function to map a results map to specific apps
-function _mapMapToApps(result) {
-  // put results in a map keyed by app
-  let newResult = {};
-  const apps = _getListOfApps();
-  const resultKeys = Object.keys(result);
-  if (!matsDataUtils.arraysEqual(apps.sort(), resultKeys.sort())) {
-    if (resultKeys.includes("Predefined region")) result = result["Predefined region"];
-    for (let aidx = 0; aidx < apps.length; aidx++) {
-      newResult[apps[aidx]] = result;
-    }
-  } else {
-    newResult = result;
-  }
-  return newResult;
-}
-
 // helper function for returning an array of database-distinct apps contained within a larger MATS app
-function _getListOfApps() {
+function getListOfApps() {
   let apps;
   if (
     matsCollections.database !== undefined &&
@@ -821,8 +229,45 @@ function _getListOfApps() {
   return apps;
 }
 
+// helper function to map a results array to specific apps
+function mapArrayToApps(result) {
+  // put results in a map keyed by app
+  const newResult = {};
+  const apps = getListOfApps();
+  for (let aidx = 0; aidx < apps.length; aidx += 1) {
+    if (result[aidx] === apps[aidx]) {
+      newResult[apps[aidx]] = [result[aidx]];
+    } else {
+      newResult[apps[aidx]] = result;
+    }
+  }
+  return newResult;
+}
+
+// helper function to map a results map to specific apps
+function mapMapToApps(result) {
+  // put results in a map keyed by app
+  let newResult = {};
+  let tempResult;
+  const apps = getListOfApps();
+  const resultKeys = Object.keys(result);
+  if (!matsDataUtils.arraysEqual(apps.sort(), resultKeys.sort())) {
+    if (resultKeys.includes("Predefined region")) {
+      tempResult = result["Predefined region"];
+    } else {
+      tempResult = result;
+    }
+    for (let aidx = 0; aidx < apps.length; aidx += 1) {
+      newResult[apps[aidx]] = tempResult;
+    }
+  } else {
+    newResult = result;
+  }
+  return newResult;
+}
+
 // helper function for returning a map of database-distinct apps contained within a larger MATS app and their DBs
-function _getListOfAppDBs() {
+function getListOfAppDBs() {
   let apps;
   const result = {};
   let aidx;
@@ -835,7 +280,7 @@ function _getListOfAppDBs() {
       name: "database",
     }).options;
     if (!Array.isArray(apps)) apps = Object.keys(apps);
-    for (aidx = 0; aidx < apps.length; aidx++) {
+    for (aidx = 0; aidx < apps.length; aidx += 1) {
       result[apps[aidx]] = matsCollections.database.findOne({
         name: "database",
       }).optionsMap[apps[aidx]].sumsDB;
@@ -855,7 +300,7 @@ function _getListOfAppDBs() {
       name: "variable",
     }).options;
     if (!Array.isArray(apps)) apps = Object.keys(apps);
-    for (aidx = 0; aidx < apps.length; aidx++) {
+    for (aidx = 0; aidx < apps.length; aidx += 1) {
       result[apps[aidx]] = matsCollections.variable.findOne({
         name: "variable",
       }).optionsMap[apps[aidx]];
@@ -876,7 +321,7 @@ function _getListOfAppDBs() {
 }
 
 // helper function for getting a metadata map from a MATS selector, keyed by app title and model display text
-function _getMapByAppAndModel(selector, mapType) {
+function getMapByAppAndModel(selector, mapType) {
   let flatJSON = "";
   try {
     let result;
@@ -896,7 +341,7 @@ function _getMapByAppAndModel(selector, mapType) {
         selector === "statistic"
       ) {
         // valueMaps always need to be re-keyed by app (statistic and variable get their valuesMaps from optionsMaps)
-        newResult = _mapMapToApps(result);
+        newResult = mapMapToApps(result);
         result = newResult;
       } else if (
         matsCollections.database === undefined &&
@@ -924,7 +369,7 @@ function _getMapByAppAndModel(selector, mapType) {
 }
 
 // helper function for getting a date metadata map from a MATS selector, keyed by app title and model display text
-function _getDateMapByAppAndModel() {
+function getDateMapByAppAndModel() {
   let flatJSON = "";
   try {
     let result;
@@ -992,7 +437,7 @@ function _getDateMapByAppAndModel() {
 }
 
 // helper function for getting a metadata map from a MATS selector, keyed by app title
-function _getMapByApp(selector) {
+function getMapByApp(selector) {
   let flatJSON = "";
   try {
     let result;
@@ -1017,7 +462,7 @@ function _getMapByApp(selector) {
     if (result.length === 0) {
       newResult = {};
     } else {
-      newResult = _mapArrayToApps(result);
+      newResult = mapArrayToApps(result);
     }
     flatJSON = JSON.stringify(newResult);
   } catch (e) {
@@ -1030,7 +475,7 @@ function _getMapByApp(selector) {
 }
 
 // helper function for populating the levels in a MATS selector
-function _getlevelsByApp() {
+function getlevelsByApp() {
   let flatJSON = "";
   try {
     let result;
@@ -1057,7 +502,7 @@ function _getlevelsByApp() {
     if (result.length === 0) {
       newResult = {};
     } else {
-      newResult = _mapArrayToApps(result);
+      newResult = mapArrayToApps(result);
     }
     flatJSON = JSON.stringify(newResult);
   } catch (e) {
@@ -1069,13 +514,13 @@ function _getlevelsByApp() {
   return flatJSON;
 }
 
-// private middleware for _getApps route
-const _getApps = function (params, req, res, next) {
+// private middleware for getApps route
+const getApps = function (res) {
   // this function returns an array of apps.
   if (Meteor.isServer) {
     let flatJSON = "";
     try {
-      const result = _getListOfApps();
+      const result = getListOfApps();
       flatJSON = JSON.stringify(result);
     } catch (e) {
       console.log("error retrieving apps: ", e);
@@ -1089,13 +534,13 @@ const _getApps = function (params, req, res, next) {
   }
 };
 
-// private middleware for _getAppSumsDBs route
-const _getAppSumsDBs = function (params, req, res, next) {
+// private middleware for getAppSumsDBs route
+const getAppSumsDBs = function (res) {
   // this function returns map of apps and appRefs.
   if (Meteor.isServer) {
     let flatJSON = "";
     try {
-      const result = _getListOfAppDBs();
+      const result = getListOfAppDBs();
       flatJSON = JSON.stringify(result);
     } catch (e) {
       console.log("error retrieving apps: ", e);
@@ -1109,24 +554,24 @@ const _getAppSumsDBs = function (params, req, res, next) {
   }
 };
 
-// private middleware for _getModels route
-const _getModels = function (params, req, res, next) {
+// private middleware for getModels route
+const getModels = function (res) {
   // this function returns a map of models keyed by app title and model display text
   if (Meteor.isServer) {
-    const flatJSON = _getMapByAppAndModel("data-source", "optionsMap");
+    const flatJSON = getMapByAppAndModel("data-source", "optionsMap");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
   }
 };
 
-// private middleware for _getRegions route
-const _getRegions = function (params, req, res, next) {
+// private middleware for getRegions route
+const getRegions = function (res) {
   // this function returns a map of regions keyed by app title and model display text
   if (Meteor.isServer) {
-    let flatJSON = _getMapByAppAndModel("region", "optionsMap");
+    let flatJSON = getMapByAppAndModel("region", "optionsMap");
     if (flatJSON === "{}") {
-      flatJSON = _getMapByAppAndModel("vgtyp", "optionsMap");
+      flatJSON = getMapByAppAndModel("vgtyp", "optionsMap");
     }
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
@@ -1134,13 +579,13 @@ const _getRegions = function (params, req, res, next) {
   }
 };
 
-// private middleware for _getRegionsValuesMap route
-const _getRegionsValuesMap = function (params, req, res, next) {
+// private middleware for getRegionsValuesMap route
+const getRegionsValuesMap = function (res) {
   // this function returns a map of regions values keyed by app title
   if (Meteor.isServer) {
-    let flatJSON = _getMapByAppAndModel("region", "valuesMap");
+    let flatJSON = getMapByAppAndModel("region", "valuesMap");
     if (flatJSON === "{}") {
-      flatJSON = _getMapByAppAndModel("vgtyp", "valuesMap");
+      flatJSON = getMapByAppAndModel("vgtyp", "valuesMap");
     }
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
@@ -1148,183 +593,183 @@ const _getRegionsValuesMap = function (params, req, res, next) {
   }
 };
 
-// private middleware for _getStatistics route
-const _getStatistics = function (params, req, res, next) {
+// private middleware for getStatistics route
+const getStatistics = function (res) {
   // this function returns an map of statistics keyed by app title
   if (Meteor.isServer) {
-    const flatJSON = _getMapByApp("statistic");
+    const flatJSON = getMapByApp("statistic");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
   }
 };
 
-// private middleware for _getStatisticsValuesMap route
-const _getStatisticsValuesMap = function (params, req, res, next) {
+// private middleware for getStatisticsValuesMap route
+const getStatisticsValuesMap = function (res) {
   // this function returns a map of statistic values keyed by app title
   if (Meteor.isServer) {
-    const flatJSON = _getMapByAppAndModel("statistic", "optionsMap");
+    const flatJSON = getMapByAppAndModel("statistic", "optionsMap");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
   }
 };
 
-// private middleware for _getVariables route
-const _getVariables = function (params, req, res, next) {
+// private middleware for getVariables route
+const getVariables = function (res) {
   // this function returns an map of variables keyed by app title
   if (Meteor.isServer) {
-    const flatJSON = _getMapByApp("variable");
+    const flatJSON = getMapByApp("variable");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
   }
 };
 
-// private middleware for _getVariablesValuesMap route
-const _getVariablesValuesMap = function (params, req, res, next) {
+// private middleware for getVariablesValuesMap route
+const getVariablesValuesMap = function (res) {
   // this function returns a map of variable values keyed by app title
   if (Meteor.isServer) {
-    const flatJSON = _getMapByAppAndModel("variable", "optionsMap");
+    const flatJSON = getMapByAppAndModel("variable", "optionsMap");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
   }
 };
 
-// private middleware for _getThresholds route
-const _getThresholds = function (params, req, res, next) {
+// private middleware for getThresholds route
+const getThresholds = function (res) {
   // this function returns a map of thresholds keyed by app title and model display text
   if (Meteor.isServer) {
-    const flatJSON = _getMapByAppAndModel("threshold", "optionsMap");
+    const flatJSON = getMapByAppAndModel("threshold", "optionsMap");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
   }
 };
 
-// private middleware for _getThresholdsValuesMap route
-const _getThresholdsValuesMap = function (params, req, res, next) {
+// private middleware for getThresholdsValuesMap route
+const getThresholdsValuesMap = function (res) {
   // this function returns a map of threshold values keyed by app title
   if (Meteor.isServer) {
-    const flatJSON = _getMapByAppAndModel("threshold", "valuesMap");
+    const flatJSON = getMapByAppAndModel("threshold", "valuesMap");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
   }
 };
 
-// private middleware for _getScales route
-const _getScales = function (params, req, res, next) {
+// private middleware for getScales route
+const getScales = function (res) {
   // this function returns a map of scales keyed by app title and model display text
   if (Meteor.isServer) {
-    const flatJSON = _getMapByAppAndModel("scale", "optionsMap");
+    const flatJSON = getMapByAppAndModel("scale", "optionsMap");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
   }
 };
 
-// private middleware for _getScalesValuesMap route
-const _getScalesValuesMap = function (params, req, res, next) {
+// private middleware for getScalesValuesMap route
+const getScalesValuesMap = function (res) {
   // this function returns a map of scale values keyed by app title
   if (Meteor.isServer) {
-    const flatJSON = _getMapByAppAndModel("scale", "valuesMap");
+    const flatJSON = getMapByAppAndModel("scale", "valuesMap");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
   }
 };
 
-// private middleware for _getTruth route
-const _getTruths = function (params, req, res, next) {
+// private middleware for getTruth route
+const getTruths = function (res) {
   // this function returns a map of truths keyed by app title and model display text
   if (Meteor.isServer) {
-    const flatJSON = _getMapByAppAndModel("truth", "optionsMap");
+    const flatJSON = getMapByAppAndModel("truth", "optionsMap");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
   }
 };
 
-// private middleware for _getTruthValuesMap route
-const _getTruthsValuesMap = function (params, req, res, next) {
+// private middleware for getTruthValuesMap route
+const getTruthsValuesMap = function (res) {
   // this function returns a map of truth values keyed by app title
   if (Meteor.isServer) {
-    const flatJSON = _getMapByAppAndModel("truth", "valuesMap");
+    const flatJSON = getMapByAppAndModel("truth", "valuesMap");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
   }
 };
 
-// private middleware for _getFcstLengths route
-const _getFcstLengths = function (params, req, res, next) {
+// private middleware for getFcstLengths route
+const getFcstLengths = function (res) {
   // this function returns a map of forecast lengths keyed by app title and model display text
   if (Meteor.isServer) {
-    const flatJSON = _getMapByAppAndModel("forecast-length", "optionsMap");
+    const flatJSON = getMapByAppAndModel("forecast-length", "optionsMap");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
   }
 };
 
-// private middleware for _getFcstTypes route
-const _getFcstTypes = function (params, req, res, next) {
+// private middleware for getFcstTypes route
+const getFcstTypes = function (res) {
   // this function returns a map of forecast types keyed by app title and model display text
   if (Meteor.isServer) {
-    const flatJSON = _getMapByAppAndModel("forecast-type", "optionsMap");
+    const flatJSON = getMapByAppAndModel("forecast-type", "optionsMap");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
   }
 };
 
-// private middleware for _getFcstTypesValuesMap route
-const _getFcstTypesValuesMap = function (params, req, res, next) {
+// private middleware for getFcstTypesValuesMap route
+const getFcstTypesValuesMap = function (res) {
   // this function returns a map of forecast type values keyed by app title
   if (Meteor.isServer) {
-    const flatJSON = _getMapByAppAndModel("forecast-type", "valuesMap");
+    const flatJSON = getMapByAppAndModel("forecast-type", "valuesMap");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
   }
 };
 
-// private middleware for _getValidTimes route
-const _getValidTimes = function (params, req, res, next) {
+// private middleware for getValidTimes route
+const getValidTimes = function (res) {
   // this function returns an map of valid times keyed by app title
   if (Meteor.isServer) {
-    const flatJSON = _getMapByApp("valid-time");
+    const flatJSON = getMapByApp("valid-time");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
   }
 };
 
-// private middleware for _getValidTimes route
-const _getLevels = function (params, req, res, next) {
+// private middleware for getValidTimes route
+const getLevels = function (res) {
   // this function returns an map of pressure levels keyed by app title
   if (Meteor.isServer) {
-    const flatJSON = _getlevelsByApp();
+    const flatJSON = getlevelsByApp();
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
   }
 };
 
-// private middleware for _getDates route
-const _getDates = function (params, req, res, next) {
+// private middleware for getDates route
+const getDates = function (res) {
   // this function returns a map of dates keyed by app title and model display text
   if (Meteor.isServer) {
-    const flatJSON = _getDateMapByAppAndModel();
+    const flatJSON = getDateMapByAppAndModel();
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
   }
 };
 
-// helper function for _getCSV
+// helper function for getCSV
 const stringifyCurveData = function (stringify, dataArray, res) {
   const thisDataArray = dataArray[0];
   stringify.stringify(
@@ -1334,9 +779,9 @@ const stringifyCurveData = function (stringify, dataArray, res) {
     },
     function (err, output) {
       if (err) {
-        console.log("error in _getCSV:", err);
+        console.log("error in getCSV:", err);
         res.write(`error,${err.toLocaleString()}`);
-        res.end(`<body><h1>_getCSV Error! ${err.toLocaleString()}</h1></body>`);
+        res.end(`<body><h1>getCSV Error! ${err.toLocaleString()}</h1></body>`);
         return;
       }
       res.write(output);
@@ -1350,566 +795,25 @@ const stringifyCurveData = function (stringify, dataArray, res) {
   );
 };
 
-// private middleware for _getCSV route
-const _getCSV = function (params, req, res, next) {
-  if (Meteor.isServer) {
-    const stringify = require("csv-stringify");
-    let csv = "";
-    try {
-      const result = _getFlattenedResultData(params.key, 0, -1000);
-      const statArray = Object.values(result.stats);
-      const dataArray = Object.values(result.data);
-
-      const fileName = `matsplot-${moment.utc().format("YYYYMMDD-HH.mm.ss")}.csv`;
-      res.setHeader("Content-disposition", `attachment; filename=${fileName}`);
-      res.setHeader("Content-Type", "attachment.ContentType");
-      stringify.stringify(
-        statArray,
-        {
-          header: true,
-        },
-        function (err, output) {
-          if (err) {
-            console.log("error in _getCSV:", err);
-            res.write(`error,${err.toLocaleString()}`);
-            res.end(`<body><h1>_getCSV Error! ${err.toLocaleString()}</h1></body>`);
-            return;
-          }
-          res.write(output);
-          stringifyCurveData(stringify, dataArray, res);
-        }
-      );
-    } catch (e) {
-      console.log("error retrieving data: ", e);
-      csv = `error,${e.toLocaleString()}`;
-      res.setHeader("Content-disposition", "attachment; filename=matsplot.csv");
-      res.setHeader("Content-Type", "attachment.ContentType");
-      res.end(`<body><h1>_getCSV Error! ${csv}</h1></body>`);
-    }
-  }
-};
-
-// private middleware for _getJSON route
-const _getJSON = function (params, req, res, next) {
-  if (Meteor.isServer) {
-    let flatJSON = "";
-    try {
-      const result = _getPagenatedData(params.key, 0, -1000);
-      flatJSON = JSON.stringify(result);
-    } catch (e) {
-      console.log("error retrieving data: ", e);
-      flatJSON = JSON.stringify({
-        error: e,
-      });
-      delete flatJSON.dsiRealPageIndex;
-      delete flatJSON.dsiTextDirection;
-    }
-    res.setHeader("Content-Type", "application/json");
-    res.write(flatJSON);
-    res.end();
-  }
-};
-
-// private method for getting pagenated results and flattening them in order to be appropriate for text display.
-const _getFlattenedResultData = function (rk, p, np) {
-  if (Meteor.isServer) {
-    let resp;
-    try {
-      const r = rk;
-      var p = p;
-      var np = np;
-      // get the pagenated data
-      const result = _getPagenatedData(r, p, np);
-      // find the type
-      const { plotTypes } = result.basis.plotParams;
-      const plotType = _.invert(plotTypes).true;
-      // extract data
-      let isCTC = false;
-      let isModeSingle = false;
-      let isModePairs = false;
-      const { data } = result;
-      const { dsiRealPageIndex } = result;
-      const { dsiTextDirection } = result;
-      switch (plotType) {
-        case matsTypes.PlotTypes.timeSeries:
-        case matsTypes.PlotTypes.profile:
-        case matsTypes.PlotTypes.dieoff:
-        case matsTypes.PlotTypes.threshold:
-        case matsTypes.PlotTypes.validtime:
-        case matsTypes.PlotTypes.dailyModelCycle:
-        case matsTypes.PlotTypes.gridscale:
-        case matsTypes.PlotTypes.yearToYear:
-          var labelSuffix;
-          switch (plotType) {
-            case matsTypes.PlotTypes.timeSeries:
-            case matsTypes.PlotTypes.dailyModelCycle:
-              labelSuffix = " time";
-              break;
-            case matsTypes.PlotTypes.profile:
-              labelSuffix = " level";
-              break;
-            case matsTypes.PlotTypes.dieoff:
-              labelSuffix = " forecast lead time";
-              break;
-            case matsTypes.PlotTypes.validtime:
-              labelSuffix = " hour of day";
-              break;
-            case matsTypes.PlotTypes.threshold:
-              labelSuffix = " threshold";
-              break;
-            case matsTypes.PlotTypes.gridscale:
-              labelSuffix = " grid scale";
-              break;
-            case matsTypes.PlotTypes.yearToYear:
-              labelSuffix = " year";
-              break;
-          }
-          var returnData = {};
-          returnData.stats = {}; // map of maps
-          returnData.data = {}; // map of arrays of maps
-          for (var ci = 0; ci < data.length; ci++) {
-            // for each curve
-            isCTC =
-              data[ci] !== undefined &&
-              ((data[ci].stats !== undefined &&
-                data[ci].stats[0] !== undefined &&
-                data[ci].stats[0].hit !== undefined) ||
-                (data[ci].hitTextOutput !== undefined &&
-                  data[ci].hitTextOutput.length > 0));
-            isModePairs =
-              data[ci] !== undefined &&
-              data[ci].stats !== undefined &&
-              data[ci].stats[0] !== undefined &&
-              data[ci].stats[0].avgInterest !== undefined;
-            isModeSingle =
-              data[ci] !== undefined &&
-              data[ci].stats !== undefined &&
-              data[ci].stats[0] !== undefined &&
-              data[ci].stats[0].nForecast !== undefined;
-            // if the curve label is a reserved word do not process the curve (its a zero or max curve)
-            var reservedWords = Object.values(matsTypes.ReservedWords);
-            if (reservedWords.indexOf(data[ci].label) >= 0) {
-              continue; // don't process the zero or max curves
-            }
-            var stats = {};
-            stats.label = data[ci].label;
-            stats.mean = data[ci].glob_stats.dMean;
-            stats["standard deviation"] = data[ci].glob_stats.sd;
-            stats.n = data[ci].glob_stats.nGood;
-            if (
-              plotType === matsTypes.PlotTypes.timeSeries ||
-              plotType === matsTypes.PlotTypes.profile
-            ) {
-              stats["standard error"] = data[ci].glob_stats.stdeBetsy;
-              stats.lag1 = data[ci].glob_stats.lag1;
-            }
-            stats.minimum = data[ci].glob_stats.minVal;
-            stats.maximum = data[ci].glob_stats.maxVal;
-            returnData.stats[data[ci].label] = stats;
-
-            var curveData = []; // array of maps
-            for (var cdi = 0; cdi < data[ci].x.length; cdi++) {
-              // for each datapoint
-              var curveDataElement = {};
-              if (plotType === matsTypes.PlotTypes.profile) {
-                curveDataElement[data[ci].label + labelSuffix] = data[ci].y[cdi];
-              } else {
-                curveDataElement[data[ci].label + labelSuffix] = data[ci].x[cdi];
-              }
-              if (isCTC) {
-                curveDataElement.stat = data[ci].stats[cdi].stat;
-                curveDataElement.n = data[ci].stats[cdi].n;
-                curveDataElement.hit = data[ci].stats[cdi].hit;
-                curveDataElement.fa = data[ci].stats[cdi].fa;
-                curveDataElement.miss = data[ci].stats[cdi].miss;
-                curveDataElement.cn = data[ci].stats[cdi].cn;
-              } else if (isModeSingle) {
-                curveDataElement.stat = data[ci].stats[cdi].stat;
-                curveDataElement.nForecast = data[ci].stats[cdi].nForecast;
-                curveDataElement.nMatched = data[ci].stats[cdi].nMatched;
-                curveDataElement.nSimple = data[ci].stats[cdi].nSimple;
-                curveDataElement.nTotal = data[ci].stats[cdi].nTotal;
-              } else if (isModePairs) {
-                curveDataElement.stat = data[ci].stats[cdi].stat;
-                curveDataElement.n = data[ci].stats[cdi].n;
-                curveDataElement.avgInterest = data[ci].stats[cdi].avgInterest;
-              } else {
-                curveDataElement.stat = data[ci].stats[cdi].stat;
-                curveDataElement.mean = data[ci].stats[cdi].mean;
-                curveDataElement["std dev"] = data[ci].stats[cdi].sd;
-                if (
-                  plotType === matsTypes.PlotTypes.timeSeries ||
-                  plotType === matsTypes.PlotTypes.profile
-                ) {
-                  curveDataElement["std error"] = data[ci].stats[cdi].stdeBetsy;
-                  curveDataElement.lag1 = data[ci].stats[cdi].lag1;
-                }
-                curveDataElement.n = data[ci].stats[cdi].nGood;
-              }
-              curveData.push(curveDataElement);
-            }
-            returnData.data[data[ci].label] = curveData;
-          }
-          break;
-        case matsTypes.PlotTypes.reliability:
-        case matsTypes.PlotTypes.roc:
-        case matsTypes.PlotTypes.performanceDiagram:
-          var returnData = {};
-          returnData.stats = {}; // map of maps
-          returnData.data = {}; // map of arrays of maps
-          for (var ci = 0; ci < data.length; ci++) {
-            // for each curve
-            // if the curve label is a reserved word do not process the curve (its a zero or max curve)
-            var reservedWords = Object.values(matsTypes.ReservedWords);
-            if (
-              reservedWords.indexOf(data[ci].label) >= 0 ||
-              data[ci].label.includes(matsTypes.ReservedWords.noSkill)
-            ) {
-              continue; // don't process the zero or max curves
-            }
-            var stats = {};
-            stats.label = data[ci].label;
-            if (plotType === matsTypes.PlotTypes.reliability) {
-              stats["sample climo"] = data[ci].glob_stats.sample_climo;
-            } else if (plotType === matsTypes.PlotTypes.roc) {
-              stats.auc = data[ci].glob_stats.auc;
-            }
-            returnData.stats[data[ci].label] = stats;
-
-            var curveData = []; // array of maps
-            for (var cdi = 0; cdi < data[ci].y.length; cdi++) {
-              // for each datapoint
-              var curveDataElement = {};
-              if (plotType === matsTypes.PlotTypes.reliability) {
-                curveDataElement[`${data[ci].label} probability bin`] =
-                  data[ci].stats[cdi].prob_bin;
-                if (data[ci].stats[cdi].hit_rate) {
-                  curveDataElement["hit rate"] = data[ci].stats[cdi].hit_rate;
-                } else {
-                  curveDataElement["observed frequency"] = data[ci].stats[cdi].obs_freq;
-                }
-              } else {
-                curveDataElement[`${data[ci].label} bin value`] =
-                  data[ci].stats[cdi].bin_value;
-                curveDataElement["probability of detection"] = data[ci].stats[cdi].pody;
-                if (plotType === matsTypes.PlotTypes.roc) {
-                  curveDataElement["probability of false detection"] =
-                    data[ci].stats[cdi].pofd;
-                } else {
-                  curveDataElement["success ratio"] = data[ci].stats[cdi].fa;
-                }
-                curveDataElement.n = data[ci].stats[cdi].n;
-              }
-              if (data[ci].stats[cdi].obs_y) {
-                curveDataElement.oy = data[ci].stats[cdi].obs_y;
-                curveDataElement.on = data[ci].stats[cdi].obs_n;
-              } else {
-                curveDataElement.hitcount = data[ci].stats[cdi].hit_count;
-                curveDataElement.fcstcount = data[ci].stats[cdi].fcst_count;
-              }
-              curveData.push(curveDataElement);
-            }
-            returnData.data[data[ci].label] = curveData;
-          }
-          break;
-        case matsTypes.PlotTypes.gridscaleProb:
-          var returnData = {};
-          returnData.stats = {}; // map of maps
-          returnData.data = {}; // map of arrays of maps
-          for (var ci = 0; ci < data.length; ci++) {
-            // for each curve
-            // if the curve label is a reserved word do not process the curve (its a zero or max curve)
-            var reservedWords = Object.values(matsTypes.ReservedWords);
-            if (reservedWords.indexOf(data[ci].label) >= 0) {
-              continue; // don't process the zero or max curves
-            }
-            var stats = {};
-            stats.label = data[ci].label;
-            returnData.stats[data[ci].label] = stats;
-
-            var curveData = []; // array of maps
-            for (var cdi = 0; cdi < data[ci].y.length; cdi++) {
-              // for each datapoint
-              var curveDataElement = {};
-              curveDataElement[`${data[ci].label} probability bin`] =
-                data[ci].stats[cdi].bin_value;
-              curveDataElement["number of grid points"] = data[ci].stats[cdi].n_grid;
-              curveDataElement.n = data[ci].stats[cdi].n;
-              curveData.push(curveDataElement);
-            }
-            returnData.data[data[ci].label] = curveData;
-          }
-          break;
-        case matsTypes.PlotTypes.simpleScatter:
-          var returnData = {};
-          returnData.stats = {}; // map of maps
-          returnData.data = {}; // map of arrays of maps
-          for (var ci = 0; ci < data.length; ci++) {
-            // for each curve
-            // if the curve label is a reserved word do not process the curve (its a zero or max curve)
-            var reservedWords = Object.values(matsTypes.ReservedWords);
-            if (reservedWords.indexOf(data[ci].label) >= 0) {
-              continue; // don't process the zero or max curves
-            }
-            var stats = {};
-            stats.label = data[ci].label;
-
-            var curveData = []; // array of maps
-            for (var cdi = 0; cdi < data[ci].y.length; cdi++) {
-              // for each datapoint
-              var curveDataElement = {};
-              curveDataElement[`${data[ci].label} bin value`] =
-                data[ci].stats[cdi].bin_value;
-              curveDataElement["x-stat"] = data[ci].stats[cdi].xstat;
-              curveDataElement["y-stat"] = data[ci].stats[cdi].ystat;
-              curveDataElement.n = data[ci].stats[cdi].n;
-              curveData.push(curveDataElement);
-            }
-            returnData.data[data[ci].label] = curveData;
-          }
-          break;
-        case matsTypes.PlotTypes.map:
-          var returnData = {};
-          returnData.stats = {}; // map of maps
-          returnData.data = {}; // map of arrays of maps
-
-          var stats = {};
-          stats.label = data[0].label;
-          stats["total number of obs"] = data[0].stats.reduce(function (prev, curr) {
-            return prev + curr.nTimes;
-          }, 0);
-          stats["mean difference"] = matsDataUtils.average(data[0].queryVal);
-          stats["standard deviation"] = matsDataUtils.stdev(data[0].queryVal);
-          stats["minimum time"] = data[0].stats.reduce(function (prev, curr) {
-            return prev < curr.min_time ? prev : curr.min_time;
-          });
-          stats["minimum time"] = moment
-            .utc(stats["minimum time"] * 1000)
-            .format("YYYY-MM-DD HH:mm");
-          stats["maximum time"] = data[0].stats.reduce(function (prev, curr) {
-            return prev > curr.max_time ? prev : curr.max_time;
-          });
-          stats["maximum time"] = moment
-            .utc(stats["maximum time"] * 1000)
-            .format("YYYY-MM-DD HH:mm");
-
-          returnData.stats[data[0].label] = stats;
-
-          var curveData = []; // map of maps
-          isCTC =
-            data[0] !== undefined &&
-            data[0].stats !== undefined &&
-            data[0].stats[0] !== undefined &&
-            data[0].stats[0].hit !== undefined;
-          for (var si = 0; si < data[0].siteName.length; si++) {
-            var curveDataElement = {};
-            curveDataElement["site name"] = data[0].siteName[si];
-            curveDataElement["number of times"] = data[0].stats[si].nTimes;
-            if (isCTC) {
-              curveDataElement.stat = data[0].queryVal[si];
-              curveDataElement.hit = data[0].stats[si].hit;
-              curveDataElement.fa = data[0].stats[si].fa;
-              curveDataElement.miss = data[0].stats[si].miss;
-              curveDataElement.cn = data[0].stats[si].cn;
-            } else {
-              curveDataElement["start date"] = moment
-                .utc(data[0].stats[si].min_time * 1000)
-                .format("YYYY-MM-DD HH:mm");
-              curveDataElement["end date"] = moment
-                .utc(data[0].stats[si].max_time * 1000)
-                .format("YYYY-MM-DD HH:mm");
-              curveDataElement.stat = data[0].queryVal[si];
-            }
-            curveData.push(curveDataElement);
-          }
-          returnData.data[data[0].label] = curveData;
-          break;
-        case matsTypes.PlotTypes.histogram:
-          var returnData = {};
-          returnData.stats = {}; // map of maps
-          returnData.data = {}; // map of arrays of maps
-          for (var ci = 0; ci < data.length; ci++) {
-            // for each curve
-            // if the curve label is a reserved word do not process the curve (its a zero or max curve)
-            var reservedWords = Object.values(matsTypes.ReservedWords);
-            if (reservedWords.indexOf(data[ci].label) >= 0) {
-              continue; // don't process the zero or max curves
-            }
-            var stats = {};
-            stats.label = data[ci].label;
-            stats.mean = data[ci].glob_stats.glob_mean;
-            stats["standard deviation"] = data[ci].glob_stats.glob_sd;
-            stats.n = data[ci].glob_stats.glob_n;
-            stats.minimum = data[ci].glob_stats.glob_min;
-            stats.maximum = data[ci].glob_stats.glob_max;
-            returnData.stats[data[ci].label] = stats;
-
-            var curveData = []; // array of maps
-            for (var cdi = 0; cdi < data[ci].x.length; cdi++) {
-              // for each datapoint
-              var curveDataElement = {};
-              curveDataElement[`${data[ci].label} bin range`] =
-                data[ci].bin_stats[cdi].binLabel;
-              curveDataElement.n = data[ci].bin_stats[cdi].bin_n;
-              curveDataElement["bin rel freq"] = data[ci].bin_stats[cdi].bin_rf;
-              curveDataElement["bin lower bound"] = data[ci].bin_stats[cdi].binLowBound;
-              curveDataElement["bin upper bound"] = data[ci].bin_stats[cdi].binUpBound;
-              curveDataElement["bin mean"] = data[ci].bin_stats[cdi].bin_mean;
-              curveDataElement["bin std dev"] = data[ci].bin_stats[cdi].bin_sd;
-              curveData.push(curveDataElement);
-            }
-            returnData.data[data[ci].label] = curveData;
-          }
-          break;
-        case matsTypes.PlotTypes.ensembleHistogram:
-          var returnData = {};
-          returnData.stats = {}; // map of maps
-          returnData.data = {}; // map of arrays of maps
-          for (var ci = 0; ci < data.length; ci++) {
-            // for each curve
-            // if the curve label is a reserved word do not process the curve (its a zero or max curve)
-            var reservedWords = Object.values(matsTypes.ReservedWords);
-            if (reservedWords.indexOf(data[ci].label) >= 0) {
-              continue; // don't process the zero or max curves
-            }
-            var stats = {};
-            stats.label = data[ci].label;
-            stats.mean = data[ci].glob_stats.dMean;
-            stats["standard deviation"] = data[ci].glob_stats.sd;
-            stats.n = data[ci].glob_stats.nGood;
-            stats.minimum = data[ci].glob_stats.minVal;
-            stats.maximum = data[ci].glob_stats.maxVal;
-            returnData.stats[data[ci].label] = stats;
-
-            var curveData = []; // array of maps
-            for (var cdi = 0; cdi < data[ci].x.length; cdi++) {
-              // for each datapoint
-              var curveDataElement = {};
-              curveDataElement[`${data[ci].label} bin`] = data[ci].x[cdi];
-              curveDataElement.n = data[ci].bin_stats[cdi].bin_n;
-              curveDataElement["bin rel freq"] = data[ci].bin_stats[cdi].bin_rf;
-              curveData.push(curveDataElement);
-            }
-            returnData.data[data[ci].label] = curveData;
-          }
-          break;
-        case matsTypes.PlotTypes.contour:
-        case matsTypes.PlotTypes.contourDiff:
-          var returnData = {};
-          returnData.stats = {}; // map of maps
-          returnData.data = {}; // map of arrays of maps
-          var stats = {};
-          stats.label = data[0].label;
-          stats["total number of points"] = data[0].glob_stats.n;
-          stats["mean stat"] = data[0].glob_stats.mean;
-          stats["minimum time"] = moment
-            .utc(data[0].glob_stats.minDate * 1000)
-            .format("YYYY-MM-DD HH:mm");
-          stats["maximum time"] = moment
-            .utc(data[0].glob_stats.maxDate * 1000)
-            .format("YYYY-MM-DD HH:mm");
-
-          returnData.stats[data[0].label] = stats;
-
-          var curveData = []; // array of maps
-          isCTC =
-            data[0] !== undefined &&
-            data[0].hitTextOutput !== undefined &&
-            data[0].hitTextOutput.length > 0;
-          for (var si = 0; si < data[0].xTextOutput.length; si++) {
-            var curveDataElement = {};
-            curveDataElement.xVal = data[0].xTextOutput[si];
-            curveDataElement.yVal = data[0].yTextOutput[si];
-            curveDataElement.stat = data[0].zTextOutput[si];
-            curveDataElement.N = data[0].nTextOutput[si];
-            if (isCTC) {
-              curveDataElement.hit = data[0].hitTextOutput[si];
-              curveDataElement.fa = data[0].faTextOutput[si];
-              curveDataElement.miss = data[0].missTextOutput[si];
-              curveDataElement.cn = data[0].cnTextOutput[si];
-            } else {
-              curveDataElement["Start Date"] = moment
-                .utc(data[0].minDateTextOutput[si] * 1000)
-                .format("YYYY-MM-DD HH:mm");
-              curveDataElement["End Date"] = moment
-                .utc(data[0].maxDateTextOutput[si] * 1000)
-                .format("YYYY-MM-DD HH:mm");
-            }
-            curveData.push(curveDataElement);
-          }
-          returnData.data[data[0].label] = curveData;
-          break;
-        case matsTypes.PlotTypes.scatter2d:
-          var returnData = {}; // returns a map of arrays of maps
-          var firstBestFitIndex = -1;
-          var bestFitIndexes = {};
-          for (var ci = 0; ci < data.length; ci++) {
-            if (ci === firstBestFitIndex) {
-              break; // best fit curves are at the end so do not do further processing
-            }
-            var curveData = data[ci];
-            // look for a best fit curve - only have to look at curves with higher index than this one
-            const bestFitIndex = -1;
-            for (let cbi = ci + 1; cbi < data.length; cbi++) {
-              if (
-                data[cbi].label.indexOf(curveData.label) !== -1 &&
-                data[cbi].label.indexOf("-best fit") !== -1
-              ) {
-                bestFitIndexes[ci] = cbi;
-                if (firstBestFitIndex === -1) {
-                  firstBestFitIndex = cbi;
-                }
-                break;
-              }
-            }
-            const curveTextData = [];
-            for (var cdi = 0; cdi < curveData.data.length; cdi++) {
-              const element = {};
-              element.xAxis = curveData.data[cdi][0];
-              element.yAxis = curveData.data[cdi][1];
-              if (bestFitIndexes[ci] === undefined) {
-                element["best fit"] = "none;";
-              } else {
-                element["best fit"] = data[bestFitIndexes[ci]].data[cdi][1];
-              }
-              curveTextData.push(element);
-            }
-            returnData[curveData.label] = curveTextData;
-          }
-          break;
-        default:
-          return undefined;
-      }
-      returnData.dsiRealPageIndex = dsiRealPageIndex;
-      returnData.dsiTextDirection = dsiTextDirection;
-      return returnData;
-    } catch (error) {
-      throw new Meteor.Error(
-        `Error in _getFlattenedResultData function: ${error.message}`
-      );
-    }
-  }
-};
-
 // private method for getting pagenated data
 // a newPageIndex of -1000 means get all the data (used for export)
 // a newPageIndex of -2000 means get just the last page
-const _getPagenatedData = function (rky, p, np) {
+const getPagenatedData = function (rky, p, np) {
   if (Meteor.isServer) {
     const key = rky;
     const myPageIndex = p;
     const newPageIndex = np;
-    let ret;
     let rawReturn;
 
     try {
       const result = matsCache.getResult(key);
       rawReturn = result === undefined ? undefined : result.result; // getResult structure is {key:something, result:resultObject}
     } catch (e) {
-      console.log("_getPagenatedData: Error - ", e);
+      console.log("getPagenatedData: Error - ", e);
       return undefined;
     }
-    ret = rawReturn === undefined ? undefined : JSON.parse(JSON.stringify(rawReturn));
+    const ret =
+      rawReturn === undefined ? undefined : JSON.parse(JSON.stringify(rawReturn));
     let start;
     let end;
     let direction = 1;
@@ -1934,40 +838,39 @@ const _getPagenatedData = function (rky, p, np) {
 
     let dsiStart;
     let dsiEnd;
-    for (let csi = 0; csi < ret.data.length; csi++) {
-      if (!ret.data[csi].x || ret.data[csi].x.length <= 100) {
-        continue; // don't bother pagenating datasets less than or equal to a page - ret is rawReturn
-      }
-      dsiStart = start;
-      dsiEnd = end;
-      if (dsiStart > ret.data[csi].x.length || dsiStart === -2000) {
-        // show the last page if we either requested it specifically or are trying to navigate past it
-        dsiStart = Math.floor(rawReturn.data[csi].x.length / 100) * 100;
-        dsiEnd = rawReturn.data[csi].x.length;
-        if (dsiEnd === dsiStart) {
-          // make sure the last page isn't empty--if rawReturn.data[csi].data.length/100 produces a whole number,
-          // dsiStart and dsiEnd would be the same. This makes sure that the last full page is indeed the last page, without a phantom empty page afterwards
-          dsiStart = dsiEnd - 100;
+    for (let csi = 0; csi < ret.data.length; csi += 1) {
+      if (ret.data[csi].x && ret.data[csi].x.length > 100) {
+        dsiStart = start;
+        dsiEnd = end;
+        if (dsiStart > ret.data[csi].x.length || dsiStart === -2000) {
+          // show the last page if we either requested it specifically or are trying to navigate past it
+          dsiStart = Math.floor(rawReturn.data[csi].x.length / 100) * 100;
+          dsiEnd = rawReturn.data[csi].x.length;
+          if (dsiEnd === dsiStart) {
+            // make sure the last page isn't empty -= 1if rawReturn.data[csi].data.length/100 produces a whole number,
+            // dsiStart and dsiEnd would be the same. This makes sure that the last full page is indeed the last page, without a phantom empty page afterwards
+            dsiStart = dsiEnd - 100;
+          }
         }
+        if (dsiStart < 0) {
+          // show the first page if we are trying to navigate before it
+          dsiStart = 0;
+          dsiEnd = 100;
+        }
+        if (dsiEnd < dsiStart) {
+          // make sure that the end is after the start
+          dsiEnd = dsiStart + 100;
+        }
+        if (dsiEnd > ret.data[csi].x.length) {
+          // make sure we don't request past the end  -= 1 if results are one page, this should convert the
+          // start and end from 0 and 100 to 0 and whatever the end is.
+          dsiEnd = ret.data[csi].x.length;
+        }
+        ret.data[csi].x = rawReturn.data[csi].x.slice(dsiStart, dsiEnd);
+        ret.data[csi].y = rawReturn.data[csi].y.slice(dsiStart, dsiEnd);
+        ret.data[csi].stats = rawReturn.data[csi].stats.slice(dsiStart, dsiEnd);
+        ret.data[csi].glob_stats = rawReturn.data[csi].glob_stats;
       }
-      if (dsiStart < 0) {
-        // show the first page if we are trying to navigate before it
-        dsiStart = 0;
-        dsiEnd = 100;
-      }
-      if (dsiEnd < dsiStart) {
-        // make sure that the end is after the start
-        dsiEnd = dsiStart + 100;
-      }
-      if (dsiEnd > ret.data[csi].x.length) {
-        // make sure we don't request past the end -- if results are one page, this should convert the
-        // start and end from 0 and 100 to 0 and whatever the end is.
-        dsiEnd = ret.data[csi].x.length;
-      }
-      ret.data[csi].x = rawReturn.data[csi].x.slice(dsiStart, dsiEnd);
-      ret.data[csi].y = rawReturn.data[csi].y.slice(dsiStart, dsiEnd);
-      ret.data[csi].stats = rawReturn.data[csi].stats.slice(dsiStart, dsiEnd);
-      ret.data[csi].glob_stats = rawReturn.data[csi].glob_stats;
     }
 
     if (direction === 1) {
@@ -1978,16 +881,536 @@ const _getPagenatedData = function (rky, p, np) {
     ret.dsiTextDirection = direction;
     return ret;
   }
+  return null;
+};
+
+// private method for getting pagenated results and flattening them in order to be appropriate for text display.
+const getFlattenedResultData = function (rk, p, np) {
+  if (Meteor.isServer) {
+    try {
+      const r = rk;
+      const thisP = p;
+      const thisNP = np;
+      // get the pagenated data
+      const result = getPagenatedData(r, thisP, thisNP);
+      // find the type
+      const { plotTypes } = result.basis.plotParams;
+      const plotType = _.invert(plotTypes).true;
+      // extract data
+      let isCTC = false;
+      let isModeSingle = false;
+      let isModePairs = false;
+      let labelSuffix;
+      const returnData = {};
+      const stats = {};
+      let curveData = []; // array of maps
+      const { data } = result;
+      const { dsiRealPageIndex } = result;
+      const { dsiTextDirection } = result;
+      let firstBestFitIndex = -1;
+      let bestFitIndexes = {};
+      switch (plotType) {
+        case matsTypes.PlotTypes.timeSeries:
+        case matsTypes.PlotTypes.profile:
+        case matsTypes.PlotTypes.dieoff:
+        case matsTypes.PlotTypes.threshold:
+        case matsTypes.PlotTypes.validtime:
+        case matsTypes.PlotTypes.dailyModelCycle:
+        case matsTypes.PlotTypes.gridscale:
+        case matsTypes.PlotTypes.yearToYear:
+          switch (plotType) {
+            case matsTypes.PlotTypes.timeSeries:
+            case matsTypes.PlotTypes.dailyModelCycle:
+              labelSuffix = " time";
+              break;
+            case matsTypes.PlotTypes.profile:
+              labelSuffix = " level";
+              break;
+            case matsTypes.PlotTypes.dieoff:
+              labelSuffix = " forecast lead time";
+              break;
+            case matsTypes.PlotTypes.validtime:
+              labelSuffix = " hour of day";
+              break;
+            case matsTypes.PlotTypes.threshold:
+              labelSuffix = " threshold";
+              break;
+            case matsTypes.PlotTypes.gridscale:
+              labelSuffix = " grid scale";
+              break;
+            case matsTypes.PlotTypes.yearToYear:
+              labelSuffix = " year";
+              break;
+            default:
+              labelSuffix = "x-value";
+          }
+          returnData.stats = {}; // map of maps
+          returnData.data = {}; // map of arrays of maps
+          for (let ci = 0; ci < data.length; ci += 1) {
+            const reservedWords = Object.values(matsTypes.ReservedWords);
+            if (reservedWords.indexOf(data[ci].label) === -1) {
+              // for each curve
+              isCTC =
+                data[ci] !== undefined &&
+                ((data[ci].stats !== undefined &&
+                  data[ci].stats[0] !== undefined &&
+                  data[ci].stats[0].hit !== undefined) ||
+                  (data[ci].hitTextOutput !== undefined &&
+                    data[ci].hitTextOutput.length > 0));
+              isModePairs =
+                data[ci] !== undefined &&
+                data[ci].stats !== undefined &&
+                data[ci].stats[0] !== undefined &&
+                data[ci].stats[0].avgInterest !== undefined;
+              isModeSingle =
+                data[ci] !== undefined &&
+                data[ci].stats !== undefined &&
+                data[ci].stats[0] !== undefined &&
+                data[ci].stats[0].nForecast !== undefined;
+              // if the curve label is a reserved word do not process the curve (its a zero or max curve)
+              stats.label = data[ci].label;
+              stats.mean = data[ci].glob_stats.dMean;
+              stats["standard deviation"] = data[ci].glob_stats.sd;
+              stats.n = data[ci].glob_stats.nGood;
+              if (
+                plotType === matsTypes.PlotTypes.timeSeries ||
+                plotType === matsTypes.PlotTypes.profile
+              ) {
+                stats["standard error"] = data[ci].glob_stats.stdeBetsy;
+                stats.lag1 = data[ci].glob_stats.lag1;
+              }
+              stats.minimum = data[ci].glob_stats.minVal;
+              stats.maximum = data[ci].glob_stats.maxVal;
+              returnData.stats[data[ci].label] = stats;
+
+              for (let cdi = 0; cdi < data[ci].x.length; cdi += 1) {
+                // for each datapoint
+                const curveDataElement = {};
+                if (plotType === matsTypes.PlotTypes.profile) {
+                  curveDataElement[data[ci].label + labelSuffix] = data[ci].y[cdi];
+                } else {
+                  curveDataElement[data[ci].label + labelSuffix] = data[ci].x[cdi];
+                }
+                if (isCTC) {
+                  curveDataElement.stat = data[ci].stats[cdi].stat;
+                  curveDataElement.n = data[ci].stats[cdi].n;
+                  curveDataElement.hit = data[ci].stats[cdi].hit;
+                  curveDataElement.fa = data[ci].stats[cdi].fa;
+                  curveDataElement.miss = data[ci].stats[cdi].miss;
+                  curveDataElement.cn = data[ci].stats[cdi].cn;
+                } else if (isModeSingle) {
+                  curveDataElement.stat = data[ci].stats[cdi].stat;
+                  curveDataElement.nForecast = data[ci].stats[cdi].nForecast;
+                  curveDataElement.nMatched = data[ci].stats[cdi].nMatched;
+                  curveDataElement.nSimple = data[ci].stats[cdi].nSimple;
+                  curveDataElement.nTotal = data[ci].stats[cdi].nTotal;
+                } else if (isModePairs) {
+                  curveDataElement.stat = data[ci].stats[cdi].stat;
+                  curveDataElement.n = data[ci].stats[cdi].n;
+                  curveDataElement.avgInterest = data[ci].stats[cdi].avgInterest;
+                } else {
+                  curveDataElement.stat = data[ci].stats[cdi].stat;
+                  curveDataElement.mean = data[ci].stats[cdi].mean;
+                  curveDataElement["std dev"] = data[ci].stats[cdi].sd;
+                  if (
+                    plotType === matsTypes.PlotTypes.timeSeries ||
+                    plotType === matsTypes.PlotTypes.profile
+                  ) {
+                    curveDataElement["std error"] = data[ci].stats[cdi].stdeBetsy;
+                    curveDataElement.lag1 = data[ci].stats[cdi].lag1;
+                  }
+                  curveDataElement.n = data[ci].stats[cdi].nGood;
+                }
+                curveData.push(curveDataElement);
+              }
+              returnData.data[data[ci].label] = curveData;
+            }
+          }
+          break;
+        case matsTypes.PlotTypes.reliability:
+        case matsTypes.PlotTypes.roc:
+        case matsTypes.PlotTypes.performanceDiagram:
+          returnData.stats = {}; // map of maps
+          returnData.data = {}; // map of arrays of maps
+          for (let ci = 0; ci < data.length; ci += 1) {
+            // for each curve
+            // if the curve label is a reserved word do not process the curve (its a zero or max curve)
+            const reservedWords = Object.values(matsTypes.ReservedWords);
+            if (
+              reservedWords.indexOf(data[ci].label) === -1 &&
+              !data[ci].label.includes(matsTypes.ReservedWords.noSkill)
+            ) {
+              stats.label = data[ci].label;
+              if (plotType === matsTypes.PlotTypes.reliability) {
+                stats["sample climo"] = data[ci].glob_stats.sample_climo;
+              } else if (plotType === matsTypes.PlotTypes.roc) {
+                stats.auc = data[ci].glob_stats.auc;
+              }
+              returnData.stats[data[ci].label] = stats;
+
+              for (let cdi = 0; cdi < data[ci].y.length; cdi += 1) {
+                // for each datapoint
+                const curveDataElement = {};
+                if (plotType === matsTypes.PlotTypes.reliability) {
+                  curveDataElement[`${data[ci].label} probability bin`] =
+                    data[ci].stats[cdi].prob_bin;
+                  if (data[ci].stats[cdi].hit_rate) {
+                    curveDataElement["hit rate"] = data[ci].stats[cdi].hit_rate;
+                  } else {
+                    curveDataElement["observed frequency"] =
+                      data[ci].stats[cdi].obs_freq;
+                  }
+                } else {
+                  curveDataElement[`${data[ci].label} bin value`] =
+                    data[ci].stats[cdi].bin_value;
+                  curveDataElement["probability of detection"] =
+                    data[ci].stats[cdi].pody;
+                  if (plotType === matsTypes.PlotTypes.roc) {
+                    curveDataElement["probability of false detection"] =
+                      data[ci].stats[cdi].pofd;
+                  } else {
+                    curveDataElement["success ratio"] = data[ci].stats[cdi].fa;
+                  }
+                  curveDataElement.n = data[ci].stats[cdi].n;
+                }
+                if (data[ci].stats[cdi].obs_y) {
+                  curveDataElement.oy = data[ci].stats[cdi].obs_y;
+                  curveDataElement.on = data[ci].stats[cdi].obs_n;
+                } else {
+                  curveDataElement.hitcount = data[ci].stats[cdi].hit_count;
+                  curveDataElement.fcstcount = data[ci].stats[cdi].fcst_count;
+                }
+                curveData.push(curveDataElement);
+              }
+              returnData.data[data[ci].label] = curveData;
+            }
+          }
+          break;
+        case matsTypes.PlotTypes.gridscaleProb:
+          returnData.stats = {}; // map of maps
+          returnData.data = {}; // map of arrays of maps
+          for (let ci = 0; ci < data.length; ci += 1) {
+            // for each curve
+            // if the curve label is a reserved word do not process the curve (its a zero or max curve)
+            const reservedWords = Object.values(matsTypes.ReservedWords);
+            if (reservedWords.indexOf(data[ci].label) === -1) {
+              stats.label = data[ci].label;
+              returnData.stats[data[ci].label] = stats;
+
+              for (let cdi = 0; cdi < data[ci].y.length; cdi += 1) {
+                // for each datapoint
+                const curveDataElement = {};
+                curveDataElement[`${data[ci].label} probability bin`] =
+                  data[ci].stats[cdi].bin_value;
+                curveDataElement["number of grid points"] = data[ci].stats[cdi].n_grid;
+                curveDataElement.n = data[ci].stats[cdi].n;
+                curveData.push(curveDataElement);
+              }
+              returnData.data[data[ci].label] = curveData;
+            }
+          }
+          break;
+        case matsTypes.PlotTypes.simpleScatter:
+          returnData.stats = {}; // map of maps
+          returnData.data = {}; // map of arrays of maps
+          for (let ci = 0; ci < data.length; ci += 1) {
+            // for each curve
+            // if the curve label is a reserved word do not process the curve (its a zero or max curve)
+            const reservedWords = Object.values(matsTypes.ReservedWords);
+            if (reservedWords.indexOf(data[ci].label) === -1) {
+              stats.label = data[ci].label;
+
+              for (let cdi = 0; cdi < data[ci].y.length; cdi += 1) {
+                // for each datapoint
+                const curveDataElement = {};
+                curveDataElement[`${data[ci].label} bin value`] =
+                  data[ci].stats[cdi].bin_value;
+                curveDataElement["x-stat"] = data[ci].stats[cdi].xstat;
+                curveDataElement["y-stat"] = data[ci].stats[cdi].ystat;
+                curveDataElement.n = data[ci].stats[cdi].n;
+                curveData.push(curveDataElement);
+              }
+              returnData.data[data[ci].label] = curveData;
+            }
+          }
+          break;
+        case matsTypes.PlotTypes.map:
+          returnData.stats = {}; // map of maps
+          returnData.data = {}; // map of arrays of maps
+          stats.label = data[0].label;
+          stats["total number of obs"] = data[0].stats.reduce(function (prev, curr) {
+            return prev + curr.nTimes;
+          }, 0);
+          stats["mean difference"] = matsDataUtils.average(data[0].queryVal);
+          stats["standard deviation"] = matsDataUtils.stdev(data[0].queryVal);
+          stats["minimum time"] = data[0].stats.reduce(function (prev, curr) {
+            return prev < curr.min_time ? prev : curr.min_time;
+          });
+          stats["minimum time"] = moment
+            .utc(stats["minimum time"] * 1000)
+            .format("YYYY-MM-DD HH:mm");
+          stats["maximum time"] = data[0].stats.reduce(function (prev, curr) {
+            return prev > curr.max_time ? prev : curr.max_time;
+          });
+          stats["maximum time"] = moment
+            .utc(stats["maximum time"] * 1000)
+            .format("YYYY-MM-DD HH:mm");
+
+          returnData.stats[data[0].label] = stats;
+
+          isCTC =
+            data[0] !== undefined &&
+            data[0].stats !== undefined &&
+            data[0].stats[0] !== undefined &&
+            data[0].stats[0].hit !== undefined;
+          for (let si = 0; si < data[0].siteName.length; si += 1) {
+            const curveDataElement = {};
+            curveDataElement["site name"] = data[0].siteName[si];
+            curveDataElement["number of times"] = data[0].stats[si].nTimes;
+            if (isCTC) {
+              curveDataElement.stat = data[0].queryVal[si];
+              curveDataElement.hit = data[0].stats[si].hit;
+              curveDataElement.fa = data[0].stats[si].fa;
+              curveDataElement.miss = data[0].stats[si].miss;
+              curveDataElement.cn = data[0].stats[si].cn;
+            } else {
+              curveDataElement["start date"] = moment
+                .utc(data[0].stats[si].min_time * 1000)
+                .format("YYYY-MM-DD HH:mm");
+              curveDataElement["end date"] = moment
+                .utc(data[0].stats[si].max_time * 1000)
+                .format("YYYY-MM-DD HH:mm");
+              curveDataElement.stat = data[0].queryVal[si];
+            }
+            curveData.push(curveDataElement);
+          }
+          returnData.data[data[0].label] = curveData;
+          break;
+        case matsTypes.PlotTypes.histogram:
+          returnData.stats = {}; // map of maps
+          returnData.data = {}; // map of arrays of maps
+          for (let ci = 0; ci < data.length; ci += 1) {
+            // for each curve
+            // if the curve label is a reserved word do not process the curve (its a zero or max curve)
+            const reservedWords = Object.values(matsTypes.ReservedWords);
+            if (reservedWords.indexOf(data[ci].label) === -1) {
+              stats.label = data[ci].label;
+              stats.mean = data[ci].glob_stats.glob_mean;
+              stats["standard deviation"] = data[ci].glob_stats.glob_sd;
+              stats.n = data[ci].glob_stats.glob_n;
+              stats.minimum = data[ci].glob_stats.glob_min;
+              stats.maximum = data[ci].glob_stats.glob_max;
+              returnData.stats[data[ci].label] = stats;
+
+              for (let cdi = 0; cdi < data[ci].x.length; cdi += 1) {
+                // for each datapoint
+                const curveDataElement = {};
+                curveDataElement[`${data[ci].label} bin range`] =
+                  data[ci].bin_stats[cdi].binLabel;
+                curveDataElement.n = data[ci].bin_stats[cdi].bin_n;
+                curveDataElement["bin rel freq"] = data[ci].bin_stats[cdi].bin_rf;
+                curveDataElement["bin lower bound"] =
+                  data[ci].bin_stats[cdi].binLowBound;
+                curveDataElement["bin upper bound"] =
+                  data[ci].bin_stats[cdi].binUpBound;
+                curveDataElement["bin mean"] = data[ci].bin_stats[cdi].bin_mean;
+                curveDataElement["bin std dev"] = data[ci].bin_stats[cdi].bin_sd;
+                curveData.push(curveDataElement);
+              }
+              returnData.data[data[ci].label] = curveData;
+            }
+          }
+          break;
+        case matsTypes.PlotTypes.ensembleHistogram:
+          returnData.stats = {}; // map of maps
+          returnData.data = {}; // map of arrays of maps
+          for (let ci = 0; ci < data.length; ci += 1) {
+            // for each curve
+            // if the curve label is a reserved word do not process the curve (its a zero or max curve)
+            const reservedWords = Object.values(matsTypes.ReservedWords);
+            if (reservedWords.indexOf(data[ci].label) === -1) {
+              stats.label = data[ci].label;
+              stats.mean = data[ci].glob_stats.dMean;
+              stats["standard deviation"] = data[ci].glob_stats.sd;
+              stats.n = data[ci].glob_stats.nGood;
+              stats.minimum = data[ci].glob_stats.minVal;
+              stats.maximum = data[ci].glob_stats.maxVal;
+              returnData.stats[data[ci].label] = stats;
+
+              for (let cdi = 0; cdi < data[ci].x.length; cdi += 1) {
+                // for each datapoint
+                const curveDataElement = {};
+                curveDataElement[`${data[ci].label} bin`] = data[ci].x[cdi];
+                curveDataElement.n = data[ci].bin_stats[cdi].bin_n;
+                curveDataElement["bin rel freq"] = data[ci].bin_stats[cdi].bin_rf;
+                curveData.push(curveDataElement);
+              }
+              returnData.data[data[ci].label] = curveData;
+            }
+          }
+          break;
+        case matsTypes.PlotTypes.contour:
+        case matsTypes.PlotTypes.contourDiff:
+          returnData.stats = {}; // map of maps
+          returnData.data = {}; // map of arrays of maps
+          stats.label = data[0].label;
+          stats["total number of points"] = data[0].glob_stats.n;
+          stats["mean stat"] = data[0].glob_stats.mean;
+          stats["minimum time"] = moment
+            .utc(data[0].glob_stats.minDate * 1000)
+            .format("YYYY-MM-DD HH:mm");
+          stats["maximum time"] = moment
+            .utc(data[0].glob_stats.maxDate * 1000)
+            .format("YYYY-MM-DD HH:mm");
+
+          returnData.stats[data[0].label] = stats;
+
+          isCTC =
+            data[0] !== undefined &&
+            data[0].hitTextOutput !== undefined &&
+            data[0].hitTextOutput.length > 0;
+          for (let si = 0; si < data[0].xTextOutput.length; si += 1) {
+            const curveDataElement = {};
+            curveDataElement.xVal = data[0].xTextOutput[si];
+            curveDataElement.yVal = data[0].yTextOutput[si];
+            curveDataElement.stat = data[0].zTextOutput[si];
+            curveDataElement.N = data[0].nTextOutput[si];
+            if (isCTC) {
+              curveDataElement.hit = data[0].hitTextOutput[si];
+              curveDataElement.fa = data[0].faTextOutput[si];
+              curveDataElement.miss = data[0].missTextOutput[si];
+              curveDataElement.cn = data[0].cnTextOutput[si];
+            } else {
+              curveDataElement["Start Date"] = moment
+                .utc(data[0].minDateTextOutput[si] * 1000)
+                .format("YYYY-MM-DD HH:mm");
+              curveDataElement["End Date"] = moment
+                .utc(data[0].maxDateTextOutput[si] * 1000)
+                .format("YYYY-MM-DD HH:mm");
+            }
+            curveData.push(curveDataElement);
+          }
+          returnData.data[data[0].label] = curveData;
+          break;
+        case matsTypes.PlotTypes.scatter2d:
+          firstBestFitIndex = -1;
+          bestFitIndexes = {};
+          for (let ci = 0; ci < data.length; ci += 1) {
+            if (ci === firstBestFitIndex) {
+              break; // best fit curves are at the end so do not do further processing
+            }
+            curveData = data[ci];
+            // look for a best fit curve - only have to look at curves with higher index than this one
+            for (let cbi = ci + 1; cbi < data.length; cbi += 1) {
+              if (
+                data[cbi].label.indexOf(curveData.label) !== -1 &&
+                data[cbi].label.indexOf("-best fit") !== -1
+              ) {
+                bestFitIndexes[ci] = cbi;
+                if (firstBestFitIndex === -1) {
+                  firstBestFitIndex = cbi;
+                }
+                break;
+              }
+            }
+            const curveTextData = [];
+            for (let cdi = 0; cdi < curveData.data.length; cdi += 1) {
+              const element = {};
+              [element.xAxis] = curveData.data[cdi];
+              [, element.yAxis] = curveData.data[cdi];
+              if (bestFitIndexes[ci] === undefined) {
+                element["best fit"] = "none;";
+              } else {
+                [, element["best fit"]] = data[bestFitIndexes[ci]].data[cdi];
+              }
+              curveTextData.push(element);
+            }
+            returnData[curveData.label] = curveTextData;
+          }
+          break;
+        default:
+          return undefined;
+      }
+      returnData.dsiRealPageIndex = dsiRealPageIndex;
+      returnData.dsiTextDirection = dsiTextDirection;
+      return returnData;
+    } catch (error) {
+      throw new Meteor.Error(
+        `Error in getFlattenedResultData function: ${error.message}`
+      );
+    }
+  }
+  return null;
+};
+
+// private middleware for getCSV route
+const getCSV = function (params, res) {
+  if (Meteor.isServer) {
+    const stringify = require("csv-stringify");
+    let csv = "";
+    try {
+      const result = getFlattenedResultData(params.key, 0, -1000);
+      const statArray = Object.values(result.stats);
+      const dataArray = Object.values(result.data);
+
+      const fileName = `matsplot-${moment.utc().format("YYYYMMDD-HH.mm.ss")}.csv`;
+      res.setHeader("Content-disposition", `attachment; filename=${fileName}`);
+      res.setHeader("Content-Type", "attachment.ContentType");
+      stringify.stringify(
+        statArray,
+        {
+          header: true,
+        },
+        function (err, output) {
+          if (err) {
+            console.log("error in getCSV:", err);
+            res.write(`error,${err.toLocaleString()}`);
+            res.end(`<body><h1>getCSV Error! ${err.toLocaleString()}</h1></body>`);
+            return;
+          }
+          res.write(output);
+          stringifyCurveData(stringify, dataArray, res);
+        }
+      );
+    } catch (e) {
+      console.log("error retrieving data: ", e);
+      csv = `error,${e.toLocaleString()}`;
+      res.setHeader("Content-disposition", "attachment; filename=matsplot.csv");
+      res.setHeader("Content-Type", "attachment.ContentType");
+      res.end(`<body><h1>getCSV Error! ${csv}</h1></body>`);
+    }
+  }
+};
+
+// private middleware for getJSON route
+const getJSON = function (params, res) {
+  if (Meteor.isServer) {
+    let flatJSON = "";
+    try {
+      const result = getPagenatedData(params.key, 0, -1000);
+      flatJSON = JSON.stringify(result);
+    } catch (e) {
+      console.log("error retrieving data: ", e);
+      flatJSON = JSON.stringify({
+        error: e,
+      });
+      delete flatJSON.dsiRealPageIndex;
+      delete flatJSON.dsiTextDirection;
+    }
+    res.setHeader("Content-Type", "application/json");
+    res.write(flatJSON);
+    res.end();
+  }
 };
 
 // private define a middleware for refreshing the metadata
-const _refreshMetadataMWltData = function (params, req, res, next) {
+const refreshMetadataMWltData = function (res) {
   if (Meteor.isServer) {
     console.log("Server route asked to refresh metadata");
 
     try {
       console.log("GUI asked to refresh metadata");
-      _checkMetaDataRefresh();
+      checkMetaDataRefresh();
     } catch (e) {
       console.log(e);
       res.end(
@@ -2002,13 +1425,13 @@ const _refreshMetadataMWltData = function (params, req, res, next) {
 };
 
 // private middleware for causing the scorecard to refresh its mongo collection for a given document
-const _refreshScorecard = function (params, req, res, next) {
+const refreshScorecard = function (params, res) {
   if (Meteor.isServer) {
     const docId = decodeURIComponent(params.docId);
     // get userName, name, submitted, processedAt from id
-    // SC:anonymous--submitted:20230322230435--1block:0:02/19/2023_20_00_-_03/21/2023_20_00
+    // SC:anonymous -= 1submitted:20230322230435 -= 11block:0:02/19/2023_20_00_-_03/21/2023_20_00
     if (cbScorecardPool === undefined) {
-      throw new Meteor.Error("_getScorecardData: No cbScorecardPool defined");
+      throw new Meteor.Error("getScorecardData: No cbScorecardPool defined");
     }
     const statement = `SELECT sc.*
                 From
@@ -2054,7 +1477,7 @@ const _refreshScorecard = function (params, req, res, next) {
   }
 };
 
-const _setStatusScorecard = function (params, req, res, next) {
+const setStatusScorecard = function (params, req, res) {
   if (Meteor.isServer) {
     const docId = decodeURIComponent(params.docId);
     let body = "";
@@ -2071,8 +1494,7 @@ const _setStatusScorecard = function (params, req, res, next) {
         // console.log(body);
         try {
           const doc = JSON.parse(body);
-          const { status } = doc;
-          const { error } = doc;
+          const docStatus = doc.status;
           const found = matsCollections.Scorecard.find({ id: docId }).fetch();
           if (found.length === 0) {
             throw new Error("Error from scorecard lookup - document not found");
@@ -2083,7 +1505,7 @@ const _setStatusScorecard = function (params, req, res, next) {
             },
             {
               $set: {
-                status,
+                docStatus,
               },
             }
           );
@@ -2104,42 +1526,48 @@ const _setStatusScorecard = function (params, req, res, next) {
 };
 
 // private save the result from the query into mongo and downsample if that result's size is greater than 1.2Mb
-const _saveResultData = function (result) {
+const saveResultData = function (result) {
   if (Meteor.isServer) {
+    const storedResult = result;
     const sizeof = require("object-sizeof");
     const hash = require("object-hash");
-    const key = hash(result.basis.plotParams);
+    const key = hash(storedResult.basis.plotParams);
     const threshold = 1200000;
     let ret = {};
     try {
-      const dSize = sizeof(result.data);
-      // console.log("result.basis.data size is ", dSize);
+      const dSize = sizeof(storedResult.data);
+      // console.log("storedResult.basis.data size is ", dSize);
       // TimeSeries and DailyModelCycle are the only plot types that require downSampling
       if (
         dSize > threshold &&
-        (result.basis.plotParams.plotTypes.TimeSeries ||
-          result.basis.plotParams.plotTypes.DailyModelCycle)
+        (storedResult.basis.plotParams.plotTypes.TimeSeries ||
+          storedResult.basis.plotParams.plotTypes.DailyModelCycle)
       ) {
         // greater than threshold need to downsample
         // downsample and save it in DownSampleResult
         console.log("DownSampling");
         const downsampler = require("downsample-lttb");
         let totalPoints = 0;
-        for (let di = 0; di < result.data.length; di++) {
-          totalPoints += result.data[di].x_epoch.length;
+        for (let di = 0; di < storedResult.data.length; di += 1) {
+          totalPoints += storedResult.data[di].x_epoch.length;
         }
         const allowedNumberOfPoints = (threshold / dSize) * totalPoints;
         const downSampleResult =
-          result === undefined ? undefined : JSON.parse(JSON.stringify(result));
-        for (var ci = 0; ci < result.data.length; ci++) {
+          storedResult === undefined
+            ? undefined
+            : JSON.parse(JSON.stringify(storedResult));
+        for (let ci = 0; ci < storedResult.data.length; ci += 1) {
           const dsData = {};
-          const xyDataset = result.data[ci].x_epoch.map(function (d, index) {
-            return [result.data[ci].x_epoch[index], result.data[ci].y[index]];
+          const xyDataset = storedResult.data[ci].x_epoch.map(function (d, index) {
+            return [
+              storedResult.data[ci].x_epoch[index],
+              storedResult.data[ci].y[index],
+            ];
           });
           const ratioTotalPoints = xyDataset.length / totalPoints;
           const myAllowedPoints = Math.round(ratioTotalPoints * allowedNumberOfPoints);
           // downsample the array
-          var downsampledSeries;
+          let downsampledSeries;
           if (myAllowedPoints < xyDataset.length && xyDataset.length > 2) {
             downsampledSeries = downsampler.processData(xyDataset, myAllowedPoints);
             // replace the y attributes (tooltips etc.) with the y attributes from the nearest x
@@ -2147,10 +1575,10 @@ const _saveResultData = function (result) {
             // skip through the original dataset capturing each downSampled data point
             const arrayKeys = [];
             const nonArrayKeys = [];
-            const keys = Object.keys(result.data[ci]);
-            for (var ki = 0; ki < keys.length; ki++) {
+            const keys = Object.keys(storedResult.data[ci]);
+            for (let ki = 0; ki < keys.length; ki += 1) {
               if (keys[ki] !== "x_epoch") {
-                if (Array.isArray(result.data[ci][keys[ki]])) {
+                if (Array.isArray(storedResult.data[ci][keys[ki]])) {
                   arrayKeys.push(keys[ki]);
                   dsData[keys[ki]] = [];
                 } else {
@@ -2161,32 +1589,33 @@ const _saveResultData = function (result) {
             // We only ever downsample series plots - never profiles and series plots only ever have error_y arrays.
             // This is a little hacky but what is happening is we putting error_y.array on the arrayKeys list so that it gets its
             // downsampled equivalent values.
-            for (ki = 0; ki < nonArrayKeys.length; ki++) {
+            for (let ki = 0; ki < nonArrayKeys.length; ki += 1) {
               dsData[nonArrayKeys[ki]] = JSON.parse(
-                JSON.stringify(result.data[ci][nonArrayKeys[ki]])
+                JSON.stringify(storedResult.data[ci][nonArrayKeys[ki]])
               );
             }
             // remove the original error_y array data.
             dsData.error_y.array = [];
-            for (let dsi = 0; dsi < downsampledSeries.length; dsi++) {
+            for (let dsi = 0; dsi < downsampledSeries.length; dsi += 1) {
               while (
-                originalIndex < result.data[ci].x_epoch.length &&
-                result.data[ci].x_epoch[originalIndex] < downsampledSeries[dsi][0]
+                originalIndex < storedResult.data[ci].x_epoch.length &&
+                storedResult.data[ci].x_epoch[originalIndex] < downsampledSeries[dsi][0]
               ) {
-                originalIndex++;
+                originalIndex += 1;
               }
               // capture the stuff related to this downSampled data point (downSampled data points are always a subset of original data points)
-              for (ki = 0; ki < arrayKeys.length; ki++) {
+              for (let ki = 0; ki < arrayKeys.length; ki += 1) {
                 dsData[arrayKeys[ki]][dsi] =
-                  result.data[ci][arrayKeys[ki]][originalIndex];
+                  storedResult.data[ci][arrayKeys[ki]][originalIndex];
               }
-              dsData.error_y.array[dsi] = result.data[ci].error_y.array[originalIndex];
+              dsData.error_y.array[dsi] =
+                storedResult.data[ci].error_y.array[originalIndex];
             }
             // add downsampled annotation to curve options
             downSampleResult[ci] = dsData;
             downSampleResult[ci].annotation += "   **DOWNSAMPLED**";
           } else {
-            downSampleResult[ci] = result.data[ci];
+            downSampleResult[ci] = storedResult.data[ci];
           }
           downSampleResult.data[ci] = downSampleResult[ci];
         }
@@ -2202,21 +1631,21 @@ const _saveResultData = function (result) {
       } else {
         ret = {
           key,
-          result,
+          result: storedResult,
         };
       }
       // save original dataset in the matsCache
       if (
-        result.basis.plotParams.plotTypes.TimeSeries ||
-        result.basis.plotParams.plotTypes.DailyModelCycle
+        storedResult.basis.plotParams.plotTypes.TimeSeries ||
+        storedResult.basis.plotParams.plotTypes.DailyModelCycle
       ) {
-        for (var ci = 0; ci < result.data.length; ci++) {
-          delete result.data[ci].x_epoch; // we only needed this as an index for downsampling
+        for (let ci = 0; ci < storedResult.data.length; ci += 1) {
+          delete storedResult.data[ci].x_epoch; // we only needed this as an index for downsampling
         }
       }
       matsCache.storeResult(key, {
         key,
-        result,
+        result: storedResult,
       }); // lifespan is handled by lowDb (internally) in matscache
     } catch (error) {
       if (error.toLocaleString().indexOf("larger than the maximum size") !== -1) {
@@ -2225,10 +1654,11 @@ const _saveResultData = function (result) {
     }
     return ret;
   }
+  return null;
 };
 
 // Utility method for writing out the meteor.settings file
-const _write_settings = function (settings, appName) {
+const writeSettings = function (settings, appName) {
   const fs = require("fs");
   let settingsPath = process.env.METEOR_SETTINGS_DIR;
   if (!settingsPath) {
@@ -2272,10 +1702,10 @@ const _write_settings = function (settings, appName) {
   });
 };
 // return the scorecard for the provided selectors
-const _getScorecardData = async function (userName, name, submitted, processedAt) {
+const getThisScorecardData = async function (userName, name, submitted, processedAt) {
   try {
     if (cbScorecardPool === undefined) {
-      throw new Meteor.Error("_getScorecardData: No cbScorecardPool defined");
+      throw new Meteor.Error("getThisScorecardData: No cbScorecardPool defined");
     }
     const statement = `SELECT sc.*
             From
@@ -2320,7 +1750,7 @@ const _getScorecardData = async function (userName, name, submitted, processedAt
     // and the ID. The app will find the whole thing in the mongo collection.
     return { scorecard: result[0], docID };
   } catch (err) {
-    console.log(`_getScorecardData error : ${err.message}`);
+    console.log(`getThisScorecardData error : ${err.message}`);
     return {
       error: err.message,
     };
@@ -2328,10 +1758,10 @@ const _getScorecardData = async function (userName, name, submitted, processedAt
 };
 
 // return the scorecard status information from the couchbase database
-const _getScorecardInfo = async function () {
+const getThisScorecardInfo = async function () {
   try {
     if (cbScorecardPool === undefined) {
-      throw new Meteor.Error("_getScorecardInfo: No cbScorecardPool defined");
+      throw new Meteor.Error("getThisScorecardInfo: No cbScorecardPool defined");
     }
 
     const statement = `SELECT
@@ -2347,20 +1777,20 @@ const _getScorecardInfo = async function () {
             WHERE
             sc.type='SC';`;
     const result = await cbScorecardPool.queryCBWithConsistency(statement);
-    scMap = {};
+    const scMap = {};
     result.forEach(function (elem) {
       if (!Object.keys(scMap).includes(elem.userName)) {
         scMap[elem.userName] = {};
       }
-      userElem = scMap[elem.userName];
+      const userElem = scMap[elem.userName];
       if (!Object.keys(userElem).includes(elem.name)) {
         userElem[elem.name] = {};
       }
-      nameElem = userElem[elem.name];
+      const nameElem = userElem[elem.name];
       if (!Object.keys(nameElem).includes(elem.submited)) {
         nameElem[elem.submitted] = {};
       }
-      submittedElem = nameElem[elem.submitted];
+      const submittedElem = nameElem[elem.submitted];
       submittedElem[elem.processedAt] = {
         id: elem.id,
         status: elem.status,
@@ -2369,14 +1799,14 @@ const _getScorecardInfo = async function () {
     });
     return scMap;
   } catch (err) {
-    console.log(`_getScorecardInfo error : ${err.message}`);
+    console.log(`getThisScorecardInfo error : ${err.message}`);
     return {
       error: err.message,
     };
   }
 };
 
-const _getPlotParamsFromScorecardInstance = async function (
+const getThesePlotParamsFromScorecardInstance = async function (
   userName,
   name,
   submitted,
@@ -2384,7 +1814,9 @@ const _getPlotParamsFromScorecardInstance = async function (
 ) {
   try {
     if (cbScorecardPool === undefined) {
-      throw new Meteor.Error("_getScorecardInfo: No cbScorecardPool defined");
+      throw new Meteor.Error(
+        "getThesePlotParamsFromScorecardInstance: No cbScorecardPool defined"
+      );
     }
     const statement = `SELECT sc.plotParams
             From
@@ -2401,7 +1833,7 @@ const _getPlotParamsFromScorecardInstance = async function (
     }
     return result[0];
   } catch (err) {
-    console.log(`_getPlotParamsFromScorecardInstance error : ${err.message}`);
+    console.log(`getThesePlotParamsFromScorecardInstance error : ${err.message}`);
     return {
       error: err.message,
     };
@@ -2563,8 +1995,8 @@ const applyAuthorization = new ValidatedMethod({
           }
         }
       }
-      return false;
     }
+    return false;
   },
 });
 
@@ -2598,8 +2030,8 @@ const applyDatabaseSettings = new ValidatedMethod({
           }
         );
       }
-      return false;
     }
+    return false;
   },
 });
 
@@ -2642,13 +2074,14 @@ const dropScorecardInstance = new ValidatedMethod({
   }).validator(),
   run(params) {
     if (Meteor.isServer) {
-      return _dropScorecardInstance(
+      return dropThisScorecardInstance(
         params.userName,
         params.name,
         params.submittedTime,
         params.processedAt
       );
     }
+    return null;
   },
 });
 
@@ -2694,10 +2127,11 @@ const emailImage = new ValidatedMethod({
     );
     const { clientId } = credentials;
     const { clientSecret } = credentials;
-    const { refresh_token } = credentials;
+    const refreshToken = credentials.refresh_token;
 
     let smtpTransporter;
     try {
+      const Nodemailer = require("nodemailer");
       smtpTransporter = Nodemailer.createTransport("SMTP", {
         service: "Gmail",
         auth: {
@@ -2705,7 +2139,7 @@ const emailImage = new ValidatedMethod({
             user: "mats.gsl@noaa.gov",
             clientId,
             clientSecret,
-            refreshToken: refresh_token,
+            refreshToken,
           },
         },
       });
@@ -2722,7 +2156,7 @@ const emailImage = new ValidatedMethod({
         attachments: [
           {
             filename: "graph.png",
-            contents: new Buffer(imageStr.split("base64,")[1], "base64"),
+            contents: Buffer.from(imageStr.split("base64,")[1], "base64"),
           },
         ],
       };
@@ -2811,8 +2245,8 @@ const getGraphData = new ValidatedMethod({
           // results aren't in the cache - need to process data routine
           const Future = require("fibers/future");
           const future = new Future();
-          global[dataFunction](params.plotParams, function (results) {
-            ret = _saveResultData(results);
+          global[dataFunction](params.plotParams, function (result) {
+            ret = saveResultData(result);
             future.return(ret);
           });
           return future.wait();
@@ -2860,6 +2294,7 @@ const getGraphData = new ValidatedMethod({
         }
       }
     }
+    return null;
   },
 });
 
@@ -2899,6 +2334,7 @@ const getGraphDataByKey = new ValidatedMethod({
         );
       }
     }
+    return null;
   },
 });
 
@@ -2922,6 +2358,7 @@ const getLayout = new ValidatedMethod({
         throw new Meteor.Error(`Error in getLayout function:${key} : ${error.message}`);
       }
     }
+    return null;
   },
 });
 
@@ -2945,6 +2382,7 @@ const getScorecardSettings = new ValidatedMethod({
         );
       }
     }
+    return null;
   },
 });
 
@@ -2967,7 +2405,7 @@ const getPlotParamsFromScorecardInstance = new ValidatedMethod({
   run(params) {
     try {
       if (Meteor.isServer) {
-        return _getPlotParamsFromScorecardInstance(
+        return getThesePlotParamsFromScorecardInstance(
           params.userName,
           params.name,
           params.submitted,
@@ -2979,6 +2417,7 @@ const getPlotParamsFromScorecardInstance = new ValidatedMethod({
         `Error in getPlotParamsFromScorecardInstance function:${error.message}`
       );
     }
+    return null;
   },
 });
 
@@ -3011,12 +2450,13 @@ const getPlotResult = new ValidatedMethod({
       const npi = params.newPageIndex;
       let ret = {};
       try {
-        ret = _getFlattenedResultData(rKey, pi, npi);
+        ret = getFlattenedResultData(rKey, pi, npi);
       } catch (e) {
         console.log(e);
       }
       return ret;
     }
+    return null;
   },
 });
 
@@ -3027,9 +2467,9 @@ const getReleaseNotes = new ValidatedMethod({
     //     return Assets.getText('public/MATSReleaseNotes.html');
     // }
     if (Meteor.isServer) {
-      const future = require("fibers/future");
+      const Future = require("fibers/future");
       const fse = require("fs-extra");
-      const dFuture = new future();
+      const dFuture = new Future();
       let fData;
       let file;
       if (process.env.NODE_ENV === "development") {
@@ -3054,6 +2494,7 @@ const getReleaseNotes = new ValidatedMethod({
       dFuture.wait();
       return fData;
     }
+    return null;
   },
 });
 
@@ -3074,6 +2515,7 @@ const setCurveParamDisplayText = new ValidatedMethod({
         { $set: { controlButtonText: params.newText } }
       );
     }
+    return null;
   },
 });
 
@@ -3095,13 +2537,14 @@ const getScorecardData = new ValidatedMethod({
   }).validator(),
   run(params) {
     if (Meteor.isServer) {
-      return _getScorecardData(
+      return getThisScorecardData(
         params.userName,
         params.name,
         params.submitted,
         params.processedAt
       );
     }
+    return null;
   },
 });
 
@@ -3110,8 +2553,9 @@ const getScorecardInfo = new ValidatedMethod({
   validate: new SimpleSchema({}).validator(),
   run() {
     if (Meteor.isServer) {
-      return _getScorecardInfo();
+      return getThisScorecardInfo();
     }
+    return null;
   },
 });
 
@@ -3123,6 +2567,7 @@ const getUserAddress = new ValidatedMethod({
     if (Meteor.isServer) {
       return Meteor.user().services.google.email.toLowerCase();
     }
+    return null;
   },
 });
 
@@ -3142,7 +2587,7 @@ const insertColor = new ValidatedMethod({
       return false;
     }
     const colorScheme = matsCollections.ColorScheme.findOne({});
-    colorScheme.colors.splice(params.insertAfterIndex, 0, newColor);
+    colorScheme.colors.splice(params.insertAfterIndex, 0, params.newColor);
     matsCollections.update({}, colorScheme);
     return false;
   },
@@ -3151,18 +2596,25 @@ const insertColor = new ValidatedMethod({
 // administration tool
 const readFunctionFile = new ValidatedMethod({
   name: "matsMethods.readFunctionFile",
-  validate: new SimpleSchema({}).validator(),
-  run() {
+  validate: new SimpleSchema({
+    file: {
+      type: String,
+    },
+    type: {
+      type: String,
+    },
+  }).validator(),
+  run(params) {
     if (Meteor.isServer) {
       const future = require("fibers/future");
       const fse = require("fs-extra");
       let path = "";
       let fData;
-      if (type === "data") {
-        path = `/web/static/dataFunctions/${file}`;
+      if (params.type === "data") {
+        path = `/web/static/dataFunctions/${params.file}`;
         console.log(`exporting data file: ${path}`);
-      } else if (type === "graph") {
-        path = `/web/static/displayFunctions/${file}`;
+      } else if (params.type === "graph") {
+        path = `/web/static/displayFunctions/${params.file}`;
         console.log(`exporting graph file: ${path}`);
       } else {
         return "error - wrong type";
@@ -3174,6 +2626,7 @@ const readFunctionFile = new ValidatedMethod({
       });
       return future.wait();
     }
+    return null;
   },
 });
 
@@ -3185,7 +2638,7 @@ const refreshMetaData = new ValidatedMethod({
     if (Meteor.isServer) {
       try {
         // console.log("GUI asked to refresh metadata");
-        _checkMetaDataRefresh();
+        checkMetaDataRefresh();
       } catch (e) {
         console.log(e);
         throw new Meteor.Error("Server error: ", e.message);
@@ -3264,8 +2717,8 @@ const removeAuthorization = new ValidatedMethod({
           }
         );
       }
-      return false;
     }
+    return false;
   },
 });
 
@@ -3277,9 +2730,9 @@ const removeColor = new ValidatedMethod({
       type: String,
     },
   }).validator(),
-  run(removeColor) {
+  run(params) {
     const colorScheme = matsCollections.ColorScheme.findOne({});
-    const removeIndex = colorScheme.colors.indexOf(removeColor);
+    const removeIndex = colorScheme.colors.indexOf(params.removeColor);
     colorScheme.colors.splice(removeIndex, 1);
     matsCollections.ColorScheme.update({}, colorScheme);
     return false;
@@ -3324,7 +2777,7 @@ const applySettingsData = new ValidatedMethod({
         matsCollections.appName.findOne({})
       );
       const { appName } = matsCollections.Settings.findOne({});
-      _write_settings(settings, appName);
+      writeSettings(settings, appName);
       // in development - when being run by meteor, this should force a restart of the app.
       // in case I am in a container - exit and force a reload
       console.log(
@@ -3342,7 +2795,6 @@ const applySettingsData = new ValidatedMethod({
 // for default settings ...
 const resetApp = async function (appRef) {
   if (Meteor.isServer) {
-    const fse = require("fs-extra");
     const metaDataTableRecords = appRef.appMdr;
     const { appPools } = appRef;
     const type = appRef.appType;
@@ -3365,15 +2817,6 @@ const resetApp = async function (appRef) {
     let appDefaultModel = "";
     let appColor;
     switch (type) {
-      case matsTypes.AppTypes.mats:
-        if (dbType === matsTypes.DbTypes.couchbase) {
-          appColor = "#33abbb";
-        } else {
-          appColor = Meteor.settings.public.color
-            ? Meteor.settings.public.color
-            : "#3366bb";
-        }
-        break;
       case matsTypes.AppTypes.metexpress:
         appColor = Meteor.settings.public.color
           ? Meteor.settings.public.color
@@ -3388,15 +2831,25 @@ const resetApp = async function (appRef) {
           ? Meteor.settings.public.default_model
           : "Default";
         break;
+      case matsTypes.AppTypes.mats:
+      default:
+        if (dbType === matsTypes.DbTypes.couchbase) {
+          appColor = "#33abbb";
+        } else {
+          appColor = Meteor.settings.public.color
+            ? Meteor.settings.public.color
+            : "#3366bb";
+        }
+        break;
     }
     const appTimeOut = Meteor.settings.public.mysql_wait_timeout
       ? Meteor.settings.public.mysql_wait_timeout
       : 300;
-    let dep_env = process.env.NODE_ENV;
-    const curve_params = curveParamsByApp[Meteor.settings.public.app];
-    let apps_to_score;
+    let depEnv = process.env.NODE_ENV;
+    const curveParams = curveParamsByApp[Meteor.settings.public.app];
+    let appsToScore;
     if (Meteor.settings.public.scorecard) {
-      apps_to_score = Meteor.settings.public.apps_to_score
+      appsToScore = Meteor.settings.public.apps_to_score
         ? Meteor.settings.public.apps_to_score
         : [];
     }
@@ -3425,8 +2878,8 @@ const resetApp = async function (appRef) {
           MAPBOX_KEY: mapboxKey,
         },
         public: {
-          run_environment: dep_env,
-          apps_to_score,
+          run_environment: depEnv,
+          apps_to_score: appsToScore,
           default_group: appDefaultGroup,
           default_db: appDefaultDB,
           default_model: appDefaultModel,
@@ -3441,7 +2894,7 @@ const resetApp = async function (appRef) {
           threshold_units: thresholdUnits,
         },
       };
-      _write_settings(settings, appName); // this is going to cause the app to restart in the meteor development environment!!!
+      writeSettings(settings, appName); // this is going to cause the app to restart in the meteor development environment!!!
       // exit for production - probably won't ever get here in development mode (running with meteor)
       // This depends on whatever system is running the node process to restart it.
       console.log("resetApp - exiting after creating default settings");
@@ -3453,16 +2906,16 @@ const resetApp = async function (appRef) {
     // to debug an integration or production deployment, set the environment variable deployment_environment to one of
     // development, integration, production, metexpress
     if (Meteor.settings.public && Meteor.settings.public.run_environment) {
-      dep_env = Meteor.settings.public.run_environment;
+      depEnv = Meteor.settings.public.run_environment;
     } else {
-      dep_env = process.env.NODE_ENV;
+      depEnv = process.env.NODE_ENV;
     }
     // get the mapbox key out of the settings file, if it exists
     if (Meteor.settings.private && Meteor.settings.private.MAPBOX_KEY) {
       mapboxKey = Meteor.settings.private.MAPBOX_KEY;
     }
     delete Meteor.settings.public.undefinedRoles;
-    for (let pi = 0; pi < appPools.length; pi++) {
+    for (let pi = 0; pi < appPools.length; pi += 1) {
       const record = appPools[pi];
       const poolName = record.pool;
       // if the database credentials have been set in the meteor.private.settings file then the global[poolName]
@@ -3477,34 +2930,29 @@ const resetApp = async function (appRef) {
           Meteor.settings.public.undefinedRoles = [];
         }
         Meteor.settings.public.undefinedRoles.push(record.role);
-        continue;
-      }
-      try {
-        if (dbType === matsTypes.DbTypes.couchbase) {
-          // simple couchbase test
-          const time = await cbPool.queryCB("select NOW_MILLIS() as time;");
-          break;
-        } else {
-          // default to mysql so that old apps won't break
-          global[poolName].on("connection", function (connection) {
-            connection.query("set group_concat_max_len = 4294967295");
-            connection.query(`set session wait_timeout = ${appTimeOut}`);
-            // ("opening new " + poolName + " connection");
-          });
+      } else {
+        try {
+          if (dbType !== matsTypes.DbTypes.couchbase) {
+            // default to mysql so that old apps won't break
+            global[poolName].on("connection", function (connection) {
+              connection.query("set group_concat_max_len = 4294967295");
+              connection.query(`set session wait_timeout = ${appTimeOut}`);
+              // ("opening new " + poolName + " connection");
+            });
+          }
+          // connections all work so make sure that Meteor.settings.public.undefinedRoles is undefined
+          delete Meteor.settings.public.undefinedRoles;
+        } catch (e) {
+          console.log(
+            `${poolName}:  not initialized -= 1 could not open connection: Error:${e.message}`
+          );
+          Meteor.settings.public.undefinedRoles =
+            Meteor.settings.public.undefinedRoles === undefined
+              ? []
+              : Meteor.settings.public.undefinedRoles === undefined;
+          Meteor.settings.public.undefinedRoles.push(record.role);
         }
-      } catch (e) {
-        console.log(
-          `${poolName}:  not initialized-- could not open connection: Error:${e.message}`
-        );
-        Meteor.settings.public.undefinedRoles =
-          Meteor.settings.public.undefinedRoles === undefined
-            ? []
-            : Meteor.settings.public.undefinedRoles === undefined;
-        Meteor.settings.public.undefinedRoles.push(record.role);
-        continue;
       }
-      // connections all work so make sure that Meteor.settings.public.undefinedRoles is undefined
-      delete Meteor.settings.public.undefinedRoles;
     }
     // just in case - should never happen.
     if (
@@ -3523,6 +2971,7 @@ const resetApp = async function (appRef) {
       console.log("VERSION not set in the environment - using localhost");
       appVersion = "localhost";
       commit = "HEAD";
+      branch = "feature";
     }
     const appType = type || matsTypes.AppTypes.mats;
 
@@ -3538,7 +2987,7 @@ const resetApp = async function (appRef) {
     // only create metadata tables if the resetApp was called with a real metaDataTables object
     if (metaDataTableRecords instanceof matsTypes.MetaDataDBRecord) {
       const metaDataTables = metaDataTableRecords.getRecords();
-      for (let mdti = 0; mdti < metaDataTables.length; mdti++) {
+      for (let mdti = 0; mdti < metaDataTables.length; mdti += 1) {
         const metaDataRef = metaDataTables[mdti];
         metaDataRef.lastRefreshed = moment().format();
         if (metaDataTableUpdates.find({ name: metaDataRef.name }).count() === 0) {
@@ -3572,6 +3021,7 @@ const resetApp = async function (appRef) {
       dbType,
       appVersion,
       commit,
+      branch,
       appName,
       appType,
       mapboxKey,
@@ -3587,24 +3037,24 @@ const resetApp = async function (appRef) {
     // get the curve params for this app into their collections
     matsCollections.CurveParamsInfo.remove({});
     matsCollections.CurveParamsInfo.insert({
-      curve_params,
+      curve_params: curveParams,
     });
-    for (let cp = 0; cp < curve_params.length; cp++) {
-      if (matsCollections[curve_params[cp]] !== undefined) {
-        matsCollections[curve_params[cp]].remove({});
+    for (let cp = 0; cp < curveParams.length; cp += 1) {
+      if (matsCollections[curveParams[cp]] !== undefined) {
+        matsCollections[curveParams[cp]].remove({});
       }
     }
     // if this is a scorecard also get the apps to score out of the settings file
     if (Meteor.settings.public && Meteor.settings.public.scorecard) {
       if (Meteor.settings.public.apps_to_score) {
-        apps_to_score = Meteor.settings.public.apps_to_score;
+        appsToScore = Meteor.settings.public.apps_to_score;
         matsCollections.AppsToScore.remove({});
         matsCollections.AppsToScore.insert({
-          apps_to_score,
+          apps_to_score: appsToScore,
         });
       } else {
         throw new Meteor.Error(
-          "apps_to_score are not initialized in app settings--cannot build selectors"
+          "apps_to_score are not initialized in app settings -= 1cannot build selectors"
         );
       }
     }
@@ -3774,8 +3224,9 @@ const testGetTables = new ValidatedMethod({
         );
         try {
           const result = await cbUtilities.queryCB("select NOW_MILLIS() as time");
+          console.log(`Couchbase get tables suceeded. result: ${result}`);
         } catch (err) {
-          throw new Meteor.Error(e.message);
+          throw new Meteor.Error(err.message);
         }
       } else {
         // default to mysql so that old apps won't break
@@ -3812,6 +3263,7 @@ const testGetTables = new ValidatedMethod({
         }
       }
     }
+    return null;
   },
 });
 
@@ -3834,6 +3286,665 @@ const testSetMetaDataTableUpdatesLastRefreshedBack = new ValidatedMethod({
     return metaDataTableUpdates.find({}).fetch();
   },
 });
+
+// Define routes for server
+if (Meteor.isServer) {
+  // add indexes to result and axes collections
+  DownSampleResults.rawCollection().createIndex(
+    {
+      createdAt: 1,
+    },
+    {
+      expireAfterSeconds: 3600 * 8,
+    }
+  ); // 8 hour expiration
+  LayoutStoreCollection.rawCollection().createIndex(
+    {
+      createdAt: 1,
+    },
+    {
+      expireAfterSeconds: 900,
+    }
+  ); // 15 min expiration
+
+  // set the default proxy prefix path to ""
+  // If the settings are not complete, they will be set by the configuration and written out, which will cause the app to reset
+  if (Meteor.settings.public && !Meteor.settings.public.proxy_prefix_path) {
+    Meteor.settings.public.proxy_prefix_path = "";
+  }
+
+  // eslint-disable-next-line no-unused-vars
+  Picker.route("/status", function (params, req, res, next) {
+    Picker.middleware(status(res));
+  });
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/status`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(status(res));
+    }
+  );
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/:app/status`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(status(res));
+    }
+  );
+
+  // eslint-disable-next-line no-unused-vars
+  Picker.route("/getCSV/:key", function (params, req, res, next) {
+    Picker.middleware(getCSV(params, res));
+  });
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/getCSV/:key`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getCSV(params, res));
+    }
+  );
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/app:/getCSV/:key`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getCSV(params, res));
+    }
+  );
+
+  // eslint-disable-next-line no-unused-vars
+  Picker.route("/CSV/:f/:key/:m/:a", function (params, req, res, next) {
+    Picker.middleware(getCSV(params, res));
+  });
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/CSV/:f/:key/:m/:a`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getCSV(params, res));
+    }
+  );
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/:app/CSV/:f/:key/:m/:a`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getCSV(params, res));
+    }
+  );
+
+  // eslint-disable-next-line no-unused-vars
+  Picker.route("/getJSON/:key", function (params, req, res, next) {
+    Picker.middleware(getJSON(params, res));
+  });
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/getJSON/:key`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getJSON(params, res));
+    }
+  );
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/app:/getJSON/:key`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getJSON(params, res));
+    }
+  );
+
+  // eslint-disable-next-line no-unused-vars
+  Picker.route("/JSON/:f/:key/:m/:a", function (params, req, res, next) {
+    Picker.middleware(getJSON(params, res));
+  });
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/JSON/:f/:key/:m/:a`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getJSON(params, res));
+    }
+  );
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/:app/JSON/:f/:key/:m/:a`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getJSON(params, res));
+    }
+  );
+
+  // eslint-disable-next-line no-unused-vars
+  Picker.route("/clearCache", function (params, req, res, next) {
+    Picker.middleware(clearCache(res));
+  });
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/clearCache`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(clearCache(res));
+    }
+  );
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/:app/clearCache`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(clearCache(res));
+    }
+  );
+
+  // eslint-disable-next-line no-unused-vars
+  Picker.route("/getApps", function (params, req, res, next) {
+    Picker.middleware(getApps(res));
+  });
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/getApps`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getApps(res));
+    }
+  );
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/:app/getApps`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getApps(res));
+    }
+  );
+
+  // eslint-disable-next-line no-unused-vars
+  Picker.route("/getAppSumsDBs", function (params, req, res, next) {
+    Picker.middleware(getAppSumsDBs(res));
+  });
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/getAppSumsDBs`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getAppSumsDBs(res));
+    }
+  );
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/:app/getAppSumsDBs`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getAppSumsDBs(res));
+    }
+  );
+
+  // eslint-disable-next-line no-unused-vars
+  Picker.route("/getModels", function (params, req, res, next) {
+    Picker.middleware(getModels(res));
+  });
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/getModels`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getModels(res));
+    }
+  );
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/:app/getModels`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getModels(res));
+    }
+  );
+
+  // eslint-disable-next-line no-unused-vars
+  Picker.route("/getRegions", function (params, req, res, next) {
+    Picker.middleware(getRegions(res));
+  });
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/getRegions`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getRegions(res));
+    }
+  );
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/:app/getRegions`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getRegions(res));
+    }
+  );
+
+  // eslint-disable-next-line no-unused-vars
+  Picker.route("/getRegionsValuesMap", function (params, req, res, next) {
+    Picker.middleware(getRegionsValuesMap(res));
+  });
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/getRegionsValuesMap`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getRegionsValuesMap(res));
+    }
+  );
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/:app/getRegionsValuesMap`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getRegionsValuesMap(res));
+    }
+  );
+
+  // eslint-disable-next-line no-unused-vars
+  Picker.route("/getStatistics", function (params, req, res, next) {
+    Picker.middleware(getStatistics(res));
+  });
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/getStatistics`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getStatistics(res));
+    }
+  );
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/:app/getStatistics`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getStatistics(res));
+    }
+  );
+
+  // eslint-disable-next-line no-unused-vars
+  Picker.route("/getStatisticsValuesMap", function (params, req, res, next) {
+    Picker.middleware(getStatisticsValuesMap(res));
+  });
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/getStatisticsValuesMap`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getStatisticsValuesMap(res));
+    }
+  );
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/:app/getStatisticsValuesMap`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getStatisticsValuesMap(res));
+    }
+  );
+
+  // eslint-disable-next-line no-unused-vars
+  Picker.route("/getVariables", function (params, req, res, next) {
+    Picker.middleware(getVariables(res));
+  });
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/getVariables`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getVariables(res));
+    }
+  );
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/:app/getVariables`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getVariables(res));
+    }
+  );
+
+  // eslint-disable-next-line no-unused-vars
+  Picker.route("/getVariablesValuesMap", function (params, req, res, next) {
+    Picker.middleware(getVariablesValuesMap(res));
+  });
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/getVariablesValuesMap`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getVariablesValuesMap(res));
+    }
+  );
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/:app/getVariablesValuesMap`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getVariablesValuesMap(res));
+    }
+  );
+
+  // eslint-disable-next-line no-unused-vars
+  Picker.route("/getThresholds", function (params, req, res, next) {
+    Picker.middleware(getThresholds(res));
+  });
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/getThresholds`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getThresholds(res));
+    }
+  );
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/:app/getThresholds`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getThresholds(res));
+    }
+  );
+
+  // eslint-disable-next-line no-unused-vars
+  Picker.route("/getThresholdsValuesMap", function (params, req, res, next) {
+    Picker.middleware(getThresholdsValuesMap(res));
+  });
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/getThresholdsValuesMap`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getThresholdsValuesMap(res));
+    }
+  );
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/:app/getThresholdsValuesMap`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getThresholdsValuesMap(res));
+    }
+  );
+
+  // eslint-disable-next-line no-unused-vars
+  Picker.route("/getScales", function (params, req, res, next) {
+    Picker.middleware(getScales(res));
+  });
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/getScales`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getScales(res));
+    }
+  );
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/:app/getScales`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getScales(res));
+    }
+  );
+
+  // eslint-disable-next-line no-unused-vars
+  Picker.route("/getScalesValuesMap", function (params, req, res, next) {
+    Picker.middleware(getScalesValuesMap(res));
+  });
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/getScalesValuesMap`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getScalesValuesMap(res));
+    }
+  );
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/:app/getScalesValuesMap`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getScalesValuesMap(res));
+    }
+  );
+
+  // eslint-disable-next-line no-unused-vars
+  Picker.route("/getTruths", function (params, req, res, next) {
+    Picker.middleware(getTruths(res));
+  });
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/getTruths`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getTruths(res));
+    }
+  );
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/:app/getTruths`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getTruths(res));
+    }
+  );
+
+  // eslint-disable-next-line no-unused-vars
+  Picker.route("/getTruthsValuesMap", function (params, req, res, next) {
+    Picker.middleware(getTruthsValuesMap(res));
+  });
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/getTruthsValuesMap`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getTruthsValuesMap(res));
+    }
+  );
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/:app/getTruthsValuesMap`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getTruthsValuesMap(res));
+    }
+  );
+
+  // eslint-disable-next-line no-unused-vars
+  Picker.route("/getFcstLengths", function (params, req, res, next) {
+    Picker.middleware(getFcstLengths(res));
+  });
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/getFcstLengths`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getFcstLengths(res));
+    }
+  );
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/:app/getFcstLengths`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getFcstLengths(res));
+    }
+  );
+
+  // eslint-disable-next-line no-unused-vars
+  Picker.route("/getFcstTypes", function (params, req, res, next) {
+    Picker.middleware(getFcstTypes(res));
+  });
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/getFcstTypes`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getFcstTypes(res));
+    }
+  );
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/:app/getFcstTypes`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getFcstTypes(res));
+    }
+  );
+
+  // eslint-disable-next-line no-unused-vars
+  Picker.route("/getFcstTypesValuesMap", function (params, req, res, next) {
+    Picker.middleware(getFcstTypesValuesMap(res));
+  });
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/getFcstTypesValuesMap`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getFcstTypesValuesMap(res));
+    }
+  );
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/:app/getFcstTypesValuesMap`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getFcstTypesValuesMap(res));
+    }
+  );
+
+  // eslint-disable-next-line no-unused-vars
+  Picker.route("/getValidTimes", function (params, req, res, next) {
+    Picker.middleware(getValidTimes(res));
+  });
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/getValidTimes`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getValidTimes(res));
+    }
+  );
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/:app/getValidTimes`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getValidTimes(res));
+    }
+  );
+
+  // eslint-disable-next-line no-unused-vars
+  Picker.route("/getLevels", function (params, req, res, next) {
+    Picker.middleware(getLevels(res));
+  });
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/getLevels`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getLevels(res));
+    }
+  );
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/:app/getLevels`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getLevels(res));
+    }
+  );
+
+  // eslint-disable-next-line no-unused-vars
+  Picker.route("/getDates", function (params, req, res, next) {
+    Picker.middleware(getDates(res));
+  });
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/getDates`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getDates(res));
+    }
+  );
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/:app/getDates`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(getDates(res));
+    }
+  );
+
+  // create picker routes for refreshMetaData
+  // eslint-disable-next-line no-unused-vars
+  Picker.route("/refreshMetadata", function (params, req, res, next) {
+    Picker.middleware(refreshMetadataMWltData(res));
+  });
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/refreshMetadata`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(refreshMetadataMWltData(res));
+    }
+  );
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/:app/refreshMetadata`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(refreshMetadataMWltData(res));
+    }
+  );
+  // eslint-disable-next-line no-unused-vars
+  Picker.route("/refreshScorecard/:docId", function (params, req, res, next) {
+    Picker.middleware(refreshScorecard(params, res));
+  });
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/refreshScorecard/:docId`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(refreshScorecard(params, res));
+    }
+  );
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/:app/refreshScorecard/:docId`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(refreshScorecard(params, res));
+    }
+  );
+
+  // eslint-disable-next-line no-unused-vars
+  Picker.route("/setStatusScorecard/:docId", function (params, req, res, next) {
+    Picker.middleware(setStatusScorecard(params, req, res));
+  });
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/setStatusScorecard/:docId`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(setStatusScorecard(params, req, res));
+    }
+  );
+
+  Picker.route(
+    `${Meteor.settings.public.proxy_prefix_path}/:app/setStatusScorecard/:docId`,
+    // eslint-disable-next-line no-unused-vars
+    function (params, req, res, next) {
+      Picker.middleware(setStatusScorecard(params, req, res));
+    }
+  );
+}
+
+// eslint-disable-next-line no-undef
 export default matsMethods = {
   addSentAddress,
   applyAuthorization,

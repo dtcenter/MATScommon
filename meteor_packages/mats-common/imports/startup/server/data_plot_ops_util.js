@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import { matsCollections, matsTypes } from "meteor/randyp:mats-common";
+import { matsCollections, matsTypes, matsDataUtils } from "meteor/randyp:mats-common";
 import { Meteor } from "meteor/meteor";
 import { moment } from "meteor/momentjs:moment";
 import { _ } from "meteor/underscore";
@@ -1497,7 +1497,7 @@ const generateGridScaleProbPlotOptions = function (axisMap) {
   const yPad = (ymax - ymin) * 0.025 !== 0 ? (ymax - ymin) * 0.025 : 0.025;
   const newYmax = Math.log10(ymax + yPad * 100);
   const newYmin =
-    Number.isNaN(Math.log10(ymin - yPad)) || Math.log10(ymin - yPad) < 1
+    matsDataUtils.isThisANaN(Math.log10(ymin - yPad)) || Math.log10(ymin - yPad) < 1
       ? 0
       : Math.log10(ymin - yPad);
   layout.yaxis.range = [newYmin, newYmax];

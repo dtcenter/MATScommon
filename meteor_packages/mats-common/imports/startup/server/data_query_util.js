@@ -391,7 +391,7 @@ const parseQueryDataXYCurve = function (
       const n = rows[rowIndex].sub_data.toString().split(",").length;
       if (hit + fa + miss + cn > 0) {
         stat = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, n, statisticStr);
-        stat = Number.isNaN(Number(stat)) ? null : stat;
+        stat = matsDataUtils.isThisANaN(Number(stat)) ? null : stat;
       } else {
         stat = null;
       }
@@ -417,7 +417,7 @@ const parseQueryDataXYCurve = function (
           absSum,
           statisticStr
         );
-        stat = Number.isNaN(Number(stat)) ? null : stat;
+        stat = matsDataUtils.isThisANaN(Number(stat)) ? null : stat;
       } else {
         stat = null;
       }
@@ -470,7 +470,7 @@ const parseQueryDataXYCurve = function (
           if (isCTC) {
             thisSubSecs.push(Number(currSubData[0]));
             if (hasLevels) {
-              if (!Number.isNaN(Number(currSubData[1]))) {
+              if (!matsDataUtils.isThisANaN(Number(currSubData[1]))) {
                 thisSubLevs.push(Number(currSubData[1]));
               } else {
                 thisSubLevs.push(currSubData[1]);
@@ -508,7 +508,7 @@ const parseQueryDataXYCurve = function (
           } else if (isScalar) {
             thisSubSecs.push(Number(currSubData[0]));
             if (hasLevels) {
-              if (!Number.isNaN(Number(currSubData[1]))) {
+              if (!matsDataUtils.isThisANaN(Number(currSubData[1]))) {
                 thisSubLevs.push(Number(currSubData[1]));
               } else {
                 thisSubLevs.push(currSubData[1]);
@@ -552,7 +552,7 @@ const parseQueryDataXYCurve = function (
           } else {
             thisSubSecs.push(Number(currSubData[0]));
             if (hasLevels) {
-              if (!Number.isNaN(Number(currSubData[1]))) {
+              if (!matsDataUtils.isThisANaN(Number(currSubData[1]))) {
                 thisSubLevs.push(Number(currSubData[1]));
               } else {
                 thisSubLevs.push(currSubData[1]);
@@ -1024,7 +1024,7 @@ const parseQueryDataReliability = function (rows, d, appParams, kernel) {
             currSubData = thisSubData[sdIdx].split(";");
             thisSubSecs.push(Number(currSubData[0]));
             if (hasLevels) {
-              if (!Number.isNaN(Number(currSubData[1]))) {
+              if (!matsDataUtils.isThisANaN(Number(currSubData[1]))) {
                 thisSubLevs.push(Number(currSubData[1]));
               } else {
                 thisSubLevs.push(currSubData[1]);
@@ -1194,7 +1194,7 @@ const parseQueryDataPerformanceDiagram = function (rows, d, appParams) {
           currSubData = thisSubData[sdIdx].split(";");
           thisSubSecs.push(Number(currSubData[0]));
           if (hasLevels) {
-            if (!Number.isNaN(Number(currSubData[1]))) {
+            if (!matsDataUtils.isThisANaN(Number(currSubData[1]))) {
               thisSubLevs.push(Number(currSubData[1]));
             } else {
               thisSubLevs.push(currSubData[1]);
@@ -1379,7 +1379,7 @@ const parseQueryDataSimpleScatter = function (
           absSumX,
           statisticXStr
         );
-        xStat = Number.isNaN(Number(xStat)) ? null : xStat;
+        xStat = matsDataUtils.isThisANaN(Number(xStat)) ? null : xStat;
         yStat = matsDataUtils.calculateStatScalar(
           squareDiffSumY,
           NSumY,
@@ -1389,7 +1389,7 @@ const parseQueryDataSimpleScatter = function (
           absSumY,
           statisticYStr
         );
-        yStat = Number.isNaN(Number(yStat)) ? null : yStat;
+        yStat = matsDataUtils.isThisANaN(Number(yStat)) ? null : yStat;
       } else {
         xStat = null;
         yStat = null;
@@ -1429,7 +1429,7 @@ const parseQueryDataSimpleScatter = function (
           currSubData = thisSubData[sdIdx].split(";");
           thisSubSecs.push(Number(currSubData[0]));
           if (hasLevels) {
-            if (!Number.isNaN(Number(currSubData[1]))) {
+            if (!matsDataUtils.isThisANaN(Number(currSubData[1]))) {
               thisSubLevs.push(Number(currSubData[1]));
             } else {
               thisSubLevs.push(currSubData[1]);
@@ -1722,7 +1722,7 @@ const parseQueryDataMapScalar = function (
         absSum,
         `${statistic}_${variable}`
       );
-      queryVal = Number.isNaN(Number(queryVal)) ? null : queryVal;
+      queryVal = matsDataUtils.isThisANaN(Number(queryVal)) ? null : queryVal;
     } else {
       queryVal = null;
     }
@@ -1752,7 +1752,7 @@ const parseQueryDataMapScalar = function (
           currSubData = thisSubData[sdIdx].split(";");
           thisSubSecs.push(Number(currSubData[0]));
           if (hasLevels) {
-            if (!Number.isNaN(Number(currSubData[1]))) {
+            if (!matsDataUtils.isThisANaN(Number(currSubData[1]))) {
               thisSubLevs.push(Number(currSubData[1]));
             } else {
               thisSubLevs.push(currSubData[1]);
@@ -1830,7 +1830,7 @@ const parseQueryDataMapScalar = function (
           absSumSum,
           `${statistic}_${variable}`
         );
-        queryVal = Number.isNaN(Number(queryVal)) ? null : queryVal;
+        queryVal = matsDataUtils.isThisANaN(Number(queryVal)) ? null : queryVal;
       } catch (e) {
         // this is an error produced by a bug in the query function, not an error returned by the mysql database
         e.message = `Error in parseQueryDataMapScalar. The expected fields don't seem to be present in the results cache: ${e.message}`;
@@ -2007,7 +2007,7 @@ const parseQueryDataMapCTC = function (
     const n = rows[rowIndex].nTimes;
     if (hit + fa + miss + cn > 0) {
       queryVal = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, n, statistic);
-      queryVal = Number.isNaN(Number(queryVal)) ? null : queryVal;
+      queryVal = matsDataUtils.isThisANaN(Number(queryVal)) ? null : queryVal;
       switch (statistic) {
         case "PODy (POD of value < threshold)":
         case "PODy (POD of value > threshold)":
@@ -2068,7 +2068,7 @@ const parseQueryDataMapCTC = function (
           currSubData = thisSubData[sdIdx].split(";");
           thisSubSecs.push(Number(currSubData[0]));
           if (hasLevels) {
-            if (!Number.isNaN(Number(currSubData[1]))) {
+            if (!matsDataUtils.isThisANaN(Number(currSubData[1]))) {
               thisSubLevs.push(Number(currSubData[1]));
             } else {
               thisSubLevs.push(currSubData[1]);
@@ -2135,7 +2135,7 @@ const parseQueryDataMapCTC = function (
           thisSubHit.length,
           statistic
         );
-        queryVal = Number.isNaN(Number(queryVal)) ? null : queryVal;
+        queryVal = matsDataUtils.isThisANaN(Number(queryVal)) ? null : queryVal;
       } catch (e) {
         // this is an error produced by a bug in the query function, not an error returned by the mysql database
         e.message = `Error in parseQueryDataMapCTC. The expected fields don't seem to be present in the results cache: ${e.message}`;
@@ -2325,7 +2325,7 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
       const n = rows[rowIndex].sub_data.toString().split(",").length;
       if (hit + fa + miss + cn > 0) {
         stat = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, n, statisticStr);
-        stat = Number.isNaN(Number(stat)) ? null : stat;
+        stat = matsDataUtils.isThisANaN(Number(stat)) ? null : stat;
       } else {
         stat = null;
       }
@@ -2351,7 +2351,7 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
           absSum,
           statisticStr
         );
-        stat = Number.isNaN(Number(stat)) ? null : stat;
+        stat = matsDataUtils.isThisANaN(Number(stat)) ? null : stat;
       } else {
         stat = null;
       }
@@ -2376,7 +2376,7 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
           if (isCTC) {
             thisSubSecs.push(Number(currSubData[0]));
             if (hasLevels) {
-              if (!Number.isNaN(Number(currSubData[1]))) {
+              if (!matsDataUtils.isThisANaN(Number(currSubData[1]))) {
                 thisSubLevs.push(Number(currSubData[1]));
               } else {
                 thisSubLevs.push(currSubData[1]);
@@ -2406,7 +2406,7 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
           } else if (isScalar) {
             thisSubSecs.push(Number(currSubData[0]));
             if (hasLevels) {
-              if (!Number.isNaN(Number(currSubData[1]))) {
+              if (!matsDataUtils.isThisANaN(Number(currSubData[1]))) {
                 thisSubLevs.push(Number(currSubData[1]));
               } else {
                 thisSubLevs.push(currSubData[1]);
@@ -2438,7 +2438,7 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
           } else {
             thisSubSecs.push(Number(currSubData[0]));
             if (hasLevels) {
-              if (!Number.isNaN(Number(currSubData[1]))) {
+              if (!matsDataUtils.isThisANaN(Number(currSubData[1]))) {
                 thisSubLevs.push(Number(currSubData[1]));
               } else {
                 thisSubLevs.push(currSubData[1]);
@@ -2590,7 +2590,7 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
       cn = Number(rows[rowIndex].cn);
       if (hit + fa + miss + cn > 0) {
         stat = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, n, statisticStr);
-        stat = Number.isNaN(Number(stat)) ? null : stat;
+        stat = matsDataUtils.isThisANaN(Number(stat)) ? null : stat;
       }
     } else if (
       rows[rowIndex].stat === undefined &&
@@ -2614,7 +2614,7 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
           absSum,
           statisticStr
         );
-        stat = Number.isNaN(Number(stat)) ? null : stat;
+        stat = matsDataUtils.isThisANaN(Number(stat)) ? null : stat;
         const variable = statisticStr.split("_")[1];
         stdev = matsDataUtils.calculateStatScalar(
           squareDiffSum,
@@ -2667,7 +2667,7 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
           if (isCTC) {
             thisSubSecs.push(Number(currSubData[0]));
             if (hasLevels) {
-              if (!Number.isNaN(Number(currSubData[1]))) {
+              if (!matsDataUtils.isThisANaN(Number(currSubData[1]))) {
                 thisSubLevs.push(Number(currSubData[1]));
               } else {
                 thisSubLevs.push(currSubData[1]);
@@ -2685,7 +2685,7 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
           } else if (isScalar) {
             thisSubSecs.push(Number(currSubData[0]));
             if (hasLevels) {
-              if (!Number.isNaN(Number(currSubData[1]))) {
+              if (!matsDataUtils.isThisANaN(Number(currSubData[1]))) {
                 thisSubLevs.push(Number(currSubData[1]));
               } else {
                 thisSubLevs.push(currSubData[1]);
@@ -2707,7 +2707,7 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
           } else {
             thisSubSecs.push(Number(currSubData[0]));
             if (hasLevels) {
-              if (!Number.isNaN(Number(currSubData[1]))) {
+              if (!matsDataUtils.isThisANaN(Number(currSubData[1]))) {
                 thisSubLevs.push(Number(currSubData[1]));
               } else {
                 thisSubLevs.push(currSubData[1]);

@@ -24,7 +24,7 @@
     // our dependencies.
     // XXX: this *should* be taken care of by eslint-import-resolver-meteor, investigate.
     // "import/no-extraneous-dependencies": "off",
-    // "no-underscore-dangle": ["error", { "allow": ["_id", "_ensureIndex"] }],
+    "no-underscore-dangle": ["error", { "allow": ["_id", "_ensureIndex"] }],
     "object-shorthand": ["error", "always", { "avoidQuotes": false }],
     "space-before-function-paren": "off",
     // for Meteor API's that rely on `this` context, e.g. Template.onCreated and publications
@@ -51,7 +51,6 @@
     "radix": "warn",
     "global-require": "warn",
     "no-lonely-if": "warn",
-    "no-underscore-dangle": ["off", { "allow": ["_id", "_ensureIndex"] }], // Uncomment line 27 with Meteor's recommended "no-underscore-dangle" policy when resolving this
     "no-return-assign": "warn",
     "no-shadow": "warn",
     "new-cap": "warn",

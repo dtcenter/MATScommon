@@ -125,11 +125,11 @@ const processDataXYCurve = function (
           diffFrom === null ||
           !(
             Array.isArray(returnDataset[diffFrom[0]].subHit[di]) ||
-            !Number.isNaN(returnDataset[diffFrom[0]].subHit[di])
+            !matsDataUtils.isThisANaN(returnDataset[diffFrom[0]].subHit[di])
           ) ||
           !(
             Array.isArray(returnDataset[diffFrom[1]].subHit[di]) ||
-            !Number.isNaN(returnDataset[diffFrom[1]].subHit[di])
+            !matsDataUtils.isThisANaN(returnDataset[diffFrom[1]].subHit[di])
           )
         ) {
           data.error_y.array[di] = null;
@@ -206,46 +206,46 @@ const processDataXYCurve = function (
         data.stats[di] = {
           stat: data.y[di],
           n:
-            Array.isArray(data.subHit[di]) || !Number.isNaN(data.subHit[di])
+            Array.isArray(data.subHit[di]) || !matsDataUtils.isThisANaN(data.subHit[di])
               ? data.subHit[di].length
               : 0,
           hit:
-            Array.isArray(data.subHit[di]) || !Number.isNaN(data.subHit[di])
+            Array.isArray(data.subHit[di]) || !matsDataUtils.isThisANaN(data.subHit[di])
               ? matsDataUtils.sum(data.subHit[di])
               : null,
           fa:
-            Array.isArray(data.subFa[di]) || !Number.isNaN(data.subFa[di])
+            Array.isArray(data.subFa[di]) || !matsDataUtils.isThisANaN(data.subFa[di])
               ? matsDataUtils.sum(data.subFa[di])
               : null,
           miss:
-            Array.isArray(data.subMiss[di]) || !Number.isNaN(data.subMiss[di])
+            Array.isArray(data.subMiss[di]) || !matsDataUtils.isThisANaN(data.subMiss[di])
               ? matsDataUtils.sum(data.subMiss[di])
               : null,
           cn:
-            Array.isArray(data.subCn[di]) || !Number.isNaN(data.subCn[di])
+            Array.isArray(data.subCn[di]) || !matsDataUtils.isThisANaN(data.subCn[di])
               ? matsDataUtils.sum(data.subCn[di])
               : null,
         };
         data.text[di] = `${data.text[di]}<br>${statisticSelect}: ${
           data.y[di] === null ? null : data.y[di].toPrecision(4)
         }<br>n: ${
-          Array.isArray(data.subHit[di]) || !Number.isNaN(data.subHit[di])
+          Array.isArray(data.subHit[di]) || !matsDataUtils.isThisANaN(data.subHit[di])
             ? data.subHit[di].length
             : 0
         }<br>Hits: ${
-          Array.isArray(data.subHit[di]) || !Number.isNaN(data.subHit[di])
+          Array.isArray(data.subHit[di]) || !matsDataUtils.isThisANaN(data.subHit[di])
             ? matsDataUtils.sum(data.subHit[di])
             : null
         }<br>False alarms: ${
-          Array.isArray(data.subFa[di]) || !Number.isNaN(data.subFa[di])
+          Array.isArray(data.subFa[di]) || !matsDataUtils.isThisANaN(data.subFa[di])
             ? matsDataUtils.sum(data.subFa[di])
             : null
         }<br>Misses: ${
-          Array.isArray(data.subMiss[di]) || !Number.isNaN(data.subMiss[di])
+          Array.isArray(data.subMiss[di]) || !matsDataUtils.isThisANaN(data.subMiss[di])
             ? matsDataUtils.sum(data.subMiss[di])
             : null
         }<br>Correct Nulls: ${
-          Array.isArray(data.subCn[di]) || !Number.isNaN(data.subCn[di])
+          Array.isArray(data.subCn[di]) || !matsDataUtils.isThisANaN(data.subCn[di])
             ? matsDataUtils.sum(data.subCn[di])
             : null
         }<br>Errorbars: ${Number(data.y[di] - errorLength).toPrecision(4)} to ${Number(
@@ -255,27 +255,27 @@ const processDataXYCurve = function (
         data.stats[di] = {
           stat: data.y[di],
           n:
-            Array.isArray(data.subInterest[di]) || !Number.isNaN(data.subInterest[di])
+            Array.isArray(data.subInterest[di]) || !matsDataUtils.isThisANaN(data.subInterest[di])
               ? data.subInterest[di].length
               : 0,
           raw_stat: data.y[di],
           nGood:
-            Array.isArray(data.subInterest[di]) || !Number.isNaN(data.subInterest[di])
+            Array.isArray(data.subInterest[di]) || !matsDataUtils.isThisANaN(data.subInterest[di])
               ? data.subInterest[di].length
               : 0,
           avgInterest:
-            Array.isArray(data.subInterest[di]) || !Number.isNaN(data.subInterest[di])
+            Array.isArray(data.subInterest[di]) || !matsDataUtils.isThisANaN(data.subInterest[di])
               ? matsDataUtils.average(data.subInterest[di]).toPrecision(4)
               : null,
         };
         data.text[di] = `${data.text[di]}<br>${statisticSelect}: ${
           data.y[di] === null ? null : data.y[di].toPrecision(4)
         }<br>n: ${
-          Array.isArray(data.subInterest[di]) || !Number.isNaN(data.subInterest[di])
+          Array.isArray(data.subInterest[di]) || !matsDataUtils.isThisANaN(data.subInterest[di])
             ? data.subInterest[di].length
             : 0
         }<br>Average Interest: ${
-          Array.isArray(data.subInterest[di]) || !Number.isNaN(data.subInterest[di])
+          Array.isArray(data.subInterest[di]) || !matsDataUtils.isThisANaN(data.subInterest[di])
             ? matsDataUtils.average(data.subInterest[di]).toPrecision(4)
             : null
         }`;
@@ -656,11 +656,11 @@ const processDataProfile = function (
           diffFrom === null ||
           !(
             Array.isArray(returnDataset[diffFrom[0]].subHit[di]) ||
-            !Number.isNaN(returnDataset[diffFrom[0]].subHit[di])
+            !matsDataUtils.isThisANaN(returnDataset[diffFrom[0]].subHit[di])
           ) ||
           !(
             Array.isArray(returnDataset[diffFrom[1]].subHit[di]) ||
-            !Number.isNaN(returnDataset[diffFrom[1]].subHit[di])
+            !matsDataUtils.isThisANaN(returnDataset[diffFrom[1]].subHit[di])
           )
         ) {
           data.error_x.array[di] = null;
@@ -696,23 +696,23 @@ const processDataProfile = function (
         data.stats[di] = {
           stat: data.x[di],
           n:
-            Array.isArray(data.subHit[di]) || !Number.isNaN(data.subHit[di])
+            Array.isArray(data.subHit[di]) || !matsDataUtils.isThisANaN(data.subHit[di])
               ? data.subHit[di].length
               : 0,
           hit:
-            Array.isArray(data.subHit[di]) || !Number.isNaN(data.subHit[di])
+            Array.isArray(data.subHit[di]) || !matsDataUtils.isThisANaN(data.subHit[di])
               ? matsDataUtils.sum(data.subHit[di])
               : null,
           fa:
-            Array.isArray(data.subFa[di]) || !Number.isNaN(data.subFa[di])
+            Array.isArray(data.subFa[di]) || !matsDataUtils.isThisANaN(data.subFa[di])
               ? matsDataUtils.sum(data.subFa[di])
               : null,
           miss:
-            Array.isArray(data.subMiss[di]) || !Number.isNaN(data.subMiss[di])
+            Array.isArray(data.subMiss[di]) || !matsDataUtils.isThisANaN(data.subMiss[di])
               ? matsDataUtils.sum(data.subMiss[di])
               : null,
           cn:
-            Array.isArray(data.subCn[di]) || !Number.isNaN(data.subCn[di])
+            Array.isArray(data.subCn[di]) || !matsDataUtils.isThisANaN(data.subCn[di])
               ? matsDataUtils.sum(data.subCn[di])
               : null,
         };
@@ -721,23 +721,23 @@ const processDataProfile = function (
           `<br>${statisticSelect}: ${
             data.x[di] === null ? null : data.x[di].toPrecision(4)
           }<br>n: ${
-            Array.isArray(data.subHit[di]) || !Number.isNaN(data.subHit[di])
+            Array.isArray(data.subHit[di]) || !matsDataUtils.isThisANaN(data.subHit[di])
               ? data.subHit[di].length
               : 0
           }<br>Hits: ${
-            Array.isArray(data.subHit[di]) || !Number.isNaN(data.subHit[di])
+            Array.isArray(data.subHit[di]) || !matsDataUtils.isThisANaN(data.subHit[di])
               ? matsDataUtils.sum(data.subHit[di])
               : null
           }<br>False alarms: ${
-            Array.isArray(data.subFa[di]) || !Number.isNaN(data.subFa[di])
+            Array.isArray(data.subFa[di]) || !matsDataUtils.isThisANaN(data.subFa[di])
               ? matsDataUtils.sum(data.subFa[di])
               : null
           }<br>Misses: ${
-            Array.isArray(data.subMiss[di]) || !Number.isNaN(data.subMiss[di])
+            Array.isArray(data.subMiss[di]) || !matsDataUtils.isThisANaN(data.subMiss[di])
               ? matsDataUtils.sum(data.subMiss[di])
               : null
           }<br>Correct Nulls: ${
-            Array.isArray(data.subCn[di]) || !Number.isNaN(data.subCn[di])
+            Array.isArray(data.subCn[di]) || !matsDataUtils.isThisANaN(data.subCn[di])
               ? matsDataUtils.sum(data.subCn[di])
               : null
           }<br>Errorbars: ${Number(data.x[di] - errorLength).toPrecision(
@@ -747,27 +747,27 @@ const processDataProfile = function (
         data.stats[di] = {
           stat: data.x[di],
           n:
-            Array.isArray(data.subInterest[di]) || !Number.isNaN(data.subInterest[di])
+            Array.isArray(data.subInterest[di]) || !matsDataUtils.isThisANaN(data.subInterest[di])
               ? data.subInterest[di].length
               : 0,
           raw_stat: data.x[di],
           nGood:
-            Array.isArray(data.subInterest[di]) || !Number.isNaN(data.subInterest[di])
+            Array.isArray(data.subInterest[di]) || !matsDataUtils.isThisANaN(data.subInterest[di])
               ? data.subInterest[di].length
               : 0,
           avgInterest:
-            Array.isArray(data.subInterest[di]) || !Number.isNaN(data.subInterest[di])
+            Array.isArray(data.subInterest[di]) || !matsDataUtils.isThisANaN(data.subInterest[di])
               ? matsDataUtils.average(data.subInterest[di]).toPrecision(4)
               : null,
         };
         data.text[di] = `${data.text[di]}<br>${statisticSelect}: ${
           data.x[di] === null ? null : data.x[di].toPrecision(4)
         }<br>n: ${
-          Array.isArray(data.subInterest[di]) || !Number.isNaN(data.subInterest[di])
+          Array.isArray(data.subInterest[di]) || !matsDataUtils.isThisANaN(data.subInterest[di])
             ? data.subInterest[di].length
             : 0
         }<br>Average Interest: ${
-          Array.isArray(data.subInterest[di]) || !Number.isNaN(data.subInterest[di])
+          Array.isArray(data.subInterest[di]) || !matsDataUtils.isThisANaN(data.subInterest[di])
             ? matsDataUtils.average(data.subInterest[di]).toPrecision(4)
             : null
         }`;

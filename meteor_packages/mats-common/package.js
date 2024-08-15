@@ -30,10 +30,10 @@ Package.onUse(function (api) {
     "node-file-cache": "1.0.2",
     "python-shell": "5.0.0",
     couchbase: "4.3.1",
-    "simpl-schema": "3.4.6",
     "vanillajs-datepicker": "1.3.4",
     daterangepicker: "3.1.0",
     "lighten-darken-color": "1.0.0",
+    nodemailer: "6.9.14",
   });
   api.mainModule("server/main.js", "server");
   api.mainModule("client/main.js", "client");
@@ -67,6 +67,8 @@ Package.onUse(function (api) {
   api.use("momentjs:moment");
   api.use("pcel:mysql");
   api.use("reactive-var");
+  api.use("jkuester:http");
+  api.use("aldeed:simple-schema");
 
   // modules
   api.export("matsCollections", ["client", "server"]);
@@ -345,52 +347,4 @@ Package.onUse(function (api) {
     "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_stations_for_region.sql",
     "server"
   );
-});
-
-Package.onTest(function (api) {
-  api.use("ecmascript");
-  api.use("meteortesting:mocha");
-  api.use("randyp:mats-common");
-  api.addFiles("imports/startup/api/version-info-tests.js");
-
-  // try duplicating the runtime deps
-  Npm.depends({
-    "fs-extra": "7.0.0",
-    "@babel/runtime": "7.10.4",
-    "meteor-node-stubs": "0.4.1",
-    url: "0.11.0",
-    "jquery-ui": "1.12.1",
-    "csv-stringify": "4.3.1",
-    "node-file-cache": "1.0.2",
-    "python-shell": "3.0.1",
-    couchbase: "3.2.3",
-    "simpl-schema": "1.12.0",
-  });
-  api.use("natestrauser:select2", "client");
-  api.use("mdg:validated-method");
-  api.use("ecmascript");
-  api.use("modules");
-  api.imply("ecmascript");
-  api.use(["templating"], "client");
-  api.use("accounts-ui", "client");
-  api.use("accounts-password", "client");
-  api.use("service-configuration", "server");
-  api.use("yasinuslu:json-view", "client");
-  api.use("mdg:validated-method");
-  api.use("session");
-  api.imply("session");
-  api.use("twbs:bootstrap");
-  api.use("msavin:mongol");
-  api.use("differential:event-hooks");
-  api.use("risul:bootstrap-colorpicker");
-  api.use("logging");
-  api.use("reload");
-  api.use("random");
-  api.use("ejson");
-  api.use("spacebars");
-  api.use("check");
-  api.use("ostrio:flow-router-extra");
-  api.use("meteorhacks:picker");
-  api.use("momentjs:moment");
-  api.use("pcel:mysql");
 });

@@ -9,6 +9,12 @@ import { HTTP } from "meteor/jkuester:http";
 /* eslint-disable global-require */
 /* eslint-disable no-console */
 
+// wrapper for NaN check
+const isThisANaN = function (val) {
+  // eslint-disable-next-line no-restricted-globals
+  return !val || isNaN(val);
+};
+
 // this function checks if two JSON objects are identical
 const areObjectsEqual = function (o, p) {
   if ((o && !p) || (p && !o)) {
@@ -348,6 +354,7 @@ const doSettings = function (
   dbType,
   version,
   commit,
+  branch,
   appName,
   appType,
   mapboxKey,
@@ -458,7 +465,7 @@ const callMetadataAPI = function (
 
 // calculates the statistic for ctc plots
 const calculateStatCTC = function (hit, fa, miss, cn, n, statistic) {
-  if (Number.isNaN(hit) || Number.isNaN(fa) || Number.isNaN(miss) || Number.isNaN(cn))
+  if (isThisANaN(hit) || isThisANaN(fa) || isThisANaN(miss) || isThisANaN(cn))
     return null;
   let queryVal;
   switch (statistic) {
@@ -540,12 +547,12 @@ const calculateStatScalar = function (
   statisticAndVariable
 ) {
   if (
-    Number.isNaN(squareDiffSum) ||
-    Number.isNaN(NSum) ||
-    Number.isNaN(obsModelDiffSum) ||
-    Number.isNaN(modelSum) ||
-    Number.isNaN(obsSum) ||
-    Number.isNaN(absSum)
+    isThisANaN(squareDiffSum) ||
+    isThisANaN(NSum) ||
+    isThisANaN(obsModelDiffSum) ||
+    isThisANaN(modelSum) ||
+    isThisANaN(obsSum) ||
+    isThisANaN(absSum)
   )
     return null;
   let queryVal;
@@ -578,7 +585,7 @@ const calculateStatScalar = function (
     default:
       queryVal = null;
   }
-  if (Number.isNaN(queryVal)) return null;
+  if (isThisANaN(queryVal)) return null;
   // need to convert to correct units for surface data but not upperair
   if (statistic !== "N") {
     if (
@@ -1191,7 +1198,7 @@ const getErr = function (sVals, sSecs, sLevs, appParams) {
   let secs;
   let delta;
   for (i = 0; i < sSecs.length; i += 1) {
-    if (Number.isNaN(sVals[i])) {
+    if (isThisANaN(sVals[i])) {
       n -= 1;
     } else {
       secs = sSecs[i];
@@ -1214,7 +1221,7 @@ const getErr = function (sVals, sSecs, sLevs, appParams) {
     console.log(`matsDataUtil.getErr: ${error}`);
   }
   for (i = 0; i < sVals.length; i += 1) {
-    if (!Number.isNaN(sVals[i])) {
+    if (!isThisANaN(sVals[i])) {
       minVal = minVal < sVals[i] ? minVal : sVals[i];
       maxVal = maxVal > sVals[i] ? maxVal : sVals[i];
       dataSum += sVals[i];
@@ -1247,7 +1254,7 @@ const getErr = function (sVals, sSecs, sLevs, appParams) {
   let nDeltas = 0;
 
   for (i = 0; i < sSecs.length; i += 1) {
-    if (!Number.isNaN(sVals[i])) {
+    if (!isThisANaN(sVals[i])) {
       let sec = sSecs[i];
       if (typeof sec === "string" || sec instanceof String) sec = Number(sec);
       let lev;
@@ -1544,7 +1551,7 @@ const setHistogramParameters = function (plotParams) {
     case "Set number of bins":
       // get the user's chosen number of bins
       binNum = Number(plotParams["bin-number"]);
-      if (Number.isNaN(binNum)) {
+      if (isThisANaN(binNum)) {
         throw new Error(
           "Error parsing bin number: please enter the desired number of bins."
         );
@@ -1559,7 +1566,7 @@ const setHistogramParameters = function (plotParams) {
     case "Choose a bin bound":
       // let the histogram routine know that we want the bins shifted over to whatever was input
       pivotVal = Number(plotParams["bin-pivot"]);
-      if (Number.isNaN(pivotVal)) {
+      if (isThisANaN(pivotVal)) {
         throw new Error("Error parsing bin pivot: please enter the desired bin pivot.");
       }
       break;
@@ -1567,7 +1574,7 @@ const setHistogramParameters = function (plotParams) {
     case "Set number of bins and make zero a bin bound":
       // get the user's chosen number of bins and let the histogram routine know that we want the bins shifted over to zero
       binNum = Number(plotParams["bin-number"]);
-      if (Number.isNaN(binNum)) {
+      if (isThisANaN(binNum)) {
         throw new Error(
           "Error parsing bin number: please enter the desired number of bins."
         );
@@ -1578,13 +1585,13 @@ const setHistogramParameters = function (plotParams) {
     case "Set number of bins and choose a bin bound":
       // get the user's chosen number of bins and let the histogram routine know that we want the bins shifted over to whatever was input
       binNum = Number(plotParams["bin-number"]);
-      if (Number.isNaN(binNum)) {
+      if (isThisANaN(binNum)) {
         throw new Error(
           "Error parsing bin number: please enter the desired number of bins."
         );
       }
       pivotVal = Number(plotParams["bin-pivot"]);
-      if (Number.isNaN(pivotVal)) {
+      if (isThisANaN(pivotVal)) {
         throw new Error("Error parsing bin pivot: please enter the desired bin pivot.");
       }
       break;
@@ -1595,7 +1602,7 @@ const setHistogramParameters = function (plotParams) {
         binBounds = plotParams["bin-bounds"].split(",").map(function (item) {
           let thisItem = item.trim();
           thisItem = Number(thisItem);
-          if (!Number.isNaN(thisItem)) {
+          if (!isThisANaN(thisItem)) {
             return thisItem;
           }
           throw new Error(
@@ -1619,17 +1626,17 @@ const setHistogramParameters = function (plotParams) {
     case "Manual bin start, number, and stride":
       // get the bin start, number, and stride.
       binNum = Number(plotParams["bin-number"]);
-      if (Number.isNaN(binNum)) {
+      if (isThisANaN(binNum)) {
         throw new Error(
           "Error parsing bin number: please enter the desired number of bins."
         );
       }
       binStart = Number(plotParams["bin-start"]);
-      if (Number.isNaN(binStart)) {
+      if (isThisANaN(binStart)) {
         throw new Error("Error parsing bin start: please enter the desired bin start.");
       }
       binStride = Number(plotParams["bin-stride"]);
-      if (Number.isNaN(binStride)) {
+      if (isThisANaN(binStride)) {
         throw new Error(
           "Error parsing bin stride: please enter the desired bin stride."
         );
@@ -1708,7 +1715,7 @@ const calculateHistogramBins = function (
   binLowBounds[binParams.binNum - 1] = fullUpBound;
   binMeans[binParams.binNum - 1] = fullUpBound + binInterval / 2;
 
-  if (binParams.pivotVal !== undefined && !Number.isNaN(binParams.pivotVal)) {
+  if (binParams.pivotVal !== undefined && !isThisANaN(binParams.pivotVal)) {
     // need to shift the bounds and means over so that one of the bounds is on the chosen pivot
     const closestBoundToPivot = binLowBounds.reduce(function (prev, curr) {
       return Math.abs(curr - binParams.pivotVal) < Math.abs(prev - binParams.pivotVal)
@@ -2180,6 +2187,7 @@ export default matsDataUtils = {
   average,
   median,
   stdev,
+  isThisANaN,
   dateConvert,
   getDateRange,
   secsConvert,
