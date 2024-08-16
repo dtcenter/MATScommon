@@ -3,11 +3,14 @@
  */
 
 import { matsTypes, matsCollections } from "meteor/randyp:mats-common";
+import { Template } from "meteor/templating";
 import matsMethods from "../../imports/startup/api/matsMethods";
+
+/* global Session, setError */
 
 let notes;
 
-Template.About.helpers({
+Template.about.helpers({
   isMetexpress() {
     if (
       matsCollections.Settings.findOne({}) !== undefined &&
@@ -35,7 +38,7 @@ Template.About.helpers({
   },
 });
 
-Template.About.events({
+Template.about.events({
   "click .show-release-notes"() {
     matsMethods.getReleaseNotes.call({}, function (error, result) {
       if (error !== undefined) {
@@ -44,6 +47,7 @@ Template.About.events({
       }
       notes = result;
       Session.set("notesUpdated", Date.now());
+      return null;
     });
     document.getElementById("showNotes").style.display = "none";
     document.getElementById("hideNotes").style.display = "block";

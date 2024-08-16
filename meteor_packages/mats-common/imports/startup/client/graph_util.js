@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import { matsTypes } from "meteor/randyp:mats-common";
+import { matsTypes, matsCurveUtils } from "meteor/randyp:mats-common";
 
 /* global $, Session */
 /* eslint-disable no-console */
@@ -562,6 +562,32 @@ const setDefaultView = function () {
   window.onbeforeunload = null;
 };
 
+const graphPlotly = function () {
+  // get plot info
+  const route = Session.get("route");
+
+  // get dataset info and options
+  const resultSet = matsCurveUtils.getGraphResult();
+  if (resultSet === null || resultSet === undefined || resultSet.data === undefined) {
+    return false;
+  }
+
+  // set options
+  const { options } = resultSet;
+  if (route !== undefined && route !== "") {
+    options.selection = [];
+  }
+
+  // initialize show/hide button labels
+  const dataset = resultSet.data;
+  if (Session.get("graphPlotType") !== matsTypes.PlotTypes.map) {
+    setNoDataLabels(dataset);
+  } else {
+    setNoDataLabelsMap(dataset);
+  }
+  return null;
+};
+
 const downloadFile = function (fileURL, fileName) {
   // for non-IE
   if (!window.ActiveXObject) {
@@ -609,6 +635,7 @@ export default matsGraphUtils = {
   setGraphView,
   standAloneSetGraphView,
   setDefaultView,
+  graphPlotly,
   downloadFile,
   setScorecardDisplayView,
 };

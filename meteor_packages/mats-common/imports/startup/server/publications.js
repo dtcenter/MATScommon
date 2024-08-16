@@ -8,7 +8,7 @@ import { curveParamsByApp } from "../both/mats-curve-params";
 
 /* eslint-disable no-console */
 
-const _publishField = function (field) {
+const publishField = function (field) {
   Meteor.publish(field, function () {
     const data = matsCollections[field].find({});
     if (data) {
@@ -31,7 +31,7 @@ if (Meteor.isServer) {
   let currParam;
   for (let i = 0; i < params.length; i += 1) {
     currParam = params[i];
-    _publishField(currParam);
+    publishField(currParam);
   }
   Meteor.publish("CurveParamsInfo", function () {
     const data = matsCollections.CurveParamsInfo.find({});

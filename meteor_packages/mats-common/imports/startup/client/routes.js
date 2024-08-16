@@ -44,7 +44,7 @@ FlowRouter.route("/JSON/:graphFunction/:key/:matching/:appName", {
 FlowRouter.route("/preview/:graphFunction/:key/:matching/:appName", {
   name: "preview",
   action(params) {
-    this.render("GraphStandAlone", params);
+    this.render("graphStandAlone", params);
   },
 });
 
@@ -111,7 +111,7 @@ FlowRouter.route(
   {
     name: "preview",
     action(params) {
-      this.render("GraphStandAlone", params);
+      this.render("graphStandAlone", params);
     },
   }
 );
@@ -185,7 +185,7 @@ FlowRouter.route(
   {
     name: "preview",
     action(params) {
-      this.render("GraphStandAlone", params);
+      this.render("graphStandAlone", params);
     },
   }
 );

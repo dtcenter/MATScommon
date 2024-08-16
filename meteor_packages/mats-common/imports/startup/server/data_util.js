@@ -6,6 +6,7 @@ import { matsTypes, matsCollections, matsMethods } from "meteor/randyp:mats-comm
 import { Meteor } from "meteor/meteor";
 import { HTTP } from "meteor/jkuester:http";
 
+/* global Npm */
 /* eslint-disable global-require */
 /* eslint-disable no-console */
 
@@ -383,7 +384,6 @@ const doSettings = function (
     metexpress: "production",
   };
   const settingsId = settings._id;
-  // eslint-disable-next-line no-undef
   const os = Npm.require("os");
   const hostname = os.hostname().split(".")[0];
   settings.appVersion = version;

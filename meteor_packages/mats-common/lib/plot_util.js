@@ -2,84 +2,20 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import { matsCollections, matsParamUtils, matsTypes } from "meteor/randyp:mats-common";
+import {
+  matsCollections,
+  matsParamUtils,
+  matsCurveUtils,
+  matsTypes,
+} from "meteor/randyp:mats-common";
+import { moment } from "meteor/momentjs:moment";
+
+/* global $, Session, _ */
 
 // determine the axisText (used in scatter_axis.js for example)
 // according to the Scatter Axis Text Patterns Pattern defined in
 // ScatterAxisTextPatterns according to plotType - and derived from
 // currently selected inputs in the document.
-const getAxisText = function (plotType) {
-  const scatterAxisTextPattern = matsCollections.ScatterAxisTextPattern.findOne({
-    plotType: getPlotType(),
-  });
-  const textPattern = scatterAxisTextPattern
-    ? matsCollections.ScatterAxisTextPattern.findOne({ plotType: getPlotType() })
-        .textPattern
-    : undefined;
-  if (scatterAxisTextPattern === undefined) {
-    return "";
-  }
-  let text = "";
-  for (let i = 0; i < scatterAxisTextPattern.length; i++) {
-    const pName = scatterAxisTextPattern[i][0];
-    const delimiter = scatterAxisTextPattern[i][1];
-    let value = matsParamUtils.getValueForParamName(pName);
-    text += value += delimiter;
-  }
-  return text;
-};
-
-// determine the curveText (used in curveItem for example) for a given curve (from Session.get('curves'))
-// that has already been added
-const getCurveText = function (plotType, curve) {
-  const curveTextPattern = matsCollections.CurveTextPatterns.findOne({
-    plotType,
-  }).textPattern;
-  let text = "";
-
-  for (let i = 0; i < curveTextPattern.length; i++) {
-    const a = curveTextPattern[i];
-    if (a === undefined || a === null || curve[a[1]] === undefined) {
-      continue;
-    }
-    text += a[0];
-    if (curve[a[1]] instanceof Array && curve[a[1]].length > 2) {
-      text += `${curve[a[1]][0]}..${curve[a[1]][curve[a[1]].length - 1]}`;
-    } else {
-      text += curve[a[1]];
-    }
-    text += a[2];
-  }
-  return text;
-};
-
-// like getCurveText but with wrapping
-const getCurveTextWrapping = function (plotType, curve) {
-  const curveTextPattern = matsCollections.CurveTextPatterns.findOne({
-    plotType,
-  }).textPattern;
-  let text = "";
-  let wrapLimit = 40;
-  for (let i = 0; i < curveTextPattern.length; i++) {
-    const a = curveTextPattern[i];
-    if (a === undefined || a === null || curve[a[1]] === undefined) {
-      continue;
-    }
-    text += a[0];
-    if (curve[a[1]] instanceof Array && curve[a[1]].length > 2) {
-      text += `${curve[a[1]][0]}..${curve[a[1]][curve[a[1]].length - 1]}`;
-    } else {
-      text += curve[a[1]];
-    }
-    text += a[2];
-    if (text.length > wrapLimit) {
-      text += "<br>";
-      wrapLimit += 40;
-    }
-  }
-  return text;
-};
-
 // determine which plotType radio button is checked
 const getPlotType = function () {
   return document.getElementById("plotTypes-selector")
@@ -97,8 +33,7 @@ const getPlotFormat = function () {
   if (plotFormatParam === undefined) {
     return ""; // app may not have plotFormat?
   }
-  const { optionsMap } = plotFormatParam;
-  for (let i = 0, len = buttons.length; i < len; i++) {
+  for (let i = 0, len = buttons.length; i < len; i += 1) {
     if (buttons[i].checked) {
       return buttons[i].value;
     }
@@ -106,11 +41,77 @@ const getPlotFormat = function () {
   return ""; // error condition actually - shouldn't ever happen
 };
 
+const getAxisText = function () {
+  const scatterAxisTextPattern = matsCollections.ScatterAxisTextPattern.findOne({
+    plotType: getPlotType(),
+  });
+  if (scatterAxisTextPattern === undefined) {
+    return "";
+  }
+  let text = "";
+  for (let i = 0; i < scatterAxisTextPattern.length; i += 1) {
+    const pName = scatterAxisTextPattern[i][0];
+    const delimiter = scatterAxisTextPattern[i][1];
+    const value = matsParamUtils.getValueForParamName(pName);
+    text += value;
+    text += delimiter;
+  }
+  return text;
+};
+
+// determine the curveText (used in curveItem for example) for a given curve (from Session.get('curves'))
+// that has already been added
+const getCurveText = function (plotType, curve) {
+  const curveTextPattern = matsCollections.CurveTextPatterns.findOne({
+    plotType,
+  }).textPattern;
+  let text = "";
+
+  for (let i = 0; i < curveTextPattern.length; i += 1) {
+    const a = curveTextPattern[i];
+    if (a !== undefined && a !== null && curve[a[1]] !== undefined) {
+      text += a[0];
+      if (curve[a[1]] instanceof Array && curve[a[1]].length > 2) {
+        text += `${curve[a[1]][0]}..${curve[a[1]][curve[a[1]].length - 1]}`;
+      } else {
+        text += curve[a[1]];
+      }
+      text += a[2];
+    }
+  }
+  return text;
+};
+
+// like getCurveText but with wrapping
+const getCurveTextWrapping = function (plotType, curve) {
+  const curveTextPattern = matsCollections.CurveTextPatterns.findOne({
+    plotType,
+  }).textPattern;
+  let text = "";
+  let wrapLimit = 40;
+  for (let i = 0; i < curveTextPattern.length; i += 1) {
+    const a = curveTextPattern[i];
+    if (a !== undefined && a !== null && curve[a[1]] !== undefined) {
+      text += a[0];
+      if (curve[a[1]] instanceof Array && curve[a[1]].length > 2) {
+        text += `${curve[a[1]][0]}..${curve[a[1]][curve[a[1]].length - 1]}`;
+      } else {
+        text += curve[a[1]];
+      }
+      text += a[2];
+      if (text.length > wrapLimit) {
+        text += "<br>";
+        wrapLimit += 40;
+      }
+    }
+  }
+  return text;
+};
+
 // Determine which BestFit radio button is checked
 const getBestFit = function () {
   const buttons = document.getElementsByName("Fit Type");
-  const { optionsMap } = matsCollections.PlotParams.findOne({ name: "bestFit" });
-  for (let i = 0, len = buttons.length; i < len; i++) {
+  for (let i = 0, len = buttons.length; i < len; i += 1) {
     if (buttons[i].checked) {
       return buttons[i].value;
     }
@@ -121,7 +122,7 @@ const getBestFit = function () {
 const containsPoint = function (pointArray, point) {
   const lat = point[0];
   const lon = point[1];
-  for (let i = 0; i < pointArray.length; i++) {
+  for (let i = 0; i < pointArray.length; i += 1) {
     const pLat = pointArray[i][0];
     const pLon = pointArray[i][1];
     if (lat === pLat && lon === pLon) {
@@ -167,7 +168,7 @@ const restoreSettings = function (p) {
   // get the plot-type elements checked state
   let plotTypeSaved = false;
   const plotTypeElems = document.getElementById("plotTypes-selector");
-  for (let ptei = 0; ptei < plotTypeElems.length; ptei++) {
+  for (let ptei = 0; ptei < plotTypeElems.length; ptei += 1) {
     const ptElem = plotTypeElems[ptei];
     if (p.data.plotTypes && p.data.plotTypes[ptElem.value] === true) {
       plotTypeSaved = true;
@@ -260,7 +261,7 @@ const restoreSettings = function (p) {
   const superiors = [];
   const dependents = [];
   // get all of the curve param collections in one place
-  for (let pidx = 0; pidx < paramNames.length; pidx++) {
+  for (let pidx = 0; pidx < paramNames.length; pidx += 1) {
     const param = matsCollections[paramNames[pidx]].find({}).fetch()[0];
     // superiors
     if (param.dependentNames !== undefined) {
@@ -369,6 +370,7 @@ const restoreSettings = function (p) {
   matsParamUtils.collapseParams();
 };
 
+// eslint-disable-next-line no-undef
 export default matsPlotUtils = {
   getAxisText,
   getCurveText,

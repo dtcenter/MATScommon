@@ -9,28 +9,7 @@ import {
   matsTypes,
 } from "meteor/randyp:mats-common";
 
-// method to refresh the peers of the current selector
-const refreshPeer = function (event, param) {
-  try {
-    const { peerName } = param;
-    if (peerName !== undefined) {
-      // refresh the peer
-      const targetParam = matsParamUtils.getParameterForName(peerName);
-      const targetId = `${targetParam.name}-${targetParam.type}`;
-      const targetElem = document.getElementById(targetId);
-      const refreshMapEvent = new CustomEvent("refresh", {
-        detail: {
-          refElement: null,
-        },
-      });
-      targetElem.dispatchEvent(refreshMapEvent);
-    }
-    refreshDependents(event, param);
-  } catch (e) {
-    e.message = `INFO: Error in select.js refreshPeer: ${e.message}`;
-    setInfo(e.message);
-  }
-};
+/* global $, _, Session, setInfo */
 
 // method to refresh the dependents of the current selector
 const refreshDependents = function (event, param) {
@@ -43,10 +22,10 @@ const refreshDependents = function (event, param) {
     ) {
       // refresh the dependents
       let selectAllbool = false;
-      for (let i = 0; i < dependentNames.length; i++) {
+      for (let i = 0; i < dependentNames.length; i += 1) {
         const name = dependentNames[i];
         const targetParam = matsParamUtils.getParameterForName(name);
-        var targetId;
+        let targetId;
         if (targetParam.type === matsTypes.InputTypes.dateRange) {
           targetId = `element-${targetParam.name}`;
         } else {
@@ -75,14 +54,14 @@ const refreshDependents = function (event, param) {
         const select = true;
         if (targetElem.multiple && elements !== undefined && elements.length > 0) {
           if (selectAllbool) {
-            for (let i1 = 0; i1 < elements.length; i1++) {
+            for (let i1 = 0; i1 < elements.length; i1 += 1) {
               elements[i1].selected = select;
             }
             matsParamUtils.setValueTextForParamName(name, "");
           } else {
-            const previously_selected = Session.get("selected");
-            for (let i2 = 0; i2 < elements.length; i2++) {
-              if (_.indexOf(previously_selected, elements[i2].text) !== -1) {
+            const previouslySelected = Session.get("selected");
+            for (let i2 = 0; i2 < elements.length; i2 += 1) {
+              if (_.indexOf(previouslySelected, elements[i2].text) !== -1) {
                 elements[i2].selected = select;
               }
             }
@@ -96,6 +75,29 @@ const refreshDependents = function (event, param) {
   }
 };
 
+// method to refresh the peers of the current selector
+const refreshPeer = function (event, param) {
+  try {
+    const { peerName } = param;
+    if (peerName !== undefined) {
+      // refresh the peer
+      const targetParam = matsParamUtils.getParameterForName(peerName);
+      const targetId = `${targetParam.name}-${targetParam.type}`;
+      const targetElem = document.getElementById(targetId);
+      const refreshMapEvent = new CustomEvent("refresh", {
+        detail: {
+          refElement: null,
+        },
+      });
+      targetElem.dispatchEvent(refreshMapEvent);
+    }
+    refreshDependents(event, param);
+  } catch (e) {
+    e.message = `INFO: Error in select.js refreshPeer: ${e.message}`;
+    setInfo(e.message);
+  }
+};
+
 // check for enable controlled - This select might have control of another selector
 const checkDisableOther = function (param, firstRender) {
   try {
@@ -103,7 +105,7 @@ const checkDisableOther = function (param, firstRender) {
       // this param controls the enable/disable properties of at least one other param.
       // Use the options to enable disable that param.
       const controlledSelectors = Object.keys(param.disableOtherFor);
-      for (let i = 0; i < controlledSelectors.length; i++) {
+      for (let i = 0; i < controlledSelectors.length; i += 1) {
         const elem = matsParamUtils.getInputElementForParamName(param.name);
         if (!elem) {
           return;
@@ -142,7 +144,7 @@ const checkHideOther = function (param, firstRender) {
     if (param.hideOtherFor !== undefined) {
       // this param controls the visibility of at least one other param.
       const controlledSelectors = Object.keys(param.hideOtherFor);
-      for (let i = 0; i < controlledSelectors.length; i++) {
+      for (let i = 0; i < controlledSelectors.length; i += 1) {
         const elem = matsParamUtils.getInputElementForParamName(param.name);
         if (!elem) {
           return;
@@ -151,7 +153,7 @@ const checkHideOther = function (param, firstRender) {
         let selectedText;
         if (param.type === matsTypes.InputTypes.radioGroup) {
           const radioButtons = elem.getElementsByTagName("input");
-          for (let ridx = 0; ridx < radioButtons.length; ridx++) {
+          for (let ridx = 0; ridx < radioButtons.length; ridx += 1) {
             if (radioButtons[ridx].checked) {
               selectedOptions = radioButtons[ridx].id.split("-radioGroup-");
               selectedText = selectedOptions[selectedOptions.length - 1];
@@ -174,7 +176,7 @@ const checkHideOther = function (param, firstRender) {
           param.superiorRadioGroups !== undefined
         ) {
           // if a superior radio group wants the target element hidden and it already is, leave it be.
-          for (let sidx = 0; sidx < param.superiorRadioGroups.length; sidx++) {
+          for (let sidx = 0; sidx < param.superiorRadioGroups.length; sidx += 1) {
             const superiorName = param.superiorRadioGroups[sidx];
             const superiorHideOtherFor = matsCollections.PlotParams.findOne({
               name: superiorName,
@@ -183,10 +185,14 @@ const checkHideOther = function (param, firstRender) {
               .getInputElementForParamName(superiorName)
               .getElementsByTagName("input");
             let superiorSelectedText = "";
-            for (let sidx = 0; sidx < superiorInputElementOptions.length; sidx++) {
-              if (superiorInputElementOptions[sidx].checked) {
+            for (
+              let seidx = 0;
+              seidx < superiorInputElementOptions.length;
+              seidx += 1
+            ) {
+              if (superiorInputElementOptions[seidx].checked) {
                 const superiorSelectedOptions =
-                  superiorInputElementOptions[sidx].id.split("-radioGroup-");
+                  superiorInputElementOptions[seidx].id.split("-radioGroup-");
                 superiorSelectedText =
                   superiorSelectedOptions[superiorSelectedOptions.length - 1];
                 break;
@@ -208,7 +214,7 @@ const checkHideOther = function (param, firstRender) {
         const otherInputElement = matsParamUtils.getInputElementForParamName(
           controlledSelectors[i]
         );
-        var selectorControlElem;
+        let selectorControlElem;
         if (
           (firstRender &&
             param.default.toString() ===
@@ -242,10 +248,13 @@ const checkHideOther = function (param, firstRender) {
               selectorControlElem.purposelyHidden = false;
             }
           }
-          otherInputElement &&
+          if (
+            otherInputElement &&
             otherInputElement.options &&
-            otherInputElement.selectedIndex >= 0 &&
+            otherInputElement.selectedIndex >= 0
+          ) {
             otherInputElement.options[otherInputElement.selectedIndex].scrollIntoView();
+          }
         }
       }
       checkDisableOther(param, firstRender);
@@ -301,30 +310,30 @@ const refresh = function (event, paramName) {
     if (superiorDimensionality === 1) {
       sNames = superiorNames;
     } else {
-      sNames = superiorNames[0];
+      [sNames] = superiorNames;
     }
-    for (var sn = 0; sn < sNames.length; sn++) {
-      var superiorElement = matsParamUtils.getInputElementForParamName(sNames[sn]);
-      var selectedSuperiorValue =
+    for (let sn = 0; sn < sNames.length; sn += 1) {
+      const superiorElement = matsParamUtils.getInputElementForParamName(sNames[sn]);
+      let selectedSuperiorValue =
         superiorElement.options[superiorElement.selectedIndex] === undefined
           ? matsParamUtils.getParameterForName(sNames[sn]).default
           : superiorElement.options[superiorElement.selectedIndex].text;
       if (sNames[sn].includes("statistic") && isMetexpress) {
-        selectedSuperiorValue = statisticTranslations[selectedSuperiorValue][0];
+        [selectedSuperiorValue] = statisticTranslations[selectedSuperiorValue];
       }
       superiors[0] = superiors[0] === undefined ? [] : superiors[0];
       superiors[0].push({ element: superiorElement, value: selectedSuperiorValue });
     }
-    for (var sNameIndex = 1; sNameIndex < superiorDimensionality; sNameIndex++) {
+    for (let sNameIndex = 1; sNameIndex < superiorDimensionality; sNameIndex += 1) {
       sNames = superiorNames[sNameIndex];
-      for (var sn = 0; sn < sNames.length; sn++) {
-        var superiorElement = matsParamUtils.getInputElementForParamName(sNames[sn]);
-        var selectedSuperiorValue =
+      for (let sn = 0; sn < sNames.length; sn += 1) {
+        const superiorElement = matsParamUtils.getInputElementForParamName(sNames[sn]);
+        let selectedSuperiorValue =
           superiorElement.options[superiorElement.selectedIndex] === undefined
             ? matsParamUtils.getParameterForName(sNames[sn]).default
             : superiorElement.options[superiorElement.selectedIndex].text;
         if (sNames[sn].includes("statistic") && isMetexpress) {
-          selectedSuperiorValue = statisticTranslations[selectedSuperiorValue][0];
+          [selectedSuperiorValue] = statisticTranslations[selectedSuperiorValue];
         }
         superiors[sNameIndex] =
           superiors[sNameIndex] === undefined ? [] : superiors[sNameIndex];
@@ -409,7 +418,7 @@ const refresh = function (event, paramName) {
     }
 
     const brothers = [];
-    for (var i = 0; i < elems.length; i++) {
+    for (let i = 0; i < elems.length; i += 1) {
       if (elems[i].id.indexOf(name) >= 0 && elems[i].id !== elem.id)
         brothers.push(elems[i]);
     }
@@ -424,15 +433,15 @@ const refresh = function (event, paramName) {
       // These are the ancestral options.
       if (param.optionsMap) {
         let firstSuperiorOptions = optionsMap;
-        var theseSuperiors =
+        const theseSuperiors =
           superiors === undefined || superiors.length === 0 ? [] : superiors[0];
         for (
-          var theseSuperiorsIndex = 0;
+          let theseSuperiorsIndex = 0;
           theseSuperiorsIndex < theseSuperiors.length;
-          theseSuperiorsIndex++
+          theseSuperiorsIndex += 1
         ) {
-          var superior = theseSuperiors[theseSuperiorsIndex];
-          var selectedSuperiorValue = superior.value;
+          const superior = theseSuperiors[theseSuperiorsIndex];
+          const selectedSuperiorValue = superior.value;
           if (isScorecard) {
             firstSuperiorOptions =
               firstSuperiorOptions[selectedSuperiorValue] !== undefined
@@ -483,29 +492,29 @@ const refresh = function (event, paramName) {
              */
 
       // need to get the actual options here
-      for (var sNameIndex = 1; sNameIndex < superiorDimensionality; sNameIndex++) {
+      for (let sNameIndex = 1; sNameIndex < superiorDimensionality; sNameIndex += 1) {
         // index down through the options for the list of superiors
         // starting with the most superior down through the least superior
         // and get the options list for the first set of superiors.
         // These are the ancestral options.
         let nextSuperiorOptions = optionsMap;
-        var theseSuperiors =
+        const theseSuperiors =
           superiors === undefined || superiors.length === 0
             ? []
             : superiors[sNameIndex];
         for (
-          var theseSuperiorsIndex = 0;
+          let theseSuperiorsIndex = 0;
           theseSuperiorsIndex < theseSuperiors.length;
-          theseSuperiorsIndex++
+          theseSuperiorsIndex += 1
         ) {
-          var superior = theseSuperiors[theseSuperiorsIndex];
-          var selectedSuperiorValue = superior.value;
+          const superior = theseSuperiors[theseSuperiorsIndex];
+          const selectedSuperiorValue = superior.value;
           nextSuperiorOptions = nextSuperiorOptions[selectedSuperiorValue];
         }
         // since we now have multiple options we have to intersect them
         myOptions = _.intersection(myOptions, nextSuperiorOptions);
       }
-      if (myOptions === []) {
+      if (myOptions && myOptions.length === 0) {
         // none used - set to []
         matsParamUtils.setValueTextForParamName(name, matsTypes.InputTypes.unused);
       }
@@ -525,7 +534,7 @@ const refresh = function (event, paramName) {
           // optionGroups are an ordered map. It probably has options that are in the disabledOption list
           // which are used as markers in the select options pulldown. This is typical for models
           const optionsGroupsKeys = Object.keys(optionsGroups);
-          for (let k = 0; k < optionsGroupsKeys.length; k++) {
+          for (let k = 0; k < optionsGroupsKeys.length; k += 1) {
             if (myOptions === null) {
               myOptions = [];
               myOptions.push(optionsGroupsKeys[k]);
@@ -544,7 +553,7 @@ const refresh = function (event, paramName) {
         return;
       }
       let firstGroup = true;
-      for (var i = 0; i < myOptions.length; i++) {
+      for (let i = 0; i < myOptions.length; i += 1) {
         const dIndex =
           disabledOptions === undefined ? -1 : disabledOptions.indexOf(myOptions[i]);
         if (dIndex >= 0) {
@@ -621,8 +630,8 @@ const refresh = function (event, paramName) {
           );
         }
         if (elem.selectedIndex >= 0) {
-          for (let svi = 0; svi < selectedSuperiorValues.length; svi++) {
-            superior = superiors[svi];
+          for (let svi = 0; svi < selectedSuperiorValues.length; svi += 1) {
+            const superior = superiors[svi];
             if (
               matsParamUtils.getControlElementForParamName(superior.element.name)
                 .offsetParent !== null
@@ -646,17 +655,15 @@ const refresh = function (event, paramName) {
           matsParamUtils.setValueTextForParamName(name, matsTypes.InputTypes.unused);
         } else {
           elem.selectedIndex = 0;
-          elem &&
-            elem.options &&
-            elem.selectedIndex >= 0 &&
+          if (elem && elem.options && elem.selectedIndex >= 0) {
             elem.options[elem.selectedIndex].scrollIntoView();
-          elem &&
-            elem.options &&
-            elem.selectedIndex >= 0 &&
+          }
+          if (elem && elem.options && elem.selectedIndex >= 0) {
             matsParamUtils.setValueTextForParamName(
               name,
               elem.options[elem.selectedIndex].text
             );
+          }
         }
       } else if (param.multiple && selectedOptionOverlap.length > 0) {
         // need to manually select all the desired options
@@ -677,19 +684,17 @@ const refresh = function (event, paramName) {
         matsParamUtils.setValueTextForParamName(name, selectedOptionOverlap);
       } else {
         elem.selectedIndex = selectedOptionIndex;
-        elem &&
-          elem.options &&
-          elem.selectedIndex >= 0 &&
+        if (elem && elem.options && elem.selectedIndex >= 0) {
           elem.options[elem.selectedIndex].scrollIntoView();
-        elem &&
-          elem.options &&
-          elem.selectedIndex >= 0 &&
+        }
+        if (elem && elem.options && elem.selectedIndex >= 0) {
           matsParamUtils.setValueTextForParamName(
             name,
             elem.options[elem.selectedIndex].text
           );
+        }
       }
-      for (var i = 0; i < brothers.length; i++) {
+      for (let i = 0; i < brothers.length; i += 1) {
         const belem = brothers[i];
         const belemSelectedOptions = $(belem.selectedOptions)
           .map(function () {
@@ -698,7 +703,7 @@ const refresh = function (event, paramName) {
           .get();
         if (belemSelectedOptions === undefined || belemSelectedOptions.length === 0) {
           belem.options = [];
-          for (let i1 = 0; i1 < myOptions.length; i1++) {
+          for (let i1 = 0; i1 < myOptions.length; i1 += 1) {
             belem.options[belem.options.length] = new Option(
               myOptions[i1],
               myOptions[i1],
@@ -715,10 +720,11 @@ const refresh = function (event, paramName) {
   }
   // These need to be done in the right order!
   // always check to see if an "other" needs to be hidden or disabled before refreshing
-  matsSelectUtils.checkHideOther(param, false);
+  checkHideOther(param, false);
   refreshPeer(event, param);
 }; // refresh function
 
+// eslint-disable-next-line no-undef
 export default matsSelectUtils = {
   refresh,
   refreshPeer,

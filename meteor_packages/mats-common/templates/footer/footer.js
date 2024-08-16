@@ -3,6 +3,7 @@
  */
 
 import { matsTypes, matsCollections } from "meteor/randyp:mats-common";
+import { Template } from "meteor/templating";
 
 Template.footer.helpers({
   isMetexpress() {

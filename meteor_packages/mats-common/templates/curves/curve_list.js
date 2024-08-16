@@ -5,11 +5,14 @@
 import {
   matsTypes,
   matsCollections,
-  matsMethods,
   matsCurveUtils,
   matsPlotUtils,
   matsParamUtils,
 } from "meteor/randyp:mats-common";
+import { Template } from "meteor/templating";
+
+/* global Session, $ */
+/* eslint-disable no-console */
 
 Template.curveList.helpers({
   displayPlotUnMatched() {
@@ -100,7 +103,7 @@ Template.curveList.helpers({
     let i;
     let truth;
     let otherTruth;
-    for (i = 0; i < curves.length; i++) {
+    for (i = 0; i < curves.length; i += 1) {
       if (curves[i]["region-type"] === "Predefined region") {
         truth = curves[i].truth;
         break;
@@ -108,7 +111,7 @@ Template.curveList.helpers({
         truth = "METAR";
       }
     }
-    for (i = 0; i < curves.length; i++) {
+    for (i = 0; i < curves.length; i += 1) {
       if (curves[i]["region-type"] === "Predefined region") {
         otherTruth = curves[i].truth;
       } else {
@@ -128,11 +131,7 @@ Template.curveList.helpers({
   },
   matchedLabel() {
     if (Session.get(undefined === "matchName")) {
-      if (setMatchName) {
-        setMatchName();
-      } else {
-        Session.set("matchName", "plot matched");
-      }
+      Session.set("matchName", "plot matched");
     } else {
       Session.set("matchName", "plot matched");
     }
@@ -166,7 +165,6 @@ Template.curveList.events({
       Session.set("paramWellColor", "#f5f5f5"); // default grey
       Session.set("lastUpdate", Date.now());
       Session.set("confirmRemoveAll", "");
-      return false;
     }
     if (Session.get("Curves").length > 0) {
       $("#modal-confirm-remove-all").modal();
@@ -194,7 +192,7 @@ Template.curveList.events({
     document.getElementById("plot-curves").click();
     return false;
   },
-  "click .no-gaps-check"(event) {
+  "click .no-gaps-check"() {
     // make the Interpolate Over Nulls option on the colorbar modal match up with this.
     if (document.getElementById("nullSmooth")) {
       if (document.getElementById("noGapsCheck").checked) {

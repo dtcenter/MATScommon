@@ -2,9 +2,6 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import { Meteor } from "meteor/meteor";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 import {
   matsCollections,
   matsCurveUtils,
@@ -14,13 +11,20 @@ import {
 } from "meteor/randyp:mats-common";
 import { Template } from "meteor/templating";
 import { FlowRouter } from "meteor/ostrio:flow-router-extra";
+import { moment } from "meteor/momentjs:moment";
 import "./graphStandAlone.html";
+
+/* global Session, Plotly, $, setError */
+/* eslint-disable no-console */
+
+const { jsPDF: JsPDF } = require("jspdf");
+const html2canvas = require("html2canvas");
 
 let resizeOptions;
 
-Template.GraphStandAlone.onCreated(function () {
+Template.graphStandAlone.onCreated(function () {
   // get the params for what this window will contain from the route
-  console.log("GraphStandAlone.onCreated");
+  console.log("graphStandAlone.onCreated");
   Session.set("route", FlowRouter.getRouteName());
   Session.set("graphFunction", FlowRouter.getParam("graphFunction"));
   Session.set("plotResultKey", FlowRouter.getParam("key"));
@@ -28,7 +32,7 @@ Template.GraphStandAlone.onCreated(function () {
   Session.set("appName", FlowRouter.getParam("appName"));
 });
 
-Template.GraphStandAlone.onRendered(function () {
+Template.graphStandAlone.onRendered(function () {
   // the window resize event needs to also resize the graph
   $(window).resize(function () {
     const plotType = Session.get("plotType");
@@ -42,12 +46,12 @@ Template.GraphStandAlone.onRendered(function () {
   document.getElementById("graph-container").style.backgroundColor = "white";
 });
 
-Template.GraphStandAlone.helpers({
+Template.graphStandAlone.helpers({
   /**
    * @return {string}
    * @return {string}
    */
-  graphFunction(params) {
+  graphFunction() {
     // causes graph display routine to be processed
     const graphFunction = FlowRouter.getParam("graphFunction");
     const key = FlowRouter.getParam("key");
@@ -64,69 +68,69 @@ Template.GraphStandAlone.helpers({
       Session.set("PlotResultsUpDated", new Date());
       Session.set("PlotParams", ret.result.basis.plotParams);
       const ptypes = Object.keys(ret.result.basis.plotParams.plotTypes);
-      for (let i = 0; i < ptypes.length; i++) {
+      for (let i = 0; i < ptypes.length; i += 1) {
         if (ret.result.basis.plotParams.plotTypes[ptypes[i]] === true) {
           Session.set("plotType", ptypes[i]);
           break;
         }
       }
-      if (graphFunction) {
-        eval(graphFunction)(key);
-        const plotType = Session.get("plotType");
-        const dataset = matsCurveUtils.getGraphResult().data;
-        let { options } = matsCurveUtils.getGraphResult();
-        if (dataset === undefined) {
+      matsGraphUtils.graphPlotly();
+      const plotType = Session.get("plotType");
+      const dataset = matsCurveUtils.getGraphResult().data;
+      let { options } = matsCurveUtils.getGraphResult();
+      if (dataset === undefined) {
+        return false;
+      }
+      // make sure to capture the options (layout) from the old graph - which were stored in graph.js
+      matsMethods.getLayout.call({ resultKey: key }, function (e, r) {
+        if (e !== undefined) {
+          setError(e);
           return false;
         }
-        // make sure to capture the options (layout) from the old graph - which were stored in graph.js
-        matsMethods.getLayout.call({ resultKey: key }, function (error, ret) {
-          if (error !== undefined) {
-            setError(error);
-            return false;
-          }
-          let mapLoadPause = 0;
-          options = ret.layout;
-          if (plotType === matsTypes.PlotTypes.map) {
-            options.mapbox.zoom = 2.75;
-            mapLoadPause = 1000;
-          }
-          options.hovermode = false;
-          resizeOptions = options;
+        let mapLoadPause = 0;
+        options = r.layout;
+        if (plotType === matsTypes.PlotTypes.map) {
+          options.mapbox.zoom = 2.75;
+          mapLoadPause = 1000;
+        }
+        options.hovermode = false;
+        resizeOptions = options;
 
-          // initial plot
-          $("#legendContainer").empty();
-          $("#placeholder").empty();
+        // initial plot
+        $("#legendContainer").empty();
+        $("#placeholder").empty();
 
-          // need a slight delay for plotly to load
+        // need a slight delay for plotly to load
+        setTimeout(function () {
+          Plotly.newPlot($("#placeholder")[0], dataset, options, {
+            showLink: false,
+            displayModeBar: false,
+          });
+          // update changes to the curve ops -- need to pause if we're doing a map so the map can finish loading before we try to edit it
           setTimeout(function () {
-            Plotly.newPlot($("#placeholder")[0], dataset, options, {
-              showLink: false,
-              displayModeBar: false,
-            });
-            // update changes to the curve ops -- need to pause if we're doing a map so the map can finish loading before we try to edit it
-            setTimeout(function () {
-              const updates = ret.curveOpsUpdate.curveOpsUpdate;
-              for (let uidx = 0; uidx < updates.length; uidx++) {
-                const curveOpsUpdate = {};
-                if (updates[uidx]) {
-                  const updatedKeys = Object.keys(updates[uidx]);
-                  for (let kidx = 0; kidx < updatedKeys.length; kidx++) {
-                    const jsonHappyKey = updatedKeys[kidx];
-                    // turn the json placeholder back into .
-                    const updatedKey = jsonHappyKey.split("____").join(".");
-                    curveOpsUpdate[updatedKey] = updates[uidx][jsonHappyKey];
-                  }
-                  Plotly.restyle($("#placeholder")[0], curveOpsUpdate, uidx);
+            const updates = r.curveOpsUpdate.curveOpsUpdate;
+            for (let uidx = 0; uidx < updates.length; uidx += 1) {
+              const curveOpsUpdate = {};
+              if (updates[uidx]) {
+                const updatedKeys = Object.keys(updates[uidx]);
+                for (let kidx = 0; kidx < updatedKeys.length; kidx += 1) {
+                  const jsonHappyKey = updatedKeys[kidx];
+                  // turn the json placeholder back into .
+                  const updatedKey = jsonHappyKey.split("____").join(".");
+                  curveOpsUpdate[updatedKey] = updates[uidx][jsonHappyKey];
                 }
+                Plotly.restyle($("#placeholder")[0], curveOpsUpdate, uidx);
               }
-            }, mapLoadPause);
-          }, 500);
+            }
+          }, mapLoadPause);
+        }, 500);
 
-          // append annotations
-          $("#legendContainer").append(ret.annotation);
-          document.getElementById("gsaSpinner").style.display = "none";
-        });
-      }
+        // append annotations
+        $("#legendContainer").append(r.annotation);
+        document.getElementById("gsaSpinner").style.display = "none";
+        return null;
+      });
+      return null;
     });
   },
   graphFunctionDispay() {
@@ -153,7 +157,7 @@ Template.GraphStandAlone.helpers({
     return Session.get("Curves");
   },
   plotName() {
-    return Session.get("PlotParams") === [] ||
+    return Session.get("PlotParams").length === 0 ||
       Session.get("PlotParams").plotAction === undefined ||
       Session.get("plotType") === matsTypes.PlotTypes.map
       ? ""
@@ -227,9 +231,10 @@ Template.GraphStandAlone.helpers({
   },
 });
 
-Template.GraphStandAlone.events({
-  "click .exportpdf"(e) {
+Template.graphStandAlone.events({
+  "click .exportpdf"() {
     $(".previewCurveButtons").each(function (i, obj) {
+      // eslint-disable-next-line no-param-reassign
       obj.style.display = "none";
     });
     html2canvas(document.querySelector("#graph-container"), { scale: 3.0 }).then(
@@ -237,31 +242,25 @@ Template.GraphStandAlone.events({
         const h = 419.53;
         const w = 595.28;
         const filename = document.getElementById("exportFileName").value;
-        const pdf = new jsPDF("letter", "pt", "a5");
+        const pdf = new JsPDF({
+          orientation: "landscape",
+          unit: "pt",
+          format: [w, h],
+        });
         pdf.addImage(canvas.toDataURL("image/jpeg"), "JPEG", 0, 0, w, h);
         pdf.save(filename);
         $(".previewCurveButtons").each(function (i, obj) {
+          // eslint-disable-next-line no-param-reassign
           obj.style.display = "block";
         });
       }
     );
   },
-  "click .exportpng"(e) {
+  "click .exportpng"() {
     $(".previewCurveButtons").each(function (i, obj) {
+      // eslint-disable-next-line no-param-reassign
       obj.style.display = "none";
     });
-    html2canvas(document.querySelector("#graph-container"), { scale: 3.0 }).then(
-      (canvas) => {
-        const h = 419.53;
-        const w = 595.28;
-        const filename = document.getElementById("exportFileName").value;
-        saveAs(canvas.toDataURL(), `${filename}.png`);
-        $(".previewCurveButtons").each(function (i, obj) {
-          obj.style.display = "block";
-        });
-      }
-    );
-
     function saveAs(uri, filename) {
       const link = document.createElement("a");
       if (typeof link.download === "string") {
@@ -280,5 +279,15 @@ Template.GraphStandAlone.events({
         window.open(uri);
       }
     }
+    html2canvas(document.querySelector("#graph-container"), { scale: 3.0 }).then(
+      (canvas) => {
+        const filename = document.getElementById("exportFileName").value;
+        saveAs(canvas.toDataURL(), `${filename}.png`);
+        $(".previewCurveButtons").each(function (i, obj) {
+          // eslint-disable-next-line no-param-reassign
+          obj.style.display = "block";
+        });
+      }
+    );
   },
 });

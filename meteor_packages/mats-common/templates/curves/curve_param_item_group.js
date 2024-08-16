@@ -8,6 +8,10 @@ import {
   matsPlotUtils,
   matsParamUtils,
 } from "meteor/randyp:mats-common";
+import { Template } from "meteor/templating";
+
+/* global Session */
+/* eslint-disable no-console */
 
 const allGroups = {};
 Template.curveParamItemGroup.helpers({
@@ -19,9 +23,8 @@ Template.curveParamItemGroup.helpers({
     });
 
     // create a set of groups each with an array of 6 params for display
-    const lastUpdate = Session.get("lastUpdate");
+    Session.get("lastUpdate");
     const plotType = matsPlotUtils.getPlotType();
-    const elmementValues = matsParamUtils.getElementValues().curveParams;
     // derive the sorted pValues, xpValues, and ypValues from the sorted params and the elementValues
     const pValues = [];
     let pattern;
@@ -130,7 +133,7 @@ Template.curveParamItemGroup.helpers({
     }
     const { groupSize } = pattern;
     const { displayParams } = pattern;
-    for (let di = 0; di < displayParams.length; di++) {
+    for (let di = 0; di < displayParams.length; di += 1) {
       pValues.push({
         name: displayParams[di],
         value: c[displayParams[di]],
@@ -155,12 +158,14 @@ Template.curveParamItemGroup.helpers({
         }
         groupParams = [];
       }
-      pValues[pvi] && groupParams.push(pValues[pvi]);
+      if (pValues[pvi]) {
+        groupParams.push(pValues[pvi]);
+      }
       if (groupParams.length >= groupSize) {
         pGroups.push(groupParams);
         groupParams = [];
       }
-      pvi++;
+      pvi += 1;
     }
     // check for a partial last group
     if (groupParams.length > 0) {
@@ -202,12 +207,12 @@ Template.curveParamItemGroup.helpers({
     }
     // Make everything title case
     pLabel = pLabel.split(" ");
-    for (var i = 0; i < pLabel.length; i++) {
+    for (let i = 0; i < pLabel.length; i += 1) {
       pLabel[i] = pLabel[i].charAt(0).toUpperCase() + pLabel[i].slice(1);
       pLabel[i] = pLabel[i] === "Utc" ? "UTC" : pLabel[i];
     }
     pLabel = pLabel.join(" ").split("-");
-    for (var i = 0; i < pLabel.length; i++) {
+    for (let i = 0; i < pLabel.length; i += 1) {
       pLabel[i] = pLabel[i].charAt(0).toUpperCase() + pLabel[i].slice(1);
     }
     return pLabel.join(" ");
@@ -219,14 +224,14 @@ Template.curveParamItemGroup.helpers({
     return elem.name;
   },
   buttonId(elem) {
-    const name = new String(elem.name);
+    const name = elem.name.toString();
     const upperName = name.toUpperCase();
     const curveNumber = elem.index;
     const spanId = `${upperName}-curve-${curveNumber}-Button`;
     return spanId;
   },
   spanId(elem) {
-    const name = new String(elem.name);
+    const name = elem.name.toString();
     const upperName = name.toUpperCase();
     const curveNumber = elem.index;
     const spanId = `${upperName}-curve-${curveNumber}-Item`;
@@ -242,7 +247,7 @@ Template.curveParamItemGroup.helpers({
     let text = "";
     if (Object.prototype.toString.call(value) === "[object Array]") {
       if (value.length === 1) {
-        text = value[0];
+        [text] = value;
       } else if (value.length > 1) {
         text = `${value[0]} .. ${value[value.length - 1]}`;
       }
@@ -255,7 +260,7 @@ Template.curveParamItemGroup.helpers({
     return elem.color;
   },
   border(elem) {
-    const elementChanged = Session.get("elementChanged");
+    Session.get("elementChanged");
     const { name } = elem; // for xaxis params
     const { curve } = elem;
     const adb = name === Session.get("activeDisplayButton");
@@ -273,29 +278,30 @@ Template.curveParamItemGroup.helpers({
     return Session.get("eventTargetCurve");
   },
   displayParam(elem) {
-    if (elem.name === "label") {
+    const thisElem = elem;
+    if (thisElem.name === "label") {
       return "none";
     }
     // it isn't good enough to just check the item control button. Need to evaluate the hideOtherFor functionality with
     // respect to this particular curve item
     // First - determine if my visibility is controlled by another
     const visibilityControllingParam = matsParamUtils.visibilityControllerForParam(
-      elem.name
+      thisElem.name
     );
     // Second - Check the hide/show state based on the parameter hideOtherFor map in the parameter nad the state of this particular curve
     if (visibilityControllingParam !== undefined) {
-      const curve = Session.get("Curves")[elem.index];
-      const hideOtherFor = visibilityControllingParam.hideOtherFor[elem.name];
+      const curve = Session.get("Curves")[thisElem.index];
+      const hideOtherFor = visibilityControllingParam.hideOtherFor[thisElem.name];
       if (
         curve !== undefined &&
         curve[visibilityControllingParam.name] !== undefined &&
         hideOtherFor.indexOf(curve[visibilityControllingParam.name]) !== -1
       ) {
-        elem.purposelyHidden = true;
+        thisElem.purposelyHidden = true;
         return "none";
       }
     }
-    elem.purposelyHidden = false;
+    thisElem.purposelyHidden = false;
     return "block";
   },
 });

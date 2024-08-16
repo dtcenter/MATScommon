@@ -2,6 +2,8 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
+/* global Package, Npm */
+
 Package.describe({
   name: "randyp:mats-common",
   version: "5.3.1",
@@ -78,7 +80,6 @@ Package.onUse(function (api) {
   api.export("matsSelectUtils", ["client"]);
   api.export("matsGraphUtils", ["client"]);
   api.export("matsParamUtils", ["client", "server"]);
-  api.export("matsMathUtils", ["client", "server"]);
   api.export("matsPlotUtils", ["client", "server"]);
   api.export("matsDataUtils", ["server"]);
   api.export("matsDataQueryUtils", ["server"]);
@@ -151,7 +152,6 @@ Package.onUse(function (api) {
   api.addFiles("lib/regression.js", ["client", "server"]);
   api.addFiles("lib/param_util.js", ["client", "server"]);
   api.addFiles("lib/plot_util.js", ["client", "server"]);
-  api.addFiles("lib/math_util.js", ["client", "server"]);
 
   // templates
   api.addFiles("templates/Home.html", "client");
@@ -189,8 +189,6 @@ Package.onUse(function (api) {
 
   api.addFiles("templates/graph/graph.html", "client");
   api.addFiles("templates/graph/graph.js", "client");
-
-  api.addFiles("templates/graph/displayFunctions/graph_plotly.js", "client");
 
   api.addFiles("templates/graphStandAlone/graphStandAlone.html", "client");
   api.addFiles("templates/graphStandAlone/graphStandAlone.js", "client");
