@@ -8,6 +8,9 @@ import {
   matsParamUtils,
   matsCollections,
 } from "meteor/randyp:mats-common";
+import { Template } from "meteor/templating";
+
+/* global Session, $, setError */
 
 Template.item.onRendered(function () {
   try {
@@ -36,12 +39,12 @@ Template.item.helpers({
       tcname = this.name;
     }
     tcname = tcname.split(" ");
-    for (var i = 0; i < tcname.length; i++) {
+    for (let i = 0; i < tcname.length; i += 1) {
       tcname[i] = tcname[i].charAt(0).toUpperCase() + tcname[i].slice(1);
       tcname[i] = tcname[i] === "Utc" ? "UTC" : tcname[i];
     }
     tcname = tcname.join(" ").split("-");
-    for (var i = 0; i < tcname.length; i++) {
+    for (let i = 0; i < tcname.length; i += 1) {
       tcname[i] = tcname[i].charAt(0).toUpperCase() + tcname[i].slice(1);
     }
     return tcname.join(" ");
@@ -72,13 +75,13 @@ Template.item.helpers({
         */
     lcname = lcname.split(" ");
     lcname[0] = lcname[0].charAt(0).toUpperCase() + lcname[0].slice(1);
-    for (var i = 1; i < lcname.length; i++) {
+    for (let i = 1; i < lcname.length; i += 1) {
       lcname[i] = lcname[i].charAt(0).toLowerCase() + lcname[i].slice(1);
       lcname[i] = lcname[i] === "Utc" ? "UTC" : lcname[i];
     }
     lcname = lcname.join(" ").split("-");
     lcname[0] = lcname[0].charAt(0).toUpperCase() + lcname[0].slice(1);
-    for (var i = 1; i < lcname.length; i++) {
+    for (let i = 1; i < lcname.length; i += 1) {
       lcname[i] = lcname[i].charAt(0).toLowerCase() + lcname[i].slice(1);
     }
     return lcname.join(" ");
@@ -87,7 +90,7 @@ Template.item.helpers({
     Session.get("lastUpdate");
     if (this.name === "label") {
       // label is handled specially
-      return;
+      return undefined;
     }
     if (matsParamUtils.getInputElementForParamName(this.name)) {
       return this.default;
@@ -231,7 +234,7 @@ Template.item.helpers({
 });
 
 Template.item.events({
-  "click .control-button"(event) {
+  "click .control-button"() {
     Session.set("elementChanged", Date.now());
     const elem = document.getElementById(
       `${matsTypes.InputTypes.element}-${this.name}`
@@ -246,7 +249,6 @@ Template.item.events({
       if (elem !== null) {
         elem.style.display = "block";
         if (this.type === matsTypes.InputTypes.select) {
-          const s = document.getElementById(`${this.name}-${this.type}`);
           const ref = `#${this.name}-${this.type}`;
           $(ref).select2("open"); // need to foricibly open the selector for the select2
         }
@@ -256,8 +258,9 @@ Template.item.events({
         }
       }
     }
+    return null;
   },
-  "click .data-input"(event) {
+  "click .data-input"() {
     Session.set("elementChanged", Date.now());
     if (this.displayPriority !== undefined) {
       Session.set("displayPriority", this.displayPriority + 1);
@@ -300,6 +303,7 @@ Template.item.events({
     if (curveItem && this.type !== matsTypes.InputTypes.dateRange) {
       $("#save").trigger("click");
     }
+    return null;
   },
 
   "click .help"() {
@@ -313,6 +317,9 @@ Template.item.events({
     $("#helpModal").modal("show");
   },
   invalid(event) {
+    const defaultValue = matsCollections[event.currentTarget.name].findOne({
+      name: event.currentTarget.name,
+    }).default;
     if (this.type === matsTypes.InputTypes.numberSpinner) {
       let param;
       if (matsCollections[event.currentTarget.name] !== undefined) {
@@ -325,7 +332,7 @@ Template.item.events({
       }
       setError(
         new Error(
-          `invalid value (${event.currentTarget.value}) for ${event.currentTarget.name} it must be between ${event.currentTarget.min} and ${event.currentTarget.max} -- resetting to default value: ${default_value}`
+          `invalid value (${event.currentTarget.value}) for ${event.currentTarget.name} it must be between ${event.currentTarget.min} and ${event.currentTarget.max} -- resetting to default value: ${defaultValue}`
         )
       );
     } else {
@@ -335,9 +342,7 @@ Template.item.events({
       }
       setError(new Error(errMsg));
     }
-    const default_value = matsCollections[event.currentTarget.name].findOne({
-      name: event.currentTarget.name,
-    }).default;
-    event.currentTarget.value = default_value;
+    // eslint-disable-next-line no-param-reassign
+    event.currentTarget.value = defaultValue;
   },
 });

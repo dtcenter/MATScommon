@@ -3,7 +3,14 @@
  */
 
 import { matsCollections, matsParamUtils, matsTypes } from "meteor/randyp:mats-common";
-import daterangepicker from "daterangepicker";
+import { Template } from "meteor/templating";
+import { moment } from "meteor/momentjs:moment";
+
+// eslint-disable-next-line no-unused-vars
+const daterangepicker = require("daterangepicker");
+
+/* global Session, $, setError, setInfo */
+/* eslint-disable no-console */
 
 Template.dateRange.helpers({
   defaultDate() {
@@ -20,7 +27,6 @@ Template.dateRange.onRendered(function () {
 
   const { name } = this.data;
   const idref = `${name}-${this.data.type}`;
-  const controlButtonRef = `controlButton-${name}-value`;
   const elem = document.getElementById(`element-${name}`);
   const { superiorNames } = this.data;
   const defaultDateRange = matsParamUtils.getDefaultDateRange(name);
@@ -110,6 +116,7 @@ Template.dateRange.onRendered(function () {
     if (curveItem) {
       $("#save").trigger("click");
     }
+    return null;
   });
 
   $(`#${idref}`).on("cancel.daterangepicker", function () {
@@ -118,7 +125,7 @@ Template.dateRange.onRendered(function () {
 
   elem.style.display = "none";
 
-  $(".drp-buttons").each(function (index) {
+  $(".drp-buttons").each(function () {
     if ($(this).find("span.newRangeLabel").length === 0) {
       $(this).prepend(
         "<span class='newRangeLabel' style='text-align: right; font-size: 16px;'>Apply this range?&nbsp;&nbsp;</span>"
@@ -142,7 +149,7 @@ Template.dateRange.onRendered(function () {
           Array.isArray(superiorNames[0])
             ? superiorNames.length
             : 1;
-        for (var si = 0; si < superiorDimensionality; si++) {
+        for (let si = 0; si < superiorDimensionality; si += 1) {
           let superiors = [];
           if (superiorDimensionality === 1) {
             superiors = superiorNames;
@@ -150,7 +157,7 @@ Template.dateRange.onRendered(function () {
             superiors = superiorNames[si];
           }
           let datesMap;
-          for (let si2 = 0; si2 < superiors.length; si2++) {
+          for (let si2 = 0; si2 < superiors.length; si2 += 1) {
             const thisSuperior = superiors[si2];
             if (matsCollections[thisSuperior] !== undefined) {
               datesMap =
@@ -163,23 +170,25 @@ Template.dateRange.onRendered(function () {
                 matsParamUtils.getInputElementForParamName(thisSuperior).selectedIndex
               ].text;
             if (thisSuperior === "statistic" && isMetexpress) {
-              sval = statisticTranslations[sval][0];
+              [sval] = statisticTranslations[sval];
             }
             if (
-              sval === matsTypes.InputTypes.unused ||
-              sval === null ||
-              datesMap === undefined ||
-              matsParamUtils.getInputElementForParamName(thisSuperior) === undefined ||
-              isNaN(
-                matsParamUtils.getInputElementForParamName(thisSuperior).selectedIndex
-              ) ||
-              matsParamUtils.getInputElementForParamName(thisSuperior).selectedIndex ===
-                -1
+              !(
+                sval === matsTypes.InputTypes.unused ||
+                sval === null ||
+                datesMap === undefined ||
+                matsParamUtils.getInputElementForParamName(thisSuperior) ===
+                  undefined ||
+                Number.isNaN(
+                  matsParamUtils.getInputElementForParamName(thisSuperior).selectedIndex
+                ) ||
+                matsParamUtils.getInputElementForParamName(thisSuperior)
+                  .selectedIndex === -1
+              )
             ) {
               // skip this superior - it isn't being used right now
-              continue;
+              datesMap = datesMap[sval];
             }
-            datesMap = datesMap[sval];
           }
           const superiorMinimumDateStr = datesMap.minDate;
           const superiorMinimumMoment = moment.utc(
@@ -231,7 +240,7 @@ Template.dateRange.onRendered(function () {
       let dataEnd = superiorVals[0].max;
 
       if (superiorVals.length > 1) {
-        for (si = 1; si < superiorVals.length; si++) {
+        for (let si = 1; si < superiorVals.length; si += 1) {
           const tStart = superiorVals[si].min;
           const tEnd = superiorVals[si].max;
           if (dataEnd.isBefore(tStart)) {
@@ -302,10 +311,11 @@ Template.dateRange.onRendered(function () {
     } catch (error) {
       console.log(`Error in date_range.js.refresh : ${error.message}`);
     }
+    return null;
   };
 
   // register refresh event for superior to use to enforce a refresh of the options list
-  elem.addEventListener("refresh", function (e) {
+  elem.addEventListener("refresh", function () {
     refresh();
   });
 });

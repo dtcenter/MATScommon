@@ -1,12 +1,17 @@
 /*
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
+import { Meteor } from "meteor/meteor";
 import {
+  matsCollections,
   matsPlotUtils,
   matsGraphUtils,
   matsCurveUtils,
   matsMethods,
 } from "meteor/randyp:mats-common";
+import { Template } from "meteor/templating";
+
+/* global Session, setError */
 
 function toggleDisplay(divId) {
   const x = document.getElementById(divId);
@@ -15,35 +20,6 @@ function toggleDisplay(divId) {
   } else {
     x.style.display = "none";
   }
-}
-
-function getUserNames() {
-  // userlist is subscribed in init.js
-  // return Meteor.allUsers.find();
-  ids = [];
-  if (Meteor.users.find().fetch()[0] !== undefined) {
-    users = Meteor.users.find().fetch();
-    users.forEach(function addUserEmail(user) {
-      ids.push(user.emails[0].address);
-    });
-    return ids;
-  }
-}
-
-function getNamesForUser(userName) {
-  // myScorecardInfo is keyed by userName
-  return Object.keys(myScorecardInfo);
-}
-
-function getprocessedAtsForUserName(userName, name) {
-  const processedAts = [];
-  const dt = new Date("07/1/2022");
-  const end = new Date("08/1/2022");
-  while (dt <= end) {
-    processedAts.push(new Date(dt));
-    dt.setDate(dt.getDate() + 1);
-  }
-  return processedAts;
 }
 
 function refreshPage() {
@@ -57,13 +33,13 @@ function refreshPage() {
   });
 }
 
-Template.scorecardStatusPage.created = function () {
+Template.scorecardStatusPage.onCreated = function () {
   refreshPage();
-  const cursor = matsCollections.Scorecard.find({}).observeChanges({
-    added(id, fields) {
+  matsCollections.Scorecard.find({}).observeChanges({
+    added() {
       refreshPage();
     },
-    changed(id, fields) {
+    changed() {
       refreshPage();
     },
   });
@@ -156,13 +132,13 @@ Template.scorecardStatusPage.helpers({
 });
 
 Template.scorecardStatusPage.events({
-  "click .back"(event) {
+  "click .back"() {
     matsPlotUtils.enableActionButtons();
     matsGraphUtils.setDefaultView();
     matsCurveUtils.resetPlotResultData();
     return false;
   },
-  "click .refresh-scorecard"(event) {
+  "click .refresh-scorecard"() {
     refreshPage();
   },
   "click .userName-control"(event) {
@@ -171,11 +147,11 @@ Template.scorecardStatusPage.events({
   "click .userName-name-control"(event) {
     toggleDisplay(event.currentTarget.attributes["data-target"].value);
   },
-  "click .drop-sc-instance"(e) {
-    const userName = e.currentTarget.dataset.user_name;
-    const { name } = e.currentTarget.dataset;
-    const submitted = e.currentTarget.dataset.submit_time;
-    const processedAt = e.currentTarget.dataset.run_time;
+  "click .drop-sc-instance"(event) {
+    const userName = event.currentTarget.dataset.user_name;
+    const { name } = event.currentTarget.dataset;
+    const submitted = event.currentTarget.dataset.submit_time;
+    const processedAt = event.currentTarget.dataset.run_time;
 
     matsMethods.dropScorecardInstance.call(
       {
@@ -194,11 +170,11 @@ Template.scorecardStatusPage.events({
       }
     );
   },
-  "click .restore-sc-instance"(e) {
-    const userName = e.currentTarget.dataset.user_name;
-    const { name } = e.currentTarget.dataset;
-    const submitted = e.currentTarget.dataset.submit_time;
-    const processedAt = e.currentTarget.dataset.run_time;
+  "click .restore-sc-instance"(event) {
+    const userName = event.currentTarget.dataset.user_name;
+    const { name } = event.currentTarget.dataset;
+    const submitted = event.currentTarget.dataset.submit_time;
+    const processedAt = event.currentTarget.dataset.run_time;
 
     matsMethods.getPlotParamsFromScorecardInstance.call(
       {
@@ -211,7 +187,7 @@ Template.scorecardStatusPage.events({
         if (error !== undefined) {
           setError(error);
         } else {
-          plotParams = ret;
+          const plotParams = ret;
           matsPlotUtils.enableActionButtons();
           matsGraphUtils.setDefaultView();
           matsCurveUtils.resetPlotResultData();

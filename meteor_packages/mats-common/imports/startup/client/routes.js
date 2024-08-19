@@ -13,16 +13,16 @@ FlowRouter.route("/", {
   name: "main",
   action() {
     if (Meteor.settings.public.scorecard) {
-      this.render("ScorecardHome");
+      this.render("scorecardHome");
     } else if (Meteor.settings.public.custom) {
-      this.render("CustomHome");
+      this.render("customHome");
     } else if (
       Meteor.settings.public.undefinedRoles !== undefined &&
       Meteor.settings.public.undefinedRoles.length > 0
     ) {
-      this.render("Configure");
+      this.render("configure");
     } else {
-      this.render("Home");
+      this.render("home");
     }
   },
 });
@@ -51,7 +51,7 @@ FlowRouter.route("/preview/:graphFunction/:key/:matching/:appName", {
 FlowRouter.route("/scorecardDisplay/:userName/:name/:submitted/:processedAt", {
   name: "scorecardDisplay",
   action(params) {
-    this.render("ScorecardDisplay", params);
+    this.render("scorecardDisplay", params);
   },
 });
 
@@ -60,9 +60,9 @@ FlowRouter.route("/scorecardTimeseries/:key", {
   action(params) {
     Session.set("scorecardTimeseriesKey", params.key);
     if (Meteor.settings.public.custom) {
-      this.render("CustomHome");
+      this.render("customHome");
     } else {
-      this.render("Home");
+      this.render("home");
     }
   },
 });
@@ -72,16 +72,16 @@ FlowRouter.route(`${Meteor.settings.public.proxy_prefix_path}/`, {
   name: "main",
   action() {
     if (Meteor.settings.public.scorecard) {
-      this.render("ScorecardHome");
+      this.render("scorecardHome");
     } else if (Meteor.settings.public.custom) {
-      this.render("CustomHome");
+      this.render("customHome");
     } else if (
       Meteor.settings.public.undefinedRoles !== undefined &&
       Meteor.settings.public.undefinedRoles.length > 0
     ) {
-      this.render("Configure");
+      this.render("configure");
     } else {
-      this.render("Home");
+      this.render("home");
     }
   },
 });
@@ -121,7 +121,7 @@ FlowRouter.route(
   {
     name: "scorecardDisplay",
     action(params) {
-      this.render("ScorecardDisplay", params);
+      this.render("scorecardDisplay", params);
     },
   }
 );
@@ -133,9 +133,9 @@ FlowRouter.route(
     action(params) {
       Session.set("scorecardTimeseriesKey", params.key);
       if (Meteor.settings.public.custom) {
-        this.render("CustomHome");
+        this.render("customHome");
       } else {
-        this.render("Home");
+        this.render("home");
       }
     },
   }
@@ -146,16 +146,16 @@ FlowRouter.route(`${Meteor.settings.public.proxy_prefix_path}/:appName`, {
   name: "main",
   action() {
     if (Meteor.settings.public.scorecard) {
-      this.render("ScorecardHome");
+      this.render("scorecardHome");
     } else if (Meteor.settings.public.custom) {
-      this.render("CustomHome");
+      this.render("customHome");
     } else if (
       Meteor.settings.public.undefinedRoles !== undefined &&
       Meteor.settings.public.undefinedRoles.length > 0
     ) {
-      this.render("Configure");
+      this.render("configure");
     } else {
-      this.render("Home");
+      this.render("home");
     }
   },
 });
@@ -195,7 +195,7 @@ FlowRouter.route(
   {
     name: "scorecardDisplay",
     action(params) {
-      this.render("ScorecardDisplay", params);
+      this.render("scorecardDisplay", params);
     },
   }
 );
@@ -207,9 +207,9 @@ FlowRouter.route(
     action(params) {
       Session.set("scorecardTimeseriesKey", params.key);
       if (Meteor.settings.public.custom) {
-        this.render("CustomHome");
+        this.render("customHome");
       } else {
-        this.render("Home");
+        this.render("home");
       }
     },
   }

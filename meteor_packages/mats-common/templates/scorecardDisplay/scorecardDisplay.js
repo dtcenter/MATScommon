@@ -3,17 +3,21 @@
 
 The scorecardStatus page has a visit link which is really a FlowRouter route
 "/scorecard_display/' + userName + '/' + name + '/' + submitted + '/' + processedAt"
-which is a route to this template (ScorecardDisplay). The userName, name, submitted, and processedAt are passed as params.
+which is a route to this template (scorecardDisplay). The userName, name, submitted, and processedAt are passed as params.
 That makes them available in "this" at the top level of the template.
 */
 
 import { Meteor } from "meteor/meteor";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 import { matsMethods, matsCollections } from "meteor/randyp:mats-common";
-import { Template } from "meteor/templating";
-import { LightenDarkenColor } from "lighten-darken-color";
 import "./scorecardDisplay.html";
+import { Template } from "meteor/templating";
+
+/* global Session, $, setError */
+
+const { jsPDF: JsPDF } = require("jspdf");
+const html2canvas = require("html2canvas");
+const LightenDarkenColor = require("lighten-darken-color");
+const hash = require("object-hash");
 
 const getTableCellId = function (
   fcstlen,
@@ -43,7 +47,7 @@ const getAppSourceByApplication = function (application) {
 const getAllStats = function (blockName) {
   const myScorecard = Session.get("myScorecard");
   if (myScorecard === undefined) {
-    return;
+    return null;
   }
   const myRegions = Object.keys(myScorecard.scorecard.results.blocks[blockName].data);
   const myStats = new Set();
@@ -59,7 +63,7 @@ const getAllStats = function (blockName) {
 const getAllVariables = function (blockName) {
   const myScorecard = Session.get("myScorecard");
   if (myScorecard === undefined) {
-    return;
+    return null;
   }
   const myVars = new Set();
   const myRegions = Object.keys(myScorecard.scorecard.results.blocks[blockName].data);
@@ -80,7 +84,7 @@ const getAllVariables = function (blockName) {
 const getAllThresholds = function (blockName) {
   const myScorecard = Session.get("myScorecard");
   if (myScorecard === undefined) {
-    return;
+    return null;
   }
   const myThreshs = new Set();
   const myRegions = Object.keys(myScorecard.scorecard.results.blocks[blockName].data);
@@ -102,9 +106,9 @@ const getAllThresholds = function (blockName) {
   });
   if (Array.from(myThreshs).length > 1) {
     return Array.from(myThreshs).sort(function (a, b) {
-      a = Number(a.split(" (")[0]);
-      b = Number(b.split(" (")[0]);
-      return a - b;
+      const numA = Number(a.split(" (")[0]);
+      const numB = Number(b.split(" (")[0]);
+      return numA - numB;
     });
   }
   return Array.from(myThreshs).sort();
@@ -113,7 +117,7 @@ const getAllThresholds = function (blockName) {
 const getAllLevels = function (blockName) {
   const myScorecard = Session.get("myScorecard");
   if (myScorecard === undefined) {
-    return;
+    return null;
   }
   let allNumbers = true;
   const myLevs = new Set();
@@ -133,7 +137,7 @@ const getAllLevels = function (blockName) {
             myScorecard.scorecard.results.blocks[blockName].data[r][s][v][t]
           );
           rLevs.forEach(function (l) {
-            if (isNaN(Number(l))) {
+            if (Number.isNaN(Number(l))) {
               allNumbers = false;
             }
             myLevs.add(l);
@@ -148,6 +152,19 @@ const getAllLevels = function (blockName) {
     });
   }
   return Array.from(myLevs).sort();
+};
+
+const refreshScorecard = function (userName, name, submitted, processedAt) {
+  const myScorecard = matsCollections.Scorecard.findOne(
+    {
+      "scorecard.name": name,
+      "scorecard.userName": userName,
+      "scorecard.submitted": Number(submitted),
+      "scorecard.processedAt": Number(processedAt),
+    },
+    { fields: { scorecard: 1 } }
+  );
+  Session.set("myScorecard", myScorecard);
 };
 
 // retrieves the Scorecard from Couchbase
@@ -171,26 +188,13 @@ const getScorecard = function (userName, name, submitted, processedAt) {
       }
       Session.set("myScorecard", scorecard);
       const cursor = matsCollections.Scorecard.find({ _id: scorecard.docID });
-      const handle = cursor.observeChanges({
-        changed(id, fields) {
+      cursor.observeChanges({
+        changed() {
           refreshScorecard(userName, name, submitted, processedAt);
         },
       });
     }
   );
-};
-
-const refreshScorecard = function (userName, name, submitted, processedAt) {
-  myScorecard = matsCollections.Scorecard.findOne(
-    {
-      "scorecard.name": name,
-      "scorecard.userName": userName,
-      "scorecard.submitted": Number(submitted),
-      "scorecard.processedAt": Number(processedAt),
-    },
-    { fields: { scorecard: 1 } }
-  );
-  Session.set("myScorecard", myScorecard);
 };
 
 const hideLoading = function () {
@@ -204,7 +208,7 @@ const hideLoading = function () {
   }
 };
 
-Template.ScorecardDisplay.onRendered(function () {
+Template.scorecardDisplay.onRendered(function () {
   //  onVisible(document.querySelector("#scorecard-display-container"), hideLoading());
   $(document).ready(function () {
     $('[data-toggle="tooltip"]').tooltip();
@@ -217,7 +221,7 @@ Template.ScorecardDisplay.onRendered(function () {
   );
 });
 
-Template.ScorecardDisplay.onCreated(function () {
+Template.scorecardDisplay.onCreated(function () {
   getScorecard(
     this.data.userName,
     this.data.name,
@@ -226,11 +230,11 @@ Template.ScorecardDisplay.onCreated(function () {
   );
 });
 
-Template.ScorecardDisplay.helpers({
+Template.scorecardDisplay.helpers({
   application(blockName) {
     const myScorecard = Session.get("myScorecard");
     if (myScorecard === undefined) {
-      return;
+      return null;
     }
     return myScorecard.scorecard.plotParams.curves.find((r) => r.label === blockName)
       .application;
@@ -238,7 +242,7 @@ Template.ScorecardDisplay.helpers({
   blockTitle(blockName) {
     const myScorecard = Session.get("myScorecard");
     if (myScorecard === undefined) {
-      return;
+      return null;
     }
     const { blockTitle } = myScorecard.scorecard.results.blocks[blockName];
     return `Scorecard ${blockName}: Experimental Data Source = ${blockTitle.dataSource}, Control Data Source = ${blockTitle.controlDataSource}`;
@@ -246,7 +250,7 @@ Template.ScorecardDisplay.helpers({
   constantFields(blockName) {
     const myScorecard = Session.get("myScorecard");
     if (myScorecard === undefined) {
-      return;
+      return null;
     }
     const blockConstantFields =
       myScorecard.scorecard.results.blocks[blockName].blockParameters;
@@ -254,7 +258,7 @@ Template.ScorecardDisplay.helpers({
       (r) => r.label === blockName
     );
     let CFString = "";
-    for (let fidx = 0; fidx < blockConstantFields.length; fidx++) {
+    for (let fidx = 0; fidx < blockConstantFields.length; fidx += 1) {
       const currentField = blockConstantFields[fidx];
       if (
         currentField !== "application" &&
@@ -271,27 +275,27 @@ Template.ScorecardDisplay.helpers({
   scorecardBlocks() {
     const myScorecard = Session.get("myScorecard");
     if (myScorecard === undefined) {
-      return;
+      return null;
     }
     return Object.keys(myScorecard.scorecard.results.blocks).sort();
   },
   regions(blockName) {
     const myScorecard = Session.get("myScorecard");
     if (myScorecard === undefined) {
-      return;
+      return null;
     }
     return myScorecard.scorecard.results.blocks[blockName].regions.sort();
   },
   fcstlens(blockName) {
     const myScorecard = Session.get("myScorecard");
     if (myScorecard === undefined) {
-      return;
+      return null;
     }
     const myFcstlenStrs = myScorecard.scorecard.results.blocks[blockName].fcstlens;
     const myFcstLengths = [];
     const fcstLength = myFcstlenStrs.length;
     // padd the fcst lengths with leading '0' for single digit fcsts
-    for (let i = 0; i < fcstLength; i++) {
+    for (let i = 0; i < fcstLength; i += 1) {
       myFcstLengths[i] = (Number(myFcstlenStrs[i]) < 10 ? "0" : "") + myFcstlenStrs[i];
     }
     return myFcstLengths.sort();
@@ -299,7 +303,7 @@ Template.ScorecardDisplay.helpers({
   numFcsts(blockName) {
     const myScorecard = Session.get("myScorecard");
     if (myScorecard === undefined) {
-      return;
+      return null;
     }
     return myScorecard.scorecard.results.blocks[blockName].fcstlens.length;
   },
@@ -309,7 +313,7 @@ Template.ScorecardDisplay.helpers({
   significanceIconHTML(blockName, region, stat, variable, threshold, level, fcstlen) {
     const myScorecard = Session.get("myScorecard");
     if (myScorecard === undefined) {
-      return;
+      return null;
     }
     // un padd the possibly padded fcstlen
     const fcstlenStr = `${Number(fcstlen)}`;
@@ -382,7 +386,7 @@ Template.ScorecardDisplay.helpers({
   ) {
     const myScorecard = Session.get("myScorecard");
     if (myScorecard === undefined) {
-      return;
+      return null;
     }
     // un padd the possibly padded fcstlen
     const fcstlenStr = `${Number(fcstlen)}`;
@@ -509,7 +513,7 @@ Template.ScorecardDisplay.helpers({
   plotParams() {
     const myScorecard = Session.get("myScorecard");
     if (myScorecard === undefined) {
-      return;
+      return null;
     }
     return JSON.stringify(myScorecard.scorecard.results.plotParams);
   },
@@ -526,8 +530,8 @@ Template.ScorecardDisplay.helpers({
     const y = x.getFullYear().toString();
     let m = (x.getMonth() + 1).toString();
     let d = x.getDate().toString();
-    d.length === 1 && (d = `0${d}`);
-    m.length === 1 && (m = `0${m}`);
+    if (d.length === 1) d = `0${d}`;
+    if (m.length === 1) m = `0${m}`;
     const yyyymmdd = y + m + d;
     return `${this.name}-${yyyymmdd}`;
   },
@@ -536,10 +540,11 @@ Template.ScorecardDisplay.helpers({
   },
   trimmedText(text) {
     if (typeof text === "string" || text instanceof String) {
-      text = text.replace(/__DOT__/g, ".");
-      text = text.split(" (")[0];
+      let returnText = text.replace(/__DOT__/g, ".");
+      [returnText] = returnText.split(" (");
+      return returnText;
     }
-    return text;
+    return undefined;
   },
   thresholdHider(blockName) {
     const thresholds = getAllThresholds(blockName);
@@ -551,12 +556,13 @@ Template.ScorecardDisplay.helpers({
   },
 });
 
-Template.ScorecardDisplay.events({
-  "click .refresh-scorecard"(event) {
+Template.scorecardDisplay.events({
+  "click .refresh-scorecard"() {
     refreshScorecard(this.userName, this.name, this.submitted, this.processedAt);
   },
-  "click .exportpdf"(e) {
+  "click .exportpdf"() {
     $(".previewCurveButtons").each(function (i, obj) {
+      // eslint-disable-next-line no-param-reassign
       obj.style.display = "none";
     });
     html2canvas(document.querySelector("#graph-container"), {
@@ -565,30 +571,24 @@ Template.ScorecardDisplay.events({
       const h = 419.53;
       const w = 595.28;
       const filename = document.getElementById("exportFileName").value;
-      const pdf = new jsPDF("letter", "pt", "a5");
+      const pdf = new JsPDF({
+        orientation: "landscape",
+        unit: "pt",
+        format: [w, h],
+      });
       pdf.addImage(canvas.toDataURL("image/jpeg"), "JPEG", 0, 0, w, h);
       pdf.save(filename);
       $(".previewCurveButtons").each(function (i, obj) {
+        // eslint-disable-next-line no-param-reassign
         obj.style.display = "block";
       });
     });
   },
-  "click .exportpng"(e) {
+  "click .exportpng"() {
     $(".previewCurveButtons").each(function (i, obj) {
+      // eslint-disable-next-line no-param-reassign
       obj.style.display = "none";
     });
-    html2canvas(document.querySelector("#graph-container"), {
-      scale: 3.0,
-    }).then((canvas) => {
-      const h = 419.53;
-      const w = 595.28;
-      const filename = document.getElementById("exportFileName").value;
-      saveAs(canvas.toDataURL(), `${filename}.png`);
-      $(".previewCurveButtons").each(function (i, obj) {
-        obj.style.display = "block";
-      });
-    });
-
     function saveAs(uri, filename) {
       const link = document.createElement("a");
       if (typeof link.download === "string") {
@@ -607,13 +607,24 @@ Template.ScorecardDisplay.events({
         window.open(uri);
       }
     }
+    html2canvas(document.querySelector("#graph-container"), {
+      scale: 3.0,
+    }).then((canvas) => {
+      const filename = document.getElementById("exportFileName").value;
+      saveAs(canvas.toDataURL(), `${filename}.png`);
+      $(".previewCurveButtons").each(function (i, obj) {
+        // eslint-disable-next-line no-param-reassign
+        obj.style.display = "block";
+      });
+    });
   },
-  "click .scTableSigTd"(e) {
+
+  "click .scTableSigTd"(event) {
     const myScorecard = Session.get("myScorecard");
     if (myScorecard === undefined) {
       return;
     }
-    const block = e.currentTarget.dataset.scorecardblock;
+    const block = event.currentTarget.dataset.scorecardblock;
     const blockData = myScorecard.scorecard.plotParams.curves.find(
       (r) => r.label === block
     );
@@ -629,29 +640,30 @@ Template.ScorecardDisplay.events({
       curve0DataSource: curve0Model,
       curve1DataSource: curve1Model,
       commonCurveParams: {
-        region: e.currentTarget.dataset.region
-          ? e.currentTarget.dataset.region.replace(/__DOT__/g, ".")
+        region: event.currentTarget.dataset.region
+          ? event.currentTarget.dataset.region.replace(/__DOT__/g, ".")
           : "undefined",
         "forecast-length":
-          e.currentTarget.dataset.fcstlen && !blockData["forecast-type"]
-            ? parseInt(e.currentTarget.dataset.fcstlen)
+          event.currentTarget.dataset.fcstlen && !blockData["forecast-type"]
+            ? parseInt(event.currentTarget.dataset.fcstlen, 10)
                 .toString()
                 .replace(/__DOT__/g, ".")
             : "undefined",
-        statistic: e.currentTarget.dataset.stat
-          ? e.currentTarget.dataset.stat.replace(/__DOT__/g, ".")
+        statistic: event.currentTarget.dataset.stat
+          ? event.currentTarget.dataset.stat.replace(/__DOT__/g, ".")
           : "undefined",
-        variable: e.currentTarget.dataset.variable
-          ? e.currentTarget.dataset.variable.replace(/__DOT__/g, ".")
+        variable: event.currentTarget.dataset.variable
+          ? event.currentTarget.dataset.variable.replace(/__DOT__/g, ".")
           : "undefined",
         threshold:
-          e.currentTarget.dataset.threshold &&
-          e.currentTarget.dataset.threshold !== "threshold_NA"
-            ? e.currentTarget.dataset.threshold.replace(/__DOT__/g, ".")
+          event.currentTarget.dataset.threshold &&
+          event.currentTarget.dataset.threshold !== "threshold_NA"
+            ? event.currentTarget.dataset.threshold.replace(/__DOT__/g, ".")
             : "undefined",
         level:
-          e.currentTarget.dataset.level && e.currentTarget.dataset.level !== "level_NA"
-            ? e.currentTarget.dataset.level.replace(/__DOT__/g, ".")
+          event.currentTarget.dataset.level &&
+          event.currentTarget.dataset.level !== "level_NA"
+            ? event.currentTarget.dataset.level.replace(/__DOT__/g, ".")
             : "undefined",
         scale: blockData.scale ? blockData.scale : "undefined",
         truth: blockData.truth ? blockData.truth : "undefined",
@@ -668,7 +680,6 @@ Template.ScorecardDisplay.events({
     const appSource = getAppSourceByApplication(application);
 
     const settingsJSON = JSON.stringify(scorecardSettings);
-    const hash = require("object-hash");
     const key = hash(settingsJSON);
     matsMethods.saveScorecardSettings.call(
       {
@@ -678,16 +689,13 @@ Template.ScorecardDisplay.events({
       function (error) {
         if (error !== undefined) {
           setError(error);
+        } else if (baseURL.includes("localhost")) {
+          event.view.window.open(`${baseURL}/scorecardTimeseries/${key}`, "_blank");
         } else {
-          // now that the settings are saved, open a new window and pass the key to it.
-          if (baseURL.includes("localhost")) {
-            e.view.window.open(`${baseURL}/scorecardTimeseries/${key}`, "_blank");
-          } else {
-            e.view.window.open(
-              `${baseURL}/${appSource}/scorecardTimeseries/${key}`,
-              "_blank"
-            );
-          }
+          event.view.window.open(
+            `${baseURL}/${appSource}/scorecardTimeseries/${key}`,
+            "_blank"
+          );
         }
       }
     );

@@ -3,14 +3,15 @@
  */
 
 import {
-  matsPlotUtils,
-  matsTypes,
   matsCollections,
-  matsCurveUtils,
   matsParamUtils,
+  matsMethods,
 } from "meteor/randyp:mats-common";
+import { Template } from "meteor/templating";
 
-Template.CustomHome.onCreated(function () {
+/* global setError */
+
+Template.customHome.onCreated(function () {
   this.subscribe("matsPlotUtils").ready();
   this.subscribe("matsTypes").ready();
   this.subscribe("matsCollections").ready();
@@ -19,7 +20,7 @@ Template.CustomHome.onCreated(function () {
   this.subscribe("plotType").ready();
 });
 
-Template.CustomHome.helpers({
+Template.customHome.helpers({
   isUnderConstruction() {
     return (
       matsCollections.underConstruction !== undefined &&
@@ -28,7 +29,7 @@ Template.CustomHome.helpers({
     );
   },
   resetDefaults() {
-    matsMethods.refreshMetaData.call({}, function (error, result) {
+    matsMethods.refreshMetaData.call({}, function (error) {
       if (error !== undefined) {
         setError(new Error(error.message));
       }

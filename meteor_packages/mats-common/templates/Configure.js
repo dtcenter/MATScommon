@@ -4,8 +4,9 @@
 import { Template } from "meteor/templating";
 import { Meteor } from "meteor/meteor";
 import matsMethods from "../imports/startup/api/matsMethods";
+/* global Session, setError */
 
-Template.Configure.helpers({
+Template.configure.helpers({
   app() {
     return Meteor.settings.public.title;
   },
@@ -38,7 +39,7 @@ Template.Configure.helpers({
     return Session.get("selectedGroup");
   },
   app_order() {
-    document.getElementById("app_order").value;
+    return document.getElementById("app_order").value;
   },
   show_copy_icon() {
     const roles = Meteor.settings.public.undefinedRoles;
@@ -58,6 +59,7 @@ Template.Configure.helpers({
           return `<p>${error}</p>`;
         }
         Session.set("defaultGroups", result);
+        return null;
       });
     }
     if (
@@ -71,7 +73,7 @@ Template.Configure.helpers({
   group_name() {
     return this;
   },
-  apps_length(group) {
+  apps_length() {
     return 10;
   },
   baseUrl() {
@@ -79,7 +81,7 @@ Template.Configure.helpers({
   },
 });
 
-Template.Configure.events({
+Template.configure.events({
   "submit .configure-settings-form"(event) {
     // Prevent default browser form submit
     event.preventDefault();
@@ -89,12 +91,12 @@ Template.Configure.events({
     const data = { private: { databases: [] }, public: {} };
     const roles = Meteor.settings.public.undefinedRoles;
     // private database values
-    for (var ri = 0; ri < roles.length; ri++) {
+    for (let ri = 0; ri < roles.length; ri += 1) {
       // look for all the inputs that go with this role
       const roleData = {};
       roleData.role = roles[ri];
       roleData.status = "active"; // default to active
-      for (var i = 0; i < inputs.length; i++) {
+      for (let i = 0; i < inputs.length; i += 1) {
         const input = inputs[i];
         let name = input.id;
         const { value } = input;
@@ -106,21 +108,20 @@ Template.Configure.events({
       data.private.databases.push(roleData);
     }
     // public values
-    for (var i = 0; i < inputs.length; i++) {
+    for (let i = 0; i < inputs.length; i += 1) {
       const input = inputs[i];
       const name = input.id;
-      if (name === "colorValue") {
-        continue;
-      }
-      const { value } = input;
-      let roleVal = false;
-      for (ri = 0; ri < roles.length; ri++) {
-        if (name.indexOf(roles[ri]) !== -1) {
-          roleVal = true;
+      if (name !== "colorValue") {
+        const { value } = input;
+        let roleVal = false;
+        for (let ri = 0; ri < roles.length; ri += 1) {
+          if (name.indexOf(roles[ri]) !== -1) {
+            roleVal = true;
+          }
         }
-      }
-      if (roleVal === false) {
-        data.public[name] = value;
+        if (roleVal === false) {
+          data.public[name] = value;
+        }
       }
     }
     matsMethods.applySettingsData.call({ settings: data }, function (error) {
@@ -129,7 +130,7 @@ Template.Configure.events({
       }
     });
   },
-  "change select.groupSelect"(event) {
+  "change select.groupSelect"() {
     document.getElementById("group").value =
       document.getElementById("groupSelect").selectedOptions[0].value;
   },
@@ -152,7 +153,7 @@ Template.Configure.events({
         database: document.getElementById(`${roleStr}-database`).value,
         database_type: document.getElementById(`${roleStr}-database_type`).value,
       },
-      function (error, result) {
+      function (error) {
         document.getElementById(`${role}-spinner`).style.display = "none";
         if (error) {
           setError(error);
@@ -166,7 +167,6 @@ Template.Configure.events({
     );
   },
   "click .copy"(event) {
-    console.log(event);
     event.preventDefault();
     const baseHost = document.getElementById(
       `${Meteor.settings.public.undefinedRoles[0]}-host`
@@ -186,7 +186,7 @@ Template.Configure.events({
     document.getElementById(`${thisRole}-user`).value = baseUser;
     document.getElementById(`${thisRole}-password`).value = basePassword;
   },
-  "change .color"(event) {
+  "change .color"() {
     document.getElementById("colorValue").value =
       document.getElementById("color").value;
   },

@@ -3,7 +3,10 @@
  */
 import { Meteor } from "meteor/meteor";
 import { matsCollections, matsTypes } from "meteor/randyp:mats-common";
+import { Template } from "meteor/templating";
 import matsMethods from "../../imports/startup/api/matsMethods";
+
+/* global Session,, $, setError */
 
 const getRunEnvironment = function () {
   if (Session.get("deployment_environment") === undefined) {
@@ -18,6 +21,7 @@ const getRunEnvironment = function () {
   } else {
     return Session.get("deployment_environment");
   }
+  return null;
 };
 
 Template.topNav.helpers({
@@ -98,7 +102,6 @@ Template.topNav.helpers({
     switch (getRunEnvironment()) {
       case "metexpress":
         return "https://github.com/dtcenter/METexpress/issues";
-        break;
       default:
         if (
           matsCollections.Settings.findOne({}) !== undefined &&

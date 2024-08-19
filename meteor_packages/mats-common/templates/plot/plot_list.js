@@ -2,6 +2,7 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
+import { Meteor } from "meteor/meteor";
 import {
   matsTypes,
   matsCollections,
@@ -10,8 +11,11 @@ import {
   matsGraphUtils,
   matsPlotUtils,
   matsParamUtils,
-  matsSelectUtils,
 } from "meteor/randyp:mats-common";
+import { Template } from "meteor/templating";
+
+/* global Session, $, _, setError, setInfo */
+/* eslint-disable no-console */
 
 /*
     A note about how things get to the backend, and then to the graph or display view.
@@ -30,7 +34,7 @@ import {
     is what sets up the graph page.
 */
 
-const _setApplication = async (app) => {
+const setApplication = async (app) => {
   // application usually refers to either database or variable in MATS
   if (document.getElementById("database-item")) {
     matsParamUtils.setValueTextForParamName("database", app);
@@ -42,12 +46,12 @@ const _setApplication = async (app) => {
   }
 };
 
-const _changeParameter = async (parameter, newValue) => {
+const changeParameter = async (parameter, newValue) => {
   matsParamUtils.setValueTextForParamName(parameter, newValue);
 };
 
-const _setCommonParams = async (commonParamKeys, commonParams) => {
-  for (let kidx = 0; kidx < commonParamKeys.length; kidx++) {
+const setCommonParams = async (commonParamKeys, commonParams) => {
+  for (let kidx = 0; kidx < commonParamKeys.length; kidx += 1) {
     const thisKey = commonParamKeys[kidx];
     const thisValue = commonParams[commonParamKeys[kidx]];
     if (thisValue !== "undefined") {
@@ -65,24 +69,24 @@ const _setCommonParams = async (commonParamKeys, commonParams) => {
   }
 };
 
-const _addCurve = async () => {
+const addCurve = async () => {
   matsParamUtils.addImportedCurve();
 };
 
-const _plotGraph = async () => {
+const plotGraph = async () => {
   $("#plotMatched").trigger("click");
 };
 
 const addCurvesAndPlot = async (parsedSettings, commonParamKeys, commonParams) => {
-  await _setApplication(parsedSettings.appName);
-  await _changeParameter("data-source", parsedSettings.curve0DataSource);
-  await _setCommonParams(commonParamKeys, commonParams);
-  await _addCurve();
-  await _changeParameter("data-source", parsedSettings.curve1DataSource);
-  await _setCommonParams(commonParamKeys, commonParams);
-  await _addCurve();
-  await _changeParameter("dates", parsedSettings.dateRange);
-  await _plotGraph();
+  await setApplication(parsedSettings.appName);
+  await changeParameter("data-source", parsedSettings.curve0DataSource);
+  await setCommonParams(commonParamKeys, commonParams);
+  await addCurve();
+  await changeParameter("data-source", parsedSettings.curve1DataSource);
+  await setCommonParams(commonParamKeys, commonParams);
+  await addCurve();
+  await changeParameter("dates", parsedSettings.dateRange);
+  await plotGraph();
 };
 
 Template.plotList.helpers({
@@ -95,7 +99,7 @@ Template.plotList.helpers({
       {},
       { fields: { displayGroup: 1 } }
     ).fetch();
-    for (let i = 0; i < params.length; i++) {
+    for (let i = 0; i < params.length; i += 1) {
       groupNums.push(params[i].displayGroup);
     }
     const res = _.uniq(groupNums).sort();
@@ -116,7 +120,7 @@ Template.plotList.helpers({
       {},
       { fields: { name: 1, owner: 1, permission: 1 } }
     ).fetch();
-    for (let i = 0; i < l.length; i++) {
+    for (let i = 0; i < l.length; i += 1) {
       if (l[i].owner === Meteor.userId() && l[i].permission === "private") {
         names.push(l[i].name);
       }
@@ -129,7 +133,7 @@ Template.plotList.helpers({
       {},
       { fields: { name: 1, owner: 1, permission: 1 } }
     ).fetch();
-    for (let i = 0; i < savedSettings.length; i++) {
+    for (let i = 0; i < savedSettings.length; i += 1) {
       if (savedSettings[i].permission === "public") {
         names.push(savedSettings[i].name);
       }
@@ -174,7 +178,7 @@ Template.plotList.events({
   "click .restore-from-public"() {
     document.getElementById("restore_from_private").value = "";
   },
-  "click .submit-params"(event, template) {
+  "click .submit-params"(event) {
     const plotAction = Session.get("plotParameter");
     Session.set("spinner_img", "spinner.gif");
     document.getElementById("spinner").style.display = "block";
@@ -188,7 +192,7 @@ Template.plotList.events({
     // get the plot-type elements checked state
     const plotTypeElems = document.getElementById("plotTypes-selector");
     p.plotTypes = {};
-    for (ptei = 0; ptei < plotTypeElems.length; ptei++) {
+    for (let ptei = 0; ptei < plotTypeElems.length; ptei += 1) {
       const ptElem = plotTypeElems[ptei];
       p.plotTypes[ptElem.value] = ptElem.value === plotTypeElems.value;
     }
@@ -213,7 +217,7 @@ Template.plotList.events({
         const { options } = plotParam;
 
         if (type === matsTypes.InputTypes.radioGroup) {
-          for (var i = 0; i < options.length; i++) {
+          for (let i = 0; i < options.length; i += 1) {
             if (
               document.getElementById(`${name}-${type}-${options[i]}`).checked === true
             ) {
@@ -223,7 +227,7 @@ Template.plotList.events({
           }
         } else if (type === matsTypes.InputTypes.checkBoxGroup) {
           p[name] = [];
-          for (var i = 0; i < options.length; i++) {
+          for (let i = 0; i < options.length; i += 1) {
             if (document.getElementById(`${name}-${type}-${options[i]}`).checked) {
               p[name].push(options[i]);
             }
@@ -241,26 +245,26 @@ Template.plotList.events({
         }
       });
     if (
-      document.getElementById("QCParamGroup-item") &&
-      document.getElementById("QCParamGroup-item").style.display === "block"
+      document.getElementById("qcParamGroup-item") &&
+      document.getElementById("qcParamGroup-item").style.display === "block"
     ) {
       p.completeness = document.getElementById("completeness").value;
     } else if (
-      document.getElementById("QCParamGroup-gaps-item") &&
-      document.getElementById("QCParamGroup-gaps-item").style.display === "block"
+      document.getElementById("qcParamGroup-gaps-item") &&
+      document.getElementById("qcParamGroup-gaps-item").style.display === "block"
     ) {
       p.completeness = document.getElementById("completeness-gaps").value;
     } else {
       p.completeness = 0;
     }
     if (
-      document.getElementById("QCParamGroup-item") &&
-      document.getElementById("QCParamGroup-item").style.display === "block"
+      document.getElementById("qcParamGroup-item") &&
+      document.getElementById("qcParamGroup-item").style.display === "block"
     ) {
       p.outliers = document.getElementById("outliers").value;
     } else if (
-      document.getElementById("QCParamGroup-lite-item") &&
-      document.getElementById("QCParamGroup-lite-item").style.display === "block"
+      document.getElementById("qcParamGroup-lite-item") &&
+      document.getElementById("qcParamGroup-lite-item").style.display === "block"
     ) {
       p.outliers = document.getElementById("outliers-lite").value;
     } else {
@@ -271,6 +275,22 @@ Template.plotList.events({
       : false;
     Session.set("PlotParams", p);
 
+    let saveAs = "";
+    let permission = "";
+    let paramData;
+    let restoreFrom;
+    let pt;
+    let pgf;
+    let graphFunction;
+    let expireKey;
+    let x;
+    let y;
+    let m;
+    let d;
+    let h;
+    let min;
+    let sec;
+    let submitTime;
     switch (action) {
       case "save":
         if (
@@ -284,7 +304,6 @@ Template.plotList.events({
           document.getElementById("spinner").style.display = "none";
           return false;
         }
-        var saveAs = "";
         if (
           document.getElementById("save_as").value !== "" &&
           document.getElementById("save_as").value !== undefined
@@ -293,7 +312,7 @@ Template.plotList.events({
         } else {
           saveAs = document.getElementById("save_to").value;
         }
-        var permission =
+        permission =
           document.getElementById("save-public").checked === true
             ? "public"
             : "private";
@@ -301,7 +320,7 @@ Template.plotList.events({
         Session.set("plotName", saveAs);
         // get the settings to save out of the session
         p = Session.get("PlotParams");
-        var paramData = matsParamUtils.getElementValues();
+        paramData = matsParamUtils.getElementValues();
         p.paramData = paramData;
         matsMethods.saveSettings.call({ saveAs, p, permission }, function (error) {
           if (error) {
@@ -317,7 +336,6 @@ Template.plotList.events({
         Session.set("spinner_img", "spinner.gif");
         document.getElementById("spinner").style.display = "none";
         return false;
-        break;
       case "restore":
         matsCurveUtils.clearAllUsed();
         if (
@@ -331,7 +349,7 @@ Template.plotList.events({
           document.getElementById("spinner").style.display = "none";
           return false;
         }
-        var restoreFrom = document.getElementById("restore_from_private").value;
+        restoreFrom = document.getElementById("restore_from_private").value;
         if (restoreFrom === "" || restoreFrom === undefined) {
           restoreFrom = document.getElementById("restore_from_public").value;
         }
@@ -342,12 +360,11 @@ Template.plotList.events({
         // now set all the curves.... This will refresh the curves list
         matsPlotUtils.restoreSettings(p);
         return false;
-        break;
       case "plot":
-        var pt = matsPlotUtils.getPlotType();
+        pt = matsPlotUtils.getPlotType();
         console.log("resizing graph type is ", pt);
         matsGraphUtils.resizeGraph(pt);
-        var pgf = matsCollections.PlotGraphFunctions.findOne({ plotType: pt });
+        pgf = matsCollections.PlotGraphFunctions.findOne({ plotType: pt });
         if (pgf === undefined) {
           setError(
             new Error(
@@ -361,10 +378,10 @@ Template.plotList.events({
         Session.set("graphViewMode", matsTypes.PlotView.graph);
         Session.set("mvResultKey", null); // disable the mv links on the graph page
 
-        var { graphFunction } = pgf;
+        graphFunction = pgf.graphFunction;
         console.log("prior to getGraphData call time:", new Date());
         // the following line converts a null expireKey to false.
-        var expireKey = Session.get("expireKey") === true;
+        expireKey = Session.get("expireKey") === true;
         matsMethods.getGraphData.call(
           { plotParams: p, plotType: pt, expireKey },
           function (error, ret) {
@@ -398,13 +415,14 @@ Template.plotList.events({
               " graphFunction:",
               graphFunction
             );
+            return null;
           }
         );
         break;
       case "displayScorecardStatusPage":
-        var pt = matsPlotUtils.getPlotType();
+        pt = matsPlotUtils.getPlotType();
         console.log("displayScorecardStatusPage plot type is ", pt);
-        var pgf = matsCollections.PlotGraphFunctions.findOne({ plotType: pt });
+        pgf = matsCollections.PlotGraphFunctions.findOne({ plotType: pt });
         if (pgf === undefined) {
           setError(
             new Error(
@@ -415,29 +433,39 @@ Template.plotList.events({
           document.getElementById("spinner").style.display = "none";
           return false;
         }
-        var { graphFunction } = pgf;
+        graphFunction = pgf.graphFunction;
         console.log("prior to getGraphData call time:", new Date());
         // the following line converts a null expireKey to false.
-        var expireKey = Session.get("expireKey") === true;
+        expireKey = Session.get("expireKey") === true;
         // add user and name to the plotparams
         if (Meteor.user() === null) {
           p.userName = "anonymous";
         } else {
           p.userName = Meteor.user().emails[0].address;
         }
-        const x = new Date();
-        const y = x.getUTCFullYear().toString();
-        let m = (x.getUTCMonth() + 1).toString();
-        let d = x.getUTCDate().toString();
-        let h = x.getUTCHours().toString();
-        let min = x.getUTCMinutes().toString();
-        let sec = x.getUTCSeconds().toString();
-        d.length === 1 && (d = `0${d}`);
-        m.length === 1 && (m = `0${m}`);
-        h.length === 1 && (h = `0${h}`);
-        min.length === 1 && (min = `0${min}`);
-        sec.length === 1 && (sec = `0${sec}`);
-        const submitTime = y + m + d + h + min + sec;
+        x = new Date();
+        y = x.getUTCFullYear().toString();
+        m = (x.getUTCMonth() + 1).toString();
+        d = x.getUTCDate().toString();
+        h = x.getUTCHours().toString();
+        min = x.getUTCMinutes().toString();
+        sec = x.getUTCSeconds().toString();
+        if (d.length === 1) {
+          d = `0${d}`;
+        }
+        if (m.length === 1) {
+          m = `0${m}`;
+        }
+        if (h.length === 1) {
+          h = `0${h}`;
+        }
+        if (min.length === 1) {
+          min = `0${min}`;
+        }
+        if (sec.length === 1) {
+          sec = `0${sec}`;
+        }
+        submitTime = y + m + d + h + min + sec;
         // stash the submit epoch in the params
         p.submitEpoch = Math.floor(x.getTime() / 1000);
         p[
@@ -466,6 +494,7 @@ Template.plotList.events({
               graphFunction
             );
             matsGraphUtils.setScorecardDisplayView(pt);
+            return null;
           }
         );
         break;
@@ -510,6 +539,7 @@ Template.plotList.onRendered(function () {
 
         // add the curves from the scorecard settings and then plot
         addCurvesAndPlot(parsedSettings, commonParamKeys, commonParams).then();
+        return null;
       }
     );
   } else {

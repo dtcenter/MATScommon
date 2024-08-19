@@ -3,6 +3,10 @@
  */
 
 import { matsTypes, matsCollections, matsPlotUtils } from "meteor/randyp:mats-common";
+import { Template } from "meteor/templating";
+
+/* global Session, $, _ */
+/* eslint-disable no-console */
 
 const isEditing = function () {
   const mode = Session.get("editMode");
@@ -115,16 +119,12 @@ Template.scatter2d.helpers({
     switch (param.type) {
       case matsTypes.InputTypes.checkBoxGroup:
         return "checkbox";
-        break;
       case matsTypes.InputTypes.radioGroup:
         return "radio";
-        break;
       case matsTypes.InputTypes.select:
         return "select";
-        break;
       case matsTypes.InputTypes.numberSpinner:
         return "number";
-        break;
       default:
         return "text";
     }
@@ -193,26 +193,26 @@ const apply = function (axis) {
   const curveNames = matsCollections.CurveParamsInfo.find({
     curve_params: { $exists: true },
   }).fetch()[0].curve_params;
-  const param_elems = _.filter(elems, function (elem) {
+  const paramElems = _.filter(elems, function (elem) {
     return _.contains(curveNames, elem.name);
   });
-  const l = param_elems.length;
-  for (let i = 0; i < l; i++) {
-    const pelem = param_elems[i];
+  const l = paramElems.length;
+  for (let i = 0; i < l; i += 1) {
+    const pelem = paramElems[i];
     // console.log("pelem.type is " + pelem.type);
-    const elem_id = pelem.id;
-    const target_id = `${axis}-${elem_id}`;
-    const telem = document.getElementById(target_id);
+    const elemId = pelem.id;
+    const targetId = `${axis}-${elemId}`;
+    const telem = document.getElementById(targetId);
     // Notice that these types are not matsTypes these are javascript types
     if (pelem.type === "select-multiple") {
-      var $options = $(`#${elem_id} > option`).clone();
-      $(`#${target_id}`).empty().append($options);
+      const $options = $(`#${elemId} > option`).clone();
+      $(`#${targetId}`).empty().append($options);
       const selectedOptions = $(pelem.selectedOptions)
         .map(function () {
           return this.value;
         })
         .get();
-      for (let x = 0; x < telem.options.length; x++) {
+      for (let x = 0; x < telem.options.length; x += 1) {
         if ($.inArray(telem.options[x].value, selectedOptions) !== -1) {
           telem.options[x].selected = true;
         } else {
@@ -220,8 +220,8 @@ const apply = function (axis) {
         }
       }
     } else if (pelem.type === "select-one") {
-      var $options = $(`#${elem_id} > option`).clone();
-      $(`#${target_id}`).empty().append($options);
+      const $options = $(`#${elemId} > option`).clone();
+      $(`#${targetId}`).empty().append($options);
       telem.selectedIndex = pelem.selectedIndex;
     } else if (pelem.type === "radio") {
       // NOT SURE THIS IS RIGHT
@@ -237,26 +237,26 @@ const apply = function (axis) {
 };
 
 Template.scatter2d.events({
-  "click .apply-params-to-xaxis"(event) {
+  "click .apply-params-to-xaxis"() {
     apply("xaxis");
   },
-  "click .apply-params-to-yaxis"(event) {
+  "click .apply-params-to-yaxis"() {
     apply("yaxis");
   },
   "change .axis-selector-radioGroup"(event) {
     const newAxis = event.currentTarget.value;
     Session.set("axis", newAxis);
     const elems = document.getElementsByClassName("data-input");
-    const axis_elems = _.filter(elems, function (elem) {
+    const axisElems = _.filter(elems, function (elem) {
       return elem.name.indexOf(newAxis) > -1;
     });
-    const l = axis_elems.length;
-    for (let i = 0; i < l; i++) {
-      const aelem = axis_elems[i];
-      const aelem_id = aelem.id;
+    const l = axisElems.length;
+    for (let i = 0; i < l; i += 1) {
+      const aelem = axisElems[i];
+      const aelemId = aelem.id;
       // remove the axis part at the front
-      const target_id = aelem_id.substring(newAxis.length + 1, aelem_id.length);
-      const telem = document.getElementById(target_id);
+      const targetId = aelemId.substring(newAxis.length + 1, aelemId.length);
+      const telem = document.getElementById(targetId);
       if (aelem.type === "select-multiple") {
         $(telem).val(
           $(aelem.selectedOptions)

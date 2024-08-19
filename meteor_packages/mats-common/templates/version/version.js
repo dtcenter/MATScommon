@@ -3,6 +3,7 @@
  */
 
 import { matsCollections } from "meteor/randyp:mats-common";
+import { Template } from "meteor/templating";
 
 Template.version.helpers({
   version() {

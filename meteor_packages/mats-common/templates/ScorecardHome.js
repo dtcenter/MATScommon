@@ -9,11 +9,14 @@ import {
   matsMethods,
 } from "meteor/randyp:mats-common";
 import { Template } from "meteor/templating";
-import { Datepicker } from "vanillajs-datepicker";
+
+/* global Session, setError */
+
+const Datepicker = require("vanillajs-datepicker");
 
 let datepicker;
 
-Template.ScorecardHome.onCreated(function () {
+Template.scorecardHome.onCreated(function () {
   this.subscribe("matsPlotUtils").ready();
   this.subscribe("matsTypes").ready();
   this.subscribe("matsCollections").ready();
@@ -22,7 +25,7 @@ Template.ScorecardHome.onCreated(function () {
   this.subscribe("plotType").ready();
 });
 
-Template.ScorecardHome.helpers({
+Template.scorecardHome.helpers({
   isUnderConstruction() {
     return (
       matsCollections.underConstruction !== undefined &&
@@ -32,7 +35,7 @@ Template.ScorecardHome.helpers({
     );
   },
   resetDefaults() {
-    matsMethods.refreshMetaData.call({}, function (error, result) {
+    matsMethods.refreshMetaData.call({}, function (error) {
       if (error !== undefined) {
         setError(new Error(error.message));
       }
@@ -64,8 +67,8 @@ Template.ScorecardHome.helpers({
   },
 });
 
-Template.ScorecardHome.events({
-  "click #controlButton-scorecard-ends-on-value"(event) {
+Template.scorecardHome.events({
+  "click #controlButton-scorecard-ends-on-value"() {
     const today = new Date();
     if (datepicker === undefined) {
       // declared at top of file - lazy instantiation
@@ -86,7 +89,7 @@ Template.ScorecardHome.events({
     datepicker.refresh();
     datepicker.show();
   },
-  "click #display-status"(event) {
+  "click #display-status"() {
     matsMethods.getScorecardInfo.call(function (error, ret) {
       if (error !== undefined) {
         setError(error);
@@ -96,7 +99,7 @@ Template.ScorecardHome.events({
     });
     matsGraphUtils.setScorecardDisplayView();
   },
-  "click #scorecard-schedule-mode-radioGroup-recurring"(event) {
+  "click #scorecard-schedule-mode-radioGroup-recurring"() {
     // this event is only fired when 'recurring' is selected
     // firing off a blur event will cause the hideForOthers stuff in radiogroup.js to happen
     const defaultOption = matsParamUtils.getParameterForName(
@@ -107,7 +110,7 @@ Template.ScorecardHome.events({
     );
     elem.dispatchEvent(new Event("blur"));
   },
-  "change #scorecard-color-theme-radioGroup-RedGreen"(event) {
+  "change #scorecard-color-theme-radioGroup-RedGreen"() {
     document.querySelector('[name="major-truth-color-icon"]').style.color = "#ff0000";
     document.getElementById("major-truth-color-color").value = "#ff0000";
     document.querySelector('[name="minor-truth-color-icon"]').style.color = "#ff0000";
@@ -117,7 +120,7 @@ Template.ScorecardHome.events({
     document.querySelector('[name="minor-source-color-icon"]').style.color = "#00ff00";
     document.getElementById("minor-source-color-color").value = "#00ff00";
   },
-  "change #scorecard-color-theme-radioGroup-RedBlue"(event) {
+  "change #scorecard-color-theme-radioGroup-RedBlue"() {
     document.querySelector('[name="major-truth-color-icon"]').style.color = "#ff0000";
     document.getElementById("major-truth-color-color").value = "#ff0000";
     document.querySelector('[name="minor-truth-color-icon"]').style.color = "#ff0000";
@@ -127,22 +130,22 @@ Template.ScorecardHome.events({
     document.querySelector('[name="minor-source-color-icon"]').style.color = "#0000ff";
     document.getElementById("minor-source-color-color").value = "#0000ff";
   },
-  "change [name='major-truth-color-icon']"(event) {
+  "change [name='major-truth-color-icon']"() {
     document.getElementById("major-truth-color-color").value = document.querySelector(
       '[name="major-truth-color-icon"]'
     ).style.color;
   },
-  "change [name='minor-truth-color-icon']"(event) {
+  "change [name='minor-truth-color-icon']"() {
     document.getElementById("minor-truth-color-color").value = document.querySelector(
       '[name="minor-truth-color-icon"]'
     ).style.color;
   },
-  "change [name='major-source-color-icon']"(event) {
+  "change [name='major-source-color-icon']"() {
     document.getElementById("major-source-color-color").value = document.querySelector(
       '[name="major-source-color-icon"]'
     ).style.color;
   },
-  "change [name='minor-source-color-icon']"(event) {
+  "change [name='minor-source-color-icon']"() {
     document.getElementById("minor-source-color-color").value = document.querySelector(
       '[name="minor-source-color-icon"]'
     ).style.color;

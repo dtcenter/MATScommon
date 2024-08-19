@@ -7,8 +7,11 @@ import {
   matsParamUtils,
   matsMethods,
 } from "meteor/randyp:mats-common";
+import { Template } from "meteor/templating";
 
-Template.Home.onCreated(function () {
+/* global setError */
+
+Template.home.onCreated(function () {
   this.subscribe("matsPlotUtils").ready();
   this.subscribe("matsTypes").ready();
   this.subscribe("matsCollections").ready();
@@ -17,7 +20,7 @@ Template.Home.onCreated(function () {
   this.subscribe("plotType").ready();
 });
 
-Template.Home.helpers({
+Template.home.helpers({
   isUnderConstruction() {
     return (
       matsCollections.underConstruction !== undefined &&
@@ -26,7 +29,7 @@ Template.Home.helpers({
     );
   },
   resetDefaults() {
-    matsMethods.refreshMetaData.call({}, function (error, result) {
+    matsMethods.refreshMetaData.call({}, function (error) {
       if (error !== undefined) {
         setError(new Error(error.message));
       }

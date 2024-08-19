@@ -10,14 +10,18 @@ import {
   matsParamUtils,
   matsMethods,
 } from "meteor/randyp:mats-common";
+import { Template } from "meteor/templating";
+
+/* global Session, $, _, setError */
+/* eslint-disable no-console */
 
 function shadeRGBColor(color, percent) {
   const f = color.split(",");
   const t = percent < 0 ? 0 : 255;
   const p = percent < 0 ? percent * -1 : percent;
-  const R = parseInt(f[0].slice(4));
-  const G = parseInt(f[1]);
-  const B = parseInt(f[2]);
+  const R = parseInt(f[0].slice(4), 10);
+  const G = parseInt(f[1], 10);
+  const B = parseInt(f[2], 10);
   return `rgb(${Math.round((t - R) * p) + R},${Math.round((t - G) * p) + G},${
     Math.round((t - B) * p) + B
   })`;
@@ -25,14 +29,14 @@ function shadeRGBColor(color, percent) {
 
 Template.paramList.helpers({
   CurveParamGroups() {
-    const lastUpdate = Session.get("lastUpdate");
+    Session.get("lastUpdate");
     const groupNums = [];
     const params = matsCollections.CurveParamsInfo.find({
       curve_params: { $exists: true },
     }).fetch()[0].curve_params;
     let param;
-    for (let i = 0; i < params.length; i++) {
-      param = matsCollections[params[i]].find({}).fetch()[0];
+    for (let i = 0; i < params.length; i += 1) {
+      [param] = matsCollections[params[i]].find({}).fetch();
       if (param !== undefined) {
         groupNums.push(param.displayGroup);
       }
@@ -41,7 +45,7 @@ Template.paramList.helpers({
     return res;
   },
   isEdit() {
-    return Session.get("editMode") !== "";
+    return Session.get("editMode") !== "" && Session.get("editMode") !== undefined;
   },
   log() {
     console.log(this);
@@ -78,9 +82,10 @@ Template.paramList.events({
     matsParamUtils.setInputForParamName("label", matsCurveUtils.getNextCurveLabel());
     matsParamUtils.collapseParams();
   },
-  "click .reset"(event, template) {
+  "click .reset"(event) {
     event.preventDefault();
     Session.set("paramWellColor", "rgb(245,245,245)");
+    // eslint-disable-next-line no-unused-vars
     matsMethods.refreshMetaData.call({}, function (error, result) {
       if (error !== undefined) {
         setError(new Error(error.message));
@@ -107,11 +112,11 @@ Template.paramList.events({
         Note: when adding a curve or saving changes after editing a curve there is a special
         case for scatter plots. Each hidden axis parameter must get set with the value from the regular parameter.
      */
-  "submit form"(event, template) {
+  "submit form"(event) {
     event.preventDefault();
     if (!matsParamUtils.getValueForParamName("label")) {
       setError("Label cannot be blank");
-      return;
+      return false;
     }
     const isScatter = matsPlotUtils.getPlotType() === matsTypes.PlotTypes.scatter2d;
     const isMap = matsPlotUtils.getPlotType() === matsTypes.PlotTypes.map;
@@ -126,11 +131,11 @@ Template.paramList.events({
     }).fetch()[0].curve_params;
     const dateParamNames = [];
     let param;
-    // remove any hidden params (not unused ones -- unused is a valid state)
+    // remove any hidden params (not unused ones  -= 1 unused is a valid state)
     // iterate backwards so that we can splice to remove
-    for (let cindex = curveNames.length - 1; cindex >= 0; cindex--) {
+    for (let cindex = curveNames.length - 1; cindex >= 0; cindex -= 1) {
       const cname = curveNames[cindex];
-      param = matsCollections[cname].find({}).fetch()[0];
+      [param] = matsCollections[cname].find({}).fetch();
       if (param.type === matsTypes.InputTypes.dateRange) {
         dateParamNames.push(cname);
       }
@@ -139,9 +144,9 @@ Template.paramList.events({
     // remove any hidden date params or unused ones
     // iterate backwards so that we can splice to remove
     // dates are a little different - there is no element named paramName-paramtype
-    // because of the way daterange widgets are attached (--There is now but this still works--)
+    // because of the way daterange widgets are attached ( -= 1There is now but this still works -= 1)
     // Instead we have to look for a document element with an id element-paramName
-    for (let dindex = dateParamNames.length - 1; dindex >= 0; dindex--) {
+    for (let dindex = dateParamNames.length - 1; dindex >= 0; dindex -= 1) {
       const dElem = document.getElementById(`${dateParamNames[dindex]}-item`);
       if (dElem && dElem.style && dElem.style.display === "none") {
         dateParamNames.splice(dindex, 1);
@@ -149,7 +154,7 @@ Template.paramList.events({
     }
     if (isScatter) {
       const scatterCurveNames = [];
-      for (var i = 0; i < curveNames.length; i++) {
+      for (let i = 0; i < curveNames.length; i += 1) {
         scatterCurveNames.push(curveNames[i]);
         scatterCurveNames.push(`xaxis-${curveNames[i]}`);
         scatterCurveNames.push(`yaxis-${curveNames[i]}`);
@@ -160,7 +165,7 @@ Template.paramList.events({
       return _.contains(curveNames, elem.name);
     });
     // add in any date params (they aren't technically elements)
-    paramElems.push.apply(paramElems, dateParamNames);
+    paramElems.concat(dateParamNames);
     // add in the scatter2d parameters if it is a scatter plot.
     if (isScatter) {
       $(":input[id^='Fit-Type']:input[name*='Fit-Type']").each(function () {
@@ -176,12 +181,10 @@ Template.paramList.events({
       const label = document.getElementById(labelId);
       label.disabled = false;
 
-      for (var i = 0; i < l; i++) {
+      for (let i = 0; i < l; i += 1) {
         if (paramElems[i].name === "label") {
           p[paramElems[i].name] = changingCurveLabel; // don't change the label when editing a curve
-          continue;
-        }
-        if (paramElems[i] instanceof Element === false) {
+        } else if (paramElems[i] instanceof Element === false) {
           // isn't really an element - must be a date field - these are only strings
           p[paramElems[i]] = matsParamUtils.getValueForParamName(paramElems[i]);
         } else if (paramElems[i].type === "select-multiple") {
@@ -216,7 +219,7 @@ Template.paramList.events({
         }
       }
       let index = -1;
-      for (var i = 0; i < curves.length; i++) {
+      for (let i = 0; i < curves.length; i += 1) {
         if (curves[i].label === p.label) {
           index = i;
           p.color = curves[i].color;
@@ -229,7 +232,7 @@ Template.paramList.events({
           const axisParams = Object.keys(p).filter(function (key) {
             return key.startsWith(axis);
           });
-          for (let api = 0; api < axisParams.length; api++) {
+          for (let api = 0; api < axisParams.length; api += 1) {
             const ap = axisParams[api];
             const pp = ap.replace(`${axis}-`, "");
             p[ap] = p[pp];
@@ -253,7 +256,7 @@ Template.paramList.events({
         setError(new Error("ERROR: Contour Diff plot-type can only have two curves!"));
         return false;
       }
-      for (var i = 0; i < l; i++) {
+      for (let i = 0; i < l; i += 1) {
         if (paramElems[i] instanceof Element === false) {
           // isn't really an element - must be a date field - these are only strings
           p[paramElems[i]] = matsParamUtils.getValueForParamName(paramElems[i]);

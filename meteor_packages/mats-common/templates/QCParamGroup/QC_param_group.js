@@ -3,8 +3,9 @@
  */
 
 import { Meteor } from "meteor/meteor";
+import { Template } from "meteor/templating";
 
-Template.QCParamGroup.helpers({
+Template.qcParamGroup.helpers({
   completenessNumber() {
     return "0";
   },

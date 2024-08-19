@@ -154,14 +154,14 @@ Package.onUse(function (api) {
   api.addFiles("lib/plot_util.js", ["client", "server"]);
 
   // templates
-  api.addFiles("templates/Home.html", "client");
-  api.addFiles("templates/Home.js", "client");
-  api.addFiles("templates/ScorecardHome.html", "client");
-  api.addFiles("templates/ScorecardHome.js", "client");
-  api.addFiles("templates/CustomHome.html", "client");
-  api.addFiles("templates/CustomHome.js", "client");
-  api.addFiles("templates/Configure.html", "client");
-  api.addFiles("templates/Configure.js", "client");
+  api.addFiles("templates/home.html", "client");
+  api.addFiles("templates/home.js", "client");
+  api.addFiles("templates/scorecardHome.html", "client");
+  api.addFiles("templates/scorecardHome.js", "client");
+  api.addFiles("templates/customHome.html", "client");
+  api.addFiles("templates/customHome.js", "client");
+  api.addFiles("templates/configure.html", "client");
+  api.addFiles("templates/configure.js", "client");
 
   api.addFiles("templates/about/about.html", "client");
   api.addFiles("templates/about/about.js", "client");
@@ -219,8 +219,8 @@ Package.onUse(function (api) {
   api.addFiles("templates/plotType/plot_type.html", "client");
   api.addFiles("templates/plotType/plot_type.js", "client");
 
-  api.addFiles("templates/QCParamGroup/QC_param_group.html", "client");
-  api.addFiles("templates/QCParamGroup/QC_param_group.js", "client");
+  api.addFiles("templates/qcParamGroup/QC_param_group.html", "client");
+  api.addFiles("templates/qcParamGroup/QC_param_group.js", "client");
 
   api.addFiles("templates/scorecard/scorecardStatusPage.html", "client");
   api.addFiles("templates/scorecard/scorecardStatusPage.js", "client");

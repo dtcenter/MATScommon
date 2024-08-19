@@ -461,13 +461,13 @@ const checkIfDisplayAllQCParams = function (faceOptions) {
         0 ||
         _.intersection(thisAppsStatistics.options, doNotFilterStats).length > 0)
     ) {
-      if (theseFaceOptions.QCParamGroup === "block") {
+      if (theseFaceOptions.qcParamGroup === "block") {
         // not a map plot, display only the gaps selector
-        theseFaceOptions.QCParamGroup = "none";
-        theseFaceOptions["QCParamGroup-gaps"] = "block";
-      } else if (theseFaceOptions["QCParamGroup-lite"] === "block") {
+        theseFaceOptions.qcParamGroup = "none";
+        theseFaceOptions["qcParamGroup-gaps"] = "block";
+      } else if (theseFaceOptions["qcParamGroup-lite"] === "block") {
         // map plot, display nothing
-        theseFaceOptions["QCParamGroup-lite"] = "none";
+        theseFaceOptions["qcParamGroup-lite"] = "none";
       }
     }
   }
@@ -562,9 +562,9 @@ const showTimeseriesFace = function () {
     "bin-parameter": "none",
     significance: "none",
     plotFormat: "block",
-    QCParamGroup: "block",
-    "QCParamGroup-gaps": "none",
-    "QCParamGroup-lite": "none",
+    qcParamGroup: "block",
+    "qcParamGroup-gaps": "none",
+    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -614,9 +614,9 @@ const showProfileFace = function () {
     "bin-parameter": "none",
     significance: "none",
     plotFormat: "block",
-    QCParamGroup: "block",
-    "QCParamGroup-gaps": "none",
-    "QCParamGroup-lite": "none",
+    qcParamGroup: "block",
+    "qcParamGroup-gaps": "none",
+    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -666,9 +666,9 @@ const showDieoffFace = function () {
     "bin-parameter": "none",
     significance: "none",
     plotFormat: "block",
-    QCParamGroup: "block",
-    "QCParamGroup-gaps": "none",
-    "QCParamGroup-lite": "none",
+    qcParamGroup: "block",
+    "qcParamGroup-gaps": "none",
+    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -718,9 +718,9 @@ const showThresholdFace = function () {
     "bin-parameter": "none",
     significance: "none",
     plotFormat: "block",
-    QCParamGroup: "block",
-    "QCParamGroup-gaps": "none",
-    "QCParamGroup-lite": "none",
+    qcParamGroup: "block",
+    "qcParamGroup-gaps": "none",
+    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -774,9 +774,9 @@ const showValidTimeFace = function () {
     "bin-parameter": "none",
     significance: "none",
     plotFormat: "block",
-    QCParamGroup: "block",
-    "QCParamGroup-gaps": "none",
-    "QCParamGroup-lite": "none",
+    qcParamGroup: "block",
+    "qcParamGroup-gaps": "none",
+    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -826,9 +826,9 @@ const showGridScaleFace = function () {
     "bin-parameter": "none",
     significance: "none",
     plotFormat: "block",
-    QCParamGroup: "block",
-    "QCParamGroup-gaps": "none",
-    "QCParamGroup-lite": "none",
+    qcParamGroup: "block",
+    "qcParamGroup-gaps": "none",
+    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -878,9 +878,9 @@ const showDailyModelCycleFace = function () {
     "bin-parameter": "none",
     significance: "none",
     plotFormat: "block",
-    QCParamGroup: "block",
-    "QCParamGroup-gaps": "none",
-    "QCParamGroup-lite": "none",
+    qcParamGroup: "block",
+    "qcParamGroup-gaps": "none",
+    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff for a specified UTC cycle init hour",
@@ -930,9 +930,9 @@ const showYearToYearFace = function () {
     "bin-parameter": "none",
     significance: "none",
     plotFormat: "block",
-    QCParamGroup: "block",
-    "QCParamGroup-gaps": "none",
-    "QCParamGroup-lite": "none",
+    qcParamGroup: "block",
+    "qcParamGroup-gaps": "none",
+    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -982,9 +982,9 @@ const showReliabilityFace = function () {
     "bin-parameter": "none",
     significance: "none",
     plotFormat: "none",
-    QCParamGroup: "none",
-    "QCParamGroup-gaps": "none",
-    "QCParamGroup-lite": "none",
+    qcParamGroup: "none",
+    "qcParamGroup-gaps": "none",
+    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -1034,9 +1034,9 @@ const showROCFace = function () {
     "bin-parameter": "block",
     significance: "none",
     plotFormat: "none",
-    QCParamGroup: "none",
-    "QCParamGroup-gaps": "none",
-    "QCParamGroup-lite": "none",
+    qcParamGroup: "none",
+    "qcParamGroup-gaps": "none",
+    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -1088,9 +1088,9 @@ const showPerformanceDiagramFace = function () {
     "bin-parameter": "block",
     significance: "none",
     plotFormat: "none",
-    QCParamGroup: "none",
-    "QCParamGroup-gaps": "none",
-    "QCParamGroup-lite": "none",
+    qcParamGroup: "none",
+    "qcParamGroup-gaps": "none",
+    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -1148,9 +1148,9 @@ const showGridScaleProbFace = function () {
     "bin-parameter": "none",
     significance: "none",
     plotFormat: "block",
-    QCParamGroup: "none",
-    "QCParamGroup-gaps": "none",
-    "QCParamGroup-lite": "none",
+    qcParamGroup: "none",
+    "qcParamGroup-gaps": "none",
+    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -1201,9 +1201,9 @@ const showMapFace = function () {
     "bin-parameter": "none",
     significance: "none",
     plotFormat: "none",
-    QCParamGroup: "none",
-    "QCParamGroup-gaps": "none",
-    "QCParamGroup-lite": "block",
+    qcParamGroup: "none",
+    "qcParamGroup-gaps": "none",
+    "qcParamGroup-lite": "block",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -1262,9 +1262,9 @@ const showHistogramFace = function () {
     "bin-parameter": "none",
     significance: "none",
     plotFormat: "block",
-    QCParamGroup: "none",
-    "QCParamGroup-gaps": "none",
-    "QCParamGroup-lite": "none",
+    qcParamGroup: "none",
+    "qcParamGroup-gaps": "none",
+    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -1323,9 +1323,9 @@ const showEnsembleHistogramFace = function () {
     "bin-parameter": "none",
     significance: "none",
     plotFormat: "block",
-    QCParamGroup: "none",
-    "QCParamGroup-gaps": "none",
-    "QCParamGroup-lite": "none",
+    qcParamGroup: "none",
+    "qcParamGroup-gaps": "none",
+    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -1377,9 +1377,9 @@ const showContourFace = function () {
     "bin-parameter": "none",
     significance: plotType === matsTypes.PlotTypes.contourDiff ? "block" : "none",
     plotFormat: "none",
-    QCParamGroup: "none",
-    "QCParamGroup-gaps": "none",
-    "QCParamGroup-lite": "none",
+    qcParamGroup: "none",
+    "qcParamGroup-gaps": "none",
+    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -1435,9 +1435,9 @@ const showSimpleScatterFace = function () {
     "bin-parameter": "block",
     significance: "none",
     plotFormat: "none",
-    QCParamGroup: "none",
-    "QCParamGroup-gaps": "none",
-    "QCParamGroup-lite": "none",
+    qcParamGroup: "none",
+    "qcParamGroup-gaps": "none",
+    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -1496,9 +1496,9 @@ const showScatterFace = function () {
     "bin-parameter": "none",
     significance: "none",
     plotFormat: "none",
-    QCParamGroup: "none",
-    "QCParamGroup-gaps": "none",
-    "QCParamGroup-lite": "none",
+    qcParamGroup: "none",
+    "qcParamGroup-gaps": "none",
+    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
