@@ -154,8 +154,8 @@ Package.onUse(function (api) {
   api.addFiles("lib/plot_util.js", ["client", "server"]);
 
   // templates
-  api.addFiles("templates/home.html", "client");
-  api.addFiles("templates/home.js", "client");
+  api.addFiles("templates/Home.html", "client");
+  api.addFiles("templates/Home.js", "client");
   api.addFiles("templates/scorecardHome.html", "client");
   api.addFiles("templates/scorecardHome.js", "client");
   api.addFiles("templates/customHome.html", "client");
