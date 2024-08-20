@@ -1648,6 +1648,7 @@ const parseQueryDataMapScalar = function (
   variable,
   varUnits,
   appParams,
+  plotParams,
   isCouchbase
 ) {
   const returnD = d;
@@ -1895,8 +1896,14 @@ const parseQueryDataMapScalar = function (
   filteredValues = filteredValues.sort(function (a, b) {
     return Number(a) - Number(b);
   });
-  highLimit = filteredValues[Math.floor(filteredValues.length * 0.98)];
-  lowLimit = filteredValues[Math.floor(filteredValues.length * 0.02)];
+  const limitType = plotParams["map-range-controls"];
+  if (limitType === "Default range") {
+    highLimit = filteredValues[Math.floor(filteredValues.length * 0.98)];
+    lowLimit = filteredValues[Math.floor(filteredValues.length * 0.02)];
+  } else {
+    highLimit = Number(plotParams["map-high-limit"]);
+    lowLimit = Number(plotParams["map-low-limit"]);
+  }
 
   const maxValue =
     Math.abs(highLimit) > Math.abs(lowLimit) ? Math.abs(highLimit) : Math.abs(lowLimit);
@@ -1907,6 +1914,7 @@ const parseQueryDataMapScalar = function (
   }
 
   for (let didx = 0; didx < returnD.queryVal.length - 1; didx += 1) {
+    queryVal = returnD.queryVal[didx];
     let textMarker;
     if (variable.includes("2m") || variable.includes("10m")) {
       textMarker = queryVal === null ? "" : queryVal.toFixed(0);
@@ -3584,7 +3592,8 @@ const queryDBMapScalar = function (
   variable,
   varUnits,
   siteMap,
-  appParams
+  appParams,
+  plotParams
 ) {
   if (Meteor.isServer) {
     // d will contain the curve data
@@ -3686,6 +3695,7 @@ const queryDBMapScalar = function (
           variable,
           varUnits,
           appParams,
+          plotParams,
           true
         );
         d = parsedData.d;
@@ -3719,6 +3729,7 @@ const queryDBMapScalar = function (
             variable,
             varUnits,
             appParams,
+            plotParams,
             false
           );
           d = parsedData.d;
