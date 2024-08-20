@@ -3150,6 +3150,11 @@ const queryDBTimeSeries = function (
     // wait for the future to finish - sort of like 'back to the future' ;)
     dFuture.wait();
 
+    // if we have only null values, return a no data found
+    if (!(d.x.some((el) => el !== null) && d.y.some((el) => el !== null))) {
+      error = matsTypes.Messages.NO_DATA_FOUND;
+    }
+
     return {
       data: d,
       error,
@@ -3283,6 +3288,11 @@ const queryDBSpecialtyCurve = function (
     // wait for the future to finish - sort of like 'back to the future' ;)
     dFuture.wait();
 
+    // if we have only null values, return a no data found
+    if (!(d.x.some((el) => el !== null) && d.y.some((el) => el !== null))) {
+      error = matsTypes.Messages.NO_DATA_FOUND;
+    }
+
     return {
       data: d,
       error,
@@ -3372,6 +3382,11 @@ const queryDBReliability = function (pool, statement, appParams, kernel) {
     // wait for the future to finish - sort of like 'back to the future' ;)
     dFuture.wait();
 
+    // if we have only null values, return a no data found
+    if (!(d.x.some((el) => el !== null) && d.y.some((el) => el !== null))) {
+      error = matsTypes.Messages.NO_DATA_FOUND;
+    }
+
     return {
       data: d,
       error,
@@ -3459,6 +3474,11 @@ const queryDBPerformanceDiagram = function (pool, statement, appParams) {
     }
     // wait for the future to finish - sort of like 'back to the future' ;)
     dFuture.wait();
+
+    // if we have only null values, return a no data found
+    if (!(d.x.some((el) => el !== null) && d.y.some((el) => el !== null))) {
+      error = matsTypes.Messages.NO_DATA_FOUND;
+    }
 
     return {
       data: d,
@@ -3572,6 +3592,11 @@ const queryDBSimpleScatter = function (
     }
     // wait for the future to finish - sort of like 'back to the future' ;)
     dFuture.wait();
+
+    // if we have only null values, return a no data found
+    if (!(d.x.some((el) => el !== null) && d.y.some((el) => el !== null))) {
+      error = matsTypes.Messages.NO_DATA_FOUND;
+    }
 
     return {
       data: d,
@@ -4108,6 +4133,11 @@ const queryDBContour = function (pool, statement, appParams, statisticStr) {
     }
     // wait for the future to finish - sort of like 'back to the future' ;)
     dFuture.wait();
+
+    // if we have only null values, return a no data found
+    if (!d.z.some((el) => el !== null)) {
+      error = matsTypes.Messages.NO_DATA_FOUND;
+    }
 
     return {
       data: d,
