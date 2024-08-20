@@ -3289,7 +3289,11 @@ const queryDBSpecialtyCurve = function (
     dFuture.wait();
 
     // if we have only null values, return a no data found
-    if (!(d.x.some((el) => el !== null) && d.y.some((el) => el !== null))) {
+    if (appParams.plotType !== matsTypes.PlotTypes.histogram) {
+      if (!(d.x.some((el) => el !== null) && d.y.some((el) => el !== null))) {
+        error = matsTypes.Messages.NO_DATA_FOUND;
+      }
+    } else if (!d.subVals.some((el) => el !== null)) {
       error = matsTypes.Messages.NO_DATA_FOUND;
     }
 
