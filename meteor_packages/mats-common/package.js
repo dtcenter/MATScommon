@@ -219,8 +219,8 @@ Package.onUse(function (api) {
   api.addFiles("templates/plotType/plot_type.html", "client");
   api.addFiles("templates/plotType/plot_type.js", "client");
 
-  api.addFiles("templates/qcParamGroup/QC_param_group.html", "client");
-  api.addFiles("templates/qcParamGroup/QC_param_group.js", "client");
+  api.addFiles("templates/qcParams/qcParamGroup.html", "client");
+  api.addFiles("templates/qcParams/qcParamGroup.js", "client");
 
   api.addFiles("templates/scorecard/scorecardStatusPage.html", "client");
   api.addFiles("templates/scorecard/scorecardStatusPage.js", "client");
