@@ -1867,9 +1867,31 @@ const parseQueryDataMapScalar = function (
       returnD.color.push("rgb(125,125,125)"); // dummy
     }
   }
+  // get stdev threshold at which to exclude entire points
+  let filteredValues = returnD.queryVal.filter((x) => x || x === 0);
+  const allMean = matsDataUtils.average(filteredValues);
+  const allStdev = matsDataUtils.stdev(filteredValues);
+  let allSdLimit;
+  if (outlierQCParam !== "all") {
+    allSdLimit = outlierQCParam * allStdev;
+  }
+
+  for (let didx = returnD.queryVal.length - 1; didx >= 0; didx -= 1) {
+    queryVal = returnD.queryVal[didx];
+    if (outlierQCParam !== "all" && Math.abs(queryVal - allMean) > allSdLimit) {
+      // this point is too far from the mean. Exclude it.
+      returnD.queryVal.splice(didx, 1);
+      returnD.stats.splice(didx, 1);
+      returnD.text.splice(didx, 1);
+      returnD.siteName.splice(didx, 1);
+      returnD.lat.splice(didx, 1);
+      returnD.lon.splice(didx, 1);
+      returnD.color.splice(didx, 1);
+    }
+  }
 
   // get range of values for colorscale, eliminating the highest and lowest as outliers
-  let filteredValues = returnD.queryVal.filter((x) => x || x === 0);
+  filteredValues = returnD.queryVal.filter((x) => x || x === 0);
   filteredValues = filteredValues.sort(function (a, b) {
     return Number(a) - Number(b);
   });
@@ -1884,71 +1906,52 @@ const parseQueryDataMapScalar = function (
     lowLimit = -1 * maxValue;
   }
 
-  // get stdev threshold at which to exclude entire points
-  const allMean = matsDataUtils.average(filteredValues);
-  const allStdev = matsDataUtils.stdev(filteredValues);
-  let allSdLimit;
-  if (outlierQCParam !== "all") {
-    allSdLimit = outlierQCParam * allStdev;
-  }
-
-  for (let didx = returnD.queryVal.length - 1; didx >= 0; didx -= 1) {
-    queryVal = returnD.queryVal[didx];
-    if (!(outlierQCParam !== "all" && Math.abs(queryVal - allMean) > allSdLimit)) {
-      // this point is too far from the mean. Exclude it.
-      returnD.queryVal.splice(didx, 1);
-      returnD.stats.splice(didx, 1);
-      returnD.text.splice(didx, 1);
-      returnD.siteName.splice(didx, 1);
-      returnD.lat.splice(didx, 1);
-      returnD.lon.splice(didx, 1);
-      returnD.color.splice(didx, 1);
-
-      let textMarker;
-      if (variable.includes("2m") || variable.includes("10m")) {
-        textMarker = queryVal === null ? "" : queryVal.toFixed(0);
-      } else {
-        textMarker = queryVal === null ? "" : queryVal.toFixed(1);
-      }
-      // sort the data by the color it will appear on the map
-      if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.2) {
-        returnD.color[didx] = colorLowest;
-        returnDLowest.siteName.push(returnD.siteName[didx]);
-        returnDLowest.queryVal.push(queryVal);
-        returnDLowest.text.push(textMarker);
-        returnDLowest.lat.push(returnD.lat[didx]);
-        returnDLowest.lon.push(returnD.lon[didx]);
-      } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.4) {
-        returnD.color[didx] = colorLow;
-        returnDLow.siteName.push(returnD.siteName[didx]);
-        returnDLow.queryVal.push(queryVal);
-        returnDLow.text.push(textMarker);
-        returnDLow.lat.push(returnD.lat[didx]);
-        returnDLow.lon.push(returnD.lon[didx]);
-      } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.6) {
-        returnD.color[didx] = colorModerate;
-        returnDModerate.siteName.push(returnD.siteName[didx]);
-        returnDModerate.queryVal.push(queryVal);
-        returnDModerate.text.push(textMarker);
-        returnDModerate.lat.push(returnD.lat[didx]);
-        returnDModerate.lon.push(returnD.lon[didx]);
-      } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.8) {
-        returnD.color[didx] = colorHigh;
-        returnDHigh.siteName.push(returnD.siteName[didx]);
-        returnDHigh.queryVal.push(queryVal);
-        returnDHigh.text.push(textMarker);
-        returnDHigh.lat.push(returnD.lat[didx]);
-        returnDHigh.lon.push(returnD.lon[didx]);
-      } else {
-        returnD.color[didx] = colorHighest;
-        returnDHighest.siteName.push(returnD.siteName[didx]);
-        returnDHighest.queryVal.push(queryVal);
-        returnDHighest.text.push(textMarker);
-        returnDHighest.lat.push(returnD.lat[didx]);
-        returnDHighest.lon.push(returnD.lon[didx]);
-      }
+  for (let didx = 0; didx < returnD.queryVal.length - 1; didx += 1) {
+    let textMarker;
+    if (variable.includes("2m") || variable.includes("10m")) {
+      textMarker = queryVal === null ? "" : queryVal.toFixed(0);
+    } else {
+      textMarker = queryVal === null ? "" : queryVal.toFixed(1);
+    }
+    // sort the data by the color it will appear on the map
+    if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.2) {
+      returnD.color[didx] = colorLowest;
+      returnDLowest.siteName.push(returnD.siteName[didx]);
+      returnDLowest.queryVal.push(queryVal);
+      returnDLowest.text.push(textMarker);
+      returnDLowest.lat.push(returnD.lat[didx]);
+      returnDLowest.lon.push(returnD.lon[didx]);
+    } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.4) {
+      returnD.color[didx] = colorLow;
+      returnDLow.siteName.push(returnD.siteName[didx]);
+      returnDLow.queryVal.push(queryVal);
+      returnDLow.text.push(textMarker);
+      returnDLow.lat.push(returnD.lat[didx]);
+      returnDLow.lon.push(returnD.lon[didx]);
+    } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.6) {
+      returnD.color[didx] = colorModerate;
+      returnDModerate.siteName.push(returnD.siteName[didx]);
+      returnDModerate.queryVal.push(queryVal);
+      returnDModerate.text.push(textMarker);
+      returnDModerate.lat.push(returnD.lat[didx]);
+      returnDModerate.lon.push(returnD.lon[didx]);
+    } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.8) {
+      returnD.color[didx] = colorHigh;
+      returnDHigh.siteName.push(returnD.siteName[didx]);
+      returnDHigh.queryVal.push(queryVal);
+      returnDHigh.text.push(textMarker);
+      returnDHigh.lat.push(returnD.lat[didx]);
+      returnDHigh.lon.push(returnD.lon[didx]);
+    } else {
+      returnD.color[didx] = colorHighest;
+      returnDHighest.siteName.push(returnD.siteName[didx]);
+      returnDHighest.queryVal.push(queryVal);
+      returnDHighest.text.push(textMarker);
+      returnDHighest.lat.push(returnD.lat[didx]);
+      returnDHighest.lon.push(returnD.lon[didx]);
     }
   } // end of loop row
+
   return {
     d: returnD,
     dLowest: returnDLowest,

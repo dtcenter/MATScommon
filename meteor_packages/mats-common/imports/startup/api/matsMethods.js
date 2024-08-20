@@ -55,7 +55,7 @@ const status = function (res) {
 // wrapper for NaN check
 const isThisANaN = function (val) {
   // eslint-disable-next-line no-restricted-globals
-  return !val || isNaN(val);
+  return val === undefined || val === null || isNaN(val);
 };
 
 // private - used to see if the main page needs to update its selectors

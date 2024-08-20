@@ -542,7 +542,7 @@ const calculateStatScalar = function (
     return null;
   let queryVal;
   const variable = statisticAndVariable.split("_")[1];
-  const statistic = statisticAndVariable.split("_");
+  const statistic = statisticAndVariable.split("_")[0];
   switch (statistic) {
     case "RMSE":
       queryVal = Math.sqrt(squareDiffSum / NSum);
