@@ -1710,8 +1710,13 @@ Template.graph.events({
             : newX[newX.length - 1];
 
         // store previous and new x values to craft consistent tick marks
-        tickvals = _.union(tickvals, newX);
-        ticktext = _.union(ticktext, origX[didx]);
+        if (
+          reservedWords.indexOf(dataset[didx].label) === -1 &&
+          !dataset[didx].label.includes(matsTypes.ReservedWords.noSkill)
+        ) {
+          tickvals = _.union(tickvals, newX);
+          ticktext = _.union(ticktext, origX[didx]);
+        }
       }
       Session.set("thresholdEquiX", true);
       Session.set("origX", origX);
@@ -1736,8 +1741,13 @@ Template.graph.events({
             : origX[didx][origX[didx].length - 1];
 
         // store previous and new x values to craft consistent tick marks
-        tickvals = _.union(tickvals, origX[didx]);
-        ticktext = _.union(ticktext, origX[didx]);
+        if (
+          reservedWords.indexOf(dataset[didx].label) === -1 &&
+          !dataset[didx].label.includes(matsTypes.ReservedWords.noSkill)
+        ) {
+          tickvals = _.union(tickvals, origX[didx]);
+          ticktext = _.union(ticktext, origX[didx]);
+        }
 
         // remove new formatting that would have been passed to pop-out windows
         delete curveOpsUpdate[didx].x;
