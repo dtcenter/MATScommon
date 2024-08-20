@@ -1278,7 +1278,7 @@ const processDataROC = function (
     resultOptions.xaxis.range[1],
     resultOptions.xaxis.range[0],
     resultOptions.yaxis.range[1],
-    returnDataset.ymin,
+    resultOptions.yaxis.range[0],
     matsTypes.ReservedWords.noSkill,
     "top left",
     matsTypes.ReservedWords.noSkill,
