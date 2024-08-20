@@ -2466,17 +2466,26 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
   }
 
   // we don't have bins yet, so we want all of the data in one array
-  const subVals = curveSubStatsRaw.reduce(function (a, b) {
-    return a.concat(b);
-  });
-  const subSecs = curveSubSecsRaw.reduce(function (a, b) {
-    return a.concat(b);
-  });
+  const subVals =
+    curveSubStatsRaw.length > 0
+      ? curveSubStatsRaw.reduce(function (a, b) {
+          return a.concat(b);
+        })
+      : [];
+  const subSecs =
+    curveSubSecsRaw.length > 0
+      ? curveSubSecsRaw.reduce(function (a, b) {
+          return a.concat(b);
+        })
+      : [];
   let subLevs;
   if (hasLevels) {
-    subLevs = curveSubLevsRaw.reduce(function (a, b) {
-      return a.concat(b);
-    });
+    subLevs =
+      curveSubLevsRaw.length > 0
+        ? curveSubLevsRaw.reduce(function (a, b) {
+            return a.concat(b);
+          })
+        : [];
   }
 
   returnD.subVals = subVals;

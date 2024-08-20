@@ -236,7 +236,9 @@ const randomRGB = function () {
 const setNextCurveColor = function () {
   const usedColors = Session.get("UsedColors");
   const { colors } = matsCollections.ColorScheme.findOne({}, { fields: { colors: 1 } });
-  const lastUsedIndex = usedColors ? usedColors.length - 1 : -1;
+  const lastUsedIndex = usedColors
+    ? colors.indexOf(usedColors[usedColors.length - 1])
+    : -1;
   let nextCurveColor;
   if (lastUsedIndex !== undefined && lastUsedIndex !== -1) {
     if (lastUsedIndex < colors.length - 1) {

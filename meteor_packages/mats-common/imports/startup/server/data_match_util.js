@@ -260,11 +260,16 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
           subLevsRaw[curveIndex].push(data.subLevs[di]);
         }
       }
-      subSecs[curveIndex] = subSecsRaw[curveIndex].reduce(function (a, b) {
-        return a.concat(b);
-      });
+      subSecs[curveIndex] =
+        subSecsRaw[curveIndex].length > 0
+          ? subSecsRaw[curveIndex].reduce(function (a, b) {
+              return a.concat(b);
+            })
+          : [];
       if (hasLevels) {
         subLevs[curveIndex] = subLevsRaw[curveIndex].reduce(function (a, b) {
+          if (a.length === 0) return b;
+          if (b.length === 0) return a;
           return a.concat(b);
         });
       }
@@ -856,17 +861,26 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
       };
       if (data.x.length > 0) {
         // need to recalculate bins and stats
-        const curveSubVals = data.subVals.reduce(function (a, b) {
-          return a.concat(b);
-        });
-        const curveSubSecs = data.subSecs.reduce(function (a, b) {
-          return a.concat(b);
-        });
+        const curveSubVals =
+          data.subVals.length > 0
+            ? data.subVals.reduce(function (a, b) {
+                return a.concat(b);
+              })
+            : [];
+        const curveSubSecs =
+          data.subSecs.length > 0
+            ? data.subSecs.reduce(function (a, b) {
+                return a.concat(b);
+              })
+            : [];
         let curveSubLevs;
         if (hasLevels) {
-          curveSubLevs = data.subLevs.reduce(function (a, b) {
-            return a.concat(b);
-          });
+          curveSubLevs =
+            data.subLevs.length > 0
+              ? data.subLevs.reduce(function (a, b) {
+                  return a.concat(b);
+                })
+              : [];
         } else {
           curveSubLevs = [];
         }

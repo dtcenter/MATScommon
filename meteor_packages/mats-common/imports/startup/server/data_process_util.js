@@ -1963,9 +1963,12 @@ const processDataHistogram = function (
   let ymin = Number.MAX_VALUE;
 
   // flatten all the returned data into one stats array and one secs array in order to calculate histogram bins over the whole range.
-  const curveSubStats = allReturnedSubStats.reduce(function (a, b) {
-    return a.concat(b);
-  });
+  const curveSubStats =
+    allReturnedSubStats.length > 0
+      ? allReturnedSubStats.reduce(function (a, b) {
+          return a.concat(b);
+        })
+      : [];
   const curveSubSecs = allReturnedSubSecs.reduce(function (a, b) {
     return a.concat(b);
   });
