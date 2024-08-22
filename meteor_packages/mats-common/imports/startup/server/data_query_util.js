@@ -3151,7 +3151,11 @@ const queryDBTimeSeries = function (
     dFuture.wait();
 
     // if we have only null values, return a no data found
-    if (!(d.x.some((el) => el !== null) && d.y.some((el) => el !== null))) {
+    if (
+      d.x.length > 0 &&
+      d.y.length > 0 &&
+      !(d.x.some((el) => el !== null) && d.y.some((el) => el !== null))
+    ) {
       error = matsTypes.Messages.NO_DATA_FOUND;
     }
 
@@ -3290,10 +3294,14 @@ const queryDBSpecialtyCurve = function (
 
     // if we have only null values, return a no data found
     if (appParams.plotType !== matsTypes.PlotTypes.histogram) {
-      if (!(d.x.some((el) => el !== null) && d.y.some((el) => el !== null))) {
+      if (
+        d.x.length > 0 &&
+        d.y.length > 0 &&
+        !(d.x.some((el) => el !== null) && d.y.some((el) => el !== null))
+      ) {
         error = matsTypes.Messages.NO_DATA_FOUND;
       }
-    } else if (!d.subVals.some((el) => el !== null)) {
+    } else if (d.subVals.length > 0 && !d.subVals.some((el) => el !== null)) {
       error = matsTypes.Messages.NO_DATA_FOUND;
     }
 
@@ -3387,7 +3395,11 @@ const queryDBReliability = function (pool, statement, appParams, kernel) {
     dFuture.wait();
 
     // if we have only null values, return a no data found
-    if (!(d.x.some((el) => el !== null) && d.y.some((el) => el !== null))) {
+    if (
+      d.x.length > 0 &&
+      d.y.length > 0 &&
+      !(d.x.some((el) => el !== null) && d.y.some((el) => el !== null))
+    ) {
       error = matsTypes.Messages.NO_DATA_FOUND;
     }
 
@@ -3480,7 +3492,11 @@ const queryDBPerformanceDiagram = function (pool, statement, appParams) {
     dFuture.wait();
 
     // if we have only null values, return a no data found
-    if (!(d.x.some((el) => el !== null) && d.y.some((el) => el !== null))) {
+    if (
+      d.x.length > 0 &&
+      d.y.length > 0 &&
+      !(d.x.some((el) => el !== null) && d.y.some((el) => el !== null))
+    ) {
       error = matsTypes.Messages.NO_DATA_FOUND;
     }
 
@@ -3598,7 +3614,11 @@ const queryDBSimpleScatter = function (
     dFuture.wait();
 
     // if we have only null values, return a no data found
-    if (!(d.x.some((el) => el !== null) && d.y.some((el) => el !== null))) {
+    if (
+      d.x.length > 0 &&
+      d.y.length > 0 &&
+      !(d.x.some((el) => el !== null) && d.y.some((el) => el !== null))
+    ) {
       error = matsTypes.Messages.NO_DATA_FOUND;
     }
 
@@ -4139,7 +4159,7 @@ const queryDBContour = function (pool, statement, appParams, statisticStr) {
     dFuture.wait();
 
     // if we have only null values, return a no data found
-    if (!d.z.some((el) => el !== null)) {
+    if (d.z.length > 0 && !d.z.some((el) => el !== null)) {
       error = matsTypes.Messages.NO_DATA_FOUND;
     }
 
