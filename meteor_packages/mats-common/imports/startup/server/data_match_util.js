@@ -267,11 +267,12 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
             })
           : [];
       if (hasLevels) {
-        subLevs[curveIndex] = subLevsRaw[curveIndex].reduce(function (a, b) {
-          if (a.length === 0) return b;
-          if (b.length === 0) return a;
-          return a.concat(b);
-        });
+        subLevs[curveIndex] =
+          subLevsRaw[curveIndex].length > 0
+            ? subLevsRaw[curveIndex].reduce(function (a, b) {
+                return a.concat(b);
+              })
+            : [];
       }
     }
 
