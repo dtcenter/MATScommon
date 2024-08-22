@@ -1897,7 +1897,7 @@ const parseQueryDataMapScalar = function (
     return Number(a) - Number(b);
   });
   const limitType = plotParams["map-range-controls"];
-  if (limitType === "Default range") {
+  if (limitType === undefined || limitType === "Default range") {
     highLimit = filteredValues[Math.floor(filteredValues.length * 0.98)];
     lowLimit = filteredValues[Math.floor(filteredValues.length * 0.02)];
   } else {
