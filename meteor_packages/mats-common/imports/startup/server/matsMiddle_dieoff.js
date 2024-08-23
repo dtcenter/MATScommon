@@ -226,7 +226,7 @@ class MatsMiddleDieoff {
       prSlice.then((qr) => {
         for (let jmfve = 0; jmfve < qr.rows.length; jmfve += 1) {
           const fveDataSingleEpoch = qr.rows[jmfve];
-!!!!!!!          const indVarKey = fveDataSingleEpoch.fcst_lead.toString();
+          const indVarKey = fveDataSingleEpoch.fcst_lead.toString();
           if (!this.fveObs[indVarKey]) {
             this.fveObs[indVarKey] = {};
           }
