@@ -3,7 +3,6 @@
  */
 
 import { Meteor } from "meteor/meteor";
-import { Hooks } from "meteor/differential:event-hooks";
 import {
   matsCollections,
   matsCurveUtils,
@@ -12,9 +11,12 @@ import {
   matsPlotUtils,
   matsTypes,
 } from "meteor/randyp:mats-common";
+import { Template } from "meteor/templating";
 import { moment } from "meteor/momentjs:moment";
 
-const pageIndex = 0;
+/* global Session, Plotly, $, _, setError */
+/* eslint-disable no-console */
+
 let annotation = "";
 let openWindows = [];
 let xAxes;
@@ -54,33 +56,134 @@ Template.graph.helpers({
   graphFunction() {
     // causes graph display routine to be processed
     Session.get("PlotResultsUpDated");
-    const graphFunction = Session.get("graphFunction");
-    if (graphFunction && !graphFunction.toLowerCase().includes("scorecard")) {
-      eval(graphFunction)(Session.get("plotResultKey"));
-      const plotType = Session.get("graphPlotType");
-      const dataset = matsCurveUtils.getGraphResult().data;
-      const { options } = matsCurveUtils.getGraphResult();
-      Session.set("options", options);
+    matsGraphUtils.graphPlotly();
+    const plotType = Session.get("graphPlotType");
+    const dataset = matsCurveUtils.getGraphResult().data;
+    const { options } = matsCurveUtils.getGraphResult();
+    Session.set("options", options);
 
-      // need to save some curve options so that the reset button can undo Plotly.restyle
-      switch (plotType) {
-        case matsTypes.PlotTypes.contour:
-        case matsTypes.PlotTypes.contourDiff:
-          // saved curve options for contours
-          Session.set("colorbarResetOpts", {
-            name: dataset[0].name,
-            showlegend: dataset[0].showlegend,
-            "colorbar.title": dataset[0].colorbar.title,
-            autocontour: dataset[0].autocontour,
-            ncontours: dataset[0].ncontours,
-            "contours.start": dataset[0].contours.start,
-            "contours.end": dataset[0].contours.end,
-            "contours.size": dataset[0].contours.size,
-            reversescale: dataset[0].reversescale,
-            connectgaps: dataset[0].connectgaps,
-            colorscale: JSON.stringify(dataset[0].colorscale),
+    // need to save some curve options so that the reset button can undo Plotly.restyle
+    const lineTypeResetOpts = [];
+    const barTypeResetOpts = [];
+    const mapResetOpts = [];
+    switch (plotType) {
+      case matsTypes.PlotTypes.contour:
+      case matsTypes.PlotTypes.contourDiff:
+        // saved curve options for contours
+        Session.set("colorbarResetOpts", {
+          name: dataset[0].name,
+          showlegend: dataset[0].showlegend,
+          "colorbar.title": dataset[0].colorbar.title,
+          autocontour: dataset[0].autocontour,
+          ncontours: dataset[0].ncontours,
+          "contours.start": dataset[0].contours.start,
+          "contours.end": dataset[0].contours.end,
+          "contours.size": dataset[0].contours.size,
+          reversescale: dataset[0].reversescale,
+          connectgaps: dataset[0].connectgaps,
+          colorscale: JSON.stringify(dataset[0].colorscale),
+        });
+        break;
+      case matsTypes.PlotTypes.timeSeries:
+      case matsTypes.PlotTypes.profile:
+      case matsTypes.PlotTypes.dieoff:
+      case matsTypes.PlotTypes.threshold:
+      case matsTypes.PlotTypes.validtime:
+      case matsTypes.PlotTypes.gridscale:
+      case matsTypes.PlotTypes.dailyModelCycle:
+      case matsTypes.PlotTypes.yearToYear:
+      case matsTypes.PlotTypes.reliability:
+      case matsTypes.PlotTypes.roc:
+      case matsTypes.PlotTypes.performanceDiagram:
+      case matsTypes.PlotTypes.gridscaleProb:
+      case matsTypes.PlotTypes.simpleScatter:
+        // saved curve options for line graphs
+        for (let lidx = 0; lidx < dataset.length; lidx += 1) {
+          lineTypeResetOpts.push({
+            name: dataset[lidx].name,
+            visible: dataset[lidx].visible,
+            showlegend: dataset[lidx].showlegend,
+            mode: dataset[lidx].mode,
+            xaxis: dataset[lidx].xaxis,
+            yaxis: dataset[lidx].yaxis,
+            x: [dataset[lidx].x],
+            y: [dataset[lidx].y],
+            text: [dataset[lidx].text],
+            error_y: dataset[lidx].error_y,
+            error_x: dataset[lidx].error_x,
+            "marker.symbol": dataset[lidx].marker.symbol,
+            "marker.size": dataset[lidx].marker.size,
+            "marker.color": dataset[lidx].marker.color,
           });
-          break;
+          if (dataset[lidx].binVals !== undefined) {
+            lineTypeResetOpts[lidx].binVals = [dataset[lidx].binVals];
+          } else if (dataset[lidx].threshold_all !== undefined) {
+            lineTypeResetOpts[lidx].threshold_all = [dataset[lidx].threshold_all];
+          }
+          if (plotType !== matsTypes.PlotTypes.simpleScatter) {
+            lineTypeResetOpts[lidx]["line.dash"] = dataset[lidx].line.dash;
+            lineTypeResetOpts[lidx]["line.width"] = dataset[lidx].line.width;
+            lineTypeResetOpts[lidx]["line.color"] = dataset[lidx].line.color;
+          }
+        }
+        Session.set("lineTypeResetOpts", lineTypeResetOpts);
+        break;
+      case matsTypes.PlotTypes.histogram:
+      case matsTypes.PlotTypes.ensembleHistogram:
+        // saved curve options for histograms
+        for (let bidx = 0; bidx < dataset.length; bidx += 1) {
+          barTypeResetOpts.push({
+            name: dataset[bidx].name,
+            visible: dataset[bidx].visible,
+            showlegend: dataset[0].showlegend,
+            "marker.color": dataset[bidx].marker.color,
+          });
+        }
+        Session.set("barTypeResetOpts", barTypeResetOpts);
+        break;
+      case matsTypes.PlotTypes.map:
+        // saved curve options for maps
+        mapResetOpts[0] = {
+          "marker.opacity": dataset[0].marker.opacity,
+        };
+        for (let midx = 1; midx < dataset.length; midx += 1) {
+          mapResetOpts.push({
+            name: dataset[midx].name,
+            visible: dataset[midx].visible,
+          });
+        }
+        Session.set("mapResetOpts", mapResetOpts);
+        break;
+      case matsTypes.PlotTypes.scatter2d:
+      default:
+        break;
+    }
+    curveOpsUpdate = [];
+    Session.set("thresholdEquiX", false);
+
+    // initial plot
+    $("#placeholder").empty();
+    if (!dataset || !options) {
+      return false;
+    }
+    Plotly.newPlot($("#placeholder")[0], dataset, options, { showLink: true });
+    matsGraphUtils.setGraphView(plotType);
+
+    // there seems to be a bug in the plotly API, where if you have a handler for plotly_legendclick,
+    // it will always supersede the handler for plotly_legenddoubleclick. If you comment out the
+    // handler for plotly_legendclick, then the one for plotly_legenddoubleclick will fire. This
+    // is not the behavior that the plotly instruction manual implies should occur, but seems to
+    // be the reality (the broader plotly_click and plotly_doubleclick work as expected, accurately
+    // recognizing double clicks even if a single click handler exists). I'm going to add handlers
+    // for both plotly_legendclick and plotly_legenddoubleclick anyway, in the hopes that they
+    // eventually fix this and it gets pushed to https://cdn.plot.ly/plotly-latest.min.js, but
+    // until then, the double click show/hide all curves functionality will not exist.
+    $("#placeholder")[0].on("plotly_legendclick", function (data) {
+      const resultDataset = matsCurveUtils.getGraphResult().data;
+      const curveToShowHide = data.curveNumber;
+      const { label } = resultDataset[curveToShowHide];
+      const thisPlotType = Session.get("graphPlotType");
+      switch (thisPlotType) {
         case matsTypes.PlotTypes.timeSeries:
         case matsTypes.PlotTypes.profile:
         case matsTypes.PlotTypes.dieoff:
@@ -93,97 +196,37 @@ Template.graph.helpers({
         case matsTypes.PlotTypes.roc:
         case matsTypes.PlotTypes.performanceDiagram:
         case matsTypes.PlotTypes.gridscaleProb:
+          document.getElementById(`${label}-curve-show-hide`).click();
+          return false;
         case matsTypes.PlotTypes.simpleScatter:
-          // saved curve options for line graphs
-          var lineTypeResetOpts = [];
-          for (let lidx = 0; lidx < dataset.length; lidx += 1) {
-            lineTypeResetOpts.push({
-              name: dataset[lidx].name,
-              visible: dataset[lidx].visible,
-              showlegend: dataset[lidx].showlegend,
-              mode: dataset[lidx].mode,
-              xaxis: dataset[lidx].xaxis,
-              yaxis: dataset[lidx].yaxis,
-              x: [dataset[lidx].x],
-              y: [dataset[lidx].y],
-              text: [dataset[lidx].text],
-              error_y: dataset[lidx].error_y,
-              error_x: dataset[lidx].error_x,
-              "marker.symbol": dataset[lidx].marker.symbol,
-              "marker.size": dataset[lidx].marker.size,
-              "marker.color": dataset[lidx].marker.color,
-            });
-            if (dataset[lidx].binVals !== undefined) {
-              lineTypeResetOpts[lidx].binVals = [dataset[lidx].binVals];
-            } else if (dataset[lidx].threshold_all !== undefined) {
-              lineTypeResetOpts[lidx].threshold_all = [dataset[lidx].threshold_all];
-            }
-            if (plotType !== matsTypes.PlotTypes.simpleScatter) {
-              lineTypeResetOpts[lidx]["line.dash"] = dataset[lidx].line.dash;
-              lineTypeResetOpts[lidx]["line.width"] = dataset[lidx].line.width;
-              lineTypeResetOpts[lidx]["line.color"] = dataset[lidx].line.color;
-            }
-          }
-          Session.set("lineTypeResetOpts", lineTypeResetOpts);
-          break;
+        case matsTypes.PlotTypes.scatter2d:
+          document.getElementById(`${label}-curve-show-hide-points`).click();
+          return false;
         case matsTypes.PlotTypes.histogram:
         case matsTypes.PlotTypes.ensembleHistogram:
-          // saved curve options for histograms
-          var barTypeResetOpts = [];
-          for (let bidx = 0; bidx < dataset.length; bidx += 1) {
-            barTypeResetOpts.push({
-              name: dataset[bidx].name,
-              visible: dataset[bidx].visible,
-              showlegend: dataset[0].showlegend,
-              "marker.color": dataset[bidx].marker.color,
-            });
-          }
-          Session.set("barTypeResetOpts", barTypeResetOpts);
-          break;
+          document.getElementById(`${label}-curve-show-hide-bars`).click();
+          return false;
         case matsTypes.PlotTypes.map:
-          // saved curve options for maps
-          var mapResetOpts = [];
-          mapResetOpts[0] = {
-            "marker.opacity": dataset[0].marker.opacity,
-          };
-          for (let midx = 1; midx < dataset.length; midx += 1) {
-            mapResetOpts.push({
-              name: dataset[midx].name,
-              visible: dataset[midx].visible,
-            });
-          }
-          Session.set("mapResetOpts", mapResetOpts);
-          break;
-        case matsTypes.PlotTypes.scatter2d:
+        case matsTypes.PlotTypes.contour:
+        case matsTypes.PlotTypes.contourDiff:
         default:
-          break;
+          // keep the plotly default event behavior
+          return true;
       }
-      curveOpsUpdate = [];
-      Session.set("thresholdEquiX", false);
-
-      // initial plot
-      $("#placeholder").empty();
-      if (!dataset || !options) {
-        return false;
-      }
-      Plotly.newPlot($("#placeholder")[0], dataset, options, { showLink: true });
-      matsGraphUtils.setGraphView(plotType);
-
-      // there seems to be a bug in the plotly API, where if you have a handler for plotly_legendclick,
-      // it will always supersede the handler for plotly_legenddoubleclick. If you comment out the
-      // handler for plotly_legendclick, then the one for plotly_legenddoubleclick will fire. This
-      // is not the behavior that the plotly instruction manual implies should occur, but seems to
-      // be the reality (the broader plotly_click and plotly_doubleclick work as expected, accurately
-      // recognizing double clicks even if a single click handler exists). I'm going to add handlers
-      // for both plotly_legendclick and plotly_legenddoubleclick anyway, in the hopes that they
-      // eventually fix this and it gets pushed to https://cdn.plot.ly/plotly-latest.min.js, but
-      // until then, the double click show/hide all curves functionality will not exist.
-      $("#placeholder")[0].on("plotly_legendclick", function (data) {
-        const dataset = matsCurveUtils.getGraphResult().data;
-        const curveToShowHide = data.curveNumber;
-        const { label } = dataset[curveToShowHide];
-        const plotType = Session.get("graphPlotType");
-        switch (plotType) {
+    });
+    Session.set("singleCurveIsolated", false);
+    $("#placeholder")[0].on("plotly_legenddoubleclick", function (data) {
+      const returnDataset = matsCurveUtils.getGraphResult().data;
+      const curveToShowHide = data.curveNumber;
+      let { label } = returnDataset[curveToShowHide];
+      const thisPlotType = Session.get("graphPlotType");
+      let hideAllOtherCurves;
+      if (returnDataset[curveToShowHide].visible === "legendonly") {
+        // we want to show this hidden curve and hide all others
+        hideAllOtherCurves = true;
+        Session.set("singleCurveIsolated", label);
+        // update this curve
+        switch (thisPlotType) {
           case matsTypes.PlotTypes.timeSeries:
           case matsTypes.PlotTypes.profile:
           case matsTypes.PlotTypes.dieoff:
@@ -197,15 +240,15 @@ Template.graph.helpers({
           case matsTypes.PlotTypes.performanceDiagram:
           case matsTypes.PlotTypes.gridscaleProb:
             document.getElementById(`${label}-curve-show-hide`).click();
-            return false;
+            break;
           case matsTypes.PlotTypes.simpleScatter:
           case matsTypes.PlotTypes.scatter2d:
             document.getElementById(`${label}-curve-show-hide-points`).click();
-            return false;
+            break;
           case matsTypes.PlotTypes.histogram:
           case matsTypes.PlotTypes.ensembleHistogram:
             document.getElementById(`${label}-curve-show-hide-bars`).click();
-            return false;
+            break;
           case matsTypes.PlotTypes.map:
           case matsTypes.PlotTypes.contour:
           case matsTypes.PlotTypes.contourDiff:
@@ -213,77 +256,36 @@ Template.graph.helpers({
             // keep the plotly default event behavior
             return true;
         }
-      });
-      Session.set("singleCurveIsolated", false);
-      $("#placeholder")[0].on("plotly_legenddoubleclick", function (data) {
-        const dataset = matsCurveUtils.getGraphResult().data;
-        const curveToShowHide = data.curveNumber;
-        let { label } = dataset[curveToShowHide];
-        const plotType = Session.get("graphPlotType");
-        let hideAllOtherCurves;
-        if (dataset[curveToShowHide].visible === "legendonly") {
-          // we want to show this hidden curve and hide all others
-          hideAllOtherCurves = true;
-          Session.set("singleCurveIsolated", label);
-          // update this curve
-          switch (plotType) {
-            case matsTypes.PlotTypes.timeSeries:
-            case matsTypes.PlotTypes.profile:
-            case matsTypes.PlotTypes.dieoff:
-            case matsTypes.PlotTypes.threshold:
-            case matsTypes.PlotTypes.validtime:
-            case matsTypes.PlotTypes.gridscale:
-            case matsTypes.PlotTypes.dailyModelCycle:
-            case matsTypes.PlotTypes.yearToYear:
-            case matsTypes.PlotTypes.reliability:
-            case matsTypes.PlotTypes.roc:
-            case matsTypes.PlotTypes.performanceDiagram:
-            case matsTypes.PlotTypes.gridscaleProb:
-              document.getElementById(`${label}-curve-show-hide`).click();
-              break;
-            case matsTypes.PlotTypes.simpleScatter:
-            case matsTypes.PlotTypes.scatter2d:
-              document.getElementById(`${label}-curve-show-hide-points`).click();
-              break;
-            case matsTypes.PlotTypes.histogram:
-            case matsTypes.PlotTypes.ensembleHistogram:
-              document.getElementById(`${label}-curve-show-hide-bars`).click();
-              break;
-            case matsTypes.PlotTypes.map:
-            case matsTypes.PlotTypes.contour:
-            case matsTypes.PlotTypes.contourDiff:
-            default:
-              // keep the plotly default event behavior
-              return true;
-          }
-        } else if (Session.get("singleCurveIsolated") === label) {
-          // we previously showed this curve and hid the others, so undo that now.
-          hideAllOtherCurves = false;
-          Session.set("singleCurveIsolated", false);
-        } else {
-          // we have a new curve to show at the expense of others, but it's already visible
-          hideAllOtherCurves = true;
-          Session.set("singleCurveIsolated", label);
-        }
-        // update the other curves
-        for (let i = 0; i < dataset.length; i += 1) {
-          if (
-            Object.values(matsTypes.ReservedWords).indexOf(dataset[i].label) >= 0 ||
-            dataset[i].label.includes(matsTypes.ReservedWords.noSkill) ||
-            (plotType === matsTypes.PlotTypes.map &&
-              Object.values(matsTypes.ReservedWords).indexOf(dataset[i].reserved) >=
-                0) ||
+      } else if (Session.get("singleCurveIsolated") === label) {
+        // we previously showed this curve and hid the others, so undo that now.
+        hideAllOtherCurves = false;
+        Session.set("singleCurveIsolated", false);
+      } else {
+        // we have a new curve to show at the expense of others, but it's already visible
+        hideAllOtherCurves = true;
+        Session.set("singleCurveIsolated", label);
+      }
+      // update the other curves
+      for (let i = 0; i < returnDataset.length; i += 1) {
+        if (
+          !(
+            Object.values(matsTypes.ReservedWords).indexOf(returnDataset[i].label) >=
+              0 ||
+            returnDataset[i].label.includes(matsTypes.ReservedWords.noSkill) ||
+            (thisPlotType === matsTypes.PlotTypes.map &&
+              Object.values(matsTypes.ReservedWords).indexOf(
+                returnDataset[i].reserved
+              ) >= 0) ||
             i === curveToShowHide
-          ) {
-            continue; // don't process the zero or max curves
-          }
-          label = dataset[i].label;
-          switch (plotType) {
+          )
+        ) {
+          label = returnDataset[i].label;
+          switch (thisPlotType) {
             case matsTypes.PlotTypes.simpleScatter:
             case matsTypes.PlotTypes.scatter2d:
               if (
-                (hideAllOtherCurves && dataset[i].visible !== "legendonly") ||
-                (!hideAllOtherCurves && dataset[i].visible === "legendonly")
+                (hideAllOtherCurves && returnDataset[i].visible !== "legendonly") ||
+                (!hideAllOtherCurves && returnDataset[i].visible === "legendonly")
               ) {
                 document.getElementById(`${label}-curve-show-hide-points`).click();
               }
@@ -291,8 +293,8 @@ Template.graph.helpers({
             case matsTypes.PlotTypes.histogram:
             case matsTypes.PlotTypes.ensembleHistogram:
               if (
-                (hideAllOtherCurves && dataset[i].visible !== "legendonly") ||
-                (!hideAllOtherCurves && dataset[i].visible === "legendonly")
+                (hideAllOtherCurves && returnDataset[i].visible !== "legendonly") ||
+                (!hideAllOtherCurves && returnDataset[i].visible === "legendonly")
               ) {
                 document.getElementById(`${label}-curve-show-hide-bars`).click();
               }
@@ -311,28 +313,29 @@ Template.graph.helpers({
             case matsTypes.PlotTypes.gridscaleProb:
             default:
               if (
-                (hideAllOtherCurves && dataset[i].visible !== "legendonly") ||
-                (!hideAllOtherCurves && dataset[i].visible === "legendonly")
+                (hideAllOtherCurves && returnDataset[i].visible !== "legendonly") ||
+                (!hideAllOtherCurves && returnDataset[i].visible === "legendonly")
               ) {
                 document.getElementById(`${label}-curve-show-hide`).click();
               }
               break;
           }
         }
-        return false;
-      });
+      }
+      return false;
+    });
 
-      // append annotations and other setup
-      let localAnnotation;
-      for (let i = 0; i < dataset.length; i += 1) {
-        if (
+    // append annotations and other setup
+    let localAnnotation;
+    for (let i = 0; i < dataset.length; i += 1) {
+      if (
+        !(
           Object.values(matsTypes.ReservedWords).indexOf(dataset[i].label) >= 0 ||
           dataset[i].label.includes(matsTypes.ReservedWords.noSkill) ||
           (plotType === matsTypes.PlotTypes.map &&
             Object.values(matsTypes.ReservedWords).indexOf(dataset[i].reserved) >= 0)
-        ) {
-          continue; // don't process the zero or max curves
-        }
+        )
+      ) {
         switch (plotType) {
           case matsTypes.PlotTypes.timeSeries:
           case matsTypes.PlotTypes.profile:
@@ -370,16 +373,12 @@ Template.graph.helpers({
         }
 
         // store the existing axes. Reset global arrays from previous plots.
-        xAxes = [];
-        yAxes = [];
         Session.set("axesCollapsed", false);
-        Object.keys($("#placeholder")[0].layout).filter(function (k) {
-          if (k.startsWith("xaxis")) {
-            xAxes.push(k);
-          }
-          if (k.startsWith("yaxis")) {
-            yAxes.push(k);
-          }
+        xAxes = Object.keys($("#placeholder")[0].layout).filter(function (k) {
+          return k.startsWith("xaxis");
+        });
+        yAxes = Object.keys($("#placeholder")[0].layout).filter(function (k) {
+          return k.startsWith("yaxis");
         });
 
         // enable colorpickers on curve styles modal
@@ -388,40 +387,40 @@ Template.graph.helpers({
           $(`#${l}`).colorpicker({ format: "rgb", align: "left" });
         }
       }
-
-      if (
-        plotType === matsTypes.PlotTypes.contour ||
-        plotType === matsTypes.PlotTypes.contourDiff
-      ) {
-        // enable colorpicker on colorbar modal, if applicable. Otherwise hide the selection field.
-        const lastCurveIndex = dataset.length - 1;
-        if (
-          dataset[lastCurveIndex].label === matsTypes.ReservedWords.contourSigLabel &&
-          dataset[lastCurveIndex].x.length > 0
-        ) {
-          $("#sigDotColor").colorpicker({ format: "rgb", align: "left" });
-          $("#sigDotContainer")[0].style.display = "block";
-        } else {
-          $("#sigDotContainer")[0].style.display = "none";
-        }
-
-        // make default colorbar selection actually match what is on the graph
-        const colorscale = JSON.stringify(dataset[0].colorscale);
-        const elem = document.getElementById("colormapSelect");
-        elem.value = colorscale;
-      }
-
-      // enable colorpickers on axes modal, if applicable.
-      if (plotType !== matsTypes.PlotTypes.map) {
-        $("#gridColor").colorpicker({ format: "rgb", align: "left" });
-        $("#legendFontColor").colorpicker({ format: "rgb", align: "left" });
-      }
-
-      // store annotation
-      annotation = $("#curves")[0].innerHTML;
-      matsCurveUtils.hideSpinner();
     }
-    return graphFunction;
+
+    if (
+      plotType === matsTypes.PlotTypes.contour ||
+      plotType === matsTypes.PlotTypes.contourDiff
+    ) {
+      // enable colorpicker on colorbar modal, if applicable. Otherwise hide the selection field.
+      const lastCurveIndex = dataset.length - 1;
+      if (
+        dataset[lastCurveIndex].label === matsTypes.ReservedWords.contourSigLabel &&
+        dataset[lastCurveIndex].x.length > 0
+      ) {
+        $("#sigDotColor").colorpicker({ format: "rgb", align: "left" });
+        $("#sigDotContainer")[0].style.display = "block";
+      } else {
+        $("#sigDotContainer")[0].style.display = "none";
+      }
+
+      // make default colorbar selection actually match what is on the graph
+      const colorscale = JSON.stringify(dataset[0].colorscale);
+      const elem = document.getElementById("colormapSelect");
+      elem.value = colorscale;
+    }
+
+    // enable colorpickers on axes modal, if applicable.
+    if (plotType !== matsTypes.PlotTypes.map) {
+      $("#gridColor").colorpicker({ format: "rgb", align: "left" });
+      $("#legendFontColor").colorpicker({ format: "rgb", align: "left" });
+    }
+
+    // store annotation
+    annotation = $("#curves")[0].innerHTML;
+    matsCurveUtils.hideSpinner();
+    return null;
   },
   Title() {
     if (
@@ -441,7 +440,7 @@ Template.graph.helpers({
   curves() {
     return Session.get("Curves");
   },
-  indValLabel(curveLabel) {
+  indValLabel() {
     const plotType = Session.get("plotType");
     if (plotType !== undefined) {
       let fieldName;
@@ -483,7 +482,7 @@ Template.graph.helpers({
       if (dataset !== undefined && dataset !== null) {
         for (let i = 0; i < dataset.length; i += 1) {
           if (dataset[i].label === curveLabel) {
-            var indValsArray;
+            let indValsArray;
             switch (plotType) {
               // line plots only
               case matsTypes.PlotTypes.profile:
@@ -536,7 +535,7 @@ Template.graph.helpers({
     return [];
   },
   plotName() {
-    return Session.get("PlotParams") === [] ||
+    return Session.get("PlotParams").length === 0 ||
       Session.get("PlotParams").plotAction === undefined ||
       Session.get("plotType") === matsTypes.PlotTypes.map
       ? ""
@@ -670,23 +669,19 @@ Template.graph.helpers({
     // create an array like [0,1,2...] for each unique xaxis
     // by getting the xaxis keys - filtering them to be unique, then using an Array.apply on the resulting array
     // to assign a number to each value
-    const xaxis = {};
     if (
-      $("#placeholder")[0] === undefined ||
-      $("#placeholder")[0].layout === undefined ||
-      plotType === matsTypes.PlotTypes.map
+      !(
+        $("#placeholder")[0] === undefined ||
+        $("#placeholder")[0].layout === undefined ||
+        plotType === matsTypes.PlotTypes.map
+      )
     ) {
-      return;
+      const xAxis = Object.keys($("#placeholder")[0].layout).filter(function (k) {
+        return k.startsWith("xaxis");
+      });
+      return [...Array(xAxis.length).keys()];
     }
-    Object.keys($("#placeholder")[0].layout).filter(function (k) {
-      if (k.startsWith("xaxis")) {
-        xaxis[k] = $("#placeholder")[0].layout[k];
-      }
-    });
-    return Array.apply(null, { length: Object.keys(xaxis).length }).map(
-      Number.call,
-      Number
-    );
+    return undefined;
   },
   yAxes() {
     Session.get("PlotResultsUpDated");
@@ -694,23 +689,19 @@ Template.graph.helpers({
     // create an array like [0,1,2...] for each unique yaxis
     // by getting the yaxis keys - filtering them to be unique, then using an Array.apply on the resulting array
     // to assign a number to each value
-    const yaxis = {};
     if (
-      $("#placeholder")[0] === undefined ||
-      $("#placeholder")[0].layout === undefined ||
-      plotType === matsTypes.PlotTypes.map
+      !(
+        $("#placeholder")[0] === undefined ||
+        $("#placeholder")[0].layout === undefined ||
+        plotType === matsTypes.PlotTypes.map
+      )
     ) {
-      return;
+      const yAxis = Object.keys($("#placeholder")[0].layout).filter(function (k) {
+        return k.startsWith("yaxis");
+      });
+      return [...Array(yAxis.length).keys()];
     }
-    Object.keys($("#placeholder")[0].layout).filter(function (k) {
-      if (k.startsWith("yaxis")) {
-        yaxis[k] = $("#placeholder")[0].layout[k];
-      }
-    });
-    return Array.apply(null, { length: Object.keys(yaxis).length }).map(
-      Number.call,
-      Number
-    );
+    return undefined;
   },
   isProfile() {
     return Session.get("plotType") === matsTypes.PlotTypes.profile;
@@ -1156,7 +1147,7 @@ Template.graph.helpers({
   },
   xAxisMin(xAxis) {
     Session.get("PlotResultsUpDated");
-    const plotType = Session.get("plotType");
+    Session.get("plotType");
     const options = Session.get("options");
     const xAxisKey = `xaxis${xAxis === 0 ? "" : xAxis + 1}`;
     if (
@@ -1175,7 +1166,7 @@ Template.graph.helpers({
   },
   xAxisMax(xAxis) {
     Session.get("PlotResultsUpDated");
-    const plotType = Session.get("plotType");
+    Session.get("plotType");
     const options = Session.get("options");
     const xAxisKey = `xaxis${xAxis === 0 ? "" : xAxis + 1}`;
     if (
@@ -1368,7 +1359,7 @@ Template.graph.events({
     return false;
   },
 
-  "click .header"(event) {
+  "click .header"() {
     document.getElementById("graph-control").style.display = "block";
     // document.getElementById('showAdministration').style.display = 'block';
     document.getElementById("navbar").style.display = "block";
@@ -1463,7 +1454,6 @@ Template.graph.events({
   },
   "click .plotButton"() {
     matsGraphUtils.setGraphView(Session.get("plotType"));
-    const graphView = document.getElementById("graphView");
     Session.set("graphViewMode", matsTypes.PlotView.graph);
     matsCurveUtils.hideSpinner();
   },
@@ -1489,6 +1479,7 @@ Template.graph.events({
       return false;
     }
     $("#sendModal").modal("show");
+    return null;
   },
   "click .basis"() {
     window.open(
@@ -1537,121 +1528,129 @@ Template.graph.events({
     const dataset = matsCurveUtils.getGraphResult().data;
     const options = Session.get("options");
     const reservedWords = Object.values(matsTypes.ReservedWords);
+    const nCurves = dataset.filter(function (k) {
+      return (
+        reservedWords.indexOf(k.label) === -1 &&
+        !k.label.includes(matsTypes.ReservedWords.noSkill)
+      );
+    }).length;
     let newAxisLabel;
     let min = Number.MAX_VALUE; // placeholder xmin
     let max = -1 * Number.MAX_VALUE; // placeholder xmax
     let didx;
     let xidx;
     let yidx;
-    if (!Session.get("axesCollapsed")) {
-      // combine all x- or y-axes into the same axis
-      for (didx = 0; didx < dataset.length; didx += 1) {
-        if (
-          reservedWords.indexOf(dataset[didx].label) === -1 &&
-          !dataset[didx].label.includes(matsTypes.ReservedWords.noSkill)
-        ) {
-          if (plotType === matsTypes.PlotTypes.profile) {
-            updates[didx] = {
-              xaxis: "x1",
-            };
-          } else if (plotType === matsTypes.PlotTypes.simpleScatter) {
-            updates[didx] = {
-              xaxis: "x1",
-              yaxis: "y1",
-            };
-          } else {
-            updates[didx] = {
-              yaxis: "y1",
-            };
+    if (nCurves > 1) {
+      if (!Session.get("axesCollapsed")) {
+        // combine all x- or y-axes into the same axis
+        for (didx = 0; didx < dataset.length; didx += 1) {
+          if (
+            reservedWords.indexOf(dataset[didx].label) === -1 &&
+            !dataset[didx].label.includes(matsTypes.ReservedWords.noSkill)
+          ) {
+            if (plotType === matsTypes.PlotTypes.profile) {
+              updates[didx] = {
+                xaxis: "x1",
+              };
+            } else if (plotType === matsTypes.PlotTypes.simpleScatter) {
+              updates[didx] = {
+                xaxis: "x1",
+                yaxis: "y1",
+              };
+            } else {
+              updates[didx] = {
+                yaxis: "y1",
+              };
+            }
+            Plotly.restyle($("#placeholder")[0], updates[didx], didx);
           }
-          Plotly.restyle($("#placeholder")[0], updates[didx], didx);
         }
-      }
-      if (
-        plotType === matsTypes.PlotTypes.profile ||
-        plotType === matsTypes.PlotTypes.simpleScatter
-      ) {
-        newAxisLabel = "";
-        for (xidx = 0; xidx < xAxes.length; xidx += 1) {
-          newAxisLabel =
-            newAxisLabel === ""
-              ? options[xAxes[xidx]].title
-              : `${newAxisLabel}/${options[xAxes[xidx]].title}`;
-          min =
-            options[xAxes[xidx]].range[0] < min ? options[xAxes[xidx]].range[0] : min;
-          max =
-            options[xAxes[xidx]].range[1] > max ? options[xAxes[xidx]].range[1] : max;
-        }
-        newOpts["xaxis.title"] = newAxisLabel;
-        newOpts["xaxis.range[0]"] = min - (max - min) * 0.125;
-        newOpts["xaxis.range[1]"] = max + (max - min) * 0.125;
-      }
-      if (plotType !== matsTypes.PlotTypes.profile) {
-        newAxisLabel = "";
-        for (yidx = 0; yidx < yAxes.length; yidx += 1) {
-          newAxisLabel =
-            newAxisLabel === ""
-              ? options[yAxes[yidx]].title
-              : `${newAxisLabel}/${options[yAxes[yidx]].title}`;
-          min =
-            options[yAxes[yidx]].range[0] < min ? options[yAxes[yidx]].range[0] : min;
-          max =
-            options[yAxes[yidx]].range[1] > max ? options[yAxes[yidx]].range[1] : max;
-        }
-        newOpts["yaxis.title"] = newAxisLabel;
-        newOpts["yaxis.range[0]"] = min - (max - min) * 0.125;
-        newOpts["yaxis.range[1]"] = max + (max - min) * 0.125;
-      }
-      Plotly.relayout($("#placeholder")[0], newOpts);
-      Session.set("axesCollapsed", true);
-    } else {
-      // separate x- or y-axes back out
-      const lineTypeResetOpts = Session.get("lineTypeResetOpts");
-      for (didx = 0; didx < dataset.length; didx += 1) {
         if (
-          reservedWords.indexOf(dataset[didx].label) === -1 &&
-          !dataset[didx].label.includes(matsTypes.ReservedWords.noSkill)
+          plotType === matsTypes.PlotTypes.profile ||
+          plotType === matsTypes.PlotTypes.simpleScatter
         ) {
-          if (plotType === matsTypes.PlotTypes.profile) {
-            updates[didx] = {
-              xaxis: lineTypeResetOpts[didx].xaxis,
-            };
-          } else if (plotType === matsTypes.PlotTypes.simpleScatter) {
-            updates[didx] = {
-              xaxis: lineTypeResetOpts[didx].xaxis,
-              yaxis: lineTypeResetOpts[didx].yaxis,
-            };
-          } else {
-            updates[didx] = {
-              yaxis: lineTypeResetOpts[didx].yaxis,
-            };
+          newAxisLabel = "";
+          for (xidx = 0; xidx < xAxes.length; xidx += 1) {
+            newAxisLabel =
+              newAxisLabel === ""
+                ? options[xAxes[xidx]].title
+                : `${newAxisLabel}/${options[xAxes[xidx]].title}`;
+            min =
+              options[xAxes[xidx]].range[0] < min ? options[xAxes[xidx]].range[0] : min;
+            max =
+              options[xAxes[xidx]].range[1] > max ? options[xAxes[xidx]].range[1] : max;
           }
-          Plotly.restyle($("#placeholder")[0], updates[didx], didx);
+          newOpts["xaxis.title"] = newAxisLabel;
+          newOpts["xaxis.range[0]"] = min - (max - min) * 0.125;
+          newOpts["xaxis.range[1]"] = max + (max - min) * 0.125;
         }
-      }
-      if (
-        plotType === matsTypes.PlotTypes.profile ||
-        plotType === matsTypes.PlotTypes.simpleScatter
-      ) {
-        for (xidx = 0; xidx < xAxes.length; xidx += 1) {
-          newOpts[`${xAxes[xidx]}.title`] = options[xAxes[xidx]].title;
-          newOpts[`${xAxes[xidx]}.range[0]`] = options[xAxes[xidx]].range[0];
-          newOpts[`${xAxes[xidx]}.range[1]`] = options[xAxes[xidx]].range[1];
+        if (plotType !== matsTypes.PlotTypes.profile) {
+          newAxisLabel = "";
+          for (yidx = 0; yidx < yAxes.length; yidx += 1) {
+            newAxisLabel =
+              newAxisLabel === ""
+                ? options[yAxes[yidx]].title
+                : `${newAxisLabel}/${options[yAxes[yidx]].title}`;
+            min =
+              options[yAxes[yidx]].range[0] < min ? options[yAxes[yidx]].range[0] : min;
+            max =
+              options[yAxes[yidx]].range[1] > max ? options[yAxes[yidx]].range[1] : max;
+          }
+          newOpts["yaxis.title"] = newAxisLabel;
+          newOpts["yaxis.range[0]"] = min - (max - min) * 0.125;
+          newOpts["yaxis.range[1]"] = max + (max - min) * 0.125;
         }
-      }
-      if (plotType !== matsTypes.PlotTypes.profile) {
-        for (yidx = 0; yidx < yAxes.length; yidx += 1) {
-          newOpts[`${yAxes[yidx]}.title`] = options[yAxes[yidx]].title;
-          newOpts[`${yAxes[yidx]}.range[0]`] = options[yAxes[yidx]].range[0];
-          newOpts[`${yAxes[yidx]}.range[1]`] = options[yAxes[yidx]].range[1];
+        Plotly.relayout($("#placeholder")[0], newOpts);
+        Session.set("axesCollapsed", true);
+      } else {
+        // separate x- or y-axes back out
+        const lineTypeResetOpts = Session.get("lineTypeResetOpts");
+        for (didx = 0; didx < dataset.length; didx += 1) {
+          if (
+            reservedWords.indexOf(dataset[didx].label) === -1 &&
+            !dataset[didx].label.includes(matsTypes.ReservedWords.noSkill)
+          ) {
+            if (plotType === matsTypes.PlotTypes.profile) {
+              updates[didx] = {
+                xaxis: lineTypeResetOpts[didx].xaxis,
+              };
+            } else if (plotType === matsTypes.PlotTypes.simpleScatter) {
+              updates[didx] = {
+                xaxis: lineTypeResetOpts[didx].xaxis,
+                yaxis: lineTypeResetOpts[didx].yaxis,
+              };
+            } else {
+              updates[didx] = {
+                yaxis: lineTypeResetOpts[didx].yaxis,
+              };
+            }
+            Plotly.restyle($("#placeholder")[0], updates[didx], didx);
+          }
         }
+        if (
+          plotType === matsTypes.PlotTypes.profile ||
+          plotType === matsTypes.PlotTypes.simpleScatter
+        ) {
+          for (xidx = 0; xidx < xAxes.length; xidx += 1) {
+            newOpts[`${xAxes[xidx]}.title`] = options[xAxes[xidx]].title;
+            [newOpts[`${xAxes[xidx]}.range[0]`]] = options[xAxes[xidx]].range;
+            [, newOpts[`${xAxes[xidx]}.range[1]`]] = options[xAxes[xidx]].range;
+          }
+        }
+        if (plotType !== matsTypes.PlotTypes.profile) {
+          for (yidx = 0; yidx < yAxes.length; yidx += 1) {
+            newOpts[`${yAxes[yidx]}.title`] = options[yAxes[yidx]].title;
+            [newOpts[`${yAxes[yidx]}.range[0]`]] = options[yAxes[yidx]].range;
+            [, newOpts[`${yAxes[yidx]}.range[1]`]] = options[yAxes[yidx]].range;
+          }
+        }
+        Plotly.relayout($("#placeholder")[0], newOpts);
+        Session.set("axesCollapsed", false);
       }
-      Plotly.relayout($("#placeholder")[0], newOpts);
-      Session.set("axesCollapsed", false);
-    }
-    // save the updates in case we want to pass them to a pop-out window.
-    for (let uidx = 0; uidx < updates.length; uidx += 1) {
-      saveUpdatesToJSON(updates[uidx], uidx);
+      // save the updates in case we want to pass them to a pop-out window.
+      for (let uidx = 0; uidx < updates.length; uidx += 1) {
+        saveUpdatesToJSON(updates[uidx], uidx);
+      }
     }
   },
   "click .axisXSpace"(event) {
@@ -1711,8 +1710,13 @@ Template.graph.events({
             : newX[newX.length - 1];
 
         // store previous and new x values to craft consistent tick marks
-        tickvals = _.union(tickvals, newX);
-        ticktext = _.union(ticktext, origX[didx]);
+        if (
+          reservedWords.indexOf(dataset[didx].label) === -1 &&
+          !dataset[didx].label.includes(matsTypes.ReservedWords.noSkill)
+        ) {
+          tickvals = _.union(tickvals, newX);
+          ticktext = _.union(ticktext, origX[didx]);
+        }
       }
       Session.set("thresholdEquiX", true);
       Session.set("origX", origX);
@@ -1737,8 +1741,13 @@ Template.graph.events({
             : origX[didx][origX[didx].length - 1];
 
         // store previous and new x values to craft consistent tick marks
-        tickvals = _.union(tickvals, origX[didx]);
-        ticktext = _.union(ticktext, origX[didx]);
+        if (
+          reservedWords.indexOf(dataset[didx].label) === -1 &&
+          !dataset[didx].label.includes(matsTypes.ReservedWords.noSkill)
+        ) {
+          tickvals = _.union(tickvals, origX[didx]);
+          ticktext = _.union(ticktext, origX[didx]);
+        }
 
         // remove new formatting that would have been passed to pop-out windows
         delete curveOpsUpdate[didx].x;
@@ -1856,7 +1865,7 @@ Template.graph.events({
     }
   },
   "click .reCacheButton"() {
-    const plotType = Session.get("plotType");
+    Session.get("plotType");
     Session.set("expireKey", true);
     document.getElementById("plot-curves").click();
   },
@@ -2047,8 +2056,8 @@ Template.graph.events({
     const myDataIdx = dataset.findIndex(function (d) {
       return d.curveId === label;
     });
+    let update;
     if (dataset[myDataIdx].x.length > 0) {
-      var update;
       if (plotType !== matsTypes.PlotTypes.profile) {
         update = {
           "error_y.visible": dataset[myDataIdx].error_y.visible,
@@ -2084,8 +2093,8 @@ Template.graph.events({
     const myDataIdx = dataset.findIndex(function (d) {
       return d.curveId === label;
     });
+    let update;
     if (dataset[myDataIdx].x.length > 0) {
-      var update;
       if (dataset[myDataIdx].visible === "legendonly") {
         $(`#${id}`)[0].value = "hide bars";
         update = {
@@ -2127,8 +2136,9 @@ Template.graph.events({
     const myDataIdx = dataset.findIndex(function (d) {
       return d.curveId === label;
     });
+    let update;
     if (dataset[myDataIdx].x.length > 0) {
-      var update = {
+      update = {
         showlegend: !dataset[myDataIdx].showlegend,
       };
       if (update.showlegend) {
@@ -2198,6 +2208,13 @@ Template.graph.events({
     const options = Session.get("options");
     Session.set("thresholdEquiX", false);
     Session.set("axesCollapsed", false);
+    let lastCurveIndex;
+    let lineTypeResetOpts;
+    let thisAnnotation;
+    let annotationCurrentlyHidden;
+    let localAnnotation;
+    let barTypeResetOpts;
+    let mapResetOpts;
     if (curveOpsUpdate.length === 0) {
       // we just need a relayout
       Plotly.relayout($("#placeholder")[0], options);
@@ -2210,7 +2227,7 @@ Template.graph.events({
           // restyle for contour plots
           Plotly.restyle($("#placeholder")[0], Session.get("colorbarResetOpts"), 0);
           // deal with sig dots that some of the difference contours have
-          const lastCurveIndex = dataset.length - 1;
+          lastCurveIndex = dataset.length - 1;
           if (
             dataset[lastCurveIndex].label === matsTypes.ReservedWords.contourSigLabel &&
             dataset[lastCurveIndex].x.length > 0
@@ -2233,7 +2250,7 @@ Template.graph.events({
         case matsTypes.PlotTypes.gridscaleProb:
         case matsTypes.PlotTypes.simpleScatter:
           // restyle for line plots
-          const lineTypeResetOpts = Session.get("lineTypeResetOpts");
+          lineTypeResetOpts = Session.get("lineTypeResetOpts");
           for (let lidx = 0; lidx < lineTypeResetOpts.length; lidx += 1) {
             Plotly.restyle($("#placeholder")[0], lineTypeResetOpts[lidx], lidx);
             if (
@@ -2261,9 +2278,9 @@ Template.graph.events({
                 case matsTypes.PlotTypes.yearToYear:
                 case matsTypes.PlotTypes.scatter2d:
                 case matsTypes.PlotTypes.map:
-                  const thisAnnotation = $(`#legendContainer${dataset[lidx].label}`);
-                  const annotationCurrentlyHidden = thisAnnotation[0].hidden;
-                  const localAnnotation = `<div id='${dataset[lidx].label}-annotation' style='color:${lineTypeResetOpts[lidx]["line.color"]}'>${dataset[lidx].annotation} </div>`;
+                  thisAnnotation = $(`#legendContainer${dataset[lidx].label}`);
+                  annotationCurrentlyHidden = thisAnnotation[0].hidden;
+                  localAnnotation = `<div id='${dataset[lidx].label}-annotation' style='color:${lineTypeResetOpts[lidx]["line.color"]}'>${dataset[lidx].annotation} </div>`;
                   thisAnnotation.empty().append(localAnnotation);
                   thisAnnotation[0].hidden = annotationCurrentlyHidden;
                   thisAnnotation[0].style.display = thisAnnotation[0].hidden
@@ -2289,7 +2306,7 @@ Template.graph.events({
         case matsTypes.PlotTypes.histogram:
         case matsTypes.PlotTypes.ensembleHistogram:
           // restyle for bar plots
-          const barTypeResetOpts = Session.get("barTypeResetOpts");
+          barTypeResetOpts = Session.get("barTypeResetOpts");
           for (let bidx = 0; bidx < barTypeResetOpts.length; bidx += 1) {
             Plotly.restyle($("#placeholder")[0], barTypeResetOpts[bidx], bidx);
             if (
@@ -2303,7 +2320,7 @@ Template.graph.events({
           break;
         case matsTypes.PlotTypes.map:
           // restyle for maps
-          const mapResetOpts = Session.get("mapResetOpts");
+          mapResetOpts = Session.get("mapResetOpts");
           for (let midx = 0; midx < mapResetOpts.length; midx += 1) {
             Plotly.restyle($("#placeholder")[0], mapResetOpts[midx], midx);
           }
@@ -2421,7 +2438,7 @@ Template.graph.events({
           if (elem.value !== undefined && elem.value !== "") {
             if (!axesCollapsed || index === 0) {
               // if we've collapsed the axes we only want to process the first one
-              if (!isNaN(elem.value)) {
+              if (!matsMethods.isThisANaN(elem.value)) {
                 newOpts[
                   `xaxis${index === 0 ? "" : index + 1}.tickformat`
                 ] = `.${elem.value.toString()}r`;
@@ -2538,7 +2555,7 @@ Template.graph.events({
           if (elem.value !== undefined && elem.value !== "") {
             if (!axesCollapsed || index === 0) {
               // if we've collapsed the axes we only want to process the first one
-              if (!isNaN(elem.value)) {
+              if (!matsMethods.isThisANaN(elem.value)) {
                 newOpts[
                   `yaxis${index === 0 ? "" : index + 1}.tickformat`
                 ] = `.${elem.value.toString()}r`;
@@ -2549,6 +2566,7 @@ Template.graph.events({
     }
     $("[id$=legendFontSize]")
       .get()
+      // eslint-disable-next-line no-unused-vars
       .forEach(function (elem, index) {
         if (elem.value !== undefined && elem.value !== "") {
           newOpts["legend.font.size"] = elem.value;
@@ -2556,6 +2574,7 @@ Template.graph.events({
       });
     $("[id$=legendFontColor]")
       .get()
+      // eslint-disable-next-line no-unused-vars
       .forEach(function (elem, index) {
         if (elem.value !== undefined && elem.value !== "") {
           newOpts["legend.font.color"] = elem.value;
@@ -2589,6 +2608,9 @@ Template.graph.events({
     event.preventDefault();
     const plotType = Session.get("plotType");
     const dataset = matsCurveUtils.getGraphResult().data;
+    let thisAnnotation;
+    let annotationCurrentlyHidden;
+    let localAnnotation;
     const updates = [];
     // get input line style change
     $("[id$=LineColor]")
@@ -2628,9 +2650,9 @@ Template.graph.events({
               }
 
               // update the annotation with the new color
-              const thisAnnotation = $(`#legendContainer${dataset[index].curveId}`);
-              const annotationCurrentlyHidden = thisAnnotation[0].hidden;
-              const localAnnotation = `<div id='${dataset[index].curveId}-annotation' style='color:${elem.value}'>${dataset[index].annotation} </div>`;
+              thisAnnotation = $(`#legendContainer${dataset[index].curveId}`);
+              annotationCurrentlyHidden = thisAnnotation[0].hidden;
+              localAnnotation = `<div id='${dataset[index].curveId}-annotation' style='color:${elem.value}'>${dataset[index].annotation} </div>`;
               thisAnnotation.empty().append(localAnnotation);
               thisAnnotation[0].hidden = annotationCurrentlyHidden;
               thisAnnotation[0].style.display = thisAnnotation[0].hidden
@@ -2685,13 +2707,13 @@ Template.graph.events({
           updates[index]["marker.size"] = elem.value;
         }
       });
-    for (var uidx = 0; uidx < updates.length; uidx += 1) {
+    for (let uidx = 0; uidx < updates.length; uidx += 1) {
       // apply new settings
       Plotly.restyle($("#placeholder")[0], updates[uidx], uidx);
     }
 
     // save the updates in case we want to pass them to a pop-out window.
-    for (uidx = 0; uidx < updates.length; uidx += 1) {
+    for (let uidx = 0; uidx < updates.length; uidx += 1) {
       saveUpdatesToJSON(updates[uidx], uidx);
     }
     $("#lineTypeModal").modal("hide");
@@ -2714,13 +2736,13 @@ Template.graph.events({
           updates[index].name = elem.value;
         }
       });
-    for (var uidx = 0; uidx < updates.length; uidx += 1) {
+    for (let uidx = 0; uidx < updates.length; uidx += 1) {
       // apply new settings
       Plotly.restyle($("#placeholder")[0], updates[uidx], uidx);
     }
 
     // save the updates in case we want to pass them to a pop-out window.
-    for (uidx = 0; uidx < updates.length; uidx += 1) {
+    for (let uidx = 0; uidx < updates.length; uidx += 1) {
       curveOpsUpdate[uidx] =
         curveOpsUpdate[uidx] === undefined ? {} : curveOpsUpdate[uidx];
       curveOpsUpdate[uidx].name = updates[uidx].name;
@@ -2776,6 +2798,7 @@ Template.graph.events({
     // get input check box data
     $("[id$=filterPoint]")
       .get()
+      // eslint-disable-next-line no-unused-vars
       .forEach(function (elem, index) {
         if (elem.checked === false) {
           const splitElemId = elem.id.split("---");
@@ -2783,12 +2806,12 @@ Template.graph.events({
           const indVal = splitElemId[1];
           for (let i = 0; i < dataset.length; i += 1) {
             if (dataset[i].label === curveLabel) {
-              var j;
-              var indArray;
+              let j;
+              let indArray;
               switch (plotType) {
                 // line plots only
                 case matsTypes.PlotTypes.profile:
-                  j = isNaN(Number(indVal))
+                  j = matsMethods.isThisANaN(Number(indVal))
                     ? dataset[i].y.indexOf(indVal)
                     : dataset[i].y.indexOf(Number(indVal));
                   break;
@@ -2800,7 +2823,7 @@ Template.graph.events({
                     dataset[i].binVals !== undefined
                       ? dataset[i].binVals
                       : dataset[i].threshold_all;
-                  j = isNaN(Number(indVal))
+                  j = matsMethods.isThisANaN(Number(indVal))
                     ? indArray.indexOf(indVal)
                     : indArray.indexOf(Number(indVal));
                   break;
@@ -2811,7 +2834,7 @@ Template.graph.events({
                 case matsTypes.PlotTypes.dailyModelCycle:
                 case matsTypes.PlotTypes.yearToYear:
                 case matsTypes.PlotTypes.gridscaleProb:
-                  j = isNaN(Number(indVal))
+                  j = matsMethods.isThisANaN(Number(indVal))
                     ? dataset[i].x.indexOf(indVal)
                     : dataset[i].x.indexOf(Number(indVal));
                   break;
@@ -2819,7 +2842,7 @@ Template.graph.events({
                   indArray = Session.get("thresholdEquiX")
                     ? dataset[i].origX
                     : dataset[i].x;
-                  j = isNaN(Number(indVal))
+                  j = matsMethods.isThisANaN(Number(indVal))
                     ? indArray.indexOf(indVal)
                     : indArray.indexOf(Number(indVal));
                   break;
@@ -2907,6 +2930,7 @@ Template.graph.events({
     // get new formatting
     $("input[id=colorbarLabel]")
       .get()
+      // eslint-disable-next-line no-unused-vars
       .forEach(function (elem, index) {
         if (elem.value !== undefined && elem.value !== "") {
           update["colorbar.title"] = elem.value;
@@ -2916,6 +2940,7 @@ Template.graph.events({
       });
     $("input[id=colorbarMin]")
       .get()
+      // eslint-disable-next-line no-unused-vars
       .forEach(function (elem, index) {
         if (elem.value !== undefined && elem.value !== "") {
           update.autocontour = false;
@@ -2924,6 +2949,7 @@ Template.graph.events({
       });
     $("input[id=colorbarMax]")
       .get()
+      // eslint-disable-next-line no-unused-vars
       .forEach(function (elem, index) {
         if (elem.value !== undefined && elem.value !== "") {
           update.autocontour = false;
@@ -2932,6 +2958,7 @@ Template.graph.events({
       });
     $("input[id=colorbarNumber]")
       .get()
+      // eslint-disable-next-line no-unused-vars
       .forEach(function (elem, index) {
         if (elem.value !== undefined && elem.value !== "") {
           update.autocontour = false;
@@ -2950,6 +2977,7 @@ Template.graph.events({
       });
     $("input[id=colorbarStep]")
       .get()
+      // eslint-disable-next-line no-unused-vars
       .forEach(function (elem, index) {
         if (elem.value !== undefined && elem.value !== "") {
           if (update.ncontours === undefined) {
@@ -2960,6 +2988,7 @@ Template.graph.events({
       });
     $("input[id=colorbarReverse]")
       .get()
+      // eslint-disable-next-line no-unused-vars
       .forEach(function (elem, index) {
         if (elem && elem.checked) {
           update.reversescale = true;
@@ -2969,6 +2998,7 @@ Template.graph.events({
       });
     $("input[id=nullSmooth]")
       .get()
+      // eslint-disable-next-line no-unused-vars
       .forEach(function (elem, index) {
         if (elem && elem.checked) {
           update.connectgaps = true;
@@ -2976,9 +3006,9 @@ Template.graph.events({
           update.connectgaps = false;
         }
       });
-    const elem = document.getElementById("colormapSelect");
-    if (elem !== undefined && elem.value !== undefined) {
-      update.colorscale = elem.value;
+    const thisElem = document.getElementById("colormapSelect");
+    if (thisElem !== undefined && thisElem.value !== undefined) {
+      update.colorscale = thisElem.value;
     }
     // apply new settings
     Plotly.restyle($("#placeholder")[0], update, 0);
@@ -2994,6 +3024,7 @@ Template.graph.events({
     ) {
       $("[id$=sigDotColor]")
         .get()
+        // eslint-disable-next-line no-unused-vars
         .forEach(function (elem, index) {
           update = {};
           if (elem.value !== undefined && elem.value !== "") {

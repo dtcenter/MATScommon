@@ -7,6 +7,9 @@ import {
   matsSelectUtils,
   matsParamUtils,
 } from "meteor/randyp:mats-common";
+import { Template } from "meteor/templating";
+
+/* global $ */
 
 Template.radioGroup.helpers({
   checkedByDefault(def) {
@@ -61,12 +64,12 @@ Template.radioGroup.events({
           for (
             let didx = 0;
             didx < radioGroupParam.dependentRadioGroups.length;
-            didx++
+            didx += 1
           ) {
             const dependentElemOptions = matsParamUtils
               .getInputElementForParamName(radioGroupParam.dependentRadioGroups[didx])
               .getElementsByTagName("input");
-            for (let deidx = 0; deidx < dependentElemOptions.length; deidx++) {
+            for (let deidx = 0; deidx < dependentElemOptions.length; deidx += 1) {
               if (dependentElemOptions[deidx].checked) {
                 $(`#${dependentElemOptions[deidx].id}`).trigger("change");
                 break;

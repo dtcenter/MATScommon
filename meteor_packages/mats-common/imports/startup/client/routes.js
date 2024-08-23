@@ -5,36 +5,38 @@
 import { Meteor } from "meteor/meteor";
 import { FlowRouter } from "meteor/ostrio:flow-router-extra";
 
+/* global Session */
+
 // localhost routes
 
 FlowRouter.route("/", {
   name: "main",
   action() {
     if (Meteor.settings.public.scorecard) {
-      this.render("ScorecardHome");
+      this.render("scorecardHome");
     } else if (Meteor.settings.public.custom) {
-      this.render("CustomHome");
+      this.render("customHome");
     } else if (
       Meteor.settings.public.undefinedRoles !== undefined &&
       Meteor.settings.public.undefinedRoles.length > 0
     ) {
-      this.render("Configure");
+      this.render("configure");
     } else {
-      this.render("Home");
+      this.render("home");
     }
   },
 });
 
 FlowRouter.route("/CSV/:graphFunction/:key/:matching/:appName", {
   name: "csv",
-  action(params) {
+  action() {
     window.location.href = FlowRouter.path;
   },
 });
 
 FlowRouter.route("/JSON/:graphFunction/:key/:matching/:appName", {
   name: "json",
-  action(params) {
+  action() {
     window.location.href = FlowRouter.path;
   },
 });
@@ -42,14 +44,14 @@ FlowRouter.route("/JSON/:graphFunction/:key/:matching/:appName", {
 FlowRouter.route("/preview/:graphFunction/:key/:matching/:appName", {
   name: "preview",
   action(params) {
-    this.render("GraphStandAlone", params);
+    this.render("graphStandAlone", params);
   },
 });
 
 FlowRouter.route("/scorecardDisplay/:userName/:name/:submitted/:processedAt", {
   name: "scorecardDisplay",
   action(params) {
-    this.render("ScorecardDisplay", params);
+    this.render("scorecardDisplay", params);
   },
 });
 
@@ -58,9 +60,9 @@ FlowRouter.route("/scorecardTimeseries/:key", {
   action(params) {
     Session.set("scorecardTimeseriesKey", params.key);
     if (Meteor.settings.public.custom) {
-      this.render("CustomHome");
+      this.render("customHome");
     } else {
-      this.render("Home");
+      this.render("home");
     }
   },
 });
@@ -70,16 +72,16 @@ FlowRouter.route(`${Meteor.settings.public.proxy_prefix_path}/`, {
   name: "main",
   action() {
     if (Meteor.settings.public.scorecard) {
-      this.render("ScorecardHome");
+      this.render("scorecardHome");
     } else if (Meteor.settings.public.custom) {
-      this.render("CustomHome");
+      this.render("customHome");
     } else if (
       Meteor.settings.public.undefinedRoles !== undefined &&
       Meteor.settings.public.undefinedRoles.length > 0
     ) {
-      this.render("Configure");
+      this.render("configure");
     } else {
-      this.render("Home");
+      this.render("home");
     }
   },
 });
@@ -88,7 +90,7 @@ FlowRouter.route(
   `${Meteor.settings.public.proxy_prefix_path}/CSV/:graphFunction/:key/:matching/:appName`,
   {
     name: "csv",
-    action(params) {
+    action() {
       window.location.href = FlowRouter.path;
     },
   }
@@ -98,7 +100,7 @@ FlowRouter.route(
   `${Meteor.settings.public.proxy_prefix_path}/JSON/:graphFunction/:key/:matching/:appName`,
   {
     name: "json",
-    action(params) {
+    action() {
       window.location.href = FlowRouter.path;
     },
   }
@@ -109,7 +111,7 @@ FlowRouter.route(
   {
     name: "preview",
     action(params) {
-      this.render("GraphStandAlone", params);
+      this.render("graphStandAlone", params);
     },
   }
 );
@@ -119,7 +121,7 @@ FlowRouter.route(
   {
     name: "scorecardDisplay",
     action(params) {
-      this.render("ScorecardDisplay", params);
+      this.render("scorecardDisplay", params);
     },
   }
 );
@@ -131,9 +133,9 @@ FlowRouter.route(
     action(params) {
       Session.set("scorecardTimeseriesKey", params.key);
       if (Meteor.settings.public.custom) {
-        this.render("CustomHome");
+        this.render("customHome");
       } else {
-        this.render("Home");
+        this.render("home");
       }
     },
   }
@@ -144,16 +146,16 @@ FlowRouter.route(`${Meteor.settings.public.proxy_prefix_path}/:appName`, {
   name: "main",
   action() {
     if (Meteor.settings.public.scorecard) {
-      this.render("ScorecardHome");
+      this.render("scorecardHome");
     } else if (Meteor.settings.public.custom) {
-      this.render("CustomHome");
+      this.render("customHome");
     } else if (
       Meteor.settings.public.undefinedRoles !== undefined &&
       Meteor.settings.public.undefinedRoles.length > 0
     ) {
-      this.render("Configure");
+      this.render("configure");
     } else {
-      this.render("Home");
+      this.render("home");
     }
   },
 });
@@ -162,7 +164,7 @@ FlowRouter.route(
   `${Meteor.settings.public.proxy_prefix_path}/*/CSV/:graphFunction/:key/:matching/:appName`,
   {
     name: "csv",
-    action(params) {
+    action() {
       window.location.href = FlowRouter.path;
     },
   }
@@ -172,7 +174,7 @@ FlowRouter.route(
   `${Meteor.settings.public.proxy_prefix_path}/*/JSON/:graphFunction/:key/:matching/:appName`,
   {
     name: "json",
-    action(params) {
+    action() {
       window.location.href = FlowRouter.path;
     },
   }
@@ -183,7 +185,7 @@ FlowRouter.route(
   {
     name: "preview",
     action(params) {
-      this.render("GraphStandAlone", params);
+      this.render("graphStandAlone", params);
     },
   }
 );
@@ -193,7 +195,7 @@ FlowRouter.route(
   {
     name: "scorecardDisplay",
     action(params) {
-      this.render("ScorecardDisplay", params);
+      this.render("scorecardDisplay", params);
     },
   }
 );
@@ -205,9 +207,9 @@ FlowRouter.route(
     action(params) {
       Session.set("scorecardTimeseriesKey", params.key);
       if (Meteor.settings.public.custom) {
-        this.render("CustomHome");
+        this.render("customHome");
       } else {
-        this.render("Home");
+        this.render("home");
       }
     },
   }
@@ -223,7 +225,6 @@ FlowRouter.route(`${Meteor.settings.public.proxy_prefix_path}/*/`, {
 
 FlowRouter.route("/*", {
   action() {
-    console.log("route: " + " not found");
     this.render("notFound");
   },
 });

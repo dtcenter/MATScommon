@@ -9,6 +9,8 @@ import { Mongo } from "meteor/mongo";
 import { Meteor } from "meteor/meteor";
 import { curveParamsByApp } from "./mats-curve-params";
 
+/* eslint-disable no-console */
+
 const params = curveParamsByApp[Meteor.settings.public.app];
 if (!params) {
   console.log(
@@ -20,7 +22,7 @@ if (!params) {
 }
 const paramCollections = {};
 let currParam;
-for (let i = 0; i < params.length; i++) {
+for (let i = 0; i < params.length; i += 1) {
   currParam = params[i];
   paramCollections[currParam] = new Mongo.Collection(currParam);
 }
@@ -86,6 +88,7 @@ const explicitCollections = {
   Scorecard,
 };
 
+// eslint-disable-next-line no-undef
 export default matsCollections = {
   ...paramCollections,
   ...explicitCollections,

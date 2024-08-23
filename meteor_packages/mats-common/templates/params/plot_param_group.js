@@ -3,6 +3,9 @@
  */
 
 import { matsCollections, plotParamHandler } from "meteor/randyp:mats-common";
+import { Template } from "meteor/templating";
+
+/* eslint-disable no-console */
 
 Template.plotParamGroup.helpers({
   PlotParams(num) {

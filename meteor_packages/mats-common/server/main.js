@@ -4,7 +4,11 @@
 
 import "../imports/startup/server/index.js";
 import "../imports/startup/both/index.js";
+import { Meteor } from "meteor/meteor";
 import { ServiceConfiguration } from "meteor/service-configuration";
+
+/* global Npm */
+/* eslint-disable no-console */
 
 const setGoogleCred = function () {
   /*
@@ -27,7 +31,9 @@ const setGoogleCred = function () {
         cSecret = cred.secret;
         _id = cred._id;
       }
-    } catch (ignore) {}
+    } catch (ignore) {
+      console.log("Can't find credentials");
+    }
     switch (hostname.split(".")[0]) {
       case "mats":
         gid =

@@ -3,6 +3,10 @@
  */
 
 import { matsCurveUtils, matsParamUtils, matsTypes } from "meteor/randyp:mats-common";
+import { Template } from "meteor/templating";
+
+/* global Session */
+/* eslint-disable no-console */
 
 Template.textInput.helpers({
   defaultTextInput() {
@@ -30,6 +34,7 @@ Template.textInput.helpers({
     } else {
       return this.default;
     }
+    return null;
   },
 });
 

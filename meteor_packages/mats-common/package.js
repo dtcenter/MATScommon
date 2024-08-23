@@ -2,9 +2,11 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
+/* global Package, Npm */
+
 Package.describe({
   name: "randyp:mats-common",
-  version: "5.2.3",
+  version: "5.3.1",
   // Brief, one-line summary of the package.
   summary: "MATScommon files provides common functionality for MATS/METexpress apps",
   // URL to the Git repository containing the source code for this package.
@@ -15,25 +17,25 @@ Package.describe({
 });
 
 Package.onUse(function (api) {
-  api.versionsFrom("2.15");
+  api.versionsFrom("2.16");
   Npm.depends({
-    "@fortawesome/fontawesome-free": "6.5.1",
+    "@fortawesome/fontawesome-free": "6.5.2",
     "fs-extra": "11.2.0",
-    "@babel/runtime": "7.24.0",
-    "meteor-node-stubs": "1.2.7",
+    "@babel/runtime": "7.24.7",
+    "meteor-node-stubs": "1.2.9",
     url: "0.11.3",
     jquery: "3.7.1",
-    "datatables.net-bs": "1.13.11",
-    "datatables.net-dt": "1.13.11",
-    "jquery-ui": "1.13.2",
-    "csv-stringify": "6.4.6",
+    "datatables.net-bs": "2.0.8",
+    "datatables.net-dt": "2.0.8",
+    "jquery-ui": "1.13.3",
+    "csv-stringify": "6.5.0",
     "node-file-cache": "1.0.2",
     "python-shell": "5.0.0",
-    couchbase: "4.2.10",
-    "simpl-schema": "3.4.6",
+    couchbase: "4.3.1",
     "vanillajs-datepicker": "1.3.4",
     daterangepicker: "3.1.0",
     "lighten-darken-color": "1.0.0",
+    nodemailer: "6.9.14",
   });
   api.mainModule("server/main.js", "server");
   api.mainModule("client/main.js", "client");
@@ -67,6 +69,8 @@ Package.onUse(function (api) {
   api.use("momentjs:moment");
   api.use("pcel:mysql");
   api.use("reactive-var");
+  api.use("jkuester:http");
+  api.use("aldeed:simple-schema");
 
   // modules
   api.export("matsCollections", ["client", "server"]);
@@ -76,7 +80,6 @@ Package.onUse(function (api) {
   api.export("matsSelectUtils", ["client"]);
   api.export("matsGraphUtils", ["client"]);
   api.export("matsParamUtils", ["client", "server"]);
-  api.export("matsMathUtils", ["client", "server"]);
   api.export("matsPlotUtils", ["client", "server"]);
   api.export("matsDataUtils", ["server"]);
   api.export("matsDataQueryUtils", ["server"]);
@@ -149,7 +152,6 @@ Package.onUse(function (api) {
   api.addFiles("lib/regression.js", ["client", "server"]);
   api.addFiles("lib/param_util.js", ["client", "server"]);
   api.addFiles("lib/plot_util.js", ["client", "server"]);
-  api.addFiles("lib/math_util.js", ["client", "server"]);
 
   // templates
   api.addFiles("templates/Home.html", "client");
@@ -188,8 +190,6 @@ Package.onUse(function (api) {
   api.addFiles("templates/graph/graph.html", "client");
   api.addFiles("templates/graph/graph.js", "client");
 
-  api.addFiles("templates/graph/displayFunctions/graph_plotly.js", "client");
-
   api.addFiles("templates/graphStandAlone/graphStandAlone.html", "client");
   api.addFiles("templates/graphStandAlone/graphStandAlone.js", "client");
 
@@ -219,8 +219,8 @@ Package.onUse(function (api) {
   api.addFiles("templates/plotType/plot_type.html", "client");
   api.addFiles("templates/plotType/plot_type.js", "client");
 
-  api.addFiles("templates/QCParamGroup/QC_param_group.html", "client");
-  api.addFiles("templates/QCParamGroup/QC_param_group.js", "client");
+  api.addFiles("templates/qcParams/qcParamGroup.html", "client");
+  api.addFiles("templates/qcParams/qcParamGroup.js", "client");
 
   api.addFiles("templates/scorecard/scorecardStatusPage.html", "client");
   api.addFiles("templates/scorecard/scorecardStatusPage.js", "client");
@@ -345,52 +345,4 @@ Package.onUse(function (api) {
     "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_stations_for_region.sql",
     "server"
   );
-});
-
-Package.onTest(function (api) {
-  api.use("ecmascript");
-  api.use("meteortesting:mocha");
-  api.use("randyp:mats-common");
-  api.addFiles("imports/startup/api/version-info-tests.js");
-
-  // try duplicating the runtime deps
-  Npm.depends({
-    "fs-extra": "7.0.0",
-    "@babel/runtime": "7.10.4",
-    "meteor-node-stubs": "0.4.1",
-    url: "0.11.0",
-    "jquery-ui": "1.12.1",
-    "csv-stringify": "4.3.1",
-    "node-file-cache": "1.0.2",
-    "python-shell": "3.0.1",
-    couchbase: "3.2.3",
-    "simpl-schema": "1.12.0",
-  });
-  api.use("natestrauser:select2", "client");
-  api.use("mdg:validated-method");
-  api.use("ecmascript");
-  api.use("modules");
-  api.imply("ecmascript");
-  api.use(["templating"], "client");
-  api.use("accounts-ui", "client");
-  api.use("accounts-password", "client");
-  api.use("service-configuration", "server");
-  api.use("yasinuslu:json-view", "client");
-  api.use("mdg:validated-method");
-  api.use("session");
-  api.imply("session");
-  api.use("twbs:bootstrap");
-  api.use("msavin:mongol");
-  api.use("differential:event-hooks");
-  api.use("risul:bootstrap-colorpicker");
-  api.use("logging");
-  api.use("reload");
-  api.use("random");
-  api.use("ejson");
-  api.use("spacebars");
-  api.use("check");
-  api.use("ostrio:flow-router-extra");
-  api.use("meteorhacks:picker");
-  api.use("momentjs:moment");
-  api.use("pcel:mysql");
 });

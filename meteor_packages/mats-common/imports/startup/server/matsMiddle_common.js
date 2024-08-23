@@ -169,7 +169,7 @@ class MatsMiddleCommon {
       const varValM = modelSingleFve.stations[station];
 
       if (varValO && varValM) {
-        ctc.N0 += 1;
+        ctc.n0 += 1;
         let sub = `${fve};`;
         if (varValO < threshold && varValM < threshold) {
           ctc.hit += 1;
@@ -217,7 +217,7 @@ class MatsMiddleCommon {
         const obsSum = varValO;
         const absSum = Math.abs(varValO - varValM);
 
-        sums.N0 += 1;
+        sums.n0 += 1;
         sums.square_diff_sum += squareDiffSum;
         sums.N_sum += nSum;
         sums.obs_model_diff_sum += obsModelDiffSum;

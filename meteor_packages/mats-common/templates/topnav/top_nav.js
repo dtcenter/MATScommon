@@ -1,7 +1,12 @@
 /*
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
+import { Meteor } from "meteor/meteor";
+import { matsCollections, matsTypes } from "meteor/randyp:mats-common";
+import { Template } from "meteor/templating";
 import matsMethods from "../../imports/startup/api/matsMethods";
+
+/* global Session,, $, setError */
 
 const getRunEnvironment = function () {
   if (Session.get("deployment_environment") === undefined) {
@@ -16,26 +21,31 @@ const getRunEnvironment = function () {
   } else {
     return Session.get("deployment_environment");
   }
+  return null;
 };
 
 Template.topNav.helpers({
   transparentGif() {
+    const urlComponents = document.location.href.split("/");
     const baseURL =
       Meteor.settings.public.home === undefined
-        ? `https://${document.location.href.split("/")[2]}`
+        ? `https://${urlComponents[2]}`
         : Meteor.settings.public.home;
+    const appName =
+      matsCollections.Settings === undefined ||
+      matsCollections.Settings.findOne({}) === undefined ||
+      matsCollections.Settings.findOne({}).appName === undefined
+        ? `${urlComponents[urlComponents.length - 1]}`
+        : matsCollections.Settings.findOne({}).appName;
     if (baseURL.includes("localhost")) {
       return `${baseURL}/packages/randyp_mats-common/public/img/noaa_transparent.png`;
     }
-    return `${baseURL}/${
-      matsCollections.Settings.findOne({}).appName
-    }/packages/randyp_mats-common/public/img/noaa_transparent.png`;
+    return `${baseURL}/${appName}/packages/randyp_mats-common/public/img/noaa_transparent.png`;
   },
   emailText() {
     switch (getRunEnvironment()) {
       case "metexpress":
         return "METexpress";
-        break;
       default:
         if (
           matsCollections.Settings.findOne({}) !== undefined &&
@@ -51,7 +61,6 @@ Template.topNav.helpers({
     switch (getRunEnvironment()) {
       case "metexpress":
         return "National Weather Service";
-        break;
       default:
         return "Global Systems Laboratory";
     }
@@ -60,7 +69,6 @@ Template.topNav.helpers({
     switch (getRunEnvironment()) {
       case "metexpress":
         return "https://www.weather.gov/";
-        break;
       default:
         return "http://gsl.noaa.gov/";
     }
@@ -69,7 +77,6 @@ Template.topNav.helpers({
     switch (getRunEnvironment()) {
       case "metexpress":
         return "METexpress";
-        break;
       default:
         if (
           matsCollections.Settings.findOne({}) !== undefined &&
@@ -95,7 +102,6 @@ Template.topNav.helpers({
     switch (getRunEnvironment()) {
       case "metexpress":
         return "https://github.com/dtcenter/METexpress/issues";
-        break;
       default:
         if (
           matsCollections.Settings.findOne({}) !== undefined &&

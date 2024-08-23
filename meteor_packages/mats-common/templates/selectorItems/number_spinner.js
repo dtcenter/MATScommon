@@ -3,6 +3,7 @@
  */
 
 import { matsParamUtils, matsCollections } from "meteor/randyp:mats-common";
+import { Template } from "meteor/templating";
 
 const refresh = function (name) {
   if (matsCollections[name] !== undefined) {
@@ -13,14 +14,12 @@ const refresh = function (name) {
     const { optionsMap } = paramData;
     const { superiorNames } = paramData;
     const ref = `${paramData.name}-${paramData.type}`;
-    const refValueDisplay = `controlButton-${paramData.name}-value`;
-    const dispElem = document.getElementById(refValueDisplay);
     const elem = document.getElementById(ref);
     let dispDefault = paramData.default;
     let { min } = paramData;
     let step = paramData.step === undefined ? "any" : paramData.step;
     let { max } = paramData;
-    for (let si = 0; si < superiorNames.length; si++) {
+    for (let si = 0; si < superiorNames.length; si += 1) {
       const superiorElement = matsParamUtils.getInputElementForParamName(
         superiorNames[si]
       );
@@ -28,15 +27,14 @@ const refresh = function (name) {
         superiorElement.options[superiorElement.selectedIndex] &&
         superiorElement.options[superiorElement.selectedIndex].text;
       const options = optionsMap[selectedSuperiorValue];
-      if (options === undefined) {
-        continue;
+      if (options) {
+        min = Number(options.min) < Number(min) ? options.min : min;
+        max = Number(options.max) > Number(max) ? options.max : max;
+        if (step !== "any" && options.step !== "any") {
+          step = Number(options.step) < Number(step) ? options.step : step;
+        }
+        dispDefault = options.default !== undefined ? options.default : dispDefault;
       }
-      min = Number(options.min) < Number(min) ? options.min : min;
-      max = Number(options.max) > Number(max) ? options.max : max;
-      if (step !== "any" && options.step !== "any") {
-        step = Number(options.step) < Number(step) ? options.step : step;
-      }
-      dispDefault = options.default !== undefined ? options.default : dispDefault;
     }
     elem.setAttribute("min", min);
     elem.setAttribute("max", max);
@@ -71,7 +69,7 @@ Template.numberSpinner.onRendered(function () {
     // this is a "brother" (hidden) scatterplot param. There is no need to refresh it or add event listeners etc.
     return;
   }
-  elem.addEventListener("refresh", function (e) {
+  elem.addEventListener("refresh", function () {
     refresh(this.name);
   });
 });

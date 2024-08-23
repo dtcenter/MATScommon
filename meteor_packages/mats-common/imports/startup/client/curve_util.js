@@ -5,74 +5,70 @@
 import {
   matsTypes,
   matsCollections,
+  matsMethods,
   matsPlotUtils,
   matsParamUtils,
-  Info,
-  matsMethods,
 } from "meteor/randyp:mats-common";
 
-/*
- global dataset variable - container for graph dataset.
- This (plotResult) is very important. It isn't "var" because it needs to be a meteor global scope.
- The page is rendered whe the graph page comes up, but the data from the data processing callback
- in plotList.js or curveList.js may not have set the global variable
- PlotResult.
- */
+/* global $, _, Session, setError, setInfo */
+/* eslint-disable no-console */
 
 // var plotResultData = null; -- this was the global variable for the text output data, but now it is set elsewhere
 let graphResult = null; // this is the global variable for the data on the graph
-let plot;
 
-const sizeof = function (_1) {
-  const _2 = [_1];
-  let _3 = 0;
-  for (let _4 = 0; _4 < _2.length; _4++) {
-    switch (typeof _2[_4]) {
+const sizeof = function (val1) {
+  const val2 = [val1];
+  let val24Keys = [];
+  let val3 = 0;
+  for (let val4 = 0; val4 < val2.length; val4 += 1) {
+    switch (typeof val2[val4]) {
       case "boolean":
-        _3 += 4;
+        val3 += 4;
         break;
       case "number":
-        _3 += 8;
+        val3 += 8;
         break;
       case "string":
-        _3 += 2 * _2[_4].length;
+        val3 += 2 * val2[val4].length;
         break;
       case "object":
-        if (Object.prototype.toString.call(_2[_4]) !== "[object Array]") {
-          for (var _5 in _2[_4]) {
-            _3 += 2 * _5.length;
+        val24Keys = Object.keys(val2[val4]);
+        if (Object.prototype.toString.call(val2[val4]) !== "[object Array]") {
+          for (let v24idx = 0; v24idx < val24Keys.length; v24idx += 1) {
+            const val5 = val2[val4][val24Keys[v24idx]];
+            val3 += 2 * val5.length;
           }
         }
-        for (var _5 in _2[_4]) {
-          let _6 = false;
-          for (let _7 = 0; _7 < _2.length; _7++) {
-            if (_2[_7] === _2[_4][_5]) {
-              _6 = true;
+        for (let v24idx = 0; v24idx < val24Keys.length; v24idx += 1) {
+          const val5 = val2[val4][val24Keys[v24idx]];
+          let val6 = false;
+          for (let val7 = 0; val7 < val2.length; val7 += 1) {
+            if (val2[val7] === val2[val4][val5]) {
+              val6 = true;
               break;
             }
           }
-          if (!_6) {
-            _2.push(_2[_4][_5]);
+          if (!val6) {
+            val2.push(val2[val4][val5]);
           }
         }
+        break;
+      default:
+        val3 = 0;
     }
   }
-  return _3;
+  return val3;
 };
 
-// Retrieves the globally stored plotResultData for the text output and other things.
-// Re-sets the plotResultData if the requested page range has changed, or if it has not been previously set.
-const getPlotResultData = function () {
-  const pageIndex = Session.get("pageIndex");
-  const newPageIndex = Session.get("newPageIndex");
-  if (
-    plotResultData === undefined ||
-    plotResultData === null ||
-    Session.get("textRefreshNeeded") === true
-  ) {
-    setPlotResultData();
+const showSpinner = function () {
+  if (document.getElementById("spinner")) {
+    document.getElementById("spinner").style.display = "block";
   }
-  return plotResultData;
+};
+const hideSpinner = function () {
+  if (document.getElementById("spinner")) {
+    document.getElementById("spinner").style.display = "none";
+  }
 };
 
 // Sets the global plotResultData variable for the text output to the requested range from the Results data stored in mongo, via a MatsMethod.
@@ -94,15 +90,18 @@ const setPlotResultData = function () {
           Session.set("textRefreshNeeded", false);
         }
         if (!result) {
+          // eslint-disable-next-line no-undef
           plotResultData = undefined;
           Session.set("textRefreshNeeded", false);
           hideSpinner();
           return;
         }
+        // eslint-disable-next-line no-undef
         plotResultData = result;
         Session.set("pageIndex", result.dsiRealPageIndex);
         Session.set("pageTextDirection", result.dsiTextDirection);
         Session.set("textLoaded", new Date());
+        // eslint-disable-next-line no-undef
         console.log("size of plotResultData is ", sizeof(plotResultData));
         Session.set("textRefreshNeeded", false);
         hideSpinner();
@@ -111,8 +110,25 @@ const setPlotResultData = function () {
   }
 };
 
+// Retrieves the globally stored plotResultData for the text output and other things.
+// Re-sets the plotResultData if the requested page range has changed, or if it has not been previously set.
+const getPlotResultData = function () {
+  if (
+    // eslint-disable-next-line no-undef
+    plotResultData === undefined ||
+    // eslint-disable-next-line no-undef
+    plotResultData === null ||
+    Session.get("textRefreshNeeded") === true
+  ) {
+    setPlotResultData();
+  }
+  // eslint-disable-next-line no-undef
+  return plotResultData;
+};
+
 // resets the global plotResultData variable for the text output to null
 const resetPlotResultData = function () {
+  // eslint-disable-next-line no-undef
   plotResultData = null;
   Session.set("textLoaded", new Date());
 };
@@ -145,6 +161,7 @@ const setCurveParamDisplayText = function (paramName, newText) {
         paramName,
         newText,
       },
+      // eslint-disable-next-line no-unused-vars
       function (error, res) {
         if (error !== undefined) {
           setError(error);
@@ -162,13 +179,6 @@ const getUsedLabels = function () {
     return [];
   }
   return Session.get("UsedLabels");
-};
-
-const getNextCurveLabel = function () {
-  if (Session.get("NextCurveLabel") === undefined) {
-    setNextCurveLabel();
-  }
-  return Session.get("NextCurveLabel");
 };
 
 // determine the next curve Label and set it in the session
@@ -194,7 +204,7 @@ const setNextCurveLabel = function () {
   if (lastUsedLabel !== undefined) {
     const minusPrefix = lastUsedLabel.replace(labelPrefix, "");
     const tryNum = parseInt(minusPrefix, 10);
-    if (!isNaN(tryNum)) {
+    if (!matsMethods.isThisANaN(tryNum)) {
       lastLabelNumber = tryNum;
     }
   }
@@ -202,10 +212,23 @@ const setNextCurveLabel = function () {
   let nextCurveLabel = labelPrefix + newLabelNumber;
   // the label might be one from a removed curve so the next ones might be used
   while (_.indexOf(usedLabels, nextCurveLabel) !== -1) {
-    newLabelNumber++;
+    newLabelNumber += 1;
     nextCurveLabel = labelPrefix + newLabelNumber;
   }
   Session.set("NextCurveLabel", nextCurveLabel);
+  return null;
+};
+
+const getNextCurveLabel = function () {
+  if (Session.get("NextCurveLabel") === undefined) {
+    setNextCurveLabel();
+  }
+  return Session.get("NextCurveLabel");
+};
+
+// function for random color
+const randomRGB = function () {
+  return Math.floor(Math.random() * 226);
 };
 
 // determine the next curve color and set it in the session
@@ -213,27 +236,19 @@ const setNextCurveLabel = function () {
 const setNextCurveColor = function () {
   const usedColors = Session.get("UsedColors");
   const { colors } = matsCollections.ColorScheme.findOne({}, { fields: { colors: 1 } });
-  let lastUsedIndex = -1;
-  if (usedColors !== undefined) {
-    lastUsedIndex = _.indexOf(colors, _.last(usedColors));
-  }
+  const lastUsedIndex = usedColors
+    ? colors.indexOf(usedColors[usedColors.length - 1])
+    : -1;
   let nextCurveColor;
   if (lastUsedIndex !== undefined && lastUsedIndex !== -1) {
     if (lastUsedIndex < colors.length - 1) {
-      let newIndex = lastUsedIndex + 1;
-      nextCurveColor = colors[newIndex];
-      // the color might be one from a removed curve so the next ones might be used
-      while (_.indexOf(usedColors, nextCurveColor) !== -1) {
-        newIndex++;
-        nextCurveColor = colors[newIndex];
-      }
+      nextCurveColor = colors[lastUsedIndex + 1];
     } else {
       // out of defaults
-      const rint = Math.round(0xffffff * Math.random());
-      nextCurveColor = `rgb(${rint >> 16},${(rint >> 8) & 255},${rint & 255})`;
+      nextCurveColor = `rgb(${randomRGB()},${randomRGB()},${randomRGB()})`;
     }
   } else {
-    nextCurveColor = colors[0];
+    [nextCurveColor] = colors;
   }
   Session.set("NextCurveColor", nextCurveColor);
 };
@@ -291,7 +306,7 @@ const clearAllUsed = function () {
 const setUsedColors = function () {
   const curves = Session.get("Curves");
   const usedColors = [];
-  for (let i = 0; i < curves.length; i++) {
+  for (let i = 0; i < curves.length; i += 1) {
     const { color } = curves[i];
     usedColors.push(color);
   }
@@ -303,7 +318,7 @@ const setUsedColors = function () {
 const setUsedLabels = function () {
   const curves = Session.get("Curves");
   const usedLabels = [];
-  for (let i = 0; i < curves.length; i++) {
+  for (let i = 0; i < curves.length; i += 1) {
     const { label } = curves[i];
     usedLabels.push(label);
   }
@@ -341,29 +356,14 @@ const addDiffs = function () {
     return false;
   }
 
+  let baseIndex = 0;
   switch (matsPlotUtils.getPlotFormat()) {
-    case matsTypes.PlotFormats.matching:
-      var baseIndex = 0; // This will probably not default to curve 0 in the future
-      for (var ci = 1; ci < curves.length; ci++) {
-        var newCurve = $.extend(true, {}, curves[ci]);
-        newCurve.label = `${curves[ci].label}-${curves[0].label}`;
-        newCurve.color = getNextCurveColor();
-        newCurve.diffFrom = [ci, baseIndex];
-        // do not create extra diff if it already exists
-        if (_.findWhere(curves, { label: newCurve.label }) === undefined) {
-          newCurves.push(newCurve);
-          Session.set("Curves", newCurves);
-          setUsedColorsAndLabels();
-        }
-      }
-      break;
     case matsTypes.PlotFormats.pairwise:
-      var baseIndex = 0; // This will probably not default to curve 0 in the future
-      for (var ci = 1; ci < curves.length; ci++) {
+      for (let ci = 1; ci < curves.length; ci += 1) {
         if (ci % 2 !== 0) {
           // only diff on odd curves against previous curve
           baseIndex = ci - 1;
-          var newCurve = $.extend(true, {}, curves[ci]);
+          const newCurve = $.extend(true, {}, curves[ci]);
           newCurve.label = `${curves[ci].label}-${curves[baseIndex].label}`;
           newCurve.color = getNextCurveColor();
           newCurve.diffFrom = [ci, baseIndex];
@@ -377,9 +377,23 @@ const addDiffs = function () {
       }
       break;
     case matsTypes.PlotFormats.absolute:
-      var baseIndex = 0; // This will probably not default to curve 0 in the future
-      for (var ci = 1; ci < curves.length; ci++) {
-        var newCurve = $.extend(true, {}, curves[ci]);
+      for (let ci = 1; ci < curves.length; ci += 1) {
+        const newCurve = $.extend(true, {}, curves[ci]);
+        newCurve.label = `${curves[ci].label}-${curves[0].label}`;
+        newCurve.color = getNextCurveColor();
+        newCurve.diffFrom = [ci, baseIndex];
+        // do not create extra diff if it already exists
+        if (_.findWhere(curves, { label: newCurve.label }) === undefined) {
+          newCurves.push(newCurve);
+          Session.set("Curves", newCurves);
+          setUsedColorsAndLabels();
+        }
+      }
+      break;
+    case matsTypes.PlotFormats.matching:
+    default:
+      for (let ci = 1; ci < curves.length; ci += 1) {
+        const newCurve = $.extend(true, {}, curves[ci]);
         newCurve.label = `${curves[ci].label}-${curves[0].label}`;
         newCurve.color = getNextCurveColor();
         newCurve.diffFrom = [ci, baseIndex];
@@ -392,6 +406,7 @@ const addDiffs = function () {
       }
       break;
   }
+  return null;
 };
 
 // remove difference curves
@@ -427,6 +442,7 @@ const checkDiffs = function () {
 const checkIfDisplayAllQCParams = function (faceOptions) {
   // we only want to allow people to filter sub-values for apps with scalar or precalculated stats.
   // the stats in the list below are representative of these apps.
+  const theseFaceOptions = faceOptions;
   const subValueFilterableStats = [
     "RMSE", // scalar stats
     "ACC", // anomalycor stats
@@ -447,17 +463,17 @@ const checkIfDisplayAllQCParams = function (faceOptions) {
         0 ||
         _.intersection(thisAppsStatistics.options, doNotFilterStats).length > 0)
     ) {
-      if (faceOptions.QCParamGroup === "block") {
+      if (theseFaceOptions.qcParamGroup === "block") {
         // not a map plot, display only the gaps selector
-        faceOptions.QCParamGroup = "none";
-        faceOptions["QCParamGroup-gaps"] = "block";
-      } else if (faceOptions["QCParamGroup-lite"] === "block") {
+        theseFaceOptions.qcParamGroup = "none";
+        theseFaceOptions["qcParamGroup-gaps"] = "block";
+      } else if (theseFaceOptions["qcParamGroup-lite"] === "block") {
         // map plot, display nothing
-        faceOptions["QCParamGroup-lite"] = "none";
+        theseFaceOptions["qcParamGroup-lite"] = "none";
       }
     }
   }
-  return faceOptions;
+  return theseFaceOptions;
 };
 
 const setSelectorVisibility = function (plotType, faceOptions, selectorsToReset) {
@@ -468,7 +484,7 @@ const setSelectorVisibility = function (plotType, faceOptions, selectorsToReset)
   ) {
     // reset selectors that may have been set to something invalid for the new plot type
     const resetSelectors = Object.keys(selectorsToReset);
-    for (let ridx = 0; ridx < resetSelectors.length; ridx++) {
+    for (let ridx = 0; ridx < resetSelectors.length; ridx += 1) {
       if (matsParamUtils.getParameterForName(resetSelectors[ridx]) !== undefined) {
         if (
           matsParamUtils.getParameterForName(resetSelectors[ridx]).type ===
@@ -489,7 +505,7 @@ const setSelectorVisibility = function (plotType, faceOptions, selectorsToReset)
     // show/hide selectors appropriate to this plot type
     let elem;
     const faceSelectors = Object.keys(faceOptions);
-    for (let fidx = 0; fidx < faceSelectors.length; fidx++) {
+    for (let fidx = 0; fidx < faceSelectors.length; fidx += 1) {
       elem = document.getElementById(`${faceSelectors[fidx]}-item`);
       if (
         elem &&
@@ -539,6 +555,9 @@ const showTimeseriesFace = function () {
     "bin-stride": "none",
     "bin-pivot": "none",
     "bin-bounds": "none",
+    "map-range-controls": "none",
+    "map-low-limit": "none",
+    "map-high-limit": "none",
     truth: "block",
     year: "block",
     storm: "block",
@@ -548,9 +567,9 @@ const showTimeseriesFace = function () {
     "bin-parameter": "none",
     significance: "none",
     plotFormat: "block",
-    QCParamGroup: "block",
-    "QCParamGroup-gaps": "none",
-    "QCParamGroup-lite": "none",
+    qcParamGroup: "block",
+    "qcParamGroup-gaps": "none",
+    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -591,6 +610,9 @@ const showProfileFace = function () {
     "bin-stride": "none",
     "bin-pivot": "none",
     "bin-bounds": "none",
+    "map-range-controls": "none",
+    "map-low-limit": "none",
+    "map-high-limit": "none",
     truth: "block",
     year: "block",
     storm: "block",
@@ -600,9 +622,9 @@ const showProfileFace = function () {
     "bin-parameter": "none",
     significance: "none",
     plotFormat: "block",
-    QCParamGroup: "block",
-    "QCParamGroup-gaps": "none",
-    "QCParamGroup-lite": "none",
+    qcParamGroup: "block",
+    "qcParamGroup-gaps": "none",
+    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -643,6 +665,9 @@ const showDieoffFace = function () {
     "bin-stride": "none",
     "bin-pivot": "none",
     "bin-bounds": "none",
+    "map-range-controls": "none",
+    "map-low-limit": "none",
+    "map-high-limit": "none",
     truth: "block",
     year: "block",
     storm: "block",
@@ -652,9 +677,9 @@ const showDieoffFace = function () {
     "bin-parameter": "none",
     significance: "none",
     plotFormat: "block",
-    QCParamGroup: "block",
-    "QCParamGroup-gaps": "none",
-    "QCParamGroup-lite": "none",
+    qcParamGroup: "block",
+    "qcParamGroup-gaps": "none",
+    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -695,6 +720,9 @@ const showThresholdFace = function () {
     "bin-stride": "none",
     "bin-pivot": "none",
     "bin-bounds": "none",
+    "map-range-controls": "none",
+    "map-low-limit": "none",
+    "map-high-limit": "none",
     truth: "block",
     year: "block",
     storm: "block",
@@ -704,9 +732,9 @@ const showThresholdFace = function () {
     "bin-parameter": "none",
     significance: "none",
     plotFormat: "block",
-    QCParamGroup: "block",
-    "QCParamGroup-gaps": "none",
-    "QCParamGroup-lite": "none",
+    qcParamGroup: "block",
+    "qcParamGroup-gaps": "none",
+    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -751,6 +779,9 @@ const showValidTimeFace = function () {
     "bin-stride": "none",
     "bin-pivot": "none",
     "bin-bounds": "none",
+    "map-range-controls": "none",
+    "map-low-limit": "none",
+    "map-high-limit": "none",
     truth: "block",
     year: "block",
     storm: "block",
@@ -760,9 +791,9 @@ const showValidTimeFace = function () {
     "bin-parameter": "none",
     significance: "none",
     plotFormat: "block",
-    QCParamGroup: "block",
-    "QCParamGroup-gaps": "none",
-    "QCParamGroup-lite": "none",
+    qcParamGroup: "block",
+    "qcParamGroup-gaps": "none",
+    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -803,6 +834,9 @@ const showGridScaleFace = function () {
     "bin-stride": "none",
     "bin-pivot": "none",
     "bin-bounds": "none",
+    "map-range-controls": "none",
+    "map-low-limit": "none",
+    "map-high-limit": "none",
     truth: "block",
     year: "block",
     storm: "block",
@@ -812,9 +846,9 @@ const showGridScaleFace = function () {
     "bin-parameter": "none",
     significance: "none",
     plotFormat: "block",
-    QCParamGroup: "block",
-    "QCParamGroup-gaps": "none",
-    "QCParamGroup-lite": "none",
+    qcParamGroup: "block",
+    "qcParamGroup-gaps": "none",
+    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -855,6 +889,9 @@ const showDailyModelCycleFace = function () {
     "bin-stride": "none",
     "bin-pivot": "none",
     "bin-bounds": "none",
+    "map-range-controls": "none",
+    "map-low-limit": "none",
+    "map-high-limit": "none",
     truth: "block",
     year: "block",
     storm: "block",
@@ -864,9 +901,9 @@ const showDailyModelCycleFace = function () {
     "bin-parameter": "none",
     significance: "none",
     plotFormat: "block",
-    QCParamGroup: "block",
-    "QCParamGroup-gaps": "none",
-    "QCParamGroup-lite": "none",
+    qcParamGroup: "block",
+    "qcParamGroup-gaps": "none",
+    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff for a specified UTC cycle init hour",
@@ -907,6 +944,9 @@ const showYearToYearFace = function () {
     "bin-stride": "none",
     "bin-pivot": "none",
     "bin-bounds": "none",
+    "map-range-controls": "none",
+    "map-low-limit": "none",
+    "map-high-limit": "none",
     truth: "block",
     year: "none",
     storm: "none",
@@ -916,9 +956,9 @@ const showYearToYearFace = function () {
     "bin-parameter": "none",
     significance: "none",
     plotFormat: "block",
-    QCParamGroup: "block",
-    "QCParamGroup-gaps": "none",
-    "QCParamGroup-lite": "none",
+    qcParamGroup: "block",
+    "qcParamGroup-gaps": "none",
+    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -959,6 +999,9 @@ const showReliabilityFace = function () {
     "bin-stride": "none",
     "bin-pivot": "none",
     "bin-bounds": "none",
+    "map-range-controls": "none",
+    "map-low-limit": "none",
+    "map-high-limit": "none",
     truth: "block",
     year: "block",
     storm: "block",
@@ -968,9 +1011,9 @@ const showReliabilityFace = function () {
     "bin-parameter": "none",
     significance: "none",
     plotFormat: "none",
-    QCParamGroup: "none",
-    "QCParamGroup-gaps": "none",
-    "QCParamGroup-lite": "none",
+    qcParamGroup: "none",
+    "qcParamGroup-gaps": "none",
+    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -1011,6 +1054,9 @@ const showROCFace = function () {
     "bin-stride": "none",
     "bin-pivot": "none",
     "bin-bounds": "none",
+    "map-range-controls": "none",
+    "map-low-limit": "none",
+    "map-high-limit": "none",
     truth: "block",
     year: "block",
     storm: "block",
@@ -1020,9 +1066,9 @@ const showROCFace = function () {
     "bin-parameter": "block",
     significance: "none",
     plotFormat: "none",
-    QCParamGroup: "none",
-    "QCParamGroup-gaps": "none",
-    "QCParamGroup-lite": "none",
+    qcParamGroup: "none",
+    "qcParamGroup-gaps": "none",
+    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -1065,6 +1111,9 @@ const showPerformanceDiagramFace = function () {
     "bin-stride": "none",
     "bin-pivot": "none",
     "bin-bounds": "none",
+    "map-range-controls": "none",
+    "map-low-limit": "none",
+    "map-high-limit": "none",
     truth: "block",
     year: "block",
     storm: "block",
@@ -1074,9 +1123,9 @@ const showPerformanceDiagramFace = function () {
     "bin-parameter": "block",
     significance: "none",
     plotFormat: "none",
-    QCParamGroup: "none",
-    "QCParamGroup-gaps": "none",
-    "QCParamGroup-lite": "none",
+    qcParamGroup: "none",
+    "qcParamGroup-gaps": "none",
+    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -1125,6 +1174,9 @@ const showGridScaleProbFace = function () {
     "bin-stride": "none",
     "bin-pivot": "none",
     "bin-bounds": "none",
+    "map-range-controls": "none",
+    "map-low-limit": "none",
+    "map-high-limit": "none",
     truth: "block",
     year: "block",
     storm: "block",
@@ -1134,9 +1186,9 @@ const showGridScaleProbFace = function () {
     "bin-parameter": "none",
     significance: "none",
     plotFormat: "block",
-    QCParamGroup: "none",
-    "QCParamGroup-gaps": "none",
-    "QCParamGroup-lite": "none",
+    qcParamGroup: "none",
+    "qcParamGroup-gaps": "none",
+    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -1178,6 +1230,9 @@ const showMapFace = function () {
     "bin-stride": "none",
     "bin-pivot": "none",
     "bin-bounds": "none",
+    "map-range-controls": "block",
+    "map-low-limit": "none",
+    "map-high-limit": "none",
     truth: "none",
     year: "block",
     storm: "block",
@@ -1187,9 +1242,9 @@ const showMapFace = function () {
     "bin-parameter": "none",
     significance: "none",
     plotFormat: "none",
-    QCParamGroup: "none",
-    "QCParamGroup-gaps": "none",
-    "QCParamGroup-lite": "block",
+    qcParamGroup: "none",
+    "qcParamGroup-gaps": "none",
+    "qcParamGroup-lite": "block",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -1239,6 +1294,9 @@ const showHistogramFace = function () {
     "bin-stride": "none",
     "bin-pivot": "none",
     "bin-bounds": "none",
+    "map-range-controls": "none",
+    "map-low-limit": "none",
+    "map-high-limit": "none",
     truth: "block",
     year: "block",
     storm: "block",
@@ -1248,9 +1306,9 @@ const showHistogramFace = function () {
     "bin-parameter": "none",
     significance: "none",
     plotFormat: "block",
-    QCParamGroup: "none",
-    "QCParamGroup-gaps": "none",
-    "QCParamGroup-lite": "none",
+    qcParamGroup: "none",
+    "qcParamGroup-gaps": "none",
+    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -1300,6 +1358,9 @@ const showEnsembleHistogramFace = function () {
     "bin-stride": "none",
     "bin-pivot": "none",
     "bin-bounds": "none",
+    "map-range-controls": "none",
+    "map-low-limit": "none",
+    "map-high-limit": "none",
     truth: "block",
     year: "block",
     storm: "block",
@@ -1309,9 +1370,9 @@ const showEnsembleHistogramFace = function () {
     "bin-parameter": "none",
     significance: "none",
     plotFormat: "block",
-    QCParamGroup: "none",
-    "QCParamGroup-gaps": "none",
-    "QCParamGroup-lite": "none",
+    qcParamGroup: "none",
+    "qcParamGroup-gaps": "none",
+    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -1354,6 +1415,9 @@ const showContourFace = function () {
     "bin-stride": "none",
     "bin-pivot": "none",
     "bin-bounds": "none",
+    "map-range-controls": "none",
+    "map-low-limit": "none",
+    "map-high-limit": "none",
     truth: "block",
     year: "block",
     storm: "block",
@@ -1363,9 +1427,9 @@ const showContourFace = function () {
     "bin-parameter": "none",
     significance: plotType === matsTypes.PlotTypes.contourDiff ? "block" : "none",
     plotFormat: "none",
-    QCParamGroup: "none",
-    "QCParamGroup-gaps": "none",
-    "QCParamGroup-lite": "none",
+    qcParamGroup: "none",
+    "qcParamGroup-gaps": "none",
+    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -1412,6 +1476,9 @@ const showSimpleScatterFace = function () {
     "bin-stride": "none",
     "bin-pivot": "none",
     "bin-bounds": "none",
+    "map-range-controls": "none",
+    "map-low-limit": "none",
+    "map-high-limit": "none",
     truth: "block",
     year: "block",
     storm: "block",
@@ -1421,9 +1488,9 @@ const showSimpleScatterFace = function () {
     "bin-parameter": "block",
     significance: "none",
     plotFormat: "none",
-    QCParamGroup: "none",
-    "QCParamGroup-gaps": "none",
-    "QCParamGroup-lite": "none",
+    qcParamGroup: "none",
+    "qcParamGroup-gaps": "none",
+    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -1473,6 +1540,9 @@ const showScatterFace = function () {
     "bin-stride": "none",
     "bin-pivot": "none",
     "bin-bounds": "none",
+    "map-range-controls": "none",
+    "map-low-limit": "none",
+    "map-high-limit": "none",
     truth: "block",
     year: "block",
     storm: "block",
@@ -1482,9 +1552,9 @@ const showScatterFace = function () {
     "bin-parameter": "none",
     significance: "none",
     plotFormat: "none",
-    QCParamGroup: "none",
-    "QCParamGroup-gaps": "none",
-    "QCParamGroup-lite": "none",
+    qcParamGroup: "none",
+    "qcParamGroup-gaps": "none",
+    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -1495,17 +1565,7 @@ const showScatterFace = function () {
   return selectorsToReset;
 };
 
-const showSpinner = function () {
-  if (document.getElementById("spinner")) {
-    document.getElementById("spinner").style.display = "block";
-  }
-};
-const hideSpinner = function () {
-  if (document.getElementById("spinner")) {
-    document.getElementById("spinner").style.display = "none";
-  }
-};
-
+// eslint-disable-next-line no-undef
 export default matsCurveUtils = {
   addDiffs,
   checkDiffs,
@@ -1525,6 +1585,7 @@ export default matsCurveUtils = {
   setGraphResult,
   setUsedColorsAndLabels,
   setUsedLabels,
+  setCurveParamDisplayText,
   showSpinner,
   showTimeseriesFace,
   showProfileFace,

@@ -8,6 +8,9 @@ import {
   matsParamUtils,
   matsSelectUtils,
 } from "meteor/randyp:mats-common";
+import { Template } from "meteor/templating";
+
+/* global Session, $, setError */
 
 /*
     Much of the work for select widgets happens in mats-common->imports->client->select_util.js. Especially the refresh
@@ -25,7 +28,7 @@ Template.select.onRendered(function () {
   try {
     // register refresh event for axis change to use to enforce a refresh
 
-    elem &&
+    if (elem) {
       elem.addEventListener("axisRefresh", function (event) {
         // Don't know why I have to do this, I expected the parameter data to be in the context....
         if (matsCollections[this.name] !== undefined) {
@@ -39,6 +42,7 @@ Template.select.onRendered(function () {
           matsSelectUtils.refreshPeer(event, paramData);
         }
       });
+    }
 
     // register refresh event for any superior to use to enforce a refresh of the options list
     if (ref.search("axis") === 1) {
@@ -46,10 +50,11 @@ Template.select.onRendered(function () {
       return;
     }
     elem.options = [];
-    elem &&
+    if (elem) {
       elem.addEventListener("refresh", function (event) {
         matsSelectUtils.refresh(event, this.name);
       });
+    }
   } catch (e) {
     e.message = `Error in select.js rendered: ${e.message}`;
     setError(e);
@@ -65,7 +70,6 @@ Template.select.onRendered(function () {
 
 Template.select.helpers({
   optionMaxLength() {
-    const sOptions = [];
     if (!this.options) {
       return 10;
     }
@@ -104,7 +108,7 @@ Template.select.helpers({
     if (this.optionsGroups) {
       // options have optionGroups
       this.optionsGroups.foreach(function (value) {
-        Soptions.concat(value);
+        sOptions.concat(value);
       });
     } else {
       sOptions = matsParamUtils.typeSort(this.options);
@@ -115,6 +119,7 @@ Template.select.helpers({
     if (this.multiple === true) {
       return "multiple";
     }
+    return null;
   },
   isMultiple() {
     return this.multiple === true;
@@ -127,7 +132,6 @@ Template.select.helpers({
 const setValue = function (pName) {
   const elem = matsParamUtils.getInputElementForParamName(pName);
   const { selectedOptions } = elem;
-  const { options } = elem;
 
   if (
     selectedOptions === undefined ||
@@ -160,7 +164,9 @@ Template.select.events({
     matsSelectUtils.refreshPeer(event, this);
     document.getElementById(`element-${this.name}`).style.display = "none"; // be sure to hide the element div
     const curveItem = document.getElementById(`curveItem-${Session.get("editMode")}`);
-    curveItem && curveItem.scrollIntoView(false);
+    if (curveItem) {
+      curveItem.scrollIntoView(false);
+    }
     setValue(paramName);
     if (this.multiple) {
       return true; // prevents the select 2 from closing on multiple selectors
@@ -170,7 +176,7 @@ Template.select.events({
     Session.set("lastUpdate", Date.now());
     return false;
   },
-  "click .doneSelecting"(event) {
+  "click .doneSelecting"() {
     Session.set("elementChanged", Date.now());
     const controlElem = matsParamUtils.getControlElementForParamName(this.name);
     $(`#${this.name}-${this.type}`).select2("close").trigger("change"); // apply the selection choices to the select2
@@ -190,22 +196,20 @@ Template.select.events({
     }
     return false;
   },
-  "click .selectAll"(event) {
+  "click .selectAll"() {
     const elem = matsParamUtils.getInputElementForParamName(this.name);
     const values = [];
-    for (let i = 0; i < elem.options.length; i++) {
+    for (let i = 0; i < elem.options.length; i += 1) {
       values.push(elem.options[i].text);
     }
     $(`#${this.name}-${this.type}`).select2().val(values).trigger("change");
     return false;
   },
-  "click .clearSelections"(event) {
-    const elem = matsParamUtils.getInputElementForParamName(this.name);
+  "click .clearSelections"() {
     $(`#${this.name}-${this.type}`).select2().val(null).trigger("change");
     return false;
   },
-  "click .doNotUse"(event) {
-    const elem = matsParamUtils.getInputElementForParamName(this.name);
+  "click .doNotUse"() {
     $(`#${this.name}-${this.type}`).select2().val(null).trigger("change");
     return false;
   },
@@ -227,7 +231,7 @@ Template.select.events({
         const curves = Session.get("Curves");
         const { options } = this;
         const priorSelected = [defaultOption];
-        for (let ci = 0; ci < curves.length; ci++) {
+        for (let ci = 0; ci < curves.length; ci += 1) {
           const curve = curves[ci];
           const curveOption = curve[this.name];
           priorSelected.push(curveOption);
@@ -236,7 +240,7 @@ Template.select.events({
         if (!priorSelected.includes(selection)) {
           // this option has not been selected prior
           // check to see if all the prior options to this one are selected
-          for (let oi = 0; oi < options.length; oi++) {
+          for (let oi = 0; oi < options.length; oi += 1) {
             const option = options[oi];
             // We reached the selected option
             if (option === selection) {
@@ -308,7 +312,7 @@ Template.select.events({
     }
     return false;
   },
-  focusout(event) {
+  focusout() {
     // close the selector if it is left open
     // event.currentTarget....
   },

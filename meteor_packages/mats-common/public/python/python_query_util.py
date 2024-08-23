@@ -135,7 +135,7 @@ class QueryUtil:
     returned data. In the future, we plan to split this into two classes, one for querying and one for statistics."""
     error = []  # one of the four fields to return at the end -- records any error message
     n0 = []  # one of the four fields to return at the end -- number of sub_values for each independent variable
-    n_times = []  # one of the four fields to return at the end -- number of sub_secs for each independent variable
+    nTimes = []  # one of the four fields to return at the end -- number of sub_secs for each independent variable
     data = []  # one of the four fields to return at the end -- the parsed data structure
     output_JSON = {}  # JSON structure to pass the five output fields back to the MATS JS
 
@@ -185,10 +185,10 @@ class QueryUtil:
                 "threshold_all": [],
                 "oy_all": [],
                 "on_all": [],
-                "n_forecast": [],
-                "n_matched": [],
-                "n_simple": [],
-                "n_total": [],
+                "nForecast": [],
+                "nMatched": [],
+                "nSimple": [],
+                "nTotal": [],
                 "sample_climo": 0,
                 "auc": 0,
                 "glob_stats": {
@@ -207,7 +207,7 @@ class QueryUtil:
                 "sum": 0
             })
             self.n0.append([])
-            self.n_times.append([])
+            self.nTimes.append([])
             self.error.append("")
 
     def construct_output_json(self, plot_type, queries):
@@ -230,24 +230,24 @@ class QueryUtil:
                 elif stat_line_type == 'mode_single':
                     for j in range(len(self.data[i]["subData"])):
                         if self.data[i]["subHeaders"][j] == 'NaN' or len(self.data[i]["subHeaders"][j]) == 0:
-                            self.data[i]["n_forecast"].append(0)
-                            self.data[i]["n_matched"].append(0)
-                            self.data[i]["n_simple"].append(0)
-                            self.data[i]["n_total"].append(0)
+                            self.data[i]["nForecast"].append(0)
+                            self.data[i]["nMatched"].append(0)
+                            self.data[i]["nSimple"].append(0)
+                            self.data[i]["nTotal"].append(0)
                         else:
                             try:
                                 forecast_idx = self.data[i]["subHeaders"][j].index('fcst_flag')
                                 matched_idx = self.data[i]["subHeaders"][j].index('matched_flag')
                                 simple_idx = self.data[i]["subHeaders"][j].index('simple_flag')
-                                self.data[i]["n_forecast"].append(sum([int(a[forecast_idx]) for a in self.data[i]["subData"][j]]))
-                                self.data[i]["n_matched"].append(sum([int(a[matched_idx]) for a in self.data[i]["subData"][j]]))
-                                self.data[i]["n_simple"].append(sum([int(a[simple_idx]) for a in self.data[i]["subData"][j]]))
-                                self.data[i]["n_total"].append(len([int(a[forecast_idx]) for a in self.data[i]["subData"][j]]))
+                                self.data[i]["nForecast"].append(sum([int(a[forecast_idx]) for a in self.data[i]["subData"][j]]))
+                                self.data[i]["nMatched"].append(sum([int(a[matched_idx]) for a in self.data[i]["subData"][j]]))
+                                self.data[i]["nSimple"].append(sum([int(a[simple_idx]) for a in self.data[i]["subData"][j]]))
+                                self.data[i]["nTotal"].append(len([int(a[forecast_idx]) for a in self.data[i]["subData"][j]]))
                             except Exception as e:
-                                self.data[i]["n_forecast"].append(0)
-                                self.data[i]["n_matched"].append(0)
-                                self.data[i]["n_simple"].append(0)
-                                self.data[i]["n_total"].append(0)
+                                self.data[i]["nForecast"].append(0)
+                                self.data[i]["nMatched"].append(0)
+                                self.data[i]["nSimple"].append(0)
+                                self.data[i]["nTotal"].append(0)
                 elif stat_line_type == 'ctc':
                     for j in range(len(self.data[i]["subData"])):
                         if self.data[i]["subHeaders"][j] == 'NaN' or len(self.data[i]["subHeaders"][j]) == 0:
@@ -276,8 +276,8 @@ class QueryUtil:
 
         self.output_JSON = {
             "data": self.data,
-            "N0": self.n0,
-            "N_times": self.n_times,
+            "n0": self.n0,
+            "nTimes": self.nTimes,
             "error": self.error
         }
         self.output_JSON = json.dumps(self.output_JSON, cls=NpEncoder)
@@ -358,11 +358,11 @@ class QueryUtil:
                 data_exists = row['area'] != "null" and row['area'] != "NULL"
             else:
                 data_exists = row['stat'] != "null" and row['stat'] != "NULL"
-            if hasattr(row, 'N0'):
-                self.n0[idx].append(int(row['N0']))
+            if hasattr(row, 'n0'):
+                self.n0[idx].append(int(row['n0']))
             else:
-                self.n0[idx].append(int(row['N_times']))
-            self.n_times[idx].append(int(row['N_times']))
+                self.n0[idx].append(int(row['nTimes']))
+            self.nTimes[idx].append(int(row['nTimes']))
 
             if plot_type == 'TimeSeries' and row_idx < len(query_data) - 1:  # make sure we have the smallest time interval for the while loop later
                 time_diff = int(query_data[row_idx + 1]['avtime']) - int(row['avtime'])
@@ -428,7 +428,7 @@ class QueryUtil:
                 *sorted(zip(curve_ind_vars, curve_stats, sub_data_all, sub_headers_all, sub_vals_all, sub_secs_all)))
 
         n0_max = max(self.n0[idx])
-        n_times_max = max(self.n_times[idx])
+        n_times_max = max(self.nTimes[idx])
         time_interval = time_interval * 1000
         loop_sum = 0
         dep_var_min = sys.float_info.max
@@ -449,7 +449,7 @@ class QueryUtil:
             # for any bad data points along the curve.
             d_idx = curve_ind_vars.index(ind_var)
             this_n0 = self.n0[idx][d_idx]
-            this_n_times = self.n_times[idx][d_idx]
+            this_n_times = self.nTimes[idx][d_idx]
             # add a null if there were too many missing sub-values
             if curve_stats[d_idx] == 'null' or this_n_times < completeness_qc_param * n_times_max:
                 if not hide_gaps:
@@ -585,11 +585,11 @@ class QueryUtil:
                 data_exists = row['fss'] != "null" and row['fss'] != "NULL"
             else:
                 data_exists = row['stat'] != "null" and row['stat'] != "NULL"
-            if hasattr(row, 'N0'):
-                self.n0[idx].append(int(row['N0']))
+            if hasattr(row, 'n0'):
+                self.n0[idx].append(int(row['n0']))
             else:
-                self.n0[idx].append(int(row['N_times']))
-            self.n_times[idx].append(int(row['N_times']))
+                self.n0[idx].append(int(row['nTimes']))
+            self.nTimes[idx].append(int(row['nTimes']))
 
             if data_exists:
                 stat, sub_levs, sub_secs, sub_values, sub_data, sub_headers, self.error[idx] \
@@ -655,11 +655,11 @@ class QueryUtil:
             if data_exists:
                 bin_number = int(row['bin'])
                 bin_count = int(row['bin_count'])
-                if hasattr(row, 'N0'):
-                    self.n0[idx].append(int(row['N0']))
+                if hasattr(row, 'n0'):
+                    self.n0[idx].append(int(row['n0']))
                 else:
-                    self.n0[idx].append(int(row['N_times']))
-                self.n_times[idx].append(int(row['N_times']))
+                    self.n0[idx].append(int(row['nTimes']))
+                self.nTimes[idx].append(int(row['nTimes']))
 
                 # this function deals with rhist/phist/relp and rhist_rank/phist_bin/relp_ens tables
                 stat, sub_levs, sub_secs, sub_values, sub_data, sub_headers, self.error[idx] \
@@ -746,11 +746,11 @@ class QueryUtil:
                 threshold = row['threshold']
                 oy = int(row['oy_i'])
                 on = int(row['on_i'])
-                number_times = int(row['N_times'])
-                if hasattr(row, 'N0'):
-                    number_values = int(row['N0'])
+                number_times = int(row['nTimes'])
+                if hasattr(row, 'n0'):
+                    number_values = int(row['n0'])
                 else:
-                    number_values = int(row['N_times'])
+                    number_values = int(row['nTimes'])
 
                 # we must add up all of the observed and not-observed values for each probability bin
                 observed_total = observed_total + oy
@@ -783,7 +783,7 @@ class QueryUtil:
 
         # Since everything is combined already, put it into the data structure
         self.n0[idx] = total_values
-        self.n_times[idx] = total_times
+        self.nTimes[idx] = total_times
         self.data[idx]['x'] = ens_stats[ens_stats["x_var"]]
         self.data[idx]['y'] = ens_stats[ens_stats["y_var"]]
         self.data[idx]['sample_climo'] = ens_stats["sample_climo"]

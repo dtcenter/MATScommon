@@ -3,6 +3,9 @@
  */
 
 import { matsParamUtils, matsCurveUtils } from "meteor/randyp:mats-common";
+import { Template } from "meteor/templating";
+
+/* global Session, $ */
 
 // moved here from plotType.html and plotType.js
 Template.changePlotType.events({

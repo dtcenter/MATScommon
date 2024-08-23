@@ -4,12 +4,14 @@
 
 import {
   matsTypes,
-  matsCollections,
-  matsMethods,
   matsCurveUtils,
   matsPlotUtils,
   matsParamUtils,
 } from "meteor/randyp:mats-common";
+import { Template } from "meteor/templating";
+
+/* global Session, $ */
+/* eslint-disable no-console */
 
 Template.scorecardCurveList.helpers({
   displayScorecardStatus() {
@@ -73,7 +75,6 @@ Template.scorecardCurveList.events({
       Session.set("paramWellColor", "#f5f5f5"); // default grey
       Session.set("lastUpdate", Date.now());
       Session.set("confirmRemoveAll", "");
-      return false;
     }
     if (Session.get("Curves").length > 0) {
       $("#modal-confirm-remove-all").modal();

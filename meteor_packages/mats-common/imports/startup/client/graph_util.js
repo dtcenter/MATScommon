@@ -2,11 +2,14 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import { matsTypes, matsCollections } from "meteor/randyp:mats-common";
+import { matsTypes, matsCurveUtils } from "meteor/randyp:mats-common";
+
+/* global $, Session */
+/* eslint-disable no-console */
 
 // set the label for the hide show buttons (NO DATA) for the initial time here
 const setNoDataLabels = function (dataset) {
-  for (let c = 0; c < dataset.length; c++) {
+  for (let c = 0; c < dataset.length; c += 1) {
     if (dataset[c].x.length === 0) {
       Session.set(`${dataset[c].curveId}hideButtonText`, "NO DATA");
       if (document.getElementById(`${dataset[c].curveId}-curve-show-hide`)) {
@@ -186,7 +189,7 @@ const setNoDataLabels = function (dataset) {
 };
 
 const setNoDataLabelsMap = function (dataset) {
-  for (let c = 0; c < dataset.length; c++) {
+  for (let c = 0; c < dataset.length; c += 1) {
     if (dataset[c].lat.length === 0) {
       Session.set(`${dataset[c].curveId}heatMapButtonText`, "NO DATA");
       if (document.getElementById(`${dataset[c].curveId}-curve-show-hide-heatmap`)) {
@@ -206,7 +209,7 @@ const setNoDataLabelsMap = function (dataset) {
         ).style.color = "white";
       }
     } else {
-      var heatMapText;
+      let heatMapText;
       if (dataset[c].datatype === "ctc") {
         heatMapText = "hide heat map";
       } else {
@@ -231,6 +234,48 @@ const setNoDataLabelsMap = function (dataset) {
       }
     }
   }
+};
+
+const standAloneSquareWidthHeight = function () {
+  console.log("squareWidthHeight");
+  const vpw = Math.min(document.documentElement.clientWidth, window.innerWidth || 0);
+  const vph = Math.min(document.documentElement.clientHeight, window.innerHeight || 0);
+  const min = Math.min(vpw, vph);
+  return `${(0.9 * min).toString()}px`;
+};
+const standAloneRectangleWidth = function () {
+  console.log("rectangleWidth");
+  const vpw = Math.min(document.documentElement.clientWidth, window.innerWidth || 0);
+  return `${(0.925 * vpw).toString()}px`;
+};
+const standAloneRectangleHeight = function () {
+  console.log("rectangleHeight");
+  const vph = Math.min(document.documentElement.clientHeight, window.innerHeight || 0);
+  return `${(0.825 * vph).toString()}px`;
+};
+
+const squareWidthHeight = function () {
+  const vpw = Math.min(document.documentElement.clientWidth, window.innerWidth || 0);
+  const vph = Math.min(document.documentElement.clientHeight, window.innerHeight || 0);
+  const min = Math.min(vpw, vph);
+  if (min < 400) {
+    return `${(0.9 * min).toString()}px`;
+  }
+  return `${(0.7 * min).toString()}px`;
+};
+const rectangleWidth = function () {
+  const vpw = Math.min(document.documentElement.clientWidth, window.innerWidth || 0);
+  if (vpw < 400) {
+    return `${(0.9 * vpw).toString()}px`;
+  }
+  return `${(0.9 * vpw).toString()}px`;
+};
+const rectangleHeight = function () {
+  const vph = Math.min(document.documentElement.clientHeight, window.innerHeight || 0);
+  if (vph < 400) {
+    return `${(0.8 * vph).toString()}px`;
+  }
+  return `${(0.7 * vph).toString()}px`;
 };
 
 // plot width helper used in multiple places
@@ -351,48 +396,6 @@ const standAloneHeight = function (plotType) {
       // set the height wide
       return standAloneRectangleHeight();
   }
-};
-
-const standAloneSquareWidthHeight = function () {
-  console.log("squareWidthHeight");
-  const vpw = Math.min(document.documentElement.clientWidth, window.innerWidth || 0);
-  const vph = Math.min(document.documentElement.clientHeight, window.innerHeight || 0);
-  const min = Math.min(vpw, vph);
-  return `${(0.9 * min).toString()}px`;
-};
-const standAloneRectangleWidth = function () {
-  console.log("rectangleWidth");
-  const vpw = Math.min(document.documentElement.clientWidth, window.innerWidth || 0);
-  return `${(0.925 * vpw).toString()}px`;
-};
-const standAloneRectangleHeight = function () {
-  console.log("rectangleHeight");
-  const vph = Math.min(document.documentElement.clientHeight, window.innerHeight || 0);
-  return `${(0.825 * vph).toString()}px`;
-};
-
-const squareWidthHeight = function () {
-  const vpw = Math.min(document.documentElement.clientWidth, window.innerWidth || 0);
-  const vph = Math.min(document.documentElement.clientHeight, window.innerHeight || 0);
-  const min = Math.min(vpw, vph);
-  if (min < 400) {
-    return `${(0.9 * min).toString()}px`;
-  }
-  return `${(0.7 * min).toString()}px`;
-};
-const rectangleWidth = function () {
-  const vpw = Math.min(document.documentElement.clientWidth, window.innerWidth || 0);
-  if (vpw < 400) {
-    return `${(0.9 * vpw).toString()}px`;
-  }
-  return `${(0.9 * vpw).toString()}px`;
-};
-const rectangleHeight = function () {
-  const vph = Math.min(document.documentElement.clientHeight, window.innerHeight || 0);
-  if (vph < 400) {
-    return `${(0.8 * vph).toString()}px`;
-  }
-  return `${(0.7 * vph).toString()}px`;
 };
 
 const resizeGraph = function (plotType) {
@@ -559,6 +562,32 @@ const setDefaultView = function () {
   window.onbeforeunload = null;
 };
 
+const graphPlotly = function () {
+  // get plot info
+  const route = Session.get("route");
+
+  // get dataset info and options
+  const resultSet = matsCurveUtils.getGraphResult();
+  if (resultSet === null || resultSet === undefined || resultSet.data === undefined) {
+    return false;
+  }
+
+  // set options
+  const { options } = resultSet;
+  if (route !== undefined && route !== "") {
+    options.selection = [];
+  }
+
+  // initialize show/hide button labels
+  const dataset = resultSet.data;
+  if (Session.get("graphPlotType") !== matsTypes.PlotTypes.map) {
+    setNoDataLabels(dataset);
+  } else {
+    setNoDataLabelsMap(dataset);
+  }
+  return null;
+};
+
 const downloadFile = function (fileURL, fileName) {
   // for non-IE
   if (!window.ActiveXObject) {
@@ -586,13 +615,14 @@ const downloadFile = function (fileURL, fileName) {
 
   // for IE < 11
   else if (!!window.ActiveXObject && document.execCommand) {
-    const _window = window.open(fileURL, "_blank");
-    _window.document.close();
-    _window.document.execCommand("SaveAs", true, fileName || fileURL);
-    _window.close();
+    const thisWindow = window.open(fileURL, "_blank");
+    thisWindow.document.close();
+    thisWindow.document.execCommand("SaveAs", true, fileName || fileURL);
+    thisWindow.close();
   }
 };
 
+// eslint-disable-next-line no-undef
 export default matsGraphUtils = {
   setNoDataLabels,
   setNoDataLabelsMap,
@@ -605,6 +635,7 @@ export default matsGraphUtils = {
   setGraphView,
   standAloneSetGraphView,
   setDefaultView,
+  graphPlotly,
   downloadFile,
   setScorecardDisplayView,
 };

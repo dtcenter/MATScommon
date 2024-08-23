@@ -3,11 +3,15 @@
  */
 
 import { matsTypes, matsCollections, matsPlotUtils } from "meteor/randyp:mats-common";
+import { Template } from "meteor/templating";
+
+/* global Session */
+/* eslint-disable no-console */
 
 const duplicate = function (param) {
   const obj = {};
   const keys = Object.keys(param);
-  for (let i = 0; i < keys.length; i++) {
+  for (let i = 0; i < keys.length; i += 1) {
     if (keys[i] !== "_id") {
       obj[keys[i]] = param[keys[i]];
     }
@@ -24,7 +28,7 @@ const filterParams = function (params) {
     const xparams = [];
     const yparams = [];
     let newParams = [];
-    for (let i = 0; i < params.length; i++) {
+    for (let i = 0; i < params.length; i += 1) {
       const xp = duplicate(params[i]);
       xp.name = `xaxis-${params[i].name}`;
       xp.hidden = true;
@@ -49,8 +53,8 @@ const getParams = function (num) {
   const paramMap = {};
   let params = [];
   let param;
-  for (let i = 0; i < paramNames.length; i++) {
-    param = matsCollections[paramNames[i]].find({}).fetch()[0];
+  for (let i = 0; i < paramNames.length; i += 1) {
+    [param] = matsCollections[paramNames[i]].find({}).fetch();
     if (param.displayGroup === num) {
       paramMap[param.displayOrder] = param;
     }
@@ -58,7 +62,7 @@ const getParams = function (num) {
   const displayOrders = Object.keys(paramMap).sort(function (a, b) {
     return a - b;
   });
-  for (let dor = 0; dor < displayOrders.length; dor++) {
+  for (let dor = 0; dor < displayOrders.length; dor += 1) {
     params.push(paramMap[displayOrders[dor]]);
   }
   params = filterParams(params);
@@ -67,15 +71,15 @@ const getParams = function (num) {
 
 Template.curveParamGroup.helpers({
   CurveParams(num) {
-    const restoreSettingsTime = Session.get("restoreSettingsTime"); // used to force re-render
-    const lastUpdate = Session.get("lastUpdate");
+    Session.get("restoreSettingsTime"); // used to force re-render
+    Session.get("lastUpdate");
     return getParams(num);
   },
   gapAbove(num) {
-    const restoreSettingsTime = Session.get("restoreSettingsTime"); // used to force re-render
-    const lastUpdate = Session.get("lastUpdate");
+    Session.get("restoreSettingsTime"); // used to force re-render
+    Session.get("lastUpdate");
     const params = getParams(num);
-    for (let i = 0; i < params.length; i++) {
+    for (let i = 0; i < params.length; i += 1) {
       if (params[i].gapAbove) {
         return "margin-top: 1em; border-top: 2px solid gray;";
       }
@@ -83,8 +87,8 @@ Template.curveParamGroup.helpers({
     return "";
   },
   gapMessage(num) {
-    const restoreSettingsTime = Session.get("restoreSettingsTime"); // used to force re-render
-    const lastUpdate = Session.get("lastUpdate");
+    Session.get("restoreSettingsTime"); // used to force re-render
+    Session.get("lastUpdate");
     const plotType = Session.get("plotType");
     let isMetexpress = false;
     let isCouchbase = false;
@@ -99,7 +103,7 @@ Template.curveParamGroup.helpers({
     }
     const params = getParams(num);
     if (isMetexpress || isCouchbase) {
-      for (let i = 0; i < params.length; i++) {
+      for (let i = 0; i < params.length; i += 1) {
         if (params[i].gapAbove) {
           if (params[i].name === "aggregation-method") {
             switch (plotType) {
@@ -139,10 +143,10 @@ Template.curveParamGroup.helpers({
     return "";
   },
   gapMessageSpacing(num) {
-    const restoreSettingsTime = Session.get("restoreSettingsTime"); // used to force re-render
-    const lastUpdate = Session.get("lastUpdate");
+    Session.get("restoreSettingsTime"); // used to force re-render
+    Session.get("lastUpdate");
     const params = getParams(num);
-    for (let i = 0; i < params.length; i++) {
+    for (let i = 0; i < params.length; i += 1) {
       if (params[i].gapAbove) {
         return "margin-left: 10px; margin-top: 1em;";
       }
@@ -150,10 +154,10 @@ Template.curveParamGroup.helpers({
     return "margin-left: 10px;";
   },
   gapBelow(num) {
-    const restoreSettingsTime = Session.get("restoreSettingsTime"); // used to force re-render
-    const lastUpdate = Session.get("lastUpdate");
+    Session.get("restoreSettingsTime"); // used to force re-render
+    Session.get("lastUpdate");
     const params = getParams(num);
-    for (let i = 0; i < params.length; i++) {
+    for (let i = 0; i < params.length; i += 1) {
       if (params[i].gapBelow) {
         return "margin-bottom: 2em;";
       }

@@ -3,33 +3,40 @@
  */
 
 import { Meteor } from "meteor/meteor";
-import { matsCollections } from "meteor/randyp:mats-common";
+
+/* eslint-disable global-require */
+
+let getResult;
+let storeResult;
+let clear;
+let expireKey;
 
 if (Meteor.isServer) {
   const Results = require("node-file-cache").create({
     file: "fileCache",
     life: 8 * 3600,
   });
-  var getResult = function (key) {
+  getResult = function (key) {
     // console.log('asked to get result from cache for key:', key);
     const result = Results.get(key);
     return result === null ? undefined : result;
   };
-  var storeResult = function (key, result) {
+  storeResult = function (key, result) {
     // console.log('asked to set result in cache for app: ',process.env.PWD, ' key:', key);
     Results.set(key, result);
     // console.log('set result in cache for app: ', process.env.PWD, 'key:', key);
   };
-  var clear = function () {
+  clear = function () {
     // console.log('asked to clear result cache');
     Results.clear();
   };
-  var expireKey = function (key) {
+  expireKey = function (key) {
     // console.log('asked to clear result cache for key ', key);
     Results.expire(key);
   };
 }
 
+// eslint-disable-next-line no-undef
 export default matsCache = {
   getResult,
   storeResult,

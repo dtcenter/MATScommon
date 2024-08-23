@@ -20,6 +20,7 @@ function getVersionsFromEnv() {
   };
 }
 
+// eslint-disable-next-line no-undef
 export default versionInfo = {
   getVersionsFromEnv,
 };

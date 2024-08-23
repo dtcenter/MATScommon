@@ -185,39 +185,40 @@ of table names. The internal list can be appended. The getRecords returns the in
  */
 class MetaDataDBRecord {
   constructor(poolName, dbName, tables) {
-    if (!typeof poolName === "string") {
+    if (!(typeof poolName === "string")) {
       throw new Error("MetaDataDBRecord.constructor : poolName is not a string");
     }
-    if (!typeof dbName === "string") {
+    if (!(typeof dbName === "string")) {
       throw new Error("MetaDataDBRecord.constructor : dbName is not a string");
     }
-    if (!tables instanceof Array) {
+    if (!(tables instanceof Array)) {
       throw new Error("MetaDataDBRecord.constructor : tables is not an array");
     }
-    this._records = [];
+    this.records = [];
     const record = { pool: poolName, name: dbName, tables };
-    this._records.push(record);
+    this.records.push(record);
   }
 
   addRecord(poolName, dbName, tables) {
-    if (!typeof poolName === "string") {
+    if (!(typeof poolName === "string")) {
       throw new Error("MetaDataDBRecord.constructor : poolName is not a string");
     }
-    if (!typeof dbName === "string") {
+    if (!(typeof dbName === "string")) {
       throw new Error("MetaDataDBRecord.constructor : dbName is not a string");
     }
-    if (!tables instanceof Array) {
+    if (!(tables instanceof Array)) {
       throw new Error("MetaDataDBRecord.constructor : tables is not an array");
     }
     const record = { pool: poolName, name: dbName, tables };
-    this._records.push(record);
+    this.records.push(record);
   }
 
   getRecords() {
-    return this._records;
+    return this.records;
   }
 }
 
+// eslint-disable-next-line no-undef
 export default matsTypes = {
   InputTypes,
   ScorecardStatus,

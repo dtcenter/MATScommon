@@ -8,27 +8,15 @@ import {
   matsPlotUtils,
   matsTypes,
 } from "meteor/randyp:mats-common";
-import { moment } from "meteor/momentjs:moment";
+import { Template } from "meteor/templating";
+
+/* global Session */
+
 /*
 Referring to the Session variable plotResultKey here causes the html template to get re-rendered with the current graph data
 (which is in the Results collection).
  */
 let fillStr = "---";
-
-const times = [];
-
-// I don't think this is used anymore, but I'm not certain, so I'm leaving it here for now.
-const getDataForTime = function (data, time) {
-  if (data === undefined) {
-    return undefined;
-  }
-  for (let i = 0; i < data.length; i++) {
-    if (Number(data[i][0]) === Number(time)) {
-      return data[i] === null ? undefined : data[i];
-    }
-  }
-  return undefined;
-};
 
 // fetches the data back from where the query routine stored it.
 const getDataForCurve = function (curve) {
@@ -71,14 +59,7 @@ Template.textOutput.helpers({
       case matsTypes.PlotTypes.timeSeries:
       case matsTypes.PlotTypes.profile:
         header +=
-          "<th>label</th>\
-                    <th>mean</th>\
-                    <th>standard deviation</th>\
-                    <th>n</th>\
-                    <th>standard error</th>\
-                    <th>lag1</th>\
-                    <th>minimum</th>\
-                    <th>maximum</th>";
+          "<th>label</th><th>mean</th><th>standard deviation</th><th>n</th><th>standard error</th><th>lag1</th><th>minimum</th><th>maximum</th>";
         break;
       case matsTypes.PlotTypes.dieoff:
       case matsTypes.PlotTypes.threshold:
@@ -87,22 +68,13 @@ Template.textOutput.helpers({
       case matsTypes.PlotTypes.gridscale:
       case matsTypes.PlotTypes.yearToYear:
         header +=
-          "<th>label</th>\
-                    <th>mean</th>\
-                    <th>standard deviation</th>\
-                    <th>n</th>\
-                    <th>minimum</th>\
-                    <th>maximum</th>";
+          "<th>label</th><th>mean</th><th>standard deviation</th><th>n</th><th>minimum</th><th>maximum</th>";
         break;
       case matsTypes.PlotTypes.reliability:
-        header +=
-          "<th>label</th>\
-                    <th>sample climatology</th>";
+        header += "<th>label</th><th>sample climatology</th>";
         break;
       case matsTypes.PlotTypes.roc:
-        header +=
-          "<th>label</th>\
-                    <th>area under the ROC curve</th>";
+        header += "<th>label</th><th>area under the ROC curve</th>";
         break;
       case matsTypes.PlotTypes.performanceDiagram:
       case matsTypes.PlotTypes.gridscaleProb:
@@ -110,31 +82,17 @@ Template.textOutput.helpers({
         break;
       case matsTypes.PlotTypes.map:
         header +=
-          "<th>label</th>\
-                    <th>mean</th>\
-                    <th>standard deviation</th>\
-                    <th>n</th>\
-                    <th>minimum time</th>\
-                    <th>maximum time</th>";
+          "<th>label</th><th>mean</th><th>standard deviation</th><th>n</th><th>minimum time</th><th>maximum time</th>";
         break;
       case matsTypes.PlotTypes.histogram:
       case matsTypes.PlotTypes.ensembleHistogram:
         header +=
-          "<th>label</th>\
-                    <th>mean</th>\
-                    <th>standard deviation</th>\
-                    <th>n</th>\
-                    <th>minimum</th>\
-                    <th>maximum</th>";
+          "<th>label</th><th>mean</th><th>standard deviation</th><th>n</th><th>minimum</th><th>maximum</th>";
         break;
       case matsTypes.PlotTypes.contour:
       case matsTypes.PlotTypes.contourDiff:
         header +=
-          "<th>label</th>\
-                    <th>mean stat</th>\
-                    <th>n</th>\
-                    <th>minimum time</th>\
-                    <th>maximum time</th>";
+          "<th>label</th><th>mean stat</th><th>n</th><th>minimum time</th><th>maximum time</th>";
         break;
       case matsTypes.PlotTypes.simpleScatter:
         header += "";
@@ -159,7 +117,7 @@ Template.textOutput.helpers({
     const isModeSingle =
       curveData !== undefined &&
       curveData[0] !== undefined &&
-      Object.keys(curveData[0]).indexOf("n_forecast") !== -1;
+      Object.keys(curveData[0]).indexOf("nForecast") !== -1;
     const isModePairs =
       curveData !== undefined &&
       curveData[0] !== undefined &&
@@ -188,6 +146,9 @@ Template.textOutput.helpers({
         break;
       case matsTypes.PlotTypes.yearToYear:
         labelSuffix = " year";
+        break;
+      default:
+        labelSuffix = "x-value";
         break;
     }
     switch (plotType) {
@@ -293,30 +254,14 @@ Template.textOutput.helpers({
       case matsTypes.PlotTypes.map:
         if (isCTC) {
           header +=
-            "<th>site name</th>\
-                        <th>number of times</th>\
-                        <th>stat</th>\
-                        <th>hits</th>\
-                        <th>false alarms</th>\
-                        <th>misses</th>\
-                        <th>correct nulls</th>";
+            "<th>site name</th><th>number of times</th><th>stat</th><th>hits</th><th>false alarms</th><th>misses</th><th>correct nulls</th>";
         } else {
           header +=
-            "<th>site name</th>\
-                        <th>number of times</th>\
-                        <th>start date</th>\
-                        <th>end date</th>\
-                        <th>stat</th>";
+            "<th>site name</th><th>number of times</th><th>start date</th><th>end date</th><th>stat</th>";
         }
         break;
       case matsTypes.PlotTypes.histogram:
-        header += `<th>${curve.label}  bin range</th>\
-                        <th>bin n</th>\
-                        <th>bin rel freq</th>\
-                        <th>bin lower bound</th>\
-                        <th>bin upper bound</th>\
-                        <th>bin mean</th>\
-                        <th>bin std dev</th>`;
+        header += `<th>${curve.label}  bin range</th><th>bin n</th><th>bin rel freq</th><th>bin lower bound</th><th>bin upper bound</th><th>bin mean</th><th>bin std dev</th>`;
         break;
       case matsTypes.PlotTypes.ensembleHistogram:
         header += `<th>${curve.label}  bin number</th>\
@@ -327,35 +272,17 @@ Template.textOutput.helpers({
       case matsTypes.PlotTypes.contourDiff:
         if (isCTC) {
           header +=
-            "<th>x value</th>\
-                        <th>y value</th>\
-                        <th>stat</th>\
-                        <th>n</th>\
-                        <th>hits</th>\
-                        <th>false alarms</th>\
-                        <th>misses</th>\
-                        <th>correct nulls</th>";
+            "<th>x value</th><th>y value</th><th>stat</th><th>n</th><th>hits</th><th>false alarms</th><th>misses</th><th>correct nulls</th>";
         } else {
           header +=
-            "<th>x value</th>\
-                        <th>y value</th>\
-                        <th>stat</th>\
-                        <th>n</th>\
-                        <th>start date</th>\
-                        <th>end date</th>";
+            "<th>x value</th><th>y value</th><th>stat</th><th>n</th><th>start date</th><th>end date</th>";
         }
         break;
       case matsTypes.PlotTypes.simpleScatter:
-        header += `<th>${curve.label} bin value</th>\
-                        <th>x-statistic</th>\
-                        <th>y-statistic</th>\
-                        <th>n</th>\
-                        `;
+        header += `<th>${curve.label} bin value</th><th>x-statistic</th><th>y-statistic</th><th>n</th>`;
         break;
       case matsTypes.PlotTypes.scatter2d:
-        header += `<th>${curve.label} x axis</th>\
-                        <th>${curve.label} y axis</th>\
-                        <th>best fit</th>`;
+        header += `<th>${curve.label} x axis</th><th>${curve.label} y axis</th><th>best fit</th>`;
         break;
       default:
         break;
@@ -375,15 +302,12 @@ Template.textOutput.helpers({
     switch (Session.get("plotType")) {
       case matsTypes.PlotTypes.timeSeries:
         return `${curve.label} time`;
-        break;
       case matsTypes.PlotTypes.profile:
         return `${curve.label} level`;
-        break;
       case matsTypes.PlotTypes.dieoff:
         return `${curve.label} forecast lead time`;
       default:
-        return curve.label;
-        break;
+        return `${curve.label} x-value`;
     }
   },
   curveText() {
@@ -394,11 +318,9 @@ Template.textOutput.helpers({
   // get the table row values for each curve's data
   elementHtml(element) {
     let labelKey = Template.parentData().label;
-    const elementLabel = "";
     let line = "";
     const isCTC = element.hit !== undefined && element.hit !== null;
-    const isModeSingle =
-      element.n_forecast !== undefined && element.n_forecast !== null;
+    const isModeSingle = element.nForecast !== undefined && element.nForecast !== null;
     const isModePairs =
       element.avgInterest !== undefined && element.avgInterest !== null;
     const plotType = Session.get("plotType");
@@ -425,6 +347,9 @@ Template.textOutput.helpers({
         break;
       case matsTypes.PlotTypes.yearToYear:
         labelSuffix = " year";
+        break;
+      default:
+        labelSuffix = "x-value";
         break;
     }
     switch (plotType) {
@@ -472,23 +397,23 @@ Template.textOutput.helpers({
                 : fillStr
             }</td>` +
             `<td>${
-              element.n_forecast !== undefined && element.n_forecast !== null
-                ? element.n_forecast.toString()
+              element.nForecast !== undefined && element.nForecast !== null
+                ? element.nForecast.toString()
                 : fillStr
             }</td>` +
             `<td>${
-              element.n_matched !== undefined && element.n_matched !== null
-                ? element.n_matched.toString()
+              element.nMatched !== undefined && element.nMatched !== null
+                ? element.nMatched.toString()
                 : fillStr
             }</td>` +
             `<td>${
-              element.n_simple !== undefined && element.n_simple !== null
-                ? element.n_simple.toString()
+              element.nSimple !== undefined && element.nSimple !== null
+                ? element.nSimple.toString()
                 : fillStr
             }</td>` +
             `<td>${
-              element.n_total !== undefined && element.n_total !== null
-                ? element.n_total.toString()
+              element.nTotal !== undefined && element.nTotal !== null
+                ? element.nTotal.toString()
                 : fillStr
             }</td>`;
         } else if (isModePairs) {
@@ -588,23 +513,23 @@ Template.textOutput.helpers({
                 : fillStr
             }</td>` +
             `<td>${
-              element.n_forecast !== undefined && element.n_forecast !== null
-                ? element.n_forecast.toString()
+              element.nForecast !== undefined && element.nForecast !== null
+                ? element.nForecast.toString()
                 : fillStr
             }</td>` +
             `<td>${
-              element.n_matched !== undefined && element.n_matched !== null
-                ? element.n_matched.toString()
+              element.nMatched !== undefined && element.nMatched !== null
+                ? element.nMatched.toString()
                 : fillStr
             }</td>` +
             `<td>${
-              element.n_simple !== undefined && element.n_simple !== null
-                ? element.n_simple.toString()
+              element.nSimple !== undefined && element.nSimple !== null
+                ? element.nSimple.toString()
                 : fillStr
             }</td>` +
             `<td>${
-              element.n_total !== undefined && element.n_total !== null
-                ? element.n_total.toString()
+              element.nTotal !== undefined && element.nTotal !== null
+                ? element.nTotal.toString()
                 : fillStr
             }</td>`;
         } else if (isModePairs) {
@@ -944,7 +869,7 @@ Template.textOutput.helpers({
       return [];
     }
     let cindex;
-    for (cindex = 0; cindex < curves.length; cindex++) {
+    for (cindex = 0; cindex < curves.length; cindex += 1) {
       if (curves[cindex].label === curve.label) {
         break;
       }
@@ -1154,8 +1079,8 @@ Template.textOutput.helpers({
 
 Template.textOutput.events({
   "click .export"() {
-    const plotType = Session.get("plotType");
-    const key = Session.get("plotResultKey");
+    Session.get("plotType");
+    Session.get("plotResultKey");
     // open a new window with
     window.open(
       `${window.location}/CSV/${Session.get("graphFunction")}/${Session.get(

@@ -8,6 +8,9 @@ import {
   matsCurveUtils,
   matsParamUtils,
 } from "meteor/randyp:mats-common";
+import { Template } from "meteor/templating";
+
+/* global Session, $, setError, setInfo */
 
 Template.plotType.helpers({
   plotTypes() {
@@ -23,7 +26,7 @@ Template.plotType.helpers({
   selected(plotType) {
     // don't display the choice if there is only one choice
     if (matsCollections.PlotGraphFunctions.find({ plotType }).fetch()[0].checked) {
-      return (selected = "selected");
+      return "selected";
     }
     return "";
   },
@@ -197,7 +200,7 @@ const changePlotType = function (plotType, selectorsToInitialize, dateSelector) 
       );
     }
     if (curves.length > 0) {
-      for (let ci = curves.length - 1; ci >= 0; ci--) {
+      for (let ci = curves.length - 1; ci >= 0; ci -= 1) {
         // remove any difference curves for plot types that don't support them
         let curveGone = false;
         if (curves[ci].diffFrom !== undefined && curves[ci].diffFrom !== null) {
@@ -231,13 +234,13 @@ const changePlotType = function (plotType, selectorsToInitialize, dateSelector) 
         }
         if (!curveGone) {
           // change options that were valid for the plot type where this curve was added but not for this one
-          for (let ri = 0; ri < resetSelectors.length; ri++) {
+          for (let ri = 0; ri < resetSelectors.length; ri += 1) {
             if (curves[ci][resetSelectors[ri]] !== undefined) {
               curves[ci][resetSelectors[ri]] = selectorsToReset[resetSelectors[ri]];
             }
           }
           // initialize options for parameters not used in the plot type where this curve was added
-          for (let si = 0; si < selectorsToInitialize.length; si++) {
+          for (let si = 0; si < selectorsToInitialize.length; si += 1) {
             if (dateSelector === "curve-dates" && newDate !== 0) {
               curves[ci]["curve-dates"] = newDate;
             }
@@ -290,7 +293,7 @@ const changePlotType = function (plotType, selectorsToInitialize, dateSelector) 
 };
 
 Template.plotType.events({
-  "change .plotTypes-selector"(event) {
+  "change .plotTypes-selector"() {
     const plotType = document
       .getElementById("plotTypes-selector")
       .value.replace(" ", "");

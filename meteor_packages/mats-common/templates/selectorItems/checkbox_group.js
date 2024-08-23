@@ -2,7 +2,8 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import { matsTypes } from "meteor/randyp:mats-common";
+import { matsParamUtils } from "meteor/randyp:mats-common";
+import { Template } from "meteor/templating";
 
 Template.checkboxGroup.helpers({
   checkedByDefault(def) {

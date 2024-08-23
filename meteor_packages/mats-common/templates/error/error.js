@@ -3,6 +3,9 @@
  */
 
 import { matsPlotUtils } from "meteor/randyp:mats-common";
+import { Template } from "meteor/templating";
+
+/* global getError, getStack, clearError */
 
 Template.error.helpers({
   errorMessage() {

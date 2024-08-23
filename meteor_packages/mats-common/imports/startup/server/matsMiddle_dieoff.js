@@ -354,7 +354,7 @@ class MatsMiddleDieoff {
       ctcStats.miss = 0;
       ctcStats.fa = 0;
       ctcStats.cn = 0;
-      ctcStats.N0 = 0;
+      ctcStats.n0 = 0;
       ctcStats.sub_data = [];
 
       // get all the fve for this indVar
@@ -364,7 +364,7 @@ class MatsMiddleDieoff {
 
       [ctcStats.min_secs] = fveArray;
       ctcStats.max_secs = fveArray[fveArray.length - 1];
-      ctcStats.N_times = fveArray.length;
+      ctcStats.nTimes = fveArray.length;
       for (let imfve = 0; imfve < fveArray.length; imfve += 1) {
         const fve = fveArray[imfve];
         const obsSingleFve = this.fveObs[indVarKey][fve];
@@ -426,7 +426,7 @@ class MatsMiddleDieoff {
       sumsStats.model_sum = 0;
       sumsStats.obs_sum = 0;
       sumsStats.abs_sum = 0;
-      sumsStats.N0 = 0;
+      sumsStats.n0 = 0;
       sumsStats.sub_data = [];
 
       // get all the fve for this indVar
@@ -436,7 +436,7 @@ class MatsMiddleDieoff {
 
       [sumsStats.min_secs] = fveArray;
       sumsStats.max_secs = fveArray[fveArray.length - 1];
-      sumsStats.N_times = fveArray.length;
+      sumsStats.nTimes = fveArray.length;
       for (let imfve = 0; imfve < fveArray.length; imfve += 1) {
         const fve = fveArray[imfve];
         const obsSingleFve = this.fveObs[indVarKey][fve];

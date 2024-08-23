@@ -6,6 +6,9 @@ import { Meteor } from "meteor/meteor";
 import matsCollections from "meteor/randyp:mats-common";
 import { curveParamsByApp } from "../both/mats-curve-params";
 
+/* global Accounts, Session */
+/* eslint-disable no-console */
+
 if (Meteor.isClient) {
   const params = curveParamsByApp[Meteor.settings.public.app];
   if (!params) {
@@ -16,7 +19,7 @@ if (Meteor.isClient) {
       "curveParams are not defined in imports/startup/both/mats-curve-params.js. Please define some curveParams for this app."
     );
   }
-  for (let i = 0; i < params.length; i++) {
+  for (let i = 0; i < params.length; i += 1) {
     Meteor.subscribe(params[i]);
   }
   Meteor.subscribe("Scatter2dParams");
@@ -49,8 +52,8 @@ if (Meteor.isClient) {
     },
   });
 
-  const ref = location.href;
-  const pathArray = location.href.split("/");
+  const ref = window.location.href;
+  const pathArray = window.location.href.split("/");
   const protocol = pathArray[0];
   const hostport = pathArray[2];
   const hostName = hostport.split(":")[0];

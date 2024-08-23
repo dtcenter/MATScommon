@@ -10,11 +10,15 @@ import {
   matsParamUtils,
   matsSelectUtils,
 } from "meteor/randyp:mats-common";
+import { Template } from "meteor/templating";
+import { moment } from "meteor/momentjs:moment";
 
-label;
+/* global Session, jQuery, $, _ */
+/* eslint-disable no-console */
+
 Template.curveItem.onRendered(function () {
   // the value used for the colorpicker (l) MUST match the returned value in the colorpick helper
-  label = this.data.label;
+  const { label } = this.data;
   $(function () {
     const l = `.${label}-colorpick`;
     $(l).colorpicker({ format: "rgb", align: "left" });
@@ -53,7 +57,7 @@ Template.curveItem.helpers({
       let plotType = Session.get("plotType");
       if (plotType === undefined) {
         const pfuncs = matsCollections.PlotGraphFunctions.find({}).fetch();
-        for (let i = 0; i < pfuncs.length; i++) {
+        for (let i = 0; i < pfuncs.length; i += 1) {
           if (pfuncs[i].checked === true) {
             Session.set("plotType", pfuncs[i].plotType);
           }
@@ -61,7 +65,7 @@ Template.curveItem.helpers({
         plotType = Session.get("plotType");
       }
       if (this.region) {
-        this.regionName = this.region.split(" ")[0];
+        [this.regionName] = this.region.split(" ");
       }
       return matsPlotUtils.getCurveText(plotType, this);
     }
@@ -76,11 +80,12 @@ Template.curveItem.helpers({
   defaultColor() {
     const curves = Session.get("Curves");
     const { label } = this;
-    for (let i = 0; i < curves.length; i++) {
+    for (let i = 0; i < curves.length; i += 1) {
       if (curves[i].label === label) {
         return curves[i].color;
       }
     }
+    return null;
   },
   curveNumber() {
     const { label } = this;
@@ -120,7 +125,7 @@ const setParamsToAxis = function (newAxis, currentParams) {
   const superiors = [];
   const dependents = [];
   // get all of the curve param collections in one place
-  for (let pidx = 0; pidx < paramNames.length; pidx++) {
+  for (let pidx = 0; pidx < paramNames.length; pidx += 1) {
     const param = matsCollections[paramNames[pidx]].find({}).fetch()[0];
     // superiors
     if (param.dependentNames !== undefined) {
@@ -133,25 +138,24 @@ const setParamsToAxis = function (newAxis, currentParams) {
       params.push(param);
     }
   }
-  for (let s = 0; s < superiors.length; s++) {
-    var plotParam = superiors[p];
+  for (let s = 0; s < superiors.length; s += 1) {
+    const plotParam = superiors[s];
     // do any date parameters - there are no axis date params in a scatter plot
     if (plotParam.type === matsTypes.InputTypes.dateRange) {
-      if (currentParams[plotParam.name] === undefined) {
-        continue; // just like continue
+      if (currentParams[plotParam.name] !== undefined) {
+        const dateArr = currentParams[plotParam.name].split(" - ");
+        const from = dateArr[0];
+        const to = dateArr[1];
+        const idref = `#${plotParam.name}-${plotParam.type}`;
+        $(idref)
+          .data("daterangepicker")
+          .setStartDate(moment.utc(from, "MM-DD-YYYY HH:mm"));
+        $(idref).data("daterangepicker").setEndDate(moment.utc(to, "MM-DD-YYYY HH:mm"));
+        matsParamUtils.setValueTextForParamName(
+          plotParam.name,
+          currentParams[plotParam.name]
+        );
       }
-      const dateArr = currentParams[plotParam.name].split(" - ");
-      const from = dateArr[0];
-      const to = dateArr[1];
-      const idref = `#${plotParam.name}-${plotParam.type}`;
-      $(idref)
-        .data("daterangepicker")
-        .setStartDate(moment.utc(from, "MM-DD-YYYY HH:mm"));
-      $(idref).data("daterangepicker").setEndDate(moment.utc(to, "MM-DD-YYYY HH:mm"));
-      matsParamUtils.setValueTextForParamName(
-        plotParam.name,
-        currentParams[plotParam.name]
-      );
     } else {
       currentParamName =
         currentParams[`${newAxis}-${plotParam.name}`] === undefined
@@ -167,29 +171,28 @@ const setParamsToAxis = function (newAxis, currentParams) {
   }
   // now reset the form parameters for the dependents
   const combParams = _.union(params, dependents);
-  for (var p = 0; p < combParams.length; p++) {
-    var plotParam = combParams[p];
+  for (let p = 0; p < combParams.length; p += 1) {
+    const plotParam = combParams[p];
     // do any plot date parameters
     currentParamName =
       currentParams[`${newAxis}-${plotParam.name}`] === undefined
         ? plotParam.name
         : `${newAxis}-${plotParam.name}`;
     if (plotParam.type === matsTypes.InputTypes.dateRange) {
-      if (currentParams[currentParamName] === undefined) {
-        continue; // just like continue
+      if (currentParams[currentParamName] !== undefined) {
+        const dateArr = currentParams[currentParamName].split(" - ");
+        const from = dateArr[0];
+        const to = dateArr[1];
+        const idref = `#${plotParam.name}-${plotParam.type}`;
+        $(idref)
+          .data("daterangepicker")
+          .setStartDate(moment.utc(from, "MM-DD-YYYY HH:mm"));
+        $(idref).data("daterangepicker").setEndDate(moment.utc(to, "MM-DD-YYYY HH:mm"));
+        matsParamUtils.setValueTextForParamName(
+          plotParam.name,
+          currentParams[currentParamName]
+        );
       }
-      const dateArr = currentParams[currentParamName].split(" - ");
-      const from = dateArr[0];
-      const to = dateArr[1];
-      const idref = `#${plotParam.name}-${plotParam.type}`;
-      $(idref)
-        .data("daterangepicker")
-        .setStartDate(moment.utc(from, "MM-DD-YYYY HH:mm"));
-      $(idref).data("daterangepicker").setEndDate(moment.utc(to, "MM-DD-YYYY HH:mm"));
-      matsParamUtils.setValueTextForParamName(
-        plotParam.name,
-        currentParams[currentParamName]
-      );
     } else {
       const val =
         currentParams[currentParamName] === null ||
@@ -201,8 +204,8 @@ const setParamsToAxis = function (newAxis, currentParams) {
   }
   // reset the scatter parameters
   params = matsCollections.Scatter2dParams.find({}).fetch();
-  for (var p = 0; p < params.length; p++) {
-    var plotParam = params[p];
+  for (let p = 0; p < params.length; p += 1) {
+    const plotParam = params[p];
     currentParamName =
       currentParams[`${newAxis}-${plotParam.name}`] === undefined
         ? plotParam.name
@@ -223,25 +226,24 @@ const correlateEditPanelToCurveItems = function (
   currentParams,
   doCheckHideOther
 ) {
-  for (let p = 0; p < params.length; p++) {
+  for (let p = 0; p < params.length; p += 1) {
     const plotParam = params[p];
     // do any plot date parameters
     if (plotParam.type === matsTypes.InputTypes.dateRange) {
-      if (currentParams[plotParam.name] === undefined) {
-        continue; // just like continue
+      if (currentParams[plotParam.name] !== undefined) {
+        const dateArr = currentParams[plotParam.name].split(" - ");
+        const from = dateArr[0];
+        const to = dateArr[1];
+        const idref = `#${plotParam.name}-${plotParam.type}`;
+        $(idref)
+          .data("daterangepicker")
+          .setStartDate(moment.utc(from, "MM-DD-YYYY HH:mm"));
+        $(idref).data("daterangepicker").setEndDate(moment.utc(to, "MM-DD-YYYY HH:mm"));
+        matsParamUtils.setValueTextForParamName(
+          plotParam.name,
+          currentParams[plotParam.name]
+        );
       }
-      const dateArr = currentParams[plotParam.name].split(" - ");
-      const from = dateArr[0];
-      const to = dateArr[1];
-      const idref = `#${plotParam.name}-${plotParam.type}`;
-      $(idref)
-        .data("daterangepicker")
-        .setStartDate(moment.utc(from, "MM-DD-YYYY HH:mm"));
-      $(idref).data("daterangepicker").setEndDate(moment.utc(to, "MM-DD-YYYY HH:mm"));
-      matsParamUtils.setValueTextForParamName(
-        plotParam.name,
-        currentParams[plotParam.name]
-      );
     } else {
       const val =
         currentParams[plotParam.name] === null ||
@@ -250,7 +252,7 @@ const correlateEditPanelToCurveItems = function (
           : currentParams[plotParam.name];
       matsParamUtils.setInputForParamName(plotParam.name, val);
     }
-    if (doCheckHideOther) {
+    if (currentParams[plotParam.name] !== undefined && doCheckHideOther) {
       matsSelectUtils.checkHideOther(plotParam, false);
     }
   }
@@ -268,7 +270,7 @@ Template.curveItem.events({
     document.getElementById("cancel").click();
     Session.set("paramWellColor", "#f5f5f5");
   },
-  "click .remove-curve"(event) {
+  "click .remove-curve"() {
     const removeCurve = Session.get("confirmRemoveCurve");
     if (removeCurve && removeCurve.confirm) {
       const { label } = removeCurve;
@@ -283,12 +285,13 @@ Template.curveItem.events({
       Session.set("confirmRemoveCurve", "");
       Session.set("lastUpdate", Date.now());
       if (Curves.length === 0) {
-        location.reload(true);
+        window.location.reload(true);
       }
       return false;
     }
     Session.set("confirmRemoveCurve", { label: this.label, color: this.color });
     $("#modal-confirm-remove-curve").modal();
+    return null;
   },
   "click .confirm-remove-curve"() {
     const confirmCurve = Session.get("confirmRemoveCurve");
@@ -299,13 +302,13 @@ Template.curveItem.events({
     });
     $("#curve-list-remove").trigger("click");
   },
-  "click .edit-curve-xaxis"(event) {
+  "click .edit-curve-xaxis"() {
     Session.set("axis", "xaxis");
     Session.set("editMode", this.label);
     const currentParams = jQuery.extend({}, this);
     setParamsToAxis("xaxis", currentParams);
   },
-  "click .edit-curve-yaxis"(event) {
+  "click .edit-curve-yaxis"() {
     Session.set("axis", "yaxis");
     Session.set("editMode", this.label);
     const currentParams = jQuery.extend({}, this);
@@ -348,7 +351,7 @@ Template.curveItem.events({
     const superiors = [];
     const hidden = [];
     // get all of the curve param collections in one place
-    for (let pidx = 0; pidx < paramNames.length; pidx++) {
+    for (let pidx = 0; pidx < paramNames.length; pidx += 1) {
       const param = matsCollections[paramNames[pidx]].find({}).fetch()[0];
       // superiors
       if (param.dependentNames !== undefined) {
@@ -363,25 +366,26 @@ Template.curveItem.events({
         params.push(param);
       }
     }
-    for (var p = 0; p < superiors.length; p++) {
-      var plotParam = superiors[p];
+    for (let p = 0; p < superiors.length; p += 1) {
+      const plotParam = superiors[p];
       // do any curve date parameters
       if (plotParam.type === matsTypes.InputTypes.dateRange) {
-        if (currentParams[plotParam.name] === undefined) {
-          continue; // just like continue
+        if (currentParams[plotParam.name] !== undefined) {
+          const dateArr = currentParams[plotParam.name].split(" - ");
+          const from = dateArr[0];
+          const to = dateArr[1];
+          const idref = `#${plotParam.name}-${plotParam.type}`;
+          $(idref)
+            .data("daterangepicker")
+            .setStartDate(moment.utc(from, "MM-DD-YYYY HH:mm"));
+          $(idref)
+            .data("daterangepicker")
+            .setEndDate(moment.utc(to, "MM-DD-YYYY HH:mm"));
+          matsParamUtils.setValueTextForParamName(
+            plotParam.name,
+            currentParams[plotParam.name]
+          );
         }
-        const dateArr = currentParams[plotParam.name].split(" - ");
-        const from = dateArr[0];
-        const to = dateArr[1];
-        const idref = `#${plotParam.name}-${plotParam.type}`;
-        $(idref)
-          .data("daterangepicker")
-          .setStartDate(moment.utc(from, "MM-DD-YYYY HH:mm"));
-        $(idref).data("daterangepicker").setEndDate(moment.utc(to, "MM-DD-YYYY HH:mm"));
-        matsParamUtils.setValueTextForParamName(
-          plotParam.name,
-          currentParams[plotParam.name]
-        );
       } else {
         const val =
           currentParams[plotParam.name] === null ||
@@ -401,8 +405,8 @@ Template.curveItem.events({
 
     // reset the scatter parameters
     params = matsCollections.Scatter2dParams.find({}).fetch();
-    for (var p = 0; p < params.length; p++) {
-      var plotParam = params[p];
+    for (let p = 0; p < params.length; p += 1) {
+      const plotParam = params[p];
       const val =
         currentParams[plotParam.name] === null ||
         currentParams[plotParam.name] === undefined
@@ -411,12 +415,11 @@ Template.curveItem.events({
       matsParamUtils.setInputForParamName(plotParam.name, val);
     }
     matsParamUtils.collapseParams();
-    return false;
   },
   hidePicker() {
     const Curves = Session.get("Curves");
     const { label } = this;
-    for (let i = 0; i < Curves.length; i++) {
+    for (let i = 0; i < Curves.length; i += 1) {
       if (label === Curves[i].label) {
         Curves[i].color = document.getElementById(`${label}-color-value`).value;
       }
@@ -464,21 +467,29 @@ Template.curveItem.events({
       $("#confirm-lost-edits").modal();
       return;
     }
-    inputElem && inputElem.focus();
+    if (inputElem) {
+      inputElem.focus();
+    }
     curveListEditNode.click();
-    controlElem && controlElem.click();
+    if (controlElem) {
+      controlElem.click();
+    }
     Session.set("elementChanged", Date.now());
   },
   "click .continue-lose-edits"() {
     const intendedName = Session.get("intendedActiveDisplayButton");
-    const activeDisplayButton = Session.set("activeDisplayButton", intendedName);
+    Session.set("activeDisplayButton", intendedName);
     document.getElementById("cancel").click();
     Session.set("paramWellColor", "#f5f5f5");
     const controlElem = matsParamUtils.getControlElementForParamName(intendedName);
     const inputElem = matsParamUtils.getInputElementForParamName(intendedName);
-    inputElem && inputElem.focus();
+    if (inputElem) {
+      inputElem.focus();
+    }
     curveListEditNode.click();
-    controlElem && controlElem.click();
+    if (controlElem) {
+      controlElem.click();
+    }
     Session.set("elementChanged", Date.now());
   },
   "click .cancel-lose-edits"() {
@@ -486,8 +497,12 @@ Template.curveItem.events({
     const name = Session.get("activeDisplayButton");
     const controlElem = matsParamUtils.getControlElementForParamName(name);
     const inputElem = matsParamUtils.getInputElementForParamName(name);
-    inputElem && inputElem.focus();
-    controlElem && controlElem.click();
+    if (inputElem) {
+      inputElem.focus();
+    }
+    if (controlElem) {
+      controlElem.click();
+    }
     Session.set("elementChanged", Date.now());
   },
 });

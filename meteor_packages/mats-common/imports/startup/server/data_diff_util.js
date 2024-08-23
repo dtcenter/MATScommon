@@ -62,10 +62,10 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, allStatTypes
             subLevs: [],
             stats: [],
             text: [],
-            n_forecast: [],
-            n_matched: [],
-            n_simple: [],
-            n_total: [],
+            nForecast: [],
+            nMatched: [],
+            nSimple: [],
+            nTotal: [],
             glob_stats: {},
             xmin: Number.MAX_VALUE,
             xmax: Number.MIN_VALUE,
@@ -134,10 +134,10 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, allStatTypes
       glob_max: null,
       glob_min: null,
     },
-    n_forecast: [],
-    n_matched: [],
-    n_simple: [],
-    n_total: [],
+    nForecast: [],
+    nMatched: [],
+    nSimple: [],
+    nTotal: [],
     xmin: Number.MAX_VALUE,
     xmax: Number.MIN_VALUE,
     ymin: Number.MAX_VALUE,
@@ -311,14 +311,11 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, allStatTypes
               minuendDataSubModelSum = minuendData.subModelSum[minuendIndex];
               minuendDataSubObsSum = minuendData.subObsSum[minuendIndex];
               minuendDataSubAbsSum = minuendData.subAbsSum[minuendIndex];
-            } else if (
-              minuendData.n_total.length > 0 &&
-              subtrahendData.n_total.length
-            ) {
-              minuendDataNForecast = minuendData.n_forecast[minuendIndex];
-              minuendDataNMatched = minuendData.n_matched[minuendIndex];
-              minuendDataNSimple = minuendData.n_simple[minuendIndex];
-              minuendDataNTotal = minuendData.n_total[minuendIndex];
+            } else if (minuendData.nTotal.length > 0 && subtrahendData.nTotal.length) {
+              minuendDataNForecast = minuendData.nForecast[minuendIndex];
+              minuendDataNMatched = minuendData.nMatched[minuendIndex];
+              minuendDataNSimple = minuendData.nSimple[minuendIndex];
+              minuendDataNTotal = minuendData.nTotal[minuendIndex];
             }
             minuendDataSubValues = minuendData.subVals[minuendIndex];
             minuendDataSubSeconds = minuendData.subSecs[minuendIndex];
@@ -339,14 +336,11 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, allStatTypes
               subtrahendDataSubModelSum = subtrahendData.subModelSum[subtrahendIndex];
               subtrahendDataSubObsSum = subtrahendData.subObsSum[subtrahendIndex];
               subtrahendDataSubAbsSum = subtrahendData.subAbsSum[subtrahendIndex];
-            } else if (
-              minuendData.n_total.length > 0 &&
-              subtrahendData.n_total.length
-            ) {
-              subtrahendDataNForecast = subtrahendData.n_forecast[subtrahendIndex];
-              subtrahendDataNMatched = subtrahendData.n_matched[subtrahendIndex];
-              subtrahendDataNSimple = subtrahendData.n_simple[subtrahendIndex];
-              subtrahendDataNTotal = subtrahendData.n_total[subtrahendIndex];
+            } else if (minuendData.nTotal.length > 0 && subtrahendData.nTotal.length) {
+              subtrahendDataNForecast = subtrahendData.nForecast[subtrahendIndex];
+              subtrahendDataNMatched = subtrahendData.nMatched[subtrahendIndex];
+              subtrahendDataNSimple = subtrahendData.nSimple[subtrahendIndex];
+              subtrahendDataNTotal = subtrahendData.nTotal[subtrahendIndex];
             }
             subtrahendDataSubValues = subtrahendData.subVals[subtrahendIndex];
             subtrahendDataSubSeconds = subtrahendData.subSecs[subtrahendIndex];
@@ -438,11 +432,11 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, allStatTypes
             if (hasLevels) {
               d.subLevs.push(tempSubLevsArray);
             }
-            if (minuendData.n_total.length > 0 && subtrahendData.n_total.length) {
-              d.n_forecast.push(minuendDataNForecast - subtrahendDataNForecast);
-              d.n_matched.push(minuendDataNMatched - subtrahendDataNMatched);
-              d.n_simple.push(minuendDataNSimple - subtrahendDataNSimple);
-              d.n_total.push(minuendDataNTotal - subtrahendDataNTotal);
+            if (minuendData.nTotal.length > 0 && subtrahendData.nTotal.length) {
+              d.nForecast.push(minuendDataNForecast - subtrahendDataNForecast);
+              d.nMatched.push(minuendDataNMatched - subtrahendDataNMatched);
+              d.nSimple.push(minuendDataNSimple - subtrahendDataNSimple);
+              d.nTotal.push(minuendDataNTotal - subtrahendDataNTotal);
             }
             d.sum += d[independentVarName][largeIntervalCurveIndex];
           } else {
@@ -503,24 +497,12 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, allStatTypes
   }
 
   // calculate the max and min for this curve
-  const filteredx = d.x.filter((x) => x);
-  const filteredy = d.y.filter((y) => y);
+  const filteredx = d.x.filter((x) => x || x === 0);
+  const filteredy = d.y.filter((y) => y || y === 0);
   d.xmin = Math.min(...filteredx);
-  if (d.x.indexOf(0) !== -1 && d.xmin > 0) {
-    d.xmin = 0;
-  }
   d.xmax = Math.max(...filteredx);
-  if (d.x.indexOf(0) !== -1 && d.xmax < 0) {
-    d.xmax = 0;
-  }
   d.ymin = Math.min(...filteredy);
-  if (d.y.indexOf(0) !== -1 && d.ymin > 0) {
-    d.ymin = 0;
-  }
   d.ymax = Math.max(...filteredy);
-  if (d.y.indexOf(0) !== -1 && d.ymax < 0) {
-    d.ymax = 0;
-  }
 
   return { dataset: d };
 };
@@ -1405,54 +1387,18 @@ const getDataForDiffContour = function (
   }
 
   // calculate statistics
-  const filteredx = diffDataset.x.filter((x) => x);
-  const filteredy = diffDataset.y.filter((y) => y);
-  const filteredz = diffDataset.zTextOutput.filter((z) => z);
+  const filteredx = diffDataset.x.filter((x) => x || x === 0);
+  const filteredy = diffDataset.y.filter((y) => y || y === 0);
+  const filteredz = diffDataset.zTextOutput.filter((z) => z || z === 0);
   diffDataset.xmin = Math.min(...filteredx);
-  if (
-    !Number.isFinite(diffDataset.xmin) ||
-    (diffDataset.x.indexOf(0) !== -1 && diffDataset.xmin > 0)
-  ) {
-    diffDataset.xmin = 0;
-  }
   diffDataset.xmax = Math.max(...filteredx);
-  if (
-    !Number.isFinite(diffDataset.xmax) ||
-    (diffDataset.x.indexOf(0) !== -1 && diffDataset.xmax < 0)
-  ) {
-    diffDataset.xmax = 0;
-  }
   diffDataset.ymin = Math.min(...filteredy);
-  if (
-    !Number.isFinite(diffDataset.ymin) ||
-    (diffDataset.y.indexOf(0) !== -1 && diffDataset.ymin > 0)
-  ) {
-    diffDataset.ymin = 0;
-  }
   diffDataset.ymax = Math.max(...filteredy);
-  if (
-    !Number.isFinite(diffDataset.ymax) ||
-    (diffDataset.y.indexOf(0) !== -1 && diffDataset.ymax < 0)
-  ) {
-    diffDataset.ymax = 0;
-  }
   diffDataset.zmin = Math.min(...filteredz);
-  if (
-    !Number.isFinite(diffDataset.zmin) ||
-    (diffDataset.z.indexOf(0) !== -1 && diffDataset.zmin > 0)
-  ) {
-    diffDataset.zmin = 0;
-  }
   diffDataset.zmax = Math.max(...filteredz);
-  if (
-    !Number.isFinite(diffDataset.zmax) ||
-    (diffDataset.z.indexOf(0) !== -1 && diffDataset.zmax < 0)
-  ) {
-    diffDataset.zmax = 0;
-  }
 
-  const filteredMinDate = diffDataset.minDateTextOutput.filter((t) => t);
-  const filteredMaxDate = diffDataset.maxDateTextOutput.filter((t) => t);
+  const filteredMinDate = diffDataset.minDateTextOutput.filter((t) => t || t === 0);
+  const filteredMaxDate = diffDataset.maxDateTextOutput.filter((t) => t || t === 0);
   diffDataset.glob_stats.mean = diffDataset.sum / nPoints;
   diffDataset.glob_stats.minDate = Math.min(...filteredMinDate);
   diffDataset.glob_stats.maxDate = Math.max(...filteredMaxDate);

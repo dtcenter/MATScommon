@@ -3,6 +3,7 @@
  */
 
 import { matsParamUtils } from "meteor/randyp:mats-common";
+import { Template } from "meteor/templating";
 
 Template.color.helpers({
   defaultColor() {
@@ -30,10 +31,9 @@ Template.color.events({
       ).style.backgroundColor = event.currentTarget.value;
       this.value = event.currentTarget.value;
     } else {
-      document.querySelector(
-        `[name="${event.currentTarget.name}-icon` + `"]`
-      ).style.color = event.currentTarget.value;
-      document.querySelector(`[name="${event.currentTarget.name}-icon` + `"]`).value =
+      document.querySelector(`[name="${event.currentTarget.name}-icon"]`).style.color =
+        event.currentTarget.value;
+      document.querySelector(`[name="${event.currentTarget.name}-icon"]`).value =
         event.currentTarget.value;
     }
   },

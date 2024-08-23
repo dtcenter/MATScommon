@@ -24,7 +24,7 @@
     // our dependencies.
     // XXX: this *should* be taken care of by eslint-import-resolver-meteor, investigate.
     // "import/no-extraneous-dependencies": "off",
-    // "no-underscore-dangle": ["error", { "allow": ["_id", "_ensureIndex"] }],
+    "no-underscore-dangle": ["error", { "allow": ["_id", "_ensureIndex"] }],
     "object-shorthand": ["error", "always", { "avoidQuotes": false }],
     "space-before-function-paren": "off",
     // for Meteor API's that rely on `this` context, e.g. Template.onCreated and publications
@@ -35,59 +35,15 @@
     // We want to be able to turn these back into "error"'s at some point. However, for
     // our first pass, we'll only consider the checks that ESLint can auto-fix as errors.
     // https://eslint.org/docs/latest/use/configure/rules#rule-severities
-    "no-undef": "warn",
-    "no-redeclare": "warn",
-    "no-plusplus": "warn",
-    "vars-on-top": "warn",
-    "no-var": "warn",
-    "block-scoped-var": "warn",
-    "no-loop-func": "warn",
-    "no-unused-vars": "warn",
-    "prefer-destructuring": "warn",
-    "no-param-reassign": "warn",
-    "camelcase": "warn",
-    "no-use-before-define": "warn",
-    "no-restricted-globals": "warn",
-    "radix": "warn",
-    "global-require": "warn",
-    "no-lonely-if": "warn",
-    "no-underscore-dangle": ["off", { "allow": ["_id", "_ensureIndex"] }], // Uncomment line 27 with Meteor's recommended "no-underscore-dangle" policy when resolving this
-    "no-return-assign": "warn",
-    "no-shadow": "warn",
-    "new-cap": "warn",
-    "prefer-spread": "warn",
-    "no-case-declarations": "warn",
-    "default-case": "warn",
-    "consistent-return": "warn",
-    "no-unreachable": "warn",
-    "no-useless-concat": "warn",
-    "no-multi-str": "warn",
-    "no-unused-expressions": "warn",
-    "no-continue": "warn",
-    "no-eval": "warn",
-    "array-callback-return": "warn",
-    "no-multi-assign": "warn",
-    "no-new-wrappers": "warn",
-    "no-sequences": "warn",
-    "no-empty": "warn",
-    "no-bitwise": "warn",
-    "no-useless-escape": "warn",
-    "no-unsafe-negation": "warn",
-    "guard-for-in": "warn",
-    "no-restricted-syntax": "warn",
-    "class-methods-use-this": "warn",
-    "eqeqeq": "warn",
-    "operator-assignment": "warn",
-    "prefer-const": "warn",
-    "no-buffer-constructor": "warn",
-    "no-prototype-builtins": "warn",
-    "no-await-in-loop": "warn",
-    "no-dupe-else-if": "warn",
-    "meteor/no-session": "warn",
-    "meteor/template-names": "warn",
-    "meteor/eventmap-params": "warn",
-    "meteor/no-template-lifecycle-assignments": "warn",
-    "import/prefer-default-export": "warn",
+    "meteor/no-session": "off",
     "import/no-unresolved": ["warn", { "ignore": ["^meteor/", "^/"] }] // This may be tricky to resolve due to: https://github.com/clayne11/eslint-import-resolver-meteor/issues/5
-  }
+  },
+  "ignorePatterns": [
+    "meteor_packages/mats-common/imports/startup/server/matsMiddle_common.js",
+    "meteor_packages/mats-common/imports/startup/server/matsMiddle_dailyModelCycle.js",
+    "meteor_packages/mats-common/imports/startup/server/matsMiddle_dieoff.js",
+    "meteor_packages/mats-common/imports/startup/server/matsMiddle_map.js",
+    "meteor_packages/mats-common/imports/startup/server/matsMiddle_timeSeries.js",
+    "meteor_packages/mats-common/imports/startup/server/matsMiddle_validTime.js"
+  ]
 }

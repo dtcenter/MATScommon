@@ -3,6 +3,9 @@
  */
 
 import { matsParamUtils, matsCollections } from "meteor/randyp:mats-common";
+import { Template } from "meteor/templating";
+
+/* global Plotly, $, setError */
 
 Template.map.onRendered(function () {
   const defaultAttrs = this; // save for when we need to reset to defaults
@@ -23,11 +26,12 @@ Template.map.onRendered(function () {
 
     // method to initialize the map selector
     const initializeSelectorMap = function (item) {
+      const thesePeerOptions = [];
       const defaultPoint = item.data.defaultMapView.point;
       const defaultZoomLevel = item.data.defaultMapView.zoomLevel;
       peerName = item.data.peerName;
 
-      targetElement = document.getElementsByName(peerName)[0];
+      [targetElement] = document.getElementsByName(peerName);
       if (!targetElement) {
         return;
       }
@@ -37,10 +41,9 @@ Template.map.onRendered(function () {
       thisMarkers = []; // markers valid for this data source
 
       // find out what peer options are available for this data source
-      peerOptions = [];
       if (targetElement.options) {
-        for (let i = 0; i < targetElement.options.length; i++) {
-          peerOptions.push(targetElement.options[i].text);
+        for (let i = 0; i < targetElement.options.length; i += 1) {
+          thesePeerOptions.push(targetElement.options[i].text);
         }
       }
       selectedValues = $(targetId).val() ? $(targetId).val() : [];
@@ -90,19 +93,20 @@ Template.map.onRendered(function () {
 
       // set the initial site marker locations and colors
       let marker;
-      for (var sidx = 0; sidx < peerOptions.length; sidx++) {
-        marker = markers.find((obj) => obj.name === peerOptions[sidx]);
+      for (let sidx = 0; sidx < thesePeerOptions.length; sidx += 1) {
+        marker = markers.find((obj) => obj.name === thesePeerOptions[sidx]);
         thisMarkers[sidx] = marker;
         dataset.siteName[sidx] = marker.name;
         dataset.text[sidx] = marker.name;
-        dataset.lat[sidx] = marker.point[0];
-        dataset.lon[sidx] = marker.point[1];
+        [dataset.lat[sidx]] = marker.point;
+        [, dataset.lon[sidx]] = marker.point;
         if (selectedValues.indexOf(marker.name) === -1) {
           dataset.marker.color[sidx] = marker.options.color;
         } else {
           dataset.marker.color[sidx] = marker.options.highLightColor;
         }
       }
+      peerOptions = thesePeerOptions;
     };
 
     // call the above initialization for the first time
@@ -203,13 +207,13 @@ Template.map.onRendered(function () {
       });
 
       // event handler for selecting all stations
-      $(".selectSites").on("click", function () {
+      $(".selectSites").on("click", function (event) {
         event.preventDefault();
         // fill the selected values array with all available options and change the marker to its highlight color
         $(targetId).val(peerOptions).trigger("change");
         matsParamUtils.collapseParam(peerName);
         $(targetId).select2("close");
-        for (let sidx = 0; sidx < thisMarkers.length; sidx++) {
+        for (let sidx = 0; sidx < thisMarkers.length; sidx += 1) {
           dataset.marker.color[sidx] = thisMarkers[sidx].options.highLightColor;
         }
         const update = { marker: { color: dataset.marker.color, opacity: 1 } };
@@ -217,13 +221,13 @@ Template.map.onRendered(function () {
       });
 
       // event handler for deselecting all stations
-      $(".deselectSites").on("click", function () {
+      $(".deselectSites").on("click", function (event) {
         event.preventDefault();
         // empty the selected values array and return the marker to its original color
         $(targetId).val([]).trigger("change");
         matsParamUtils.collapseParam(peerName);
         $(targetId).select2("close");
-        for (let sidx = 0; sidx < thisMarkers.length; sidx++) {
+        for (let sidx = 0; sidx < thisMarkers.length; sidx += 1) {
           dataset.marker.color[sidx] = thisMarkers[sidx].options.color;
         }
         const update = { marker: { color: dataset.marker.color, opacity: 1 } };
@@ -233,12 +237,13 @@ Template.map.onRendered(function () {
       // method to see if the available sites have changed for this data source
       const refreshOptionsForPeer = function (peerElement) {
         // find out what peer options are available
-        peerOptions = [];
+        const thesePeerOptions = [];
         if (peerElement.options) {
-          for (let i = 0; i < peerElement.options.length; i++) {
-            peerOptions.push(peerElement.options[i].text);
+          for (let i = 0; i < peerElement.options.length; i += 1) {
+            thesePeerOptions.push(peerElement.options[i].text);
           }
         }
+        peerOptions = thesePeerOptions;
       };
 
       // method to sync the map up with the sites selector
@@ -246,6 +251,7 @@ Template.map.onRendered(function () {
         if (!peerElement) {
           return;
         }
+        const thesePeerOptions = peerOptions;
         const peerId = peerElement.id;
         refreshOptionsForPeer(peerElement);
         selectedValues = $(`#${peerId}`).val() ? $(`#${peerId}`).val() : [];
@@ -258,13 +264,13 @@ Template.map.onRendered(function () {
         dataset.lon = [];
         dataset.marker.color = [];
         let marker;
-        for (var sidx = 0; sidx < peerOptions.length; sidx++) {
-          marker = markers.find((obj) => obj.name === peerOptions[sidx]);
+        for (let sidx = 0; sidx < thesePeerOptions.length; sidx += 1) {
+          marker = markers.find((obj) => obj.name === thesePeerOptions[sidx]);
           thisMarkers[sidx] = marker;
           dataset.siteName[sidx] = marker.name;
           dataset.text[sidx] = marker.name;
-          dataset.lat[sidx] = marker.point[0];
-          dataset.lon[sidx] = marker.point[1];
+          [dataset.lat[sidx]] = marker.point;
+          [, dataset.lon[sidx]] = marker.point;
           if (selectedValues.indexOf(marker.name) === -1) {
             dataset.marker.color[sidx] = marker.options.color;
           } else {
@@ -285,13 +291,13 @@ Template.map.onRendered(function () {
 
       // register an event listener so that the select.js can ask the map div to refresh after a selection
       let elem = document.getElementById(divElement);
-      elem.addEventListener("refresh", function (e) {
+      elem.addEventListener("refresh", function () {
         refresh(targetElement);
       });
 
       // register an event listener so that the param_util.js can ask the map div to reset when someone clicks 'reset to defaults'
       elem = document.getElementById(divElement);
-      elem.addEventListener("reset", function (e) {
+      elem.addEventListener("reset", function () {
         resetMap(defaultAttrs);
       });
     }
