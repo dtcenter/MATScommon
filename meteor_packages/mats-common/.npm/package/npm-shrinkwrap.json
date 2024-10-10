@@ -6,10 +6,10 @@
       "resolved": "https://registry.npmjs.org/@babel/runtime/-/runtime-7.24.7.tgz",
       "integrity": "sha512-UwgBRMjJP+xv857DCngvqXI3Iq6J4v0wXmwc6sapg+zyhbwmQX67LUEFrkK5tbyJ30jGuG3ZvWpBiB9LCy1kWw=="
     },
-    "@couchbase/couchbase-darwin-x64-napi": {
+    "@couchbase/couchbase-darwin-arm64-napi": {
       "version": "4.3.1",
-      "resolved": "https://registry.npmjs.org/@couchbase/couchbase-darwin-x64-napi/-/couchbase-darwin-x64-napi-4.3.1.tgz",
-      "integrity": "sha512-pXaz2V9f6kSIP+zsNLQ/GMpfhGx7ixZ96j41spVYhuB5XjpESA3UAr2oc+hCY58o3fe+Nixj1+0DmpEEpnW61w=="
+      "resolved": "https://registry.npmjs.org/@couchbase/couchbase-darwin-arm64-napi/-/couchbase-darwin-arm64-napi-4.3.1.tgz",
+      "integrity": "sha512-lCDXvd0H6ncRViIRki0N6Ckk24jxiDgq2H30xCnXP5KB9cAj8eGPfWYFg/2Za/4fvnMWhhCVpLyNNZeRJlT/hg=="
     },
     "@fortawesome/fontawesome-free": {
       "version": "6.5.2",
@@ -42,9 +42,9 @@
       "integrity": "sha512-Oei9OH4tRh0YqU3GxhX79dM/mwVgvbZJaSNaRk+bshkj0S5cfHcgYakreBjrHwatXKbz+IoIdYLxrKim2MjW0Q=="
     },
     "axios": {
-      "version": "1.7.4",
-      "resolved": "https://registry.npmjs.org/axios/-/axios-1.7.4.tgz",
-      "integrity": "sha512-DukmaFRnY6AzAALSH4J2M3k6PkaC+MfaAGdEERRWcC9q3/TWQwLpHR8ZRLKTdQ3aBDL64EdluRDjJqKw+BPZEw=="
+      "version": "1.7.7",
+      "resolved": "https://registry.npmjs.org/axios/-/axios-1.7.7.tgz",
+      "integrity": "sha512-S4kL7XrjgBmvdGut0sN3yJxqYzrDOnivkBiN0OFs6hLiUam3UPvswUo0kqGyhqUZGEOytHyumEdXsAkgCOUf3Q=="
     },
     "call-bind": {
       "version": "1.0.7",
@@ -162,14 +162,14 @@
       "integrity": "sha512-Zf5H2Kxt2xjTvbJvP2ZWLEICxA6j+hAmMzIlypy4xcBg1vKVnx89Wy0GbS+kf5cwCVFFzdCFh2XSCFNULS6csw=="
     },
     "escalade": {
-      "version": "3.1.2",
-      "resolved": "https://registry.npmjs.org/escalade/-/escalade-3.1.2.tgz",
-      "integrity": "sha512-ErCHMCae19vR8vQGe50xIsVomy19rg6gFu3+r3jkEO46suLMWBksvVyoGgQV+jOfl84ZSOSlmv6Gxa89PmTGmA=="
+      "version": "3.2.0",
+      "resolved": "https://registry.npmjs.org/escalade/-/escalade-3.2.0.tgz",
+      "integrity": "sha512-WUj2qlxaQtO4g6Pq5c29GTcWGDyd8itL8zTlipgECz3JesAiiOKotd8JU6otB3PACgG6xkJUyVhboMS+bje/jA=="
     },
     "follow-redirects": {
-      "version": "1.15.6",
-      "resolved": "https://registry.npmjs.org/follow-redirects/-/follow-redirects-1.15.6.tgz",
-      "integrity": "sha512-wWN62YITEaOpSK584EZXJafH1AGpO8RVgElfkuXbTOrPX4fIfOyEpW/CsiNd8JdYrAoOvafRTOEnvsO++qCqFA=="
+      "version": "1.15.8",
+      "resolved": "https://registry.npmjs.org/follow-redirects/-/follow-redirects-1.15.8.tgz",
+      "integrity": "sha512-xgrmBhBToVKay1q2Tao5LI26B83UhrB/vM1avwVSDzt8rx3rO6AizBAaF46EgksTVr+rFTQaqZZ9MVBfUe4nig=="
     },
     "form-data": {
       "version": "4.0.0",
