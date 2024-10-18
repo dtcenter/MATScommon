@@ -123,7 +123,7 @@ class MatsMiddleDailyModelCycle {
         this.indVar_Array.push(indVar);
       }
     }
-    this.indVar_Array.sort((a, b) => a - b);
+    this.indVar_Array.sort((a, b) => Number(a) - Number(b));
 
     await this.createObsData();
     await this.createModelData();
@@ -198,11 +198,13 @@ class MatsMiddleDailyModelCycle {
           const dataSingleEpoch = {};
           const stationsSingleEpoch = {};
           for (let i = 0; i < this.stationNames.length; i += 1) {
-            const varValStation =
-              fveDataSingleEpoch[this.stationNames[i]] === "NULL"
-                ? null
-                : fveDataSingleEpoch[this.stationNames[i]];
-            stationsSingleEpoch[this.stationNames[i]] = varValStation;
+            if (fveDataSingleEpoch[this.stationNames[i]]) {
+              const varValStation =
+                fveDataSingleEpoch[this.stationNames[i]] === "NULL"
+                  ? null
+                  : fveDataSingleEpoch[this.stationNames[i]];
+              stationsSingleEpoch[this.stationNames[i]] = varValStation;
+            }
           }
           dataSingleEpoch.stations = stationsSingleEpoch;
           this.fveObs[indVarKey][fveDataSingleEpoch.fve] = dataSingleEpoch;
@@ -279,11 +281,13 @@ class MatsMiddleDailyModelCycle {
           const dataSingleEpoch = {};
           const stationsSingleEpoch = {};
           for (let i = 0; i < this.stationNames.length; i += 1) {
-            const varValStation =
-              fveDataSingleEpoch[this.stationNames[i]] === "NULL"
-                ? null
-                : fveDataSingleEpoch[this.stationNames[i]];
-            stationsSingleEpoch[this.stationNames[i]] = varValStation;
+            if (fveDataSingleEpoch[this.stationNames[i]]) {
+              const varValStation =
+                fveDataSingleEpoch[this.stationNames[i]] === "NULL"
+                  ? null
+                  : fveDataSingleEpoch[this.stationNames[i]];
+              stationsSingleEpoch[this.stationNames[i]] = varValStation;
+            }
           }
           dataSingleEpoch.stations = stationsSingleEpoch;
           this.fveModels[indVarKey][fveDataSingleEpoch.fve] = dataSingleEpoch;
@@ -299,18 +303,20 @@ class MatsMiddleDailyModelCycle {
   };
 
   generateCtc = () => {
-    const { threshold } = this;
+    const threshold = Number(this.threshold);
     const indVarsWithData = _.intersection(
       Object.keys(this.fveObs),
       Object.keys(this.fveModels)
     );
+    indVarsWithData.sort(function (a, b) {
+      return Number(a) - Number(b);
+    });
 
     for (let idx = 0; idx < indVarsWithData.length; idx += 1) {
       const ctcStats = {};
 
       const indVar = indVarsWithData[idx];
-      const indVarKey = indVar.toString();
-      ctcStats.avtime = indVar;
+      ctcStats.avtime = Number(indVar);
       ctcStats.hit = 0;
       ctcStats.miss = 0;
       ctcStats.fa = 0;
@@ -319,7 +325,7 @@ class MatsMiddleDailyModelCycle {
       ctcStats.sub_data = [];
 
       // get all the fve for this indVar
-      const indVarSingle = this.fveModels[indVarKey];
+      const indVarSingle = this.fveModels[indVar];
       const fveArray = Object.keys(indVarSingle);
       fveArray.sort();
 
@@ -328,7 +334,7 @@ class MatsMiddleDailyModelCycle {
       ctcStats.nTimes = fveArray.length;
       for (let imfve = 0; imfve < fveArray.length; imfve += 1) {
         const fve = fveArray[imfve];
-        const obsSingleFve = this.fveObs[indVarKey][fve];
+        const obsSingleFve = this.fveObs[indVar][fve];
         const modelSingleFve = indVarSingle[fve];
 
         if (obsSingleFve && modelSingleFve) {
@@ -357,13 +363,15 @@ class MatsMiddleDailyModelCycle {
       Object.keys(this.fveObs),
       Object.keys(this.fveModels)
     );
+    indVarsWithData.sort(function (a, b) {
+      return Number(a) - Number(b);
+    });
 
     for (let idx = 0; idx < indVarsWithData.length; idx += 1) {
       const sumsStats = {};
 
       const indVar = indVarsWithData[idx];
-      const indVarKey = indVar.toString();
-      sumsStats.avtime = indVar;
+      sumsStats.avtime = Number(indVar);
       sumsStats.square_diff_sum = 0;
       sumsStats.N_sum = 0;
       sumsStats.obs_model_diff_sum = 0;
@@ -374,7 +382,7 @@ class MatsMiddleDailyModelCycle {
       sumsStats.sub_data = [];
 
       // get all the fve for this indVar
-      const indVarSingle = this.fveModels[indVarKey];
+      const indVarSingle = this.fveModels[indVar];
       const fveArray = Object.keys(indVarSingle);
       fveArray.sort();
 
@@ -383,7 +391,7 @@ class MatsMiddleDailyModelCycle {
       sumsStats.nTimes = fveArray.length;
       for (let imfve = 0; imfve < fveArray.length; imfve += 1) {
         const fve = fveArray[imfve];
-        const obsSingleFve = this.fveObs[indVarKey][fve];
+        const obsSingleFve = this.fveObs[indVar][fve];
         const modelSingleFve = indVarSingle[fve];
 
         if (obsSingleFve && modelSingleFve) {
