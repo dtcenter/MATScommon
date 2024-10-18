@@ -1,5 +1,4 @@
-import { matsTypes, matsDataQueryUtils } from "meteor/randyp:mats-common";
-import { Meteor } from "meteor/meteor";
+/* global Assets */
 
 class MatsMiddleCommon {
   cbPool = null;
@@ -10,50 +9,37 @@ class MatsMiddleCommon {
     this.cbPool = cbPool;
   }
 
+  /* eslint-disable global-require */
+  /* eslint-disable no-console */
+  /* eslint-disable class-methods-use-this */
+
   writeToLocalFile(filePath, contentStr) {
     const fs = require("fs");
     const homedir = require("os").homedir();
     fs.writeFileSync(homedir + filePath, contentStr);
   }
 
-  get_fcstValidEpoch_Array = async (fromSecs, toSecs) => {
-    console.log(`get_fcstValidEpoch_Array(${fromSecs},${toSecs})`);
-
-    const fs = require("fs");
-    this.conn = await cbPool.getConnection();
-
-    const startTime = new Date().valueOf();
+  getFcstValidEpochArray = async (fromSecs, toSecs) => {
+    this.conn = await this.cbPool.getConnection();
 
     let queryTemplate = Assets.getText(
       "imports/startup/server/matsMiddle/sqlTemplates/tmpl_distinct_fcstValidEpoch_obs.sql"
     );
     queryTemplate = queryTemplate.replace(/{{vxFROM_SECS}}/g, fromSecs);
     queryTemplate = queryTemplate.replace(/{{vxTO_SECS}}/g, toSecs);
-    console.log(`fromSecs:${fromSecs},toSecs:${toSecs}`);
 
-    const qr_fcstValidEpoch = await this.conn.cluster.query(queryTemplate);
+    const qrFcstValidEpoch = await this.conn.cluster.query(queryTemplate);
 
-    const fcstValidEpoch_Array = [];
-    for (let imfve = 0; imfve < qr_fcstValidEpoch.rows.length; imfve++) {
-      fcstValidEpoch_Array.push(qr_fcstValidEpoch.rows[imfve].fcstValidEpoch);
+    const fcstValidEpochArray = [];
+    for (let imfve = 0; imfve < qrFcstValidEpoch.rows.length; imfve += 1) {
+      fcstValidEpochArray.push(qrFcstValidEpoch.rows[imfve].fcstValidEpoch);
     }
-    const endTime = new Date().valueOf();
-    console.log(
-      `\tget_fcstValidEpoch_Array():${fcstValidEpoch_Array.length} in ${
-        endTime - startTime
-      } ms.`
-    );
 
-    return fcstValidEpoch_Array;
+    return fcstValidEpochArray;
   };
 
   get_fcstLen_Array = async (model, fromSecs, toSecs) => {
-    console.log(`get_fcstLen_Array(${model},${fromSecs},${toSecs})`);
-
-    const fs = require("fs");
-    this.conn = await cbPool.getConnection();
-
-    const startTime = new Date().valueOf();
+    this.conn = await this.cbPool.getConnection();
 
     let queryTemplate = Assets.getText(
       "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_distinct_fcstLen.sql"
@@ -61,18 +47,13 @@ class MatsMiddleCommon {
     queryTemplate = queryTemplate.replace(/{{vxMODEL}}/g, `"${model}"`);
     queryTemplate = queryTemplate.replace(/{{vxFROM_SECS}}/g, fromSecs);
     queryTemplate = queryTemplate.replace(/{{vxTO_SECS}}/g, toSecs);
-    console.log(`model:${model},fromSecs:${fromSecs},toSecs:${toSecs}`);
 
-    const qr_distinct_fcstLen = await this.conn.cluster.query(queryTemplate);
+    const qrDistinctFcstLen = await this.conn.cluster.query(queryTemplate);
 
     const fcstLenArray = [];
-    for (let ifcstLen = 0; ifcstLen < qr_distinct_fcstLen.rows.length; ifcstLen++) {
-      fcstLenArray.push(qr_distinct_fcstLen.rows[ifcstLen].fcstLen);
+    for (let ifcstLen = 0; ifcstLen < qrDistinctFcstLen.rows.length; ifcstLen += 1) {
+      fcstLenArray.push(qrDistinctFcstLen.rows[ifcstLen].fcstLen);
     }
-    endTime = new Date().valueOf();
-    console.log(
-      `fcstLenArray:${qr_distinct_fcstLen.rows.length} in ${endTime - startTime} ms.`
-    );
 
     return fcstLenArray;
   };
@@ -163,47 +144,50 @@ class MatsMiddleCommon {
     obsSingleFve,
     modelSingleFve
   ) {
+    const thisCtc = ctc;
     for (let i = 0; i < stationNames.length; i += 1) {
       const station = stationNames[i];
       const varValO = obsSingleFve.stations[station];
       const varValM = modelSingleFve.stations[station];
 
       if (varValO && varValM) {
-        ctc.n0 += 1;
+        thisCtc.n0 += 1;
         let sub = `${fve};`;
         if (varValO < threshold && varValM < threshold) {
-          ctc.hit += 1;
+          thisCtc.hit += 1;
           sub += "1;";
         } else {
           sub += "0;";
         }
 
         if (varValO >= threshold && varValM < threshold) {
-          ctc.fa += 1;
+          thisCtc.fa += 1;
           sub += "1;";
         } else {
           sub += "0;";
         }
 
         if (varValO < threshold && varValM >= threshold) {
-          ctc.miss += 1;
+          thisCtc.miss += 1;
           sub += "1;";
         } else {
           sub += "0;";
         }
 
         if (varValO >= threshold && varValM >= threshold) {
-          ctc.cn += 1;
+          thisCtc.cn += 1;
           sub += "1";
         } else {
           sub += "0";
         }
-        ctc.sub_data.push(sub);
+        thisCtc.sub_data.push(sub);
       }
     }
+    return thisCtc;
   }
 
   computeSumsForStations(fve, sums, stationNames, obsSingleFve, modelSingleFve) {
+    const thisSums = sums;
     for (let i = 0; i < stationNames.length; i += 1) {
       const station = stationNames[i];
       const varValO = obsSingleFve.stations[station];
@@ -217,21 +201,23 @@ class MatsMiddleCommon {
         const obsSum = varValO;
         const absSum = Math.abs(varValO - varValM);
 
-        sums.n0 += 1;
-        sums.square_diff_sum += squareDiffSum;
-        sums.N_sum += nSum;
-        sums.obs_model_diff_sum += obsModelDiffSum;
-        sums.model_sum += modelSum;
-        sums.obs_sum += obsSum;
-        sums.abs_sum += absSum;
+        thisSums.n0 += 1;
+        thisSums.square_diff_sum += squareDiffSum;
+        thisSums.N_sum += nSum;
+        thisSums.obs_model_diff_sum += obsModelDiffSum;
+        thisSums.model_sum += modelSum;
+        thisSums.obs_sum += obsSum;
+        thisSums.abs_sum += absSum;
 
         const sub = `${fve};${squareDiffSum};${nSum};${obsModelDiffSum};${modelSum};${obsSum};${absSum};`;
-        sums.sub_data.push(sub);
+        thisSums.sub_data.push(sub);
       }
     }
+    return thisSums;
   }
 }
 
+// eslint-disable-next-line no-undef
 export default matsMiddleCommon = {
   MatsMiddleCommon,
 };

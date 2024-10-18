@@ -2,19 +2,18 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-/* global cbPool, Assets */
+/* global Assets */
 
 import { matsTypes, matsMiddleCommon } from "meteor/randyp:mats-common";
-import { _ } from "meteor/underscore";
 
 class MatsMiddleMap {
   logToFile = false;
 
   logMemUsage = false;
 
-  fcstValidEpoch_Array = [];
+  fcstValidEpochArray = [];
 
-  indVar_Array = [];
+  indVarArray = [];
 
   cbPool = null;
 
@@ -55,6 +54,10 @@ class MatsMiddleMap {
     this.mmCommon = new matsMiddleCommon.MatsMiddleCommon(cbPool);
   }
 
+  /* eslint-disable global-require */
+  /* eslint-disable no-console */
+  /* eslint-disable class-methods-use-this */
+
   processStationQuery = (
     statType,
     varName,
@@ -72,7 +75,7 @@ class MatsMiddleMap {
     let rv = [];
     const dFuture = new Future();
     (async () => {
-      rv = await this.processStationQuery_int(
+      rv = await this.processStationQueryInt(
         statType,
         varName,
         stationNames,
@@ -90,7 +93,7 @@ class MatsMiddleMap {
     return rv;
   };
 
-  processStationQuery_int = async (
+  processStationQueryInt = async (
     statType,
     varName,
     stationNames,
@@ -102,8 +105,6 @@ class MatsMiddleMap {
     validTimes,
     filterInfo
   ) => {
-    const fs = require("fs");
-
     this.statType = statType;
     this.varName = varName;
     this.stationNames = stationNames;
@@ -119,9 +120,9 @@ class MatsMiddleMap {
     }
     this.filterInfo = filterInfo;
 
-    this.conn = await cbPool.getConnection();
+    this.conn = await this.cbPool.getConnection();
 
-    this.fcstValidEpoch_Array = await this.mmCommon.get_fcstValidEpoch_Array(
+    this.fcstValidEpochArray = await this.mmCommon.getFcstValidEpochArray(
       fromSecs,
       toSecs
     );
@@ -131,7 +132,7 @@ class MatsMiddleMap {
       const stationNamesSlice = this.stationNames.slice(iofve, iofve + 100);
 
       await this.createObsData(stationNamesSlice);
-      await this.createModelData(stationNamesSlice);  
+      await this.createModelData(stationNamesSlice);
     }
 
     this.fveObs = {};
@@ -156,8 +157,6 @@ class MatsMiddleMap {
   };
 
   createObsData = async (stationNamesSlice) => {
-    const fs = require("fs");
-
     this.fveObs = {};
 
     const tmplGetNStationsMfveObs = Assets.getText(
@@ -188,8 +187,8 @@ class MatsMiddleMap {
     );
 
     const promises = [];
-    for (let iofve = 0; iofve < this.fcstValidEpoch_Array.length; iofve += 100) {
-      const fveArraySlice = this.fcstValidEpoch_Array.slice(iofve, iofve + 100);
+    for (let iofve = 0; iofve < this.fcstValidEpochArray.length; iofve += 100) {
+      const fveArraySlice = this.fcstValidEpochArray.slice(iofve, iofve + 100);
       const sql = tmplWithStationNamesObs.replace(
         /{{fcstValidEpoch}}/g,
         JSON.stringify(fveArraySlice)
@@ -222,8 +221,6 @@ class MatsMiddleMap {
   };
 
   createModelData = async (stationNamesSlice) => {
-    const fs = require("fs");
-
     this.fveModels = {};
 
     let tmplGetNStationsMfveModel = Assets.getText(
@@ -271,8 +268,8 @@ class MatsMiddleMap {
     );
 
     const promises = [];
-    for (let imfve = 0; imfve < this.fcstValidEpoch_Array.length; imfve += 100) {
-      const fveArraySlice = this.fcstValidEpoch_Array.slice(imfve, imfve + 100);
+    for (let imfve = 0; imfve < this.fcstValidEpochArray.length; imfve += 100) {
+      const fveArraySlice = this.fcstValidEpochArray.slice(imfve, imfve + 100);
       const sql = tmplWithStationNamesModels.replace(
         /{{fcstValidEpoch}}/g,
         JSON.stringify(fveArraySlice)
@@ -311,7 +308,7 @@ class MatsMiddleMap {
   };
 
   generateCtc = (stationNamesSlice) => {
-    const { threshold } = this;
+    const threshold = Number(this.threshold);
 
     for (let idx = 0; idx < stationNamesSlice.length; idx += 1) {
       const indVar = stationNamesSlice[idx];
@@ -328,12 +325,12 @@ class MatsMiddleMap {
         ctcStats.n0 = 0;
         ctcStats.nTimes = 0;
         ctcStats.sub_data = [];
-        [ctcStats.min_secs] = this.fcstValidEpoch_Array;
+        [ctcStats.min_secs] = this.fcstValidEpochArray;
         ctcStats.max_secs =
-          this.fcstValidEpoch_Array[this.fcstValidEpoch_Array.length - 1];
+          this.fcstValidEpochArray[this.fcstValidEpochArray.length - 1];
 
-        for (let imfve = 0; imfve < this.fcstValidEpoch_Array.length; imfve += 1) {
-          const fve = this.fcstValidEpoch_Array[imfve];
+        for (let imfve = 0; imfve < this.fcstValidEpochArray.length; imfve += 1) {
+          const fve = this.fcstValidEpochArray[imfve];
 
           const varValO = stnObs[fve];
           const varValM = stnModel[fve];
@@ -350,39 +347,25 @@ class MatsMiddleMap {
             ctcStats.n0 += 1;
             ctcStats.nTimes += 1;
 
-            let sub = `${fve};`;
             if (varValO < threshold && varValM < threshold) {
               ctcStats.hit += 1;
-              sub += "1;";
-            } else {
-              sub += "0;";
             }
 
             if (varValO >= threshold && varValM < threshold) {
               ctcStats.fa += 1;
-              sub += "1;";
-            } else {
-              sub += "0;";
             }
 
             if (varValO < threshold && varValM >= threshold) {
               ctcStats.miss += 1;
-              sub += "1;";
-            } else {
-              sub += "0;";
             }
 
             if (varValO >= threshold && varValM >= threshold) {
               ctcStats.cn += 1;
-              sub += "1";
-            } else {
-              sub += "0";
             }
-            // stats_fve.sub_data.push(sub);
           }
         }
         if (ctcStats.n0 > 0) {
-          const sub = `${this.fcstValidEpoch_Array[0]};${ctcStats.hit};${ctcStats.fa};${ctcStats.miss};${ctcStats.cn}`;
+          const sub = `${this.fcstValidEpochArray[0]};${ctcStats.hit};${ctcStats.fa};${ctcStats.miss};${ctcStats.cn}`;
           ctcStats.sub_data.push(sub);
           this.stats.push(ctcStats);
         }
@@ -408,12 +391,12 @@ class MatsMiddleMap {
         sumsStats.n0 = 0;
         sumsStats.nTimes = 0;
         sumsStats.sub_data = [];
-        [sumsStats.min_secs] = this.fcstValidEpoch_Array;
+        [sumsStats.min_secs] = this.fcstValidEpochArray;
         sumsStats.max_secs =
-          this.fcstValidEpoch_Array[this.fcstValidEpoch_Array.length - 1];
+          this.fcstValidEpochArray[this.fcstValidEpochArray.length - 1];
 
-        for (let imfve = 0; imfve < this.fcstValidEpoch_Array.length; imfve += 1) {
-          const fve = this.fcstValidEpoch_Array[imfve];
+        for (let imfve = 0; imfve < this.fcstValidEpochArray.length; imfve += 1) {
+          const fve = this.fcstValidEpochArray[imfve];
           const varValO = stnObs[fve];
           const varValM = stnModel[fve];
 
@@ -440,7 +423,7 @@ class MatsMiddleMap {
           }
         }
         if (sumsStats.n0 > 0) {
-          const sub = `${this.fcstValidEpoch_Array[0]};${sumsStats.square_diff_sum};${sumsStats.N_sum};${sumsStats.obs_model_diff_sum};${sumsStats.model_sum};${sumsStats.obs_sum};${sumsStats.abs_sum}`;
+          const sub = `${this.fcstValidEpochArray[0]};${sumsStats.square_diff_sum};${sumsStats.N_sum};${sumsStats.obs_model_diff_sum};${sumsStats.model_sum};${sumsStats.obs_sum};${sumsStats.abs_sum}`;
           sumsStats.sub_data.push(sub);
           this.stats.push(sumsStats);
         }
@@ -449,6 +432,7 @@ class MatsMiddleMap {
   };
 }
 
+// eslint-disable-next-line no-undef
 export default matsMiddleMap = {
   MatsMiddleMap,
 };

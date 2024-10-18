@@ -36,14 +36,7 @@
     // our first pass, we'll only consider the checks that ESLint can auto-fix as errors.
     // https://eslint.org/docs/latest/use/configure/rules#rule-severities
     "meteor/no-session": "off",
-    "import/no-unresolved": ["warn", { "ignore": ["^meteor/", "^/"] }] // This may be tricky to resolve due to: https://github.com/clayne11/eslint-import-resolver-meteor/issues/5
-  },
-  "ignorePatterns": [
-    "meteor_packages/mats-common/imports/startup/server/matsMiddle_common.js",
-    "meteor_packages/mats-common/imports/startup/server/matsMiddle_dailyModelCycle.js",
-    "meteor_packages/mats-common/imports/startup/server/matsMiddle_dieoff.js",
-    "meteor_packages/mats-common/imports/startup/server/matsMiddle_map.js",
-    "meteor_packages/mats-common/imports/startup/server/matsMiddle_timeSeries.js",
-    "meteor_packages/mats-common/imports/startup/server/matsMiddle_validTime.js"
-  ]
+    "import/no-unresolved": ["warn", { "ignore": ["^meteor/", "^/"] }], // This may be tricky to resolve due to: https://github.com/clayne11/eslint-import-resolver-meteor/issues/5
+    "no-await-in-loop": "warn"
+  }
 }

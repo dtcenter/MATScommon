@@ -2,19 +2,18 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-/* global cbPool, Assets */
+/* global Assets */
 
 import { matsTypes, matsMiddleCommon } from "meteor/randyp:mats-common";
-import { _ } from "meteor/underscore";
 
 class MatsMiddleDieoff {
   logToFile = false;
 
   logMemUsage = false;
 
-  fcstValidEpoch_Array = [];
+  fcstValidEpochArray = [];
 
-  indVar_Array = [];
+  indVarArray = [];
 
   cbPool = null;
 
@@ -59,6 +58,10 @@ class MatsMiddleDieoff {
     this.mmCommon = new matsMiddleCommon.MatsMiddleCommon(cbPool);
   }
 
+  /* eslint-disable global-require */
+  /* eslint-disable no-console */
+  /* eslint-disable class-methods-use-this */
+
   processStationQuery = (
     statType,
     varName,
@@ -78,7 +81,7 @@ class MatsMiddleDieoff {
     let rv = [];
     const dFuture = new Future();
     (async () => {
-      rv = await this.processStationQuery_int(
+      rv = await this.processStationQueryInt(
         statType,
         varName,
         stationNames,
@@ -98,7 +101,7 @@ class MatsMiddleDieoff {
     return rv;
   };
 
-  processStationQuery_int = async (
+  processStationQueryInt = async (
     statType,
     varName,
     stationNames,
@@ -112,8 +115,6 @@ class MatsMiddleDieoff {
     singleCycle,
     filterInfo
   ) => {
-    const fs = require("fs");
-
     this.statType = statType;
     this.varName = varName;
     this.stationNames = stationNames;
@@ -147,21 +148,21 @@ class MatsMiddleDieoff {
 
     this.filterInfo = filterInfo;
 
-    this.conn = await cbPool.getConnection();
+    this.conn = await this.cbPool.getConnection();
 
-    this.fcstValidEpoch_Array = await this.mmCommon.get_fcstValidEpoch_Array(
+    this.fcstValidEpochArray = await this.mmCommon.getFcstValidEpochArray(
       fromSecs,
       toSecs
     );
 
     // create distinct indVar array
-    this.indVar_Array = await this.mmCommon.get_fcstLen_Array(
+    this.indVarArray = await this.mmCommon.get_fcstLen_Array(
       this.model,
-      this.fcstValidEpoch_Array[0],
-      this.fcstValidEpoch_Array[this.fcstValidEpoch_Array.length - 1]
+      this.fcstValidEpochArray[0],
+      this.fcstValidEpochArray[this.fcstValidEpochArray.length - 1]
     );
-    this.indVar_Array = this.indVar_Array.filter((fl) => Number(fl) % 3 === 0);
-    this.indVar_Array.sort((a, b) => Number(a) - Number(b));
+    this.indVarArray = this.indVarArray.filter((fl) => Number(fl) % 3 === 0);
+    this.indVarArray.sort((a, b) => Number(a) - Number(b));
 
     await this.createObsData();
     await this.createModelData();
@@ -185,8 +186,6 @@ class MatsMiddleDieoff {
   };
 
   createObsData = async () => {
-    const fs = require("fs");
-
     const tmplGetNStationsMfveObs = Assets.getText(
       "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_obs.sql"
     );
@@ -215,8 +214,8 @@ class MatsMiddleDieoff {
     );
 
     const promises = [];
-    for (let iofve = 0; iofve < this.fcstValidEpoch_Array.length; iofve += 100) {
-      const fveArraySlice = this.fcstValidEpoch_Array.slice(iofve, iofve + 100);
+    for (let iofve = 0; iofve < this.fcstValidEpochArray.length; iofve += 100) {
+      const fveArraySlice = this.fcstValidEpochArray.slice(iofve, iofve + 100);
       const sql = tmplWithStationNamesObs.replace(
         /{{fcstValidEpoch}}/g,
         JSON.stringify(fveArraySlice)
@@ -229,7 +228,7 @@ class MatsMiddleDieoff {
       prSlice.then((qr) => {
         for (let jmfve = 0; jmfve < qr.rows.length; jmfve += 1) {
           const fveDataSingleEpoch = qr.rows[jmfve];
-          const indVarKey = "0";  // obs don't have a lead time
+          const indVarKey = "0"; // obs don't have a lead time
           if (!this.fveObs[indVarKey]) {
             this.fveObs[indVarKey] = {};
           }
@@ -254,8 +253,6 @@ class MatsMiddleDieoff {
   };
 
   createModelData = async () => {
-    const fs = require("fs");
-
     let tmplGetNStationsMfveModel = Assets.getText(
       "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_model.sql"
     );
@@ -293,16 +290,16 @@ class MatsMiddleDieoff {
     );
 
     const flaIncr = 3;
-    for (let flai = 0; flai < this.indVar_Array.length; flai += flaIncr) {
+    for (let flai = 0; flai < this.indVarArray.length; flai += flaIncr) {
       this.fveModels = {};
-      const flaSlice = this.indVar_Array.slice(flai, flai + flaIncr);
+      const flaSlice = this.indVarArray.slice(flai, flai + flaIncr);
       const tmplWithStationNamesModelsFcstArray = tmplWithStationNamesModels.replace(
         /{{vxFCST_LEN_ARRAY}}/g,
         JSON.stringify(flaSlice)
       );
       const promises = [];
-      for (let imfve = 0; imfve < this.fcstValidEpoch_Array.length; imfve += 100) {
-        const fveArraySlice = this.fcstValidEpoch_Array.slice(imfve, imfve + 100);
+      for (let imfve = 0; imfve < this.fcstValidEpochArray.length; imfve += 100) {
+        const fveArraySlice = this.fcstValidEpochArray.slice(imfve, imfve + 100);
         const sql = tmplWithStationNamesModelsFcstArray.replace(
           /{{fcstValidEpoch}}/g,
           JSON.stringify(fveArraySlice)
@@ -353,7 +350,7 @@ class MatsMiddleDieoff {
     });
 
     for (let idx = 0; idx < indVarsWithData.length; idx += 1) {
-      const ctcStats = {};
+      let ctcStats = {};
 
       const indVar = indVarsWithData[idx];
       ctcStats.fcst_lead = Number(indVar);
@@ -395,7 +392,7 @@ class MatsMiddleDieoff {
           (!this.singleCycle ||
             (this.singleCycle && fve - indVar * 3600 === this.singleCycle))
         ) {
-          this.mmCommon.computeCtcForStations(
+          ctcStats = this.mmCommon.computeCtcForStations(
             fve,
             threshold,
             ctcStats,
@@ -422,7 +419,7 @@ class MatsMiddleDieoff {
     });
 
     for (let idx = 0; idx < indVarsWithData.length; idx += 1) {
-      const sumsStats = {};
+      let sumsStats = {};
 
       const indVar = indVarsWithData[idx];
       sumsStats.fcst_lead = Number(indVar);
@@ -466,7 +463,7 @@ class MatsMiddleDieoff {
           (!this.singleCycle ||
             (this.singleCycle && fve - indVar * 3600 === this.singleCycle))
         ) {
-          this.mmCommon.computeSumsForStations(
+          sumsStats = this.mmCommon.computeSumsForStations(
             fve,
             sumsStats,
             this.stationNames,
@@ -486,6 +483,7 @@ class MatsMiddleDieoff {
   };
 }
 
+// eslint-disable-next-line no-undef
 export default matsMiddleDieoff = {
   MatsMiddleDieoff,
 };

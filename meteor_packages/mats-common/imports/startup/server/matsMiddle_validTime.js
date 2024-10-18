@@ -2,9 +2,9 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-/* global cbPool, Assets */
+/* global Assets */
 
-import { matsTypes, matsMiddleCommon } from "meteor/randyp:mats-common";
+import { matsMiddleCommon } from "meteor/randyp:mats-common";
 import { _ } from "meteor/underscore";
 
 class MatsMiddleValidTime {
@@ -12,9 +12,9 @@ class MatsMiddleValidTime {
 
   logMemUsage = false;
 
-  fcstValidEpoch_Array = [];
+  fcstValidEpochArray = [];
 
-  indVar_Array = [];
+  indVarArray = [];
 
   cbPool = null;
 
@@ -53,6 +53,10 @@ class MatsMiddleValidTime {
     this.mmCommon = new matsMiddleCommon.MatsMiddleCommon(cbPool);
   }
 
+  /* eslint-disable global-require */
+  /* eslint-disable no-console */
+  /* eslint-disable class-methods-use-this */
+
   processStationQuery = (
     statType,
     varName,
@@ -69,7 +73,7 @@ class MatsMiddleValidTime {
     let rv = [];
     const dFuture = new Future();
     (async () => {
-      rv = await this.processStationQuery_int(
+      rv = await this.processStationQueryInt(
         statType,
         varName,
         stationNames,
@@ -86,7 +90,7 @@ class MatsMiddleValidTime {
     return rv;
   };
 
-  processStationQuery_int = async (
+  processStationQueryInt = async (
     statType,
     varName,
     stationNames,
@@ -97,8 +101,6 @@ class MatsMiddleValidTime {
     toSecs,
     filterInfo
   ) => {
-    const fs = require("fs");
-
     this.statType = statType;
     this.varName = varName;
     this.stationNames = stationNames;
@@ -109,22 +111,22 @@ class MatsMiddleValidTime {
     this.toSecs = toSecs;
     this.filterInfo = filterInfo;
 
-    this.conn = await cbPool.getConnection();
+    this.conn = await this.cbPool.getConnection();
 
-    this.fcstValidEpoch_Array = await this.mmCommon.get_fcstValidEpoch_Array(
+    this.fcstValidEpochArray = await this.mmCommon.getFcstValidEpochArray(
       fromSecs,
       toSecs
     );
 
     // create distinct indVar array
-    for (let iofve = 0; iofve < this.fcstValidEpoch_Array.length; iofve += 1) {
-      const ofve = this.fcstValidEpoch_Array[iofve];
+    for (let iofve = 0; iofve < this.fcstValidEpochArray.length; iofve += 1) {
+      const ofve = this.fcstValidEpochArray[iofve];
       const indVar = (ofve % (24 * 3600)) / 3600;
-      if (!this.indVar_Array.includes(indVar)) {
-        this.indVar_Array.push(indVar);
+      if (!this.indVarArray.includes(indVar)) {
+        this.indVarArray.push(indVar);
       }
     }
-    this.indVar_Array.sort((a, b) => Number(a) - Number(b));
+    this.indVarArray.sort((a, b) => Number(a) - Number(b));
 
     await this.createObsData();
     await this.createModelData();
@@ -148,8 +150,6 @@ class MatsMiddleValidTime {
   };
 
   createObsData = async () => {
-    const fs = require("fs");
-
     const tmplGetNStationsMfveObs = Assets.getText(
       "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_obs.sql"
     );
@@ -178,8 +178,8 @@ class MatsMiddleValidTime {
     );
 
     const promises = [];
-    for (let iofve = 0; iofve < this.fcstValidEpoch_Array.length; iofve += 100) {
-      const fveArraySlice = this.fcstValidEpoch_Array.slice(iofve, iofve + 100);
+    for (let iofve = 0; iofve < this.fcstValidEpochArray.length; iofve += 100) {
+      const fveArraySlice = this.fcstValidEpochArray.slice(iofve, iofve + 100);
       const sql = tmplWithStationNamesObs.replace(
         /{{fcstValidEpoch}}/g,
         JSON.stringify(fveArraySlice)
@@ -201,15 +201,15 @@ class MatsMiddleValidTime {
           for (let i = 0; i < this.stationNames.length; i += 1) {
             if (fveDataSingleEpoch[this.stationNames[i]]) {
               const varValStation =
-              fveDataSingleEpoch[this.stationNames[i]] === "NULL"
-                ? null
-                : fveDataSingleEpoch[this.stationNames[i]];
+                fveDataSingleEpoch[this.stationNames[i]] === "NULL"
+                  ? null
+                  : fveDataSingleEpoch[this.stationNames[i]];
               stationsSingleEpoch[this.stationNames[i]] = varValStation;
             }
           }
           dataSingleEpoch.stations = stationsSingleEpoch;
           this.fveObs[indVarKey][fveDataSingleEpoch.fve] = dataSingleEpoch;
-      }
+        }
       });
     }
 
@@ -217,8 +217,6 @@ class MatsMiddleValidTime {
   };
 
   createModelData = async () => {
-    const fs = require("fs");
-
     let tmplGetNStationsMfveModel = Assets.getText(
       "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_model.sql"
     );
@@ -264,8 +262,8 @@ class MatsMiddleValidTime {
     );
 
     const promises = [];
-    for (let imfve = 0; imfve < this.fcstValidEpoch_Array.length; imfve += 100) {
-      const fveArraySlice = this.fcstValidEpoch_Array.slice(imfve, imfve + 100);
+    for (let imfve = 0; imfve < this.fcstValidEpochArray.length; imfve += 100) {
+      const fveArraySlice = this.fcstValidEpochArray.slice(imfve, imfve + 100);
       const sql = tmplWithStationNamesModels.replace(
         /{{fcstValidEpoch}}/g,
         JSON.stringify(fveArraySlice)
@@ -288,9 +286,9 @@ class MatsMiddleValidTime {
           for (let i = 0; i < this.stationNames.length; i += 1) {
             if (fveDataSingleEpoch[this.stationNames[i]]) {
               const varValStation =
-              fveDataSingleEpoch[this.stationNames[i]] === "NULL"
-                ? null
-                : fveDataSingleEpoch[this.stationNames[i]];
+                fveDataSingleEpoch[this.stationNames[i]] === "NULL"
+                  ? null
+                  : fveDataSingleEpoch[this.stationNames[i]];
               stationsSingleEpoch[this.stationNames[i]] = varValStation;
             }
           }
@@ -318,7 +316,7 @@ class MatsMiddleValidTime {
     });
 
     for (let idx = 0; idx < indVarsWithData.length; idx += 1) {
-      const ctcStats = {};
+      let ctcStats = {};
 
       const indVar = indVarsWithData[idx];
       ctcStats.hr_of_day = Number(indVar);
@@ -343,7 +341,7 @@ class MatsMiddleValidTime {
         const modelSingleFve = indVarSingle[fve];
 
         if (obsSingleFve && modelSingleFve) {
-          this.mmCommon.computeCtcForStations(
+          ctcStats = this.mmCommon.computeCtcForStations(
             fve,
             threshold,
             ctcStats,
@@ -373,7 +371,7 @@ class MatsMiddleValidTime {
     });
 
     for (let idx = 0; idx < indVarsWithData.length; idx += 1) {
-      const sumsStats = {};
+      let sumsStats = {};
 
       const indVar = indVarsWithData[idx];
       sumsStats.hr_of_day = Number(indVar);
@@ -400,7 +398,7 @@ class MatsMiddleValidTime {
         const modelSingleFve = indVarSingle[fve];
 
         if (obsSingleFve && modelSingleFve) {
-          this.mmCommon.computeSumsForStations(
+          sumsStats = this.mmCommon.computeSumsForStations(
             fve,
             sumsStats,
             this.stationNames,
@@ -420,6 +418,7 @@ class MatsMiddleValidTime {
   };
 }
 
+// eslint-disable-next-line no-undef
 export default matsMiddleValidTime = {
   MatsMiddleValidTime,
 };
