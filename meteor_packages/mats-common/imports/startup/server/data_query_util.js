@@ -149,7 +149,9 @@ const getStationsInCouchbaseRegion = function (pool, region) {
       sitesList = await pool.queryCB(pool.trfmSQLForDbTarget(statement));
       // done waiting - have results
       dFuture.return();
-    })();
+    })().catch(() => {
+      dFuture.return();
+    });
     dFuture.wait();
     return sitesList;
   }
@@ -3100,26 +3102,31 @@ const queryDBTimeSeries = function (
           rows = await pool.queryCB(statementOrMwRows);
           // done waiting - have results
           dFuture.return();
-        })();
+        })().catch((err) => {
+          error = err.message;
+          dFuture.return();
+        });
       }
       dFuture.wait();
-      if (rows === undefined || rows === null || rows.length === 0) {
-        error = matsTypes.Messages.NO_DATA_FOUND;
-      } else if (rows.includes("queryCB ERROR: ")) {
-        error = rows;
-      } else {
-        parsedData = parseQueryDataXYCurve(
-          rows,
-          d,
-          appParams,
-          statisticStr,
-          forecastOffset,
-          cycles,
-          regular
-        );
-        d = parsedData.d;
-        n0 = parsedData.n0;
-        nTimes = parsedData.nTimes;
+      if (error.length === 0) {
+        if (rows === undefined || rows === null || rows.length === 0) {
+          error = matsTypes.Messages.NO_DATA_FOUND;
+        } else if (rows.includes("queryCB ERROR: ")) {
+          error = rows;
+        } else {
+          parsedData = parseQueryDataXYCurve(
+            rows,
+            d,
+            appParams,
+            statisticStr,
+            forecastOffset,
+            cycles,
+            regular
+          );
+          d = parsedData.d;
+          n0 = parsedData.n0;
+          nTimes = parsedData.nTimes;
+        }
       }
     } else {
       // if this app isn't couchbase, use mysql
@@ -3234,30 +3241,35 @@ const queryDBSpecialtyCurve = function (
         (async () => {
           rows = await pool.queryCB(statementOrMwRows);
           dFuture.return();
-        })();
+        })().catch((err) => {
+          error = err.message;
+          dFuture.return();
+        });
       }
       dFuture.wait();
-      if (rows === undefined || rows === null || rows.length === 0) {
-        error = matsTypes.Messages.NO_DATA_FOUND;
-      } else if (rows.includes("queryCB ERROR: ")) {
-        error = rows;
-      } else {
-        if (appParams.plotType !== matsTypes.PlotTypes.histogram) {
-          parsedData = parseQueryDataXYCurve(
-            rows,
-            d,
-            appParams,
-            statisticStr,
-            null,
-            null,
-            null
-          );
+      if (error.length === 0) {
+        if (rows === undefined || rows === null || rows.length === 0) {
+          error = matsTypes.Messages.NO_DATA_FOUND;
+        } else if (rows.includes("queryCB ERROR: ")) {
+          error = rows;
         } else {
-          parsedData = parseQueryDataHistogram(rows, d, appParams, statisticStr);
+          if (appParams.plotType !== matsTypes.PlotTypes.histogram) {
+            parsedData = parseQueryDataXYCurve(
+              rows,
+              d,
+              appParams,
+              statisticStr,
+              null,
+              null,
+              null
+            );
+          } else {
+            parsedData = parseQueryDataHistogram(rows, d, appParams, statisticStr);
+          }
+          d = parsedData.d;
+          n0 = parsedData.n0;
+          nTimes = parsedData.nTimes;
         }
-        d = parsedData.d;
-        n0 = parsedData.n0;
-        nTimes = parsedData.nTimes;
       }
     } else {
       // if this app isn't couchbase, use mysql
@@ -3374,7 +3386,10 @@ const queryDBReliability = function (pool, statement, appParams, kernel) {
           d = parsedData.d;
         }
         dFuture.return();
-      })();
+      })().catch((err) => {
+        error = err.message;
+        dFuture.return();
+      });
     } else {
       // if this app isn't couchbase, use mysql
       pool.query(statement, function (err, rows) {
@@ -3469,7 +3484,10 @@ const queryDBPerformanceDiagram = function (pool, statement, appParams) {
           nTimes = parsedData.nTimes;
         }
         dFuture.return();
-      })();
+      })().catch((err) => {
+        error = err.message;
+        dFuture.return();
+      });
     } else {
       // if this app isn't couchbase, use mysql
       pool.query(statement, function (err, rows) {
@@ -3585,7 +3603,10 @@ const queryDBSimpleScatter = function (
           nTimes = parsedData.nTimes;
         }
         dFuture.return();
-      })();
+      })().catch((err) => {
+        error = err.message;
+        dFuture.return();
+      });
     } else {
       // if this app isn't couchbase, use mysql
       pool.query(statement, function (err, rows) {
@@ -3722,38 +3743,43 @@ const queryDBMapScalar = function (
         (async () => {
           rows = await pool.queryCB(statementOrMwRows);
           dFuture.return();
-        })();
+        })().catch((err) => {
+          error = err.message;
+          dFuture.return();
+        });
       }
       dFuture.wait();
-      if (rows === undefined || rows === null || rows.length === 0) {
-        error = matsTypes.Messages.NO_DATA_FOUND;
-      } else if (rows.includes("queryCB ERROR: ")) {
-        error = rows;
-      } else {
-        parsedData = parseQueryDataMapScalar(
-          rows,
-          d,
-          dLowest,
-          dLow,
-          dModerate,
-          dHigh,
-          dHighest,
-          dataSource,
-          siteMap,
-          statistic,
-          variable,
-          varUnits,
-          appParams,
-          plotParams,
-          true
-        );
-        d = parsedData.d;
-        dLowest = parsedData.dLowest;
-        dLow = parsedData.dLow;
-        dModerate = parsedData.dModerate;
-        dHigh = parsedData.dHigh;
-        dHighest = parsedData.dHighest;
-        valueLimits = parsedData.valueLimits;
+      if (error.length === 0) {
+        if (rows === undefined || rows === null || rows.length === 0) {
+          error = matsTypes.Messages.NO_DATA_FOUND;
+        } else if (rows.includes("queryCB ERROR: ")) {
+          error = rows;
+        } else {
+          parsedData = parseQueryDataMapScalar(
+            rows,
+            d,
+            dLowest,
+            dLow,
+            dModerate,
+            dHigh,
+            dHighest,
+            dataSource,
+            siteMap,
+            statistic,
+            variable,
+            varUnits,
+            appParams,
+            plotParams,
+            true
+          );
+          d = parsedData.d;
+          dLowest = parsedData.dLowest;
+          dLow = parsedData.dLow;
+          dModerate = parsedData.dModerate;
+          dHigh = parsedData.dHigh;
+          dHighest = parsedData.dHighest;
+          valueLimits = parsedData.valueLimits;
+        }
       }
     } else {
       // if this app isn't couchbase, use mysql
@@ -3935,15 +3961,15 @@ const queryDBMapCTC = function (
     let error = "";
     let parsedData;
 
-    const Future = require("fibers/future");
-    const dFuture = new Future();
-
     if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
       /*
             we have to call the couchbase utilities as async functions but this
             routine 'queryDBSpecialtyCurve' cannot itself be async because the graph page needs to wait
             for its result, so we use an anonymous async() function here to wrap the queryCB call
       */
+      const Future = require("fibers/future");
+      const dFuture = new Future();
+
       let rows = null;
       if (Array.isArray(statementOrMwRows)) {
         rows = statementOrMwRows;
@@ -3952,48 +3978,56 @@ const queryDBMapCTC = function (
         (async () => {
           rows = await pool.queryCB(statementOrMwRows);
           dFuture.return();
-        })();
+        })().catch((err) => {
+          error = err.message;
+          dFuture.return();
+        });
       }
       dFuture.wait();
-      if (rows === undefined || rows === null || rows.length === 0) {
-        error = matsTypes.Messages.NO_DATA_FOUND;
-      } else if (rows.includes("queryCB ERROR: ")) {
-        error = rows;
-      } else {
-        parsedData = parseQueryDataMapCTC(
-          rows,
-          d,
-          dPurple,
-          dPurpleBlue,
-          dBlue,
-          dBlueGreen,
-          dGreen,
-          dGreenYellow,
-          dYellow,
-          dOrange,
-          dOrangeRed,
-          dRed,
-          dataSource,
-          siteMap,
-          statistic,
-          appParams,
-          true
-        );
-        d = parsedData.d;
-        dPurple = parsedData.dPurple;
-        dPurpleBlue = parsedData.dPurpleBlue;
-        dBlue = parsedData.dBlue;
-        dBlueGreen = parsedData.dBlueGreen;
-        dGreen = parsedData.dGreen;
-        dGreenYellow = parsedData.dGreenYellow;
-        dYellow = parsedData.dYellow;
-        dOrange = parsedData.dOrange;
-        dOrangeRed = parsedData.dOrangeRed;
-        dRed = parsedData.dRed;
-        valueLimits = parsedData.valueLimits;
+      if (error.length === 0) {
+        if (rows === undefined || rows === null || rows.length === 0) {
+          error = matsTypes.Messages.NO_DATA_FOUND;
+        } else if (rows.includes("queryCB ERROR: ")) {
+          error = rows;
+        } else {
+          parsedData = parseQueryDataMapCTC(
+            rows,
+            d,
+            dPurple,
+            dPurpleBlue,
+            dBlue,
+            dBlueGreen,
+            dGreen,
+            dGreenYellow,
+            dYellow,
+            dOrange,
+            dOrangeRed,
+            dRed,
+            dataSource,
+            siteMap,
+            statistic,
+            appParams,
+            true
+          );
+          d = parsedData.d;
+          dPurple = parsedData.dPurple;
+          dPurpleBlue = parsedData.dPurpleBlue;
+          dBlue = parsedData.dBlue;
+          dBlueGreen = parsedData.dBlueGreen;
+          dGreen = parsedData.dGreen;
+          dGreenYellow = parsedData.dGreenYellow;
+          dYellow = parsedData.dYellow;
+          dOrange = parsedData.dOrange;
+          dOrangeRed = parsedData.dOrangeRed;
+          dRed = parsedData.dRed;
+          valueLimits = parsedData.valueLimits;
+        }
       }
     } else {
       // if this app isn't couchbase, use mysql
+      const Future = require("fibers/future");
+      const dFuture = new Future();
+
       pool.query(statementOrMwRows, function (err, rows) {
         // query callback - build the curve data from the results - or set an error
         if (err !== undefined && err !== null) {
@@ -4138,7 +4172,10 @@ const queryDBContour = function (pool, statement, appParams, statisticStr) {
           d = parsedData.d;
         }
         dFuture.return();
-      })();
+      })().catch((err) => {
+        error = err.message;
+        dFuture.return();
+      });
     } else {
       // if this app isn't couchbase, use mysql
       pool.query(statement, function (err, rows) {

@@ -54,15 +54,19 @@ class CBUtilities {
       }
       return this.conn;
     } catch (err) {
-      console.log(`CBUtilities.getConnection ERROR: ${err}`);
-      throw new Error(`CBUtilities.getConnection ERROR: ${err}`);
+      console.log(`CBUtilities.getConnection ERROR: ${err.message}`);
+      throw new Error(`CBUtilities.getConnection ERROR: ${err.message}`);
     }
   };
 
   closeConnection = async () => {
-    console.log(`closing couchbase connection to: ${this.host}`);
-    if (this.conn) {
-      this.conn.cluster.close();
+    try {
+      if (this.conn) {
+        this.conn.cluster.close();
+      }
+    } catch (err) {
+      console.log(`CBUtilities.closeConnection ERROR: ${err.message}`);
+      throw new Error(`CBUtilities.closeConnection ERROR: ${err.message}`);
     }
   };
 
@@ -71,8 +75,8 @@ class CBUtilities {
       const conn = await this.getConnection();
       return await conn.collection.upsert(key, doc, options);
     } catch (err) {
-      console.log("upsertCB ERROR: ", err);
-      throw new Error(`upsertCB ERROR: ${err}`);
+      console.log(`CBUtilities.upsertCB ERROR: ${err.message}`);
+      throw new Error(`CBUtilities.upsertCB ERROR: ${err.message}`);
     }
   };
 
@@ -82,8 +86,8 @@ class CBUtilities {
       const result = await conn.collection.remove(key);
       return result;
     } catch (err) {
-      console.log("removeCB ERROR: ", err);
-      throw new Error(`removeCB ERROR: ${err}`);
+      console.log(`CBUtilities.removeCB ERROR: ${err.message}`);
+      throw new Error(`CBUtilities.removeCB ERROR: ${err.message}`);
     }
   };
 
@@ -93,26 +97,19 @@ class CBUtilities {
       const result = await conn.collection.get(key);
       return result;
     } catch (err) {
-      console.log("getCB ERROR: ", err);
-      throw new Error(`getCB ERROR: ${err}`);
+      console.log(`CBUtilities.getCB ERROR: ${err.message}`);
+      throw new Error(`CBUtilities.getCB ERROR: ${err.message}`);
     }
   };
 
   queryCB = async (statement) => {
-    const Future = require("fibers/future");
     try {
-      let result;
       const conn = await this.getConnection();
-      const dFuture = new Future();
-      (async () => {
-        result = await conn.cluster.query(statement);
-        // done waiting - have results
-        dFuture.return();
-      })();
-      dFuture.wait();
+      const result = await conn.cluster.query(statement);
       return result.rows;
     } catch (err) {
-      return `queryCB ERROR: ${err}`;
+      console.log(`CBUtilities.queryCB ERROR: ${err.message}`);
+      throw new Error(`CBUtilities.queryCB ERROR: ${err.message}`);
     }
   };
 
@@ -125,7 +122,8 @@ class CBUtilities {
       });
       return result.rows;
     } catch (err) {
-      return `queryCBWithConsistency ERROR: ${err}`;
+      console.log(`CBUtilities.queryCBWithConsistency ERROR: ${err.message}`);
+      throw new Error(`CBUtilities.queryCBWithConsistency ERROR: ${err.message}`);
     }
   };
 
@@ -151,54 +149,66 @@ class CBUtilities {
       });
       return results.rows;
     } catch (err) {
-      console.log("searchStationsByBoundingBox ERROR: ", err);
-      throw new Error(`searchStationsByBoundingBox ERROR: ${err}`);
+      console.log(`CBUtilities.searchStationsByBoundingBox ERROR: ${err.message}`);
+      throw new Error(`CBUtilities.searchStationsByBoundingBox ERROR: ${err.message}`);
     }
   };
 
   trfmSQLForDbTarget = (sqlstr) => {
-    let val = sqlstr.replace(/{{vxBUCKET}}/g, this.bucket);
-    val = val.replace(/{{vxSCOPE}}/g, this.scope);
-    val = val.replace(/{{vxCOLLECTION}}/g, this.collection);
-    val = val.replace(
-      /{{vxDBTARGET}}/g,
-      `${this.bucketName}.${this.scope}.${this.collection}`
-    );
-    return val;
+    try {
+      let val = sqlstr.replace(/{{vxBUCKET}}/g, this.bucket);
+      val = val.replace(/{{vxSCOPE}}/g, this.scope);
+      val = val.replace(/{{vxCOLLECTION}}/g, this.collection);
+      val = val.replace(
+        /{{vxDBTARGET}}/g,
+        `${this.bucketName}.${this.scope}.${this.collection}`
+      );
+      return val;
+    } catch (err) {
+      console.log(`CBUtilities.trfmSQLForDbTarget ERROR: ${err.message}`);
+      throw new Error(`CBUtilities.trfmSQLForDbTarget ERROR: ${err.message}`);
+    }
   };
 
   trfmListToCSVString = (listVals, prefix, doQuotes) => {
-    let newArr = listVals;
-    if (prefix) {
-      newArr = listVals.map((i) => prefix + i);
+    try {
+      let newArr = listVals;
+      if (prefix) {
+        newArr = listVals.map((i) => prefix + i);
+      }
+      let rv = "";
+      if (doQuotes) {
+        rv = `'${newArr.join("','")}${+"'"}`;
+      } else {
+        rv = newArr;
+      }
+      return rv;
+    } catch (err) {
+      console.log(`CBUtilities.trfmListToCSVString ERROR: ${err.message}`);
+      throw new Error(`CBUtilities.trfmListToCSVString ERROR: ${err.message}`);
     }
-    let rv = "";
-    if (doQuotes) {
-      rv = `'${newArr.join("','")}${+"'"}`;
-    } else {
-      rv = newArr;
-    }
-    return rv;
   };
 
   // Gopa - this is a trivial implenentation that asssumes that the clause in
   // question is all in a single line, could use improvement
   trfmSQLRemoveClause = (sqlstr, clauseFragment) => {
-    const lines = sqlstr.split("\n");
-    let rv = "";
-    for (let i = 0; i < lines.length; i += 1) {
-      if (!lines[i].includes(clauseFragment)) {
-        rv = `${rv + lines[i]}\n`;
+    try {
+      const lines = sqlstr.split("\n");
+      let rv = "";
+      for (let i = 0; i < lines.length; i += 1) {
+        if (!lines[i].includes(clauseFragment)) {
+          rv = `${rv + lines[i]}\n`;
+        }
       }
+      return rv;
+    } catch (err) {
+      console.log(`CBUtilities.trfmSQLRemoveClause ERROR: ${err.message}`);
+      throw new Error(`CBUtilities.trfmSQLRemoveClause ERROR: ${err.message}`);
     }
-    return rv;
   };
 }
-
-const test = async () => {};
 
 // eslint-disable-next-line no-undef
 export default matsCouchbaseUtils = {
   CBUtilities,
-  test,
 };
