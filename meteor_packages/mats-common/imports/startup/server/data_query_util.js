@@ -3961,15 +3961,15 @@ const queryDBMapCTC = function (
     let error = "";
     let parsedData;
 
+    const Future = require("fibers/future");
+    const dFuture = new Future();
+
     if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
       /*
             we have to call the couchbase utilities as async functions but this
             routine 'queryDBSpecialtyCurve' cannot itself be async because the graph page needs to wait
             for its result, so we use an anonymous async() function here to wrap the queryCB call
       */
-      const Future = require("fibers/future");
-      const dFuture = new Future();
-
       let rows = null;
       if (Array.isArray(statementOrMwRows)) {
         rows = statementOrMwRows;
@@ -4025,9 +4025,6 @@ const queryDBMapCTC = function (
       }
     } else {
       // if this app isn't couchbase, use mysql
-      const Future = require("fibers/future");
-      const dFuture = new Future();
-
       pool.query(statementOrMwRows, function (err, rows) {
         // query callback - build the curve data from the results - or set an error
         if (err !== undefined && err !== null) {
