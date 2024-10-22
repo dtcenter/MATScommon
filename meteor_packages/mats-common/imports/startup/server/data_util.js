@@ -290,28 +290,6 @@ const doColorScheme = function () {
   }
 };
 
-// utility for google login capabilities in MATS -- broken for esrl.noaa.gov/gsd/mats?
-const doCredentials = function () {
-  // the gmail account for the credentials is mats.mail.daemon@gmail.com - pwd mats2015!
-  if (
-    matsCollections.Settings.findOne({}) === undefined ||
-    matsCollections.Settings.findOne({}).resetFromCode === undefined ||
-    matsCollections.Settings.findOne({}).resetFromCode === true
-  ) {
-    matsCollections.Credentials.remove({});
-  }
-  if (matsCollections.Credentials.find().count() === 0) {
-    matsCollections.Credentials.insert({
-      name: "oauth_google",
-      clientId:
-        "499180266722-aai2tddo8s9edv4km1pst88vebpf9hec.apps.googleusercontent.com",
-      clientSecret: "xdU0sc7SbdOOEzSyID_PTIRE",
-      refresh_token:
-        "1/3bhWyvCMMfwwDdd4F3ftlJs3-vksgg7G8POtiOBwYnhIgOrJDtdun6zK6XiATCKT",
-    });
-  }
-};
-
 // another utility to assist at logging into MATS
 const doRoles = function () {
   if (
@@ -2177,7 +2155,6 @@ export default matsDataUtils = {
   secsConvert,
   doAuthorization,
   doColorScheme,
-  doCredentials,
   doRoles,
   doSettings,
   callMetadataAPI,

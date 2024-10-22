@@ -2091,115 +2091,6 @@ const dropScorecardInstance = new ValidatedMethod({
   },
 });
 
-// administration tools
-const emailImage = new ValidatedMethod({
-  name: "matsMethods.emailImage",
-  validate: new SimpleSchema({
-    imageStr: {
-      type: String,
-    },
-    toAddress: {
-      type: String,
-    },
-    subject: {
-      type: String,
-    },
-  }).validator(),
-  run(params) {
-    const { imageStr } = params;
-    const { toAddress } = params;
-    const { subject } = params;
-    if (!Meteor.userId()) {
-      throw new Meteor.Error(401, "not-logged-in");
-    }
-    const fromAddress = Meteor.user().services.google.email;
-    // these come from google - see
-    // http://masashi-k.blogspot.fr/2013/06/sending-mail-with-gmail-using-xoauth2.html
-    // http://stackoverflow.com/questions/24098461/nodemailer-gmail-what-exactly-is-a-refresh-token-and-how-do-i-get-one/24123550
-
-    // the gmail account for the credentials is mats.mail.daemon@gmail.com - pwd mats2015!
-    // var clientId = "339389735380-382sf11aicmgdgn7e72p4end5gnm9sad.apps.googleusercontent.com";
-    // var clientSecret = "7CfNN-tRl5QAL595JTW2TkRl";
-    // var refresh_token = "1/PDql7FR01N2gmq5NiTfnrT-OlCYC3U67KJYYDNPeGnA";
-    const credentials = matsCollections.Credentials.findOne(
-      {
-        name: "oauth_google",
-      },
-      {
-        clientId: 1,
-        clientSecret: 1,
-        refresh_token: 1,
-      }
-    );
-    const { clientId } = credentials;
-    const { clientSecret } = credentials;
-    const refreshToken = credentials.refresh_token;
-
-    let smtpTransporter;
-    try {
-      const Nodemailer = require("nodemailer");
-      smtpTransporter = Nodemailer.createTransport("SMTP", {
-        service: "Gmail",
-        auth: {
-          XOAuth2: {
-            user: "mats.gsl@noaa.gov",
-            clientId,
-            clientSecret,
-            refreshToken,
-          },
-        },
-      });
-    } catch (e) {
-      throw new Meteor.Error(401, `Transport error ${e.message()}`);
-    }
-    try {
-      const mailOptions = {
-        sender: fromAddress,
-        replyTo: fromAddress,
-        from: fromAddress,
-        to: toAddress,
-        subject,
-        attachments: [
-          {
-            filename: "graph.png",
-            contents: Buffer.from(imageStr.split("base64,")[1], "base64"),
-          },
-        ],
-      };
-
-      smtpTransporter.sendMail(mailOptions, function (error, response) {
-        if (error) {
-          console.log(
-            `smtpTransporter error ${error} from:${fromAddress} to:${toAddress}`
-          );
-        } else {
-          console.log(`${response} from:${fromAddress} to:${toAddress}`);
-        }
-        smtpTransporter.close();
-      });
-    } catch (e) {
-      throw new Meteor.Error(401, `Send error ${e.message()}`);
-    }
-    return false;
-  },
-});
-
-// administation tool
-const getAuthorizations = new ValidatedMethod({
-  name: "matsMethods.getAuthorizations",
-  validate: new SimpleSchema({}).validator(),
-  run() {
-    let roles = [];
-    if (Meteor.isServer) {
-      const userEmail = Meteor.user().services.google.email.toLowerCase();
-      roles = matsCollections.Authorization.findOne({
-        email: userEmail,
-      }).roles;
-    }
-    return roles;
-  },
-});
-
 // administration tool
 
 const getRunEnvironment = new ValidatedMethod({
@@ -3016,8 +2907,6 @@ const resetApp = async function (appRef) {
     matsDataUtils.doRoles();
     matsCollections.Authorization.remove({});
     matsDataUtils.doAuthorization();
-    matsCollections.Credentials.remove({});
-    matsDataUtils.doCredentials();
     matsCollections.PlotGraphFunctions.remove({});
     matsCollections.ColorScheme.remove({});
     matsDataUtils.doColorScheme();
@@ -3959,8 +3848,6 @@ export default matsMethods = {
   applySettingsData,
   deleteSettings,
   dropScorecardInstance,
-  emailImage,
-  getAuthorizations,
   getRunEnvironment,
   getDefaultGroupList,
   getGraphData,

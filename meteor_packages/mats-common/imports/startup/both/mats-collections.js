@@ -46,8 +46,6 @@ const Roles = new Mongo.Collection("Roles");
 const SavedRoles = new Mongo.Collection("SavedRoles");
 const Databases = new Mongo.Collection("Databases");
 const SavedDatabases = new Mongo.Collection("SavedDatabases");
-const Credentials = new Mongo.Collection("Credentials");
-const SavedCredentials = new Mongo.Collection("SavedCredentials");
 const SiteMap = new Mongo.Collection("SiteMap");
 const StationMap = new Mongo.Collection("StationMap");
 const Scorecard = new Mongo.Collection("Scorecard");
@@ -81,8 +79,6 @@ const explicitCollections = {
   SavedRoles,
   Databases,
   SavedDatabases,
-  Credentials,
-  SavedCredentials,
   SiteMap,
   StationMap,
   Scorecard,

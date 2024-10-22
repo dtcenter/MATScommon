@@ -34,7 +34,6 @@ if (Meteor.isClient) {
   Meteor.subscribe("SentAddresses");
   Meteor.subscribe("Roles");
   Meteor.subscribe("Authorization");
-  Meteor.subscribe("Credentials");
   Meteor.subscribe("Databases");
   Meteor.subscribe("CurveTextPatterns");
   Meteor.subscribe("ScatterAxisTextPattern");
