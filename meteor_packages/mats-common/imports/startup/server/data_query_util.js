@@ -3836,6 +3836,168 @@ const queryDBMapScalar = function (
   return null;
 };
 
+// helper method for function below
+const runMultipleQueries = async function (
+  future,
+  pool,
+  statement,
+  querySites,
+  error,
+  allRows
+) {
+  if (querySites.length > 0) {
+    const querySite = querySites[0];
+    const thisStatement = statement
+      .toString()
+      .replace(/{{siteName}}/g, querySite.name)
+      .replace(/{{siteID}}/g, querySite.id);
+
+    pool.query(thisStatement, function (err, rows) {
+      // query callback - build the curve data from the results - or set an error
+      if (err !== undefined && err !== null) {
+        // eslint-disable-next-line no-param-reassign
+        error = err.message;
+        future.return();
+      } else {
+        allRows.push(rows[0]);
+        runMultipleQueries(
+          future,
+          pool,
+          statement,
+          querySites.filter((x, y) => y !== 0),
+          error,
+          allRows
+        );
+      }
+    });
+  } else {
+    future.return();
+  }
+};
+
+// this method queries the database for map plots, in a loop with one query per station
+const queryDBMapScalarLoop = function (
+  pool,
+  statement,
+  dataSource,
+  statistic,
+  variable,
+  varUnits,
+  querySites,
+  appParams,
+  plotParams
+) {
+  if (Meteor.isServer) {
+    // d will contain the curve data
+    let d = {
+      siteName: [],
+      queryVal: [],
+      lat: [],
+      lon: [],
+      color: [],
+      stats: [],
+      text: [],
+    };
+    let dLowest = {
+      siteName: [],
+      queryVal: [],
+      lat: [],
+      lon: [],
+      stats: [],
+      text: [],
+      color: "",
+    };
+    let dLow = {
+      siteName: [],
+      queryVal: [],
+      lat: [],
+      lon: [],
+      stats: [],
+      text: [],
+      color: "",
+    };
+    let dModerate = {
+      siteName: [],
+      queryVal: [],
+      lat: [],
+      lon: [],
+      stats: [],
+      text: [],
+      color: "",
+    };
+    let dHigh = {
+      siteName: [],
+      queryVal: [],
+      lat: [],
+      lon: [],
+      stats: [],
+      text: [],
+      color: "",
+    };
+    let dHighest = {
+      siteName: [],
+      queryVal: [],
+      lat: [],
+      lon: [],
+      stats: [],
+      text: [],
+      color: "",
+    };
+    let valueLimits = {};
+    let parsedData;
+    const allRows = [];
+    let error = "";
+
+    const Future = require("fibers/future");
+    const dFuture = new Future();
+    runMultipleQueries(dFuture, pool, statement, querySites, error, allRows);
+    dFuture.wait();
+
+    if (error.length === 0) {
+      if (allRows.length === 0) {
+        error = matsTypes.Messages.NO_DATA_FOUND;
+      } else {
+        parsedData = parseQueryDataMapScalar(
+          allRows,
+          d,
+          dLowest,
+          dLow,
+          dModerate,
+          dHigh,
+          dHighest,
+          dataSource,
+          querySites,
+          statistic,
+          variable,
+          varUnits,
+          appParams,
+          plotParams,
+          true
+        );
+        d = parsedData.d;
+        dLowest = parsedData.dLowest;
+        dLow = parsedData.dLow;
+        dModerate = parsedData.dModerate;
+        dHigh = parsedData.dHigh;
+        dHighest = parsedData.dHighest;
+        valueLimits = parsedData.valueLimits;
+      }
+    }
+
+    return {
+      data: d,
+      dataLowest: dLowest,
+      dataLow: dLow,
+      dataModerate: dModerate,
+      dataHigh: dHigh,
+      dataHighest: dHighest,
+      valueLimits,
+      error,
+    };
+  }
+  return null;
+};
+
 // this method queries the database for map plots in CTC apps
 const queryDBMapCTC = function (
   pool,
@@ -4216,6 +4378,7 @@ export default matsDataQueryUtils = {
   queryDBPerformanceDiagram,
   queryDBSimpleScatter,
   queryDBMapScalar,
+  queryDBMapScalarLoop,
   queryDBMapCTC,
   queryDBContour,
 };
