@@ -378,6 +378,7 @@ export const curveParamsByApp = {
   ],
   surfrad: [
     "label",
+    "obs-type",
     "data-source",
     "region",
     "statistic",
