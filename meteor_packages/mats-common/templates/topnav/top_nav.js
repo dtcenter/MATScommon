@@ -24,23 +24,49 @@ const getRunEnvironment = function () {
   return null;
 };
 
+const getBaseURL = function () {
+  const urlComponents = document.location.href.split("/");
+  const baseURL =
+    Meteor.settings.public.home === undefined
+      ? `https://${urlComponents[2]}`
+      : Meteor.settings.public.home;
+  const appName =
+    matsCollections.Settings === undefined ||
+    matsCollections.Settings.findOne({}) === undefined ||
+    matsCollections.Settings.findOne({}).appName === undefined
+      ? `${urlComponents[urlComponents.length - 1]}`
+      : matsCollections.Settings.findOne({}).appName;
+  return { appName, baseURL };
+};
+
 Template.topNav.helpers({
-  transparentGif() {
-    const urlComponents = document.location.href.split("/");
-    const baseURL =
-      Meteor.settings.public.home === undefined
-        ? `https://${urlComponents[2]}`
-        : Meteor.settings.public.home;
-    const appName =
-      matsCollections.Settings === undefined ||
-      matsCollections.Settings.findOne({}) === undefined ||
-      matsCollections.Settings.findOne({}).appName === undefined
-        ? `${urlComponents[urlComponents.length - 1]}`
-        : matsCollections.Settings.findOne({}).appName;
-    if (baseURL.includes("localhost")) {
-      return `${baseURL}/packages/randyp_mats-common/public/img/noaa_transparent.png`;
+  govLogo() {
+    const urlParams = getBaseURL();
+    if (urlParams.baseURL.includes("localhost")) {
+      return `${urlParams.baseURL}/packages/randyp_mats-common/public/img/icon-dot-gov.svg`;
     }
-    return `${baseURL}/${appName}/packages/randyp_mats-common/public/img/noaa_transparent.png`;
+    return `${urlParams.baseURL}/${urlParams.appName}/packages/randyp_mats-common/public/img/icon-dot-gov.svg`;
+  },
+  httpsLogo() {
+    const urlParams = getBaseURL();
+    if (urlParams.baseURL.includes("localhost")) {
+      return `${urlParams.baseURL}/packages/randyp_mats-common/public/img/icon-https.svg`;
+    }
+    return `${urlParams.baseURL}/${urlParams.appName}/packages/randyp_mats-common/public/img/icon-https.svg`;
+  },
+  flagLogo() {
+    const urlParams = getBaseURL();
+    if (urlParams.baseURL.includes("localhost")) {
+      return `${urlParams.baseURL}/packages/randyp_mats-common/public/img/us_flag_small.png`;
+    }
+    return `${urlParams.baseURL}/${urlParams.appName}/packages/randyp_mats-common/public/img/us_flag_small.png`;
+  },
+  transparentGif() {
+    const urlParams = getBaseURL();
+    if (urlParams.baseURL.includes("localhost")) {
+      return `${urlParams.baseURL}/packages/randyp_mats-common/public/img/noaa_transparent.png`;
+    }
+    return `${urlParams.baseURL}/${urlParams.appName}/packages/randyp_mats-common/public/img/noaa_transparent.png`;
   },
   emailText() {
     switch (getRunEnvironment()) {

@@ -14,8 +14,6 @@
       id="topnav"
       class="navbar navbar-default"
       style="
-        color: white;
-        background: #006699;
         height: 100%;
         margin-bottom: 0;
         margin-top: 0;
@@ -24,54 +22,95 @@
       "
     >
       <div class="container-fluid">
-        <div class="navbar-header" style="color: cyan; padding-left: 5px">
-          <button
-            type="button"
-            class="navbar-toggle collapsed"
-            data-toggle="collapse"
-            data-target="#navbar-collapse-1"
-            aria-expanded="false"
-          >
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a href="{{productLink}}">
-            <i
-              style="color: cyan; padding-top: 10px"
-              class="fa-solid fa-house-chimney fa-2x"
-              aria-hidden="true"
-            ></i
-          ></a>
+        <div
+          class="row"
+          style="
+            height: 100%;
+            margin-bottom: 0;
+            margin-top: 0.75em;
+            padding-left: 2em;
+            padding-right: 1em;
+          "
+        >
+          <div class="col-12" id="accordion">
+            <header class="header" id="headingOne">
+              <div
+                aria-controls="collapseOne"
+                aria-expanded="false"
+                class="collapsed small row"
+                data-target="#collapseOne"
+                data-toggle="collapse"
+              >
+                <div class="col-sm d-flex">
+                  <div class="">
+                    <img
+                      class=""
+                      style="width: 15px"
+                      src="{{flagLogo}}"
+                      alt="U.S. flag"
+                    />
+                    <span
+                      >An official website of the United States government
+                      <button
+                        style="
+                          cursor: pointer;
+                          text-transform: none;
+                          border: none;
+                          background-color: inherit;
+                        "
+                      >
+                        <span style="color: #005ea2; text-decoration: underline"
+                          >Here's how you know<i
+                            class="fa-solid fa-caret-down"
+                            style="margin-left: 5px"
+                          ></i
+                        ></span></button
+                    ></span>
+                  </div>
+                </div>
+              </div>
+            </header>
+          </div>
         </div>
-        <!-- Collect the nav links, forms, and other content for toggling -->
-        <div class="collapse navbar-collapse" id="navbar-collapse-1">
-          <ul class="nav navbar-nav">
-            <li>
-              <a href="http://www.doc.gov/" target="_blank"
-                ><span style="color: white">U.S. Department of Commerce</span></a
+        <div
+          aria-labelledby="headingOne"
+          class="collapse"
+          data-parent="#accordion"
+          id="collapseOne"
+        >
+          <div style="display: flex; width: 100%">
+            <div style="width: 50%; padding: 2em;">
+              <img
+                class=""
+                style="width: 25px"
+                src="{{govLogo}}"
+                alt="Official US Government Icon"
+              />
+              <small
+                ><strong>Official websites use .gov</strong><br />A
+                <strong>.gov</strong> website belongs to an official government
+                organization in the United States.</small
               >
-            </li>
-            <li>
-              <a href="http://www.noaa.gov/" target="_blank"
-                ><span style="color: white"
-                  >National Oceanic and Atmospheric Administration</span
-                ></a
-              >
-            </li>
-            {{#unless isMetexpress}}
-            <li>
-              <a href="http://research.noaa.gov/" target="_blank"
-                ><span style="color: white">NOAA Research</span></a
-              >
-            </li>
-            {{/unless}}
-          </ul>
+            </div>
+            <div style="width: 50%; padding: 2em;">
+              <img
+                class=""
+                style="width: 25px"
+                src="{{httpsLogo}}"
+                alt="Secure Site Icon"
+              />
+              <small>
+                <strong>Secure .gov websites use HTTPS</strong>
+                <br />
+                A <strong>lock</strong> (
+                <i class="fa-solid fa-lock"></i>
+                ) or <strong>https://</strong> means you’ve safely connected to the .gov
+                website. Share sensitive information only on official, secure websites.
+              </small>
+            </div>
+          </div>
         </div>
-        <!-- /.navbar-collapse -->
       </div>
-      <!-- /.container-fluid -->
     </nav>
     <nav
       id="topnav1"
@@ -104,7 +143,7 @@
           <a
             style="margin-bottom: 0; margin-top: 0; padding: 0"
             class="navbar-brand"
-            href="https://www.noaa.gov"
+            href="{{productLink}}"
             target="_blank"
             ><img
               style="
@@ -164,25 +203,5 @@
       </div>
       <!-- /.container-fluid -->
     </nav>
-    {{#unless isMetexpress}}
-    <div
-      style="
-        background-color: #dddddd;
-        height: 100%;
-        margin-bottom: 0;
-        margin-top: 0;
-        padding-left: 1em;
-        padding-right: 0;
-      "
-      class="container-fluid"
-    >
-      <a
-        style="font-size: large; font-weight: bold"
-        href="https://gsl.noaa.gov/research/research-divisions"
-        target="_blank"
-        >GSL Modeling</a
-      >
-    </div>
-    {{/unless}}
   </div>
 </template>
