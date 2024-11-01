@@ -52,15 +52,15 @@ Template.paramList.helpers({
   },
   paramWellColor() {
     if (Session.get("paramWellColor") === undefined) {
-      Session.set("paramWellColor", "rgb(245,245,245)");
+      Session.set("paramWellColor", "#ffffff");
     }
     if (Session.get("editMode") !== "") {
       const curveBeingEdited = $.grep(Session.get("Curves"), function (c) {
         return c.label === Session.get("editMode");
       });
       if (curveBeingEdited === undefined || curveBeingEdited[0] === undefined) {
-        Session.set("paramWellColor", "rgb(245,245,245)");
-        return "rgb(245,245,245)";
+        Session.set("paramWellColor", "#ffffff");
+        return "#ffffff";
       }
       const { color } = curveBeingEdited[0];
       const lighterShadeOfColor = shadeRGBColor(color, 0.2);
@@ -74,7 +74,7 @@ Template.paramList.helpers({
 Template.paramList.events({
   "click .edit-cancel"() {
     Session.set("editMode", "");
-    Session.set("paramWellColor", "rgb(245,245,245)");
+    Session.set("paramWellColor", "#ffffff");
     const labelId = `label-${matsTypes.InputTypes.textInput}`;
     const label = document.getElementById(labelId);
     label.disabled = false;
@@ -84,7 +84,7 @@ Template.paramList.events({
   },
   "click .reset"(event) {
     event.preventDefault();
-    Session.set("paramWellColor", "rgb(245,245,245)");
+    Session.set("paramWellColor", "#ffffff");
     // eslint-disable-next-line no-unused-vars
     matsMethods.refreshMetaData.call({}, function (error, result) {
       if (error !== undefined) {
@@ -101,7 +101,7 @@ Template.paramList.events({
   },
   // restore settings
   "click .restore-settings"(event) {
-    Session.set("paramWellColor", "rgb(245,245,245)");
+    Session.set("paramWellColor", "#ffffff");
     event.preventDefault();
     document.getElementById("restore-settings").click();
     return false;
@@ -176,7 +176,7 @@ Template.paramList.events({
     if (Session.get("editMode")) {
       const changingCurveLabel = Session.get("editMode");
       Session.set("editMode", "");
-      Session.set("paramWellColor", "rgb(245,245,245)");
+      Session.set("paramWellColor", "#ffffff");
       const labelId = `label-${matsTypes.InputTypes.textInput}`;
       const label = document.getElementById(labelId);
       label.disabled = false;
