@@ -151,6 +151,30 @@ Template.topNav.helpers({
     }
     return false;
   },
+  alertMessageHidden() {
+    if (
+      matsCollections.Settings === undefined ||
+      matsCollections.Settings.findOne({}) === undefined
+    )
+      return "none";
+    const alertMessage = matsCollections.Settings.findOne({}).appMessage;
+    if (alertMessage === undefined || alertMessage === "") {
+      return "none";
+    }
+    return "block";
+  },
+  alertMessage() {
+    if (
+      matsCollections.Settings === undefined ||
+      matsCollections.Settings.findOne({}) === undefined
+    )
+      return "none";
+    const alertMessage = matsCollections.Settings.findOne({}).appMessage;
+    if (alertMessage === undefined || alertMessage === "") {
+      return "";
+    }
+    return alertMessage;
+  },
 });
 
 Template.topNav.events({

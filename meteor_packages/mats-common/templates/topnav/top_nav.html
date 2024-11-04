@@ -1,18 +1,13 @@
 <template name="topNav">
   <div
     id="navbar"
-    style="
-      display: block;
-      height: 100%;
-      margin-bottom: 0;
-      margin-top: 0;
-      padding-top: 0;
-      padding-bottom: 0;
-    "
+    alt="Collection of elements at the top of the MATS page"
+    style="margin-bottom: 2em"
   >
     <nav
       id="officialUSABanner"
       class="navbar navbar-default"
+      alt="Official USA governemnt website banner"
       style="
         height: 100%;
         margin-bottom: 0;
@@ -42,13 +37,8 @@
                 data-toggle="collapse"
               >
                 <div class="col-sm d-flex">
-                  <div class="">
-                    <img
-                      class=""
-                      style="width: 15px"
-                      src="{{flagLogo}}"
-                      alt="U.S. flag"
-                    />
+                  <div>
+                    <img style="width: 15px" src="{{flagLogo}}" alt="U.S. flag" />
                     <span
                       >An official website of the United States government
                       <button
@@ -81,7 +71,6 @@
           <div style="display: flex; width: 100%">
             <div style="width: 50%; padding: 2em">
               <img
-                class=""
                 style="width: 25px"
                 src="{{govLogo}}"
                 alt="Official US Government Icon"
@@ -93,12 +82,7 @@
               >
             </div>
             <div style="width: 50%; padding: 2em">
-              <img
-                class=""
-                style="width: 25px"
-                src="{{httpsLogo}}"
-                alt="Secure Site Icon"
-              />
+              <img style="width: 25px" src="{{httpsLogo}}" alt="Secure Site Icon" />
               <small>
                 <strong>Secure .gov websites use HTTPS</strong>
                 <br />
@@ -115,6 +99,7 @@
     <nav
       id="MATSNavigationBar"
       class="navbar navbar-default"
+      alt="Navigation bar with MATS administative links"
       style="
         color: white;
         background: #000066;
@@ -126,7 +111,6 @@
       "
     >
       <div class="container-fluid">
-        <!-- Brand and toggle get grouped for better mobile display -->
         <div class="navbar-header">
           <button
             type="button"
@@ -154,7 +138,7 @@
                 padding-right: 1em;
               "
               src="{{transparentGif}}"
-              alt="NOAA"
+              alt="NOAA logo"
           /></a>
         </div>
 
@@ -199,23 +183,26 @@
             </li>
           </ul>
         </div>
-        <!-- /.navbar-collapse -->
       </div>
-      <!-- /.container-fluid -->
     </nav>
-    <nav
+    <div
       id="disclaimerBar"
-      class="navbar navbar-default"
-      style="color: black; background: #dfefff; font-weight: bold; height: 100%"
+      class="alert alert-info"
+      alt="Disclaimer about this site being for research purposes"
+      style="color: black; margin-bottom: 0"
     >
-      <div class="navbar-header">
-        <div id="disclaimerText" style="margin: 0.5em; text-align: center">
-          PLEASE NOTE: The information on this website is for RESEARCH PURPOSES ONLY. No
-          data from this site should be used to make decisions related to the safety of
-          life and property. There is no guarantee that data will be updated or that any
-          product will continue to be available.
-        </div>
-      </div>
-    </nav>
+      PLEASE NOTE: The information on this website is for RESEARCH PURPOSES ONLY. No
+      data from this site should be used to make decisions related to the safety of life
+      and property. There is no guarantee that data will be updated or that any product
+      will continue to be available.
+    </div>
+    <div
+      id="alertBar"
+      class="alert alert-danger"
+      alt="Space for app-specific alerts"
+      style="color: black; margin-bottom: 0; display:{{alertMessageHidden}}"
+    >
+      {{alertMessage}}
+    </div>
   </div>
 </template>

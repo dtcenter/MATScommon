@@ -34,30 +34,6 @@ Template.plotType.helpers({
     // space out the plot type names to be more readable
     return plotType.replace(/([A-Z][a-z])/g, " $1").trim();
   },
-  alertMessageHidden() {
-    if (
-      matsCollections.Settings === undefined ||
-      matsCollections.Settings.findOne({}) === undefined
-    )
-      return "none";
-    const alertMessage = matsCollections.Settings.findOne({}).appMessage;
-    if (alertMessage === undefined || alertMessage === "") {
-      return "none";
-    }
-    return "block";
-  },
-  alertMessage() {
-    if (
-      matsCollections.Settings === undefined ||
-      matsCollections.Settings.findOne({}) === undefined
-    )
-      return "none";
-    const alertMessage = matsCollections.Settings.findOne({}).appMessage;
-    if (alertMessage === undefined || alertMessage === "") {
-      return "";
-    }
-    return alertMessage;
-  },
 });
 
 const matchPlotTypeSelector = function (plotType) {
