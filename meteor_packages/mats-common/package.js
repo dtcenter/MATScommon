@@ -280,7 +280,6 @@ Package.onUse(function (api) {
   api.addAssets("public/img/arrow-left.gif", "client");
   api.addAssets("public/img/arrow-right.gif", "client");
   api.addAssets("public/img/arrow-up.gif", "client");
-  api.addAssets("public/img/bg.png", "client");
   api.addAssets("public/img/us_flag_small.png", "client");
   api.addAssets("public/img/icon-dot-gov.svg", "client");
   api.addAssets("public/img/icon-https.svg", "client");

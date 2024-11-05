@@ -3,87 +3,85 @@
     <div
       class="container-fluid"
       style="
-        background-color: #dddddd;
+        background-color: #eeeeee;
         height: 100%;
         margin-bottom: 0;
         margin-top: 0;
         padding-bottom: 1em;
-        padding-top: 0;
+        padding-top: 1em;
       "
     >
-      <div class="navbar-header">
-        <button
-          type="button"
-          class="navbar-toggle collapsed"
-          data-toggle="collapse"
-          data-target="#navbar-collapse-3"
-          aria-expanded="false"
+      <div class="row" style="background-color: #eeeeee; height: 100%; display: flex">
+        <span style="width: 20%; text-align: left; padding-left: 1em"
+          >{{>version}}</span
         >
-          <span class="sr-only">Toggle navigation</span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </button>
+        <span style="width: 80%; text-align: right; padding-right: 1em">
+          <span
+            ><a
+              href="http://www.noaa.gov/privacy"
+              target="_blank"
+              style="color: black; font-size: small"
+              >NOAA Privacy Statement</a
+            >
+            &nbsp;
+          </span>
+          <span
+            ><a
+              href="http://www.noaa.gov/accessibility"
+              target="_blank"
+              style="color: black; font-size: small"
+              >Web Accessibility Statement</a
+            >
+            &nbsp;
+          </span>
+          <span
+            ><a
+              href="http://www.noaa.gov/disclaimer"
+              target="_blank"
+              style="color: black; font-size: small"
+              >Disclaimer for External Links</a
+            >
+            &nbsp;
+          </span>
+          <span
+            ><a
+              href="http://www.noaa.gov/"
+              target="_blank"
+              style="color: black; font-size: small"
+              >NOAA</a
+            >
+            &nbsp;
+          </span>
+          {{#if isMetexpress}}
+          <span
+            ><a
+              href="http://www.commerce.gov/"
+              target="_blank"
+              style="color: black; font-size: small"
+              >U.S. Department of Commerce</a
+            ></span
+          >
+          {{else}}
+          <span
+            ><a
+              href="http://www.commerce.gov/"
+              target="_blank"
+              style="color: black; font-size: small"
+              >U.S. Department of Commerce</a
+            >
+            &nbsp;
+          </span>
+          <span
+            ><a
+              href="http://research.noaa.gov/"
+              target="_blank"
+              style="color: black; font-size: small"
+              >NOAA Research</a
+            ></span
+          >
+          {{/if}}
+        </span>
       </div>
-      <!-- Collect the nav links, forms, and other content for toggling -->
-      <div
-        class="row"
-        style="
-          background-color: #dddddd;
-          height: 100%;
-          margin-bottom: 0;
-          margin-top: 0;
-          padding-bottom: 1em;
-          padding-top: 0;
-        "
-      >
-        <span class="col-md-2">{{>version}}</span>
-        <span
-          ><a href="http://www.noaa.gov/privacy" target="_blank" class="navbar-link"
-            >NOAA Privacy Statement</a
-          >
-          -
-        </span>
-        <span
-          ><a
-            href="http://www.noaa.gov/accessibility"
-            target="_blank"
-            class="navbar-link"
-            >Web Accessibility Statement</a
-          >
-          -
-        </span>
-        <span
-          ><a href="http://www.noaa.gov/disclaimer" target="_blank" class="navbar-link"
-            >Disclaimer for External Links</a
-          >
-          -
-        </span>
-        <span
-          ><a href="http://www.noaa.gov/" target="_blank" class="navbar-link">NOAA</a> -
-        </span>
-        {{#if isMetexpress}}
-        <span
-          ><a href="http://www.commerce.gov/" target="_blank" class="navbar-link"
-            >U.S. Department of Commerce</a
-          ></span
-        >
-        {{else}}
-        <span
-          ><a href="http://www.commerce.gov/" target="_blank" class="navbar-link"
-            >U.S. Department of Commerce</a
-          >
-          -
-        </span>
-        <span
-          ><a href="http://research.noaa.gov/" target="_blank" class="navbar-link"
-            >NOAA Research</a
-          ></span
-        >
-        {{/if}}
-      </div>
-      <!-- /.navbar-collapse -->
     </div>
-    <!-- /.container-fluid -->
   </nav>
 </template>

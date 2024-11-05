@@ -1,9 +1,5 @@
 <template name="topNav">
-  <div
-    id="navbar"
-    alt="Collection of elements at the top of the MATS page"
-    style="margin-bottom: 2em"
-  >
+  <div id="navbar" alt="Collection of elements at the top of the MATS page">
     <nav
       id="officialUSABanner"
       class="navbar navbar-default"
@@ -189,20 +185,20 @@
       id="disclaimerBar"
       class="alert alert-info"
       alt="Disclaimer about this site being for research purposes"
-      style="color: black; margin-bottom: 0"
+      style="color: black"
     >
       PLEASE NOTE: The information on this website is for RESEARCH PURPOSES ONLY. No
       data from this site should be used to make decisions related to the safety of life
       and property. There is no guarantee that data will be updated or that any product
       will continue to be available.
     </div>
-    <div
-      id="alertBar"
-      class="alert alert-danger"
-      alt="Space for app-specific alerts"
-      style="color: black; margin-bottom: 0; display:{{alertMessageHidden}}"
-    >
-      {{alertMessage}}
-    </div>
+  </div>
+  <div
+    id="alertBar"
+    class="alert alert-danger"
+    alt="Space for app-specific alerts"
+    style="color: black; width: 90%; margin-right: auto; margin-left: auto; font-size: small; display:{{alertMessageHidden}}"
+  >
+    {{alertMessage}}
   </div>
 </template>
