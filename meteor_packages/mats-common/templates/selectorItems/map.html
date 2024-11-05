@@ -2,26 +2,14 @@
   <div id="mapModal" class="modal" role="dialog" data-backdrop="false">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
-        <div class="modal-header">
-          <h4 class="modal-title">Map</h4>
-          <!--                    <button class="btn btn-xs col-2 btn-success selectSites">Select All Sites</button>-->
-          <!--                    <button id="gc-spacer" type="button" class="btn spacebutton"></button>-->
-          <button class="btn btn-xs col-2 btn-danger deselectSites">
-            Deselect All Sites
+        <div class="modal-header" style="margin-top: 1em;">
+          <button class="btn col-2 btn-danger deselectSites">Deselect All Sites</button>
+          <button type="button" class="close-map btn btn-info" data-dismiss="modal">
+            &nbsp;&nbsp;Close
           </button>
         </div>
         <div class="modal-body">
-          <div class="modal-body" id="{{name}}-{{type}}"></div>
-        </div>
-        <div class="modal-footer btn-group">
-          <button
-            type="button"
-            class="close-map btn btn-info"
-            data-dismiss="modal"
-            style="background-color: #330066"
-          >
-            &nbsp;&nbsp;Close
-          </button>
+          <div class="modal-body" id="{{name}}-{{type}}" style="margin-top: -2em"></div>
         </div>
       </div>
       <!-- /.modal-content -->
