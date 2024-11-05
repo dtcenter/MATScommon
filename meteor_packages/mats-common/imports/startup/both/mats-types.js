@@ -94,9 +94,8 @@ const ForecastTypes = {
 
 const PlotFormats = {
   none: "none",
-  matching: "matching",
-  pairwise: "pairwise",
-  absolute: "absolute",
+  matching: "Diff all curves against the 1st added curve",
+  pairwise: "Diff the 1st and 2nd curves, 3rd and 4th, etc",
 };
 
 const PlotActions = {
