@@ -1,9 +1,8 @@
 <template name="topNav">
-  <div id="navbar" alt="Collection of elements at the top of the MATS page">
+  <div id="topNav">
     <nav
       id="officialUSABanner"
       class="navbar navbar-default"
-      alt="Official USA governemnt website banner"
       style="
         height: 100%;
         margin-bottom: 0;
@@ -23,13 +22,13 @@
             padding-right: 1em;
           "
         >
-          <div class="col-12" id="accordion">
-            <header class="header" id="headingOne">
+          <div class="col-12" id="usaAccordion">
+            <header class="header" id="usaHeadingOne">
               <div
-                aria-controls="collapseOne"
+                aria-controls="usaCollapseOne"
                 aria-expanded="false"
                 class="collapsed small row"
-                data-target="#collapseOne"
+                data-target="#usaCollapseOne"
                 data-toggle="collapse"
               >
                 <div class="col-sm d-flex">
@@ -49,6 +48,7 @@
                           >Here's how you know<i
                             class="fa-solid fa-caret-down"
                             style="margin-left: 5px"
+                            alt="down caret icon"
                           ></i
                         ></span></button
                     ></span>
@@ -59,10 +59,10 @@
           </div>
         </div>
         <div
-          aria-labelledby="headingOne"
+          aria-labelledby="usaHeadingOne"
           class="collapse"
-          data-parent="#accordion"
-          id="collapseOne"
+          data-parent="#usaAccordion"
+          id="usaCollapseOne"
         >
           <div style="display: flex; width: 100%">
             <div style="width: 50%; padding: 2em">
@@ -83,7 +83,7 @@
                 <strong>Secure .gov websites use HTTPS</strong>
                 <br />
                 A <strong>lock</strong> (
-                <i class="fa-solid fa-lock"></i>
+                <i class="fa-solid fa-lock" alt="lock icon"></i>
                 ) or <strong>https://</strong> means you’ve safely connected to the .gov
                 website. Share sensitive information only on official, secure websites.
               </small>
@@ -95,7 +95,6 @@
     <nav
       id="MATSNavigationBar"
       class="navbar navbar-default"
-      alt="Navigation bar with MATS administative links"
       style="
         color: white;
         background: #000066;
@@ -112,7 +111,7 @@
             type="button"
             class="navbar-toggle collapsed"
             data-toggle="collapse"
-            data-target="#navbar-collapse-2"
+            data-target="#navbar-collapse"
             aria-expanded="false"
           >
             <span class="sr-only">Toggle navigation</span>
@@ -139,7 +138,7 @@
         </div>
 
         <!-- Collect the nav links, forms, and other content for toggling -->
-        <div class="collapse navbar-collapse" id="navbar-collapse-2">
+        <div class="collapse navbar-collapse" id="navbar-collapse">
           <ul class="nav navbar-nav">
             <li>
               <div style="margin-top: 0.5em">
@@ -184,7 +183,6 @@
     <div
       id="disclaimerBar"
       class="alert alert-info"
-      alt="Disclaimer about this site being for research purposes"
       style="color: black"
     >
       PLEASE NOTE: The information on this website is for RESEARCH PURPOSES ONLY. No
@@ -196,7 +194,6 @@
   <div
     id="alertBar"
     class="alert alert-danger"
-    alt="Space for app-specific alerts"
     style="color: black; width: 90%; margin-right: auto; margin-left: auto; font-size: small; display:{{alertMessageHidden}}"
   >
     {{alertMessage}}

@@ -324,7 +324,6 @@ Package.onUse(function (api) {
   api.addAssets("public/help/map-help.html", "client");
   api.addAssets("public/help/region.html", "client");
   api.addAssets("public/help/scatter-help.html", "client");
-  api.addAssets("public/help/StdErrorcalculationonEMBverificationpages.html", "client");
   api.addAssets("public/help/top-help.html", "client");
   api.addAssets("public/help/wfip2-statistic.html", "client");
   api.addAssets(
