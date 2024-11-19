@@ -2691,6 +2691,18 @@ Template.graph.events({
           updates[index]["line.width"] = elem.value;
         }
       });
+    $("input[id$=ErrorWeight]")
+      .get()
+      .forEach(function (elem, index) {
+        if (elem.value !== undefined && elem.value !== "") {
+          updates[index] = updates[index] === undefined ? {} : updates[index];
+          if (plotType === matsTypes.PlotTypes.profile) {
+            updates[index]["error_x.thickness"] = elem.value;
+          } else {
+            updates[index]["error_y.thickness"] = elem.value;
+          }
+        }
+      });
     $("[id$=LineMarker]")
       .get()
       .forEach(function (elem, index) {

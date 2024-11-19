@@ -682,33 +682,37 @@
             <h4>* Leave a field blank to preserve its original value.</h4>
           </div>
           <div class="modal-body">
-            <div><br /></div>
-            <div class="row">
-              <label class="col-sm-2">&nbsp;&nbsp;</label>
-              <label class="col-sm-2">Color</label>
-              {{#if isLinePlot}}
-              <label class="col-sm-2">Line Style</label>
-              <label class="col-sm-2">Line Weight</label>
-              {{/if}} {{#if isLineOrScatterPlot}}
-              <label class="col-sm-2">Marker Style</label>
-              <label class="col-sm-2">Marker Weight</label>
-              {{/if}}
-            </div>
             {{#each curves}}
             <div class="row">
-              <label class="col-sm-2">{{this.label}}: </label>
+              <h3 class="col-12" style="text-align: center; margin-bottom: 1em">
+                {{this.label}}
+              </h3>
+            </div>
+            <div class="row">
+              <!-- <label class="col-sm-2">&nbsp;&nbsp;</label> -->
+              <label class="col-sm-2" style="text-align: center">Color</label>
+              {{#if isLinePlot}}
+              <label class="col-sm-2" style="text-align: center">Line Style</label>
+              <label class="col-sm-2" style="text-align: center">Line Weight</label>
+              <label class="col-sm-2" style="text-align: center">Errorbar Weight</label>
+              {{/if}} {{#if isLineOrScatterPlot}}
+              <label class="col-sm-2" style="text-align: center">Marker Style</label>
+              <label class="col-sm-2" style="text-align: center">Marker Weight</label>
+              {{/if}}
+            </div>
+            <div class="row">
               <input
                 id="{{this.label}}LineColor"
                 type="text"
                 class="col-sm-2 form-control {{this.label}}-graphColorpick"
                 value="{{this.color}}"
-                style="display: inline-block; width: 8em; font-size: small"
+                style="font-size: small; height: 2em; width: 15.67%; margin-left: 1%"
               />
               {{#if isLinePlot}}
               <select
                 id="{{this.label}}LineStyle"
                 class="{{this.label}}-line-style col-sm-2"
-                style="font-size: small"
+                style="font-size: small; height: 2em"
               >
                 <option value="solid" selected="selected">Solid</option>
                 <option value="dash">Dash</option>
@@ -719,15 +723,23 @@
                 id="{{this.label}}LineWeight"
                 class="{{this.label}}-line-weight data-input numberInput col-sm-2"
                 type="number"
-                value="2"
+                value="3"
                 name="{{this.label}}LineWeight"
-                style="width: 6em; font-size: small"
+                style="font-size: small; height: 2em"
+              />
+              <input
+                id="{{this.label}}ErrorWeight"
+                class="{{this.label}}-error-weight data-input numberInput col-sm-2"
+                type="number"
+                value="2"
+                name="{{this.label}}ErrorWeight"
+                style="font-size: small; height: 2em"
               />
               {{/if}} {{#if isLineOrScatterPlot}}
               <select
                 id="{{this.label}}LineMarker"
                 class="{{this.label}}-line-marker col-sm-2"
-                style="font-size: small"
+                style="font-size: small; height: 2em"
               >
                 <option value="circle" selected="selected">Solid circle</option>
                 <option value="circle-open">Open circle</option>
@@ -746,12 +758,13 @@
                 id="{{this.label}}MarkerWeight"
                 class="{{this.label}}-marker-weight data-input numberInput col-sm-2"
                 type="number"
-                value="8"
+                value="9"
                 name="{{this.label}}MarkerWeight"
-                style="width: 6em; font-size: small"
+                style="font-size: small; height: 2em; width: 15%; margin-right: 1%"
               />
               {{/if}}
             </div>
+            <div><br /></div>
             {{/each}}
           </div>
           <div class="modal-footer btn-group">

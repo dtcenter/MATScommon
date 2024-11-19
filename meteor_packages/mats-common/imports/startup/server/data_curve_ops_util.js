@@ -301,7 +301,7 @@ const generateSeriesCurveOptions = function (
   const errorYTemp = {
     error_y: {
       array: dataSeries.error_y,
-      thickness: 1, // set the thickness of the error bars
+      thickness: 2, // set the thickness of the error bars
       color: curve.color,
       visible: false, // changed later if matching
       // width: 0
@@ -321,7 +321,7 @@ const generateSeriesCurveOptions = function (
       marker: {
         symbol: "circle",
         color: curve.color,
-        size: 8,
+        size: 9,
       },
       line: {
         dash: "solid",
@@ -408,7 +408,7 @@ const generateProfileCurveOptions = function (
   const errorXTemp = {
     error_x: {
       array: dataProfile.error_x,
-      thickness: 1, // set the thickness of the error bars
+      thickness: 2, // set the thickness of the error bars
       color: curve.color,
       visible: false, // changed later if matching
       // width: 0
@@ -427,7 +427,7 @@ const generateProfileCurveOptions = function (
       marker: {
         symbol: "circle",
         color: curve.color,
-        size: 8,
+        size: 9,
       },
       line: {
         dash: "solid",
@@ -1056,7 +1056,7 @@ const generateScatterCurveOptions = function (
       marker: {
         symbol: "circle",
         color: curve.color,
-        size: 8,
+        size: 9,
       },
       visible: true,
       showlegend: true,
