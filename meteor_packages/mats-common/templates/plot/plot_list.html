@@ -1,6 +1,11 @@
 <template name="plotList">
   <div id="plotList" class="clearfix well span12">
-    <form id="plotForm" name="plotForm" aria-label="form to save or restore curve settings" novalidate>
+    <form
+      id="plotForm"
+      name="plotForm"
+      aria-label="form to save or restore curve settings"
+      novalidate
+    >
       <div style="display: inline-block; width: 100%">
         {{#each PlotParamGroups}} {{> plotParamGroup}} {{/each}}
       </div>

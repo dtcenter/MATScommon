@@ -1,7 +1,7 @@
 <template name="customHome">
   <title>Model Analysis Tool Suite</title>
   <main id="main" class="main row">
-    <a style="display: none;" href="#main-content">Skip to main content</a>
+    <a style="display: none" href="#main-content">Skip to main content</a>
     {{>spinner}} {{>help}}
     <div class="container row pull-left col-lg-8" style="width: 100%">
       {{>error}}
@@ -14,8 +14,9 @@
           style="align-content: center; font-size: xx-large; font-weight: bold"
           class="boldedPublicSans"
           id="main-content"
-          >{{title}}</h1
         >
+          {{title}}
+        </h1>
       </div>
       <div class="row pull-left col-lg-8" id="plotTypeContainer">{{>plotType}}</div>
       {{>about}} {{#if Template.subscriptionsReady}} {{#if isUnderConstruction}}
