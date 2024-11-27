@@ -30,6 +30,7 @@
         min="0"
         max="100"
         value="{{completenessNumber}}"
+        aria-label="Data completeness percentage:"
       />
     </span>
     <span style="font-size: large; font-weight: normal">
@@ -39,14 +40,14 @@
         >Stdev filter level:
       </label>
       {{#if noQC}}
-      <select id="outliers" aria-label="outlier options">
+      <select id="outliers" aria-label="Stdev filter level:">
         <option value="all" selected="selected">All Data</option>
         <option value="3">3 sd</option>
         <option value="2">2 sd</option>
         <option value="1">1 sd</option>
       </select>
       {{else}}
-      <select id="outliers" aria-label="outlier options">
+      <select id="outliers" aria-label="Stdev filter level:">
         <option value="all">All Data</option>
         <option value="3" selected="selected">3 sd</option>
         <option value="2">2 sd</option>
@@ -79,14 +80,14 @@
         >Stdev filter level:
       </label>
       {{#if noQC}}
-      <select id="outliers-lite" aria-label="outlier options">
+      <select id="outliers-lite" aria-label="Stdev filter level:">
         <option value="all" selected="selected">All Data</option>
         <option value="3">3 sd</option>
         <option value="2">2 sd</option>
         <option value="1">1 sd</option>
       </select>
       {{else}}
-      <select id="outliers-lite" aria-label="outlier options">
+      <select id="outliers-lite" aria-label="Stdev filter level:">
         <option value="all">All Data</option>
         <option value="3" selected="selected">3 sd</option>
         <option value="2">2 sd</option>
@@ -125,6 +126,7 @@
         min="0"
         max="100"
         value="{{completenessNumber}}"
+        aria-label="Data completeness percentage:"
       />
     </span>
   </div>

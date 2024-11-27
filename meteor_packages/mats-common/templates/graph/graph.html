@@ -20,7 +20,12 @@
         >
           <i class="fa-solid fa-arrow-left-long"></i>&nbsp;&nbsp;<strong>Back</strong>
         </button>
-        <button type="button" class="btn spacebutton"></button>
+        <button
+          id="backToPreviewSpacer"
+          type="button"
+          class="btn spacebutton"
+          aria-label="spacer"
+        ></button>
         <button
           id="previewButton"
           type="button"
@@ -83,7 +88,12 @@
           class="btn-group btn-group-sm"
           style="display: none"
         >
-          <button type="button" class="btn spacebutton"></button>
+          <button
+            id="textToTextSpacer"
+            type="button"
+            class="btn spacebutton"
+            aria-label="2nd spacer"
+          ></button>
           <button
             id="firstPageButton"
             type="button"
@@ -162,7 +172,12 @@
           class="btn-group btn-group-sm"
           style="display: block"
         >
-          <button type="button" class="btn spacebutton"></button>
+          <button
+            id="textToAxesSpacer"
+            type="button"
+            class="btn spacebutton"
+            aria-label="3rd spacer"
+          ></button>
           <span
             id="plot-control-button-group"
             class="btn-group btn-group-sm"
@@ -1085,16 +1100,22 @@
       <span>
         <h4 class="col-8">
           <span>{{Title}} : </span><span>{{plotText}}</span><span> {{plotName}}</span>
-          <span
-            id="graph-touch-controls"
-            class="btn-group btn-group-sm"
-            aria-label="touchcontrol"
-          >
-            <button type="button" class="btn spacebutton"></button>
+          <span id="graph-touch-controls" class="btn-group btn-group-sm">
+            <button
+              id="titleToCloserSpacer"
+              type="button"
+              class="btn spacebutton"
+              aria-label="4th spacer"
+            ></button>
             <button class="btn col-2 btn-danger closeapp" style="border-radius: 15px">
               Close All Preview Windows
             </button>
-            <button type="button" class="btn spacebutton"></button>
+            <button
+              id="closerToRefreshSpacer"
+              type="button"
+              class="btn spacebutton"
+              aria-label="5th spacer"
+            ></button>
             <button
               id="refresh-plot"
               type="button"
@@ -1102,7 +1123,8 @@
               style="border-radius: 15px"
               data-toggle="tooltip"
               data-placement="top"
-              title="Reset plot to original (or last re-sample)"
+              title="Reset plot to original"
+              aria-label="Reset plot to original"
             >
               <i class="fa-solid fa-arrows-rotate"></i>
             </button>
