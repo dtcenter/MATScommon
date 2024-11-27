@@ -25,20 +25,11 @@ const getPlotType = function () {
 
 // determine which plotFormat radio button is checked
 const getPlotFormat = function () {
-  const buttons = document.getElementsByName("plotFormat");
-  if (buttons === undefined) {
-    return ""; // app may not have plotFormat?
-  }
   const plotFormatParam = matsCollections.PlotParams.findOne({ name: "plotFormat" });
   if (plotFormatParam === undefined) {
     return ""; // app may not have plotFormat?
   }
-  for (let i = 0, len = buttons.length; i < len; i += 1) {
-    if (buttons[i].checked) {
-      return buttons[i].value;
-    }
-  }
-  return ""; // error condition actually - shouldn't ever happen
+  return matsParamUtils.getValueForParamName("plotFormat");
 };
 
 const getAxisText = function () {

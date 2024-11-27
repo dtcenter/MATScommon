@@ -5,6 +5,7 @@
 import {
   matsTypes,
   matsCollections,
+  matsCurveUtils,
   matsParamUtils,
   matsSelectUtils,
 } from "meteor/randyp:mats-common";
@@ -173,6 +174,9 @@ Template.select.events({
     }
     $(`#${this.name}-${this.type}`).select2("close");
     matsSelectUtils.refreshDependents(event, this);
+    if (this.name === "plotFormat") {
+      matsCurveUtils.checkDiffs();
+    }
     Session.set("lastUpdate", Date.now());
     return false;
   },
