@@ -526,6 +526,7 @@ const generateMapCurveOptions = function (curve, dataSeries, appParams, maxValue
       label,
       curveId: label,
       name: longLabel,
+      annotateColor: curve.color,
       datatype: "scalar",
       type: "scattermapbox",
       mode: "markers",

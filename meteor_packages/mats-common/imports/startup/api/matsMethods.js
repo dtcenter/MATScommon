@@ -987,8 +987,9 @@ const getFlattenedResultData = function (rk, p, np) {
               }
               stats.minimum = data[ci].glob_stats.minVal;
               stats.maximum = data[ci].glob_stats.maxVal;
-              returnData.stats[data[ci].label] = stats;
+              returnData.stats[data[ci].label] = JSON.parse(JSON.stringify(stats));
 
+              curveData = []; // array of maps
               for (let cdi = 0; cdi < data[ci].x.length; cdi += 1) {
                 // for each datapoint
                 const curveDataElement = {};
@@ -1052,8 +1053,9 @@ const getFlattenedResultData = function (rk, p, np) {
               } else if (plotType === matsTypes.PlotTypes.roc) {
                 stats.auc = data[ci].glob_stats.auc;
               }
-              returnData.stats[data[ci].label] = stats;
+              returnData.stats[data[ci].label] = JSON.parse(JSON.stringify(stats));
 
+              curveData = []; // array of maps
               for (let cdi = 0; cdi < data[ci].y.length; cdi += 1) {
                 // for each datapoint
                 const curveDataElement = {};
@@ -1101,8 +1103,9 @@ const getFlattenedResultData = function (rk, p, np) {
             const reservedWords = Object.values(matsTypes.ReservedWords);
             if (reservedWords.indexOf(data[ci].label) === -1) {
               stats.label = data[ci].label;
-              returnData.stats[data[ci].label] = stats;
+              returnData.stats[data[ci].label] = JSON.parse(JSON.stringify(stats));
 
+              curveData = []; // array of maps
               for (let cdi = 0; cdi < data[ci].y.length; cdi += 1) {
                 // for each datapoint
                 const curveDataElement = {};
@@ -1126,6 +1129,7 @@ const getFlattenedResultData = function (rk, p, np) {
             if (reservedWords.indexOf(data[ci].label) === -1) {
               stats.label = data[ci].label;
 
+              curveData = []; // array of maps
               for (let cdi = 0; cdi < data[ci].y.length; cdi += 1) {
                 // for each datapoint
                 const curveDataElement = {};
@@ -1162,13 +1166,15 @@ const getFlattenedResultData = function (rk, p, np) {
             .utc(stats["maximum time"] * 1000)
             .format("YYYY-MM-DD HH:mm");
 
-          returnData.stats[data[0].label] = stats;
+          returnData.stats[data[0].label] = JSON.parse(JSON.stringify(stats));
 
           isCTC =
             data[0] !== undefined &&
             data[0].stats !== undefined &&
             data[0].stats[0] !== undefined &&
             data[0].stats[0].hit !== undefined;
+
+          curveData = []; // array of maps
           for (let si = 0; si < data[0].siteName.length; si += 1) {
             const curveDataElement = {};
             curveDataElement["site name"] = data[0].siteName[si];
@@ -1206,8 +1212,9 @@ const getFlattenedResultData = function (rk, p, np) {
               stats.n = data[ci].glob_stats.glob_n;
               stats.minimum = data[ci].glob_stats.glob_min;
               stats.maximum = data[ci].glob_stats.glob_max;
-              returnData.stats[data[ci].label] = stats;
+              returnData.stats[data[ci].label] = JSON.parse(JSON.stringify(stats));
 
+              curveData = []; // array of maps
               for (let cdi = 0; cdi < data[ci].x.length; cdi += 1) {
                 // for each datapoint
                 const curveDataElement = {};
@@ -1241,8 +1248,9 @@ const getFlattenedResultData = function (rk, p, np) {
               stats.n = data[ci].glob_stats.nGood;
               stats.minimum = data[ci].glob_stats.minVal;
               stats.maximum = data[ci].glob_stats.maxVal;
-              returnData.stats[data[ci].label] = stats;
+              returnData.stats[data[ci].label] = JSON.parse(JSON.stringify(stats));
 
+              curveData = []; // array of maps
               for (let cdi = 0; cdi < data[ci].x.length; cdi += 1) {
                 // for each datapoint
                 const curveDataElement = {};
@@ -1269,12 +1277,14 @@ const getFlattenedResultData = function (rk, p, np) {
             .utc(data[0].glob_stats.maxDate * 1000)
             .format("YYYY-MM-DD HH:mm");
 
-          returnData.stats[data[0].label] = stats;
+          returnData.stats[data[0].label] = JSON.parse(JSON.stringify(stats));
 
           isCTC =
             data[0] !== undefined &&
             data[0].hitTextOutput !== undefined &&
             data[0].hitTextOutput.length > 0;
+
+          curveData = []; // array of maps
           for (let si = 0; si < data[0].xTextOutput.length; si += 1) {
             const curveDataElement = {};
             curveDataElement.xVal = data[0].xTextOutput[si];
@@ -1301,6 +1311,8 @@ const getFlattenedResultData = function (rk, p, np) {
         case matsTypes.PlotTypes.scatter2d:
           firstBestFitIndex = -1;
           bestFitIndexes = {};
+
+          curveData = []; // array of maps
           for (let ci = 0; ci < data.length; ci += 1) {
             if (ci === firstBestFitIndex) {
               break; // best fit curves are at the end so do not do further processing
