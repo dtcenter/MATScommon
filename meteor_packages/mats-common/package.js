@@ -35,6 +35,7 @@ Package.onUse(function (api) {
     "vanillajs-datepicker": "1.3.4",
     daterangepicker: "3.1.0",
     "lighten-darken-color": "1.0.0",
+    "rgb-hex": "4.1.0",
     nodemailer: "6.9.14",
   });
   api.mainModule("server/main.js", "server");

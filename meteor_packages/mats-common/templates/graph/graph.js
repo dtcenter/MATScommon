@@ -13,6 +13,10 @@ import {
 } from "meteor/randyp:mats-common";
 import { Template } from "meteor/templating";
 import { moment } from "meteor/momentjs:moment";
+// eslint-disable-next-line import/no-unresolved
+import rgbHex from "rgb-hex";
+
+const LightenDarkenColor = require("lighten-darken-color");
 
 /* global Session, Plotly, $, _, setError */
 /* eslint-disable no-console */
@@ -336,6 +340,14 @@ Template.graph.helpers({
             Object.values(matsTypes.ReservedWords).indexOf(dataset[i].reserved) >= 0)
         )
       ) {
+        // annotation color needs to be darkened for proper section 508 contrast compliance
+        const darkerAnnotationColor = LightenDarkenColor.LightenDarkenColor(
+          rgbHex(dataset[i].annotateColor),
+          -75
+        )
+          .toString()
+          .padStart(6, "0");
+
         switch (plotType) {
           case matsTypes.PlotTypes.timeSeries:
           case matsTypes.PlotTypes.profile:
@@ -346,10 +358,10 @@ Template.graph.helpers({
           case matsTypes.PlotTypes.dailyModelCycle:
           case matsTypes.PlotTypes.yearToYear:
           case matsTypes.PlotTypes.scatter2d:
-            localAnnotation = `<div id='${dataset[i].curveId}-annotation' style='color:${dataset[i].annotateColor}'>${dataset[i].annotation} </div>`;
+            localAnnotation = `<div id='${dataset[i].curveId}-annotation' style='color:#${darkerAnnotationColor}'>${dataset[i].annotation} </div>`;
             break;
           case matsTypes.PlotTypes.map:
-            localAnnotation = `<div id='${dataset[i].curveId}-annotation' style='color:${dataset[i].annotateColor}'>${dataset[i].name} </div><div></br></div>`;
+            localAnnotation = `<div id='${dataset[i].curveId}-annotation' style='color:#${darkerAnnotationColor}'>${dataset[i].name} </div><div></br></div>`;
             break;
           case matsTypes.PlotTypes.reliability:
           case matsTypes.PlotTypes.roc:
@@ -2267,6 +2279,14 @@ Template.graph.events({
                 "hide legend";
 
               // revert the annotation to the original colors
+              // annotation color needs to be darkened for proper section 508 contrast compliance
+              const darkerAnnotationColor = LightenDarkenColor.LightenDarkenColor(
+                rgbHex(lineTypeResetOpts[lidx]["line.color"]),
+                -75
+              )
+                .toString()
+                .padStart(6, "0");
+
               switch (plotType) {
                 case matsTypes.PlotTypes.timeSeries:
                 case matsTypes.PlotTypes.profile:
@@ -2280,7 +2300,7 @@ Template.graph.events({
                 case matsTypes.PlotTypes.map:
                   thisAnnotation = $(`#legendContainer${dataset[lidx].label}`);
                   annotationCurrentlyHidden = thisAnnotation[0].hidden;
-                  localAnnotation = `<div id='${dataset[lidx].label}-annotation' style='color:${lineTypeResetOpts[lidx]["line.color"]}'>${dataset[lidx].annotation} </div>`;
+                  localAnnotation = `<div id='${dataset[lidx].label}-annotation' style='color:#${darkerAnnotationColor}'>${dataset[lidx].annotation} </div>`;
                   thisAnnotation.empty().append(localAnnotation);
                   thisAnnotation[0].hidden = annotationCurrentlyHidden;
                   thisAnnotation[0].style.display = thisAnnotation[0].hidden
@@ -2618,6 +2638,15 @@ Template.graph.events({
       .forEach(function (elem, index) {
         if (elem.value !== undefined && elem.value !== "") {
           updates[index] = updates[index] === undefined ? {} : updates[index];
+
+          // annotation color needs to be darkened for proper section 508 contrast compliance
+          const darkerAnnotationColor = LightenDarkenColor.LightenDarkenColor(
+            rgbHex(elem.value),
+            -75
+          )
+            .toString()
+            .padStart(6, "0");
+
           switch (plotType) {
             case matsTypes.PlotTypes.timeSeries:
             case matsTypes.PlotTypes.profile:
@@ -2652,7 +2681,7 @@ Template.graph.events({
               // update the annotation with the new color
               thisAnnotation = $(`#legendContainer${dataset[index].curveId}`);
               annotationCurrentlyHidden = thisAnnotation[0].hidden;
-              localAnnotation = `<div id='${dataset[index].curveId}-annotation' style='color:${elem.value}'>${dataset[index].annotation} </div>`;
+              localAnnotation = `<div id='${dataset[index].curveId}-annotation' style='color:#${darkerAnnotationColor}'>${dataset[index].annotation} </div>`;
               thisAnnotation.empty().append(localAnnotation);
               thisAnnotation[0].hidden = annotationCurrentlyHidden;
               thisAnnotation[0].style.display = thisAnnotation[0].hidden

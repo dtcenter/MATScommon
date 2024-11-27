@@ -341,50 +341,6 @@
         </span>
       </span>
     </div>
-    <div id="sendModal" class="modal row" role="dialog">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h4>Send To ?</h4>
-          </div>
-          <div class="modal-body">
-            <div>
-              <label>Send Address ...</label>
-              <input
-                id="sendAddress"
-                class="send-address data-input textInput"
-                type="text"
-                name="send address"
-              />
-              <select
-                class="data-input sentAddresses"
-                size="5"
-                name="sentAddresses"
-                id="sentAddresses"
-              >
-                {{#each sentAddresses}}
-                <option>{{this}}</option>
-                {{/each}}
-              </select>
-            </div>
-          </div>
-          <div class="modal-footer btn-group">
-            <button
-              type="button"
-              class="cancel-send btn btn-primary"
-              data-dismiss="modal"
-            >
-              &nbsp;&nbsp;Cancel
-            </button>
-            <button name="send" type="submit" class="send btn btn-info">
-              &nbsp;&nbsp;Send
-            </button>
-          </div>
-        </div>
-        <!-- /.modal-content -->
-      </div>
-      <!-- /.modal-dialog -->
-    </div>
     {{#if isNotMap}}
     <div id="axisLimitModal" class="modal container" role="dialog">
       <div class="modal-dialog">
@@ -713,6 +669,7 @@
                 id="{{this.label}}LineStyle"
                 class="{{this.label}}-line-style col-sm-2"
                 style="font-size: small; height: 2em"
+                aria-label="line style options"
               >
                 <option value="solid" selected="selected">Solid</option>
                 <option value="dash">Dash</option>
@@ -740,6 +697,7 @@
                 id="{{this.label}}LineMarker"
                 class="{{this.label}}-line-marker col-sm-2"
                 style="font-size: small; height: 2em"
+                aria-label="line marker options"
               >
                 <option value="circle" selected="selected">Solid circle</option>
                 <option value="circle-open">Open circle</option>
@@ -1050,7 +1008,7 @@
               <div><br /></div>
               <div class="row">
                 <label class="col-sm-5">Select colormap: </label>
-                <select id="colormapSelect">
+                <select id="colormapSelect" aria-label="preset colorbar options">
                   <option value="RdBu">RedBlue</option>
                   <option value="{{RdWhBuTriplet}}">RedWhiteBlue</option>
                   <option value="{{MPL_BrBGTriplet}}">Wet/Dry (No White)</option>
@@ -1130,7 +1088,6 @@
           <span
             id="graph-touch-controls"
             class="btn-group btn-group-sm"
-            role="group"
             aria-label="touchcontrol"
           >
             <button type="button" class="btn spacebutton"></button>

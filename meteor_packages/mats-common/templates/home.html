@@ -1,8 +1,7 @@
 <template name="home">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
-  <div id="main" class="main row">
+  <title>Model Analysis Tool Suite</title>
+  <main id="main" class="main row">
+    <a style="display: none" href="#main-content">Skip to main content</a>
     {{>topNav}} {{>spinner}} {{>help}}
     <div class="container row pull-left col-lg-8" style="width: 100%">
       {{>error}}
@@ -11,11 +10,13 @@
         class="row text-center"
         style="margin: 1em 0; display: block"
       >
-        <span
+        <h1
           style="align-content: center; font-size: xx-large; font-weight: bold"
           class="boldedPublicSans"
-          >{{title}}</span
+          id="main-content"
         >
+          {{title}}
+        </h1>
       </div>
       <div class="row pull-left col-lg-8" id="plotTypeContainer">{{>plotType}}</div>
       {{>about}} {{#if Template.subscriptionsReady}} {{#if isUnderConstruction}}
@@ -32,7 +33,6 @@
       {{resetDefaults}} {{/if}} {{else}} Loading... {{/if}}
     </div>
     <div>{{>graph}}</div>
-  </div>
-
+  </main>
   {{>footer}}
 </template>

@@ -18,7 +18,7 @@
       >QC parameters:
     </label>
     <span style="font-size: large; font-weight: normal">
-      <label style="padding-left: 1em; font-size: large; font-weight: normal"
+      <label for="completeness" style="padding-left: 1em; font-size: large; font-weight: normal"
         >Data completeness percentage:
       </label>
       <input
@@ -31,18 +31,18 @@
       />
     </span>
     <span style="font-size: large; font-weight: normal">
-      <label style="padding-left: 1em; font-size: large; font-weight: normal"
+      <label for="outliers" style="padding-left: 1em; font-size: large; font-weight: normal"
         >Stdev filter level:
       </label>
       {{#if noQC}}
-      <select id="outliers">
+      <select id="outliers" aria-label="outlier options">
         <option value="all" selected="selected">All Data</option>
         <option value="3">3 sd</option>
         <option value="2">2 sd</option>
         <option value="1">1 sd</option>
       </select>
       {{else}}
-      <select id="outliers">
+      <select id="outliers" aria-label="outlier options">
         <option value="all">All Data</option>
         <option value="3" selected="selected">3 sd</option>
         <option value="2">2 sd</option>
@@ -69,18 +69,18 @@
       >QC parameters:
     </label>
     <span style="font-size: large; font-weight: normal">
-      <label style="padding-left: 1em; font-size: large; font-weight: normal"
+      <label for="outliers-lite" style="padding-left: 1em; font-size: large; font-weight: normal"
         >Stdev filter level:
       </label>
       {{#if noQC}}
-      <select id="outliers-lite">
+      <select id="outliers-lite" aria-label="outlier options">
         <option value="all" selected="selected">All Data</option>
         <option value="3">3 sd</option>
         <option value="2">2 sd</option>
         <option value="1">1 sd</option>
       </select>
       {{else}}
-      <select id="outliers-lite">
+      <select id="outliers-lite" aria-label="outlier options">
         <option value="all">All Data</option>
         <option value="3" selected="selected">3 sd</option>
         <option value="2">2 sd</option>
@@ -107,7 +107,7 @@
       >QC parameters:
     </label>
     <span style="font-size: large; font-weight: normal">
-      <label style="padding-left: 1em; font-size: large; font-weight: normal"
+      <label for="completeness-gaps" style="padding-left: 1em; font-size: large; font-weight: normal"
         >Data completeness percentage:
       </label>
       <input

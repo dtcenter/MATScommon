@@ -1,14 +1,11 @@
 <template name="configure">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
   <div id="configure" name="configure">
     {{>topNav}}
     <div>
       {{>error}}
       <h1>{{app}} Database Configuration</h1>
       <h3>One or more of your database roles remains undefined. Define them now.</h3>
-      <form class="ui form configure-settings-form">
+      <form class="ui form configure-settings-form" aria-label="run environment settings form">
         <h2>Run Environment</h2>
         <div class="">
           <div class="form-group-sm">
@@ -69,6 +66,7 @@
                   class="form-control groupSelect"
                   id="confGroupSelect"
                   name="groupSelect"
+                  aria-label="group select"
                 >
                   {{#each groups}}
                   <option value="{{group_name}}">{{group_name}}</option>

@@ -39,7 +39,7 @@
   </div>
 
   <div id="curveItem-{{label}}">
-    <div class="pull-left clearfix col-lg-12" role="toolbar">
+    <div class="pull-left clearfix col-lg-12">
       <div
         style="padding:0.5%;margin-bottom:0.5%;display:inline-block;background-color: #f5f5f5;border:solid;border-width:thick;border-color: {{defaultColor}};border-radius: 10px;"
       >
@@ -63,7 +63,7 @@
             style="display: inline-block; width: 10em"
           />
           {{#if DBcurve }} {{#if editingThis}}
-          <div id="editMode" class="btn-toolbar-sm btn-group" role="group">
+          <div id="editMode" class="btn-toolbar-sm btn-group">
             <button
               name="save"
               id="curve-list-save"
@@ -77,7 +77,7 @@
             </button>
           </div>
           {{else}}
-          <div id="nonEditMode" class="btn-toolbar-sm btn-group" role="group">
+          <div id="nonEditMode" class="btn-toolbar-sm btn-group">
             <button id="curve-list-remove" class="remove-curve btn-danger btn">
               <i class="fa-solid fa-xmark"></i> &nbsp;Remove {{label}}
             </button>
@@ -89,7 +89,7 @@
               <i class="fa-solid fa-pencil"></i>&nbsp;&nbsp;Edit {{label}}
             </button>
           </div>
-          <div id="nonEditMode-scatter" class="btn-toolbar-sm btn-group" role="group">
+          <div id="nonEditMode-scatter" class="btn-toolbar-sm btn-group">
             <button
               id="curve-list-edit-xaxis"
               class="edit-curve-xaxis edit-curve-xaxis-{{label}} btn-info btn"

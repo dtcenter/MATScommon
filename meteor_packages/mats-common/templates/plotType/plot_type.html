@@ -10,13 +10,12 @@
         margin-left: 2px;
       "
     >
-      <span class="boldedPublicSans" style="font-size: large"
-        >Plot Type:&nbsp;&nbsp;</span
-      >
+      <label for="plotTypes-selector" class="boldedPublicSans" style="font-size: large">Plot Type:&nbsp;&nbsp;</label>
       <select
         id="plotTypes-selector"
         class="boldedPublicSans plotTypes-selector"
         style="font-size: large"
+        aria-label="plot type options"
       >
         {{#each plotTypes}}
         <option

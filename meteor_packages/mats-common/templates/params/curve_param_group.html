@@ -1,9 +1,9 @@
 <template name="curveParamGroup">
   <div
-    id="curveParamGroup"
+    id="curveParamGroup-{{this}}"
     style="display:{{displayGroup}}; {{gapAbove this}} {{gapBelow this}}"
   >
-    <div class="btn-toolbar btn-group-inline" role="toolbar">
+    <div class="btn-toolbar btn-group-inline">
       <div style="{{gapMessageSpacing this}}">{{gapMessage this}}</div>
       {{#each CurveParams this}} {{> item}} {{/each}}
     </div>

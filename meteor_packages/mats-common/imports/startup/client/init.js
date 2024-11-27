@@ -6,7 +6,7 @@ import { Meteor } from "meteor/meteor";
 import matsCollections from "meteor/randyp:mats-common";
 import { curveParamsByApp } from "../both/mats-curve-params";
 
-/* global Accounts, Session */
+/* global Accounts, Session, $ */
 /* eslint-disable no-console */
 
 if (Meteor.isClient) {
@@ -80,5 +80,8 @@ if (Meteor.isClient) {
     opacity_normal: ".7",
     opacity_expand: ".9",
     disable_warning: true,
+  });
+  $(document).ready(function () {
+    $("html").attr("lang", "en");
   });
 }

@@ -1,6 +1,6 @@
 <template name="scorecardParamList">
   <div id="paramList" class="clearfix pull-left">
-    <form id="paramForm" name="paramForm" novalidate>
+    <form id="paramForm" name="paramForm" aria-label="form to set the scorecard parameters" novalidate>
       <div
         id="paramWell"
         class="clearfix well well-sm pull-left"
@@ -12,7 +12,6 @@
       <div
         class="row clearfix well-sm col-lg-12 pull-left btn-toolbar btn-group btn-lg"
         style="padding: 1em"
-        role="toolbar"
       >
         <button type="submit" name="save" id="save" class="btn btn-success">
           <i class="fa-regular fa-floppy-disk"></i>&nbsp;&nbsp;Save Changes
@@ -30,7 +29,6 @@
       <div
         class="row clearfix well-sm col-lg-12 pull-left btn-toolbar btn-group btn-lg"
         style="padding: 1em"
-        role="toolbar"
       >
         <button type="submit" name="add" id="add" class="btn btn-success">
           <i class="fa-solid fa-plus"></i>&nbsp;&nbsp;Add Block
