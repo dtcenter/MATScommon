@@ -125,6 +125,7 @@
             class="navbar-brand"
             href="{{productLink}}"
             target="_blank"
+            aria-label="Opens in new window"
             ><img
               style="
                 height: 100%;
@@ -141,7 +142,10 @@
           <ul class="nav navbar-nav">
             <li>
               <div style="margin-top: 0.5em">
-                <a href="{{agencyLink}}" target="_blank"
+                <a
+                  href="{{agencyLink}}"
+                  target="_blank"
+                  aria-label="Opens in new window"
                   ><span style="color: white; font-size: small">{{agencyText}}</span></a
                 ><br />
                 <a href="{{productLink}}"
@@ -154,7 +158,7 @@
           </ul>
           <ul class="nav navbar-nav navbar-right">
             <li style="margin-top: 0.5em">
-              <a href="{{bugsLink}}" target="_blank"
+              <a href="{{bugsLink}}" target="_blank" aria-label="Opens in new window"
                 ><span style="color: white; font-size: medium">{{bugsText}}</span></a
               >
             </li>
@@ -167,6 +171,7 @@
               <a
                 href="mailto:mats.gsl@noaa.gov?Subject=Feedback from {{emailText}}"
                 target="_blank"
+                aria-label="Opens in new window"
                 ><span style="color: white; font-size: medium">Contact Us</span></a
               >
             </li>
