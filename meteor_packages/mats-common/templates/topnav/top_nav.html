@@ -125,7 +125,6 @@
             class="navbar-brand"
             href="{{productLink}}"
             target="_blank"
-            aria-label="Opens in new window"
             ><img
               style="
                 height: 100%;
@@ -136,7 +135,8 @@
               "
               src="{{transparentGif}}"
               alt="NOAA logo"
-          /></a>
+            /><span class="sr-only">Opens in new window</span></a
+          >
         </div>
         <div class="collapse navbar-collapse" id="navbar-collapse">
           <ul class="nav navbar-nav">
@@ -145,8 +145,8 @@
                 <a
                   href="{{agencyLink}}"
                   target="_blank"
-                  aria-label="Opens in new window"
-                  ><span style="color: white; font-size: small">{{agencyText}}</span></a
+                  style="color: white; font-size: small"
+                  >{{agencyText}}<span class="sr-only">Opens in new window</span></a
                 ><br />
                 <a href="{{productLink}}"
                   ><span style="color: white; font-size: x-large"
@@ -158,21 +158,22 @@
           </ul>
           <ul class="nav navbar-nav navbar-right">
             <li style="margin-top: 0.5em">
-              <a href="{{bugsLink}}" target="_blank" aria-label="Opens in new window"
-                ><span style="color: white; font-size: medium">{{bugsText}}</span></a
+              <a
+                href="{{bugsLink}}"
+                target="_blank"
+                style="color: white; font-size: medium"
+                >{{bugsText}}<span class="sr-only">Opens in new window</span></a
               >
             </li>
             <li style="margin-top: 0.5em">
-              <a href="" class="about"
-                ><span style="color: white; font-size: medium">About</span></a
-              >
+              <a href="" class="about" style="color: white; font-size: medium">About</a>
             </li>
             <li style="margin-top: 0.5em">
               <a
                 href="mailto:mats.gsl@noaa.gov?Subject=Feedback from {{emailText}}"
                 target="_blank"
-                aria-label="Opens in new window"
-                ><span style="color: white; font-size: medium">Contact Us</span></a
+                style="color: white; font-size: medium"
+                >Contact Us<span class="sr-only">Opens in new window</span></a
               >
             </li>
           </ul>

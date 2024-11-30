@@ -59,7 +59,7 @@ Template.textOutput.helpers({
       case matsTypes.PlotTypes.timeSeries:
       case matsTypes.PlotTypes.profile:
         header +=
-          "<th>label</th><th>mean</th><th>standard deviation</th><th>n</th><th>standard error</th><th>lag1</th><th>minimum</th><th>maximum</th>";
+          "<th scope='col'>label</th><th scope='col'>mean</th><th scope='col'>standard deviation</th><th scope='col'>n</th><th scope='col'>standard error</th><th scope='col'>lag1</th><th scope='col'>minimum</th><th scope='col'>maximum</th>";
         break;
       case matsTypes.PlotTypes.dieoff:
       case matsTypes.PlotTypes.threshold:
@@ -68,13 +68,14 @@ Template.textOutput.helpers({
       case matsTypes.PlotTypes.gridscale:
       case matsTypes.PlotTypes.yearToYear:
         header +=
-          "<th>label</th><th>mean</th><th>standard deviation</th><th>n</th><th>minimum</th><th>maximum</th>";
+          "<th scope='col'>label</th><th scope='col'>mean</th><th scope='col'>standard deviation</th><th scope='col'>n</th><th scope='col'>minimum</th><th scope='col'>maximum</th>";
         break;
       case matsTypes.PlotTypes.reliability:
-        header += "<th>label</th><th>sample climatology</th>";
+        header += "<th scope='col'>label</th><th scope='col'>sample climatology</th>";
         break;
       case matsTypes.PlotTypes.roc:
-        header += "<th>label</th><th>area under the ROC curve</th>";
+        header +=
+          "<th scope='col'>label</th><th scope='col'>area under the ROC curve</th>";
         break;
       case matsTypes.PlotTypes.performanceDiagram:
       case matsTypes.PlotTypes.gridscaleProb:
@@ -82,17 +83,17 @@ Template.textOutput.helpers({
         break;
       case matsTypes.PlotTypes.map:
         header +=
-          "<th>label</th><th>mean</th><th>standard deviation</th><th>n</th><th>minimum time</th><th>maximum time</th>";
+          "<th scope='col'>label</th><th scope='col'>mean</th><th scope='col'>standard deviation</th><th scope='col'>n</th><th scope='col'>minimum time</th><th scope='col'>maximum time</th>";
         break;
       case matsTypes.PlotTypes.histogram:
       case matsTypes.PlotTypes.ensembleHistogram:
         header +=
-          "<th>label</th><th>mean</th><th>standard deviation</th><th>n</th><th>minimum</th><th>maximum</th>";
+          "<th scope='col'>label</th><th scope='col'>mean</th><th scope='col'>standard deviation</th><th scope='col'>n</th><th scope='col'>minimum</th><th scope='col'>maximum</th>";
         break;
       case matsTypes.PlotTypes.contour:
       case matsTypes.PlotTypes.contourDiff:
         header +=
-          "<th>label</th><th>mean stat</th><th>n</th><th>minimum time</th><th>maximum time</th>";
+          "<th scope='col'>label</th><th scope='col'>mean stat</th><th scope='col'>n</th><th scope='col'>minimum time</th><th scope='col'>maximum time</th>";
         break;
       case matsTypes.PlotTypes.simpleScatter:
         header += "";
@@ -155,33 +156,33 @@ Template.textOutput.helpers({
       case matsTypes.PlotTypes.timeSeries:
       case matsTypes.PlotTypes.profile:
         if (isCTC) {
-          header += `<th>${curve.label}${labelSuffix}</th>\
-                        <th>plotted stat</th>\
-                        <th>n</th>\
-                        <th>hits</th>\
-                        <th>false alarms</th>\
-                        <th>misses</th>\
-                        <th>correct nulls</th>`;
+          header += `<th scope='col'>${curve.label}${labelSuffix}</th>\
+                        <th scope='col'>plotted stat</th>\
+                        <th scope='col'>n</th>\
+                        <th scope='col'>hits</th>\
+                        <th scope='col'>false alarms</th>\
+                        <th scope='col'>misses</th>\
+                        <th scope='col'>correct nulls</th>`;
         } else if (isModeSingle) {
-          header += `<th>${curve.label}${labelSuffix}</th>\
-                        <th>plotted stat</th>\
-                        <th>Number of forecast objects</th>\
-                        <th>Number of matched objects</th>\
-                        <th>Number of simple objects</th>\
-                        <th>Number of total objects</th>`;
+          header += `<th scope='col'>${curve.label}${labelSuffix}</th>\
+                        <th scope='col'>plotted stat</th>\
+                        <th scope='col'>Number of forecast objects</th>\
+                        <th scope='col'>Number of matched objects</th>\
+                        <th scope='col'>Number of simple objects</th>\
+                        <th scope='col'>Number of total objects</th>`;
         } else if (isModePairs) {
-          header += `<th>${curve.label}${labelSuffix}</th>\
-                        <th>stat</th>\
-                        <th>n</th>\
-                        <th>average interest</th>`;
+          header += `<th scope='col'>${curve.label}${labelSuffix}</th>\
+                        <th scope='col'>stat</th>\
+                        <th scope='col'>n</th>\
+                        <th scope='col'>average interest</th>`;
         } else {
-          header += `<th>${curve.label}${labelSuffix}</th>\
-                        <th>plotted stat</th>\
-                        <th>mean of sub values</th>\
-                        <th>std dev</th>\
-                        <th>std error</th>\
-                        <th>lag1</th>\
-                        <th>n</th>`;
+          header += `<th scope='col'>${curve.label}${labelSuffix}</th>\
+                        <th scope='col'>plotted stat</th>\
+                        <th scope='col'>mean of sub values</th>\
+                        <th scope='col'>std dev</th>\
+                        <th scope='col'>std error</th>\
+                        <th scope='col'>lag1</th>\
+                        <th scope='col'>n</th>`;
         }
         break;
       case matsTypes.PlotTypes.dieoff:
@@ -191,98 +192,98 @@ Template.textOutput.helpers({
       case matsTypes.PlotTypes.gridscale:
       case matsTypes.PlotTypes.yearToYear:
         if (isCTC) {
-          header += `<th>${curve.label}${labelSuffix}</th>\
-                        <th>plotted stat</th>\
-                        <th>n</th>\
-                        <th>hits</th>\
-                        <th>false alarms</th>\
-                        <th>misses</th>\
-                        <th>correct nulls</th>`;
+          header += `<th scope='col'>${curve.label}${labelSuffix}</th>\
+                        <th scope='col'>plotted stat</th>\
+                        <th scope='col'>n</th>\
+                        <th scope='col'>hits</th>\
+                        <th scope='col'>false alarms</th>\
+                        <th scope='col'>misses</th>\
+                        <th scope='col'>correct nulls</th>`;
         } else if (isModeSingle) {
-          header += `<th>${curve.label}${labelSuffix}</th>\
-                        <th>plotted stat</th>\
-                        <th>Number of forecast objects</th>\
-                        <th>Number of matched objects</th>\
-                        <th>Number of simple objects</th>\
-                        <th>Number of total objects</th>`;
+          header += `<th scope='col'>${curve.label}${labelSuffix}</th>\
+                        <th scope='col'>plotted stat</th>\
+                        <th scope='col'>Number of forecast objects</th>\
+                        <th scope='col'>Number of matched objects</th>\
+                        <th scope='col'>Number of simple objects</th>\
+                        <th scope='col'>Number of total objects</th>`;
         } else if (isModePairs) {
-          header += `<th>${curve.label}${labelSuffix}</th>\
-                        <th>stat</th>\
-                        <th>n</th>\
-                        <th>average interest</th>`;
+          header += `<th scope='col'>${curve.label}${labelSuffix}</th>\
+                        <th scope='col'>stat</th>\
+                        <th scope='col'>n</th>\
+                        <th scope='col'>average interest</th>`;
         } else {
-          header += `<th>${curve.label}${labelSuffix}</th>\
-                        <th>plotted stat</th>\
-                        <th>mean of sub values</th>\
-                        <th>std dev</th>\
-                        <th>n</th>`;
+          header += `<th scope='col'>${curve.label}${labelSuffix}</th>\
+                        <th scope='col'>plotted stat</th>\
+                        <th scope='col'>mean of sub values</th>\
+                        <th scope='col'>std dev</th>\
+                        <th scope='col'>n</th>`;
         }
         break;
       case matsTypes.PlotTypes.reliability:
         if (curve.kernel) {
-          header += `<th>${curve.label} probability bin</th>\
-                        <th>observed frequency</th>\
-                        <th>hit count</th>\
-                        <th>fcst count</th>`;
+          header += `<th scope='col'>${curve.label} probability bin</th>\
+                        <th scope='col'>observed frequency</th>\
+                        <th scope='col'>hit count</th>\
+                        <th scope='col'>fcst count</th>`;
         } else {
-          header += `<th>${curve.label} probability bin</th>\
-                        <th>hit rate</th>\
-                        <th>oy</th>\
-                        <th>on</th>`;
+          header += `<th scope='col'>${curve.label} probability bin</th>\
+                        <th scope='col'>hit rate</th>\
+                        <th scope='col'>oy</th>\
+                        <th scope='col'>on</th>`;
         }
         break;
       case matsTypes.PlotTypes.roc:
-        header += `<th>${curve.label} bin value</th>\
-                        <th>probability of detection</th>\
-                        <th>probability of false detection</th>\
-                        <th>n</th>\
+        header += `<th scope='col'>${curve.label} bin value</th>\
+                        <th scope='col'>probability of detection</th>\
+                        <th scope='col'>probability of false detection</th>\
+                        <th scope='col'>n</th>\
                         `;
         break;
       case matsTypes.PlotTypes.performanceDiagram:
-        header += `<th>${curve.label} bin value</th>\
-                        <th>probability of detection</th>\
-                        <th>success ratio</th>\
-                        <th>n</th>\
+        header += `<th scope='col'>${curve.label} bin value</th>\
+                        <th scope='col'>probability of detection</th>\
+                        <th scope='col'>success ratio</th>\
+                        <th scope='col'>n</th>\
                         `;
         break;
       case matsTypes.PlotTypes.gridscaleProb:
-        header += `<th>${curve.label} probability bin</th>\
-                        <th>number of grid points</th>\
-                        <th>n</th>\
+        header += `<th scope='col'>${curve.label} probability bin</th>\
+                        <th scope='col'>number of grid points</th>\
+                        <th scope='col'>n</th>\
                         `;
         break;
       case matsTypes.PlotTypes.map:
         if (isCTC) {
           header +=
-            "<th>site name</th><th>number of times</th><th>stat</th><th>hits</th><th>false alarms</th><th>misses</th><th>correct nulls</th>";
+            "<th scope='col'>site name</th><th scope='col'>number of times</th><th scope='col'>stat</th><th scope='col'>hits</th><th scope='col'>false alarms</th><th scope='col'>misses</th><th scope='col'>correct nulls</th>";
         } else {
           header +=
-            "<th>site name</th><th>number of times</th><th>start date</th><th>end date</th><th>stat</th>";
+            "<th scope='col'>site name</th><th scope='col'>number of times</th><th scope='col'>start date</th><th scope='col'>end date</th><th scope='col'>stat</th>";
         }
         break;
       case matsTypes.PlotTypes.histogram:
-        header += `<th>${curve.label}  bin range</th><th>bin n</th><th>bin rel freq</th><th>bin lower bound</th><th>bin upper bound</th><th>bin mean</th><th>bin std dev</th>`;
+        header += `<th scope='col'>${curve.label}  bin range</th><th scope='col'>bin n</th><th scope='col'>bin rel freq</th><th scope='col'>bin lower bound</th><th scope='col'>bin upper bound</th><th scope='col'>bin mean</th><th scope='col'>bin std dev</th>`;
         break;
       case matsTypes.PlotTypes.ensembleHistogram:
-        header += `<th>${curve.label}  bin number</th>\
-                        <th>bin n</th>\
-                        <th>bin rel freq</th>`;
+        header += `<th scope='col'>${curve.label}  bin number</th>\
+                        <th scope='col'>bin n</th>\
+                        <th scope='col'>bin rel freq</th>`;
         break;
       case matsTypes.PlotTypes.contour:
       case matsTypes.PlotTypes.contourDiff:
         if (isCTC) {
           header +=
-            "<th>x value</th><th>y value</th><th>stat</th><th>n</th><th>hits</th><th>false alarms</th><th>misses</th><th>correct nulls</th>";
+            "<th scope='col'>x value</th><th scope='col'>y value</th><th scope='col'>stat</th><th scope='col'>n</th><th scope='col'>hits</th><th scope='col'>false alarms</th><th scope='col'>misses</th><th scope='col'>correct nulls</th>";
         } else {
           header +=
-            "<th>x value</th><th>y value</th><th>stat</th><th>n</th><th>start date</th><th>end date</th>";
+            "<th scope='col'>x value</th><th scope='col'>y value</th><th scope='col'>stat</th><th scope='col'>n</th><th scope='col'>start date</th><th scope='col'>end date</th>";
         }
         break;
       case matsTypes.PlotTypes.simpleScatter:
-        header += `<th>${curve.label} bin value</th><th>x-statistic</th><th>y-statistic</th><th>n</th>`;
+        header += `<th scope='col'>${curve.label} bin value</th><th scope='col'>x-statistic</th><th scope='col'>y-statistic</th><th scope='col'>n</th>`;
         break;
       case matsTypes.PlotTypes.scatter2d:
-        header += `<th>${curve.label} x axis</th><th>${curve.label} y axis</th><th>best fit</th>`;
+        header += `<th scope='col'>${curve.label} x axis</th><th scope='col'>${curve.label} y axis</th><th scope='col'>best fit</th>`;
         break;
       default:
         break;
