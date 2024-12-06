@@ -7,6 +7,16 @@ import { Meteor } from "meteor/meteor";
 import { moment } from "meteor/momentjs:moment";
 import { _ } from "meteor/underscore";
 
+const noaaDisclaimer = function () {
+  if (
+    matsCollections.Settings.findOne({}) !== undefined &&
+    matsCollections.Settings.findOne({}).displayDisclaimer
+  ) {
+    return "This plot is for research purposes only, and should not be used to make decisions related to the safety of life and property.";
+  }
+  return "";
+};
+
 // sets plot options for timeseries plots
 const generateSeriesPlotOptions = function (axisMap, errorMax) {
   let { xmin } = axisMap[Object.keys(axisMap)[0]];
@@ -15,11 +25,17 @@ const generateSeriesPlotOptions = function (axisMap, errorMax) {
 
   // overall plot options
   const layout = {
+    title: {
+      text: noaaDisclaimer(),
+      font: {
+        size: 10,
+      },
+    },
     margin: {
       l: 80,
       r: 80,
       b: 80,
-      t: 20,
+      t: 30,
       pad: 4,
     },
     zeroline: false,
@@ -162,6 +178,12 @@ const generateProfilePlotOptions = function (axisMap, errorMax) {
 
   // overall plot options
   const layout = {
+    title: {
+      text: noaaDisclaimer(),
+      font: {
+        size: 10,
+      },
+    },
     margin: {
       l: 80,
       r: 80,
@@ -321,6 +343,12 @@ const generateDieoffPlotOptions = function (axisMap, errorMax) {
 
   // overall plot options
   const layout = {
+    title: {
+      text: noaaDisclaimer(),
+      font: {
+        size: 10,
+      },
+    },
     margin: {
       l: 80,
       r: 80,
@@ -493,6 +521,12 @@ const generateThresholdPlotOptions = function (dataset, axisMap, errorMax) {
 
   // overall plot options
   const layout = {
+    title: {
+      text: noaaDisclaimer(),
+      font: {
+        size: 10,
+      },
+    },
     margin: {
       l: 80,
       r: 80,
@@ -637,6 +671,12 @@ const generateValidTimePlotOptions = function (axisMap, errorMax) {
 
   // overall plot options
   const layout = {
+    title: {
+      text: noaaDisclaimer(),
+      font: {
+        size: 10,
+      },
+    },
     margin: {
       l: 80,
       r: 80,
@@ -815,6 +855,12 @@ const generateGridScalePlotOptions = function (axisMap, errorMax) {
 
   // overall plot options
   const layout = {
+    title: {
+      text: noaaDisclaimer(),
+      font: {
+        size: 10,
+      },
+    },
     margin: {
       l: 80,
       r: 80,
@@ -957,6 +1003,12 @@ const generateYearToYearPlotOptions = function (axisMap, errorMax) {
 
   // overall plot options
   const layout = {
+    title: {
+      text: noaaDisclaimer(),
+      font: {
+        size: 10,
+      },
+    },
     margin: {
       l: 80,
       r: 80,
@@ -1104,6 +1156,12 @@ const generateReliabilityPlotOptions = function () {
 
   // overall plot options
   const layout = {
+    title: {
+      text: noaaDisclaimer(),
+      font: {
+        size: 10,
+      },
+    },
     margin: {
       l: 80,
       r: 80,
@@ -1211,6 +1269,12 @@ const generateROCPlotOptions = function () {
 
   // overall plot options
   const layout = {
+    title: {
+      text: noaaDisclaimer(),
+      font: {
+        size: 10,
+      },
+    },
     margin: {
       l: 80,
       r: 80,
@@ -1318,6 +1382,12 @@ const generatePerformanceDiagramPlotOptions = function () {
 
   // overall plot options
   const layout = {
+    title: {
+      text: noaaDisclaimer(),
+      font: {
+        size: 10,
+      },
+    },
     margin: {
       l: 80,
       r: 80,
@@ -1425,6 +1495,12 @@ const generateGridScaleProbPlotOptions = function (axisMap) {
 
   // overall plot options
   const layout = {
+    title: {
+      text: noaaDisclaimer(),
+      font: {
+        size: 10,
+      },
+    },
     margin: {
       l: 80,
       r: 80,
@@ -1523,6 +1599,12 @@ const generateMapPlotOptions = function (extraLegendSpace) {
           : "undefined",
       style: "light",
     },
+    title: {
+      text: noaaDisclaimer(),
+      font: {
+        size: 10,
+      },
+    },
     margin: {
       l: 30,
       r: 30,
@@ -1564,6 +1646,12 @@ const generateHistogramPlotOptions = function (curves, axisMap, varUnits, plotBi
 
   // overall plot options
   const layout = {
+    title: {
+      text: noaaDisclaimer(),
+      font: {
+        size: 10,
+      },
+    },
     margin: {
       l: 80,
       r: 80,
@@ -1660,6 +1748,12 @@ const generateEnsembleHistogramPlotOptions = function (dataset, curves, axisMap)
 
   // overall plot options
   const layout = {
+    title: {
+      text: noaaDisclaimer(),
+      font: {
+        size: 10,
+      },
+    },
     margin: {
       l: 80,
       r: 80,
@@ -1744,6 +1838,12 @@ const generateContourPlotOptions = function (dataset) {
 
   // overall plot options
   const layout = {
+    title: {
+      text: noaaDisclaimer(),
+      font: {
+        size: 10,
+      },
+    },
     margin: {
       l: 80,
       r: 80,
@@ -1881,6 +1981,12 @@ const generateScatterPlotOptions = function (axisXMap, axisYMap) {
 
   // overall plot options
   const layout = {
+    title: {
+      text: noaaDisclaimer(),
+      font: {
+        size: 10,
+      },
+    },
     margin: {
       l: 80,
       r: 80,

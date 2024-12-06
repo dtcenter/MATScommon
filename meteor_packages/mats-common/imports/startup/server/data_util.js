@@ -315,6 +315,9 @@ const doSettings = function (
   commit,
   branch,
   appName,
+  agency,
+  agencyURL,
+  displayDisclaimer,
   appType,
   mapboxKey,
   appDefaultGroup,
@@ -339,6 +342,9 @@ const doSettings = function (
       appVersion: version,
       commit,
       appName,
+      agency,
+      agencyURL,
+      displayDisclaimer,
       appType,
       LineWidth: 3.5,
       NullFillString: "---",
@@ -354,19 +360,11 @@ const doSettings = function (
   }
   // always update the version, roles, and the hostname, not just if it doesn't exist...
   const settings = matsCollections.Settings.findOne({});
-  const deploymentRoles = {
-    "mats-docker-dev": "development",
-    "mats-docker-preint": "integration",
-    gsl: "production",
-    esrl: "production",
-    metexpress: "production",
-  };
   const settingsId = settings._id;
   const os = Npm.require("os");
   const hostname = os.hostname().split(".")[0];
   settings.appVersion = version;
   settings.hostname = hostname;
-  settings.deploymentRoles = JSON.stringify(deploymentRoles);
   matsCollections.Settings.update(settingsId, { $set: settings });
 };
 

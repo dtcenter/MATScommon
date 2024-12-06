@@ -4,25 +4,8 @@
 import { Meteor } from "meteor/meteor";
 import { matsCollections, matsTypes } from "meteor/randyp:mats-common";
 import { Template } from "meteor/templating";
-import matsMethods from "../../imports/startup/api/matsMethods";
 
-/* global Session,, $, setError */
-
-const getRunEnvironment = function () {
-  if (Session.get("deployment_environment") === undefined) {
-    matsMethods.getRunEnvironment.call({}, function (error, result) {
-      if (error !== undefined) {
-        setError(error);
-        return `<p>${error}</p>`;
-      }
-      Session.set("deployment_environment", result);
-      return result;
-    });
-  } else {
-    return Session.get("deployment_environment");
-  }
-  return null;
-};
+/* global $ */
 
 const getBaseURL = function () {
   const urlComponents = document.location.href.split("/");
@@ -69,52 +52,46 @@ Template.topNav.helpers({
     return `${urlParams.baseURL}/${urlParams.appName}/packages/randyp_mats-common/public/img/noaa_transparent.png`;
   },
   emailText() {
-    switch (getRunEnvironment()) {
-      case "metexpress":
-        return "METexpress";
-      default:
-        if (
-          matsCollections.Settings.findOne({}) !== undefined &&
-          matsCollections.Settings.findOne({}).appType !== undefined
-        ) {
-          const { appType } = matsCollections.Settings.findOne({});
-          return appType === matsTypes.AppTypes.metexpress ? "METexpress" : "MATS";
-        }
-        return "MATS";
+    if (
+      matsCollections.Settings.findOne({}) !== undefined &&
+      matsCollections.Settings.findOne({}).appType !== undefined
+    ) {
+      const { appType } = matsCollections.Settings.findOne({});
+      return appType === matsTypes.AppTypes.metexpress ? "METexpress" : "MATS";
     }
+    return "MATS";
   },
   agencyText() {
-    switch (getRunEnvironment()) {
-      case "metexpress":
-        return "National Weather Service";
-      default:
-        return "Global Systems Laboratory";
+    if (
+      matsCollections.Settings.findOne({}) !== undefined &&
+      matsCollections.Settings.findOne({}).agency !== undefined
+    ) {
+      const { agency } = matsCollections.Settings.findOne({});
+      return agency;
     }
+    return "Unknown Agency";
   },
   agencyLink() {
-    switch (getRunEnvironment()) {
-      case "metexpress":
-        return "https://www.weather.gov/";
-      default:
-        return "http://gsl.noaa.gov/";
+    if (
+      matsCollections.Settings.findOne({}) !== undefined &&
+      matsCollections.Settings.findOne({}).agencyURL !== undefined
+    ) {
+      const { agencyURL } = matsCollections.Settings.findOne({});
+      return agencyURL;
     }
+    return "#";
   },
   productText() {
-    switch (getRunEnvironment()) {
-      case "metexpress":
-        return "METexpress";
-      default:
-        if (
-          matsCollections.Settings.findOne({}) !== undefined &&
-          matsCollections.Settings.findOne({}).appType !== undefined
-        ) {
-          const { appType } = matsCollections.Settings.findOne({});
-          return appType === matsTypes.AppTypes.metexpress
-            ? "METexpress"
-            : "Model Analysis Tool Suite (MATS)";
-        }
-        return "Model Analysis Tool Suite (MATS)";
+    if (
+      matsCollections.Settings.findOne({}) !== undefined &&
+      matsCollections.Settings.findOne({}).appType !== undefined
+    ) {
+      const { appType } = matsCollections.Settings.findOne({});
+      return appType === matsTypes.AppTypes.metexpress
+        ? "METexpress"
+        : "Model Analysis Tool Suite (MATS)";
     }
+    return "Model Analysis Tool Suite (MATS)";
   },
   productLink() {
     return Meteor.settings.public.home === undefined
@@ -125,21 +102,16 @@ Template.topNav.helpers({
     return "Bugs/Issues (GitHub)";
   },
   bugsLink() {
-    switch (getRunEnvironment()) {
-      case "metexpress":
-        return "https://github.com/dtcenter/METexpress/issues";
-      default:
-        if (
-          matsCollections.Settings.findOne({}) !== undefined &&
-          matsCollections.Settings.findOne({}).appType !== undefined
-        ) {
-          const { appType } = matsCollections.Settings.findOne({});
-          return appType === matsTypes.AppTypes.metexpress
-            ? "https://github.com/dtcenter/METexpress/issues"
-            : "https://github.com/NOAA-GSL/MATS/issues";
-        }
-        return "https://github.com/NOAA-GSL/MATS/issues";
+    if (
+      matsCollections.Settings.findOne({}) !== undefined &&
+      matsCollections.Settings.findOne({}).appType !== undefined
+    ) {
+      const { appType } = matsCollections.Settings.findOne({});
+      return appType === matsTypes.AppTypes.metexpress
+        ? "https://github.com/dtcenter/METexpress/issues"
+        : "https://github.com/NOAA-GSL/MATS/issues";
     }
+    return "https://github.com/NOAA-GSL/MATS/issues";
   },
   isMetexpress() {
     if (

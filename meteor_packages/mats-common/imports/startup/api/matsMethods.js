@@ -2105,14 +2105,6 @@ const dropScorecardInstance = new ValidatedMethod({
 
 // administration tool
 
-const getRunEnvironment = new ValidatedMethod({
-  name: "matsMethods.getRunEnvironment",
-  validate: new SimpleSchema({}).validator(),
-  run() {
-    return Meteor.settings.public.run_environment;
-  },
-});
-
 const getDefaultGroupList = new ValidatedMethod({
   name: "matsMethods.getDefaultGroupList",
   validate: new SimpleSchema({}).validator(),
@@ -2712,24 +2704,26 @@ const resetApp = async function (appRef) {
       : false;
     const dbType = appRef.dbType ? appRef.dbType : matsTypes.DbTypes.mysql;
     const appName = Meteor.settings.public.app ? Meteor.settings.public.app : "unnamed";
+    const agency = Meteor.settings.public.agency
+      ? Meteor.settings.public.agency
+      : "Unknown Agency";
+    const agencyURL = Meteor.settings.public.agencyURL
+      ? Meteor.settings.public.agencyURL
+      : "#";
+    const displayDisclaimer = Meteor.settings.public.displayResearchDisclaimerOnPlots
+      ? Meteor.settings.public.displayResearchDisclaimerOnPlots
+      : false;
     const appTitle = Meteor.settings.public.title
       ? Meteor.settings.public.title
       : "Unnamed App";
-    const appGroup = Meteor.settings.public.group
-      ? Meteor.settings.public.group
-      : "Misc. Apps";
     const thresholdUnits = Meteor.settings.public.threshold_units
       ? Meteor.settings.public.threshold_units
       : {};
     let appDefaultGroup = "";
     let appDefaultDB = "";
     let appDefaultModel = "";
-    let appColor;
     switch (type) {
       case matsTypes.AppTypes.metexpress:
-        appColor = Meteor.settings.public.color
-          ? Meteor.settings.public.color
-          : "darkorchid";
         appDefaultGroup = Meteor.settings.public.default_group
           ? Meteor.settings.public.default_group
           : "NO GROUP";
@@ -2742,13 +2736,6 @@ const resetApp = async function (appRef) {
         break;
       case matsTypes.AppTypes.mats:
       default:
-        if (dbType === matsTypes.DbTypes.couchbase) {
-          appColor = "#33abbb";
-        } else {
-          appColor = Meteor.settings.public.color
-            ? Meteor.settings.public.color
-            : "#3366bb";
-        }
         break;
     }
     const appTimeOut = Meteor.settings.public.mysql_wait_timeout
@@ -2795,11 +2782,11 @@ const resetApp = async function (appRef) {
           proxy_prefix_path: "",
           home: homeUrl,
           appName,
+          agency,
+          agencyURL,
+          displayResearchDisclaimerOnPlots: displayDisclaimer,
           mysql_wait_timeout: appTimeOut,
-          group: appGroup,
-          app_order: 1,
           title: appTitle,
-          color: appColor,
           threshold_units: thresholdUnits,
         },
       };
@@ -2930,6 +2917,9 @@ const resetApp = async function (appRef) {
       commit,
       branch,
       appName,
+      agency,
+      agencyURL,
+      displayDisclaimer,
       appType,
       mapboxKey,
       appDefaultGroup,
@@ -3860,7 +3850,6 @@ export default matsMethods = {
   applySettingsData,
   deleteSettings,
   dropScorecardInstance,
-  getRunEnvironment,
   getDefaultGroupList,
   getGraphData,
   getGraphDataByKey,
