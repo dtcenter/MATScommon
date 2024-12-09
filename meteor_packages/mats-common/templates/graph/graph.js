@@ -341,12 +341,11 @@ Template.graph.helpers({
         )
       ) {
         // annotation color needs to be darkened for proper section 508 contrast compliance
-        const darkerAnnotationColor = LightenDarkenColor.LightenDarkenColor(
-          rgbHex(dataset[i].annotateColor),
-          -75
-        )
-          .toString()
-          .padStart(6, "0");
+        const darkerAnnotationColor = dataset[i].annotateColor
+          ? LightenDarkenColor.LightenDarkenColor(rgbHex(dataset[i].annotateColor), -75)
+              .toString()
+              .padStart(6, "0")
+          : "000000";
 
         switch (plotType) {
           case matsTypes.PlotTypes.timeSeries:
