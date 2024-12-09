@@ -180,7 +180,7 @@ const generateProfilePlotOptions = function (axisMap, errorMax) {
   const layout = {
     title: {
       text: noaaDisclaimer(),
-      y: 0.92,
+      y: 0.87,
       font: {
         size: 10,
       },
@@ -203,7 +203,7 @@ const generateProfilePlotOptions = function (axisMap, errorMax) {
     legend: {
       orientation: "h",
       x: 0,
-      y: 1.11,
+      y: 1.2,
       font: {
         size: 12,
         color: "#000000",
@@ -1159,7 +1159,7 @@ const generateReliabilityPlotOptions = function () {
   const layout = {
     title: {
       text: noaaDisclaimer(),
-      y: 0.92,
+      y: 0.87,
       font: {
         size: 10,
       },
@@ -1183,7 +1183,7 @@ const generateReliabilityPlotOptions = function () {
     legend: {
       orientation: "h",
       x: 0,
-      y: 1.11,
+      y: 1.2,
       font: {
         size: 12,
         color: "#000000",
@@ -1273,7 +1273,7 @@ const generateROCPlotOptions = function () {
   const layout = {
     title: {
       text: noaaDisclaimer(),
-      y: 0.92,
+      y: 0.87,
       font: {
         size: 10,
       },
@@ -1297,7 +1297,7 @@ const generateROCPlotOptions = function () {
     legend: {
       orientation: "h",
       x: 0,
-      y: 1.11,
+      y: 1.2,
       font: {
         size: 12,
         color: "#000000",
@@ -1387,7 +1387,7 @@ const generatePerformanceDiagramPlotOptions = function () {
   const layout = {
     title: {
       text: noaaDisclaimer(),
-      y: 0.92,
+      y: 0.87,
       font: {
         size: 10,
       },
@@ -1411,7 +1411,7 @@ const generatePerformanceDiagramPlotOptions = function () {
     legend: {
       orientation: "h",
       x: 0,
-      y: 1.11,
+      y: 1.2,
       font: {
         size: 12,
         color: "#000000",
@@ -1605,7 +1605,7 @@ const generateMapPlotOptions = function (extraLegendSpace) {
     },
     title: {
       text: noaaDisclaimer(),
-      y: extraLegendSpace ? 0.92 : 0.94,
+      y: extraLegendSpace ? 0.89 : 0.94,
       font: {
         size: 10,
       },
@@ -1620,7 +1620,7 @@ const generateMapPlotOptions = function (extraLegendSpace) {
     legend: {
       orientation: "h",
       x: 0,
-      y: extraLegendSpace ? 1.11 : 1.07,
+      y: extraLegendSpace ? 1.13 : 1.07,
       font: {
         size: 14,
         color: "#000000",
@@ -1845,7 +1845,7 @@ const generateContourPlotOptions = function (dataset) {
   const layout = {
     title: {
       text: noaaDisclaimer(),
-      y: 0.94,
+      y: 0.93,
       font: {
         size: 10,
       },
@@ -1868,7 +1868,7 @@ const generateContourPlotOptions = function (dataset) {
     legend: {
       orientation: "h",
       x: 0,
-      y: 1.08,
+      y: 1.09,
       font: {
         size: 12,
         color: "#000000",
@@ -1989,7 +1989,7 @@ const generateScatterPlotOptions = function (axisXMap, axisYMap) {
   const layout = {
     title: {
       text: noaaDisclaimer(),
-      y: 0.92,
+      y: 0.87,
       font: {
         size: 10,
       },
@@ -2012,7 +2012,7 @@ const generateScatterPlotOptions = function (axisXMap, axisYMap) {
     legend: {
       orientation: "h",
       x: 0,
-      y: 1.11,
+      y: 1.2,
       font: {
         size: 12,
         color: "#000000",
