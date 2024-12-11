@@ -2761,6 +2761,19 @@ Template.graph.events({
   // add show/hide modal submit button
   "click #showHideSubmit"(event) {
     event.preventDefault();
+    const options = Session.get("options");
+    const newOpts = {};
+    $("input[id=showHideNOAADisclaimer]")
+      .get()
+      // eslint-disable-next-line no-unused-vars
+      .forEach(function (elem, index) {
+        if (elem && elem.checked) {
+          newOpts["title.text"] = options.title.text;
+        } else {
+          newOpts["title.text"] = "";
+        }
+      });
+    Plotly.relayout($("#placeholder")[0], newOpts);
     $("#showHideModal").modal("hide");
   },
   // add legend text modal submit button
