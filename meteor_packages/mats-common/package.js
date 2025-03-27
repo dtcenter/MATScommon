@@ -6,7 +6,7 @@
 
 Package.describe({
   name: "randyp:mats-common",
-  version: "5.3.1",
+  version: "6.1.0",
   // Brief, one-line summary of the package.
   summary: "MATScommon files provides common functionality for MATS/METexpress apps",
   // URL to the Git repository containing the source code for this package.
@@ -17,7 +17,7 @@ Package.describe({
 });
 
 Package.onUse(function (api) {
-  api.versionsFrom("2.16");
+  api.versionsFrom("3.1");
   Npm.depends({
     "@fortawesome/fontawesome-free": "6.5.2",
     "fs-extra": "11.2.0",
@@ -48,15 +48,12 @@ Package.onUse(function (api) {
   api.use("modules");
   api.imply("ecmascript");
   api.use(["templating"], "client");
-  api.use("accounts-ui", "client");
-  api.use("accounts-password", "client");
   api.use("service-configuration", "server");
   api.use("yasinuslu:json-view", "client");
   api.use("mdg:validated-method");
   api.use("session");
   api.imply("session");
   api.use("twbs:bootstrap");
-  api.use("msavin:mongol");
   api.use("differential:event-hooks");
   api.use("risul:bootstrap-colorpicker");
   api.use("logging");
@@ -66,7 +63,6 @@ Package.onUse(function (api) {
   api.use("spacebars");
   api.use("check");
   api.use("ostrio:flow-router-extra");
-  api.use("meteorhacks:picker");
   api.use("momentjs:moment");
   api.use("pcel:mysql");
   api.use("reactive-var");
