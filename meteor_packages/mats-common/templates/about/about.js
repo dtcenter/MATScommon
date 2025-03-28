@@ -40,7 +40,7 @@ Template.about.helpers({
 
 Template.about.events({
   "click .show-release-notes"() {
-    matsMethods.getReleaseNotes.call({}, function (error, result) {
+    matsMethods.getReleaseNotes.callAsync({}, function (error, result) {
       if (error !== undefined) {
         setError(error);
         return `<p>${error}</p>`;

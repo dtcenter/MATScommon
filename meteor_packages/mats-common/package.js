@@ -19,24 +19,23 @@ Package.describe({
 Package.onUse(function (api) {
   api.versionsFrom("3.1");
   Npm.depends({
-    "@fortawesome/fontawesome-free": "6.5.2",
-    "fs-extra": "11.2.0",
-    "@babel/runtime": "7.24.7",
-    "meteor-node-stubs": "1.2.9",
-    url: "0.11.3",
+    "@fortawesome/fontawesome-free": "6.7.2",
+    "fs-extra": "11.3.0",
+    "@babel/runtime": "7.27.0",
+    "meteor-node-stubs": "1.2.13",
+    url: "0.11.4",
     jquery: "3.7.1",
-    "datatables.net-bs": "2.0.8",
-    "datatables.net-dt": "2.0.8",
-    "jquery-ui": "1.13.3",
-    "csv-stringify": "6.5.0",
+    "datatables.net-bs": "2.2.2",
+    "datatables.net-dt": "2.2.2",
+    "jquery-ui": "1.14.1",
+    "csv-stringify": "6.5.2",
     "node-file-cache": "1.0.2",
     "python-shell": "5.0.0",
-    couchbase: "4.3.1",
+    couchbase: "4.4.5",
     "vanillajs-datepicker": "1.3.4",
     daterangepicker: "3.1.0",
     "lighten-darken-color": "1.0.0",
     "rgb-hex": "4.1.0",
-    nodemailer: "6.9.14",
   });
   api.mainModule("server/main.js", "server");
   api.mainModule("client/main.js", "client");

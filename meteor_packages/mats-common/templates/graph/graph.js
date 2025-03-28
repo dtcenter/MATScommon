@@ -1385,7 +1385,7 @@ Template.graph.events({
     // capture the layout
     const { layout } = $("#placeholder")[0];
     const key = Session.get("plotResultKey");
-    matsMethods.saveLayout.call(
+    matsMethods.saveLayout.callAsync(
       {
         resultKey: key,
         layout,

@@ -24,7 +24,7 @@ function toggleDisplay(divId) {
 
 function refreshPage() {
   // refresh the page
-  matsMethods.getScorecardInfo.call(function (error, ret) {
+  matsMethods.getScorecardInfo.callAsync(function (error, ret) {
     if (error !== undefined) {
       setError(error);
     } else {
@@ -153,7 +153,7 @@ Template.scorecardStatusPage.events({
     const submitted = event.currentTarget.dataset.submit_time;
     const processedAt = event.currentTarget.dataset.run_time;
 
-    matsMethods.dropScorecardInstance.call(
+    matsMethods.dropScorecardInstance.callAsync(
       {
         userName,
         name,
@@ -176,7 +176,7 @@ Template.scorecardStatusPage.events({
     const submitted = event.currentTarget.dataset.submit_time;
     const processedAt = event.currentTarget.dataset.run_time;
 
-    matsMethods.getPlotParamsFromScorecardInstance.call(
+    matsMethods.getPlotParamsFromScorecardInstance.callAsync(
       {
         userName,
         name,

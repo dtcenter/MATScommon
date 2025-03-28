@@ -47,7 +47,7 @@ const getModelCadence = async function (pool, dataSource, startDate, endDate) {
     // this query should only return data if the model cadence is irregular.
     // otherwise, the cadence will be calculated later by the query function.
     let cyclesRaw;
-    if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
+    if (matsCollections.Settings.findOneAsync().dbType === matsTypes.DbTypes.couchbase) {
       /*
             we have to call the couchbase utilities as async functions but this
             routine  'queryDBTimeSeries' cannot itslef be async because the graph page needs to wait
@@ -1853,9 +1853,9 @@ const parseQueryDataMapScalar = function (
 
       let thisSite;
       if (isCouchbase) {
-        thisSite = siteMap.find((obj) => obj.name === site);
+        thisSite = siteMap.findAsync((obj) => obj.name === site);
       } else {
-        thisSite = siteMap.find((obj) => obj.options.id === site);
+        thisSite = siteMap.findAsync((obj) => obj.options.id === site);
       }
 
       const tooltips =
@@ -2172,9 +2172,9 @@ const parseQueryDataMapCTC = function (
 
       let thisSite;
       if (isCouchbase) {
-        thisSite = siteMap.find((obj) => obj.name === site);
+        thisSite = siteMap.findAsync((obj) => obj.name === site);
       } else {
-        thisSite = siteMap.find((obj) => obj.options.id === site);
+        thisSite = siteMap.findAsync((obj) => obj.options.id === site);
       }
 
       const tooltips =
@@ -3087,7 +3087,7 @@ const queryDBTimeSeries = function (
     const Future = require("fibers/future");
     const dFuture = new Future();
 
-    if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
+    if (matsCollections.Settings.findOneAsync().dbType === matsTypes.DbTypes.couchbase) {
       /*
             we have to call the couchbase utilities as async functions but this
             routine 'queryDBTimeSeries' cannot itself be async because the graph page needs to wait
@@ -3227,7 +3227,7 @@ const queryDBSpecialtyCurve = function (
     const Future = require("fibers/future");
     const dFuture = new Future();
 
-    if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
+    if (matsCollections.Settings.findOneAsync().dbType === matsTypes.DbTypes.couchbase) {
       /*
             we have to call the couchbase utilities as async functions but this
             routine 'queryDBSpecialtyCurve' cannot itself be async because the graph page needs to wait
@@ -3369,7 +3369,7 @@ const queryDBReliability = function (pool, statement, appParams, kernel) {
     const Future = require("fibers/future");
     const dFuture = new Future();
 
-    if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
+    if (matsCollections.Settings.findOneAsync().dbType === matsTypes.DbTypes.couchbase) {
       /*
             we have to call the couchbase utilities as async functions but this
             routine 'queryDBReliability' cannot itself be async because the graph page needs to wait
@@ -3465,7 +3465,7 @@ const queryDBPerformanceDiagram = function (pool, statement, appParams) {
     const Future = require("fibers/future");
     const dFuture = new Future();
 
-    if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
+    if (matsCollections.Settings.findOneAsync().dbType === matsTypes.DbTypes.couchbase) {
       /*
             we have to call the couchbase utilities as async functions but this
             routine 'queryDBSPerformanceDiagram' cannot itself be async because the graph page needs to wait
@@ -3578,7 +3578,7 @@ const queryDBSimpleScatter = function (
     const Future = require("fibers/future");
     const dFuture = new Future();
 
-    if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
+    if (matsCollections.Settings.findOneAsync().dbType === matsTypes.DbTypes.couchbase) {
       /*
             we have to call the couchbase utilities as async functions but this
             routine 'queryDBSPerformanceDiagram' cannot itself be async because the graph page needs to wait
@@ -3729,7 +3729,7 @@ const queryDBMapScalar = function (
     const Future = require("fibers/future");
     const dFuture = new Future();
 
-    if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
+    if (matsCollections.Settings.findOneAsync().dbType === matsTypes.DbTypes.couchbase) {
       /*
             we have to call the couchbase utilities as async functions but this
             routine 'queryDBSpecialtyCurve' cannot itself be async because the graph page needs to wait
@@ -4126,7 +4126,7 @@ const queryDBMapCTC = function (
     const Future = require("fibers/future");
     const dFuture = new Future();
 
-    if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
+    if (matsCollections.Settings.findOneAsync().dbType === matsTypes.DbTypes.couchbase) {
       /*
             we have to call the couchbase utilities as async functions but this
             routine 'queryDBSpecialtyCurve' cannot itself be async because the graph page needs to wait
@@ -4314,7 +4314,7 @@ const queryDBContour = function (pool, statement, appParams, statisticStr) {
     const Future = require("fibers/future");
     const dFuture = new Future();
 
-    if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
+    if (matsCollections.Settings.findOneAsync().dbType === matsTypes.DbTypes.couchbase) {
       /*
             we have to call the couchbase utilities as async functions but this
             routine 'queryDBContour' cannot itself be async because the graph page needs to wait

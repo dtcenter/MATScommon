@@ -35,7 +35,7 @@ Template.scorecardHome.helpers({
     );
   },
   resetDefaults() {
-    matsMethods.refreshMetaData.call({}, function (error) {
+    matsMethods.refreshMetaData.callAsync({}, function (error) {
       if (error !== undefined) {
         setError(new Error(error.message));
       }
@@ -90,7 +90,7 @@ Template.scorecardHome.events({
     datepicker.show();
   },
   "click #display-status"() {
-    matsMethods.getScorecardInfo.call(function (error, ret) {
+    matsMethods.getScorecardInfo.callAsync(function (error, ret) {
       if (error !== undefined) {
         setError(error);
       } else {

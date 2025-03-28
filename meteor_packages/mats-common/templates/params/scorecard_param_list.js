@@ -89,7 +89,7 @@ Template.scorecardParamList.events({
     event.preventDefault();
     Session.set("paramWellColor", "#ffffff");
     // eslint-disable-next-line no-unused-vars
-    matsMethods.refreshMetaData.call({}, function (error, result) {
+    matsMethods.refreshMetaData.callAsync({}, function (error, result) {
       if (error !== undefined) {
         setError(new Error(error.message));
       }

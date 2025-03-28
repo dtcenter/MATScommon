@@ -55,7 +55,7 @@ Template.graphStandAlone.helpers({
     // causes graph display routine to be processed
     const graphFunction = FlowRouter.getParam("graphFunction");
     const key = FlowRouter.getParam("key");
-    matsMethods.getGraphDataByKey.call({ resultKey: key }, function (error, ret) {
+    matsMethods.getGraphDataByKey.callAsync({ resultKey: key }, function (error, ret) {
       if (error !== undefined) {
         setError(error);
         matsCurveUtils.resetGraphResult();
@@ -82,7 +82,7 @@ Template.graphStandAlone.helpers({
         return false;
       }
       // make sure to capture the options (layout) from the old graph - which were stored in graph.js
-      matsMethods.getLayout.call({ resultKey: key }, function (e, r) {
+      matsMethods.getLayout.callAsync({ resultKey: key }, function (e, r) {
         if (e !== undefined) {
           setError(e);
           return false;
