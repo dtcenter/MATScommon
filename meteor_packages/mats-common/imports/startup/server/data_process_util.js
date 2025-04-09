@@ -15,7 +15,7 @@ import {
 import { moment } from "meteor/momentjs:moment";
 import { _ } from "meteor/underscore";
 
-const processDataXYCurve = function (
+const processDataXYCurve = async function (
   dataset,
   appParams,
   curveInfoParams,
@@ -465,38 +465,38 @@ const processDataXYCurve = function (
   switch (appParams.plotType) {
     case matsTypes.PlotTypes.timeSeries:
     case matsTypes.PlotTypes.dailyModelCycle:
-      resultOptions = matsDataPlotOpsUtils.generateSeriesPlotOptions(
+      resultOptions = await matsDataPlotOpsUtils.generateSeriesPlotOptions(
         returnCurveInfoParams.axisMap,
         errorMax
       );
       break;
     case matsTypes.PlotTypes.dieoff:
-      resultOptions = matsDataPlotOpsUtils.generateDieoffPlotOptions(
+      resultOptions = await matsDataPlotOpsUtils.generateDieoffPlotOptions(
         returnCurveInfoParams.axisMap,
         errorMax
       );
       break;
     case matsTypes.PlotTypes.threshold:
-      resultOptions = matsDataPlotOpsUtils.generateThresholdPlotOptions(
+      resultOptions = await matsDataPlotOpsUtils.generateThresholdPlotOptions(
         returnDataset,
         returnCurveInfoParams.axisMap,
         errorMax
       );
       break;
     case matsTypes.PlotTypes.validtime:
-      resultOptions = matsDataPlotOpsUtils.generateValidTimePlotOptions(
+      resultOptions = await matsDataPlotOpsUtils.generateValidTimePlotOptions(
         returnCurveInfoParams.axisMap,
         errorMax
       );
       break;
     case matsTypes.PlotTypes.gridscale:
-      resultOptions = matsDataPlotOpsUtils.generateGridScalePlotOptions(
+      resultOptions = await matsDataPlotOpsUtils.generateGridScalePlotOptions(
         returnCurveInfoParams.axisMap,
         errorMax
       );
       break;
     case matsTypes.PlotTypes.yearToYear:
-      resultOptions = matsDataPlotOpsUtils.generateYearToYearPlotOptions(
+      resultOptions = await matsDataPlotOpsUtils.generateYearToYearPlotOptions(
         returnCurveInfoParams.axisMap,
         errorMax
       );
@@ -560,7 +560,7 @@ const processDataXYCurve = function (
   };
 };
 
-const processDataProfile = function (
+const processDataProfile = async function (
   dataset,
   appParams,
   curveInfoParams,
@@ -957,7 +957,7 @@ const processDataProfile = function (
   }
 
   // generate plot options
-  const resultOptions = matsDataPlotOpsUtils.generateProfilePlotOptions(
+  const resultOptions = await matsDataPlotOpsUtils.generateProfilePlotOptions(
     returnCurveInfoParams.axisMap,
     errorMax
   );
@@ -1017,7 +1017,7 @@ const processDataProfile = function (
   };
 };
 
-const processDataReliability = function (
+const processDataReliability = async function (
   dataset,
   appParams,
   curveInfoParams,
@@ -1092,7 +1092,7 @@ const processDataReliability = function (
   }
 
   // generate plot options
-  const resultOptions = matsDataPlotOpsUtils.generateReliabilityPlotOptions();
+  const resultOptions = await matsDataPlotOpsUtils.generateReliabilityPlotOptions();
 
   // add black perfect reliability line curve
   const perfectLine = matsDataCurveOpsUtils.getLinearValueLine(
@@ -1193,7 +1193,7 @@ const processDataReliability = function (
   };
 };
 
-const processDataROC = function (
+const processDataROC = async function (
   dataset,
   appParams,
   curveInfoParams,
@@ -1271,7 +1271,7 @@ const processDataROC = function (
   }
 
   // generate plot options
-  const resultOptions = matsDataPlotOpsUtils.generateROCPlotOptions();
+  const resultOptions = await matsDataPlotOpsUtils.generateROCPlotOptions();
 
   // add black no skill line curve
   const noSkillLine = matsDataCurveOpsUtils.getLinearValueLine(
@@ -1335,7 +1335,7 @@ const processDataROC = function (
   };
 };
 
-const processDataPerformanceDiagram = function (
+const processDataPerformanceDiagram = async function (
   dataset,
   appParams,
   curveInfoParams,
@@ -1408,7 +1408,8 @@ const processDataPerformanceDiagram = function (
   }
 
   // generate plot options
-  const resultOptions = matsDataPlotOpsUtils.generatePerformanceDiagramPlotOptions();
+  const resultOptions =
+    await matsDataPlotOpsUtils.generatePerformanceDiagramPlotOptions();
 
   // add black lines of constant bias
   let biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(
@@ -1582,7 +1583,7 @@ const processDataPerformanceDiagram = function (
   };
 };
 
-const processDataGridScaleProb = function (
+const processDataGridScaleProb = async function (
   dataset,
   appParams,
   curveInfoParams,
@@ -1636,7 +1637,7 @@ const processDataGridScaleProb = function (
   }
 
   // generate plot options
-  const resultOptions = matsDataPlotOpsUtils.generateGridScaleProbPlotOptions(
+  const resultOptions = await matsDataPlotOpsUtils.generateGridScaleProbPlotOptions(
     returnCurveInfoParams.axisMap
   );
 
@@ -1694,7 +1695,7 @@ const processDataGridScaleProb = function (
   };
 };
 
-const processDataEnsembleHistogram = function (
+const processDataEnsembleHistogram = async function (
   dataset,
   appParams,
   curveInfoParams,
@@ -1897,7 +1898,7 @@ const processDataEnsembleHistogram = function (
           ].xmin;
   } // end curves
 
-  const resultOptions = matsDataPlotOpsUtils.generateEnsembleHistogramPlotOptions(
+  const resultOptions = await matsDataPlotOpsUtils.generateEnsembleHistogramPlotOptions(
     returnDataset,
     returnCurveInfoParams.curves,
     returnCurveInfoParams.axisMap
@@ -1941,7 +1942,7 @@ const processDataEnsembleHistogram = function (
   };
 };
 
-const processDataHistogram = function (
+const processDataHistogram = async function (
   allReturnedSubStats,
   allReturnedSubSecs,
   allReturnedSubLevs,
@@ -2223,7 +2224,7 @@ const processDataHistogram = function (
     data.subLevs = [];
   }
 
-  const resultOptions = matsDataPlotOpsUtils.generateHistogramPlotOptions(
+  const resultOptions = await matsDataPlotOpsUtils.generateHistogramPlotOptions(
     returnCurveInfoParams.curves,
     returnCurveInfoParams.axisMap,
     returnCurveInfoParams.varUnits,
@@ -2254,7 +2255,7 @@ const processDataHistogram = function (
   };
 };
 
-const processDataContour = function (
+const processDataContour = async function (
   dataset,
   curveInfoParams,
   plotParams,
@@ -2336,7 +2337,9 @@ const processDataContour = function (
   data.subLevs = [];
 
   // generate plot options
-  const resultOptions = matsDataPlotOpsUtils.generateContourPlotOptions(returnDataset);
+  const resultOptions = await matsDataPlotOpsUtils.generateContourPlotOptions(
+    returnDataset
+  );
 
   const totalProcessingFinish = moment();
   returnBookkeepingParams.dataRequests[
@@ -2363,7 +2366,7 @@ const processDataContour = function (
   };
 };
 
-const processDataSimpleScatter = function (
+const processDataSimpleScatter = async function (
   dataset,
   appParams,
   curveInfoParams,
@@ -2470,7 +2473,7 @@ const processDataSimpleScatter = function (
   }
 
   // generate plot options
-  const resultOptions = matsDataPlotOpsUtils.generateScatterPlotOptions(
+  const resultOptions = await matsDataPlotOpsUtils.generateScatterPlotOptions(
     returnCurveInfoParams.axisXMap,
     returnCurveInfoParams.axisYMap
   );
