@@ -257,7 +257,7 @@ const getCurveLine = function (
 };
 
 // provides curve options for all plot types with an independent x axis and a dependent y axis
-const generateSeriesCurveOptions = function (
+const generateSeriesCurveOptions = async function (
   curve,
   curveIndex,
   axisMap,
@@ -350,7 +350,7 @@ const generateSeriesCurveOptions = function (
   // if threshold, determine x-axis units
   if (appParams.plotType === matsTypes.PlotTypes.threshold) {
     const { database } = curve;
-    const { thresholdUnits } = matsCollections.Settings.findOneAsync({});
+    const { thresholdUnits } = await matsCollections.Settings.findOneAsync({});
     if (thresholdUnits === undefined || Object.keys(thresholdUnits).length === 0) {
       curveOptions.thresholdAxisUnits = "";
     } else if (database === undefined) {
