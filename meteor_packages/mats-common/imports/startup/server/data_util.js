@@ -236,7 +236,7 @@ const doAuthorization = function () {
   ) {
     matsCollections.Authorization.removeAsync({});
   }
-  if (matsCollections.Authorization.findAsync().countAsync() === 0) {
+  if (matsCollections.Authorization.find().countAsync() === 0) {
     matsCollections.Authorization.insertAsync({
       email: "randy.pierce@noaa.gov",
       roles: ["administrator"],
@@ -273,7 +273,7 @@ const doColorScheme = function () {
   ) {
     matsCollections.ColorScheme.removeAsync({});
   }
-  if (matsCollections.ColorScheme.findAsync().countAsync() === 0) {
+  if (matsCollections.ColorScheme.find().countAsync() === 0) {
     matsCollections.ColorScheme.insertAsync({
       colors: [
         "rgb(255,0,0)",
@@ -299,7 +299,7 @@ const doRoles = function () {
   ) {
     matsCollections.Roles.removeAsync({});
   }
-  if (matsCollections.Roles.findAsync().countAsync() === 0) {
+  if (matsCollections.Roles.find().countAsync() === 0) {
     matsCollections.Roles.insertAsync({
       name: "administrator",
       description: "administrator privileges",
@@ -334,7 +334,7 @@ const doSettings = function (
   ) {
     matsCollections.Settings.removeAsync({});
   }
-  if (matsCollections.Settings.findAsync().countAsync() === 0) {
+  if (matsCollections.Settings.find().countAsync() === 0) {
     matsCollections.Settings.insertAsync({
       LabelPrefix: scorecard ? "Block" : "Curve",
       Title: title,

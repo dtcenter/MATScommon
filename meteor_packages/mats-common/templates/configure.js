@@ -53,7 +53,7 @@ Template.configure.helpers({
   },
   groups() {
     if (Session.get("defaultGroups") === undefined) {
-      matsMethods.getDefaultGroupList.callAsync({}, function (error, result) {
+      matsMethods.getDefaultGroupList.call({}, function (error, result) {
         if (error !== undefined) {
           setError(error);
           return `<p>${error}</p>`;

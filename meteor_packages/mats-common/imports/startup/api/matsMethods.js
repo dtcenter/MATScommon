@@ -43,9 +43,9 @@ const isEmpty = function (map) {
 };
 
 // private middleware for getting the status - think health check
-const status = function (res) {
+const status = async function (res) {
   if (Meteor.isServer) {
-    const settings = matsCollections.Settings.findOneAsync();
+    const settings = await matsCollections.Settings.findOneAsync();
     res.end(
       `<body><div id='status'>Running: version - ${settings.appVersion} </div></body>`
     );
@@ -73,10 +73,10 @@ const checkMetaDataRefresh = async function () {
         }
      */
   let refresh = false;
-  const tableUpdates = metaDataTableUpdates.findAsync({}).fetch();
+  const tableUpdates = await metaDataTableUpdates.find({}).fetchAsync();
   const dbType =
-    matsCollections.Settings.findOneAsync() !== undefined
-      ? matsCollections.Settings.findOneAsync().dbType
+    (await matsCollections.Settings.findOneAsync()) !== undefined
+      ? await matsCollections.Settings.findOneAsync().dbType
       : matsTypes.DbTypes.mysql;
   for (let tui = 0; tui < tableUpdates.length; tui += 1) {
     const id = tableUpdates[tui]._id;
@@ -149,7 +149,7 @@ const checkMetaDataRefresh = async function () {
         await global.appSpecificResetRoutines[ai]();
       }
       // remember that we updated ALL the metadata tables just now
-      metaDataTableUpdates.updateAsync(
+      await metaDataTableUpdates.updateAsync(
         {
           _id: id,
         },
@@ -192,7 +192,7 @@ const dropThisScorecardInstance = async function (
                 AND sc.name='${name}'
                 AND sc.processedAt=${processedAt}
                 AND sc.submitted=${submittedTime};`;
-    return await cbScorecardPool.queryCB(statement);
+    return cbScorecardPool.queryCB(statement);
     // delete this result from the mongo Scorecard collection
   } catch (err) {
     console.log(`dropThisScorecardInstance error : ${err.message}`);
@@ -203,43 +203,43 @@ const dropThisScorecardInstance = async function (
 };
 
 // helper function for returning an array of database-distinct apps contained within a larger MATS app
-function getListOfApps() {
+async function getListOfApps() {
   let apps;
   if (
     matsCollections.database !== undefined &&
-    matsCollections.database.findOneAsync({ name: "database" }) !== undefined
+    (await matsCollections.database.findOneAsync({ name: "database" })) !== undefined
   ) {
     // get list of databases (one per app)
-    apps = matsCollections.database.findOneAsync({
+    apps = await matsCollections.database.findOneAsync({
       name: "database",
     }).options;
     if (!Array.isArray(apps)) apps = Object.keys(apps);
   } else if (
     matsCollections.variable !== undefined &&
-    matsCollections.variable.findOneAsync({
+    (await matsCollections.variable.findOneAsync({
       name: "variable",
-    }) !== undefined &&
+    })) !== undefined &&
     matsCollections.threshold !== undefined &&
-    matsCollections.threshold.findOneAsync({
+    (await matsCollections.threshold.findOneAsync({
       name: "threshold",
-    }) !== undefined
+    })) !== undefined
   ) {
     // get list of apps (variables in apps that also have thresholds)
-    apps = matsCollections.variable.findOneAsync({
+    apps = await matsCollections.variable.findOneAsync({
       name: "variable",
     }).options;
     if (!Array.isArray(apps)) apps = Object.keys(apps);
   } else {
-    apps = [matsCollections.Settings.findOneAsync().Title];
+    apps = [await matsCollections.Settings.findOneAsync().Title];
   }
   return apps;
 }
 
 // helper function to map a results array to specific apps
-function mapArrayToApps(result) {
+async function mapArrayToApps(result) {
   // put results in a map keyed by app
   const newResult = {};
-  const apps = getListOfApps();
+  const apps = await getListOfApps();
   for (let aidx = 0; aidx < apps.length; aidx += 1) {
     if (result[aidx] === apps[aidx]) {
       newResult[apps[aidx]] = [result[aidx]];
@@ -251,11 +251,11 @@ function mapArrayToApps(result) {
 }
 
 // helper function to map a results map to specific apps
-function mapMapToApps(result) {
+async function mapMapToApps(result) {
   // put results in a map keyed by app
   let newResult = {};
   let tempResult;
-  const apps = getListOfApps();
+  const apps = await getListOfApps();
   const resultKeys = Object.keys(result);
   if (!matsDataUtils.arraysEqual(apps.sort(), resultKeys.sort())) {
     if (resultKeys.includes("Predefined region")) {
@@ -273,41 +273,41 @@ function mapMapToApps(result) {
 }
 
 // helper function for returning a map of database-distinct apps contained within a larger MATS app and their DBs
-function getListOfAppDBs() {
+async function getListOfAppDBs() {
   let apps;
   const result = {};
   let aidx;
   if (
     matsCollections.database !== undefined &&
-    matsCollections.database.findOneAsync({ name: "database" }) !== undefined
+    (await matsCollections.database.findOneAsync({ name: "database" })) !== undefined
   ) {
     // get list of databases (one per app)
-    apps = matsCollections.database.findOneAsync({
+    apps = await matsCollections.database.findOneAsync({
       name: "database",
     }).options;
     if (!Array.isArray(apps)) apps = Object.keys(apps);
     for (aidx = 0; aidx < apps.length; aidx += 1) {
-      result[apps[aidx]] = matsCollections.database.findOneAsync({
+      result[apps[aidx]] = await matsCollections.database.findOneAsync({
         name: "database",
       }).optionsMap[apps[aidx]].sumsDB;
     }
   } else if (
     matsCollections.variable !== undefined &&
-    matsCollections.variable.findOneAsync({
+    (await matsCollections.variable.findOneAsync({
       name: "variable",
-    }) !== undefined &&
+    })) !== undefined &&
     matsCollections.threshold !== undefined &&
-    matsCollections.threshold.findOneAsync({
+    (await matsCollections.threshold.findOneAsync({
       name: "threshold",
-    }) !== undefined
+    })) !== undefined
   ) {
     // get list of apps (variables in apps that also have thresholds)
-    apps = matsCollections.variable.findOneAsync({
+    apps = await matsCollections.variable.findOneAsync({
       name: "variable",
     }).options;
     if (!Array.isArray(apps)) apps = Object.keys(apps);
     for (aidx = 0; aidx < apps.length; aidx += 1) {
-      result[apps[aidx]] = matsCollections.variable.findOneAsync({
+      result[apps[aidx]] = await matsCollections.variable.findOneAsync({
         name: "variable",
       }).optionsMap[apps[aidx]];
       if (
@@ -317,8 +317,8 @@ function getListOfAppDBs() {
         result[apps[aidx]] = result[apps[aidx]].sumsDB;
     }
   } else {
-    result[matsCollections.Settings.findOneAsync().Title] =
-      matsCollections.Databases.findOneAsync({
+    result[await matsCollections.Settings.findOneAsync().Title] =
+      await matsCollections.Databases.findOneAsync({
         role: matsTypes.DatabaseRoles.SUMS_DATA,
         status: "active",
       }).database;
@@ -327,17 +327,19 @@ function getListOfAppDBs() {
 }
 
 // helper function for getting a metadata map from a MATS selector, keyed by app title and model display text
-function getMapByAppAndModel(selector, mapType) {
+async function getMapByAppAndModel(selector, mapType) {
   let flatJSON = "";
   try {
     let result;
     if (
       matsCollections[selector] !== undefined &&
-      matsCollections[selector].findOneAsync({ name: selector }) !== undefined &&
-      matsCollections[selector].findOneAsync({ name: selector })[mapType] !== undefined
+      (await matsCollections[selector].findOneAsync({ name: selector })) !==
+        undefined &&
+      (await matsCollections[selector].findOneAsync({ name: selector })[mapType]) !==
+        undefined
     ) {
       // get map of requested selector's metadata
-      result = matsCollections[selector].findOneAsync({
+      result = await matsCollections[selector].findOneAsync({
         name: selector,
       })[mapType];
       let newResult = {};
@@ -347,7 +349,7 @@ function getMapByAppAndModel(selector, mapType) {
         selector === "statistic"
       ) {
         // valueMaps always need to be re-keyed by app (statistic and variable get their valuesMaps from optionsMaps)
-        newResult = mapMapToApps(result);
+        newResult = await mapMapToApps(result);
         result = newResult;
       } else if (
         matsCollections.database === undefined &&
@@ -357,7 +359,7 @@ function getMapByAppAndModel(selector, mapType) {
         )
       ) {
         // key by app title if we're not already
-        const appTitle = matsCollections.Settings.findOneAsync().Title;
+        const appTitle = await matsCollections.Settings.findOneAsync().Title;
         newResult[appTitle] = result;
         result = newResult;
       }
@@ -375,45 +377,45 @@ function getMapByAppAndModel(selector, mapType) {
 }
 
 // helper function for getting a date metadata map from a MATS selector, keyed by app title and model display text
-function getDateMapByAppAndModel() {
+async function getDateMapByAppAndModel() {
   let flatJSON = "";
   try {
     let result;
     // the date map can be in a few places. we have to hunt for it.
     if (
       matsCollections.database !== undefined &&
-      matsCollections.database.findOneAsync({
+      (await matsCollections.database.findOneAsync({
         name: "database",
-      }) !== undefined &&
-      matsCollections.database.findOneAsync({
+      })) !== undefined &&
+      (await matsCollections.database.findOneAsync({
         name: "database",
-      }).dates !== undefined
+      }).dates) !== undefined
     ) {
-      result = matsCollections.database.findOneAsync({
+      result = await matsCollections.database.findOneAsync({
         name: "database",
       }).dates;
     } else if (
       matsCollections.variable !== undefined &&
-      matsCollections.variable.findOneAsync({
+      (await matsCollections.variable.findOneAsync({
         name: "variable",
-      }) !== undefined &&
-      matsCollections.variable.findOneAsync({
+      })) !== undefined &&
+      (await matsCollections.variable.findOneAsync({
         name: "variable",
-      }).dates !== undefined
+      }).dates) !== undefined
     ) {
-      result = matsCollections.variable.findOneAsync({
+      result = await matsCollections.variable.findOneAsync({
         name: "variable",
       }).dates;
     } else if (
       matsCollections["data-source"] !== undefined &&
-      matsCollections["data-source"].findOneAsync({
+      (await matsCollections["data-source"].findOneAsync({
         name: "data-source",
-      }) !== undefined &&
-      matsCollections["data-source"].findOneAsync({
+      })) !== undefined &&
+      (await matsCollections["data-source"].findOneAsync({
         name: "data-source",
-      }).dates !== undefined
+      }).dates) !== undefined
     ) {
-      result = matsCollections["data-source"].findOneAsync({
+      result = await matsCollections["data-source"].findOneAsync({
         name: "data-source",
       }).dates;
     } else {
@@ -427,7 +429,7 @@ function getDateMapByAppAndModel() {
       )
     ) {
       // key by app title if we're not already
-      const appTitle = matsCollections.Settings.findOneAsync().Title;
+      const appTitle = await matsCollections.Settings.findOneAsync().Title;
       const newResult = {};
       newResult[appTitle] = result;
       result = newResult;
@@ -443,23 +445,23 @@ function getDateMapByAppAndModel() {
 }
 
 // helper function for getting a metadata map from a MATS selector, keyed by app title
-function getMapByApp(selector) {
+async function getMapByApp(selector) {
   let flatJSON = "";
   try {
     let result;
     if (
       matsCollections[selector] !== undefined &&
-      matsCollections[selector].findOneAsync({ name: selector }) !== undefined
+      (await matsCollections[selector].findOneAsync({ name: selector })) !== undefined
     ) {
       // get array of requested selector's metadata
-      result = matsCollections[selector].findOneAsync({
+      result = await matsCollections[selector].findOneAsync({
         name: selector,
       }).options;
       if (!Array.isArray(result)) result = Object.keys(result);
     } else if (selector === "statistic") {
       result = ["ACC"];
     } else if (selector === "variable") {
-      result = [matsCollections.Settings.findOneAsync().Title];
+      result = [await matsCollections.Settings.findOneAsync().Title];
     } else {
       result = [];
     }
@@ -468,7 +470,7 @@ function getMapByApp(selector) {
     if (result.length === 0) {
       newResult = {};
     } else {
-      newResult = mapArrayToApps(result);
+      newResult = await mapArrayToApps(result);
     }
     flatJSON = JSON.stringify(newResult);
   } catch (e) {
@@ -481,22 +483,22 @@ function getMapByApp(selector) {
 }
 
 // helper function for populating the levels in a MATS selector
-function getlevelsByApp() {
+async function getlevelsByApp() {
   let flatJSON = "";
   try {
     let result;
     if (
       matsCollections.level !== undefined &&
-      matsCollections.level.findOneAsync({ name: "level" }) !== undefined
+      (await matsCollections.level.findOneAsync({ name: "level" })) !== undefined
     ) {
       // we have levels already defined
-      result = matsCollections.level.findOneAsync({
+      result = await matsCollections.level.findOneAsync({
         name: "level",
       }).options;
       if (!Array.isArray(result)) result = Object.keys(result);
     } else if (
       matsCollections.top !== undefined &&
-      matsCollections.top.findOneAsync({ name: "top" }) !== undefined
+      (await matsCollections.top.findOneAsync({ name: "top" })) !== undefined
     ) {
       // use the MATS mandatory levels
       result = _.range(100, 1050, 50);
@@ -508,7 +510,7 @@ function getlevelsByApp() {
     if (result.length === 0) {
       newResult = {};
     } else {
-      newResult = mapArrayToApps(result);
+      newResult = await mapArrayToApps(result);
     }
     flatJSON = JSON.stringify(newResult);
   } catch (e) {
@@ -521,12 +523,12 @@ function getlevelsByApp() {
 }
 
 // private middleware for getApps route
-const getApps = function (res) {
+const getApps = async function (res) {
   // this function returns an array of apps.
   if (Meteor.isServer) {
     let flatJSON = "";
     try {
-      const result = getListOfApps();
+      const result = await getListOfApps();
       flatJSON = JSON.stringify(result);
     } catch (e) {
       console.log("error retrieving apps: ", e);
@@ -541,12 +543,12 @@ const getApps = function (res) {
 };
 
 // private middleware for getAppSumsDBs route
-const getAppSumsDBs = function (res) {
+const getAppSumsDBs = async function (res) {
   // this function returns map of apps and appRefs.
   if (Meteor.isServer) {
     let flatJSON = "";
     try {
-      const result = getListOfAppDBs();
+      const result = await getListOfAppDBs();
       flatJSON = JSON.stringify(result);
     } catch (e) {
       console.log("error retrieving apps: ", e);
@@ -561,10 +563,10 @@ const getAppSumsDBs = function (res) {
 };
 
 // private middleware for getModels route
-const getModels = function (res) {
+const getModels = async function (res) {
   // this function returns a map of models keyed by app title and model display text
   if (Meteor.isServer) {
-    const flatJSON = getMapByAppAndModel("data-source", "optionsMap");
+    const flatJSON = await getMapByAppAndModel("data-source", "optionsMap");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
@@ -572,12 +574,12 @@ const getModels = function (res) {
 };
 
 // private middleware for getRegions route
-const getRegions = function (res) {
+const getRegions = async function (res) {
   // this function returns a map of regions keyed by app title and model display text
   if (Meteor.isServer) {
-    let flatJSON = getMapByAppAndModel("region", "optionsMap");
+    let flatJSON = await getMapByAppAndModel("region", "optionsMap");
     if (flatJSON === "{}") {
-      flatJSON = getMapByAppAndModel("vgtyp", "optionsMap");
+      flatJSON = await getMapByAppAndModel("vgtyp", "optionsMap");
     }
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
@@ -586,12 +588,12 @@ const getRegions = function (res) {
 };
 
 // private middleware for getRegionsValuesMap route
-const getRegionsValuesMap = function (res) {
+const getRegionsValuesMap = async function (res) {
   // this function returns a map of regions values keyed by app title
   if (Meteor.isServer) {
-    let flatJSON = getMapByAppAndModel("region", "valuesMap");
+    let flatJSON = await getMapByAppAndModel("region", "valuesMap");
     if (flatJSON === "{}") {
-      flatJSON = getMapByAppAndModel("vgtyp", "valuesMap");
+      flatJSON = await getMapByAppAndModel("vgtyp", "valuesMap");
     }
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
@@ -600,10 +602,10 @@ const getRegionsValuesMap = function (res) {
 };
 
 // private middleware for getStatistics route
-const getStatistics = function (res) {
+const getStatistics = async function (res) {
   // this function returns an map of statistics keyed by app title
   if (Meteor.isServer) {
-    const flatJSON = getMapByApp("statistic");
+    const flatJSON = await getMapByApp("statistic");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
@@ -611,10 +613,10 @@ const getStatistics = function (res) {
 };
 
 // private middleware for getStatisticsValuesMap route
-const getStatisticsValuesMap = function (res) {
+const getStatisticsValuesMap = async function (res) {
   // this function returns a map of statistic values keyed by app title
   if (Meteor.isServer) {
-    const flatJSON = getMapByAppAndModel("statistic", "optionsMap");
+    const flatJSON = await getMapByAppAndModel("statistic", "optionsMap");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
@@ -622,10 +624,10 @@ const getStatisticsValuesMap = function (res) {
 };
 
 // private middleware for getVariables route
-const getVariables = function (res) {
+const getVariables = async function (res) {
   // this function returns an map of variables keyed by app title
   if (Meteor.isServer) {
-    const flatJSON = getMapByApp("variable");
+    const flatJSON = await getMapByApp("variable");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
@@ -633,10 +635,10 @@ const getVariables = function (res) {
 };
 
 // private middleware for getVariablesValuesMap route
-const getVariablesValuesMap = function (res) {
+const getVariablesValuesMap = async function (res) {
   // this function returns a map of variable values keyed by app title
   if (Meteor.isServer) {
-    const flatJSON = getMapByAppAndModel("variable", "optionsMap");
+    const flatJSON = await getMapByAppAndModel("variable", "optionsMap");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
@@ -644,10 +646,10 @@ const getVariablesValuesMap = function (res) {
 };
 
 // private middleware for getThresholds route
-const getThresholds = function (res) {
+const getThresholds = async function (res) {
   // this function returns a map of thresholds keyed by app title and model display text
   if (Meteor.isServer) {
-    const flatJSON = getMapByAppAndModel("threshold", "optionsMap");
+    const flatJSON = await getMapByAppAndModel("threshold", "optionsMap");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
@@ -655,10 +657,10 @@ const getThresholds = function (res) {
 };
 
 // private middleware for getThresholdsValuesMap route
-const getThresholdsValuesMap = function (res) {
+const getThresholdsValuesMap = async function (res) {
   // this function returns a map of threshold values keyed by app title
   if (Meteor.isServer) {
-    const flatJSON = getMapByAppAndModel("threshold", "valuesMap");
+    const flatJSON = await getMapByAppAndModel("threshold", "valuesMap");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
@@ -666,10 +668,10 @@ const getThresholdsValuesMap = function (res) {
 };
 
 // private middleware for getScales route
-const getScales = function (res) {
+const getScales = async function (res) {
   // this function returns a map of scales keyed by app title and model display text
   if (Meteor.isServer) {
-    const flatJSON = getMapByAppAndModel("scale", "optionsMap");
+    const flatJSON = await getMapByAppAndModel("scale", "optionsMap");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
@@ -677,10 +679,10 @@ const getScales = function (res) {
 };
 
 // private middleware for getScalesValuesMap route
-const getScalesValuesMap = function (res) {
+const getScalesValuesMap = async function (res) {
   // this function returns a map of scale values keyed by app title
   if (Meteor.isServer) {
-    const flatJSON = getMapByAppAndModel("scale", "valuesMap");
+    const flatJSON = await getMapByAppAndModel("scale", "valuesMap");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
@@ -688,10 +690,10 @@ const getScalesValuesMap = function (res) {
 };
 
 // private middleware for getTruth route
-const getTruths = function (res) {
+const getTruths = async function (res) {
   // this function returns a map of truths keyed by app title and model display text
   if (Meteor.isServer) {
-    const flatJSON = getMapByAppAndModel("truth", "optionsMap");
+    const flatJSON = await getMapByAppAndModel("truth", "optionsMap");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
@@ -699,10 +701,10 @@ const getTruths = function (res) {
 };
 
 // private middleware for getTruthValuesMap route
-const getTruthsValuesMap = function (res) {
+const getTruthsValuesMap = async function (res) {
   // this function returns a map of truth values keyed by app title
   if (Meteor.isServer) {
-    const flatJSON = getMapByAppAndModel("truth", "valuesMap");
+    const flatJSON = await getMapByAppAndModel("truth", "valuesMap");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
@@ -710,10 +712,10 @@ const getTruthsValuesMap = function (res) {
 };
 
 // private middleware for getFcstLengths route
-const getFcstLengths = function (res) {
+const getFcstLengths = async function (res) {
   // this function returns a map of forecast lengths keyed by app title and model display text
   if (Meteor.isServer) {
-    const flatJSON = getMapByAppAndModel("forecast-length", "optionsMap");
+    const flatJSON = await getMapByAppAndModel("forecast-length", "optionsMap");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
@@ -721,10 +723,10 @@ const getFcstLengths = function (res) {
 };
 
 // private middleware for getFcstTypes route
-const getFcstTypes = function (res) {
+const getFcstTypes = async function (res) {
   // this function returns a map of forecast types keyed by app title and model display text
   if (Meteor.isServer) {
-    const flatJSON = getMapByAppAndModel("forecast-type", "optionsMap");
+    const flatJSON = await getMapByAppAndModel("forecast-type", "optionsMap");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
@@ -732,10 +734,10 @@ const getFcstTypes = function (res) {
 };
 
 // private middleware for getFcstTypesValuesMap route
-const getFcstTypesValuesMap = function (res) {
+const getFcstTypesValuesMap = async function (res) {
   // this function returns a map of forecast type values keyed by app title
   if (Meteor.isServer) {
-    const flatJSON = getMapByAppAndModel("forecast-type", "valuesMap");
+    const flatJSON = await getMapByAppAndModel("forecast-type", "valuesMap");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
@@ -743,10 +745,10 @@ const getFcstTypesValuesMap = function (res) {
 };
 
 // private middleware for getValidTimes route
-const getValidTimes = function (res) {
+const getValidTimes = async function (res) {
   // this function returns an map of valid times keyed by app title
   if (Meteor.isServer) {
-    const flatJSON = getMapByApp("valid-time");
+    const flatJSON = await getMapByApp("valid-time");
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
@@ -754,10 +756,10 @@ const getValidTimes = function (res) {
 };
 
 // private middleware for getValidTimes route
-const getLevels = function (res) {
+const getLevels = async function (res) {
   // this function returns an map of pressure levels keyed by app title
   if (Meteor.isServer) {
-    const flatJSON = getlevelsByApp();
+    const flatJSON = await getlevelsByApp();
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
@@ -765,10 +767,10 @@ const getLevels = function (res) {
 };
 
 // private middleware for getDates route
-const getDates = function (res) {
+const getDates = async function (res) {
   // this function returns a map of dates keyed by app title and model display text
   if (Meteor.isServer) {
-    const flatJSON = getDateMapByAppAndModel();
+    const flatJSON = await getDateMapByAppAndModel();
     res.setHeader("Content-Type", "application/json");
     res.write(flatJSON);
     res.end();
@@ -1458,7 +1460,7 @@ const refreshScorecard = function (params, res) {
                     sc.id='${docId}';`;
     cbScorecardPool
       .queryCB(statement)
-      .then((result) => {
+      .then(async (result) => {
         // insert this result into the mongo Scorecard collection - createdAt is used for TTL
         // created at gets updated each display even if it already existed.
         // TTL is 24 hours
@@ -1467,7 +1469,7 @@ const refreshScorecard = function (params, res) {
         } else if (result[0] === undefined) {
           throw new Error("Error from couchbase query - document not found");
         } else {
-          matsCollections.Scorecard.upsertAsync(
+          await matsCollections.Scorecard.upsertAsync(
             {
               "scorecard.userName": result[0].userName,
               "scorecard.name": result[0].name,
@@ -1508,16 +1510,18 @@ const setStatusScorecard = function (params, req, res) {
 
     req.on(
       "end",
-      Meteor.bindEnvironment(function () {
+      Meteor.bindEnvironment(async function () {
         // console.log(body);
         try {
           const doc = JSON.parse(body);
           const docStatus = doc.status;
-          const found = matsCollections.Scorecard.findAsync({ id: docId }).fetch();
+          const found = await matsCollections.Scorecard.find({
+            id: docId,
+          }).fetchAsync();
           if (found.length === 0) {
             throw new Error("Error from scorecard lookup - document not found");
           }
-          matsCollections.Scorecard.upsertAsync(
+          await matsCollections.Scorecard.upsertAsync(
             {
               id: docId,
             },
@@ -1544,7 +1548,7 @@ const setStatusScorecard = function (params, req, res) {
 };
 
 // private save the result from the query into mongo and downsample if that result's size is greater than 1.2Mb
-const saveResultData = function (result) {
+const saveResultData = async function (result) {
   if (Meteor.isServer) {
     const storedResult = result;
     const sizeof = require("object-sizeof");
@@ -1637,7 +1641,7 @@ const saveResultData = function (result) {
           }
           downSampleResult.data[ci] = downSampleResult[ci];
         }
-        DownSampleResults.rawCollection().insertAsync({
+        await DownSampleResults.rawCollection().insertAsync({
           createdAt: new Date(),
           key,
           result: downSampleResult,
@@ -1741,7 +1745,7 @@ const getThisScorecardData = async function (userName, name, submitted, processe
     // insert this result into the mongo Scorecard collection - createdAt is used for TTL
     // created at gets updated each display even if it already existed.
     // TTL is 24 hours
-    matsCollections.Scorecard.upsertAsync(
+    await matsCollections.Scorecard.upsertAsync(
       {
         "scorecard.userName": result[0].userName,
         "scorecard.name": result[0].name,
@@ -1755,7 +1759,7 @@ const getThisScorecardData = async function (userName, name, submitted, processe
         },
       }
     );
-    const docID = matsCollections.Scorecard.findOneAsync(
+    const docID = await matsCollections.Scorecard.findOneAsync(
       {
         "scorecard.userName": result[0].userName,
         "scorecard.name": result[0].name,
@@ -1858,166 +1862,6 @@ const getThesePlotParamsFromScorecardInstance = async function (
   }
 };
 
-// PUBLIC METHODS
-// administration tools
-const addSentAddress = new ValidatedMethod({
-  name: "matsMethods.addSentAddress",
-  validate: new SimpleSchema({
-    toAddress: {
-      type: String,
-    },
-  }).validator(),
-  run(toAddress) {
-    if (!Meteor.userId()) {
-      throw new Meteor.Error(401, "not-logged-in");
-    }
-    matsCollections.SentAddresses.upsertAsync(
-      {
-        address: toAddress,
-      },
-      {
-        address: toAddress,
-        userId: Meteor.userId(),
-      }
-    );
-    return false;
-  },
-});
-
-//  administation tool
-const applyAuthorization = new ValidatedMethod({
-  name: "matsMethods.applyAuthorization",
-  validate: new SimpleSchema({
-    settings: {
-      type: Object,
-      blackbox: true,
-    },
-  }).validator(),
-  run(settings) {
-    if (Meteor.isServer) {
-      let roles;
-      let roleName;
-      let authorization;
-
-      const { userRoleName } = settings;
-      const { userRoleDescription } = settings;
-      const { authorizationRole } = settings;
-      const { newUserEmail } = settings;
-      const { existingUserEmail } = settings;
-
-      if (authorizationRole) {
-        // existing role - the role roleName - no need to verify as the selection list came from the database
-        roleName = authorizationRole;
-      } else if (userRoleName && userRoleDescription) {
-        // possible new role - see if it happens to already exist
-        const role = matsCollections.Roles.findOneAsync({
-          name: userRoleName,
-        });
-        if (role === undefined) {
-          // need to add new role using description
-          matsCollections.Roles.upsertAsync(
-            {
-              name: userRoleName,
-            },
-            {
-              $set: {
-                description: userRoleDescription,
-              },
-            }
-          );
-          roleName = userRoleName;
-        } else {
-          // see if the description matches...
-          roleName = role.name;
-          const { description } = role;
-          if (description !== userRoleDescription) {
-            // have to update the description
-            matsCollections.Roles.upsertAsync(
-              {
-                name: userRoleName,
-              },
-              {
-                $set: {
-                  description: userRoleDescription,
-                },
-              }
-            );
-          }
-        }
-      }
-      // now we have a role roleName - now we need an email
-      if (existingUserEmail) {
-        // existing user -  no need to verify as the selection list came from the database
-        // see if it already has the role
-        authorization = matsCollections.Authorization.findOneAsync({
-          email: existingUserEmail,
-        });
-        roles = authorization.roles;
-        if (roles.indexOf(roleName) === -1) {
-          // have to add the role
-          if (roleName) {
-            roles.push(roleName);
-          }
-          matsCollections.Authorization.upsertAsync(
-            {
-              email: existingUserEmail,
-            },
-            {
-              $set: {
-                roles,
-              },
-            }
-          );
-        }
-      } else if (newUserEmail) {
-        // possible new authorization - see if it happens to exist
-        authorization = matsCollections.Authorization.findOneAsync({
-          email: newUserEmail,
-        });
-        if (authorization !== undefined) {
-          // authorization exists - add role to roles if necessary
-          roles = authorization.roles;
-          if (roles.indexOf(roleName) === -1) {
-            // have to add the role
-            if (roleName) {
-              roles.push(roleName);
-            }
-            matsCollections.Authorization.upsertAsync(
-              {
-                email: existingUserEmail,
-              },
-              {
-                $set: {
-                  roles,
-                },
-              }
-            );
-          }
-        } else {
-          // need a new authorization
-          roles = [];
-          if (roleName) {
-            roles.push(roleName);
-          }
-          if (newUserEmail) {
-            matsCollections.Authorization.upsertAsync(
-              {
-                email: newUserEmail,
-              },
-              {
-                $set: {
-                  roles,
-                },
-              }
-            );
-          }
-        }
-      }
-    }
-    return false;
-  },
-});
-
 // database controls
 const applyDatabaseSettings = new ValidatedMethod({
   name: "matsMethods.applyDatabaseSettings",
@@ -2028,10 +1872,10 @@ const applyDatabaseSettings = new ValidatedMethod({
     },
   }).validator(),
 
-  run(settings) {
+  async run(settings) {
     if (Meteor.isServer) {
       if (settings.name) {
-        matsCollections.Databases.upsertAsync(
+        await matsCollections.Databases.upsertAsync(
           {
             name: settings.name,
           },
@@ -2061,12 +1905,12 @@ const deleteSettings = new ValidatedMethod({
       type: String,
     },
   }).validator(),
-  run(params) {
+  async run(params) {
     if (!Meteor.userId()) {
       throw new Meteor.Error("not-logged-in");
     }
     if (Meteor.isServer) {
-      matsCollections.CurveSettings.removeAsync({
+      await matsCollections.CurveSettings.removeAsync({
         name: params.name,
       });
     }
@@ -2090,7 +1934,7 @@ const dropScorecardInstance = new ValidatedMethod({
       type: String,
     },
   }).validator(),
-  run(params) {
+  async run(params) {
     if (Meteor.isServer) {
       return dropThisScorecardInstance(
         params.userName,
@@ -2128,9 +1972,9 @@ const getGraphData = new ValidatedMethod({
       type: Boolean,
     },
   }).validator(),
-  run(params) {
+  async run(params) {
     if (Meteor.isServer) {
-      const plotGraphFunction = matsCollections.PlotGraphFunctions.findOneAsync({
+      const plotGraphFunction = await matsCollections.PlotGraphFunctions.findOneAsync({
         plotType: params.plotType,
       });
       const { dataFunction } = plotGraphFunction;
@@ -2144,17 +1988,13 @@ const getGraphData = new ValidatedMethod({
         const results = matsCache.getResult(key);
         if (results === undefined) {
           // results aren't in the cache - need to process data routine
-          const Future = require("fibers/future");
-          const future = new Future();
-          global[dataFunction](params.plotParams, function (result) {
-            ret = saveResultData(result);
-            future.return(ret);
+          await global[dataFunction](params.plotParams, async function (result) {
+            return saveResultData(result);
           });
-          return future.wait();
         }
         // results were already in the matsCache (same params and not yet expired)
         // are results in the downsampled collection?
-        const dsResults = DownSampleResults.findOneAsync(
+        const dsResults = await DownSampleResults.findOneAsync(
           {
             key,
           },
@@ -2167,7 +2007,7 @@ const getGraphData = new ValidatedMethod({
           // results are in the mongo cache downsampled collection - returned the downsampled graph data
           ret = dsResults;
           // update the expire time in the downsampled collection - this requires a new Date
-          DownSampleResults.rawCollection().updateAsync(
+          await DownSampleResults.rawCollection().updateAsync(
             {
               key,
             },
@@ -2207,12 +2047,12 @@ const getGraphDataByKey = new ValidatedMethod({
       type: String,
     },
   }).validator(),
-  run(params) {
+  async run(params) {
     if (Meteor.isServer) {
       let ret;
       const key = params.resultKey;
       try {
-        const dsResults = DownSampleResults.findOneAsync(
+        const dsResults = await DownSampleResults.findOneAsync(
           {
             key,
           },
@@ -2246,12 +2086,12 @@ const getLayout = new ValidatedMethod({
       type: String,
     },
   }).validator(),
-  run(params) {
+  async run(params) {
     if (Meteor.isServer) {
       let ret;
       const key = params.resultKey;
       try {
-        ret = LayoutStoreCollection.rawCollection().findOneAsync({
+        ret = await LayoutStoreCollection.rawCollection().findOneAsync({
           key,
         });
         return ret;
@@ -2303,7 +2143,7 @@ const getPlotParamsFromScorecardInstance = new ValidatedMethod({
       type: String,
     },
   }).validator(),
-  run(params) {
+  async run(params) {
     try {
       if (Meteor.isServer) {
         return getThesePlotParamsFromScorecardInstance(
@@ -2365,35 +2205,20 @@ const getReleaseNotes = new ValidatedMethod({
   name: "matsMethods.getReleaseNotes",
   validate: new SimpleSchema({}).validator(),
   run() {
-    //     return Assets.getText('public/MATSReleaseNotes.html');
-    // }
     if (Meteor.isServer) {
-      const Future = require("fibers/future");
       const fse = require("fs-extra");
-      const dFuture = new Future();
-      let fData;
       let file;
       if (process.env.NODE_ENV === "development") {
         file = `${process.env.PWD}/.meteor/local/build/programs/server/assets/packages/randyp_mats-common/public/MATSReleaseNotes.html`;
       } else {
         file = `${process.env.PWD}/programs/server/assets/packages/randyp_mats-common/public/MATSReleaseNotes.html`;
       }
-      try {
-        fse.readFile(file, "utf8", function (err, data) {
-          if (err) {
-            fData = err.message;
-            dFuture.return();
-          } else {
-            fData = data;
-            dFuture.return();
-          }
-        });
-      } catch (e) {
-        fData = e.message;
-        dFuture.return();
-      }
-      dFuture.wait();
-      return fData;
+      return fse.readFile(file, "utf8", function (err, data) {
+        if (err) {
+          return err.message;
+        }
+        return data;
+      });
     }
     return null;
   },
@@ -2409,7 +2234,7 @@ const setCurveParamDisplayText = new ValidatedMethod({
       type: String,
     },
   }).validator(),
-  run(params) {
+  async run(params) {
     if (Meteor.isServer) {
       return matsCollections[params.paramName].updateAsync(
         { name: params.paramName },
@@ -2436,7 +2261,7 @@ const getScorecardData = new ValidatedMethod({
       type: String,
     },
   }).validator(),
-  run(params) {
+  async run(params) {
     if (Meteor.isServer) {
       return getThisScorecardData(
         params.userName,
@@ -2452,21 +2277,9 @@ const getScorecardData = new ValidatedMethod({
 const getScorecardInfo = new ValidatedMethod({
   name: "matsMethods.getScorecardInfo",
   validate: new SimpleSchema({}).validator(),
-  run() {
+  async run() {
     if (Meteor.isServer) {
       return getThisScorecardInfo();
-    }
-    return null;
-  },
-});
-
-// administration tool
-const getUserAddress = new ValidatedMethod({
-  name: "matsMethods.getUserAddress",
-  validate: new SimpleSchema({}).validator(),
-  run() {
-    if (Meteor.isServer) {
-      return Meteor.user().services.google.email.toLowerCase();
     }
     return null;
   },
@@ -2483,13 +2296,13 @@ const insertColor = new ValidatedMethod({
       type: Number,
     },
   }).validator(),
-  run(params) {
+  async run(params) {
     if (params.newColor === "rgb(255,255,255)") {
       return false;
     }
-    const colorScheme = matsCollections.ColorScheme.findOneAsync({});
+    const colorScheme = await matsCollections.ColorScheme.findOneAsync({});
     colorScheme.colors.splice(params.insertAfterIndex, 0, params.newColor);
-    matsCollections.updateAsync({}, colorScheme);
+    await matsCollections.updateAsync({}, colorScheme);
     return false;
   },
 });
@@ -2507,10 +2320,8 @@ const readFunctionFile = new ValidatedMethod({
   }).validator(),
   run(params) {
     if (Meteor.isServer) {
-      const future = require("fibers/future");
       const fse = require("fs-extra");
       let path = "";
-      let fData;
       if (params.type === "data") {
         path = `/web/static/dataFunctions/${params.file}`;
         console.log(`exporting data file: ${path}`);
@@ -2520,12 +2331,10 @@ const readFunctionFile = new ValidatedMethod({
       } else {
         return "error - wrong type";
       }
-      fse.readFile(path, function (err, data) {
+      return fse.readFile(path, function (err, data) {
         if (err) throw err;
-        fData = data.toString();
-        future.return(fData);
+        return data.toString();
       });
-      return future.wait();
     }
     return null;
   },
@@ -2535,7 +2344,7 @@ const readFunctionFile = new ValidatedMethod({
 const refreshMetaData = new ValidatedMethod({
   name: "matsMethods.refreshMetaData",
   validate: new SimpleSchema({}).validator(),
-  run() {
+  async run() {
     if (Meteor.isServer) {
       try {
         // console.log("GUI asked to refresh metadata");
@@ -2545,81 +2354,7 @@ const refreshMetaData = new ValidatedMethod({
         throw new Meteor.Error("Server error: ", e.message);
       }
     }
-    return metaDataTableUpdates.findAsync({}).fetch();
-  },
-});
-
-// administation tool
-const removeAuthorization = new ValidatedMethod({
-  name: "matsMethods.removeAuthorization",
-  validate: new SimpleSchema({
-    settings: {
-      type: Object,
-      blackbox: true,
-    },
-  }).validator(),
-  run(settings) {
-    if (Meteor.isServer) {
-      let email;
-      let roleName;
-      const { userRoleName } = settings;
-      const { authorizationRole } = settings;
-      const { newUserEmail } = settings;
-      const { existingUserEmail } = settings;
-      if (authorizationRole) {
-        // existing role - the role roleName - no need to verify as the selection list came from the database
-        roleName = authorizationRole;
-      } else if (userRoleName) {
-        roleName = userRoleName;
-      }
-      if (existingUserEmail) {
-        email = existingUserEmail;
-      } else {
-        email = newUserEmail;
-      }
-
-      // if user and role remove the role from the user
-      if (email && roleName) {
-        matsCollections.Authorization.updateAsync(
-          {
-            email,
-          },
-          {
-            $pull: {
-              roles: roleName,
-            },
-          }
-        );
-      }
-      // if user and no role remove the user
-      if (email && !roleName) {
-        matsCollections.Authorization.removeAsync({
-          email,
-        });
-      }
-      // if role and no user remove role and remove role from all users
-      if (roleName && !email) {
-        // remove the role
-        matsCollections.Roles.removeAsync({
-          name: roleName,
-        });
-        // remove the roleName role from all the authorizations
-        matsCollections.Authorization.updateAsync(
-          {
-            roles: roleName,
-          },
-          {
-            $pull: {
-              roles: roleName,
-            },
-          },
-          {
-            multi: true,
-          }
-        );
-      }
-    }
-    return false;
+    return metaDataTableUpdates.find({}).fetchAsync();
   },
 });
 
@@ -2631,11 +2366,11 @@ const removeColor = new ValidatedMethod({
       type: String,
     },
   }).validator(),
-  run(params) {
-    const colorScheme = matsCollections.ColorScheme.findOneAsync({});
+  async run(params) {
+    const colorScheme = await matsCollections.ColorScheme.findOneAsync({});
     const removeIndex = colorScheme.colors.indexOf(params.removeColor);
     colorScheme.colors.splice(removeIndex, 1);
-    matsCollections.ColorScheme.updateAsync({}, colorScheme);
+    await matsCollections.ColorScheme.updateAsync({}, colorScheme);
     return false;
   },
 });
@@ -2648,9 +2383,9 @@ const removeDatabase = new ValidatedMethod({
       type: String,
     },
   }).validator(),
-  run(dbName) {
+  async run(dbName) {
     if (Meteor.isServer) {
-      matsCollections.Databases.removeAsync({
+      await matsCollections.Databases.removeAsync({
         name: dbName,
       });
     }
@@ -2669,15 +2404,15 @@ const applySettingsData = new ValidatedMethod({
   applyOptions: {
     noRetry: true,
   },
-  run(settingsParam) {
+  async run(settingsParam) {
     if (Meteor.isServer) {
       // Read the existing settings file
       const { settings } = settingsParam;
       console.log(
         "applySettingsData - matsCollections.appName.findOneAsync({}) is ",
-        matsCollections.appName.findOneAsync({})
+        await matsCollections.appName.findOneAsync({})
       );
-      const { appName } = matsCollections.Settings.findOneAsync({});
+      const { appName } = await matsCollections.Settings.findOneAsync({});
       writeSettings(settings, appName);
       // in development - when being run by meteor, this should force a restart of the app.
       // in case I am in a container - exit and force a reload
@@ -2886,8 +2621,11 @@ const resetApp = async function (appRef) {
       for (let mdti = 0; mdti < metaDataTables.length; mdti += 1) {
         const metaDataRef = metaDataTables[mdti];
         metaDataRef.lastRefreshed = moment().format();
-        if (metaDataTableUpdates.findAsync({ name: metaDataRef.name }).countAsync() === 0) {
-          metaDataTableUpdates.updateAsync(
+        if (
+          (await metaDataTableUpdates.find({ name: metaDataRef.name }).countAsync()) ===
+          0
+        ) {
+          await metaDataTableUpdates.updateAsync(
             {
               name: metaDataRef.name,
             },
@@ -2902,14 +2640,12 @@ const resetApp = async function (appRef) {
       throw new Meteor.Error("Server error: ", "resetApp: bad pool-database entry");
     }
     // invoke the standard common routines
-    matsCollections.Roles.removeAsync({});
+    await matsCollections.Roles.removeAsync({});
     matsDataUtils.doRoles();
-    matsCollections.Authorization.removeAsync({});
-    matsDataUtils.doAuthorization();
-    matsCollections.PlotGraphFunctions.removeAsync({});
-    matsCollections.ColorScheme.removeAsync({});
+    await matsCollections.PlotGraphFunctions.removeAsync({});
+    await matsCollections.ColorScheme.removeAsync({});
     matsDataUtils.doColorScheme();
-    matsCollections.Settings.removeAsync({});
+    await matsCollections.Settings.removeAsync({});
     matsDataUtils.doSettings(
       appTitle,
       dbType,
@@ -2929,24 +2665,24 @@ const resetApp = async function (appRef) {
       appMessage,
       scorecard
     );
-    matsCollections.PlotParams.removeAsync({});
-    matsCollections.CurveTextPatterns.removeAsync({});
+    await matsCollections.PlotParams.removeAsync({});
+    await matsCollections.CurveTextPatterns.removeAsync({});
     // get the curve params for this app into their collections
-    matsCollections.CurveParamsInfo.removeAsync({});
-    matsCollections.CurveParamsInfo.insertAsync({
+    await matsCollections.CurveParamsInfo.removeAsync({});
+    await matsCollections.CurveParamsInfo.insertAsync({
       curve_params: curveParams,
     });
     for (let cp = 0; cp < curveParams.length; cp += 1) {
       if (matsCollections[curveParams[cp]] !== undefined) {
-        matsCollections[curveParams[cp]].removeAsync({});
+        await matsCollections[curveParams[cp]].removeAsync({});
       }
     }
     // if this is a scorecard also get the apps to score out of the settings file
     if (Meteor.settings.public && Meteor.settings.public.scorecard) {
       if (Meteor.settings.public.apps_to_score) {
         appsToScore = Meteor.settings.public.apps_to_score;
-        matsCollections.AppsToScore.removeAsync({});
-        matsCollections.AppsToScore.insertAsync({
+        await matsCollections.AppsToScore.removeAsync({});
+        await matsCollections.AppsToScore.insertAsync({
           apps_to_score: appsToScore,
         });
       } else {
@@ -2981,14 +2717,14 @@ const saveLayout = new ValidatedMethod({
       type: String,
     },
   }).validator(),
-  run(params) {
+  async run(params) {
     if (Meteor.isServer) {
       const key = params.resultKey;
       const { layout } = params;
       const { curveOpsUpdate } = params;
       const { annotation } = params;
       try {
-        LayoutStoreCollection.upsertAsync(
+        await LayoutStoreCollection.upsertAsync(
           {
             key,
           },
@@ -3062,9 +2798,9 @@ const saveSettings = new ValidatedMethod({
       type: String,
     },
   }).validator(),
-  run(params) {
+  async run(params) {
     const user = "anonymous";
-    matsCollections.CurveSettings.upsertAsync(
+    await matsCollections.CurveSettings.upsertAsync(
       {
         name: params.saveAs,
       },
@@ -3086,8 +2822,8 @@ const saveSettings = new ValidatedMethod({
 const testGetMetaDataTableUpdates = new ValidatedMethod({
   name: "matsMethods.testGetMetaDataTableUpdates",
   validate: new SimpleSchema({}).validator(),
-  run() {
-    return metaDataTableUpdates.findAsync({}).fetch();
+  async run() {
+    return metaDataTableUpdates.find({}).fetchAsync();
   },
 });
 
@@ -3112,7 +2848,10 @@ const testGetTables = new ValidatedMethod({
   }).validator(),
   async run(params) {
     if (Meteor.isServer) {
-      if (matsCollections.Settings.findOneAsync().dbType === matsTypes.DbTypes.couchbase) {
+      if (
+        (await matsCollections.Settings.findOneAsync().dbType) ===
+        matsTypes.DbTypes.couchbase
+      ) {
         const cbUtilities = new matsCouchbaseUtils.CBUtilities(
           params.host,
           params.bucket,
@@ -3127,34 +2866,32 @@ const testGetTables = new ValidatedMethod({
         }
       } else {
         // default to mysql so that old apps won't break
-        const Future = require("fibers/future");
-        const queryWrap = Future.wrap(function (callback) {
-          const connection = mysql.createConnection({
-            host: params.host,
-            port: params.port,
-            user: params.user,
-            password: params.password,
-            database: params.database,
-          });
-          connection.query("show tables;", function (err, result) {
-            if (err || result === undefined) {
-              // return callback(err,null);
-              return callback(err, null);
-            }
-            const tables = result.map(function (a) {
-              return a;
-            });
-
-            return callback(err, tables);
-          });
-          connection.end(function (err) {
-            if (err) {
-              console.log("testGetTables cannot end connection");
-            }
-          });
-        });
         try {
-          return queryWrap().wait();
+          const queryWrap = async function (callback) {
+            const connection = mysql.createConnection({
+              host: params.host,
+              port: params.port,
+              user: params.user,
+              password: params.password,
+              database: params.database,
+            });
+            connection.query("show tables;", function (err, result) {
+              if (err || result === undefined) {
+                // return callback(err,null);
+                return callback(err, null);
+              }
+              const tables = result.map(function (a) {
+                return a;
+              });
+              return callback(err, tables);
+            });
+            connection.end(function (err) {
+              if (err) {
+                console.log("testGetTables cannot end connection");
+              }
+            });
+          };
+          return queryWrap();
         } catch (e) {
           throw new Meteor.Error(e.message);
         }
@@ -3167,10 +2904,10 @@ const testGetTables = new ValidatedMethod({
 const testSetMetaDataTableUpdatesLastRefreshedBack = new ValidatedMethod({
   name: "matsMethods.testSetMetaDataTableUpdatesLastRefreshedBack",
   validate: new SimpleSchema({}).validator(),
-  run() {
-    const mtu = metaDataTableUpdates.findAsync({}).fetch();
+  async run() {
+    const mtu = await metaDataTableUpdates.find({}).fetchAsync();
     const id = mtu[0]._id;
-    metaDataTableUpdates.updateAsync(
+    await metaDataTableUpdates.updateAsync(
       {
         _id: id,
       },
@@ -3180,7 +2917,7 @@ const testSetMetaDataTableUpdatesLastRefreshedBack = new ValidatedMethod({
         },
       }
     );
-    return metaDataTableUpdates.findAsync({}).fetch();
+    return metaDataTableUpdates.find({}).fetchAsync();
   },
 });
 
@@ -3211,23 +2948,23 @@ if (Meteor.isServer) {
   }
 
   // eslint-disable-next-line no-unused-vars
-  Picker.route("/status", function (params, req, res, next) {
-    Picker.middleware(status(res));
+  Picker.route("/status", async function (params, req, res, next) {
+    Picker.middleware(await status(res));
   });
 
   Picker.route(
     `${Meteor.settings.public.proxy_prefix_path}/status`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      Picker.middleware(status(res));
+    async function (params, req, res, next) {
+      Picker.middleware(await status(res));
     }
   );
 
   Picker.route(
     `${Meteor.settings.public.proxy_prefix_path}/:app/status`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      Picker.middleware(status(res));
+    async function (params, req, res, next) {
+      Picker.middleware(await status(res));
     }
   );
 
@@ -3337,443 +3074,443 @@ if (Meteor.isServer) {
   );
 
   // eslint-disable-next-line no-unused-vars
-  Picker.route("/getApps", function (params, req, res, next) {
-    Picker.middleware(getApps(res));
+  Picker.route("/getApps", async function (params, req, res, next) {
+    Picker.middleware(await getApps(res));
   });
 
   Picker.route(
     `${Meteor.settings.public.proxy_prefix_path}/getApps`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      Picker.middleware(getApps(res));
+    async function (params, req, res, next) {
+      Picker.middleware(await getApps(res));
     }
   );
 
   Picker.route(
     `${Meteor.settings.public.proxy_prefix_path}/:app/getApps`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      Picker.middleware(getApps(res));
+    async function (params, req, res, next) {
+      Picker.middleware(await getApps(res));
     }
   );
 
   // eslint-disable-next-line no-unused-vars
-  Picker.route("/getAppSumsDBs", function (params, req, res, next) {
-    Picker.middleware(getAppSumsDBs(res));
+  Picker.route("/getAppSumsDBs", async function (params, req, res, next) {
+    Picker.middleware(await getAppSumsDBs(res));
   });
 
   Picker.route(
     `${Meteor.settings.public.proxy_prefix_path}/getAppSumsDBs`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      Picker.middleware(getAppSumsDBs(res));
+    async function (params, req, res, next) {
+      Picker.middleware(await getAppSumsDBs(res));
     }
   );
 
   Picker.route(
     `${Meteor.settings.public.proxy_prefix_path}/:app/getAppSumsDBs`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      Picker.middleware(getAppSumsDBs(res));
+    async function (params, req, res, next) {
+      Picker.middleware(await getAppSumsDBs(res));
     }
   );
 
   // eslint-disable-next-line no-unused-vars
-  Picker.route("/getModels", function (params, req, res, next) {
-    Picker.middleware(getModels(res));
+  Picker.route("/getModels", async function (params, req, res, next) {
+    Picker.middleware(await getModels(res));
   });
 
   Picker.route(
     `${Meteor.settings.public.proxy_prefix_path}/getModels`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      Picker.middleware(getModels(res));
+    async function (params, req, res, next) {
+      Picker.middleware(await getModels(res));
     }
   );
 
   Picker.route(
     `${Meteor.settings.public.proxy_prefix_path}/:app/getModels`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      Picker.middleware(getModels(res));
+    async function (params, req, res, next) {
+      Picker.middleware(await getModels(res));
     }
   );
 
   // eslint-disable-next-line no-unused-vars
-  Picker.route("/getRegions", function (params, req, res, next) {
-    Picker.middleware(getRegions(res));
+  Picker.route("/getRegions", async function (params, req, res, next) {
+    Picker.middleware(await getRegions(res));
   });
 
   Picker.route(
     `${Meteor.settings.public.proxy_prefix_path}/getRegions`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      Picker.middleware(getRegions(res));
+    async function (params, req, res, next) {
+      Picker.middleware(await getRegions(res));
     }
   );
 
   Picker.route(
     `${Meteor.settings.public.proxy_prefix_path}/:app/getRegions`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      Picker.middleware(getRegions(res));
+    async function (params, req, res, next) {
+      Picker.middleware(await getRegions(res));
     }
   );
 
   // eslint-disable-next-line no-unused-vars
-  Picker.route("/getRegionsValuesMap", function (params, req, res, next) {
-    Picker.middleware(getRegionsValuesMap(res));
+  Picker.route("/getRegionsValuesMap", async function (params, req, res, next) {
+    Picker.middleware(await getRegionsValuesMap(res));
   });
 
   Picker.route(
     `${Meteor.settings.public.proxy_prefix_path}/getRegionsValuesMap`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      Picker.middleware(getRegionsValuesMap(res));
+    async function (params, req, res, next) {
+      Picker.middleware(await getRegionsValuesMap(res));
     }
   );
 
   Picker.route(
     `${Meteor.settings.public.proxy_prefix_path}/:app/getRegionsValuesMap`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      Picker.middleware(getRegionsValuesMap(res));
+    async function (params, req, res, next) {
+      Picker.middleware(await getRegionsValuesMap(res));
     }
   );
 
   // eslint-disable-next-line no-unused-vars
-  Picker.route("/getStatistics", function (params, req, res, next) {
-    Picker.middleware(getStatistics(res));
+  Picker.route("/getStatistics", async function (params, req, res, next) {
+    Picker.middleware(await getStatistics(res));
   });
 
   Picker.route(
     `${Meteor.settings.public.proxy_prefix_path}/getStatistics`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      Picker.middleware(getStatistics(res));
+    async function (params, req, res, next) {
+      Picker.middleware(await getStatistics(res));
     }
   );
 
   Picker.route(
     `${Meteor.settings.public.proxy_prefix_path}/:app/getStatistics`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      Picker.middleware(getStatistics(res));
+    async function (params, req, res, next) {
+      Picker.middleware(await getStatistics(res));
     }
   );
 
   // eslint-disable-next-line no-unused-vars
-  Picker.route("/getStatisticsValuesMap", function (params, req, res, next) {
-    Picker.middleware(getStatisticsValuesMap(res));
+  Picker.route("/getStatisticsValuesMap", async function (params, req, res, next) {
+    Picker.middleware(await getStatisticsValuesMap(res));
   });
 
   Picker.route(
     `${Meteor.settings.public.proxy_prefix_path}/getStatisticsValuesMap`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      Picker.middleware(getStatisticsValuesMap(res));
+    async function (params, req, res, next) {
+      Picker.middleware(await getStatisticsValuesMap(res));
     }
   );
 
   Picker.route(
     `${Meteor.settings.public.proxy_prefix_path}/:app/getStatisticsValuesMap`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      Picker.middleware(getStatisticsValuesMap(res));
+    async function (params, req, res, next) {
+      Picker.middleware(await getStatisticsValuesMap(res));
     }
   );
 
   // eslint-disable-next-line no-unused-vars
-  Picker.route("/getVariables", function (params, req, res, next) {
-    Picker.middleware(getVariables(res));
+  Picker.route("/getVariables", async function (params, req, res, next) {
+    Picker.middleware(await getVariables(res));
   });
 
   Picker.route(
     `${Meteor.settings.public.proxy_prefix_path}/getVariables`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      Picker.middleware(getVariables(res));
+    async function (params, req, res, next) {
+      Picker.middleware(await getVariables(res));
     }
   );
 
   Picker.route(
     `${Meteor.settings.public.proxy_prefix_path}/:app/getVariables`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      Picker.middleware(getVariables(res));
+    async function (params, req, res, next) {
+      Picker.middleware(await getVariables(res));
     }
   );
 
   // eslint-disable-next-line no-unused-vars
-  Picker.route("/getVariablesValuesMap", function (params, req, res, next) {
-    Picker.middleware(getVariablesValuesMap(res));
+  Picker.route("/getVariablesValuesMap", async function (params, req, res, next) {
+    Picker.middleware(await getVariablesValuesMap(res));
   });
 
   Picker.route(
     `${Meteor.settings.public.proxy_prefix_path}/getVariablesValuesMap`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      Picker.middleware(getVariablesValuesMap(res));
+    async function (params, req, res, next) {
+      Picker.middleware(await getVariablesValuesMap(res));
     }
   );
 
   Picker.route(
     `${Meteor.settings.public.proxy_prefix_path}/:app/getVariablesValuesMap`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      Picker.middleware(getVariablesValuesMap(res));
+    async function (params, req, res, next) {
+      Picker.middleware(await getVariablesValuesMap(res));
     }
   );
 
   // eslint-disable-next-line no-unused-vars
-  Picker.route("/getThresholds", function (params, req, res, next) {
-    Picker.middleware(getThresholds(res));
+  Picker.route("/getThresholds", async function (params, req, res, next) {
+    Picker.middleware(await getThresholds(res));
   });
 
   Picker.route(
     `${Meteor.settings.public.proxy_prefix_path}/getThresholds`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      Picker.middleware(getThresholds(res));
+    async function (params, req, res, next) {
+      Picker.middleware(await getThresholds(res));
     }
   );
 
   Picker.route(
     `${Meteor.settings.public.proxy_prefix_path}/:app/getThresholds`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      Picker.middleware(getThresholds(res));
+    async function (params, req, res, next) {
+      Picker.middleware(await getThresholds(res));
     }
   );
 
   // eslint-disable-next-line no-unused-vars
-  Picker.route("/getThresholdsValuesMap", function (params, req, res, next) {
-    Picker.middleware(getThresholdsValuesMap(res));
+  Picker.route("/getThresholdsValuesMap", async function (params, req, res, next) {
+    Picker.middleware(await getThresholdsValuesMap(res));
   });
 
   Picker.route(
     `${Meteor.settings.public.proxy_prefix_path}/getThresholdsValuesMap`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      Picker.middleware(getThresholdsValuesMap(res));
+    async function (params, req, res, next) {
+      Picker.middleware(await getThresholdsValuesMap(res));
     }
   );
 
   Picker.route(
     `${Meteor.settings.public.proxy_prefix_path}/:app/getThresholdsValuesMap`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      Picker.middleware(getThresholdsValuesMap(res));
+    async function (params, req, res, next) {
+      Picker.middleware(await getThresholdsValuesMap(res));
     }
   );
 
   // eslint-disable-next-line no-unused-vars
-  Picker.route("/getScales", function (params, req, res, next) {
-    Picker.middleware(getScales(res));
+  Picker.route("/getScales", async function (params, req, res, next) {
+    Picker.middleware(await getScales(res));
   });
 
   Picker.route(
     `${Meteor.settings.public.proxy_prefix_path}/getScales`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      Picker.middleware(getScales(res));
+    async function (params, req, res, next) {
+      Picker.middleware(await getScales(res));
     }
   );
 
   Picker.route(
     `${Meteor.settings.public.proxy_prefix_path}/:app/getScales`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      Picker.middleware(getScales(res));
+    async function (params, req, res, next) {
+      Picker.middleware(await getScales(res));
     }
   );
 
   // eslint-disable-next-line no-unused-vars
-  Picker.route("/getScalesValuesMap", function (params, req, res, next) {
-    Picker.middleware(getScalesValuesMap(res));
+  Picker.route("/getScalesValuesMap", async function (params, req, res, next) {
+    Picker.middleware(await getScalesValuesMap(res));
   });
 
   Picker.route(
     `${Meteor.settings.public.proxy_prefix_path}/getScalesValuesMap`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      Picker.middleware(getScalesValuesMap(res));
+    async function (params, req, res, next) {
+      Picker.middleware(await getScalesValuesMap(res));
     }
   );
 
   Picker.route(
     `${Meteor.settings.public.proxy_prefix_path}/:app/getScalesValuesMap`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      Picker.middleware(getScalesValuesMap(res));
+    async function (params, req, res, next) {
+      Picker.middleware(await getScalesValuesMap(res));
     }
   );
 
   // eslint-disable-next-line no-unused-vars
-  Picker.route("/getTruths", function (params, req, res, next) {
-    Picker.middleware(getTruths(res));
+  Picker.route("/getTruths", async function (params, req, res, next) {
+    Picker.middleware(await getTruths(res));
   });
 
   Picker.route(
     `${Meteor.settings.public.proxy_prefix_path}/getTruths`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      Picker.middleware(getTruths(res));
+    async function (params, req, res, next) {
+      Picker.middleware(await getTruths(res));
     }
   );
 
   Picker.route(
     `${Meteor.settings.public.proxy_prefix_path}/:app/getTruths`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      Picker.middleware(getTruths(res));
+    async function (params, req, res, next) {
+      Picker.middleware(await getTruths(res));
     }
   );
 
   // eslint-disable-next-line no-unused-vars
-  Picker.route("/getTruthsValuesMap", function (params, req, res, next) {
-    Picker.middleware(getTruthsValuesMap(res));
+  Picker.route("/getTruthsValuesMap", async function (params, req, res, next) {
+    Picker.middleware(await getTruthsValuesMap(res));
   });
 
   Picker.route(
     `${Meteor.settings.public.proxy_prefix_path}/getTruthsValuesMap`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      Picker.middleware(getTruthsValuesMap(res));
+    async function (params, req, res, next) {
+      Picker.middleware(await getTruthsValuesMap(res));
     }
   );
 
   Picker.route(
     `${Meteor.settings.public.proxy_prefix_path}/:app/getTruthsValuesMap`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      Picker.middleware(getTruthsValuesMap(res));
+    async function (params, req, res, next) {
+      Picker.middleware(await getTruthsValuesMap(res));
     }
   );
 
   // eslint-disable-next-line no-unused-vars
-  Picker.route("/getFcstLengths", function (params, req, res, next) {
-    Picker.middleware(getFcstLengths(res));
+  Picker.route("/getFcstLengths", async function (params, req, res, next) {
+    Picker.middleware(await getFcstLengths(res));
   });
 
   Picker.route(
     `${Meteor.settings.public.proxy_prefix_path}/getFcstLengths`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      Picker.middleware(getFcstLengths(res));
+    async function (params, req, res, next) {
+      Picker.middleware(await getFcstLengths(res));
     }
   );
 
   Picker.route(
     `${Meteor.settings.public.proxy_prefix_path}/:app/getFcstLengths`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      Picker.middleware(getFcstLengths(res));
+    async function (params, req, res, next) {
+      Picker.middleware(await getFcstLengths(res));
     }
   );
 
   // eslint-disable-next-line no-unused-vars
-  Picker.route("/getFcstTypes", function (params, req, res, next) {
-    Picker.middleware(getFcstTypes(res));
+  Picker.route("/getFcstTypes", async function (params, req, res, next) {
+    Picker.middleware(await getFcstTypes(res));
   });
 
   Picker.route(
     `${Meteor.settings.public.proxy_prefix_path}/getFcstTypes`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      Picker.middleware(getFcstTypes(res));
+    async function (params, req, res, next) {
+      Picker.middleware(await getFcstTypes(res));
     }
   );
 
   Picker.route(
     `${Meteor.settings.public.proxy_prefix_path}/:app/getFcstTypes`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      Picker.middleware(getFcstTypes(res));
+    async function (params, req, res, next) {
+      Picker.middleware(await getFcstTypes(res));
     }
   );
 
   // eslint-disable-next-line no-unused-vars
-  Picker.route("/getFcstTypesValuesMap", function (params, req, res, next) {
-    Picker.middleware(getFcstTypesValuesMap(res));
+  Picker.route("/getFcstTypesValuesMap", async function (params, req, res, next) {
+    Picker.middleware(await getFcstTypesValuesMap(res));
   });
 
   Picker.route(
     `${Meteor.settings.public.proxy_prefix_path}/getFcstTypesValuesMap`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      Picker.middleware(getFcstTypesValuesMap(res));
+    async function (params, req, res, next) {
+      Picker.middleware(await getFcstTypesValuesMap(res));
     }
   );
 
   Picker.route(
     `${Meteor.settings.public.proxy_prefix_path}/:app/getFcstTypesValuesMap`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      Picker.middleware(getFcstTypesValuesMap(res));
+    async function (params, req, res, next) {
+      Picker.middleware(await getFcstTypesValuesMap(res));
     }
   );
 
   // eslint-disable-next-line no-unused-vars
-  Picker.route("/getValidTimes", function (params, req, res, next) {
-    Picker.middleware(getValidTimes(res));
+  Picker.route("/getValidTimes", async function (params, req, res, next) {
+    Picker.middleware(await getValidTimes(res));
   });
 
   Picker.route(
     `${Meteor.settings.public.proxy_prefix_path}/getValidTimes`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      Picker.middleware(getValidTimes(res));
+    async function (params, req, res, next) {
+      Picker.middleware(await getValidTimes(res));
     }
   );
 
   Picker.route(
     `${Meteor.settings.public.proxy_prefix_path}/:app/getValidTimes`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      Picker.middleware(getValidTimes(res));
+    async function (params, req, res, next) {
+      Picker.middleware(await getValidTimes(res));
     }
   );
 
   // eslint-disable-next-line no-unused-vars
-  Picker.route("/getLevels", function (params, req, res, next) {
-    Picker.middleware(getLevels(res));
+  Picker.route("/getLevels", async function (params, req, res, next) {
+    Picker.middleware(await getLevels(res));
   });
 
   Picker.route(
     `${Meteor.settings.public.proxy_prefix_path}/getLevels`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      Picker.middleware(getLevels(res));
+    async function (params, req, res, next) {
+      Picker.middleware(await getLevels(res));
     }
   );
 
   Picker.route(
     `${Meteor.settings.public.proxy_prefix_path}/:app/getLevels`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      Picker.middleware(getLevels(res));
+    async function (params, req, res, next) {
+      Picker.middleware(await getLevels(res));
     }
   );
 
   // eslint-disable-next-line no-unused-vars
-  Picker.route("/getDates", function (params, req, res, next) {
-    Picker.middleware(getDates(res));
+  Picker.route("/getDates", async function (params, req, res, next) {
+    Picker.middleware(await getDates(res));
   });
 
   Picker.route(
     `${Meteor.settings.public.proxy_prefix_path}/getDates`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      Picker.middleware(getDates(res));
+    async function (params, req, res, next) {
+      Picker.middleware(await getDates(res));
     }
   );
 
   Picker.route(
     `${Meteor.settings.public.proxy_prefix_path}/:app/getDates`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      Picker.middleware(getDates(res));
+    async function (params, req, res, next) {
+      Picker.middleware(await getDates(res));
     }
   );
 
@@ -3844,8 +3581,6 @@ if (Meteor.isServer) {
 // eslint-disable-next-line no-undef
 export default matsMethods = {
   isThisANaN,
-  addSentAddress,
-  applyAuthorization,
   applyDatabaseSettings,
   applySettingsData,
   deleteSettings,
@@ -3860,11 +3595,9 @@ export default matsMethods = {
   getScorecardInfo,
   getScorecardData,
   getScorecardSettings,
-  getUserAddress,
   insertColor,
   readFunctionFile,
   refreshMetaData,
-  removeAuthorization,
   removeColor,
   removeDatabase,
   resetApp,

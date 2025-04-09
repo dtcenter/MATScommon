@@ -213,7 +213,9 @@ const generateProfilePlotOptions = function (axisMap, errorMax) {
 
   // y-axis options
   let tickVals;
-  if (matsCollections.Settings.findOneAsync({}).appType === matsTypes.AppTypes.metexpress) {
+  if (
+    matsCollections.Settings.findOneAsync({}).appType === matsTypes.AppTypes.metexpress
+  ) {
     tickVals = [1000, 850, 700, 600, 500, 400, 300, 250, 200, 150, 100, 50, 10];
   } else {
     tickVals = [1000, 900, 800, 700, 600, 500, 400, 300, 200, 100];

@@ -681,7 +681,7 @@ Template.scorecardDisplay.events({
 
     const settingsJSON = JSON.stringify(scorecardSettings);
     const key = hash(settingsJSON);
-    matsMethods.saveScorecardSettings.callAsync(
+    matsMethods.saveScorecardSettings.call(
       {
         settingsKey: key,
         scorecardSettings: settingsJSON,

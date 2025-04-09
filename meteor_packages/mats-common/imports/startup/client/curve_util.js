@@ -78,7 +78,7 @@ const setPlotResultData = function () {
 
   if (Session.get("textRefreshNeeded") === true) {
     showSpinner();
-    matsMethods.getPlotResult.callAsync(
+    matsMethods.getPlotResult.call(
       {
         resultKey: Session.get("plotResultKey"),
         pageIndex,
