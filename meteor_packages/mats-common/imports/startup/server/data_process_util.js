@@ -29,9 +29,10 @@ const processDataXYCurve = async function (
   let errorMax = Number.MIN_VALUE;
   const error = "";
 
-  const { appName } = matsCollections.Settings.findOneAsync({});
+  const { appName } = await matsCollections.Settings.findOneAsync({});
   const isMetexpress =
-    matsCollections.Settings.findOneAsync({}).appType === matsTypes.AppTypes.metexpress;
+    (await matsCollections.Settings.findOneAsync({}).appType) ===
+    matsTypes.AppTypes.metexpress;
 
   // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
   if (returnCurveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
@@ -574,9 +575,10 @@ const processDataProfile = async function (
   let errorMax = Number.MIN_VALUE;
   const error = "";
 
-  const { appName } = matsCollections.Settings.findOneAsync({});
+  const { appName } = await matsCollections.Settings.findOneAsync({});
   const isMetexpress =
-    matsCollections.Settings.findOneAsync({}).appType === matsTypes.AppTypes.metexpress;
+    (await matsCollections.Settings.findOneAsync({}).appType) ===
+    matsTypes.AppTypes.metexpress;
 
   // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
   if (returnCurveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
@@ -1030,7 +1032,8 @@ const processDataReliability = async function (
   const error = "";
 
   const isMetexpress =
-    matsCollections.Settings.findOneAsync({}).appType === matsTypes.AppTypes.metexpress;
+    (await matsCollections.Settings.findOneAsync({}).appType) ===
+    matsTypes.AppTypes.metexpress;
 
   // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
   if (returnCurveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
@@ -1206,7 +1209,8 @@ const processDataROC = async function (
   const error = "";
 
   const isMetexpress =
-    matsCollections.Settings.findOneAsync({}).appType === matsTypes.AppTypes.metexpress;
+    (await matsCollections.Settings.findOneAsync({}).appType) ===
+    matsTypes.AppTypes.metexpress;
 
   // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
   if (returnCurveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
@@ -1348,7 +1352,8 @@ const processDataPerformanceDiagram = async function (
   const error = "";
 
   const isMetexpress =
-    matsCollections.Settings.findOneAsync({}).appType === matsTypes.AppTypes.metexpress;
+    (await matsCollections.Settings.findOneAsync({}).appType) ===
+    matsTypes.AppTypes.metexpress;
 
   // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
   if (returnCurveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
@@ -1596,7 +1601,8 @@ const processDataGridScaleProb = async function (
   const error = "";
 
   const isMetexpress =
-    matsCollections.Settings.findOneAsync({}).appType === matsTypes.AppTypes.metexpress;
+    (await matsCollections.Settings.findOneAsync({}).appType) ===
+    matsTypes.AppTypes.metexpress;
 
   // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
   if (returnCurveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
@@ -1708,7 +1714,8 @@ const processDataEnsembleHistogram = async function (
   const error = "";
 
   const isMetexpress =
-    matsCollections.Settings.findOneAsync({}).appType === matsTypes.AppTypes.metexpress;
+    (await matsCollections.Settings.findOneAsync({}).appType) ===
+    matsTypes.AppTypes.metexpress;
 
   // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
   if (returnCurveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
@@ -2265,7 +2272,7 @@ const processDataContour = async function (
   const returnCurveInfoParams = curveInfoParams;
   const returnBookkeepingParams = bookkeepingParams;
   const error = "";
-  const { appName } = matsCollections.Settings.findOneAsync({});
+  const { appName } = await matsCollections.Settings.findOneAsync({});
   const statisticSelect =
     appName.indexOf("anomalycor") !== -1
       ? "ACC"
@@ -2379,7 +2386,8 @@ const processDataSimpleScatter = async function (
   const error = "";
 
   const isMetexpress =
-    matsCollections.Settings.findOneAsync({}).appType === matsTypes.AppTypes.metexpress;
+    (await matsCollections.Settings.findOneAsync({}).appType) ===
+    matsTypes.AppTypes.metexpress;
 
   // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
   if (returnCurveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
