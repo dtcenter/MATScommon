@@ -97,7 +97,7 @@ const checkMetaDataRefresh = async function () {
         if (Meteor.isServer) {
           switch (dbType) {
             case matsTypes.DbTypes.mysql:
-              rows = matsDataQueryUtils.simplePoolQueryWrapSynchronous(
+              [, rows] = await matsDataQueryUtils.queryMySQL(
                 global[poolName],
                 `SELECT UNIX_TIMESTAMP(UPDATE_TIME)` +
                   `    FROM   information_schema.tables` +
@@ -2871,31 +2871,29 @@ const testGetTables = new ValidatedMethod({
       } else {
         // default to mysql so that old apps won't break
         try {
-          const queryWrap = async function (callback) {
-            const connection = mysql.createConnection({
-              host: params.host,
-              port: params.port,
-              user: params.user,
-              password: params.password,
-              database: params.database,
+          const connection = await mysql.createConnection({
+            host: params.host,
+            port: params.port,
+            user: params.user,
+            password: params.password,
+            database: params.database,
+          });
+          const result = await connection.query("show tables;", function (err, res) {
+            if (err || res === undefined) {
+              // return callback(err,null);
+              return null;
+            }
+            const tables = result.map(function (a) {
+              return a;
             });
-            connection.query("show tables;", function (err, result) {
-              if (err || result === undefined) {
-                // return callback(err,null);
-                return callback(err, null);
-              }
-              const tables = result.map(function (a) {
-                return a;
-              });
-              return callback(err, tables);
-            });
-            connection.end(function (err) {
-              if (err) {
-                console.log("testGetTables cannot end connection");
-              }
-            });
-          };
-          return queryWrap();
+            return tables;
+          });
+          await connection.end(function (err) {
+            if (err) {
+              console.log("testGetTables cannot end connection");
+            }
+          });
+          console.log(`MySQL get tables suceeded. result: ${result}`);
         } catch (e) {
           throw new Meteor.Error(e.message);
         }
