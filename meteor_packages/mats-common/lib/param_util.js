@@ -200,12 +200,12 @@ const getElementValues = function () {
     scatterParams: {},
   };
   const axis = ["xaxis-", "yaxis-"];
-  let params = matsCollections.CurveParamsInfo.find({
+  let params = matsCollections.CurveParamsInfo.findOne({
     curve_params: { $exists: true },
-  }).fetch()[0].curve_params;
+  }).curve_params;
   let param;
   for (let pidx = 0; pidx < params.length; pidx += 1) {
-    [param] = matsCollections[params[pidx]].find({}).fetch();
+    param = matsCollections[params[pidx]].findOne({});
     let val = "";
     if (param.type === matsTypes.InputTypes.radioGroup) {
       const selector = `input:radio[name='${param.name}']:checked`;
@@ -319,12 +319,12 @@ const getElementValues = function () {
 };
 
 const expandParams = function () {
-  const params = matsCollections.CurveParamsInfo.find({
+  const params = matsCollections.CurveParamsInfo.findOne({
     curve_params: { $exists: true },
-  }).fetch()[0].curve_params;
+  }).curve_params;
   let param;
   for (let pidx = 0; pidx < params.length; pidx += 1) {
-    [param] = matsCollections[params[pidx]].find({}).fetch();
+    param = matsCollections[params[pidx]].findOne({});
     if (param.type !== matsTypes.InputTypes.selectMap) {
       const selector = `element-${param.name}`;
       const elem = document.getElementById(selector);
@@ -340,12 +340,12 @@ const expandParams = function () {
 };
 
 const collapseParams = function () {
-  const params = matsCollections.CurveParamsInfo.find({
+  const params = matsCollections.CurveParamsInfo.findOne({
     curve_params: { $exists: true },
-  }).fetch()[0].curve_params;
+  }).curve_params;
   let param;
   for (let pidx = 0; pidx < params.length; pidx += 1) {
-    [param] = matsCollections[params[pidx]].find({}).fetch();
+    param = matsCollections[params[pidx]].find({});
     if (param.type !== matsTypes.InputTypes.selectMap) {
       const selector = `element-${param.name}`;
       if (document.getElementById(selector)) {
@@ -470,15 +470,15 @@ const getMinMaxDatesTC = function (minDate, maxDate) {
 
 const setAllParamsToDefault = function () {
   // default the superiors and refresh them so that they cause the dependent options to refresh
-  const paramNames = matsCollections.CurveParamsInfo.find({
+  const paramNames = matsCollections.CurveParamsInfo.findOne({
     curve_params: { $exists: true },
-  }).fetch()[0].curve_params;
+  }).curve_params;
   let params = [];
   const superiors = [];
   const dependents = [];
   // get all of the curve param collections in one place
   for (let pidx = 0; pidx < paramNames.length; pidx += 1) {
-    const param = matsCollections[paramNames[pidx]].find({}).fetch()[0];
+    const param = matsCollections[paramNames[pidx]].findOne({});
     // superiors
     if (param !== undefined && param.dependentNames !== undefined) {
       superiors.push(param);
@@ -610,12 +610,12 @@ const visibilityControllerForParam = function (paramName) {
     If it exists, that param is returned. Otherwise return undefined.
      */
   let found;
-  const params = matsCollections.CurveParamsInfo.find({
+  const params = matsCollections.CurveParamsInfo.findOne({
     curve_params: { $exists: true },
-  }).fetch()[0].curve_params;
+  }).curve_params;
   let param;
   for (let pidx = 0; pidx < params.length; pidx += 1) {
-    [param] = matsCollections[params[pidx]].find({}).fetch();
+    param = matsCollections[params[pidx]].findOne({});
     if (param.hideOtherFor) {
       const pKeys = Object.keys(param.hideOtherFor);
       if (pKeys.indexOf(paramName) !== -1) {
@@ -628,10 +628,10 @@ const visibilityControllerForParam = function (paramName) {
 };
 
 const getMultiSelectCurveParamNames = function () {
-  const curveParamNames = matsCollections.CurveParamsInfo.find(
+  const curveParamNames = matsCollections.CurveParamsInfo.findOne(
     {},
     { curve_params: 1 }
-  ).fetch()[0].curve_params;
+  ).curve_params;
   const multiParamNames = [];
   curveParamNames.forEach(function (paramName) {
     if (getParameterForName(paramName).multiple !== undefined) {
@@ -642,10 +642,10 @@ const getMultiSelectCurveParamNames = function () {
 };
 
 const getSingleSelectCurveParamNames = function () {
-  const curveParamNames = matsCollections.CurveParamsInfo.find(
+  const curveParamNames = matsCollections.CurveParamsInfo.findOne(
     {},
     { curve_params: 1 }
-  ).fetch()[0].curve_params;
+  ).curve_params;
   const multiParamNames = getMultiSelectCurveParamNames();
   const singleParamNames = curveParamNames.filter(function (n) {
     return !multiParamNames.includes(n);
@@ -661,11 +661,11 @@ const getPlotParamNames = function () {
 const addImportedCurve = function () {
   const curves = Session.get("Curves");
   const p = {};
-  const curveParamNames = matsCollections.CurveParamsInfo.find({
+  const curveParamNames = matsCollections.CurveParamsInfo.findOne({
     curve_params: { $exists: true },
-  }).fetch()[0].curve_params;
+  }).curve_params;
   for (let i = 0; i < curveParamNames.length; i += 1) {
-    const currentParam = matsCollections[curveParamNames[i]].find({}).fetch()[0];
+    const currentParam = matsCollections[curveParamNames[i]].findOne({});
     if (
       currentParam.multiple &&
       getValueForParamName(currentParam.name) === matsTypes.InputTypes.unused

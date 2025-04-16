@@ -31,9 +31,9 @@ Template.scorecardParamList.helpers({
   CurveParamGroups() {
     Session.get("lastUpdate");
     const groupNums = [];
-    const params = matsCollections.CurveParamsInfo.find({
+    const params = matsCollections.CurveParamsInfo.findOne({
       curve_params: { $exists: true },
-    }).fetch()[0].curve_params;
+    }).curve_params;
     let param;
     for (let i = 0; i < params.length; i += 1) {
       if (
@@ -129,16 +129,16 @@ Template.scorecardParamList.events({
     const curves = Session.get("Curves");
     const p = {};
     const elems = event.target.valueOf().elements;
-    let curveNames = matsCollections.CurveParamsInfo.find({
+    let curveNames = matsCollections.CurveParamsInfo.findOne({
       curve_params: { $exists: true },
-    }).fetch()[0].curve_params;
+    }).curve_params;
     const dateParamNames = [];
     let param;
     // remove any hidden params (not unused ones  -= 1 unused is a valid state)
     // iterate backwards so that we can splice to remove
     for (let cindex = curveNames.length - 1; cindex >= 0; cindex -= 1) {
       const cname = curveNames[cindex];
-      [param] = matsCollections[cname].find({}).fetch();
+      param = matsCollections[cname].findOne({});
       if (param.type === matsTypes.InputTypes.dateRange) {
         dateParamNames.push(cname);
       }

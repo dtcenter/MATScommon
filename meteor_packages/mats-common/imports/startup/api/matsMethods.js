@@ -21,8 +21,6 @@ import { _ } from "meteor/underscore";
 import { Mongo } from "meteor/mongo";
 import { curveParamsByApp } from "../both/mats-curve-params";
 
-/* global cbPool, cbScorecardPool, cbScorecardSettingsPool, appSpecificResetRoutines */
-
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-console */
 /* eslint-disable global-require */
@@ -108,11 +106,11 @@ const checkMetaDataRefresh = async function () {
               break;
             case matsTypes.DbTypes.couchbase:
               // the tName for couchbase is supposed to be the document id
-              doc = await cbPool.getCB(tName);
+              doc = await global.cbPool.getCB(tName);
               updatedEpoch = doc.updated;
               break;
             default:
-              throw new Meteor.Error("resetApp: undefined DbType");
+              throw new Meteor.Error("reset:app undefined DbType");
           }
         }
         // console.log("DB says metadata for table " + dbName + "." + tName + " was updated at " + updatedEpoch);
@@ -149,7 +147,7 @@ const checkMetaDataRefresh = async function () {
     if (refresh === true) {
       // refresh the app metadata
       // app specific routines
-      for (let ai = 0; ai < appSpecificResetRoutines.length; ai += 1) {
+      for (let ai = 0; ai < global.appSpecificResetRoutines.length; ai += 1) {
         await global.appSpecificResetRoutines[ai]();
       }
       // remember that we updated ALL the metadata tables just now
@@ -184,7 +182,7 @@ const dropThisScorecardInstance = async function (
   processedAt
 ) {
   try {
-    if (cbScorecardPool === undefined) {
+    if (global.cbScorecardPool === undefined) {
       throw new Meteor.Error("dropThisScorecardInstance: No cbScorecardPool defined");
     }
     const statement = `DELETE
@@ -196,7 +194,7 @@ const dropThisScorecardInstance = async function (
                 AND sc.name='${name}'
                 AND sc.processedAt=${processedAt}
                 AND sc.submitted=${submittedTime};`;
-    return cbScorecardPool.queryCB(statement);
+    return global.cbScorecardPool.queryCB(statement);
     // delete this result from the mongo Scorecard collection
   } catch (err) {
     console.log(`dropThisScorecardInstance error : ${err.message}`);
@@ -1454,7 +1452,7 @@ const refreshScorecard = function (params, res) {
     const docId = decodeURIComponent(params.docId);
     // get userName, name, submitted, processedAt from id
     // SC:anonymous -= 1submitted:20230322230435 -= 11block:0:02/19/2023_20_00_-_03/21/2023_20_00
-    if (cbScorecardPool === undefined) {
+    if (global.cbScorecardPool === undefined) {
       throw new Meteor.Error("getScorecardData: No cbScorecardPool defined");
     }
     const statement = `SELECT sc.*
@@ -1462,7 +1460,7 @@ const refreshScorecard = function (params, res) {
                     vxdata._default.SCORECARD sc
                 WHERE
                     sc.id='${docId}';`;
-    cbScorecardPool
+    global.cbScorecardPool
       .queryCB(statement)
       .then(async (result) => {
         // insert this result into the mongo Scorecard collection - createdAt is used for TTL
@@ -1730,7 +1728,7 @@ const writeSettings = function (settings, appName) {
 // return the scorecard for the provided selectors
 const getThisScorecardData = async function (userName, name, submitted, processedAt) {
   try {
-    if (cbScorecardPool === undefined) {
+    if (global.cbScorecardPool === undefined) {
       throw new Meteor.Error("getThisScorecardData: No cbScorecardPool defined");
     }
     const statement = `SELECT sc.*
@@ -1742,7 +1740,7 @@ const getThisScorecardData = async function (userName, name, submitted, processe
                 AND sc.name='${name}'
                 AND sc.processedAt=${processedAt}
                 AND sc.submitted=${submitted};`;
-    const result = await cbScorecardPool.queryCBWithConsistency(statement);
+    const result = await global.cbScorecardPool.queryCBWithConsistency(statement);
     if (typeof result === "string" && result.indexOf("ERROR")) {
       throw new Meteor.Error(result);
     }
@@ -1786,7 +1784,7 @@ const getThisScorecardData = async function (userName, name, submitted, processe
 // return the scorecard status information from the couchbase database
 const getThisScorecardInfo = async function () {
   try {
-    if (cbScorecardPool === undefined) {
+    if (global.cbScorecardPool === undefined) {
       throw new Meteor.Error("getThisScorecardInfo: No cbScorecardPool defined");
     }
 
@@ -1802,7 +1800,7 @@ const getThisScorecardInfo = async function () {
             vxdata._default.SCORECARD sc
             WHERE
             sc.type='SC';`;
-    const result = await cbScorecardPool.queryCBWithConsistency(statement);
+    const result = await global.cbScorecardPool.queryCBWithConsistency(statement);
     const scMap = {};
     result.forEach(function (elem) {
       if (!Object.keys(scMap).includes(elem.userName)) {
@@ -1839,7 +1837,7 @@ const getThesePlotParamsFromScorecardInstance = async function (
   processedAt
 ) {
   try {
-    if (cbScorecardPool === undefined) {
+    if (global.cbScorecardPool === undefined) {
       throw new Meteor.Error(
         "getThesePlotParamsFromScorecardInstance: No cbScorecardPool defined"
       );
@@ -1853,7 +1851,7 @@ const getThesePlotParamsFromScorecardInstance = async function (
                 AND sc.name='${name}'
                 AND sc.processedAt=${processedAt}
                 AND sc.submitted=${submitted};`;
-    const result = await cbScorecardPool.queryCBWithConsistency(statement);
+    const result = await global.cbScorecardPool.queryCBWithConsistency(statement);
     if (typeof result === "string" && result.indexOf("ERROR")) {
       throw new Meteor.Error(result);
     }
@@ -2118,8 +2116,7 @@ const getScorecardSettings = new ValidatedMethod({
     if (Meteor.isServer) {
       const key = params.settingsKey;
       try {
-        // global cbScorecardSettingsPool
-        const rv = await cbScorecardSettingsPool.getCB(key);
+        const rv = await global.cbScorecardSettingsPool.getCB(key);
         return { scorecardSettings: rv.content };
       } catch (error) {
         throw new Meteor.Error(
@@ -2641,7 +2638,7 @@ const resetApp = async function (appRef) {
         }
       }
     } else {
-      throw new Meteor.Error("Server error: ", "resetApp: bad pool-database entry");
+      throw new Meteor.Error("Server error: ", "reset:app bad pool-database entry");
     }
     // invoke the standard common routines
     await matsCollections.Roles.removeAsync({});
@@ -2696,7 +2693,7 @@ const resetApp = async function (appRef) {
       }
     }
     // invoke the app specific routines
-    for (let ai = 0; ai < appSpecificResetRoutines.length; ai += 1) {
+    for (let ai = 0; ai < global.appSpecificResetRoutines.length; ai += 1) {
       await global.appSpecificResetRoutines[ai]();
     }
     matsCache.clear();
@@ -2773,13 +2770,12 @@ const saveScorecardSettings = new ValidatedMethod({
             2
           )}`
         );
-        // global cbScorecardSettingsPool
         (async function (id, doc) {
-          cbScorecardSettingsPool.upsertCB(id, doc);
+          global.cbScorecardSettingsPool.upsertCB(id, doc);
         })(key, scorecardSettings).then(() => {
           console.log("upserted doc with id", key);
         });
-        // await cbScorecardSettingsPool.upsertCB(settingsKey, scorecardSettings);
+        // await global.cbScorecardSettingsPool.upsertCB(settingsKey, scorecardSettings);
       } catch (err) {
         console.log(`error writing scorecard to database: ${err.message}`);
       }
@@ -2989,7 +2985,7 @@ if (Meteor.isServer) {
   );
 
   router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/app:/getCSV/:key`,
+    `${Meteor.settings.public.proxy_prefix_path}/:app/getCSV/:key`,
     // eslint-disable-next-line no-unused-vars
     function (params, req, res, next) {
       getCSV(params, res);
@@ -3037,7 +3033,7 @@ if (Meteor.isServer) {
   );
 
   router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/app:/getJSON/:key`,
+    `${Meteor.settings.public.proxy_prefix_path}/:app/getJSON/:key`,
     // eslint-disable-next-line no-unused-vars
     function (params, req, res, next) {
       getJSON(params, res);

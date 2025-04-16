@@ -245,15 +245,15 @@ const restoreSettings = function (p) {
     matsParamUtils.setInputForParamName(plotParam.name, val);
   });
 
-  const paramNames = matsCollections.CurveParamsInfo.find({
+  const paramNames = matsCollections.CurveParamsInfo.findOne({
     curve_params: { $exists: true },
-  }).fetch()[0].curve_params;
+  }).curve_params;
   params = [];
   const superiors = [];
   const dependents = [];
   // get all of the curve param collections in one place
   for (let pidx = 0; pidx < paramNames.length; pidx += 1) {
-    const param = matsCollections[paramNames[pidx]].find({}).fetch()[0];
+    const param = matsCollections[paramNames[pidx]].findOne({});
     // superiors
     if (param.dependentNames !== undefined) {
       superiors.push(param);

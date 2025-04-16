@@ -10,7 +10,6 @@ import { Meteor } from "meteor/meteor";
 import { curveParamsByApp } from "./mats-curve-params";
 
 /* eslint-disable no-console */
-
 const params = curveParamsByApp[Meteor.settings.public.app];
 if (!params) {
   console.log(

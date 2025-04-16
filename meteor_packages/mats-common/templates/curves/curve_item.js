@@ -118,15 +118,15 @@ const setParamsToAxis = function (newAxis, currentParams) {
   // set param values to this curve
   // reset the form parameters for the superiors first
   let currentParamName;
-  const paramNames = matsCollections.CurveParamsInfo.find({
+  const paramNames = matsCollections.CurveParamsInfo.findOne({
     curve_params: { $exists: true },
-  }).fetch()[0].curve_params;
+  }).curve_params;
   let params = [];
   const superiors = [];
   const dependents = [];
   // get all of the curve param collections in one place
   for (let pidx = 0; pidx < paramNames.length; pidx += 1) {
-    const param = matsCollections[paramNames[pidx]].find({}).fetch()[0];
+    const param = matsCollections[paramNames[pidx]].findOne({});
     // superiors
     if (param.dependentNames !== undefined) {
       superiors.push(param);
@@ -344,15 +344,15 @@ Template.curveItem.events({
     const currentParams = jQuery.extend({}, this);
     // set param values to this curve
     // reset the form parameters for the superiors first
-    const paramNames = matsCollections.CurveParamsInfo.find({
+    const paramNames = matsCollections.CurveParamsInfo.findOne({
       curve_params: { $exists: true },
-    }).fetch()[0].curve_params;
+    }).curve_params;
     let params = [];
     const superiors = [];
     const hidden = [];
     // get all of the curve param collections in one place
     for (let pidx = 0; pidx < paramNames.length; pidx += 1) {
-      const param = matsCollections[paramNames[pidx]].find({}).fetch()[0];
+      const param = matsCollections[paramNames[pidx]].findOne({});
       // superiors
       if (param.dependentNames !== undefined) {
         superiors.push(param);

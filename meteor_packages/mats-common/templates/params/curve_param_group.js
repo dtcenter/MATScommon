@@ -47,9 +47,9 @@ const filterParams = function (params) {
 };
 
 const getParams = function (num) {
-  const paramNames = matsCollections.CurveParamsInfo.find({
+  const paramNames = matsCollections.CurveParamsInfo.findOne({
     curve_params: { $exists: true },
-  }).fetch()[0].curve_params;
+  }).curve_params;
   const paramMap = {};
   let params = [];
   let param;
