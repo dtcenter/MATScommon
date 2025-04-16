@@ -50,10 +50,7 @@ Package.onUse(function (api) {
   api.use("service-configuration", "server");
   api.use("yasinuslu:json-view", "client");
   api.use("mdg:validated-method");
-  api.use("session");
-  api.imply("session");
   api.use("twbs:bootstrap");
-  api.use("differential:event-hooks");
   api.use("risul:bootstrap-colorpicker");
   api.use("logging");
   api.use("reload");
@@ -61,7 +58,6 @@ Package.onUse(function (api) {
   api.use("ejson");
   api.use("spacebars");
   api.use("check");
-  api.use("ostrio:flow-router-extra");
   api.use("momentjs:moment");
   api.use("pcel:mysql");
   api.use("reactive-var");
