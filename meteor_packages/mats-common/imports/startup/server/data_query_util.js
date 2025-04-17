@@ -17,26 +17,9 @@ import { _ } from "meteor/underscore";
 
 // utility for querying the DB
 const queryMySQL = async function (pool, statement) {
-  /*
-     simple synchronous query of statement to the specified pool.
-     params :
-     pool - a predefined db pool (usually defined in main.js). i.e. wfip2Pool = mysql.createPool(wfip2Settings);
-     statement - String - a valid sql statement
-     actions - queries database and will wait until query returns.
-     return: rowset - an array of rows
-     throws: error
-     */
   if (Meteor.isServer) {
-    try {
-      // eslint-disable-next-line global-require
-      const result = await pool.query(statement, function (err, rows) {
-        return [err, rows];
-      });
-      return result;
-    } catch (err) {
-      console.log(`matsDataQueryUtils.queryMySQL ERROR: ${err.message}`);
-      throw new Error(`matsDataQueryUtils.queryMySQ ERROR: ${err.message}`);
-    }
+    const results = await pool.query(statement);
+    return results[0];
   }
   return null;
 };
@@ -66,7 +49,7 @@ const getModelCadence = async function (pool, dataSource, startDate, endDate) {
         : undefined;
     } else {
       // we will default to mysql so old apps won't break
-      [, rows] = queryMySQL(
+      rows = await queryMySQL(
         pool,
         `select cycle_seconds ` +
           `from mats_common.primary_model_orders ` +

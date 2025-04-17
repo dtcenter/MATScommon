@@ -32,6 +32,7 @@ Package.onUse(function (api) {
     "node-file-cache": "1.0.2",
     "python-shell": "5.0.0",
     couchbase: "4.4.5",
+    mysql2: "3.14.0",
     "vanillajs-datepicker": "1.3.4",
     daterangepicker: "3.1.0",
     "lighten-darken-color": "1.0.0",
@@ -59,7 +60,6 @@ Package.onUse(function (api) {
   api.use("spacebars");
   api.use("check");
   api.use("momentjs:moment");
-  api.use("pcel:mysql");
   api.use("reactive-var");
   api.use("jkuester:http");
   api.use("aldeed:simple-schema");

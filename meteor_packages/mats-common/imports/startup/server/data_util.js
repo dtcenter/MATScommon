@@ -227,54 +227,18 @@ const getDateRange = function (dateRange) {
   };
 };
 
-// function to manage authorized logins for MATS
-const doAuthorization = function () {
-  if (
-    matsCollections.Settings.findOneAsync({}) === undefined ||
-    matsCollections.Settings.findOneAsync({}).resetFromCode === undefined ||
-    matsCollections.Settings.findOneAsync({}).resetFromCode === true
-  ) {
-    matsCollections.Authorization.removeAsync({});
-  }
-  if (matsCollections.Authorization.find().countAsync() === 0) {
-    matsCollections.Authorization.insertAsync({
-      email: "randy.pierce@noaa.gov",
-      roles: ["administrator"],
-    });
-    matsCollections.Authorization.insertAsync({
-      email: "kirk.l.holub@noaa.gov",
-      roles: ["administrator"],
-    });
-    matsCollections.Authorization.insertAsync({
-      email: "jeffrey.a.hamilton@noaa.gov",
-      roles: ["administrator"],
-    });
-    matsCollections.Authorization.insertAsync({
-      email: "bonny.strong@noaa.gov",
-      roles: ["administrator"],
-    });
-    matsCollections.Authorization.insertAsync({
-      email: "molly.b.smith@noaa.gov",
-      roles: ["administrator"],
-    });
-    matsCollections.Authorization.insertAsync({
-      email: "mats.gsd@noaa.gov",
-      roles: ["administrator"],
-    });
-  }
-};
-
 // master list of colors for MATS curves
-const doColorScheme = function () {
+const doColorScheme = async function () {
+  const settings = await matsCollections.Settings.findOneAsync({});
   if (
-    matsCollections.Settings.findOneAsync({}) === undefined ||
-    matsCollections.Settings.findOneAsync({}).resetFromCode === undefined ||
-    matsCollections.Settings.findOneAsync({}).resetFromCode === true
+    settings === undefined ||
+    settings.resetFromCode === undefined ||
+    settings.resetFromCode === true
   ) {
-    matsCollections.ColorScheme.removeAsync({});
+    await matsCollections.ColorScheme.removeAsync({});
   }
-  if (matsCollections.ColorScheme.find().countAsync() === 0) {
-    matsCollections.ColorScheme.insertAsync({
+  if ((await matsCollections.ColorScheme.find().countAsync()) === 0) {
+    await matsCollections.ColorScheme.insertAsync({
       colors: [
         "rgb(255,0,0)",
         "rgb(0,0,255)",
@@ -290,25 +254,8 @@ const doColorScheme = function () {
   }
 };
 
-// another utility to assist at logging into MATS
-const doRoles = function () {
-  if (
-    matsCollections.Settings.findOneAsync({}) === undefined ||
-    matsCollections.Settings.findOneAsync({}).resetFromCode === undefined ||
-    matsCollections.Settings.findOneAsync({}).resetFromCode === true
-  ) {
-    matsCollections.Roles.removeAsync({});
-  }
-  if (matsCollections.Roles.find().countAsync() === 0) {
-    matsCollections.Roles.insertAsync({
-      name: "administrator",
-      description: "administrator privileges",
-    });
-  }
-};
-
 // for use in matsMethods.resetApp() to establish default settings
-const doSettings = function (
+const doSettings = async function (
   title,
   dbType,
   version,
@@ -327,15 +274,16 @@ const doSettings = function (
   appMessage,
   scorecard
 ) {
+  let settings = await matsCollections.Settings.findOneAsync({});
   if (
-    matsCollections.Settings.findOneAsync({}) === undefined ||
-    matsCollections.Settings.findOneAsync({}).resetFromCode === undefined ||
-    matsCollections.Settings.findOneAsync({}).resetFromCode === true
+    settings === undefined ||
+    settings.resetFromCode === undefined ||
+    settings.resetFromCode === true
   ) {
-    matsCollections.Settings.removeAsync({});
+    await matsCollections.Settings.removeAsync({});
   }
-  if (matsCollections.Settings.find().countAsync() === 0) {
-    matsCollections.Settings.insertAsync({
+  if ((await matsCollections.Settings.find().countAsync()) === 0) {
+    await matsCollections.Settings.insertAsync({
       LabelPrefix: scorecard ? "Block" : "Curve",
       Title: title,
       dbType,
@@ -359,13 +307,13 @@ const doSettings = function (
     });
   }
   // always update the version, roles, and the hostname, not just if it doesn't exist...
-  const settings = matsCollections.Settings.findOneAsync({});
+  settings = await matsCollections.Settings.findOneAsync({});
   const settingsId = settings._id;
   const os = Npm.require("os");
   const hostname = os.hostname().split(".")[0];
   settings.appVersion = version;
   settings.hostname = hostname;
-  matsCollections.Settings.updateAsync(settingsId, { $set: settings });
+  await matsCollections.Settings.updateAsync(settingsId, { $set: settings });
 };
 
 const callMetadataAPI = function (
@@ -2151,9 +2099,7 @@ export default matsDataUtils = {
   dateConvert,
   getDateRange,
   secsConvert,
-  doAuthorization,
   doColorScheme,
-  doRoles,
   doSettings,
   callMetadataAPI,
   calculateStatCTC,

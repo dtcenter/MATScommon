@@ -15,10 +15,10 @@ import {
   matsTypes,
   versionInfo,
 } from "meteor/randyp:mats-common";
-import { mysql } from "meteor/pcel:mysql";
 import { moment } from "meteor/momentjs:moment";
 import { _ } from "meteor/underscore";
 import { Mongo } from "meteor/mongo";
+import mysql from "mysql2/promise";
 import { curveParamsByApp } from "../both/mats-curve-params";
 
 /* eslint-disable no-await-in-loop */
@@ -95,7 +95,7 @@ const checkMetaDataRefresh = async function () {
         if (Meteor.isServer) {
           switch (dbType) {
             case matsTypes.DbTypes.mysql:
-              [, rows] = await matsDataQueryUtils.queryMySQL(
+              rows = await matsDataQueryUtils.queryMySQL(
                 global[poolName],
                 `SELECT UNIX_TIMESTAMP(UPDATE_TIME)` +
                   `    FROM   information_schema.tables` +
@@ -1426,13 +1426,13 @@ const getJSON = function (params, res) {
 };
 
 // private define a middleware for refreshing the metadata
-const refreshMetadataMWltData = function (res) {
+const refreshMetadataMWltData = async function (res) {
   if (Meteor.isServer) {
     console.log("Server route asked to refresh metadata");
 
     try {
       console.log("GUI asked to refresh metadata");
-      checkMetaDataRefresh();
+      await checkMetaDataRefresh();
     } catch (e) {
       console.log(e);
       res.end(
@@ -2349,7 +2349,7 @@ const refreshMetaData = new ValidatedMethod({
     if (Meteor.isServer) {
       try {
         // console.log("GUI asked to refresh metadata");
-        checkMetaDataRefresh();
+        await checkMetaDataRefresh();
       } catch (e) {
         console.log(e);
         throw new Meteor.Error("Server error: ", e.message);
@@ -2566,11 +2566,8 @@ const resetApp = async function (appRef) {
         try {
           if (dbType !== matsTypes.DbTypes.couchbase) {
             // default to mysql so that old apps won't break
-            global[poolName].on("connection", function (connection) {
-              connection.query("set group_concat_max_len = 4294967295");
-              connection.query(`set session wait_timeout = ${appTimeOut}`);
-              // ("opening new " + poolName + " connection");
-            });
+            await global[poolName].query("set group_concat_max_len = 4294967295");
+            await global[poolName].query(`set session wait_timeout = ${appTimeOut}`);
           }
           // connections all work so make sure that Meteor.settings.public.undefinedRoles is undefined
           delete Meteor.settings.public.undefinedRoles;
@@ -2641,13 +2638,11 @@ const resetApp = async function (appRef) {
       throw new Meteor.Error("Server error: ", "reset:app bad pool-database entry");
     }
     // invoke the standard common routines
-    await matsCollections.Roles.removeAsync({});
-    matsDataUtils.doRoles();
     await matsCollections.PlotGraphFunctions.removeAsync({});
     await matsCollections.ColorScheme.removeAsync({});
-    matsDataUtils.doColorScheme();
+    await matsDataUtils.doColorScheme();
     await matsCollections.Settings.removeAsync({});
-    matsDataUtils.doSettings(
+    await matsDataUtils.doSettings(
       appTitle,
       dbType,
       appVersion,
@@ -3595,16 +3590,16 @@ if (Meteor.isServer) {
 
   // create picker routes for refreshMetaData
   // eslint-disable-next-line no-unused-vars
-  router.use("/refreshMetadata", function (params, req, res, next) {
-    refreshMetadataMWltData(res);
+  router.use("/refreshMetadata", async function (params, req, res, next) {
+    await refreshMetadataMWltData(res);
     next();
   });
 
   router.use(
     `${Meteor.settings.public.proxy_prefix_path}/refreshMetadata`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      refreshMetadataMWltData(res);
+    async function (params, req, res, next) {
+      await refreshMetadataMWltData(res);
       next();
     }
   );
@@ -3612,8 +3607,8 @@ if (Meteor.isServer) {
   router.use(
     `${Meteor.settings.public.proxy_prefix_path}/:app/refreshMetadata`,
     // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      refreshMetadataMWltData(res);
+    async function (params, req, res, next) {
+      await refreshMetadataMWltData(res);
       next();
     }
   );
