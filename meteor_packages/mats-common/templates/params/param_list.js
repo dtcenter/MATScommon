@@ -85,13 +85,15 @@ Template.paramList.events({
   "click .reset"(event) {
     event.preventDefault();
     Session.set("paramWellColor", "#ffffff");
-    // eslint-disable-next-line no-unused-vars
-    matsMethods.refreshMetaData.callAsync({}, function (error, result) {
-      if (error !== undefined) {
-        setError(new Error(error.message));
-      }
-      matsParamUtils.setAllParamsToDefault();
-    });
+    matsMethods.refreshMetaData
+      // eslint-disable-next-line no-unused-vars
+      .callAsync({}, function (error, result) {
+        if (error !== undefined) {
+          setError(new Error(error.message));
+        }
+        matsParamUtils.setAllParamsToDefault();
+      })
+      .then();
   },
   "click .expand"() {
     matsParamUtils.expandParams();

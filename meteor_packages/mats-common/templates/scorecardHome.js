@@ -35,12 +35,14 @@ Template.scorecardHome.helpers({
     );
   },
   resetDefaults() {
-    matsMethods.refreshMetaData.callAsync({}, function (error) {
-      if (error !== undefined) {
-        setError(new Error(error.message));
-      }
-      matsParamUtils.setAllParamsToDefault();
-    });
+    matsMethods.refreshMetaData
+      .callAsync({}, function (error) {
+        if (error !== undefined) {
+          setError(new Error(error.message));
+        }
+        matsParamUtils.setAllParamsToDefault();
+      })
+      .then();
   },
   title() {
     if (
@@ -90,13 +92,15 @@ Template.scorecardHome.events({
     datepicker.show();
   },
   "click #display-status"() {
-    matsMethods.getScorecardInfo.callAsync(function (error, ret) {
-      if (error !== undefined) {
-        setError(error);
-      } else {
-        Session.set("updateStatusPage", ret);
-      }
-    });
+    matsMethods.getScorecardInfo
+      .callAsync(function (error, ret) {
+        if (error !== undefined) {
+          setError(error);
+        } else {
+          Session.set("updateStatusPage", ret);
+        }
+      })
+      .then();
     matsGraphUtils.setScorecardDisplayView();
   },
   "click #scorecard-schedule-mode-radioGroup-recurring"() {

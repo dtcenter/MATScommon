@@ -24,13 +24,15 @@ function toggleDisplay(divId) {
 
 function refreshPage() {
   // refresh the page
-  matsMethods.getScorecardInfo.callAsync(function (error, ret) {
-    if (error !== undefined) {
-      setError(error);
-    } else {
-      Session.set("updateStatusPage", ret);
-    }
-  });
+  matsMethods.getScorecardInfo
+    .callAsync(function (error, ret) {
+      if (error !== undefined) {
+        setError(error);
+      } else {
+        Session.set("updateStatusPage", ret);
+      }
+    })
+    .then();
 }
 
 Template.scorecardStatusPage.onCreated = function () {
@@ -153,22 +155,24 @@ Template.scorecardStatusPage.events({
     const submitted = event.currentTarget.dataset.submit_time;
     const processedAt = event.currentTarget.dataset.run_time;
 
-    matsMethods.dropScorecardInstance.callAsync(
-      {
-        userName,
-        name,
-        submitted,
-        processedAt,
-      },
-      function (error) {
-        if (error !== undefined) {
-          setError(error);
-        } else {
-          // refresh the page
-          refreshPage();
+    matsMethods.dropScorecardInstance
+      .callAsync(
+        {
+          userName,
+          name,
+          submitted,
+          processedAt,
+        },
+        function (error) {
+          if (error !== undefined) {
+            setError(error);
+          } else {
+            // refresh the page
+            refreshPage();
+          }
         }
-      }
-    );
+      )
+      .then();
   },
   "click .restore-sc-instance"(event) {
     const userName = event.currentTarget.dataset.user_name;
@@ -176,30 +180,32 @@ Template.scorecardStatusPage.events({
     const submitted = event.currentTarget.dataset.submit_time;
     const processedAt = event.currentTarget.dataset.run_time;
 
-    matsMethods.getPlotParamsFromScorecardInstance.callAsync(
-      {
-        userName,
-        name,
-        submitted,
-        processedAt,
-      },
-      function (error, ret) {
-        if (error !== undefined) {
-          setError(error);
-        } else {
-          const plotParams = ret;
-          matsPlotUtils.enableActionButtons();
-          matsGraphUtils.setDefaultView();
-          matsCurveUtils.resetPlotResultData();
-          const p = { data: {} };
-          p.data = plotParams.plotParams;
-          p.data.paramData = {};
-          p.data.paramData.curveParams = plotParams.plotParams.curves;
-          p.data.paramData.plotParams = plotParams.plotParams;
-          matsPlotUtils.restoreSettings(p);
+    matsMethods.getPlotParamsFromScorecardInstance
+      .callAsync(
+        {
+          userName,
+          name,
+          submitted,
+          processedAt,
+        },
+        function (error, ret) {
+          if (error !== undefined) {
+            setError(error);
+          } else {
+            const plotParams = ret;
+            matsPlotUtils.enableActionButtons();
+            matsGraphUtils.setDefaultView();
+            matsCurveUtils.resetPlotResultData();
+            const p = { data: {} };
+            p.data = plotParams.plotParams;
+            p.data.paramData = {};
+            p.data.paramData.curveParams = plotParams.plotParams.curves;
+            p.data.paramData.plotParams = plotParams.plotParams;
+            matsPlotUtils.restoreSettings(p);
+          }
         }
-      }
-    );
+      )
+      .then();
     return false;
   },
 });

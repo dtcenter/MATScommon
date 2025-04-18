@@ -570,13 +570,10 @@ Template.graph.helpers({
         }
         plotType = Session.get("plotType");
       }
-      let curveText;
       if (plotType === matsTypes.PlotTypes.profile) {
-        curveText = matsPlotUtils.getCurveTextWrapping(plotType, this).then();
-      } else {
-        curveText = matsPlotUtils.getCurveText(plotType, this).then();
+        return matsPlotUtils.getCurveTextWrapping(plotType, this).then();
       }
-      return curveText;
+      return matsPlotUtils.getCurveText(plotType, this).then();
     }
     return `${this.label}:  Difference`;
   },
@@ -1388,19 +1385,21 @@ Template.graph.events({
     // capture the layout
     const { layout } = $("#placeholder")[0];
     const key = Session.get("plotResultKey");
-    matsMethods.saveLayout.callAsync(
-      {
-        resultKey: key,
-        layout,
-        curveOpsUpdate: { curveOpsUpdate },
-        annotation,
-      },
-      function (error) {
-        if (error !== undefined) {
-          setError(error);
+    matsMethods.saveLayout
+      .callAsync(
+        {
+          resultKey: key,
+          layout,
+          curveOpsUpdate: { curveOpsUpdate },
+          annotation,
+        },
+        function (error) {
+          if (error !== undefined) {
+            setError(error);
+          }
         }
-      }
-    );
+      )
+      .then();
     // open a new window with a standAlone graph of the current graph
     const plotType = Session.get("plotType");
     let h;

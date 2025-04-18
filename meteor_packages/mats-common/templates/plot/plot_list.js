@@ -157,11 +157,13 @@ Template.plotList.events({
   "click .delete-selected"() {
     const deleteThis = document.getElementById("save_to").value;
     if (deleteThis !== undefined && deleteThis !== "") {
-      matsMethods.deleteSettings.callAsync({ name: deleteThis }, function (error) {
-        if (error) {
-          setError(new Error(error.message));
-        }
-      });
+      matsMethods.deleteSettings
+        .callAsync({ name: deleteThis }, function (error) {
+          if (error) {
+            setError(new Error(error.message));
+          }
+        })
+        .then();
     }
   },
 
@@ -178,7 +180,7 @@ Template.plotList.events({
   "click .restore-from-public"() {
     document.getElementById("restore_from_private").value = "";
   },
-  async "click .submit-params"(event) {
+  "click .submit-params"(event) {
     const plotAction = Session.get("plotParameter");
     Session.set("spinner_img", "spinner.gif");
     document.getElementById("spinner").style.display = "block";
@@ -322,13 +324,15 @@ Template.plotList.events({
         p = Session.get("PlotParams");
         paramData = matsParamUtils.getElementValues();
         p.paramData = paramData;
-        matsMethods.saveSettings.callAsync({ saveAs, p, permission }, function (error) {
-          if (error) {
-            setError(
-              new Error(`matsMethods.saveSettings from plot_list.js ${error.message}`)
-            );
-          }
-        });
+        matsMethods.saveSettings
+          .callAsync({ saveAs, p, permission }, function (error) {
+            if (error) {
+              setError(
+                new Error(`matsMethods.saveSettings from plot_list.js ${error.message}`)
+              );
+            }
+          })
+          .then();
 
         document.getElementById("save_as").value = "";
         document.getElementById("save_to").value = "";
@@ -382,9 +386,8 @@ Template.plotList.events({
         console.log("prior to getGraphData call time:", new Date());
         // the following line converts a null expireKey to false.
         expireKey = Session.get("expireKey") === true;
-        await matsMethods.getGraphData.callAsync(
-          { plotParams: p, plotType: pt, expireKey },
-          function (error, ret) {
+        matsMethods.getGraphData
+          .callAsync({ plotParams: p, plotType: pt, expireKey }, function (error, ret) {
             if (error !== undefined) {
               // setError(new Error("matsMethods.getGraphData from plot_list.js : error: " + error ));
               setError(error);
@@ -416,8 +419,8 @@ Template.plotList.events({
               graphFunction
             );
             return null;
-          }
-        );
+          })
+          .then();
         break;
       case "displayScorecardStatusPage":
         pt = matsPlotUtils.getPlotType();
@@ -471,9 +474,8 @@ Template.plotList.events({
         p[
           "scorecard-name"
         ] = `${p.userName}--submitted:${submitTime}--${p.curves.length}block`;
-        await matsMethods.getGraphData.callAsync(
-          { plotParams: p, plotType: pt, expireKey },
-          function (error, ret) {
+        matsMethods.getGraphData
+          .callAsync({ plotParams: p, plotType: pt, expireKey }, function (error, ret) {
             if (error !== undefined) {
               // setError(new Error("matsMethods.getGraphData from plot_list.js : error: " + error ));
               setError(error);
@@ -495,8 +497,8 @@ Template.plotList.events({
             );
             matsGraphUtils.setScorecardDisplayView(pt);
             return null;
-          }
-        );
+          })
+          .then();
         break;
       default:
         break;
@@ -517,31 +519,33 @@ Template.plotList.onRendered(function () {
     matsParamUtils.setAllParamsToDefault();
 
     // get the params from the scorecard settings
-    matsMethods.getScorecardSettings.callAsync(
-      { settingsKey: Session.get("scorecardTimeseriesKey") },
-      function (error, ret) {
-        if (error !== undefined) {
-          if (error.message.includes("DocumentNotFoundError")) {
-            setInfo(
-              "INFO: No scorecard parameters found for this ID. " +
-                "Your URL may have expired. " +
-                "They only last for eight hours after a scorecard cell is clicked."
-            );
-          } else {
-            setError(error);
+    matsMethods.getScorecardSettings
+      .callAsync(
+        { settingsKey: Session.get("scorecardTimeseriesKey") },
+        function (error, ret) {
+          if (error !== undefined) {
+            if (error.message.includes("DocumentNotFoundError")) {
+              setInfo(
+                "INFO: No scorecard parameters found for this ID. " +
+                  "Your URL may have expired. " +
+                  "They only last for eight hours after a scorecard cell is clicked."
+              );
+            } else {
+              setError(error);
+            }
+            return false;
           }
-          return false;
-        }
-        const settingsJSON = ret.scorecardSettings;
-        const parsedSettings = JSON.parse(settingsJSON);
-        const commonParams = parsedSettings.commonCurveParams;
-        const commonParamKeys = Object.keys(commonParams);
+          const settingsJSON = ret.scorecardSettings;
+          const parsedSettings = JSON.parse(settingsJSON);
+          const commonParams = parsedSettings.commonCurveParams;
+          const commonParamKeys = Object.keys(commonParams);
 
-        // add the curves from the scorecard settings and then plot
-        addCurvesAndPlot(parsedSettings, commonParamKeys, commonParams).then();
-        return null;
-      }
-    );
+          // add the curves from the scorecard settings and then plot
+          addCurvesAndPlot(parsedSettings, commonParamKeys, commonParams).then();
+          return null;
+        }
+      )
+      .then();
   } else {
     // need to display correct selectors on page load if default plot type is not timeseries
     const plotType = matsPlotUtils.getPlotType();

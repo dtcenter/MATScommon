@@ -67,8 +67,7 @@ Template.curveItem.helpers({
       if (this.region) {
         [this.regionName] = this.region.split(" ");
       }
-      const curveText = matsPlotUtils.getCurveText(plotType, this).then();
-      return curveText;
+      return matsPlotUtils.getCurveText(plotType, this).then();
     }
     return `${this.label}:  Difference`;
   },
