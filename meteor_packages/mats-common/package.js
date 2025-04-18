@@ -65,6 +65,7 @@ Package.onUse(function (api) {
   api.use("reactive-var");
   api.use("jkuester:http");
   api.use("aldeed:simple-schema");
+  api.use("accounts-password");
 
   // modules
   api.export("matsCollections", ["client", "server"]);

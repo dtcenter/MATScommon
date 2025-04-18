@@ -71,10 +71,8 @@ const checkMetaDataRefresh = async function () {
      */
   let refresh = false;
   const tableUpdates = await metaDataTableUpdates.find({}).fetchAsync();
-  const dbType =
-    (await matsCollections.Settings.findOneAsync()) !== undefined
-      ? await matsCollections.Settings.findOneAsync().dbType
-      : matsTypes.DbTypes.mysql;
+  const settings = await matsCollections.Settings.findOneAsync();
+  const dbType = settings !== undefined ? settings.dbType : matsTypes.DbTypes.mysql;
   for (let tui = 0; tui < tableUpdates.length; tui += 1) {
     const id = tableUpdates[tui]._id;
     const poolName = tableUpdates[tui].pool;
@@ -2801,7 +2799,7 @@ const saveSettings = new ValidatedMethod({
         owner: !Meteor.userId() ? "anonymous" : Meteor.userId(),
         permission: params.permission,
         savedAt: new Date(),
-        savedBy: !Meteor.user() ? "anonymous" : user,
+        savedBy: !(await Meteor.userAsync()) ? "anonymous" : user,
       }
     );
   },
