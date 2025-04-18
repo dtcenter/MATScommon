@@ -58,6 +58,7 @@ Package.onUse(function (api) {
   api.use("random");
   api.use("ejson");
   api.use("session");
+  api.imply("session");
   api.use("webapp");
   api.use("spacebars");
   api.use("check");

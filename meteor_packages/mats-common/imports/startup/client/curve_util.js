@@ -90,19 +90,16 @@ const setPlotResultData = function () {
           Session.set("textRefreshNeeded", false);
         }
         if (!result) {
-          // eslint-disable-next-line no-undef
-          plotResultData = undefined;
+          global.plotResultData = undefined;
           Session.set("textRefreshNeeded", false);
           hideSpinner();
           return;
         }
-        // eslint-disable-next-line no-undef
-        plotResultData = result;
+        global.plotResultData = result;
         Session.set("pageIndex", result.dsiRealPageIndex);
         Session.set("pageTextDirection", result.dsiTextDirection);
         Session.set("textLoaded", new Date());
-        // eslint-disable-next-line no-undef
-        console.log("size of plotResultData is ", sizeof(plotResultData));
+        console.log("size of plotResultData is ", sizeof(global.plotResultData));
         Session.set("textRefreshNeeded", false);
         hideSpinner();
       }
@@ -114,22 +111,18 @@ const setPlotResultData = function () {
 // Re-sets the plotResultData if the requested page range has changed, or if it has not been previously set.
 const getPlotResultData = function () {
   if (
-    // eslint-disable-next-line no-undef
-    plotResultData === undefined ||
-    // eslint-disable-next-line no-undef
-    plotResultData === null ||
+    global.plotResultData === undefined ||
+    global.plotResultData === null ||
     Session.get("textRefreshNeeded") === true
   ) {
     setPlotResultData();
   }
-  // eslint-disable-next-line no-undef
-  return plotResultData;
+  return global.plotResultData;
 };
 
 // resets the global plotResultData variable for the text output to null
 const resetPlotResultData = function () {
-  // eslint-disable-next-line no-undef
-  plotResultData = null;
+  global.plotResultData = null;
   Session.set("textLoaded", new Date());
 };
 
