@@ -2002,6 +2002,7 @@ const getGraphData = new ValidatedMethod({
   }).validator(),
   async run(params) {
     if (Meteor.isServer) {
+      const sizeof = require("object-sizeof");
       const plotGraphFunction = await matsCollections.PlotGraphFunctions.findOneAsync({
         plotType: params.plotType,
       });
@@ -2016,8 +2017,10 @@ const getGraphData = new ValidatedMethod({
         const results = matsCache.getResult(key);
         if (results === undefined) {
           // results aren't in the cache - need to process data routine
-          await global[dataFunction](params.plotParams, async function (result) {
-            return saveResultData(result);
+          return await global[dataFunction](params.plotParams, async function (result) {
+            const newRet = (await saveResultData(result)).result;
+            console.log("result.data size is ", sizeof(newRet));
+            return newRet;
           });
         }
         // results were already in the matsCache (same params and not yet expired)
@@ -2050,7 +2053,6 @@ const getGraphData = new ValidatedMethod({
           // refresh expire time. The only way to perform a refresh on matsCache is to re-save the result.
           matsCache.storeResult(results.key, results);
         }
-        const sizeof = require("object-sizeof");
         console.log("result.data size is ", sizeof(results));
         return ret;
       } catch (dataFunctionError) {

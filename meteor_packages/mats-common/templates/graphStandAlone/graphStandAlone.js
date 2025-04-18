@@ -55,83 +55,85 @@ Template.graphStandAlone.helpers({
     // causes graph display routine to be processed
     const graphFunction = FlowRouter.getParam("graphFunction");
     const key = FlowRouter.getParam("key");
-    matsMethods.getGraphDataByKey.callAsync({ resultKey: key }, function (error, ret) {
-      if (error !== undefined) {
-        setError(error);
-        matsCurveUtils.resetGraphResult();
-        return false;
-      }
-      matsCurveUtils.setGraphResult(ret.result);
-      Session.set("plotResultKey", ret.key);
-      Session.set("Curves", ret.result.basis.plotParams.curves);
-      Session.set("graphFunction", graphFunction);
-      Session.set("PlotResultsUpDated", new Date());
-      Session.set("PlotParams", ret.result.basis.plotParams);
-      const ptypes = Object.keys(ret.result.basis.plotParams.plotTypes);
-      for (let i = 0; i < ptypes.length; i += 1) {
-        if (ret.result.basis.plotParams.plotTypes[ptypes[i]] === true) {
-          Session.set("plotType", ptypes[i]);
-          break;
-        }
-      }
-      matsGraphUtils.graphPlotly();
-      const plotType = Session.get("plotType");
-      const dataset = matsCurveUtils.getGraphResult().data;
-      let { options } = matsCurveUtils.getGraphResult();
-      if (dataset === undefined) {
-        return false;
-      }
-      // make sure to capture the options (layout) from the old graph - which were stored in graph.js
-      matsMethods.getLayout.callAsync({ resultKey: key }, function (e, r) {
-        if (e !== undefined) {
-          setError(e);
+    matsMethods.getGraphDataByKey
+      .callAsync({ resultKey: key }, function (error, ret) {
+        if (error !== undefined) {
+          setError(error);
+          matsCurveUtils.resetGraphResult();
           return false;
         }
-        let mapLoadPause = 0;
-        options = r.layout;
-        if (plotType === matsTypes.PlotTypes.map) {
-          options.mapbox.zoom = 2.75;
-          mapLoadPause = 1000;
+        matsCurveUtils.setGraphResult(ret.result);
+        Session.set("plotResultKey", ret.key);
+        Session.set("Curves", ret.result.basis.plotParams.curves);
+        Session.set("graphFunction", graphFunction);
+        Session.set("PlotResultsUpDated", new Date());
+        Session.set("PlotParams", ret.result.basis.plotParams);
+        const ptypes = Object.keys(ret.result.basis.plotParams.plotTypes);
+        for (let i = 0; i < ptypes.length; i += 1) {
+          if (ret.result.basis.plotParams.plotTypes[ptypes[i]] === true) {
+            Session.set("plotType", ptypes[i]);
+            break;
+          }
         }
-        options.hovermode = false;
-        resizeOptions = options;
+        matsGraphUtils.graphPlotly();
+        const plotType = Session.get("plotType");
+        const dataset = matsCurveUtils.getGraphResult().data;
+        let { options } = matsCurveUtils.getGraphResult();
+        if (dataset === undefined) {
+          return false;
+        }
+        // make sure to capture the options (layout) from the old graph - which were stored in graph.js
+        matsMethods.getLayout.callAsync({ resultKey: key }, function (e, r) {
+          if (e !== undefined) {
+            setError(e);
+            return false;
+          }
+          let mapLoadPause = 0;
+          options = r.layout;
+          if (plotType === matsTypes.PlotTypes.map) {
+            options.mapbox.zoom = 2.75;
+            mapLoadPause = 1000;
+          }
+          options.hovermode = false;
+          resizeOptions = options;
 
-        // initial plot
-        $("#legendContainer").empty();
-        $("#placeholder").empty();
+          // initial plot
+          $("#legendContainer").empty();
+          $("#placeholder").empty();
 
-        // need a slight delay for plotly to load
-        setTimeout(function () {
-          Plotly.newPlot($("#placeholder")[0], dataset, options, {
-            showLink: false,
-            displayModeBar: false,
-          });
-          // update changes to the curve ops -- need to pause if we're doing a map so the map can finish loading before we try to edit it
+          // need a slight delay for plotly to load
           setTimeout(function () {
-            const updates = r.curveOpsUpdate.curveOpsUpdate;
-            for (let uidx = 0; uidx < updates.length; uidx += 1) {
-              const curveOpsUpdate = {};
-              if (updates[uidx]) {
-                const updatedKeys = Object.keys(updates[uidx]);
-                for (let kidx = 0; kidx < updatedKeys.length; kidx += 1) {
-                  const jsonHappyKey = updatedKeys[kidx];
-                  // turn the json placeholder back into .
-                  const updatedKey = jsonHappyKey.split("____").join(".");
-                  curveOpsUpdate[updatedKey] = updates[uidx][jsonHappyKey];
+            Plotly.newPlot($("#placeholder")[0], dataset, options, {
+              showLink: false,
+              displayModeBar: false,
+            });
+            // update changes to the curve ops -- need to pause if we're doing a map so the map can finish loading before we try to edit it
+            setTimeout(function () {
+              const updates = r.curveOpsUpdate.curveOpsUpdate;
+              for (let uidx = 0; uidx < updates.length; uidx += 1) {
+                const curveOpsUpdate = {};
+                if (updates[uidx]) {
+                  const updatedKeys = Object.keys(updates[uidx]);
+                  for (let kidx = 0; kidx < updatedKeys.length; kidx += 1) {
+                    const jsonHappyKey = updatedKeys[kidx];
+                    // turn the json placeholder back into .
+                    const updatedKey = jsonHappyKey.split("____").join(".");
+                    curveOpsUpdate[updatedKey] = updates[uidx][jsonHappyKey];
+                  }
+                  Plotly.restyle($("#placeholder")[0], curveOpsUpdate, uidx);
                 }
-                Plotly.restyle($("#placeholder")[0], curveOpsUpdate, uidx);
               }
-            }
-          }, mapLoadPause);
-        }, 500);
+            }, mapLoadPause);
+          }, 500);
 
-        // append annotations
-        $("#legendContainer").append(r.annotation);
-        document.getElementById("gsaSpinner").style.display = "none";
+          // append annotations
+          $("#legendContainer").append(r.annotation);
+          document.getElementById("gsaSpinner").style.display = "none";
+          return null;
+        });
         return null;
-      });
-      return null;
-    });
+      })
+      .then();
   },
   graphFunctionDispay() {
     return "block";

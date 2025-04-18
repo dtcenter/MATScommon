@@ -570,10 +570,13 @@ Template.graph.helpers({
         }
         plotType = Session.get("plotType");
       }
+      let curveText;
       if (plotType === matsTypes.PlotTypes.profile) {
-        return matsPlotUtils.getCurveTextWrapping(plotType, this);
+        curveText = matsPlotUtils.getCurveTextWrapping(plotType, this).then();
+      } else {
+        curveText = matsPlotUtils.getCurveText(plotType, this).then();
       }
-      return matsPlotUtils.getCurveText(plotType, this);
+      return curveText;
     }
     return `${this.label}:  Difference`;
   },

@@ -15,6 +15,8 @@ import {
 import { moment } from "meteor/momentjs:moment";
 import { _ } from "meteor/underscore";
 
+/* eslint-disable no-await-in-loop */
+
 const processDataXYCurve = async function (
   dataset,
   appParams,
@@ -2119,7 +2121,7 @@ const processDataHistogram = async function (
     xmax = d.xmax > xmax ? d.xmax : xmax;
     ymin = d.ymin < ymin ? d.ymin : ymin;
     ymax = d.ymax > ymax ? d.ymax : ymax;
-    const cOptions = matsDataCurveOpsUtils.generateBarChartCurveOptions(
+    const cOptions = await matsDataCurveOpsUtils.generateBarChartCurveOptions(
       curve,
       curveIndex,
       returnCurveInfoParams.axisMap,

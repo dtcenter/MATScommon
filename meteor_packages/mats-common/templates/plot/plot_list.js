@@ -178,7 +178,7 @@ Template.plotList.events({
   "click .restore-from-public"() {
     document.getElementById("restore_from_private").value = "";
   },
-  "click .submit-params"(event) {
+  async "click .submit-params"(event) {
     const plotAction = Session.get("plotParameter");
     Session.set("spinner_img", "spinner.gif");
     document.getElementById("spinner").style.display = "block";
@@ -382,7 +382,7 @@ Template.plotList.events({
         console.log("prior to getGraphData call time:", new Date());
         // the following line converts a null expireKey to false.
         expireKey = Session.get("expireKey") === true;
-        matsMethods.getGraphData.callAsync(
+        await matsMethods.getGraphData.callAsync(
           { plotParams: p, plotType: pt, expireKey },
           function (error, ret) {
             if (error !== undefined) {
@@ -471,7 +471,7 @@ Template.plotList.events({
         p[
           "scorecard-name"
         ] = `${p.userName}--submitted:${submitTime}--${p.curves.length}block`;
-        matsMethods.getGraphData.callAsync(
+        await matsMethods.getGraphData.callAsync(
           { plotParams: p, plotType: pt, expireKey },
           function (error, ret) {
             if (error !== undefined) {
