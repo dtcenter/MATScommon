@@ -34,7 +34,7 @@ const getModelCadence = async function (pool, dataSource, startDate, endDate) {
     // otherwise, the cadence will be calculated later by the query function.
     let cyclesRaw;
     if (
-      (await matsCollections.Settings.findOneAsync().dbType) ===
+      (await matsCollections.Settings.findOneAsync()).dbType ===
       matsTypes.DbTypes.couchbase
     ) {
       /*
@@ -3062,7 +3062,7 @@ const queryDBTimeSeries = async function (
     let parsedData;
 
     if (
-      (await matsCollections.Settings.findOneAsync().dbType) ===
+      (await matsCollections.Settings.findOneAsync()).dbType ===
       matsTypes.DbTypes.couchbase
     ) {
       /*
@@ -3200,7 +3200,7 @@ const queryDBSpecialtyCurve = async function (
     let parsedData;
 
     if (
-      (await matsCollections.Settings.findOneAsync().dbType) ===
+      (await matsCollections.Settings.findOneAsync()).dbType ===
       matsTypes.DbTypes.couchbase
     ) {
       /*
@@ -3346,7 +3346,7 @@ const queryDBReliability = async function (pool, statement, appParams, kernel) {
     let parsedData;
 
     if (
-      (await matsCollections.Settings.findOneAsync().dbType) ===
+      (await matsCollections.Settings.findOneAsync()).dbType ===
       matsTypes.DbTypes.couchbase
     ) {
       /*
@@ -3442,7 +3442,7 @@ const queryDBPerformanceDiagram = async function (pool, statement, appParams) {
     let parsedData;
 
     if (
-      (await matsCollections.Settings.findOneAsync().dbType) ===
+      (await matsCollections.Settings.findOneAsync()).dbType ===
       matsTypes.DbTypes.couchbase
     ) {
       /*
@@ -3556,7 +3556,7 @@ const queryDBSimpleScatter = async function (
     let parsedData;
 
     if (
-      (await matsCollections.Settings.findOneAsync().dbType) ===
+      (await matsCollections.Settings.findOneAsync()).dbType ===
       matsTypes.DbTypes.couchbase
     ) {
       /*
@@ -3708,7 +3708,7 @@ const queryDBMapScalar = async function (
     let parsedData;
 
     if (
-      (await matsCollections.Settings.findOneAsync().dbType) ===
+      (await matsCollections.Settings.findOneAsync()).dbType ===
       matsTypes.DbTypes.couchbase
     ) {
       /*

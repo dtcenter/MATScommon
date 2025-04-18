@@ -205,9 +205,11 @@ async function getListOfApps() {
     (await matsCollections.database.findOneAsync({ name: "database" })) !== undefined
   ) {
     // get list of databases (one per app)
-    apps = await matsCollections.database.findOneAsync({
-      name: "database",
-    }).options;
+    apps = (
+      await matsCollections.database.findOneAsync({
+        name: "database",
+      })
+    ).options;
     if (!Array.isArray(apps)) apps = Object.keys(apps);
   } else if (
     matsCollections.variable !== undefined &&
@@ -220,12 +222,14 @@ async function getListOfApps() {
     })) !== undefined
   ) {
     // get list of apps (variables in apps that also have thresholds)
-    apps = await matsCollections.variable.findOneAsync({
-      name: "variable",
-    }).options;
+    apps = (
+      await matsCollections.variable.findOneAsync({
+        name: "variable",
+      })
+    ).options;
     if (!Array.isArray(apps)) apps = Object.keys(apps);
   } else {
-    apps = [await matsCollections.Settings.findOneAsync().Title];
+    apps = [(await matsCollections.Settings.findOneAsync()).Title];
   }
   return apps;
 }
@@ -277,14 +281,18 @@ async function getListOfAppDBs() {
     (await matsCollections.database.findOneAsync({ name: "database" })) !== undefined
   ) {
     // get list of databases (one per app)
-    apps = await matsCollections.database.findOneAsync({
-      name: "database",
-    }).options;
+    apps = (
+      await matsCollections.database.findOneAsync({
+        name: "database",
+      })
+    ).options;
     if (!Array.isArray(apps)) apps = Object.keys(apps);
     for (aidx = 0; aidx < apps.length; aidx += 1) {
-      result[apps[aidx]] = await matsCollections.database.findOneAsync({
-        name: "database",
-      }).optionsMap[apps[aidx]].sumsDB;
+      result[apps[aidx]] = (
+        await matsCollections.database.findOneAsync({
+          name: "database",
+        })
+      ).optionsMap[apps[aidx]].sumsDB;
     }
   } else if (
     matsCollections.variable !== undefined &&
@@ -297,14 +305,18 @@ async function getListOfAppDBs() {
     })) !== undefined
   ) {
     // get list of apps (variables in apps that also have thresholds)
-    apps = await matsCollections.variable.findOneAsync({
-      name: "variable",
-    }).options;
+    apps = (
+      await matsCollections.variable.findOneAsync({
+        name: "variable",
+      })
+    ).options;
     if (!Array.isArray(apps)) apps = Object.keys(apps);
     for (aidx = 0; aidx < apps.length; aidx += 1) {
-      result[apps[aidx]] = await matsCollections.variable.findOneAsync({
-        name: "variable",
-      }).optionsMap[apps[aidx]];
+      result[apps[aidx]] = (
+        await matsCollections.variable.findOneAsync({
+          name: "variable",
+        })
+      ).optionsMap[apps[aidx]];
       if (
         typeof result[apps[aidx]] !== "string" &&
         !(result[apps[aidx]] instanceof String)
@@ -312,11 +324,12 @@ async function getListOfAppDBs() {
         result[apps[aidx]] = result[apps[aidx]].sumsDB;
     }
   } else {
-    result[await matsCollections.Settings.findOneAsync().Title] =
+    result[(await matsCollections.Settings.findOneAsync()).Title] = (
       await matsCollections.Databases.findOneAsync({
         role: matsTypes.DatabaseRoles.SUMS_DATA,
         status: "active",
-      }).database;
+      })
+    ).database;
   }
   return result;
 }
@@ -330,13 +343,15 @@ async function getMapByAppAndModel(selector, mapType) {
       matsCollections[selector] !== undefined &&
       (await matsCollections[selector].findOneAsync({ name: selector })) !==
         undefined &&
-      (await matsCollections[selector].findOneAsync({ name: selector })[mapType]) !==
+      (await matsCollections[selector].findOneAsync({ name: selector }))[mapType] !==
         undefined
     ) {
       // get map of requested selector's metadata
-      result = await matsCollections[selector].findOneAsync({
-        name: selector,
-      })[mapType];
+      result = (
+        await matsCollections[selector].findOneAsync({
+          name: selector,
+        })
+      )[mapType];
       let newResult = {};
       if (
         mapType === "valuesMap" ||
@@ -354,7 +369,7 @@ async function getMapByAppAndModel(selector, mapType) {
         )
       ) {
         // key by app title if we're not already
-        const appTitle = await matsCollections.Settings.findOneAsync().Title;
+        const appTitle = (await matsCollections.Settings.findOneAsync()).Title;
         newResult[appTitle] = result;
         result = newResult;
       }
@@ -382,37 +397,49 @@ async function getDateMapByAppAndModel() {
       (await matsCollections.database.findOneAsync({
         name: "database",
       })) !== undefined &&
-      (await matsCollections.database.findOneAsync({
-        name: "database",
-      }).dates) !== undefined
+      (
+        await matsCollections.database.findOneAsync({
+          name: "database",
+        })
+      ).dates !== undefined
     ) {
-      result = await matsCollections.database.findOneAsync({
-        name: "database",
-      }).dates;
+      result = (
+        await matsCollections.database.findOneAsync({
+          name: "database",
+        })
+      ).dates;
     } else if (
       matsCollections.variable !== undefined &&
       (await matsCollections.variable.findOneAsync({
         name: "variable",
       })) !== undefined &&
-      (await matsCollections.variable.findOneAsync({
-        name: "variable",
-      }).dates) !== undefined
+      (
+        await matsCollections.variable.findOneAsync({
+          name: "variable",
+        })
+      ).dates !== undefined
     ) {
-      result = await matsCollections.variable.findOneAsync({
-        name: "variable",
-      }).dates;
+      result = (
+        await matsCollections.variable.findOneAsync({
+          name: "variable",
+        })
+      ).dates;
     } else if (
       matsCollections["data-source"] !== undefined &&
       (await matsCollections["data-source"].findOneAsync({
         name: "data-source",
       })) !== undefined &&
-      (await matsCollections["data-source"].findOneAsync({
-        name: "data-source",
-      }).dates) !== undefined
+      (
+        await matsCollections["data-source"].findOneAsync({
+          name: "data-source",
+        })
+      ).dates !== undefined
     ) {
-      result = await matsCollections["data-source"].findOneAsync({
-        name: "data-source",
-      }).dates;
+      result = (
+        await matsCollections["data-source"].findOneAsync({
+          name: "data-source",
+        })
+      ).dates;
     } else {
       result = {};
     }
@@ -424,7 +451,7 @@ async function getDateMapByAppAndModel() {
       )
     ) {
       // key by app title if we're not already
-      const appTitle = await matsCollections.Settings.findOneAsync().Title;
+      const appTitle = (await matsCollections.Settings.findOneAsync()).Title;
       const newResult = {};
       newResult[appTitle] = result;
       result = newResult;
@@ -449,14 +476,16 @@ async function getMapByApp(selector) {
       (await matsCollections[selector].findOneAsync({ name: selector })) !== undefined
     ) {
       // get array of requested selector's metadata
-      result = await matsCollections[selector].findOneAsync({
-        name: selector,
-      }).options;
+      result = (
+        await matsCollections[selector].findOneAsync({
+          name: selector,
+        })
+      ).options;
       if (!Array.isArray(result)) result = Object.keys(result);
     } else if (selector === "statistic") {
       result = ["ACC"];
     } else if (selector === "variable") {
-      result = [await matsCollections.Settings.findOneAsync().Title];
+      result = [(await matsCollections.Settings.findOneAsync()).Title];
     } else {
       result = [];
     }
@@ -487,9 +516,11 @@ async function getlevelsByApp() {
       (await matsCollections.level.findOneAsync({ name: "level" })) !== undefined
     ) {
       // we have levels already defined
-      result = await matsCollections.level.findOneAsync({
-        name: "level",
-      }).options;
+      result = (
+        await matsCollections.level.findOneAsync({
+          name: "level",
+        })
+      ).options;
       if (!Array.isArray(result)) result = Object.keys(result);
     } else if (
       matsCollections.top !== undefined &&
@@ -1754,14 +1785,16 @@ const getThisScorecardData = async function (userName, name, submitted, processe
         },
       }
     );
-    const docID = await matsCollections.Scorecard.findOneAsync(
-      {
-        "scorecard.userName": result[0].userName,
-        "scorecard.name": result[0].name,
-        "scorecard.submitted": result[0].submitted,
-        "scorecard.processedAt": result[0].processedAt,
-      },
-      { _id: 1 }
+    const docID = (
+      await matsCollections.Scorecard.findOneAsync(
+        {
+          "scorecard.userName": result[0].userName,
+          "scorecard.name": result[0].name,
+          "scorecard.submitted": result[0].submitted,
+          "scorecard.processedAt": result[0].processedAt,
+        },
+        { _id: 1 }
+      )
     )._id;
     // no need to return the whole thing, just the identifying fields
     // and the ID. The app will find the whole thing in the mongo collection.
@@ -2590,7 +2623,6 @@ const resetApp = async function (appRef) {
     let { version: appVersion, commit, branch } = versionInfo.getVersionsFromEnv();
     if (appVersion === "Unknown") {
       // Try getting versionInfo from the appProduction database
-      console.log("VERSION not set in the environment - using localhost");
       appVersion = "localhost";
       commit = "HEAD";
       branch = "feature";
@@ -2763,7 +2795,6 @@ const saveScorecardSettings = new ValidatedMethod({
         })(key, scorecardSettings).then(() => {
           console.log("upserted doc with id", key);
         });
-        // await global.cbScorecardSettingsPool.upsertCB(settingsKey, scorecardSettings);
       } catch (err) {
         console.log(`error writing scorecard to database: ${err.message}`);
       }
@@ -2837,7 +2868,7 @@ const testGetTables = new ValidatedMethod({
   async run(params) {
     if (Meteor.isServer) {
       if (
-        (await matsCollections.Settings.findOneAsync().dbType) ===
+        (await matsCollections.Settings.findOneAsync()).dbType ===
         matsTypes.DbTypes.couchbase
       ) {
         const cbUtilities = new matsCouchbaseUtils.CBUtilities(
