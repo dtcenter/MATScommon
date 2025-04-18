@@ -57,6 +57,8 @@ Package.onUse(function (api) {
   api.use("reload");
   api.use("random");
   api.use("ejson");
+  api.use("session");
+  api.use("webapp");
   api.use("spacebars");
   api.use("check");
   api.use("momentjs:moment");

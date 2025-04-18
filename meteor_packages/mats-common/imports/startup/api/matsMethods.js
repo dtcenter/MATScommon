@@ -18,7 +18,6 @@ import {
 import { moment } from "meteor/momentjs:moment";
 import { _ } from "meteor/underscore";
 import { Mongo } from "meteor/mongo";
-import mysql from "mysql2/promise";
 import { curveParamsByApp } from "../both/mats-curve-params";
 
 /* eslint-disable no-await-in-loop */
@@ -26,10 +25,6 @@ import { curveParamsByApp } from "../both/mats-curve-params";
 /* eslint-disable global-require */
 
 // PRIVATE
-
-// needed for middleware routes
-const app = WebApp.express();
-const router = WebApp.express.Router();
 
 // local collection used to keep the table update times for refresh - won't ever be synchronized or persisted.
 const metaDataTableUpdates = new Mongo.Collection(null);
@@ -2862,7 +2857,8 @@ const testGetTables = new ValidatedMethod({
       } else {
         // default to mysql so that old apps won't break
         try {
-          const connection = await mysql.createConnection({
+          const mysql = require("mysql2/promise");
+          const connection = await mysql.mysql.createConnection({
             host: params.host,
             port: params.port,
             user: params.user,
@@ -2939,6 +2935,10 @@ if (Meteor.isServer) {
   if (Meteor.settings.public && !Meteor.settings.public.proxy_prefix_path) {
     Meteor.settings.public.proxy_prefix_path = "";
   }
+
+  // needed for middleware routes
+  const app = WebApp.express();
+  const router = WebApp.express.Router();
 
   // eslint-disable-next-line no-unused-vars
   router.use("/status", async function (params, req, res, next) {
