@@ -30,13 +30,13 @@ Template.home.helpers({
   },
   resetDefaults() {
     matsMethods.refreshMetaData
-      .callAsync({}, function (error) {
-        if (error !== undefined) {
-          setError(new Error(error.message));
-        }
+      .callAsync({})
+      .then(function () {
         matsParamUtils.setAllParamsToDefault();
       })
-      .then();
+      .catch(function (error) {
+        setError(new Error(error.message));
+      });
   },
   title() {
     if (

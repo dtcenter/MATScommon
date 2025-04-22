@@ -1386,20 +1386,16 @@ Template.graph.events({
     const { layout } = $("#placeholder")[0];
     const key = Session.get("plotResultKey");
     matsMethods.saveLayout
-      .callAsync(
-        {
-          resultKey: key,
-          layout,
-          curveOpsUpdate: { curveOpsUpdate },
-          annotation,
-        },
-        function (error) {
-          if (error !== undefined) {
-            setError(error);
-          }
-        }
-      )
-      .then();
+      .callAsync({
+        resultKey: key,
+        layout,
+        curveOpsUpdate: { curveOpsUpdate },
+        annotation,
+      })
+      .then()
+      .catch(function (error) {
+        setError(error);
+      });
     // open a new window with a standAlone graph of the current graph
     const plotType = Session.get("plotType");
     let h;

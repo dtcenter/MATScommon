@@ -36,13 +36,13 @@ Template.scorecardHome.helpers({
   },
   resetDefaults() {
     matsMethods.refreshMetaData
-      .callAsync({}, function (error) {
-        if (error !== undefined) {
-          setError(new Error(error.message));
-        }
+      .callAsync({})
+      .then(function () {
         matsParamUtils.setAllParamsToDefault();
       })
-      .then();
+      .catch(function (error) {
+        setError(new Error(error.message));
+      });
   },
   title() {
     if (
@@ -100,7 +100,12 @@ Template.scorecardHome.events({
           Session.set("updateStatusPage", ret);
         }
       })
-      .then();
+      .then(function (ret) {
+        Session.set("updateStatusPage", ret);
+      })
+      .catch(function (error) {
+        setError(error);
+      });
     matsGraphUtils.setScorecardDisplayView();
   },
   "click #scorecard-schedule-mode-radioGroup-recurring"() {

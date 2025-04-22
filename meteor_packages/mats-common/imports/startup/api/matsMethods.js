@@ -1667,7 +1667,7 @@ const saveResultData = async function (result) {
           }
           downSampleResult.data[ci] = downSampleResult[ci];
         }
-        await DownSampleResults.rawCollection().insertAsync({
+        await DownSampleResults.insertAsync({
           createdAt: new Date(),
           key,
           result: downSampleResult,
@@ -2017,11 +2017,10 @@ const getGraphData = new ValidatedMethod({
         const results = matsCache.getResult(key);
         if (results === undefined) {
           // results aren't in the cache - need to process data routine
-          return await global[dataFunction](params.plotParams, async function (result) {
-            const newRet = (await saveResultData(result)).result;
-            console.log("result.data size is ", sizeof(newRet));
-            return newRet;
-          });
+          const graphData = await global[dataFunction](params.plotParams);
+          const newRet = await saveResultData(graphData);
+          console.log("result.data size is ", sizeof(newRet.result));
+          return newRet;
         }
         // results were already in the matsCache (same params and not yet expired)
         // are results in the downsampled collection?
@@ -2038,7 +2037,7 @@ const getGraphData = new ValidatedMethod({
           // results are in the mongo cache downsampled collection - returned the downsampled graph data
           ret = dsResults;
           // update the expire time in the downsampled collection - this requires a new Date
-          await DownSampleResults.rawCollection().updateAsync(
+          await DownSampleResults.updateAsync(
             {
               key,
             },
@@ -2121,7 +2120,7 @@ const getLayout = new ValidatedMethod({
       let ret;
       const key = params.resultKey;
       try {
-        ret = await LayoutStoreCollection.rawCollection().findOneAsync({
+        ret = await LayoutStoreCollection.findOneAsync({
           key,
         });
         return ret;
@@ -2944,7 +2943,7 @@ const testSetMetaDataTableUpdatesLastRefreshedBack = new ValidatedMethod({
 // Define routes for server
 if (Meteor.isServer) {
   // add indexes to result and axes collections
-  DownSampleResults.rawCollection().createIndex(
+  DownSampleResults.createIndex(
     {
       createdAt: 1,
     },
@@ -2952,7 +2951,7 @@ if (Meteor.isServer) {
       expireAfterSeconds: 3600 * 8,
     }
   ); // 8 hour expiration
-  LayoutStoreCollection.rawCollection().createIndex(
+  LayoutStoreCollection.createIndex(
     {
       createdAt: 1,
     },

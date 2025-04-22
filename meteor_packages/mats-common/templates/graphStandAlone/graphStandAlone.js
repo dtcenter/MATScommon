@@ -56,12 +56,8 @@ Template.graphStandAlone.helpers({
     const graphFunction = FlowRouter.getParam("graphFunction");
     const key = FlowRouter.getParam("key");
     matsMethods.getGraphDataByKey
-      .callAsync({ resultKey: key }, function (error, ret) {
-        if (error !== undefined) {
-          setError(error);
-          matsCurveUtils.resetGraphResult();
-          return false;
-        }
+      .callAsync({ resultKey: key })
+      .then(function (ret) {
         matsCurveUtils.setGraphResult(ret.result);
         Session.set("plotResultKey", ret.key);
         Session.set("Curves", ret.result.basis.plotParams.curves);
@@ -133,7 +129,10 @@ Template.graphStandAlone.helpers({
         });
         return null;
       })
-      .then();
+      .catch(function (error) {
+        matsCurveUtils.resetGraphResult();
+        setError(error);
+      });
   },
   graphFunctionDispay() {
     return "block";

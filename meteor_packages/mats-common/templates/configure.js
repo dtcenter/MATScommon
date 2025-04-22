@@ -125,12 +125,13 @@ Template.configure.events({
       }
     }
     matsMethods.applySettingsData
-      .callAsync({ settings: data }, function (error) {
+      .callAsync({ settings: data })
+      .then()
+      .catch(function (error) {
         if (error) {
           setError(new Error(`matsMethods.applySettingsData error: ${error.message}`));
         }
-      })
-      .then();
+      });
   },
   "change select.groupSelect"() {
     document.getElementById("group").value =
@@ -147,28 +148,26 @@ Template.configure.events({
     successButton.style.display = "none";
     document.getElementById(`${role}-spinner`).style.display = "block";
     matsMethods.testGetTables
-      .callAsync(
-        {
-          host: document.getElementById(`${roleStr}-host`).value,
-          port: document.getElementById(`${roleStr}-port`).value,
-          user: document.getElementById(`${roleStr}-user`).value,
-          password: document.getElementById(`${roleStr}-password`).value,
-          database: document.getElementById(`${roleStr}-database`).value,
-          database_type: document.getElementById(`${roleStr}-database_type`).value,
-        },
-        function (error) {
-          document.getElementById(`${role}-spinner`).style.display = "none";
-          if (error) {
-            setError(error);
-            failButton.style.display = "block";
-            successButton.style.display = "none";
-          } else {
-            successButton.style.display = "block";
-            failButton.style.display = "none";
-          }
+      .callAsync({
+        host: document.getElementById(`${roleStr}-host`).value,
+        port: document.getElementById(`${roleStr}-port`).value,
+        user: document.getElementById(`${roleStr}-user`).value,
+        password: document.getElementById(`${roleStr}-password`).value,
+        database: document.getElementById(`${roleStr}-database`).value,
+        database_type: document.getElementById(`${roleStr}-database_type`).value,
+      })
+      .then(function () {
+        successButton.style.display = "block";
+        failButton.style.display = "none";
+      })
+      .catch(function (error) {
+        document.getElementById(`${role}-spinner`).style.display = "none";
+        if (error) {
+          failButton.style.display = "block";
+          successButton.style.display = "none";
+          setError(error);
         }
-      )
-      .then();
+      });
   },
   "click .copy"(event) {
     event.preventDefault();

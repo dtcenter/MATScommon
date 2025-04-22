@@ -150,19 +150,16 @@ const resetGraphResult = function () {
 const setCurveParamDisplayText = function (paramName, newText) {
   if (document.getElementById(`${paramName}-item`)) {
     matsMethods.setCurveParamDisplayText
-      .callAsync(
-        {
-          paramName,
-          newText,
-        },
-        // eslint-disable-next-line no-unused-vars
-        function (error, res) {
-          if (error !== undefined) {
-            setError(error);
-          }
+      .callAsync({
+        paramName,
+        newText,
+      })
+      .then()
+      .catch(function (error) {
+        if (error !== undefined) {
+          setError(error);
         }
-      )
-      .then();
+      });
   }
 };
 
