@@ -3621,7 +3621,7 @@ const runMultipleQueries = async function (
       error = rows;
     } else {
       allRows.push(rows[0]);
-      runMultipleQueries(
+      await runMultipleQueries(
         pool,
         statement,
         querySites.filter((x, y) => y !== 0),
@@ -3633,7 +3633,7 @@ const runMultipleQueries = async function (
 };
 
 // this method queries the database for map plots, in a loop with one query per station
-const queryDBMapScalarLoop = function (
+const queryDBMapScalarLoop = async function (
   pool,
   statement,
   dataSource,
@@ -3705,11 +3705,7 @@ const queryDBMapScalarLoop = function (
     const allRows = [];
     let error = "";
 
-    (async () => {
-      await runMultipleQueries(pool, statement, querySites, error, allRows);
-    })().catch((err) => {
-      error = err.message;
-    });
+    await runMultipleQueries(pool, statement, querySites, error, allRows);
 
     if (error.length === 0) {
       if (allRows.length === 0) {
