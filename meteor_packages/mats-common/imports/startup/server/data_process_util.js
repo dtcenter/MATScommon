@@ -2317,7 +2317,7 @@ const processDataContour = async function (
       }<br>${statisticSelect}: ${
         data.z[j][i] === undefined || data.z[j][i] === null || data.z[j][i] === "null"
           ? null
-          : data.z[j][i].toPrecision(4)
+          : Number(data.z[j][i]).toPrecision(4)
       }<br>n: ${data.n[j][i]}`;
       currYTextArray.push(currText);
     }
