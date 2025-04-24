@@ -3539,6 +3539,7 @@ const queryDBMapScalar = async function (
 
     let error = "";
     let parsedData;
+    let isCouchbase = true;
 
     let rows = null;
     if (Array.isArray(statementOrMwRows)) {
@@ -3552,6 +3553,7 @@ const queryDBMapScalar = async function (
       rows = await pool.queryCB(statementOrMwRows);
     } else {
       // mysql and need to query
+      isCouchbase = false;
       rows = await queryMySQL(pool, statementOrMwRows);
     }
     if (error.length === 0) {
@@ -3575,7 +3577,7 @@ const queryDBMapScalar = async function (
           varUnits,
           appParams,
           plotParams,
-          true
+          isCouchbase
         );
         d = parsedData.d;
         dLowest = parsedData.dLowest;
@@ -3876,6 +3878,7 @@ const queryDBMapCTC = async function (
 
     let error = "";
     let parsedData;
+    let isCouchbase = true;
 
     let rows;
     if (Array.isArray(statementOrMwRows)) {
@@ -3889,6 +3892,7 @@ const queryDBMapCTC = async function (
       rows = await pool.queryCB(statementOrMwRows);
     } else {
       // mysql and need to query
+      isCouchbase = false;
       rows = await queryMySQL(pool, statementOrMwRows);
     }
     if (error.length === 0) {
@@ -3914,7 +3918,7 @@ const queryDBMapCTC = async function (
           siteMap,
           statistic,
           appParams,
-          true
+          isCouchbase
         );
         d = parsedData.d;
         dPurple = parsedData.dPurple;
