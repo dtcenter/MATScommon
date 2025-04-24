@@ -6,13 +6,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
-          node-version: '14'  # This needs to match the version used by our Meteor release
+          node-version: '22'
       - name: Install linters
         run: npm ci
       - name: Lint MATScommon
         run: npm run lint 
+
