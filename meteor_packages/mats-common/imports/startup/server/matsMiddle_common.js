@@ -23,7 +23,7 @@ class MatsMiddleCommon {
     try {
       this.conn = await this.cbPool.getConnection();
 
-      let queryTemplate = Assets.getText(
+      let queryTemplate = await Assets.getTextAsync(
         "imports/startup/server/matsMiddle/sqlTemplates/tmpl_distinct_fcstValidEpoch_obs.sql"
       );
       queryTemplate = queryTemplate.replace(/{{vxFROM_SECS}}/g, fromSecs);
@@ -47,7 +47,7 @@ class MatsMiddleCommon {
     try {
       this.conn = await this.cbPool.getConnection();
 
-      let queryTemplate = Assets.getText(
+      let queryTemplate = await Assets.getTextAsync(
         "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_distinct_fcstLen.sql"
       );
       queryTemplate = queryTemplate.replace(/{{vxMODEL}}/g, `"${model}"`);

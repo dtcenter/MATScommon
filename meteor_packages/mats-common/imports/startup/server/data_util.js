@@ -327,12 +327,8 @@ const callMetadataAPI = function (
   let returnDestinationStructure = destinationStructure;
   const returnHideOtherFor = hideOtherFor;
   let returnExpectedApps = expectedApps;
-  const Future = require("fibers/future");
-  const pFuture = new Future();
-  HTTP.get(queryURL, {}, function (error, response) {
-    if (error) {
-      console.log(error);
-    } else {
+  HTTP.get(queryURL, {})
+    .then((response) => {
       const metadata = JSON.parse(response.content);
       if (Array.isArray(returnDestinationStructure)) {
         // this is the list of apps. It's the only array in the API.
@@ -360,10 +356,10 @@ const callMetadataAPI = function (
       } else {
         returnDestinationStructure = { ...returnDestinationStructure, ...metadata };
       }
-    }
-    pFuture.return();
-  });
-  pFuture.wait();
+    })
+    .catch((error) => {
+      console.log(error.message);
+    });
   return [returnDestinationStructure, returnExpectedApps, returnHideOtherFor];
 };
 
