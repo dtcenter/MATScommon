@@ -2592,9 +2592,8 @@ const resetApp = async function (appRef) {
       } else {
         try {
           if (dbType !== matsTypes.DbTypes.couchbase) {
-            // default to mysql so that old apps won't break
-            await global[poolName].query("set group_concat_max_len = 4294967295");
-            await global[poolName].query(`set session wait_timeout = ${appTimeOut}`);
+            await global[poolName].execute("set group_concat_max_len = 4294967295");
+            await global[poolName].execute(`set session wait_timeout = ${appTimeOut}`);
           }
           // connections all work so make sure that Meteor.settings.public.undefinedRoles is undefined
           delete Meteor.settings.public.undefinedRoles;
