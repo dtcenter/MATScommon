@@ -162,6 +162,24 @@ const getParameterForName = function (paramName) {
   return param;
 };
 
+// async version of above
+const getParameterForNameAsync = async function (pname) {
+  let param;
+  if (matsCollections[pname] !== undefined) {
+    param = await matsCollections[pname].findOneAsync({ name: pname });
+  }
+  if (param === undefined) {
+    param = await matsCollections.PlotParams.findOneAsync({ name: pname });
+  }
+  if (param === undefined) {
+    param = await matsCollections.Scatter2dParams.findOneAsync({ name: pname });
+    if (param === undefined) {
+      return undefined;
+    }
+  }
+  return param;
+};
+
 // get a param disabledOptions list - if any.
 const getDisabledOptionsForParamName = function (paramName) {
   const name = paramName.replace(/^.axis-/, "");
@@ -627,26 +645,24 @@ const visibilityControllerForParam = function (paramName) {
   return found;
 };
 
-const getMultiSelectCurveParamNames = function () {
-  const curveParamNames = matsCollections.CurveParamsInfo.findOne(
-    {},
-    { curve_params: 1 }
+const getMultiSelectCurveParamNames = async function () {
+  const curveParamNames = (
+    await matsCollections.CurveParamsInfo.findOneAsync({}, { curve_params: 1 })
   ).curve_params;
   const multiParamNames = [];
-  curveParamNames.forEach(function (paramName) {
-    if (getParameterForName(paramName).multiple !== undefined) {
+  curveParamNames.forEach(async function (paramName) {
+    if ((await getParameterForNameAsync(paramName)).multiple !== undefined) {
       multiParamNames.push(paramName);
     }
   });
   return multiParamNames;
 };
 
-const getSingleSelectCurveParamNames = function () {
-  const curveParamNames = matsCollections.CurveParamsInfo.findOne(
-    {},
-    { curve_params: 1 }
+const getSingleSelectCurveParamNames = async function () {
+  const curveParamNames = (
+    await matsCollections.CurveParamsInfo.findOneAsync({}, { curve_params: 1 })
   ).curve_params;
-  const multiParamNames = getMultiSelectCurveParamNames();
+  const multiParamNames = await getMultiSelectCurveParamNames();
   const singleParamNames = curveParamNames.filter(function (n) {
     return !multiParamNames.includes(n);
   });
@@ -705,6 +721,7 @@ export default matsParamUtils = {
   collapseParams,
   collapseParam,
   getParameterForName,
+  getParameterForNameAsync,
   setDefaultForParamName,
   setAllParamsToDefault,
   typeSort,

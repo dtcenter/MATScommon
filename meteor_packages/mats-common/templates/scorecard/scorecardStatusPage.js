@@ -25,7 +25,7 @@ function toggleDisplay(divId) {
 function refreshPage() {
   // refresh the page
   matsMethods.getScorecardInfo
-    .callAsync()
+    .callAsync({})
     .then(function (ret) {
       Session.set("updateStatusPage", ret);
     })

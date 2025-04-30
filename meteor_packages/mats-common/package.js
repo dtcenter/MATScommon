@@ -64,7 +64,7 @@ Package.onUse(function (api) {
   api.use("check");
   api.use("momentjs:moment");
   api.use("reactive-var");
-  api.use("jkuester:http");
+  api.use("fetch");
   api.use("aldeed:simple-schema");
   api.use("accounts-password");
 

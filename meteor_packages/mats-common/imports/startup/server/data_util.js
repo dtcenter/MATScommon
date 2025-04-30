@@ -4,7 +4,7 @@
 
 import { matsTypes, matsCollections, matsMethods } from "meteor/randyp:mats-common";
 import { Meteor } from "meteor/meteor";
-import { HTTP } from "meteor/jkuester:http";
+import { fetch } from "meteor/fetch";
 
 /* global Npm */
 /* eslint-disable global-require */
@@ -316,7 +316,7 @@ const doSettings = async function (
   await matsCollections.Settings.updateAsync(settingsId, { $set: settings });
 };
 
-const callMetadataAPI = function (
+const callMetadataAPI = async function (
   selector,
   queryURL,
   destinationStructure,
@@ -327,39 +327,40 @@ const callMetadataAPI = function (
   let returnDestinationStructure = destinationStructure;
   const returnHideOtherFor = hideOtherFor;
   let returnExpectedApps = expectedApps;
-  HTTP.get(queryURL, {})
-    .then((response) => {
-      const metadata = JSON.parse(response.content);
-      if (Array.isArray(returnDestinationStructure)) {
-        // this is the list of apps. It's the only array in the API.
-        returnDestinationStructure = [...returnDestinationStructure, ...metadata];
-        returnExpectedApps = metadata;
-      } else if (Object.keys(metadata).length === 0) {
-        // this metadata type (e.g. 'threshold') is not valid for this app
-        // we need to add placeholder metadata to the destination structure
-        // and add the selector in question to the hideOtherFor map.
-        const dummyMetadata = {};
-        if (!selector.includes("values")) {
-          returnHideOtherFor[selector] =
-            returnHideOtherFor[selector] === undefined
-              ? []
-              : returnHideOtherFor[selector];
-          for (let eidx = 0; eidx < returnExpectedApps.length; eidx += 1) {
-            dummyMetadata[returnExpectedApps[eidx]] = fakeMetadata;
-            returnHideOtherFor[selector].push(returnExpectedApps[eidx]);
-          }
+
+  try {
+    const response = await fetch(queryURL);
+    const metadata = await response.json();
+
+    if (Array.isArray(returnDestinationStructure)) {
+      // this is the list of apps. It's the only array in the API.
+      returnDestinationStructure = [...returnDestinationStructure, ...metadata];
+      returnExpectedApps = metadata;
+    } else if (Object.keys(metadata).length === 0) {
+      // this metadata type (e.g. 'threshold') is not valid for this app
+      // we need to add placeholder metadata to the destination structure
+      // and add the selector in question to the hideOtherFor map.
+      const dummyMetadata = {};
+      if (!selector.includes("values")) {
+        returnHideOtherFor[selector] =
+          returnHideOtherFor[selector] === undefined
+            ? []
+            : returnHideOtherFor[selector];
+        for (let eidx = 0; eidx < returnExpectedApps.length; eidx += 1) {
+          dummyMetadata[returnExpectedApps[eidx]] = fakeMetadata;
+          returnHideOtherFor[selector].push(returnExpectedApps[eidx]);
         }
-        returnDestinationStructure = {
-          ...returnDestinationStructure,
-          ...dummyMetadata,
-        };
-      } else {
-        returnDestinationStructure = { ...returnDestinationStructure, ...metadata };
       }
-    })
-    .catch((error) => {
-      console.log(error.message);
-    });
+      returnDestinationStructure = {
+        ...returnDestinationStructure,
+        ...dummyMetadata,
+      };
+    } else {
+      returnDestinationStructure = { ...returnDestinationStructure, ...metadata };
+    }
+  } catch (err) {
+    console.log(err.message);
+  }
   return [returnDestinationStructure, returnExpectedApps, returnHideOtherFor];
 };
 

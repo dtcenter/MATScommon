@@ -93,7 +93,7 @@ Template.scorecardHome.events({
   },
   "click #display-status"() {
     matsMethods.getScorecardInfo
-      .callAsync(function (error, ret) {
+      .callAsync({}, function (error, ret) {
         if (error !== undefined) {
           setError(error);
         } else {
