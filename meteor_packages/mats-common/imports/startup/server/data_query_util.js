@@ -142,7 +142,7 @@ const getStationsInCouchbaseRegion = async function (pool, region) {
 };
 
 // utility for querying the DB via Python
-const queryDBPython = function (pool, queryArray) {
+const queryDBPython = async function (pool, queryArray) {
   if (Meteor.isServer) {
     // send the query statement to the python query function
     const pyOptions = {
@@ -155,15 +155,15 @@ const queryDBPython = function (pool, queryArray) {
           : `${process.env.PWD}/programs/server/assets/packages/randyp_mats-common/public/python/`,
       args: [
         "-h",
-        pool.config.connectionConfig.host,
+        pool.config.host,
         "-P",
-        pool.config.connectionConfig.port,
+        pool.config.port,
         "-u",
-        pool.config.connectionConfig.user,
+        pool.config.user,
         "-p",
-        pool.config.connectionConfig.password,
+        pool.config.password,
         "-d",
-        pool.config.connectionConfig.database,
+        pool.config.database,
         "-t",
         Meteor.settings.public.mysql_wait_timeout
           ? Meteor.settings.public.mysql_wait_timeout
@@ -179,78 +179,8 @@ const queryDBPython = function (pool, queryArray) {
     let nTimes = [];
 
     const pyShell = require("python-shell");
-    pyShell.PythonShell.run("python_query_util.py", pyOptions)
-      .then((results) => {
-        // query callback - build the curve data from the results - or set an error
-        if (results === undefined || results === "undefined") {
-          error =
-            "Error thrown by python_query_util.py. Please write down exactly how you produced this error, and submit a ticket at mats.gsl@noaa.gov.";
-        } else {
-          // get the data back from the query
-          const parsedData = JSON.parse(results);
-          d = parsedData.data;
-          n0 = parsedData.n0;
-          nTimes = parsedData.nTimes;
-          error = parsedData.error;
-
-          // check for nulls in output, since JSON only passes strings
-          for (let idx = 0; idx < d.length; idx += 1) {
-            for (let didx = 0; didx < d[idx].y.length; didx += 1) {
-              if (d[idx].y[didx] === "null") {
-                d[idx].y[didx] = null;
-                if (d[idx].subVals.length > 0) {
-                  d[idx].subData[didx] = NaN;
-                  d[idx].subHeaders[didx] = NaN;
-                  d[idx].subVals[didx] = NaN;
-                  if (queryArray[idx].statLineType === "ctc") {
-                    d[idx].subHit[didx] = NaN;
-                    d[idx].subFa[didx] = NaN;
-                    d[idx].subMiss[didx] = NaN;
-                    d[idx].subCn[didx] = NaN;
-                  } else if (queryArray[idx].statLineType === "mode_pair") {
-                    d[idx].subInterest[didx] = NaN;
-                  } else if (queryArray[idx].statLineType === "mode_single") {
-                    d[idx].nForecast[didx] = 0;
-                    d[idx].nMatched[didx] = 0;
-                    d[idx].nSimple[didx] = 0;
-                    d[idx].nTotal[didx] = 0;
-                  }
-                }
-                d[idx].subSecs[didx] = NaN;
-                d[idx].subLevs[didx] = NaN;
-              } else if (d[idx].x[didx] === "null") {
-                d[idx].x[didx] = null;
-                if (d[idx].subVals.length > 0) {
-                  d[idx].subData[didx] = NaN;
-                  d[idx].subHeaders[didx] = NaN;
-                  d[idx].subVals[didx] = NaN;
-                  if (queryArray[idx].statLineType === "ctc") {
-                    d[idx].subHit[didx] = NaN;
-                    d[idx].subFa[didx] = NaN;
-                    d[idx].subMiss[didx] = NaN;
-                    d[idx].subCn[didx] = NaN;
-                  } else if (queryArray[idx].statLineType === "mode_pair") {
-                    d[idx].subInterest[didx] = NaN;
-                  } else if (queryArray[idx].statLineType === "mode_single") {
-                    d[idx].nForecast[didx] = 0;
-                    d[idx].nMatched[didx] = 0;
-                    d[idx].nSimple[didx] = 0;
-                    d[idx].nTotal[didx] = 0;
-                  }
-                }
-                d[idx].subSecs[didx] = NaN;
-                d[idx].subLevs[didx] = NaN;
-              }
-            }
-          }
-        }
-        return {
-          data: d,
-          error,
-          n0,
-          nTimes,
-        };
-      })
+    const results = await pyShell.PythonShell.run("python_query_util.py", pyOptions)
+      .then()
       .catch((err) => {
         error = err.message;
         return {
@@ -260,6 +190,74 @@ const queryDBPython = function (pool, queryArray) {
           nTimes,
         };
       });
+    if (results === undefined || results === "undefined") {
+      error =
+        "Error thrown by python_query_util.py. Please write down exactly how you produced this error, and submit a ticket at mats.gsl@noaa.gov.";
+    } else {
+      // get the data back from the query
+      const parsedData = JSON.parse(results);
+      d = parsedData.data;
+      n0 = parsedData.n0;
+      nTimes = parsedData.nTimes;
+      error = parsedData.error;
+
+      // check for nulls in output, since JSON only passes strings
+      for (let idx = 0; idx < d.length; idx += 1) {
+        for (let didx = 0; didx < d[idx].y.length; didx += 1) {
+          if (d[idx].y[didx] === "null") {
+            d[idx].y[didx] = null;
+            if (d[idx].subVals.length > 0) {
+              d[idx].subData[didx] = NaN;
+              d[idx].subHeaders[didx] = NaN;
+              d[idx].subVals[didx] = NaN;
+              if (queryArray[idx].statLineType === "ctc") {
+                d[idx].subHit[didx] = NaN;
+                d[idx].subFa[didx] = NaN;
+                d[idx].subMiss[didx] = NaN;
+                d[idx].subCn[didx] = NaN;
+              } else if (queryArray[idx].statLineType === "mode_pair") {
+                d[idx].subInterest[didx] = NaN;
+              } else if (queryArray[idx].statLineType === "mode_single") {
+                d[idx].nForecast[didx] = 0;
+                d[idx].nMatched[didx] = 0;
+                d[idx].nSimple[didx] = 0;
+                d[idx].nTotal[didx] = 0;
+              }
+            }
+            d[idx].subSecs[didx] = NaN;
+            d[idx].subLevs[didx] = NaN;
+          } else if (d[idx].x[didx] === "null") {
+            d[idx].x[didx] = null;
+            if (d[idx].subVals.length > 0) {
+              d[idx].subData[didx] = NaN;
+              d[idx].subHeaders[didx] = NaN;
+              d[idx].subVals[didx] = NaN;
+              if (queryArray[idx].statLineType === "ctc") {
+                d[idx].subHit[didx] = NaN;
+                d[idx].subFa[didx] = NaN;
+                d[idx].subMiss[didx] = NaN;
+                d[idx].subCn[didx] = NaN;
+              } else if (queryArray[idx].statLineType === "mode_pair") {
+                d[idx].subInterest[didx] = NaN;
+              } else if (queryArray[idx].statLineType === "mode_single") {
+                d[idx].nForecast[didx] = 0;
+                d[idx].nMatched[didx] = 0;
+                d[idx].nSimple[didx] = 0;
+                d[idx].nTotal[didx] = 0;
+              }
+            }
+            d[idx].subSecs[didx] = NaN;
+            d[idx].subLevs[didx] = NaN;
+          }
+        }
+      }
+    }
+    return {
+      data: d,
+      error,
+      n0,
+      nTimes,
+    };
   }
   return null;
 };

@@ -508,7 +508,7 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, allStatTypes
 };
 
 // generates diff of two contours.
-const getDataForDiffContour = function (
+const getDataForDiffContour = async function (
   dataset,
   appParams,
   showSignificance,
@@ -1248,21 +1248,23 @@ const getDataForDiffContour = function (
                 subtrahendIsCTC &&
                 minuendStatistic === subtrahendStatistic
               ) {
-                isDiffSignificant = matsDataUtils.checkDiffContourSignificanceCTC(
-                  diffValue,
-                  minuendData.subHit[minuendYIndex][minuendXIndex],
-                  minuendData.subFa[minuendYIndex][minuendXIndex],
-                  minuendData.subMiss[minuendYIndex][minuendXIndex],
-                  minuendData.subCn[minuendYIndex][minuendXIndex],
-                  subtrahendData.subHit[minuendYIndex][minuendXIndex],
-                  subtrahendData.subFa[minuendYIndex][minuendXIndex],
-                  subtrahendData.subMiss[minuendYIndex][minuendXIndex],
-                  subtrahendData.subCn[minuendYIndex][minuendXIndex],
-                  sigType,
-                  minuendStatistic
-                )
-                  ? 1
-                  : null;
+                isDiffSignificant =
+                  // eslint-disable-next-line no-await-in-loop
+                  (await matsDataUtils.checkDiffContourSignificanceCTC(
+                    diffValue,
+                    minuendData.subHit[minuendYIndex][minuendXIndex],
+                    minuendData.subFa[minuendYIndex][minuendXIndex],
+                    minuendData.subMiss[minuendYIndex][minuendXIndex],
+                    minuendData.subCn[minuendYIndex][minuendXIndex],
+                    subtrahendData.subHit[minuendYIndex][minuendXIndex],
+                    subtrahendData.subFa[minuendYIndex][minuendXIndex],
+                    subtrahendData.subMiss[minuendYIndex][minuendXIndex],
+                    subtrahendData.subCn[minuendYIndex][minuendXIndex],
+                    sigType,
+                    minuendStatistic
+                  ))
+                    ? 1
+                    : null;
               } else {
                 throw new Error(
                   "INFO: For this type of statistical significance, both of your component curves need to be skill score statistics, and both need to be the same statistic."

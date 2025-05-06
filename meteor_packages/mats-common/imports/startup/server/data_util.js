@@ -1281,7 +1281,7 @@ const getErr = function (sVals, sSecs, sLevs, appParams) {
 };
 
 // utility for getting CTC error bar length via Python
-const ctcErrorPython = function (statistic, minuendData, subtrahendData) {
+const ctcErrorPython = async function (statistic, minuendData, subtrahendData) {
   if (Meteor.isServer) {
     // send the data to the python script
     const pyOptions = {
@@ -1302,32 +1302,23 @@ const ctcErrorPython = function (statistic, minuendData, subtrahendData) {
       ],
     };
     const pyShell = require("python-shell");
-    const Future = require("fibers/future");
 
-    const future = new Future();
     let error;
     let errorLength = 0;
-    pyShell.PythonShell.run("python_ctc_error.py", pyOptions)
-      .then((results) => {
-        // parse the results or set an error
-        if (results === undefined || results === "undefined") {
-          error =
-            "Error thrown by python_ctc_error.py. Please write down exactly how you produced this error, and submit a ticket at mats.gsl@noaa.gov.";
-        } else {
-          // get the data back from the query
-          const parsedData = JSON.parse(results);
-          errorLength = Number(parsedData.error_length);
-        }
-        // done waiting - have results
-        future.return();
-      })
+    const results = await pyShell.PythonShell.run("python_ctc_error.py", pyOptions)
+      .then()
       .catch((err) => {
         error = err.message;
-        future.return();
       });
-
-    // wait for future to finish
-    future.wait();
+    // parse the results or set an error
+    if (results === undefined || results === "undefined") {
+      error =
+        "Error thrown by python_ctc_error.py. Please write down exactly how you produced this error, and submit a ticket at mats.gsl@noaa.gov.";
+    } else {
+      // get the data back from the query
+      const parsedData = JSON.parse(results);
+      errorLength = Number(parsedData.error_length);
+    }
     if (error) {
       throw new Error(`Error when calculating CTC errorbars: ${error}`);
     }
@@ -1405,7 +1396,7 @@ const isStudentTTestValueSignificant = function (t, df, sigType) {
 };
 
 // find the p-value or significance for this
-const checkDiffContourSignificanceCTC = function (
+const checkDiffContourSignificanceCTC = async function (
   diffValue,
   mH,
   mF,
@@ -1430,7 +1421,7 @@ const checkDiffContourSignificanceCTC = function (
     miss: sM,
     cn: sC,
   };
-  const errorLength = ctcErrorPython(statistic, minuendData, subtrahendData);
+  const errorLength = await ctcErrorPython(statistic, minuendData, subtrahendData);
   const upperBound = diffValue + errorLength;
   const lowerBound = diffValue - errorLength;
   return (upperBound > 0 && lowerBound > 0) || (upperBound < 0 && lowerBound < 0);

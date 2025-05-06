@@ -150,7 +150,7 @@ const processDataXYCurve = async function (
             miss: returnDataset[diffFrom[1]].subMiss[di],
             cn: returnDataset[diffFrom[1]].subCn[di],
           };
-          errorLength = matsDataUtils.ctcErrorPython(
+          errorLength = await matsDataUtils.ctcErrorPython(
             statisticSelect,
             minuendData,
             subtrahendData
@@ -687,7 +687,7 @@ const processDataProfile = async function (
             miss: returnDataset[diffFrom[1]].subMiss[di],
             cn: returnDataset[diffFrom[1]].subCn[di],
           };
-          errorLength = matsDataUtils.ctcErrorPython(
+          errorLength = await matsDataUtils.ctcErrorPython(
             statisticSelect,
             minuendData,
             subtrahendData
