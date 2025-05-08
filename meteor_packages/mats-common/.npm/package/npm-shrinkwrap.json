@@ -2,9 +2,9 @@
   "lockfileVersion": 4,
   "dependencies": {
     "@babel/runtime": {
-      "version": "7.27.0",
-      "resolved": "https://registry.npmjs.org/@babel/runtime/-/runtime-7.27.0.tgz",
-      "integrity": "sha512-VtPOkrdPHZsKc/clNqyi9WUA8TINkZ4cGk63UUE3u4pmB2k+ZMQRDuIOagv8UVd6j7k0T3+RRIb7beKTebNbcw=="
+      "version": "7.27.1",
+      "resolved": "https://registry.npmjs.org/@babel/runtime/-/runtime-7.27.1.tgz",
+      "integrity": "sha512-1x3D2xEk2fRo3PAhwQwu5UubzgiVWSXTBfWpVd2Mx2AzRqJuDJCsgaDVZ7HB5iGzDW1Hl1sWN2mFyKjmR9uAog=="
     },
     "@couchbase/couchbase-darwin-arm64-napi": {
       "version": "4.4.5",
@@ -112,19 +112,19 @@
       "integrity": "sha512-RFPahj0sXcmUyjrObAK+DOWtMvMIFV328n4qZJhgX3x2RqkQgOTU2mCUmiFR0CzM6AzChlRSUErjiJeEt8BaQA=="
     },
     "datatables.net": {
-      "version": "2.2.2",
-      "resolved": "https://registry.npmjs.org/datatables.net/-/datatables.net-2.2.2.tgz",
-      "integrity": "sha512-gfODIKE3gpgbVeZy2QGj2Dq9roO6hy00S+k1knklrqlMyAMrh1wt0Q6ryBUM7gU96U77ysbq8dYhxFdmcC/oPQ=="
+      "version": "2.3.0",
+      "resolved": "https://registry.npmjs.org/datatables.net/-/datatables.net-2.3.0.tgz",
+      "integrity": "sha512-IX5Dsc7bTNqI3RyT4B7imtFicLMCg7ZLwwx/gvR6cbwYgfG+mLX2KAVm7BNmnwOhUdMMcGSGSE19RpTn31TTGQ=="
     },
     "datatables.net-bs": {
-      "version": "2.2.2",
-      "resolved": "https://registry.npmjs.org/datatables.net-bs/-/datatables.net-bs-2.2.2.tgz",
-      "integrity": "sha512-jGTV+TivO8ETIdo2eFHfO3QpgEnJfEekvjNPS2tQAztwCAVvRT+ksDgCTIqOoZ465aXHyK2G1Z2ClnoL08TKAg=="
+      "version": "2.3.0",
+      "resolved": "https://registry.npmjs.org/datatables.net-bs/-/datatables.net-bs-2.3.0.tgz",
+      "integrity": "sha512-XIbSQkKyoQ88nrkzYXluqjAwCI4J+gZdMzWYD5N1GtJa6HI9eyHnt8bI0WsMSgzpSTCR6P7hrp7JaZn8Obou+A=="
     },
     "datatables.net-dt": {
-      "version": "2.2.2",
-      "resolved": "https://registry.npmjs.org/datatables.net-dt/-/datatables.net-dt-2.2.2.tgz",
-      "integrity": "sha512-Qfe9g/E3yAPTHoDASc1J0r5Yx++3Y3VdcEOFCupvfGJ8LhRrreebUC70UYEzO8vPOKnkutoRanW/VBMRIbXKXA=="
+      "version": "2.3.0",
+      "resolved": "https://registry.npmjs.org/datatables.net-dt/-/datatables.net-dt-2.3.0.tgz",
+      "integrity": "sha512-A2i2rt6b6VQ7ZwbuKpS3NbSy7EDfL65etpCm15vJ5Dk6Qv0OVr//xacTKgkJ7YFWCs32juloQ2vlnVIlGH7qfw=="
     },
     "daterangepicker": {
       "version": "3.1.0",
@@ -379,20 +379,70 @@
       "integrity": "sha512-Wm13VcsPIMdG96dzILfij09PvuS3APtcKNh7M28FsCA/w6+1mjR7hhPmfFNoilX9xU7wTdhsH5lJAm6XNzdtww=="
     },
     "meteor-node-stubs": {
-      "version": "1.2.13",
-      "resolved": "https://registry.npmjs.org/meteor-node-stubs/-/meteor-node-stubs-1.2.13.tgz",
-      "integrity": "sha512-K7uaHEyg+TQEMtYOnyt+/ECtg48xYowo0ErnvOg59ffe6WXwD7gdfp0EK1DhOG6lpb0P4S+OoFf1eUaTaNOleg==",
+      "version": "1.2.17",
+      "resolved": "https://registry.npmjs.org/meteor-node-stubs/-/meteor-node-stubs-1.2.17.tgz",
+      "integrity": "sha512-YKcv/cwxIKwA5Jl2chCd0eusmkhgALWTNB212eyYxerD+IZEelwlCQ+BID8chIyhofE48/fnRJ7voHeCo/9FoQ==",
       "dependencies": {
+        "@meteorjs/browserify-sign": {
+          "version": "4.2.3",
+          "dependencies": {
+            "bn.js": {
+              "version": "5.2.1"
+            },
+            "hash-base": {
+              "version": "3.0.5"
+            },
+            "readable-stream": {
+              "version": "2.3.8",
+              "dependencies": {
+                "safe-buffer": {
+                  "version": "5.1.2"
+                }
+              }
+            },
+            "safe-buffer": {
+              "version": "5.1.2"
+            },
+            "string_decoder": {
+              "version": "1.1.1",
+              "dependencies": {
+                "safe-buffer": {
+                  "version": "5.1.2"
+                }
+              }
+            }
+          }
+        },
+        "bn.js": {
+          "version": "4.12.0"
+        },
+        "hash-base": {
+          "version": "3.0.4"
+        },
+        "readable-stream": {
+          "version": "3.6.2"
+        },
+        "safe-buffer": {
+          "version": "5.2.1"
+        },
+        "string_decoder": {
+          "version": "1.3.0"
+        },
+        "@meteorjs/create-ecdh": {
+          "version": "4.0.4",
+          "dependencies": {
+            "bn.js": {
+              "version": "4.12.1"
+            }
+          }
+        },
         "@meteorjs/crypto-browserify": {
-          "version": "3.12.1",
+          "version": "3.12.4",
           "dependencies": {
             "hash-base": {
               "version": "3.0.4"
             }
           }
-        },
-        "hash-base": {
-          "version": "3.0.4"
         },
         "asn1.js": {
           "version": "4.10.1",
@@ -401,9 +451,6 @@
               "version": "4.12.0"
             }
           }
-        },
-        "bn.js": {
-          "version": "4.12.0"
         },
         "assert": {
           "version": "2.1.0"
@@ -428,45 +475,6 @@
         },
         "browserify-rsa": {
           "version": "4.1.0"
-        },
-        "browserify-sign": {
-          "version": "4.2.3",
-          "dependencies": {
-            "bn.js": {
-              "version": "5.2.1"
-            },
-            "hash-base": {
-              "version": "3.0.4"
-            },
-            "readable-stream": {
-              "version": "2.3.8",
-              "dependencies": {
-                "safe-buffer": {
-                  "version": "5.1.2"
-                }
-              }
-            },
-            "safe-buffer": {
-              "version": "5.1.2"
-            },
-            "string_decoder": {
-              "version": "1.1.1",
-              "dependencies": {
-                "safe-buffer": {
-                  "version": "5.1.2"
-                }
-              }
-            }
-          }
-        },
-        "readable-stream": {
-          "version": "3.6.2"
-        },
-        "safe-buffer": {
-          "version": "5.2.1"
-        },
-        "string_decoder": {
-          "version": "1.3.0"
         },
         "browserify-zlib": {
           "version": "0.2.0"
@@ -494,14 +502,6 @@
         },
         "core-util-is": {
           "version": "1.0.3"
-        },
-        "create-ecdh": {
-          "version": "4.0.4",
-          "dependencies": {
-            "bn.js": {
-              "version": "4.12.0"
-            }
-          }
         },
         "create-hash": {
           "version": "1.2.0"
@@ -782,9 +782,9 @@
       "integrity": "sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA=="
     },
     "mysql2": {
-      "version": "3.14.0",
-      "resolved": "https://registry.npmjs.org/mysql2/-/mysql2-3.14.0.tgz",
-      "integrity": "sha512-8eMhmG6gt/hRkU1G+8KlGOdQi2w+CgtNoD1ksXZq9gQfkfDsX4LHaBwTe1SY0Imx//t2iZA03DFnyYKPinxSRw=="
+      "version": "3.14.1",
+      "resolved": "https://registry.npmjs.org/mysql2/-/mysql2-3.14.1.tgz",
+      "integrity": "sha512-7ytuPQJjQB8TNAYX/H2yhL+iQOnIBjAMam361R7UAL0lOVXWjtdrmoL9HYKqKoLp/8UUTRcvo1QPvK9KL7wA8w=="
     },
     "named-placeholders": {
       "version": "1.1.3",
@@ -845,11 +845,6 @@
       "version": "3.6.2",
       "resolved": "https://registry.npmjs.org/readable-stream/-/readable-stream-3.6.2.tgz",
       "integrity": "sha512-9u/sniCrY3D5WdsERHzHE4G2YCXqoG5FTHUiCC4SIbr6XcLZBY05ya9EKjYek9O5xOAwjGq+1JdGBAS7Q9ScoA=="
-    },
-    "regenerator-runtime": {
-      "version": "0.14.1",
-      "resolved": "https://registry.npmjs.org/regenerator-runtime/-/regenerator-runtime-0.14.1.tgz",
-      "integrity": "sha512-dYnhHh0nJoMfnkZs6GmmhFknAGRrLznOu5nc9ML+EJxGvrx6H7teuevqVqCuPcPK//3eDrrjQhehXVx9cnkGdw=="
     },
     "require-directory": {
       "version": "2.1.1",

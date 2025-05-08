@@ -17,22 +17,22 @@ Package.describe({
 });
 
 Package.onUse(function (api) {
-  api.versionsFrom("3.1");
+  api.versionsFrom("3.2");
   Npm.depends({
     "@fortawesome/fontawesome-free": "6.7.2",
     "fs-extra": "11.3.0",
-    "@babel/runtime": "7.27.0",
-    "meteor-node-stubs": "1.2.13",
+    "@babel/runtime": "7.27.1",
+    "meteor-node-stubs": "1.2.17",
     url: "0.11.4",
     jquery: "3.7.1",
-    "datatables.net-bs": "2.2.2",
-    "datatables.net-dt": "2.2.2",
+    "datatables.net-bs": "2.3.0",
+    "datatables.net-dt": "2.3.0",
     "jquery-ui": "1.14.1",
     "csv-stringify": "6.5.2",
     "node-file-cache": "1.0.2",
     "python-shell": "5.0.0",
     couchbase: "4.4.5",
-    mysql2: "3.14.0",
+    mysql2: "3.14.1",
     "vanillajs-datepicker": "1.3.4",
     daterangepicker: "3.1.0",
     "lighten-darken-color": "1.0.0",
