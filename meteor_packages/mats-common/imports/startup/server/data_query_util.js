@@ -22,8 +22,7 @@ const queryMySQL = async function (pool, statement) {
       const results = await pool.query(statement);
       return results[0];
     } catch (err) {
-      console.log(`matsDataQueryUtils.queryMySQL ERROR: ${err.message}`);
-      throw new Error(`matsDataQueryUtils.queryMySQL ERROR: ${err.message}`);
+      return `matsDataQueryUtils.queryMySQL ERROR: ${err.message}`;
     }
   }
   return null;
