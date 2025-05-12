@@ -5,6 +5,7 @@
 import {
   matsCollections,
   matsCurveUtils,
+  matsGraphUtils,
   matsPlotUtils,
   matsTypes,
 } from "meteor/randyp:mats-common";
@@ -1081,14 +1082,17 @@ Template.textOutput.helpers({
 Template.textOutput.events({
   "click .export"() {
     Session.get("plotType");
-    Session.get("plotResultKey");
+    const urlParams = matsGraphUtils.getBaseURL();
+    let url = `${urlParams.baseURL}/${urlParams.appName}`;
+    if (urlParams.baseURL.includes("localhost")) {
+      url = `${urlParams.baseURL}`;
+    }
+    const graphFunction = Session.get("graphFunction");
+    const plotResultKey = Session.get("plotResultKey");
+    const plotParameter = Session.get("plotParameter");
     // open a new window with
     window.open(
-      `${window.location}/CSV/${Session.get("graphFunction")}/${Session.get(
-        "plotResultKey"
-      )}/${Session.get("plotParameter")}/${
-        matsCollections.Settings.findOne({}, { fields: { appName: 1 } }).appName
-      }`
+      `${url}/CSV/${graphFunction}/${plotResultKey}/${plotParameter}/${urlParams.appName}`
     );
   },
 });

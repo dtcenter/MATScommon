@@ -30,14 +30,16 @@ FlowRouter.route("/", {
 FlowRouter.route("/CSV/:graphFunction/:key/:matching/:appName", {
   name: "csv",
   action() {
-    window.location.href = FlowRouter.path;
+    // eslint-disable-next-line no-underscore-dangle
+    window.location.href = FlowRouter._current.path;
   },
 });
 
 FlowRouter.route("/JSON/:graphFunction/:key/:matching/:appName", {
   name: "json",
   action() {
-    window.location.href = FlowRouter.path;
+    // eslint-disable-next-line no-underscore-dangle
+    window.location.href = FlowRouter._current.path;
   },
 });
 
@@ -91,7 +93,8 @@ FlowRouter.route(
   {
     name: "csv",
     action() {
-      window.location.href = FlowRouter.path;
+      // eslint-disable-next-line no-underscore-dangle
+      window.location.href = FlowRouter._current.path;
     },
   }
 );
@@ -101,7 +104,8 @@ FlowRouter.route(
   {
     name: "json",
     action() {
-      window.location.href = FlowRouter.path;
+      // eslint-disable-next-line no-underscore-dangle
+      window.location.href = FlowRouter._current.path;
     },
   }
 );
@@ -165,7 +169,8 @@ FlowRouter.route(
   {
     name: "csv",
     action() {
-      window.location.href = FlowRouter.path;
+      // eslint-disable-next-line no-underscore-dangle
+      window.location.href = FlowRouter._current.path;
     },
   }
 );
@@ -175,7 +180,8 @@ FlowRouter.route(
   {
     name: "json",
     action() {
-      window.location.href = FlowRouter.path;
+      // eslint-disable-next-line no-underscore-dangle
+      window.location.href = FlowRouter._current.path;
     },
   }
 );

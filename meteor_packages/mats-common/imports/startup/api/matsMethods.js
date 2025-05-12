@@ -3039,30 +3039,6 @@ if (Meteor.isServer) {
   );
 
   // eslint-disable-next-line no-unused-vars
-  router.use("/getJSON/:key", function (params, req, res, next) {
-    getJSON(params, res);
-    next();
-  });
-
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/getJSON/:key`,
-    // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      getJSON(params, res);
-      next();
-    }
-  );
-
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getJSON/:key`,
-    // eslint-disable-next-line no-unused-vars
-    function (params, req, res, next) {
-      getJSON(params, res);
-      next();
-    }
-  );
-
-  // eslint-disable-next-line no-unused-vars
   router.use("/JSON/:f/:key/:m/:a", function (params, req, res, next) {
     getJSON(params, res);
     next();

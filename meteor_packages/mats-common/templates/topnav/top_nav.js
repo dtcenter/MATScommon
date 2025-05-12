@@ -2,50 +2,35 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 import { Meteor } from "meteor/meteor";
-import { matsCollections, matsTypes } from "meteor/randyp:mats-common";
+import { matsCollections, matsTypes, matsGraphUtils } from "meteor/randyp:mats-common";
 import { Template } from "meteor/templating";
 
 /* global $ */
 
-const getBaseURL = function () {
-  const urlComponents = document.location.href.split("/");
-  const baseURL =
-    Meteor.settings.public.home === undefined
-      ? `https://${urlComponents[2]}`
-      : Meteor.settings.public.home;
-  const appName =
-    matsCollections.Settings === undefined ||
-    matsCollections.Settings.findOne({}) === undefined ||
-    matsCollections.Settings.findOne({}).appName === undefined
-      ? `${urlComponents[urlComponents.length - 1]}`
-      : matsCollections.Settings.findOne({}).appName;
-  return { appName, baseURL };
-};
-
 Template.topNav.helpers({
   govLogo() {
-    const urlParams = getBaseURL();
+    const urlParams = matsGraphUtils.getBaseURL();
     if (urlParams.baseURL.includes("localhost")) {
       return `${urlParams.baseURL}/packages/randyp_mats-common/public/img/icon-dot-gov.svg`;
     }
     return `${urlParams.baseURL}/${urlParams.appName}/packages/randyp_mats-common/public/img/icon-dot-gov.svg`;
   },
   httpsLogo() {
-    const urlParams = getBaseURL();
+    const urlParams = matsGraphUtils.getBaseURL();
     if (urlParams.baseURL.includes("localhost")) {
       return `${urlParams.baseURL}/packages/randyp_mats-common/public/img/icon-https.svg`;
     }
     return `${urlParams.baseURL}/${urlParams.appName}/packages/randyp_mats-common/public/img/icon-https.svg`;
   },
   flagLogo() {
-    const urlParams = getBaseURL();
+    const urlParams = matsGraphUtils.getBaseURL();
     if (urlParams.baseURL.includes("localhost")) {
       return `${urlParams.baseURL}/packages/randyp_mats-common/public/img/us_flag_small.png`;
     }
     return `${urlParams.baseURL}/${urlParams.appName}/packages/randyp_mats-common/public/img/us_flag_small.png`;
   },
   transparentGif() {
-    const urlParams = getBaseURL();
+    const urlParams = matsGraphUtils.getBaseURL();
     if (urlParams.baseURL.includes("localhost")) {
       return `${urlParams.baseURL}/packages/randyp_mats-common/public/img/noaa_transparent.png`;
     }

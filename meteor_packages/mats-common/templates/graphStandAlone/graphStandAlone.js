@@ -79,54 +79,56 @@ Template.graphStandAlone.helpers({
           return false;
         }
         // make sure to capture the options (layout) from the old graph - which were stored in graph.js
-        matsMethods.getLayout.callAsync({ resultKey: key }, function (e, r) {
-          if (e !== undefined) {
+        matsMethods.getLayout
+          .callAsync({ resultKey: key })
+          .then(function (r) {
+            let mapLoadPause = 0;
+            options = r.layout;
+            if (plotType === matsTypes.PlotTypes.map) {
+              options.mapbox.zoom = 2.75;
+              mapLoadPause = 1000;
+            }
+            options.hovermode = false;
+            resizeOptions = options;
+
+            // initial plot
+            $("#legendContainer").empty();
+            $("#placeholder").empty();
+
+            // need a slight delay for plotly to load
+            setTimeout(function () {
+              Plotly.newPlot($("#placeholder")[0], dataset, options, {
+                showLink: false,
+                displayModeBar: false,
+              });
+              // update changes to the curve ops -- need to pause if we're doing a map so the map can finish loading before we try to edit it
+              setTimeout(function () {
+                const updates = r.curveOpsUpdate.curveOpsUpdate;
+                for (let uidx = 0; uidx < updates.length; uidx += 1) {
+                  const curveOpsUpdate = {};
+                  if (updates[uidx]) {
+                    const updatedKeys = Object.keys(updates[uidx]);
+                    for (let kidx = 0; kidx < updatedKeys.length; kidx += 1) {
+                      const jsonHappyKey = updatedKeys[kidx];
+                      // turn the json placeholder back into .
+                      const updatedKey = jsonHappyKey.split("____").join(".");
+                      curveOpsUpdate[updatedKey] = updates[uidx][jsonHappyKey];
+                    }
+                    Plotly.restyle($("#placeholder")[0], curveOpsUpdate, uidx);
+                  }
+                }
+              }, mapLoadPause);
+            }, 500);
+
+            // append annotations
+            $("#legendContainer").append(r.annotation);
+            document.getElementById("gsaSpinner").style.display = "none";
+            return null;
+          })
+          .catch(function (e) {
             setError(e);
             return false;
-          }
-          let mapLoadPause = 0;
-          options = r.layout;
-          if (plotType === matsTypes.PlotTypes.map) {
-            options.mapbox.zoom = 2.75;
-            mapLoadPause = 1000;
-          }
-          options.hovermode = false;
-          resizeOptions = options;
-
-          // initial plot
-          $("#legendContainer").empty();
-          $("#placeholder").empty();
-
-          // need a slight delay for plotly to load
-          setTimeout(function () {
-            Plotly.newPlot($("#placeholder")[0], dataset, options, {
-              showLink: false,
-              displayModeBar: false,
-            });
-            // update changes to the curve ops -- need to pause if we're doing a map so the map can finish loading before we try to edit it
-            setTimeout(function () {
-              const updates = r.curveOpsUpdate.curveOpsUpdate;
-              for (let uidx = 0; uidx < updates.length; uidx += 1) {
-                const curveOpsUpdate = {};
-                if (updates[uidx]) {
-                  const updatedKeys = Object.keys(updates[uidx]);
-                  for (let kidx = 0; kidx < updatedKeys.length; kidx += 1) {
-                    const jsonHappyKey = updatedKeys[kidx];
-                    // turn the json placeholder back into .
-                    const updatedKey = jsonHappyKey.split("____").join(".");
-                    curveOpsUpdate[updatedKey] = updates[uidx][jsonHappyKey];
-                  }
-                  Plotly.restyle($("#placeholder")[0], curveOpsUpdate, uidx);
-                }
-              }
-            }, mapLoadPause);
-          }, 500);
-
-          // append annotations
-          $("#legendContainer").append(r.annotation);
-          document.getElementById("gsaSpinner").style.display = "none";
-          return null;
-        });
+          });
         return null;
       })
       .catch(function (error) {

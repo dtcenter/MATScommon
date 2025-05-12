@@ -1434,12 +1434,15 @@ Template.graph.events({
         w = h * 1.35;
         break;
     }
+    const urlParams = matsGraphUtils.getBaseURL();
+    let url = `${urlParams.baseURL}/${urlParams.appName}`;
+    if (urlParams.baseURL.includes("localhost")) {
+      url = `${urlParams.baseURL}`;
+    }
+    const graphFunction = Session.get("graphFunction");
+    const plotParameter = Session.get("plotParameter");
     const wind = window.open(
-      `${window.location}/preview/${Session.get("graphFunction")}/${Session.get(
-        "plotResultKey"
-      )}/${Session.get("plotParameter")}/${
-        matsCollections.Settings.findOne({}, { fields: { appName: 1 } }).appName
-      }`,
+      `${url}/preview/${graphFunction}/${key}/${plotParameter}/${urlParams.appName}`,
       "_blank",
       "status=no,titlebar=no,toolbar=no,scrollbars=no,menubar=no,resizable=yes",
       `height=${h},width=${w}`
@@ -1491,12 +1494,16 @@ Template.graph.events({
     return null;
   },
   "click .basis"() {
+    const urlParams = matsGraphUtils.getBaseURL();
+    let url = `${urlParams.baseURL}/${urlParams.appName}`;
+    if (urlParams.baseURL.includes("localhost")) {
+      url = `${urlParams.baseURL}`;
+    }
+    const graphFunction = Session.get("graphFunction");
+    const plotResultKey = Session.get("plotResultKey");
+    const plotParameter = Session.get("plotParameter");
     window.open(
-      `${window.location}/JSON/${Session.get("graphFunction")}/${Session.get(
-        "plotResultKey"
-      )}/${Session.get("plotParameter")}/${
-        matsCollections.Settings.findOne({}, { fields: { appName: 1 } }).appName
-      }`,
+      `${url}/JSON/${graphFunction}/${plotResultKey}/${plotParameter}/${urlParams.appName}`,
       "_blank",
       "resizable=yes"
     );
