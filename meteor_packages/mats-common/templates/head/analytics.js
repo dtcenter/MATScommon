@@ -7,6 +7,6 @@ Template.analytics.helpers({
     if (typeof useProductionAnalytics === "boolean") {
       return useProductionAnalytics;
     }
-    return false;
+    return false; // if not a boolean or undefined, default to false
   },
 });
