@@ -190,7 +190,8 @@ Package.onUse(function (api) {
   api.addFiles("templates/graphStandAlone/graphStandAlone.js", "client");
 
   api.addFiles("templates/head/head.html", "client");
-  api.addFiles("templates/head/head.js", "client");
+  api.addFiles("templates/head/analytics.html", "client");
+  api.addFiles("templates/head/analytics.js", "client");
 
   api.addFiles("templates/help/help.html", "client");
 
