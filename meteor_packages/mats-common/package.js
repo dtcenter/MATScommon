@@ -51,15 +51,15 @@ Package.onUse(function (api) {
   api.use("service-configuration", "server");
   api.use("yasinuslu:json-view", "client");
   api.use("mdg:validated-method");
+  api.use("session");
+  api.imply("session");
+  api.use("webapp");
   api.use("twbs:bootstrap");
   api.use("risul:bootstrap-colorpicker");
   api.use("logging");
   api.use("reload");
   api.use("random");
   api.use("ejson");
-  api.use("session");
-  api.imply("session");
-  api.use("webapp");
   api.use("spacebars");
   api.use("check");
   api.use("momentjs:moment");

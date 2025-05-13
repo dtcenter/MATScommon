@@ -7,6 +7,7 @@ import { matsCollections } from "meteor/randyp:mats-common";
 import { curveParamsByApp } from "../both/mats-curve-params";
 
 /* eslint-disable no-console */
+
 const publishField = function (field) {
   Meteor.publish(field, function () {
     const data = matsCollections[field].find({});

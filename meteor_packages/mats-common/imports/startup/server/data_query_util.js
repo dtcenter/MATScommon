@@ -151,6 +151,7 @@ const getStationsInCouchbaseRegion = async function (pool, region) {
 const queryDBPython = async function (pool, queryArray) {
   if (Meteor.isServer) {
     // send the query statement to the python query function
+    const mysqlConnection = await pool.getConnection();
     const pyOptions = {
       mode: "text",
       pythonPath: Meteor.settings.private.PYTHON_PATH,
@@ -161,15 +162,15 @@ const queryDBPython = async function (pool, queryArray) {
           : `${process.env.PWD}/programs/server/assets/packages/randyp_mats-common/public/python/`,
       args: [
         "-h",
-        pool.config.host,
+        mysqlConnection.config.host,
         "-P",
-        pool.config.port,
+        mysqlConnection.config.port,
         "-u",
-        pool.config.user,
+        mysqlConnection.config.user,
         "-p",
-        pool.config.password,
+        mysqlConnection.config.password,
         "-d",
-        pool.config.database,
+        mysqlConnection.config.database,
         "-t",
         Meteor.settings.public.mysql_wait_timeout
           ? Meteor.settings.public.mysql_wait_timeout
@@ -178,6 +179,7 @@ const queryDBPython = async function (pool, queryArray) {
         JSON.stringify(queryArray),
       ],
     };
+    mysqlConnection.release();
 
     let d = [];
     let error = "";
