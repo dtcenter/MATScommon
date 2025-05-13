@@ -103,7 +103,7 @@ const checkMetaDataRefresh = async function () {
               updatedEpoch = doc.updated;
               break;
             default:
-              throw new Meteor.Error("reset:app undefined DbType");
+              throw new Meteor.Error("resetApp: undefined DbType");
           }
         }
         // console.log("DB says metadata for table " + dbName + "." + tName + " was updated at " + updatedEpoch);
@@ -2236,7 +2236,7 @@ const getReleaseNotes = new ValidatedMethod({
       } else {
         file = `${process.env.PWD}/programs/server/assets/packages/randyp_mats-common/public/MATSReleaseNotes.html`;
       }
-      return fse.readFile(file, "utf8", function (err, data) {
+      return fse.readFileSync(file, "utf8", function (err, data) {
         if (err) {
           return err.message;
         }
@@ -2655,7 +2655,7 @@ const resetApp = async function (appRef) {
         }
       }
     } else {
-      throw new Meteor.Error("Server error: ", "reset:app bad pool-database entry");
+      throw new Meteor.Error("Server error: ", "resetApp: bad pool-database entry");
     }
     // invoke the standard common routines
     await matsCollections.PlotGraphFunctions.removeAsync({});
@@ -2889,22 +2889,20 @@ const testGetTables = new ValidatedMethod({
             password: params.password,
             database: params.database,
           });
-          const result = await connection.query("show tables;", function (err, res) {
-            if (err || res === undefined) {
-              // return callback(err,null);
-              return null;
-            }
-            const tables = result.map(function (a) {
-              return a;
-            });
-            return tables;
+          const result = await connection.query("show tables;");
+          if (!result || result.includes("ERROR: ")) {
+            // return callback(err,null);
+            return null;
+          }
+          const tables = result.map(function (a) {
+            return a;
           });
           await connection.end(function (err) {
             if (err) {
               console.log("testGetTables cannot end connection");
             }
           });
-          console.log(`MySQL get tables suceeded. result: ${result}`);
+          console.log(`MySQL get tables suceeded. result: ${tables}`);
         } catch (e) {
           throw new Meteor.Error(e.message);
         }
