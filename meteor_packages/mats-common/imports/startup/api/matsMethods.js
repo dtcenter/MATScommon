@@ -2599,7 +2599,7 @@ const resetApp = async function (appRef) {
           Meteor.settings.public.undefinedRoles =
             Meteor.settings.public.undefinedRoles === undefined
               ? []
-              : Meteor.settings.public.undefinedRoles === undefined;
+              : Meteor.settings.public.undefinedRoles;
           Meteor.settings.public.undefinedRoles.push(record.role);
         }
       }
