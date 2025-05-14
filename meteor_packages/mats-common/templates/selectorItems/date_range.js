@@ -268,7 +268,7 @@ Template.dateRange.onRendered(function () {
       }
       // now we have a normalized date range for the selected superiors.
       // evaluate DRS
-      if (appName !== "met-cyclone") {
+      if (!appName.includes("met-cyclone")) {
         // we want the exact duration of the selected hurricane season
         if (dataEnd.isBefore(startDsr) || dataStart.isAfter(endDsr)) {
           // the current user setting and the valid range do not overlap so just set the DSR to the most recent 30 days of the valid range
