@@ -42,11 +42,7 @@ const isEmpty = function (map) {
 // private middleware for determining if the app is running
 const getHealth = async function (res) {
   if (Meteor.isServer) {
-    const settings = await matsCollections.Settings.findOneAsync();
-    res.status(200).json({
-      status: "Ok",
-      version: settings.appVersion,
-    });
+    res.sendStatus(200);
   }
 };
 
