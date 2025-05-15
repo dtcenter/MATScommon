@@ -2965,227 +2965,228 @@ if (Meteor.isServer) {
   const app = WebApp.express();
   const router = WebApp.express.Router();
 
-  router.use("/healthz", async (req, res) => {
+  router.get("/healthz", async (req, res) => {
     await getHealth(res);
   });
 
-  router.use(`${proxyPrefixPath}/:app/healthz`, async (req, res) => {
+  router.get(`${proxyPrefixPath}/:app/healthz`, async (req, res) => {
     await getHealth(res);
   });
 
-  router.use("/CSV/:f/:key/:m/:a", (req, res) => {
+  router.get("/CSV/:f/:key/:m/:a", (req, res) => {
     getCSV(req.params, res);
   });
 
-  router.use(`${proxyPrefixPath}/:app/CSV/:f/:key/:m/:a`, (req, res) => {
+  router.get(`${proxyPrefixPath}/:app/CSV/:f/:key/:m/:a`, (req, res) => {
     getCSV(req.params, res);
   });
 
-  router.use("/JSON/:f/:key/:m/:a", (req, res) => {
+  router.get("/JSON/:f/:key/:m/:a", (req, res) => {
     getJSON(req.params, res);
   });
 
-  router.use(`${proxyPrefixPath}/:app/JSON/:f/:key/:m/:a`, (req, res) => {
+  router.get(`${proxyPrefixPath}/:app/JSON/:f/:key/:m/:a`, (req, res) => {
     getJSON(req.params, res);
   });
 
-  router.use("/clearCache", (req, res) => {
+  router.get("/clearCache", (req, res) => {
     clearCache(res);
   });
 
-  router.use(`${proxyPrefixPath}/:app/clearCache`, (req, res) => {
+  router.get(`${proxyPrefixPath}/:app/clearCache`, (req, res) => {
     clearCache(res);
   });
 
-  router.use("/getApps", async (req, res) => {
+  router.get("/getApps", async (req, res) => {
     await getApps(res);
   });
 
-  router.use(`${proxyPrefixPath}/:app/getApps`, async (req, res) => {
+  router.get(`${proxyPrefixPath}/:app/getApps`, async (req, res) => {
     await getApps(res);
   });
 
-  router.use("/getAppSumsDBs", async (req, res) => {
+  router.get("/getAppSumsDBs", async (req, res) => {
     await getAppSumsDBs(res);
   });
 
-  router.use(`${proxyPrefixPath}/:app/getAppSumsDBs`, async (req, res) => {
+  router.get(`${proxyPrefixPath}/:app/getAppSumsDBs`, async (req, res) => {
     await getAppSumsDBs(res);
   });
 
-  router.use("/getModels", async (req, res) => {
+  router.get("/getModels", async (req, res) => {
     await getModels(res);
   });
 
-  router.use(`${proxyPrefixPath}/:app/getModels`, async (req, res) => {
+  router.get(`${proxyPrefixPath}/:app/getModels`, async (req, res) => {
     await getModels(res);
   });
 
-  router.use("/getRegions", async (req, res) => {
+  router.get("/getRegions", async (req, res) => {
     await getRegions(res);
   });
 
-  router.use(`${proxyPrefixPath}/:app/getRegions`, async (req, res) => {
+  router.get(`${proxyPrefixPath}/:app/getRegions`, async (req, res) => {
     await getRegions(res);
   });
 
-  router.use("/getRegionsValuesMap", async (req, res) => {
+  router.get("/getRegionsValuesMap", async (req, res) => {
     await getRegionsValuesMap(res);
   });
 
-  router.use(`${proxyPrefixPath}/:app/getRegionsValuesMap`, async (req, res) => {
+  router.get(`${proxyPrefixPath}/:app/getRegionsValuesMap`, async (req, res) => {
     await getRegionsValuesMap(res);
   });
 
-  router.use("/getStatistics", async (req, res) => {
+  router.get("/getStatistics", async (req, res) => {
     await getStatistics(res);
   });
 
-  router.use(`${proxyPrefixPath}/:app/getStatistics`, async (req, res) => {
+  router.get(`${proxyPrefixPath}/:app/getStatistics`, async (req, res) => {
     await getStatistics(res);
   });
 
-  router.use("/getStatisticsValuesMap", async (req, res) => {
+  router.get("/getStatisticsValuesMap", async (req, res) => {
     await getStatisticsValuesMap(res);
   });
 
-  router.use(`${proxyPrefixPath}/:app/getStatisticsValuesMap`, async (req, res) => {
+  router.get(`${proxyPrefixPath}/:app/getStatisticsValuesMap`, async (req, res) => {
     await getStatisticsValuesMap(res);
   });
 
-  router.use("/getVariables", async (req, res) => {
+  router.get("/getVariables", async (req, res) => {
     await getVariables(res);
   });
 
-  router.use(`${proxyPrefixPath}/:app/getVariables`, async (req, res) => {
+  router.get(`${proxyPrefixPath}/:app/getVariables`, async (req, res) => {
     await getVariables(res);
   });
 
-  router.use("/getVariablesValuesMap", async (req, res) => {
+  router.get("/getVariablesValuesMap", async (req, res) => {
     await getVariablesValuesMap(res);
   });
 
-  router.use(`${proxyPrefixPath}/:app/getVariablesValuesMap`, async (req, res) => {
+  router.get(`${proxyPrefixPath}/:app/getVariablesValuesMap`, async (req, res) => {
     await getVariablesValuesMap(res);
   });
 
-  router.use("/getThresholds", async (req, res) => {
+  router.get("/getThresholds", async (req, res) => {
     await getThresholds(res);
   });
 
-  router.use(`${proxyPrefixPath}/:app/getThresholds`, async (req, res) => {
+  router.get(`${proxyPrefixPath}/:app/getThresholds`, async (req, res) => {
     await getThresholds(res);
   });
 
-  router.use("/getThresholdsValuesMap", async (req, res) => {
+  router.get("/getThresholdsValuesMap", async (req, res) => {
     await getThresholdsValuesMap(res);
   });
 
-  router.use(`${proxyPrefixPath}/:app/getThresholdsValuesMap`, async (req, res) => {
+  router.get(`${proxyPrefixPath}/:app/getThresholdsValuesMap`, async (req, res) => {
     await getThresholdsValuesMap(res);
   });
 
-  router.use("/getScales", async (req, res) => {
+  router.get("/getScales", async (req, res) => {
     await getScales(res);
   });
 
-  router.use(`${proxyPrefixPath}/:app/getScales`, async (req, res) => {
+  router.get(`${proxyPrefixPath}/:app/getScales`, async (req, res) => {
     await getScales(res);
   });
 
-  router.use("/getScalesValuesMap", async (req, res) => {
+  router.get("/getScalesValuesMap", async (req, res) => {
     await getScalesValuesMap(res);
   });
 
-  router.use(`${proxyPrefixPath}/:app/getScalesValuesMap`, async (req, res) => {
+  router.get(`${proxyPrefixPath}/:app/getScalesValuesMap`, async (req, res) => {
     await getScalesValuesMap(res);
   });
 
-  router.use("/getTruths", async (req, res) => {
+  router.get("/getTruths", async (req, res) => {
     await getTruths(res);
   });
 
-  router.use(`${proxyPrefixPath}/:app/getTruths`, async (req, res) => {
+  router.get(`${proxyPrefixPath}/:app/getTruths`, async (req, res) => {
     await getTruths(res);
   });
 
-  router.use("/getTruthsValuesMap", async (req, res) => {
+  router.get("/getTruthsValuesMap", async (req, res) => {
     await getTruthsValuesMap(res);
   });
 
-  router.use(`${proxyPrefixPath}/:app/getTruthsValuesMap`, async (req, res) => {
+  router.get(`${proxyPrefixPath}/:app/getTruthsValuesMap`, async (req, res) => {
     await getTruthsValuesMap(res);
   });
 
-  router.use("/getFcstLengths", async (req, res) => {
+  router.get("/getFcstLengths", async (req, res) => {
     await getFcstLengths(res);
   });
 
-  router.use(`${proxyPrefixPath}/:app/getFcstLengths`, async (req, res) => {
+  router.get(`${proxyPrefixPath}/:app/getFcstLengths`, async (req, res) => {
     await getFcstLengths(res);
   });
 
-  router.use("/getFcstTypes", async (req, res) => {
+  router.get("/getFcstTypes", async (req, res) => {
     await getFcstTypes(res);
   });
 
-  router.use(`${proxyPrefixPath}/:app/getFcstTypes`, async (req, res) => {
+  router.get(`${proxyPrefixPath}/:app/getFcstTypes`, async (req, res) => {
     await getFcstTypes(res);
   });
 
-  router.use("/getFcstTypesValuesMap", async (req, res) => {
+  router.get("/getFcstTypesValuesMap", async (req, res) => {
     await getFcstTypesValuesMap(res);
   });
 
-  router.use(`${proxyPrefixPath}/:app/getFcstTypesValuesMap`, async (req, res) => {
+  router.get(`${proxyPrefixPath}/:app/getFcstTypesValuesMap`, async (req, res) => {
     await getFcstTypesValuesMap(res);
   });
 
-  router.use("/getValidTimes", async (req, res) => {
+  router.get("/getValidTimes", async (req, res) => {
     await getValidTimes(res);
   });
 
-  router.use(`${proxyPrefixPath}/:app/getValidTimes`, async (req, res) => {
+  router.get(`${proxyPrefixPath}/:app/getValidTimes`, async (req, res) => {
     await getValidTimes(res);
   });
 
-  router.use("/getLevels", async (req, res) => {
+  router.get("/getLevels", async (req, res) => {
     await getLevels(res);
   });
 
-  router.use(`${proxyPrefixPath}/:app/getLevels`, async (req, res) => {
+  router.get(`${proxyPrefixPath}/:app/getLevels`, async (req, res) => {
     await getLevels(res);
   });
 
-  router.use("/getDates", async (req, res) => {
+  router.get("/getDates", async (req, res) => {
     await getDates(res);
   });
 
-  router.use(`${proxyPrefixPath}/:app/getDates`, async (req, res) => {
+  router.get(`${proxyPrefixPath}/:app/getDates`, async (req, res) => {
     await getDates(res);
   });
 
-  router.use("/refreshMetadata", async (req, res) => {
+  // users manually enter this URL to refresh the metadata
+  router.get("/refreshMetadata", async (req, res) => {
     await refreshMetadataMWltData(res);
   });
 
-  router.use(`${proxyPrefixPath}/:app/refreshMetadata`, async (req, res) => {
+  router.get(`${proxyPrefixPath}/:app/refreshMetadata`, async (req, res) => {
     await refreshMetadataMWltData(res);
   });
 
-  router.use("/refreshScorecard/:docId", (req, res) => {
+  router.post("/refreshScorecard/:docId", (req, res) => {
     refreshScorecard(req.params, res);
   });
 
-  router.use(`${proxyPrefixPath}/:app/refreshScorecard/:docId`, (req, res) => {
+  router.post(`${proxyPrefixPath}/:app/refreshScorecard/:docId`, (req, res) => {
     refreshScorecard(req.params, res);
   });
 
-  router.use("/setStatusScorecard/:docId", (req, res) => {
+  router.post("/setStatusScorecard/:docId", (req, res) => {
     setStatusScorecard(req.params, req, res);
   });
 
-  router.use(`${proxyPrefixPath}/:app/setStatusScorecard/:docId`, (req, res) => {
+  router.post(`${proxyPrefixPath}/:app/setStatusScorecard/:docId`, (req, res) => {
     setStatusScorecard(req.params, req, res);
   });
 
