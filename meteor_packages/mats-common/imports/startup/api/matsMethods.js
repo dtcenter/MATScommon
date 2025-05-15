@@ -2958,6 +2958,8 @@ if (Meteor.isServer) {
     Meteor.settings.public.proxy_prefix_path = "";
   }
 
+  const proxyPrefixPath = Meteor.settings.public.proxy_prefix_path;
+
   // needed for middleware routes
   const app = WebApp.express();
   const router = WebApp.express.Router();
@@ -2966,118 +2968,88 @@ if (Meteor.isServer) {
     await status(res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/status`,
-    async (req, res, next) => {
-      await status(res);
-    }
-  );
+  router.use(`${proxyPrefixPath}/:app/status`, async (req, res, next) => {
+    await status(res);
+  });
 
   router.use("/CSV/:f/:key/:m/:a", (req, res, next) => {
     getCSV(req.params, res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/CSV/:f/:key/:m/:a`,
-    (req, res, next) => {
-      getCSV(req.params, res);
-    }
-  );
+  router.use(`${proxyPrefixPath}/:app/CSV/:f/:key/:m/:a`, (req, res, next) => {
+    getCSV(req.params, res);
+  });
 
   router.use("/JSON/:f/:key/:m/:a", (req, res, next) => {
     getJSON(req.params, res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/JSON/:f/:key/:m/:a`,
-    (req, res, next) => {
-      getJSON(req.params, res);
-    }
-  );
+  router.use(`${proxyPrefixPath}/:app/JSON/:f/:key/:m/:a`, (req, res, next) => {
+    getJSON(req.params, res);
+  });
 
   router.use("/clearCache", (req, res, next) => {
     clearCache(res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/clearCache`,
-    (req, res, next) => {
-      clearCache(res);
-    }
-  );
+  router.use(`${proxyPrefixPath}/:app/clearCache`, (req, res, next) => {
+    clearCache(res);
+  });
 
   router.use("/getApps", async (req, res, next) => {
     await getApps(res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getApps`,
-    async (req, res, next) => {
-      await getApps(res);
-    }
-  );
+  router.use(`${proxyPrefixPath}/:app/getApps`, async (req, res, next) => {
+    await getApps(res);
+  });
 
   router.use("/getAppSumsDBs", async (req, res, next) => {
     await getAppSumsDBs(res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getAppSumsDBs`,
-    async (req, res, next) => {
-      await getAppSumsDBs(res);
-    }
-  );
+  router.use(`${proxyPrefixPath}/:app/getAppSumsDBs`, async (req, res, next) => {
+    await getAppSumsDBs(res);
+  });
 
   router.use("/getModels", async (req, res, next) => {
     await getModels(res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getModels`,
-    async (req, res, next) => {
-      await getModels(res);
-    }
-  );
+  router.use(`${proxyPrefixPath}/:app/getModels`, async (req, res, next) => {
+    await getModels(res);
+  });
 
   router.use("/getRegions", async (req, res, next) => {
     await getRegions(res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getRegions`,
-    async (req, res, next) => {
-      await getRegions(res);
-    }
-  );
+  router.use(`${proxyPrefixPath}/:app/getRegions`, async (req, res, next) => {
+    await getRegions(res);
+  });
 
   router.use("/getRegionsValuesMap", async (req, res, next) => {
     await getRegionsValuesMap(res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getRegionsValuesMap`,
-    async (req, res, next) => {
-      await getRegionsValuesMap(res);
-    }
-  );
+  router.use(`${proxyPrefixPath}/:app/getRegionsValuesMap`, async (req, res, next) => {
+    await getRegionsValuesMap(res);
+  });
 
   router.use("/getStatistics", async (req, res, next) => {
     await getStatistics(res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getStatistics`,
-    async (req, res, next) => {
-      await getStatistics(res);
-    }
-  );
+  router.use(`${proxyPrefixPath}/:app/getStatistics`, async (req, res, next) => {
+    await getStatistics(res);
+  });
 
   router.use("/getStatisticsValuesMap", async (req, res, next) => {
     await getStatisticsValuesMap(res);
   });
 
   router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getStatisticsValuesMap`,
+    `${proxyPrefixPath}/:app/getStatisticsValuesMap`,
     async (req, res, next) => {
       await getStatisticsValuesMap(res);
     }
@@ -3087,19 +3059,16 @@ if (Meteor.isServer) {
     await getVariables(res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getVariables`,
-    async (req, res, next) => {
-      await getVariables(res);
-    }
-  );
+  router.use(`${proxyPrefixPath}/:app/getVariables`, async (req, res, next) => {
+    await getVariables(res);
+  });
 
   router.use("/getVariablesValuesMap", async (req, res, next) => {
     await getVariablesValuesMap(res);
   });
 
   router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getVariablesValuesMap`,
+    `${proxyPrefixPath}/:app/getVariablesValuesMap`,
     async (req, res, next) => {
       await getVariablesValuesMap(res);
     }
@@ -3109,19 +3078,16 @@ if (Meteor.isServer) {
     await getThresholds(res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getThresholds`,
-    async (req, res, next) => {
-      await getThresholds(res);
-    }
-  );
+  router.use(`${proxyPrefixPath}/:app/getThresholds`, async (req, res, next) => {
+    await getThresholds(res);
+  });
 
   router.use("/getThresholdsValuesMap", async (req, res, next) => {
     await getThresholdsValuesMap(res);
   });
 
   router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getThresholdsValuesMap`,
+    `${proxyPrefixPath}/:app/getThresholdsValuesMap`,
     async (req, res, next) => {
       await getThresholdsValuesMap(res);
     }
@@ -3131,74 +3097,56 @@ if (Meteor.isServer) {
     await getScales(res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getScales`,
-    async (req, res, next) => {
-      await getScales(res);
-    }
-  );
+  router.use(`${proxyPrefixPath}/:app/getScales`, async (req, res, next) => {
+    await getScales(res);
+  });
 
   router.use("/getScalesValuesMap", async (req, res, next) => {
     await getScalesValuesMap(res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getScalesValuesMap`,
-    async (req, res, next) => {
-      await getScalesValuesMap(res);
-    }
-  );
+  router.use(`${proxyPrefixPath}/:app/getScalesValuesMap`, async (req, res, next) => {
+    await getScalesValuesMap(res);
+  });
 
   router.use("/getTruths", async (req, res, next) => {
     await getTruths(res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getTruths`,
-    async (req, res, next) => {
-      await getTruths(res);
-    }
-  );
+  router.use(`${proxyPrefixPath}/:app/getTruths`, async (req, res, next) => {
+    await getTruths(res);
+  });
 
   router.use("/getTruthsValuesMap", async (req, res, next) => {
     await getTruthsValuesMap(res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getTruthsValuesMap`,
-    async (req, res, next) => {
-      await getTruthsValuesMap(res);
-    }
-  );
+  router.use(`${proxyPrefixPath}/:app/getTruthsValuesMap`, async (req, res, next) => {
+    await getTruthsValuesMap(res);
+  });
 
   router.use("/getFcstLengths", async (req, res, next) => {
     await getFcstLengths(res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getFcstLengths`,
-    async (req, res, next) => {
-      await getFcstLengths(res);
-    }
-  );
+  router.use(`${proxyPrefixPath}/:app/getFcstLengths`, async (req, res, next) => {
+    await getFcstLengths(res);
+  });
 
   router.use("/getFcstTypes", async (req, res, next) => {
     await getFcstTypes(res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getFcstTypes`,
-    async (req, res, next) => {
-      await getFcstTypes(res);
-    }
-  );
+  router.use(`${proxyPrefixPath}/:app/getFcstTypes`, async (req, res, next) => {
+    await getFcstTypes(res);
+  });
 
   router.use("/getFcstTypesValuesMap", async (req, res, next) => {
     await getFcstTypesValuesMap(res);
   });
 
   router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getFcstTypesValuesMap`,
+    `${proxyPrefixPath}/:app/getFcstTypesValuesMap`,
     async (req, res, next) => {
       await getFcstTypesValuesMap(res);
     }
@@ -3208,67 +3156,49 @@ if (Meteor.isServer) {
     await getValidTimes(res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getValidTimes`,
-    async (req, res, next) => {
-      await getValidTimes(res);
-    }
-  );
+  router.use(`${proxyPrefixPath}/:app/getValidTimes`, async (req, res, next) => {
+    await getValidTimes(res);
+  });
 
   router.use("/getLevels", async (req, res, next) => {
     await getLevels(res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getLevels`,
-    async (req, res, next) => {
-      await getLevels(res);
-    }
-  );
+  router.use(`${proxyPrefixPath}/:app/getLevels`, async (req, res, next) => {
+    await getLevels(res);
+  });
 
   router.use("/getDates", async (req, res, next) => {
     await getDates(res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getDates`,
-    async (req, res, next) => {
-      await getDates(res);
-    }
-  );
+  router.use(`${proxyPrefixPath}/:app/getDates`, async (req, res, next) => {
+    await getDates(res);
+  });
 
   router.use("/refreshMetadata", async (req, res, next) => {
     await refreshMetadataMWltData(res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/refreshMetadata`,
-    async (req, res, next) => {
-      await refreshMetadataMWltData(res);
-    }
-  );
+  router.use(`${proxyPrefixPath}/:app/refreshMetadata`, async (req, res, next) => {
+    await refreshMetadataMWltData(res);
+  });
 
   router.use("/refreshScorecard/:docId", (req, res, next) => {
     refreshScorecard(req.params, res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/refreshScorecard/:docId`,
-    (req, res, next) => {
-      refreshScorecard(req.params, res);
-    }
-  );
+  router.use(`${proxyPrefixPath}/:app/refreshScorecard/:docId`, (req, res, next) => {
+    refreshScorecard(req.params, res);
+  });
 
   router.use("/setStatusScorecard/:docId", (req, res, next) => {
     setStatusScorecard(req.params, req, res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/setStatusScorecard/:docId`,
-    (req, res, next) => {
-      setStatusScorecard(req.params, req, res);
-    }
-  );
+  router.use(`${proxyPrefixPath}/:app/setStatusScorecard/:docId`, (req, res, next) => {
+    setStatusScorecard(req.params, req, res);
+  });
 
   // mount the router on the app
   app.use("/", router);
