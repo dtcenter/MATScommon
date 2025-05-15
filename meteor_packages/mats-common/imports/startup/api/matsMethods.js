@@ -39,13 +39,14 @@ const isEmpty = function (map) {
   return mapKeys.length === 0;
 };
 
-// private middleware for getting the status - think health check
-const status = async function (res) {
+// private middleware for determining if the app is running
+const getHealth = async function (res) {
   if (Meteor.isServer) {
     const settings = await matsCollections.Settings.findOneAsync();
-    res.end(
-      `<body><div id='status'>Running: version - ${settings.appVersion} </div></body>`
-    );
+    res.status(200).json({
+      status: "Ok",
+      version: settings.appVersion,
+    });
   }
 };
 
@@ -2964,12 +2965,12 @@ if (Meteor.isServer) {
   const app = WebApp.express();
   const router = WebApp.express.Router();
 
-  router.use("/status", async (req, res) => {
-    await status(res);
+  router.use("/healthz", async (req, res) => {
+    await getHealth(res);
   });
 
-  router.use(`${proxyPrefixPath}/:app/status`, async (req, res) => {
-    await status(res);
+  router.use(`${proxyPrefixPath}/:app/healthz`, async (req, res) => {
+    await getHealth(res);
   });
 
   router.use("/CSV/:f/:key/:m/:a", (req, res) => {
