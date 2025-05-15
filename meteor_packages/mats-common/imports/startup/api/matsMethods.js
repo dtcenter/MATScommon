@@ -1434,7 +1434,7 @@ const getJSON = function (params, res) {
     let flatJSON = "";
     try {
       const result = getPagenatedData(params.key, 0, -1000);
-      flatJSON = JSON.stringify(result);
+      flatJSON = JSON.stringify(result.basis);
     } catch (e) {
       console.log("error retrieving data: ", e);
       flatJSON = JSON.stringify({
