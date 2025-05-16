@@ -2965,7 +2965,6 @@ if (Meteor.isServer) {
   // eslint-disable-next-line no-unused-vars
   router.use("/status", async function (req, res, next) {
     await status(res);
-    next();
   });
 
   router.use(
@@ -2973,14 +2972,12 @@ if (Meteor.isServer) {
     // eslint-disable-next-line no-unused-vars
     async function (req, res, next) {
       await status(res);
-      next();
     }
   );
 
   // eslint-disable-next-line no-unused-vars
   router.use("/CSV/:f/:key/:m/:a", function (req, res, next) {
     getCSV(req.params, res);
-    next();
   });
 
   router.use(
@@ -2988,14 +2985,12 @@ if (Meteor.isServer) {
     // eslint-disable-next-line no-unused-vars
     function (req, res, next) {
       getCSV(req.params, res);
-      next();
     }
   );
 
   // eslint-disable-next-line no-unused-vars
   router.use("/JSON/:f/:key/:m/:a", function (req, res, next) {
     getJSON(req.params, res);
-    next();
   });
 
   router.use(
@@ -3003,14 +2998,12 @@ if (Meteor.isServer) {
     // eslint-disable-next-line no-unused-vars
     function (req, res, next) {
       getJSON(req.params, res);
-      next();
     }
   );
 
   // eslint-disable-next-line no-unused-vars
   router.use("/clearCache", function (req, res, next) {
     clearCache(res);
-    next();
   });
 
   router.use(
@@ -3018,14 +3011,12 @@ if (Meteor.isServer) {
     // eslint-disable-next-line no-unused-vars
     function (req, res, next) {
       clearCache(res);
-      next();
     }
   );
 
   // eslint-disable-next-line no-unused-vars
   router.use("/getApps", async function (req, res, next) {
     await getApps(res);
-    next();
   });
 
   router.use(
@@ -3033,14 +3024,12 @@ if (Meteor.isServer) {
     // eslint-disable-next-line no-unused-vars
     async function (req, res, next) {
       await getApps(res);
-      next();
     }
   );
 
   // eslint-disable-next-line no-unused-vars
   router.use("/getAppSumsDBs", async function (req, res, next) {
     await getAppSumsDBs(res);
-    next();
   });
 
   router.use(
@@ -3048,14 +3037,12 @@ if (Meteor.isServer) {
     // eslint-disable-next-line no-unused-vars
     async function (req, res, next) {
       await getAppSumsDBs(res);
-      next();
     }
   );
 
   // eslint-disable-next-line no-unused-vars
   router.use("/getModels", async function (req, res, next) {
     await getModels(res);
-    next();
   });
 
   router.use(
@@ -3063,14 +3050,12 @@ if (Meteor.isServer) {
     // eslint-disable-next-line no-unused-vars
     async function (req, res, next) {
       await getModels(res);
-      next();
     }
   );
 
   // eslint-disable-next-line no-unused-vars
   router.use("/getRegions", async function (req, res, next) {
     await getRegions(res);
-    next();
   });
 
   router.use(
@@ -3078,14 +3063,12 @@ if (Meteor.isServer) {
     // eslint-disable-next-line no-unused-vars
     async function (req, res, next) {
       await getRegions(res);
-      next();
     }
   );
 
   // eslint-disable-next-line no-unused-vars
   router.use("/getRegionsValuesMap", async function (req, res, next) {
     await getRegionsValuesMap(res);
-    next();
   });
 
   router.use(
@@ -3093,14 +3076,12 @@ if (Meteor.isServer) {
     // eslint-disable-next-line no-unused-vars
     async function (req, res, next) {
       await getRegionsValuesMap(res);
-      next();
     }
   );
 
   // eslint-disable-next-line no-unused-vars
   router.use("/getStatistics", async function (req, res, next) {
     await getStatistics(res);
-    next();
   });
 
   router.use(
@@ -3108,14 +3089,12 @@ if (Meteor.isServer) {
     // eslint-disable-next-line no-unused-vars
     async function (req, res, next) {
       await getStatistics(res);
-      next();
     }
   );
 
   // eslint-disable-next-line no-unused-vars
   router.use("/getStatisticsValuesMap", async function (req, res, next) {
     await getStatisticsValuesMap(res);
-    next();
   });
 
   router.use(
@@ -3123,14 +3102,12 @@ if (Meteor.isServer) {
     // eslint-disable-next-line no-unused-vars
     async function (req, res, next) {
       await getStatisticsValuesMap(res);
-      next();
     }
   );
 
   // eslint-disable-next-line no-unused-vars
   router.use("/getVariables", async function (req, res, next) {
     await getVariables(res);
-    next();
   });
 
   router.use(
@@ -3138,14 +3115,12 @@ if (Meteor.isServer) {
     // eslint-disable-next-line no-unused-vars
     async function (req, res, next) {
       await getVariables(res);
-      next();
     }
   );
 
   // eslint-disable-next-line no-unused-vars
   router.use("/getVariablesValuesMap", async function (req, res, next) {
     await getVariablesValuesMap(res);
-    next();
   });
 
   router.use(
@@ -3153,14 +3128,12 @@ if (Meteor.isServer) {
     // eslint-disable-next-line no-unused-vars
     async function (req, res, next) {
       await getVariablesValuesMap(res);
-      next();
     }
   );
 
   // eslint-disable-next-line no-unused-vars
   router.use("/getThresholds", async function (req, res, next) {
     await getThresholds(res);
-    next();
   });
 
   router.use(
@@ -3168,14 +3141,12 @@ if (Meteor.isServer) {
     // eslint-disable-next-line no-unused-vars
     async function (req, res, next) {
       await getThresholds(res);
-      next();
     }
   );
 
   // eslint-disable-next-line no-unused-vars
   router.use("/getThresholdsValuesMap", async function (req, res, next) {
     await getThresholdsValuesMap(res);
-    next();
   });
 
   router.use(
@@ -3183,14 +3154,12 @@ if (Meteor.isServer) {
     // eslint-disable-next-line no-unused-vars
     async function (req, res, next) {
       await getThresholdsValuesMap(res);
-      next();
     }
   );
 
   // eslint-disable-next-line no-unused-vars
   router.use("/getScales", async function (req, res, next) {
     await getScales(res);
-    next();
   });
 
   router.use(
@@ -3198,14 +3167,12 @@ if (Meteor.isServer) {
     // eslint-disable-next-line no-unused-vars
     async function (req, res, next) {
       await getScales(res);
-      next();
     }
   );
 
   // eslint-disable-next-line no-unused-vars
   router.use("/getScalesValuesMap", async function (req, res, next) {
     await getScalesValuesMap(res);
-    next();
   });
 
   router.use(
@@ -3213,14 +3180,12 @@ if (Meteor.isServer) {
     // eslint-disable-next-line no-unused-vars
     async function (req, res, next) {
       await getScalesValuesMap(res);
-      next();
     }
   );
 
   // eslint-disable-next-line no-unused-vars
   router.use("/getTruths", async function (req, res, next) {
     await getTruths(res);
-    next();
   });
 
   router.use(
@@ -3228,14 +3193,12 @@ if (Meteor.isServer) {
     // eslint-disable-next-line no-unused-vars
     async function (req, res, next) {
       await getTruths(res);
-      next();
     }
   );
 
   // eslint-disable-next-line no-unused-vars
   router.use("/getTruthsValuesMap", async function (req, res, next) {
     await getTruthsValuesMap(res);
-    next();
   });
 
   router.use(
@@ -3243,14 +3206,12 @@ if (Meteor.isServer) {
     // eslint-disable-next-line no-unused-vars
     async function (req, res, next) {
       await getTruthsValuesMap(res);
-      next();
     }
   );
 
   // eslint-disable-next-line no-unused-vars
   router.use("/getFcstLengths", async function (req, res, next) {
     await getFcstLengths(res);
-    next();
   });
 
   router.use(
@@ -3258,14 +3219,12 @@ if (Meteor.isServer) {
     // eslint-disable-next-line no-unused-vars
     async function (req, res, next) {
       await getFcstLengths(res);
-      next();
     }
   );
 
   // eslint-disable-next-line no-unused-vars
   router.use("/getFcstTypes", async function (req, res, next) {
     await getFcstTypes(res);
-    next();
   });
 
   router.use(
@@ -3273,14 +3232,12 @@ if (Meteor.isServer) {
     // eslint-disable-next-line no-unused-vars
     async function (req, res, next) {
       await getFcstTypes(res);
-      next();
     }
   );
 
   // eslint-disable-next-line no-unused-vars
   router.use("/getFcstTypesValuesMap", async function (req, res, next) {
     await getFcstTypesValuesMap(res);
-    next();
   });
 
   router.use(
@@ -3288,14 +3245,12 @@ if (Meteor.isServer) {
     // eslint-disable-next-line no-unused-vars
     async function (req, res, next) {
       await getFcstTypesValuesMap(res);
-      next();
     }
   );
 
   // eslint-disable-next-line no-unused-vars
   router.use("/getValidTimes", async function (req, res, next) {
     await getValidTimes(res);
-    next();
   });
 
   router.use(
@@ -3303,14 +3258,12 @@ if (Meteor.isServer) {
     // eslint-disable-next-line no-unused-vars
     async function (req, res, next) {
       await getValidTimes(res);
-      next();
     }
   );
 
   // eslint-disable-next-line no-unused-vars
   router.use("/getLevels", async function (req, res, next) {
     await getLevels(res);
-    next();
   });
 
   router.use(
@@ -3318,14 +3271,12 @@ if (Meteor.isServer) {
     // eslint-disable-next-line no-unused-vars
     async function (req, res, next) {
       await getLevels(res);
-      next();
     }
   );
 
   // eslint-disable-next-line no-unused-vars
   router.use("/getDates", async function (req, res, next) {
     await getDates(res);
-    next();
   });
 
   router.use(
@@ -3333,7 +3284,6 @@ if (Meteor.isServer) {
     // eslint-disable-next-line no-unused-vars
     async function (req, res, next) {
       await getDates(res);
-      next();
     }
   );
 
@@ -3341,7 +3291,6 @@ if (Meteor.isServer) {
   // eslint-disable-next-line no-unused-vars
   router.use("/refreshMetadata", async function (req, res, next) {
     await refreshMetadataMWltData(res);
-    next();
   });
 
   router.use(
@@ -3349,13 +3298,11 @@ if (Meteor.isServer) {
     // eslint-disable-next-line no-unused-vars
     async function (req, res, next) {
       await refreshMetadataMWltData(res);
-      next();
     }
   );
   // eslint-disable-next-line no-unused-vars
   router.use("/refreshScorecard/:docId", function (req, res, next) {
     refreshScorecard(req.params, res);
-    next();
   });
 
   router.use(
@@ -3363,14 +3310,12 @@ if (Meteor.isServer) {
     // eslint-disable-next-line no-unused-vars
     function (req, res, next) {
       refreshScorecard(req.params, res);
-      next();
     }
   );
 
   // eslint-disable-next-line no-unused-vars
   router.use("/setStatusScorecard/:docId", function (req, res, next) {
     setStatusScorecard(req.params, req, res);
-    next();
   });
 
   router.use(
@@ -3378,7 +3323,6 @@ if (Meteor.isServer) {
     // eslint-disable-next-line no-unused-vars
     function (req, res, next) {
       setStatusScorecard(req.params, req, res);
-      next();
     }
   );
 
