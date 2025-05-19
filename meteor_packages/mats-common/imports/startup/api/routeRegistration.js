@@ -10,6 +10,34 @@ import routes from "./routeConfig";
 /* eslint-disable no-console */
 
 /**
+ * Helper for registerRoute
+ * Handles the route by calling the appropriate handler function
+ * @param {Object} route - Route object from routeConfig.js containing path, handler, etc.
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ */
+const handleRoute = async (route, req, res, next) => {
+  try {
+    const params = [];
+    if (route.needsRequest) {
+      params.push(req);
+    }
+    // Add response object
+    params.push(res);
+
+    // Call handler appropriately based on whether it's async
+    if (route.async) {
+      await route.handler(...params);
+    } else {
+      route.handler(...params);
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
  * Registers all routes with the Express router
  * @param {Object} router - Express router instance
  * @param {string|null} prefix - Optional prefix for routes (e.g. '/mats', '/mats-int')
@@ -24,44 +52,12 @@ export const registerRoutes = (router, prefix = "") => {
     switch (method) {
       case "get":
         router.get(path, async (req, res, next) => {
-          try {
-            const params = [];
-            if (route.needsRequest) {
-              params.push(req);
-            }
-            // Add response object
-            params.push(res);
-
-            // Call handler appropriately based on whether it's async
-            if (route.async) {
-              await route.handler(...params);
-            } else {
-              route.handler(...params);
-            }
-          } catch (error) {
-            next(error);
-          }
+          handleRoute(route, req, res, next);
         });
         break;
       case "post":
         router.post(path, async (req, res, next) => {
-          try {
-            const params = [];
-            if (route.needsRequest) {
-              params.push(req);
-            }
-            // Add response object
-            params.push(res);
-
-            // Call handler appropriately based on whether it's async
-            if (route.async) {
-              await route.handler(...params);
-            } else {
-              route.handler(...params);
-            }
-          } catch (error) {
-            next(error);
-          }
+          handleRoute(route, req, res, next);
         });
         break;
       default:

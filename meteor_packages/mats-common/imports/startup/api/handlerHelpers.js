@@ -1,5 +1,5 @@
 /**
- * Helper functions for our Express route handlers
+ * Helper functions for our Express route handlers defined in routeHandlers.js
  */
 
 import { _ } from "meteor/underscore";

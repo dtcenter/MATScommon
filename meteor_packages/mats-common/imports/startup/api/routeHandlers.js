@@ -1,6 +1,7 @@
 /**
  * Route handler functions for MATS API
  * Each function handles requests for a specific route
+ * Backing functions for the handlers should go in handlerHelpers.js
  */
 
 import { Meteor } from "meteor/meteor";
