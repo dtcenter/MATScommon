@@ -19,18 +19,20 @@ import routes from "./routeConfig";
  */
 const handleRoute = async (route, req, res, next) => {
   try {
-    const params = [];
+    // Create a params object to pass to the handler
+    // Always include the response object
+    const handlerParams = { res };
+
+    // Only add request if the route needs it
     if (route.needsRequest) {
-      params.push(req);
+      handlerParams.req = req;
     }
-    // Add response object
-    params.push(res);
 
     // Call handler appropriately based on whether it's async
     if (route.async) {
-      await route.handler(...params);
+      await route.handler(handlerParams);
     } else {
-      route.handler(...params);
+      route.handler(handlerParams);
     }
   } catch (error) {
     next(error);

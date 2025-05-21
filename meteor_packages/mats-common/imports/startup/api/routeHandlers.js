@@ -26,14 +26,14 @@ import {
 /* eslint-disable no-console */
 
 // Health check middleware
-export const getHealth = async function (res) {
+export const getHealth = async function ({ res }) {
   if (Meteor.isServer) {
     res.sendStatus(200);
   }
 };
 
 // handler for CSV route
-export const getCSV = function (req, res) {
+export const getCSV = function ({ req, res }) {
   const { params } = req;
   if (Meteor.isServer) {
     // eslint-disable-next-line global-require
@@ -74,7 +74,7 @@ export const getCSV = function (req, res) {
 };
 
 // handler for JSON route
-export const getJSON = function (req, res) {
+export const getJSON = function ({ req, res }) {
   const { params } = req;
   if (Meteor.isServer) {
     let flatJSON = "";
@@ -94,7 +94,7 @@ export const getJSON = function (req, res) {
 };
 
 // Cache management middleware
-export const clearCache = function (res) {
+export const clearCache = function ({ res }) {
   if (Meteor.isServer) {
     matsCache.clear();
     res.end("<body><h1>clearCache Done!</h1></body>");
@@ -102,7 +102,7 @@ export const clearCache = function (res) {
 };
 
 // handler for getApps route
-export const getApps = async function (res) {
+export const getApps = async function ({ res }) {
   // this function returns an array of apps.
   if (Meteor.isServer) {
     let flatJSON = "";
@@ -122,7 +122,7 @@ export const getApps = async function (res) {
 };
 
 // handler for getAppSumsDBs route
-export const getAppSumsDBs = async function (res) {
+export const getAppSumsDBs = async function ({ res }) {
   // this function returns map of apps and appRefs.
   if (Meteor.isServer) {
     let flatJSON = "";
@@ -142,7 +142,7 @@ export const getAppSumsDBs = async function (res) {
 };
 
 // handler for getModels route
-export const getModels = async function (res) {
+export const getModels = async function ({ res }) {
   // this function returns a map of models keyed by app title and model display text
   if (Meteor.isServer) {
     const flatJSON = await getMapByAppAndModel("data-source", "optionsMap");
@@ -153,7 +153,7 @@ export const getModels = async function (res) {
 };
 
 // handler for getRegions route
-export const getRegions = async function (res) {
+export const getRegions = async function ({ res }) {
   // this function returns a map of regions keyed by app title and model display text
   if (Meteor.isServer) {
     let flatJSON = await getMapByAppAndModel("region", "optionsMap");
@@ -167,7 +167,7 @@ export const getRegions = async function (res) {
 };
 
 // handler for getRegionsValuesMap route
-export const getRegionsValuesMap = async function (res) {
+export const getRegionsValuesMap = async function ({ res }) {
   // this function returns a map of regions values keyed by app title
   if (Meteor.isServer) {
     let flatJSON = await getMapByAppAndModel("region", "valuesMap");
@@ -181,7 +181,7 @@ export const getRegionsValuesMap = async function (res) {
 };
 
 // handler for getStatistics route
-export const getStatistics = async function (res) {
+export const getStatistics = async function ({ res }) {
   // this function returns an map of statistics keyed by app title
   if (Meteor.isServer) {
     const flatJSON = await getMapByApp("statistic");
@@ -192,7 +192,7 @@ export const getStatistics = async function (res) {
 };
 
 // handler for getStatisticsValuesMap route
-export const getStatisticsValuesMap = async function (res) {
+export const getStatisticsValuesMap = async function ({ res }) {
   // this function returns a map of statistic values keyed by app title
   if (Meteor.isServer) {
     const flatJSON = await getMapByAppAndModel("statistic", "optionsMap");
@@ -203,7 +203,7 @@ export const getStatisticsValuesMap = async function (res) {
 };
 
 // handler for getVariables route
-export const getVariables = async function (res) {
+export const getVariables = async function ({ res }) {
   // this function returns an map of variables keyed by app title
   if (Meteor.isServer) {
     const flatJSON = await getMapByApp("variable");
@@ -214,7 +214,7 @@ export const getVariables = async function (res) {
 };
 
 // handler for getVariablesValuesMap route
-export const getVariablesValuesMap = async function (res) {
+export const getVariablesValuesMap = async function ({ res }) {
   // this function returns a map of variable values keyed by app title
   if (Meteor.isServer) {
     const flatJSON = await getMapByAppAndModel("variable", "optionsMap");
@@ -225,7 +225,7 @@ export const getVariablesValuesMap = async function (res) {
 };
 
 // handler for getThresholds route
-export const getThresholds = async function (res) {
+export const getThresholds = async function ({ res }) {
   // this function returns a map of thresholds keyed by app title and model display text
   if (Meteor.isServer) {
     const flatJSON = await getMapByAppAndModel("threshold", "optionsMap");
@@ -236,7 +236,7 @@ export const getThresholds = async function (res) {
 };
 
 // handler for getThresholdsValuesMap route
-export const getThresholdsValuesMap = async function (res) {
+export const getThresholdsValuesMap = async function ({ res }) {
   // this function returns a map of threshold values keyed by app title
   if (Meteor.isServer) {
     const flatJSON = await getMapByAppAndModel("threshold", "valuesMap");
@@ -247,7 +247,7 @@ export const getThresholdsValuesMap = async function (res) {
 };
 
 // handler for getScales route
-export const getScales = async function (res) {
+export const getScales = async function ({ res }) {
   // this function returns a map of scales keyed by app title and model display text
   if (Meteor.isServer) {
     const flatJSON = await getMapByAppAndModel("scale", "optionsMap");
@@ -258,7 +258,7 @@ export const getScales = async function (res) {
 };
 
 // handler for getScalesValuesMap route
-export const getScalesValuesMap = async function (res) {
+export const getScalesValuesMap = async function ({ res }) {
   // this function returns a map of scale values keyed by app title
   if (Meteor.isServer) {
     const flatJSON = await getMapByAppAndModel("scale", "valuesMap");
@@ -269,7 +269,7 @@ export const getScalesValuesMap = async function (res) {
 };
 
 // handler for getTruth route
-export const getTruths = async function (res) {
+export const getTruths = async function ({ res }) {
   // this function returns a map of truths keyed by app title and model display text
   if (Meteor.isServer) {
     const flatJSON = await getMapByAppAndModel("truth", "optionsMap");
@@ -280,7 +280,7 @@ export const getTruths = async function (res) {
 };
 
 // handler for getTruthValuesMap route
-export const getTruthsValuesMap = async function (res) {
+export const getTruthsValuesMap = async function ({ res }) {
   // this function returns a map of truth values keyed by app title
   if (Meteor.isServer) {
     const flatJSON = await getMapByAppAndModel("truth", "valuesMap");
@@ -291,7 +291,7 @@ export const getTruthsValuesMap = async function (res) {
 };
 
 // handler for getFcstLengths route
-export const getFcstLengths = async function (res) {
+export const getFcstLengths = async function ({ res }) {
   // this function returns a map of forecast lengths keyed by app title and model display text
   if (Meteor.isServer) {
     const flatJSON = await getMapByAppAndModel("forecast-length", "optionsMap");
@@ -302,7 +302,7 @@ export const getFcstLengths = async function (res) {
 };
 
 // handler for getFcstTypes route
-export const getFcstTypes = async function (res) {
+export const getFcstTypes = async function ({ res }) {
   // this function returns a map of forecast types keyed by app title and model display text
   if (Meteor.isServer) {
     const flatJSON = await getMapByAppAndModel("forecast-type", "optionsMap");
@@ -313,7 +313,7 @@ export const getFcstTypes = async function (res) {
 };
 
 // handler for getFcstTypesValuesMap route
-export const getFcstTypesValuesMap = async function (res) {
+export const getFcstTypesValuesMap = async function ({ res }) {
   // this function returns a map of forecast type values keyed by app title
   if (Meteor.isServer) {
     const flatJSON = await getMapByAppAndModel("forecast-type", "valuesMap");
@@ -324,7 +324,7 @@ export const getFcstTypesValuesMap = async function (res) {
 };
 
 // handler for getValidTimes route
-export const getValidTimes = async function (res) {
+export const getValidTimes = async function ({ res }) {
   // this function returns an map of valid times keyed by app title
   if (Meteor.isServer) {
     const flatJSON = await getMapByApp("valid-time");
@@ -335,7 +335,7 @@ export const getValidTimes = async function (res) {
 };
 
 // handler for getValidTimes route
-export const getLevels = async function (res) {
+export const getLevels = async function ({ res }) {
   // this function returns an map of pressure levels keyed by app title
   if (Meteor.isServer) {
     const flatJSON = await getlevelsByApp();
@@ -346,7 +346,7 @@ export const getLevels = async function (res) {
 };
 
 // handler for getDates route
-export const getDates = async function (res) {
+export const getDates = async function ({ res }) {
   // this function returns a map of dates keyed by app title and model display text
   if (Meteor.isServer) {
     const flatJSON = await getDateMapByAppAndModel();
@@ -357,7 +357,7 @@ export const getDates = async function (res) {
 };
 
 // handler for refreshing the metadata
-export const refreshMetadataMWltData = async function (res) {
+export const refreshMetadataMWltData = async function ({ res }) {
   if (Meteor.isServer) {
     console.log("Server route asked to refresh metadata");
 
@@ -378,7 +378,7 @@ export const refreshMetadataMWltData = async function (res) {
 };
 
 // handler for causing the scorecard to refresh its mongo collection for a given document
-export const refreshScorecard = function (req, res) {
+export const refreshScorecard = function ({ req, res }) {
   const { params } = req;
   if (Meteor.isServer) {
     const docId = decodeURIComponent(params.docId);
@@ -431,7 +431,7 @@ export const refreshScorecard = function (req, res) {
   }
 };
 
-export const setStatusScorecard = function (req, res) {
+export const setStatusScorecard = function ({ req, res }) {
   const { params } = req;
   if (Meteor.isServer) {
     const docId = decodeURIComponent(params.docId);
@@ -481,34 +481,3 @@ export const setStatusScorecard = function (req, res) {
     );
   }
 };
-
-/*
-  getHealth,
-  getCSV,
-  getJSON,
-  clearCache,
-  getApps,
-  getAppSumsDBs,
-  getModels,
-  getRegions,
-  getRegionsValuesMap,
-  getStatistics,
-  getStatisticsValuesMap,
-  getVariables,
-  getVariablesValuesMap,
-  getThresholds,
-  getThresholdsValuesMap,
-  getScales,
-  getScalesValuesMap,
-  getTruths,
-  getTruthsValuesMap,
-  getFcstLengths,
-  getFcstTypes,
-  getFcstTypesValuesMap,
-  getValidTimes,
-  getLevels,
-  getDates,
-  refreshMetadataMWltData,
-  refreshScorecard,
-  setStatusScorecard,
-  */
