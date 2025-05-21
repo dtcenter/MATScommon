@@ -396,7 +396,9 @@ export const refreshScorecard = function ({ req, res }) {
   if (Meteor.isServer) {
     // Make sure req exists and has params
     if (!req || !req.params) {
-      console.error("Request or request parameters missing in getCSV handler");
+      console.error(
+        "Request or request parameters missing in refreshScorecard handler"
+      );
       res.status(400).send("Bad request - missing parameters");
       return;
     }
@@ -456,7 +458,9 @@ export const setStatusScorecard = function ({ req, res }) {
   if (Meteor.isServer) {
     // Make sure req exists and has params
     if (!req || !req.params) {
-      console.error("Request or request parameters missing in getCSV handler");
+      console.error(
+        "Request or request parameters missing in setStatusScorecard handler"
+      );
       res.status(400).send("Bad request - missing parameters");
       return;
     }
