@@ -767,7 +767,7 @@ const setCurveParamDisplayText = new ValidatedMethod({
   }).validator(),
   async run(params) {
     if (Meteor.isServer) {
-      return matsCollections[params.paramName].update(
+      return matsCollections[params.paramName].updateAsync(
         { name: params.paramName },
         { $set: { controlButtonText: params.newText } }
       );

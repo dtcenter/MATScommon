@@ -6,7 +6,7 @@
 
 Package.describe({
   name: "randyp:mats-common",
-  version: "5.3.1",
+  version: "6.1.0",
   // Brief, one-line summary of the package.
   summary: "MATScommon files provides common functionality for MATS/METexpress apps",
   // URL to the Git repository containing the source code for this package.
@@ -37,7 +37,6 @@ Package.onUse(function (api) {
     daterangepicker: "3.1.0",
     "lighten-darken-color": "1.0.0",
     "rgb-hex": "4.1.0",
-    nodemailer: "6.9.14",
   });
   api.mainModule("server/main.js", "server");
   api.mainModule("client/main.js", "client");
@@ -49,8 +48,6 @@ Package.onUse(function (api) {
   api.use("modules");
   api.imply("ecmascript");
   api.use(["templating"], "client");
-  api.use("accounts-ui", "client");
-  api.use("accounts-password", "client");
   api.use("service-configuration", "server");
   api.use("yasinuslu:json-view", "client");
   api.use("mdg:validated-method");
