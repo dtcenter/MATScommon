@@ -75,8 +75,15 @@ export const getCSV = function ({ req, res }) {
 
 // handler for JSON route
 export const getJSON = function ({ req, res }) {
-  const { params } = req;
   if (Meteor.isServer) {
+    // Make sure req exists and has params
+    if (!req || !req.params) {
+      console.error("Request or request parameters missing in getJSON handler");
+      res.status(400).send("Bad request - missing parameters");
+      return;
+    }
+
+    const { params } = req;
     let flatJSON = "";
     try {
       const result = getPagenatedData(params.key, 0, -1000);
