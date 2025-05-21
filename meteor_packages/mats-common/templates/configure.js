@@ -53,7 +53,7 @@ Template.configure.helpers({
   },
   groups() {
     if (Session.get("defaultGroups") === undefined) {
-      matsMethods.getDefaultGroupList.callAsync({}, function (error, result) {
+      matsMethods.getDefaultGroupList.call({}, function (error, result) {
         if (error !== undefined) {
           setError(error);
           return `<p>${error}</p>`;
@@ -124,7 +124,7 @@ Template.configure.events({
         }
       }
     }
-    matsMethods.applySettingsData.callAsync({ settings: data }, function (error) {
+    matsMethods.applySettingsData.call({ settings: data }, function (error) {
       if (error) {
         setError(new Error(`matsMethods.applySettingsData error: ${error.message}`));
       }
@@ -144,7 +144,7 @@ Template.configure.events({
     failButton.style.display = "none";
     successButton.style.display = "none";
     document.getElementById(`${role}-spinner`).style.display = "block";
-    matsMethods.testGetTables.callAsync(
+    matsMethods.testGetTables.call(
       {
         host: document.getElementById(`${roleStr}-host`).value,
         port: document.getElementById(`${roleStr}-port`).value,

@@ -29,9 +29,9 @@ const processDataXYCurve = function (
   let errorMax = Number.MIN_VALUE;
   const error = "";
 
-  const { appName } = matsCollections.Settings.findOneAsync({});
+  const { appName } = matsCollections.Settings.findOne({});
   const isMetexpress =
-    matsCollections.Settings.findOneAsync({}).appType === matsTypes.AppTypes.metexpress;
+    matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
 
   // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
   if (returnCurveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
@@ -574,9 +574,9 @@ const processDataProfile = function (
   let errorMax = Number.MIN_VALUE;
   const error = "";
 
-  const { appName } = matsCollections.Settings.findOneAsync({});
+  const { appName } = matsCollections.Settings.findOne({});
   const isMetexpress =
-    matsCollections.Settings.findOneAsync({}).appType === matsTypes.AppTypes.metexpress;
+    matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
 
   // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
   if (returnCurveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
@@ -1030,7 +1030,7 @@ const processDataReliability = function (
   const error = "";
 
   const isMetexpress =
-    matsCollections.Settings.findOneAsync({}).appType === matsTypes.AppTypes.metexpress;
+    matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
 
   // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
   if (returnCurveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
@@ -1206,7 +1206,7 @@ const processDataROC = function (
   const error = "";
 
   const isMetexpress =
-    matsCollections.Settings.findOneAsync({}).appType === matsTypes.AppTypes.metexpress;
+    matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
 
   // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
   if (returnCurveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
@@ -1348,7 +1348,7 @@ const processDataPerformanceDiagram = function (
   const error = "";
 
   const isMetexpress =
-    matsCollections.Settings.findOneAsync({}).appType === matsTypes.AppTypes.metexpress;
+    matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
 
   // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
   if (returnCurveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
@@ -1595,7 +1595,7 @@ const processDataGridScaleProb = function (
   const error = "";
 
   const isMetexpress =
-    matsCollections.Settings.findOneAsync({}).appType === matsTypes.AppTypes.metexpress;
+    matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
 
   // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
   if (returnCurveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
@@ -1707,7 +1707,7 @@ const processDataEnsembleHistogram = function (
   const error = "";
 
   const isMetexpress =
-    matsCollections.Settings.findOneAsync({}).appType === matsTypes.AppTypes.metexpress;
+    matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
 
   // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
   if (returnCurveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
@@ -2264,7 +2264,7 @@ const processDataContour = function (
   const returnCurveInfoParams = curveInfoParams;
   const returnBookkeepingParams = bookkeepingParams;
   const error = "";
-  const { appName } = matsCollections.Settings.findOneAsync({});
+  const { appName } = matsCollections.Settings.findOne({});
   const statisticSelect =
     appName.indexOf("anomalycor") !== -1
       ? "ACC"
@@ -2376,7 +2376,7 @@ const processDataSimpleScatter = function (
   const error = "";
 
   const isMetexpress =
-    matsCollections.Settings.findOneAsync({}).appType === matsTypes.AppTypes.metexpress;
+    matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
 
   // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
   if (returnCurveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {

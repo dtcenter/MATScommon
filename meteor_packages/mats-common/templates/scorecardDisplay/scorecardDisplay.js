@@ -174,7 +174,7 @@ const refreshScorecard = function (userName, name, submitted, processedAt) {
 // userName, name, submitted, and processedAt
 // The insertCBscorecard needs to be synchronous because the page needs the data from the mongo scorecard
 const getScorecard = function (userName, name, submitted, processedAt) {
-  matsMethods.getScorecardData.callAsync(
+  matsMethods.getScorecardData.call(
     {
       userName,
       name,
@@ -681,7 +681,7 @@ Template.scorecardDisplay.events({
 
     const settingsJSON = JSON.stringify(scorecardSettings);
     const key = hash(settingsJSON);
-    matsMethods.saveScorecardSettings.callAsync(
+    matsMethods.saveScorecardSettings.call(
       {
         settingsKey: key,
         scorecardSettings: settingsJSON,

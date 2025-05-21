@@ -7,9 +7,10 @@ import { matsCollections } from "meteor/randyp:mats-common";
 import { curveParamsByApp } from "../both/mats-curve-params";
 
 /* eslint-disable no-console */
+
 const publishField = function (field) {
   Meteor.publish(field, function () {
-    const data = matsCollections[field].findAsync({});
+    const data = matsCollections[field].find({});
     if (data) {
       return data;
     }
@@ -33,84 +34,84 @@ if (Meteor.isServer) {
     publishField(currParam);
   }
   Meteor.publish("CurveParamsInfo", function () {
-    const data = matsCollections.CurveParamsInfo.findAsync({});
+    const data = matsCollections.CurveParamsInfo.find({});
     if (data) {
       return data;
     }
     return this.ready();
   });
   Meteor.publish("AppsToScore", function () {
-    const data = matsCollections.AppsToScore.findAsync({});
+    const data = matsCollections.AppsToScore.find({});
     if (data) {
       return data;
     }
     return this.ready();
   });
   Meteor.publish("CurveTextPatterns", function () {
-    const data = matsCollections.CurveTextPatterns.findAsync({});
+    const data = matsCollections.CurveTextPatterns.find({});
     if (data) {
       return data;
     }
     return this.ready();
   });
   Meteor.publish("ScatterAxisTextPattern", function () {
-    const data = matsCollections.ScatterAxisTextPattern.findAsync({});
+    const data = matsCollections.ScatterAxisTextPattern.find({});
     if (data) {
       return data;
     }
     return this.ready();
   });
   Meteor.publish("SavedCurveParams", function () {
-    const data = matsCollections.SavedCurveParams.findAsync({});
+    const data = matsCollections.SavedCurveParams.find({});
     if (data) {
       return data;
     }
     return this.ready();
   });
   Meteor.publish("PlotParams", function () {
-    const data = matsCollections.PlotParams.findAsync({});
+    const data = matsCollections.PlotParams.find({});
     if (data) {
       return data;
     }
     return this.ready();
   });
   Meteor.publish("Scatter2dParams", function () {
-    const data = matsCollections.Scatter2dParams.findAsync({});
+    const data = matsCollections.Scatter2dParams.find({});
     if (data) {
       return data;
     }
     return this.ready();
   });
   Meteor.publish("PlotGraphFunctions", function () {
-    const data = matsCollections.PlotGraphFunctions.findAsync({});
+    const data = matsCollections.PlotGraphFunctions.find({});
     if (data) {
       return data;
     }
     return this.ready();
   });
   Meteor.publish("ColorScheme", function () {
-    const data = matsCollections.ColorScheme.findAsync({});
+    const data = matsCollections.ColorScheme.find({});
     if (data) {
       return data;
     }
     return this.ready();
   });
   Meteor.publish("Settings", function () {
-    const data = matsCollections.Settings.findAsync({});
+    const data = matsCollections.Settings.find({});
     if (data) {
       return data;
     }
     return this.ready();
   });
   Meteor.publish("CurveSettings", function () {
-    const data = matsCollections.CurveSettings.findAsync({});
+    const data = matsCollections.CurveSettings.find({});
     if (data) {
       return data;
     }
     return this.ready();
   });
   Meteor.publish("SentAddresses", function () {
-    const data = matsCollections.SentAddresses.findAsync({ userId: this.userId });
+    const data = matsCollections.SentAddresses.find({ userId: this.userId });
     if (data) {
       return data;
     }
@@ -119,28 +120,28 @@ if (Meteor.isServer) {
 
   // do not publish databases
   // Meteor.publish("Databases", function () {
-  //     var data = matsCollections.Databases.findAsync({});
+  //     var data = matsCollections.Databases.find({});
   //     if (data) {
   //         return data;
   //     }
   //     return this.ready();
   // });
   Meteor.publish("SiteMap", function () {
-    const data = matsCollections.SiteMap.findAsync({});
+    const data = matsCollections.SiteMap.find({});
     if (data) {
       return data;
     }
     return this.ready();
   });
   Meteor.publish("StationMap", function () {
-    const data = matsCollections.StationMap.findAsync({});
+    const data = matsCollections.StationMap.find({});
     if (data) {
       return data;
     }
     return this.ready();
   });
   Meteor.publish("Scorecard", function () {
-    const data = matsCollections.Scorecard.findAsync({});
+    const data = matsCollections.Scorecard.find({});
     if (data) {
       return data;
     }

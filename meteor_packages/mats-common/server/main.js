@@ -25,7 +25,7 @@ const setGoogleCred = function () {
     let _id = "";
     let cred;
     try {
-      cred = ServiceConfiguration.configurations.findOneAsync({ service: "google" });
+      cred = ServiceConfiguration.configurations.findOne({ service: "google" });
       if (cred) {
         cid = cred.clientId;
         cSecret = cred.secret;
@@ -64,11 +64,11 @@ const setGoogleCred = function () {
     if (gid !== cid || gSecret !== cSecret) {
       // reset gid and gSecret
       if (cred) {
-        ServiceConfiguration.configurations.updateAsync(_id, {
+        ServiceConfiguration.configurations.update(_id, {
           $set: { secret: gSecret, clientId: gid },
         });
       } else {
-        ServiceConfiguration.configurations.insertAsync({
+        ServiceConfiguration.configurations.insert({
           service: "google",
           loginStyle: "popup",
           secret: gSecret,

@@ -230,34 +230,34 @@ const getDateRange = function (dateRange) {
 // function to manage authorized logins for MATS
 const doAuthorization = function () {
   if (
-    matsCollections.Settings.findOneAsync({}) === undefined ||
-    matsCollections.Settings.findOneAsync({}).resetFromCode === undefined ||
-    matsCollections.Settings.findOneAsync({}).resetFromCode === true
+    matsCollections.Settings.findOne({}) === undefined ||
+    matsCollections.Settings.findOne({}).resetFromCode === undefined ||
+    matsCollections.Settings.findOne({}).resetFromCode === true
   ) {
-    matsCollections.Authorization.removeAsync({});
+    matsCollections.Authorization.remove({});
   }
-  if (matsCollections.Authorization.findAsync().countAsync() === 0) {
-    matsCollections.Authorization.insertAsync({
+  if (matsCollections.Authorization.find().count() === 0) {
+    matsCollections.Authorization.insert({
       email: "randy.pierce@noaa.gov",
       roles: ["administrator"],
     });
-    matsCollections.Authorization.insertAsync({
+    matsCollections.Authorization.insert({
       email: "kirk.l.holub@noaa.gov",
       roles: ["administrator"],
     });
-    matsCollections.Authorization.insertAsync({
+    matsCollections.Authorization.insert({
       email: "jeffrey.a.hamilton@noaa.gov",
       roles: ["administrator"],
     });
-    matsCollections.Authorization.insertAsync({
+    matsCollections.Authorization.insert({
       email: "bonny.strong@noaa.gov",
       roles: ["administrator"],
     });
-    matsCollections.Authorization.insertAsync({
+    matsCollections.Authorization.insert({
       email: "molly.b.smith@noaa.gov",
       roles: ["administrator"],
     });
-    matsCollections.Authorization.insertAsync({
+    matsCollections.Authorization.insert({
       email: "mats.gsd@noaa.gov",
       roles: ["administrator"],
     });
@@ -267,14 +267,14 @@ const doAuthorization = function () {
 // master list of colors for MATS curves
 const doColorScheme = function () {
   if (
-    matsCollections.Settings.findOneAsync({}) === undefined ||
-    matsCollections.Settings.findOneAsync({}).resetFromCode === undefined ||
-    matsCollections.Settings.findOneAsync({}).resetFromCode === true
+    matsCollections.Settings.findOne({}) === undefined ||
+    matsCollections.Settings.findOne({}).resetFromCode === undefined ||
+    matsCollections.Settings.findOne({}).resetFromCode === true
   ) {
-    matsCollections.ColorScheme.removeAsync({});
+    matsCollections.ColorScheme.remove({});
   }
-  if (matsCollections.ColorScheme.findAsync().countAsync() === 0) {
-    matsCollections.ColorScheme.insertAsync({
+  if (matsCollections.ColorScheme.find().count() === 0) {
+    matsCollections.ColorScheme.insert({
       colors: [
         "rgb(255,0,0)",
         "rgb(0,0,255)",
@@ -293,14 +293,14 @@ const doColorScheme = function () {
 // another utility to assist at logging into MATS
 const doRoles = function () {
   if (
-    matsCollections.Settings.findOneAsync({}) === undefined ||
-    matsCollections.Settings.findOneAsync({}).resetFromCode === undefined ||
-    matsCollections.Settings.findOneAsync({}).resetFromCode === true
+    matsCollections.Settings.findOne({}) === undefined ||
+    matsCollections.Settings.findOne({}).resetFromCode === undefined ||
+    matsCollections.Settings.findOne({}).resetFromCode === true
   ) {
-    matsCollections.Roles.removeAsync({});
+    matsCollections.Roles.remove({});
   }
-  if (matsCollections.Roles.findAsync().countAsync() === 0) {
-    matsCollections.Roles.insertAsync({
+  if (matsCollections.Roles.find().count() === 0) {
+    matsCollections.Roles.insert({
       name: "administrator",
       description: "administrator privileges",
     });
@@ -328,14 +328,14 @@ const doSettings = function (
   scorecard
 ) {
   if (
-    matsCollections.Settings.findOneAsync({}) === undefined ||
-    matsCollections.Settings.findOneAsync({}).resetFromCode === undefined ||
-    matsCollections.Settings.findOneAsync({}).resetFromCode === true
+    matsCollections.Settings.findOne({}) === undefined ||
+    matsCollections.Settings.findOne({}).resetFromCode === undefined ||
+    matsCollections.Settings.findOne({}).resetFromCode === true
   ) {
-    matsCollections.Settings.removeAsync({});
+    matsCollections.Settings.remove({});
   }
-  if (matsCollections.Settings.findAsync().countAsync() === 0) {
-    matsCollections.Settings.insertAsync({
+  if (matsCollections.Settings.find().count() === 0) {
+    matsCollections.Settings.insert({
       LabelPrefix: scorecard ? "Block" : "Curve",
       Title: title,
       dbType,
@@ -359,13 +359,13 @@ const doSettings = function (
     });
   }
   // always update the version, roles, and the hostname, not just if it doesn't exist...
-  const settings = matsCollections.Settings.findOneAsync({});
+  const settings = matsCollections.Settings.findOne({});
   const settingsId = settings._id;
   const os = Npm.require("os");
   const hostname = os.hostname().split(".")[0];
   settings.appVersion = version;
   settings.hostname = hostname;
-  matsCollections.Settings.updateAsync(settingsId, { $set: settings });
+  matsCollections.Settings.update(settingsId, { $set: settings });
 };
 
 const callMetadataAPI = function (

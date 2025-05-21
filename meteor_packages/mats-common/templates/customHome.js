@@ -29,7 +29,7 @@ Template.customHome.helpers({
     );
   },
   resetDefaults() {
-    matsMethods.refreshMetaData.callAsync({}, function (error) {
+    matsMethods.refreshMetaData.call({}, function (error) {
       if (error !== undefined) {
         setError(new Error(error.message));
       }

@@ -29,7 +29,7 @@ import { Template } from "meteor/templating";
     uses a switch on 'action' which is the event.currentTarget.name "save|restore|plot" which are
     the names of type="submit" buttons in the form, like name="plot" or name="save".
     In the type="submit" and name-"plot" case of the switch this call...
-    matsMethods.getGraphData.callAsync({plotParams: p, plotType: pt, expireKey: expireKey}, function (error, ret) .....
+    matsMethods.getGraphData.call({plotParams: p, plotType: pt, expireKey: expireKey}, function (error, ret) .....
     is what invokes the data method in the backend, and the success handler of that call
     is what sets up the graph page.
 */
@@ -157,7 +157,7 @@ Template.plotList.events({
   "click .delete-selected"() {
     const deleteThis = document.getElementById("save_to").value;
     if (deleteThis !== undefined && deleteThis !== "") {
-      matsMethods.deleteSettings.callAsync({ name: deleteThis }, function (error) {
+      matsMethods.deleteSettings.call({ name: deleteThis }, function (error) {
         if (error) {
           setError(new Error(error.message));
         }
@@ -322,7 +322,7 @@ Template.plotList.events({
         p = Session.get("PlotParams");
         paramData = matsParamUtils.getElementValues();
         p.paramData = paramData;
-        matsMethods.saveSettings.callAsync({ saveAs, p, permission }, function (error) {
+        matsMethods.saveSettings.call({ saveAs, p, permission }, function (error) {
           if (error) {
             setError(
               new Error(`matsMethods.saveSettings from plot_list.js ${error.message}`)
@@ -382,7 +382,7 @@ Template.plotList.events({
         console.log("prior to getGraphData call time:", new Date());
         // the following line converts a null expireKey to false.
         expireKey = Session.get("expireKey") === true;
-        matsMethods.getGraphData.callAsync(
+        matsMethods.getGraphData.call(
           { plotParams: p, plotType: pt, expireKey },
           function (error, ret) {
             if (error !== undefined) {
@@ -471,7 +471,7 @@ Template.plotList.events({
         p[
           "scorecard-name"
         ] = `${p.userName}--submitted:${submitTime}--${p.curves.length}block`;
-        matsMethods.getGraphData.callAsync(
+        matsMethods.getGraphData.call(
           { plotParams: p, plotType: pt, expireKey },
           function (error, ret) {
             if (error !== undefined) {
@@ -517,7 +517,7 @@ Template.plotList.onRendered(function () {
     matsParamUtils.setAllParamsToDefault();
 
     // get the params from the scorecard settings
-    matsMethods.getScorecardSettings.callAsync(
+    matsMethods.getScorecardSettings.call(
       { settingsKey: Session.get("scorecardTimeseriesKey") },
       function (error, ret) {
         if (error !== undefined) {

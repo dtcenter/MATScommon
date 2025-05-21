@@ -45,7 +45,7 @@ const isEmpty = function (map) {
 // private middleware for getting the status - think health check
 const status = function (res) {
   if (Meteor.isServer) {
-    const settings = matsCollections.Settings.findOneAsync();
+    const settings = matsCollections.Settings.findOne();
     res.end(
       `<body><div id='status'>Running: version - ${settings.appVersion} </div></body>`
     );
@@ -73,10 +73,10 @@ const checkMetaDataRefresh = async function () {
         }
      */
   let refresh = false;
-  const tableUpdates = metaDataTableUpdates.findAsync({}).fetch();
+  const tableUpdates = metaDataTableUpdates.find({}).fetch();
   const dbType =
-    matsCollections.Settings.findOneAsync() !== undefined
-      ? matsCollections.Settings.findOneAsync().dbType
+    matsCollections.Settings.findOne() !== undefined
+      ? matsCollections.Settings.findOne().dbType
       : matsTypes.DbTypes.mysql;
   for (let tui = 0; tui < tableUpdates.length; tui += 1) {
     const id = tableUpdates[tui]._id;
@@ -149,7 +149,7 @@ const checkMetaDataRefresh = async function () {
         await global.appSpecificResetRoutines[ai]();
       }
       // remember that we updated ALL the metadata tables just now
-      metaDataTableUpdates.updateAsync(
+      metaDataTableUpdates.update(
         {
           _id: id,
         },
@@ -207,30 +207,30 @@ function getListOfApps() {
   let apps;
   if (
     matsCollections.database !== undefined &&
-    matsCollections.database.findOneAsync({ name: "database" }) !== undefined
+    matsCollections.database.findOne({ name: "database" }) !== undefined
   ) {
     // get list of databases (one per app)
-    apps = matsCollections.database.findOneAsync({
+    apps = matsCollections.database.findOne({
       name: "database",
     }).options;
     if (!Array.isArray(apps)) apps = Object.keys(apps);
   } else if (
     matsCollections.variable !== undefined &&
-    matsCollections.variable.findOneAsync({
+    matsCollections.variable.findOne({
       name: "variable",
     }) !== undefined &&
     matsCollections.threshold !== undefined &&
-    matsCollections.threshold.findOneAsync({
+    matsCollections.threshold.findOne({
       name: "threshold",
     }) !== undefined
   ) {
     // get list of apps (variables in apps that also have thresholds)
-    apps = matsCollections.variable.findOneAsync({
+    apps = matsCollections.variable.findOne({
       name: "variable",
     }).options;
     if (!Array.isArray(apps)) apps = Object.keys(apps);
   } else {
-    apps = [matsCollections.Settings.findOneAsync().Title];
+    apps = [matsCollections.Settings.findOne().Title];
   }
   return apps;
 }
@@ -279,35 +279,35 @@ function getListOfAppDBs() {
   let aidx;
   if (
     matsCollections.database !== undefined &&
-    matsCollections.database.findOneAsync({ name: "database" }) !== undefined
+    matsCollections.database.findOne({ name: "database" }) !== undefined
   ) {
     // get list of databases (one per app)
-    apps = matsCollections.database.findOneAsync({
+    apps = matsCollections.database.findOne({
       name: "database",
     }).options;
     if (!Array.isArray(apps)) apps = Object.keys(apps);
     for (aidx = 0; aidx < apps.length; aidx += 1) {
-      result[apps[aidx]] = matsCollections.database.findOneAsync({
+      result[apps[aidx]] = matsCollections.database.findOne({
         name: "database",
       }).optionsMap[apps[aidx]].sumsDB;
     }
   } else if (
     matsCollections.variable !== undefined &&
-    matsCollections.variable.findOneAsync({
+    matsCollections.variable.findOne({
       name: "variable",
     }) !== undefined &&
     matsCollections.threshold !== undefined &&
-    matsCollections.threshold.findOneAsync({
+    matsCollections.threshold.findOne({
       name: "threshold",
     }) !== undefined
   ) {
     // get list of apps (variables in apps that also have thresholds)
-    apps = matsCollections.variable.findOneAsync({
+    apps = matsCollections.variable.findOne({
       name: "variable",
     }).options;
     if (!Array.isArray(apps)) apps = Object.keys(apps);
     for (aidx = 0; aidx < apps.length; aidx += 1) {
-      result[apps[aidx]] = matsCollections.variable.findOneAsync({
+      result[apps[aidx]] = matsCollections.variable.findOne({
         name: "variable",
       }).optionsMap[apps[aidx]];
       if (
@@ -317,8 +317,8 @@ function getListOfAppDBs() {
         result[apps[aidx]] = result[apps[aidx]].sumsDB;
     }
   } else {
-    result[matsCollections.Settings.findOneAsync().Title] =
-      matsCollections.Databases.findOneAsync({
+    result[matsCollections.Settings.findOne().Title] =
+      matsCollections.Databases.findOne({
         role: matsTypes.DatabaseRoles.SUMS_DATA,
         status: "active",
       }).database;
@@ -333,11 +333,11 @@ function getMapByAppAndModel(selector, mapType) {
     let result;
     if (
       matsCollections[selector] !== undefined &&
-      matsCollections[selector].findOneAsync({ name: selector }) !== undefined &&
-      matsCollections[selector].findOneAsync({ name: selector })[mapType] !== undefined
+      matsCollections[selector].findOne({ name: selector }) !== undefined &&
+      matsCollections[selector].findOne({ name: selector })[mapType] !== undefined
     ) {
       // get map of requested selector's metadata
-      result = matsCollections[selector].findOneAsync({
+      result = matsCollections[selector].findOne({
         name: selector,
       })[mapType];
       let newResult = {};
@@ -357,7 +357,7 @@ function getMapByAppAndModel(selector, mapType) {
         )
       ) {
         // key by app title if we're not already
-        const appTitle = matsCollections.Settings.findOneAsync().Title;
+        const appTitle = matsCollections.Settings.findOne().Title;
         newResult[appTitle] = result;
         result = newResult;
       }
@@ -382,38 +382,38 @@ function getDateMapByAppAndModel() {
     // the date map can be in a few places. we have to hunt for it.
     if (
       matsCollections.database !== undefined &&
-      matsCollections.database.findOneAsync({
+      matsCollections.database.findOne({
         name: "database",
       }) !== undefined &&
-      matsCollections.database.findOneAsync({
+      matsCollections.database.findOne({
         name: "database",
       }).dates !== undefined
     ) {
-      result = matsCollections.database.findOneAsync({
+      result = matsCollections.database.findOne({
         name: "database",
       }).dates;
     } else if (
       matsCollections.variable !== undefined &&
-      matsCollections.variable.findOneAsync({
+      matsCollections.variable.findOne({
         name: "variable",
       }) !== undefined &&
-      matsCollections.variable.findOneAsync({
+      matsCollections.variable.findOne({
         name: "variable",
       }).dates !== undefined
     ) {
-      result = matsCollections.variable.findOneAsync({
+      result = matsCollections.variable.findOne({
         name: "variable",
       }).dates;
     } else if (
       matsCollections["data-source"] !== undefined &&
-      matsCollections["data-source"].findOneAsync({
+      matsCollections["data-source"].findOne({
         name: "data-source",
       }) !== undefined &&
-      matsCollections["data-source"].findOneAsync({
+      matsCollections["data-source"].findOne({
         name: "data-source",
       }).dates !== undefined
     ) {
-      result = matsCollections["data-source"].findOneAsync({
+      result = matsCollections["data-source"].findOne({
         name: "data-source",
       }).dates;
     } else {
@@ -427,7 +427,7 @@ function getDateMapByAppAndModel() {
       )
     ) {
       // key by app title if we're not already
-      const appTitle = matsCollections.Settings.findOneAsync().Title;
+      const appTitle = matsCollections.Settings.findOne().Title;
       const newResult = {};
       newResult[appTitle] = result;
       result = newResult;
@@ -449,17 +449,17 @@ function getMapByApp(selector) {
     let result;
     if (
       matsCollections[selector] !== undefined &&
-      matsCollections[selector].findOneAsync({ name: selector }) !== undefined
+      matsCollections[selector].findOne({ name: selector }) !== undefined
     ) {
       // get array of requested selector's metadata
-      result = matsCollections[selector].findOneAsync({
+      result = matsCollections[selector].findOne({
         name: selector,
       }).options;
       if (!Array.isArray(result)) result = Object.keys(result);
     } else if (selector === "statistic") {
       result = ["ACC"];
     } else if (selector === "variable") {
-      result = [matsCollections.Settings.findOneAsync().Title];
+      result = [matsCollections.Settings.findOne().Title];
     } else {
       result = [];
     }
@@ -487,16 +487,16 @@ function getlevelsByApp() {
     let result;
     if (
       matsCollections.level !== undefined &&
-      matsCollections.level.findOneAsync({ name: "level" }) !== undefined
+      matsCollections.level.findOne({ name: "level" }) !== undefined
     ) {
       // we have levels already defined
-      result = matsCollections.level.findOneAsync({
+      result = matsCollections.level.findOne({
         name: "level",
       }).options;
       if (!Array.isArray(result)) result = Object.keys(result);
     } else if (
       matsCollections.top !== undefined &&
-      matsCollections.top.findOneAsync({ name: "top" }) !== undefined
+      matsCollections.top.findOne({ name: "top" }) !== undefined
     ) {
       // use the MATS mandatory levels
       result = _.range(100, 1050, 50);
@@ -1467,7 +1467,7 @@ const refreshScorecard = function (params, res) {
         } else if (result[0] === undefined) {
           throw new Error("Error from couchbase query - document not found");
         } else {
-          matsCollections.Scorecard.upsertAsync(
+          matsCollections.Scorecard.upsert(
             {
               "scorecard.userName": result[0].userName,
               "scorecard.name": result[0].name,
@@ -1513,11 +1513,11 @@ const setStatusScorecard = function (params, req, res) {
         try {
           const doc = JSON.parse(body);
           const docStatus = doc.status;
-          const found = matsCollections.Scorecard.findAsync({ id: docId }).fetch();
+          const found = matsCollections.Scorecard.find({ id: docId }).fetch();
           if (found.length === 0) {
             throw new Error("Error from scorecard lookup - document not found");
           }
-          matsCollections.Scorecard.upsertAsync(
+          matsCollections.Scorecard.upsert(
             {
               id: docId,
             },
@@ -1637,7 +1637,7 @@ const saveResultData = function (result) {
           }
           downSampleResult.data[ci] = downSampleResult[ci];
         }
-        DownSampleResults.rawCollection().insertAsync({
+        DownSampleResults.rawCollection().insert({
           createdAt: new Date(),
           key,
           result: downSampleResult,
@@ -1741,7 +1741,7 @@ const getThisScorecardData = async function (userName, name, submitted, processe
     // insert this result into the mongo Scorecard collection - createdAt is used for TTL
     // created at gets updated each display even if it already existed.
     // TTL is 24 hours
-    matsCollections.Scorecard.upsertAsync(
+    matsCollections.Scorecard.upsert(
       {
         "scorecard.userName": result[0].userName,
         "scorecard.name": result[0].name,
@@ -1755,7 +1755,7 @@ const getThisScorecardData = async function (userName, name, submitted, processe
         },
       }
     );
-    const docID = matsCollections.Scorecard.findOneAsync(
+    const docID = matsCollections.Scorecard.findOne(
       {
         "scorecard.userName": result[0].userName,
         "scorecard.name": result[0].name,
@@ -1871,7 +1871,7 @@ const addSentAddress = new ValidatedMethod({
     if (!Meteor.userId()) {
       throw new Meteor.Error(401, "not-logged-in");
     }
-    matsCollections.SentAddresses.upsertAsync(
+    matsCollections.SentAddresses.upsert(
       {
         address: toAddress,
       },
@@ -1910,12 +1910,12 @@ const applyAuthorization = new ValidatedMethod({
         roleName = authorizationRole;
       } else if (userRoleName && userRoleDescription) {
         // possible new role - see if it happens to already exist
-        const role = matsCollections.Roles.findOneAsync({
+        const role = matsCollections.Roles.findOne({
           name: userRoleName,
         });
         if (role === undefined) {
           // need to add new role using description
-          matsCollections.Roles.upsertAsync(
+          matsCollections.Roles.upsert(
             {
               name: userRoleName,
             },
@@ -1932,7 +1932,7 @@ const applyAuthorization = new ValidatedMethod({
           const { description } = role;
           if (description !== userRoleDescription) {
             // have to update the description
-            matsCollections.Roles.upsertAsync(
+            matsCollections.Roles.upsert(
               {
                 name: userRoleName,
               },
@@ -1949,7 +1949,7 @@ const applyAuthorization = new ValidatedMethod({
       if (existingUserEmail) {
         // existing user -  no need to verify as the selection list came from the database
         // see if it already has the role
-        authorization = matsCollections.Authorization.findOneAsync({
+        authorization = matsCollections.Authorization.findOne({
           email: existingUserEmail,
         });
         roles = authorization.roles;
@@ -1958,7 +1958,7 @@ const applyAuthorization = new ValidatedMethod({
           if (roleName) {
             roles.push(roleName);
           }
-          matsCollections.Authorization.upsertAsync(
+          matsCollections.Authorization.upsert(
             {
               email: existingUserEmail,
             },
@@ -1971,7 +1971,7 @@ const applyAuthorization = new ValidatedMethod({
         }
       } else if (newUserEmail) {
         // possible new authorization - see if it happens to exist
-        authorization = matsCollections.Authorization.findOneAsync({
+        authorization = matsCollections.Authorization.findOne({
           email: newUserEmail,
         });
         if (authorization !== undefined) {
@@ -1982,7 +1982,7 @@ const applyAuthorization = new ValidatedMethod({
             if (roleName) {
               roles.push(roleName);
             }
-            matsCollections.Authorization.upsertAsync(
+            matsCollections.Authorization.upsert(
               {
                 email: existingUserEmail,
               },
@@ -2000,7 +2000,7 @@ const applyAuthorization = new ValidatedMethod({
             roles.push(roleName);
           }
           if (newUserEmail) {
-            matsCollections.Authorization.upsertAsync(
+            matsCollections.Authorization.upsert(
               {
                 email: newUserEmail,
               },
@@ -2031,7 +2031,7 @@ const applyDatabaseSettings = new ValidatedMethod({
   run(settings) {
     if (Meteor.isServer) {
       if (settings.name) {
-        matsCollections.Databases.upsertAsync(
+        matsCollections.Databases.upsert(
           {
             name: settings.name,
           },
@@ -2066,7 +2066,7 @@ const deleteSettings = new ValidatedMethod({
       throw new Meteor.Error("not-logged-in");
     }
     if (Meteor.isServer) {
-      matsCollections.CurveSettings.removeAsync({
+      matsCollections.CurveSettings.remove({
         name: params.name,
       });
     }
@@ -2130,7 +2130,7 @@ const getGraphData = new ValidatedMethod({
   }).validator(),
   run(params) {
     if (Meteor.isServer) {
-      const plotGraphFunction = matsCollections.PlotGraphFunctions.findOneAsync({
+      const plotGraphFunction = matsCollections.PlotGraphFunctions.findOne({
         plotType: params.plotType,
       });
       const { dataFunction } = plotGraphFunction;
@@ -2154,7 +2154,7 @@ const getGraphData = new ValidatedMethod({
         }
         // results were already in the matsCache (same params and not yet expired)
         // are results in the downsampled collection?
-        const dsResults = DownSampleResults.findOneAsync(
+        const dsResults = DownSampleResults.findOne(
           {
             key,
           },
@@ -2167,7 +2167,7 @@ const getGraphData = new ValidatedMethod({
           // results are in the mongo cache downsampled collection - returned the downsampled graph data
           ret = dsResults;
           // update the expire time in the downsampled collection - this requires a new Date
-          DownSampleResults.rawCollection().updateAsync(
+          DownSampleResults.rawCollection().update(
             {
               key,
             },
@@ -2212,7 +2212,7 @@ const getGraphDataByKey = new ValidatedMethod({
       let ret;
       const key = params.resultKey;
       try {
-        const dsResults = DownSampleResults.findOneAsync(
+        const dsResults = DownSampleResults.findOne(
           {
             key,
           },
@@ -2251,7 +2251,7 @@ const getLayout = new ValidatedMethod({
       let ret;
       const key = params.resultKey;
       try {
-        ret = LayoutStoreCollection.rawCollection().findOneAsync({
+        ret = LayoutStoreCollection.rawCollection().findOne({
           key,
         });
         return ret;
@@ -2411,7 +2411,7 @@ const setCurveParamDisplayText = new ValidatedMethod({
   }).validator(),
   run(params) {
     if (Meteor.isServer) {
-      return matsCollections[params.paramName].updateAsync(
+      return matsCollections[params.paramName].update(
         { name: params.paramName },
         { $set: { controlButtonText: params.newText } }
       );
@@ -2487,9 +2487,9 @@ const insertColor = new ValidatedMethod({
     if (params.newColor === "rgb(255,255,255)") {
       return false;
     }
-    const colorScheme = matsCollections.ColorScheme.findOneAsync({});
+    const colorScheme = matsCollections.ColorScheme.findOne({});
     colorScheme.colors.splice(params.insertAfterIndex, 0, params.newColor);
-    matsCollections.updateAsync({}, colorScheme);
+    matsCollections.update({}, colorScheme);
     return false;
   },
 });
@@ -2545,7 +2545,7 @@ const refreshMetaData = new ValidatedMethod({
         throw new Meteor.Error("Server error: ", e.message);
       }
     }
-    return metaDataTableUpdates.findAsync({}).fetch();
+    return metaDataTableUpdates.find({}).fetch();
   },
 });
 
@@ -2580,7 +2580,7 @@ const removeAuthorization = new ValidatedMethod({
 
       // if user and role remove the role from the user
       if (email && roleName) {
-        matsCollections.Authorization.updateAsync(
+        matsCollections.Authorization.update(
           {
             email,
           },
@@ -2593,18 +2593,18 @@ const removeAuthorization = new ValidatedMethod({
       }
       // if user and no role remove the user
       if (email && !roleName) {
-        matsCollections.Authorization.removeAsync({
+        matsCollections.Authorization.remove({
           email,
         });
       }
       // if role and no user remove role and remove role from all users
       if (roleName && !email) {
         // remove the role
-        matsCollections.Roles.removeAsync({
+        matsCollections.Roles.remove({
           name: roleName,
         });
         // remove the roleName role from all the authorizations
-        matsCollections.Authorization.updateAsync(
+        matsCollections.Authorization.update(
           {
             roles: roleName,
           },
@@ -2632,10 +2632,10 @@ const removeColor = new ValidatedMethod({
     },
   }).validator(),
   run(params) {
-    const colorScheme = matsCollections.ColorScheme.findOneAsync({});
+    const colorScheme = matsCollections.ColorScheme.findOne({});
     const removeIndex = colorScheme.colors.indexOf(params.removeColor);
     colorScheme.colors.splice(removeIndex, 1);
-    matsCollections.ColorScheme.updateAsync({}, colorScheme);
+    matsCollections.ColorScheme.update({}, colorScheme);
     return false;
   },
 });
@@ -2650,7 +2650,7 @@ const removeDatabase = new ValidatedMethod({
   }).validator(),
   run(dbName) {
     if (Meteor.isServer) {
-      matsCollections.Databases.removeAsync({
+      matsCollections.Databases.remove({
         name: dbName,
       });
     }
@@ -2674,10 +2674,10 @@ const applySettingsData = new ValidatedMethod({
       // Read the existing settings file
       const { settings } = settingsParam;
       console.log(
-        "applySettingsData - matsCollections.appName.findOneAsync({}) is ",
-        matsCollections.appName.findOneAsync({})
+        "applySettingsData - matsCollections.appName.findOne({}) is ",
+        matsCollections.appName.findOne({})
       );
-      const { appName } = matsCollections.Settings.findOneAsync({});
+      const { appName } = matsCollections.Settings.findOne({});
       writeSettings(settings, appName);
       // in development - when being run by meteor, this should force a restart of the app.
       // in case I am in a container - exit and force a reload
@@ -2886,8 +2886,8 @@ const resetApp = async function (appRef) {
       for (let mdti = 0; mdti < metaDataTables.length; mdti += 1) {
         const metaDataRef = metaDataTables[mdti];
         metaDataRef.lastRefreshed = moment().format();
-        if (metaDataTableUpdates.findAsync({ name: metaDataRef.name }).countAsync() === 0) {
-          metaDataTableUpdates.updateAsync(
+        if (metaDataTableUpdates.find({ name: metaDataRef.name }).count() === 0) {
+          metaDataTableUpdates.update(
             {
               name: metaDataRef.name,
             },
@@ -2902,14 +2902,14 @@ const resetApp = async function (appRef) {
       throw new Meteor.Error("Server error: ", "resetApp: bad pool-database entry");
     }
     // invoke the standard common routines
-    matsCollections.Roles.removeAsync({});
+    matsCollections.Roles.remove({});
     matsDataUtils.doRoles();
-    matsCollections.Authorization.removeAsync({});
+    matsCollections.Authorization.remove({});
     matsDataUtils.doAuthorization();
-    matsCollections.PlotGraphFunctions.removeAsync({});
-    matsCollections.ColorScheme.removeAsync({});
+    matsCollections.PlotGraphFunctions.remove({});
+    matsCollections.ColorScheme.remove({});
     matsDataUtils.doColorScheme();
-    matsCollections.Settings.removeAsync({});
+    matsCollections.Settings.remove({});
     matsDataUtils.doSettings(
       appTitle,
       dbType,
@@ -2929,24 +2929,24 @@ const resetApp = async function (appRef) {
       appMessage,
       scorecard
     );
-    matsCollections.PlotParams.removeAsync({});
-    matsCollections.CurveTextPatterns.removeAsync({});
+    matsCollections.PlotParams.remove({});
+    matsCollections.CurveTextPatterns.remove({});
     // get the curve params for this app into their collections
-    matsCollections.CurveParamsInfo.removeAsync({});
-    matsCollections.CurveParamsInfo.insertAsync({
+    matsCollections.CurveParamsInfo.remove({});
+    matsCollections.CurveParamsInfo.insert({
       curve_params: curveParams,
     });
     for (let cp = 0; cp < curveParams.length; cp += 1) {
       if (matsCollections[curveParams[cp]] !== undefined) {
-        matsCollections[curveParams[cp]].removeAsync({});
+        matsCollections[curveParams[cp]].remove({});
       }
     }
     // if this is a scorecard also get the apps to score out of the settings file
     if (Meteor.settings.public && Meteor.settings.public.scorecard) {
       if (Meteor.settings.public.apps_to_score) {
         appsToScore = Meteor.settings.public.apps_to_score;
-        matsCollections.AppsToScore.removeAsync({});
-        matsCollections.AppsToScore.insertAsync({
+        matsCollections.AppsToScore.remove({});
+        matsCollections.AppsToScore.insert({
           apps_to_score: appsToScore,
         });
       } else {
@@ -2988,7 +2988,7 @@ const saveLayout = new ValidatedMethod({
       const { curveOpsUpdate } = params;
       const { annotation } = params;
       try {
-        LayoutStoreCollection.upsertAsync(
+        LayoutStoreCollection.upsert(
           {
             key,
           },
@@ -3064,7 +3064,7 @@ const saveSettings = new ValidatedMethod({
   }).validator(),
   run(params) {
     const user = "anonymous";
-    matsCollections.CurveSettings.upsertAsync(
+    matsCollections.CurveSettings.upsert(
       {
         name: params.saveAs,
       },
@@ -3087,7 +3087,7 @@ const testGetMetaDataTableUpdates = new ValidatedMethod({
   name: "matsMethods.testGetMetaDataTableUpdates",
   validate: new SimpleSchema({}).validator(),
   run() {
-    return metaDataTableUpdates.findAsync({}).fetch();
+    return metaDataTableUpdates.find({}).fetch();
   },
 });
 
@@ -3112,7 +3112,7 @@ const testGetTables = new ValidatedMethod({
   }).validator(),
   async run(params) {
     if (Meteor.isServer) {
-      if (matsCollections.Settings.findOneAsync().dbType === matsTypes.DbTypes.couchbase) {
+      if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
         const cbUtilities = new matsCouchbaseUtils.CBUtilities(
           params.host,
           params.bucket,
@@ -3168,9 +3168,9 @@ const testSetMetaDataTableUpdatesLastRefreshedBack = new ValidatedMethod({
   name: "matsMethods.testSetMetaDataTableUpdatesLastRefreshedBack",
   validate: new SimpleSchema({}).validator(),
   run() {
-    const mtu = metaDataTableUpdates.findAsync({}).fetch();
+    const mtu = metaDataTableUpdates.find({}).fetch();
     const id = mtu[0]._id;
-    metaDataTableUpdates.updateAsync(
+    metaDataTableUpdates.update(
       {
         _id: id,
       },
@@ -3180,7 +3180,7 @@ const testSetMetaDataTableUpdatesLastRefreshedBack = new ValidatedMethod({
         },
       }
     );
-    return metaDataTableUpdates.findAsync({}).fetch();
+    return metaDataTableUpdates.find({}).fetch();
   },
 });
 

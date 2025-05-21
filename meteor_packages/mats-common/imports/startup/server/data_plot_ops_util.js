@@ -9,8 +9,8 @@ import { _ } from "meteor/underscore";
 
 const noaaDisclaimer = function () {
   if (
-    matsCollections.Settings.findOneAsync({}) !== undefined &&
-    matsCollections.Settings.findOneAsync({}).displayDisclaimer
+    matsCollections.Settings.findOne({}) !== undefined &&
+    matsCollections.Settings.findOne({}).displayDisclaimer
   ) {
     return "This plot is for research purposes only, and should not be used to make decisions related to the safety of life and property.";
   }
@@ -213,7 +213,7 @@ const generateProfilePlotOptions = function (axisMap, errorMax) {
 
   // y-axis options
   let tickVals;
-  if (matsCollections.Settings.findOneAsync({}).appType === matsTypes.AppTypes.metexpress) {
+  if (matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress) {
     tickVals = [1000, 850, 700, 600, 500, 400, 300, 250, 200, 150, 100, 50, 10];
   } else {
     tickVals = [1000, 900, 800, 700, 600, 500, 400, 300, 200, 100];
@@ -846,7 +846,7 @@ const generateGridScalePlotOptions = function (axisMap, errorMax) {
   let { xmax } = axisMap[Object.keys(axisMap)[0]];
   const yAxisNumber = Object.keys(axisMap).length;
 
-  const { appName } = matsCollections.Settings.findOneAsync({});
+  const { appName } = matsCollections.Settings.findOne({});
   let xLabel;
   if (appName.includes("met-")) {
     xLabel = "Interpolation Points";
