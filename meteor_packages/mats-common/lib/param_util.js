@@ -650,11 +650,13 @@ const getMultiSelectCurveParamNames = async function () {
     await matsCollections.CurveParamsInfo.findOneAsync({}, { curve_params: 1 })
   ).curve_params;
   const multiParamNames = [];
-  curveParamNames.forEach(async function (paramName) {
+  for (let cidx = 0; cidx < curveParamNames.length; cidx += 1) {
+    const paramName = curveParamNames[cidx];
+    // eslint-disable-next-line no-await-in-loop
     if ((await getParameterForNameAsync(paramName)).multiple !== undefined) {
       multiParamNames.push(paramName);
     }
-  });
+  }
   return multiParamNames;
 };
 
