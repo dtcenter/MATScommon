@@ -112,6 +112,15 @@ const objectContainsObject = function (superObject, subObject) {
 };
 
 // utility for calculating the sum of an array
+const range = function (start, stop, stride) {
+  const arr = [];
+  for (let idx = start; idx < stop; idx += stride || 1) {
+    arr.push(idx);
+  }
+  return arr;
+};
+
+// utility for calculating the sum of an array
 const sum = function (data) {
   if (data.length === 0) return null;
   return data.reduce(function (thisSum, value) {
@@ -2080,6 +2089,7 @@ export default matsDataUtils = {
   arrayUnique,
   findArrayInSubArray,
   objectContainsObject,
+  range,
   sum,
   average,
   median,
