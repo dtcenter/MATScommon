@@ -78,7 +78,7 @@ const setPlotResultData = function () {
 
   if (Session.get("textRefreshNeeded") === true) {
     showSpinner();
-    matsMethods.getPlotResult.call(
+    matsMethods.getPlotResult.callAsync(
       {
         resultKey: Session.get("plotResultKey"),
         pageIndex,
@@ -156,7 +156,7 @@ const resetGraphResult = function () {
 
 const setCurveParamDisplayText = function (paramName, newText) {
   if (document.getElementById(`${paramName}-item`)) {
-    matsMethods.setCurveParamDisplayText.call(
+    matsMethods.setCurveParamDisplayText.callAsync(
       {
         paramName,
         newText,
