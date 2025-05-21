@@ -17,21 +17,22 @@ Package.describe({
 });
 
 Package.onUse(function (api) {
-  api.versionsFrom("2.16");
+  api.versionsFrom("3.2");
   Npm.depends({
-    "@fortawesome/fontawesome-free": "6.5.2",
-    "fs-extra": "11.2.0",
-    "@babel/runtime": "7.24.7",
-    "meteor-node-stubs": "1.2.9",
-    url: "0.11.3",
+    "@fortawesome/fontawesome-free": "6.7.2",
+    "fs-extra": "11.3.0",
+    "@babel/runtime": "7.27.1",
+    "meteor-node-stubs": "1.2.17",
+    url: "0.11.4",
     jquery: "3.7.1",
-    "datatables.net-bs": "2.0.8",
-    "datatables.net-dt": "2.0.8",
-    "jquery-ui": "1.13.3",
-    "csv-stringify": "6.5.0",
+    "datatables.net-bs": "2.3.0",
+    "datatables.net-dt": "2.3.0",
+    "jquery-ui": "1.14.1",
+    "csv-stringify": "6.5.2",
     "node-file-cache": "1.0.2",
     "python-shell": "5.0.0",
-    couchbase: "4.3.1",
+    couchbase: "4.4.5",
+    mysql2: "3.14.1",
     "vanillajs-datepicker": "1.3.4",
     daterangepicker: "3.1.0",
     "lighten-darken-color": "1.0.0",
@@ -55,9 +56,8 @@ Package.onUse(function (api) {
   api.use("mdg:validated-method");
   api.use("session");
   api.imply("session");
+  api.use("webapp");
   api.use("twbs:bootstrap");
-  api.use("msavin:mongol");
-  api.use("differential:event-hooks");
   api.use("risul:bootstrap-colorpicker");
   api.use("logging");
   api.use("reload");
@@ -65,13 +65,11 @@ Package.onUse(function (api) {
   api.use("ejson");
   api.use("spacebars");
   api.use("check");
-  api.use("ostrio:flow-router-extra");
-  api.use("meteorhacks:picker");
   api.use("momentjs:moment");
-  api.use("pcel:mysql");
   api.use("reactive-var");
-  api.use("jkuester:http");
+  api.use("fetch");
   api.use("aldeed:simple-schema");
+  api.use("accounts-password");
 
   // modules
   api.export("matsCollections", ["client", "server"]);
@@ -108,6 +106,11 @@ Package.onUse(function (api) {
 
   // api
   api.addFiles("imports/startup/api/matsMethods.js");
+  api.addFiles("imports/startup/api/matsHelpers.js");
+  api.addFiles("imports/startup/api/handlerHelpers.js");
+  api.addFiles("imports/startup/api/routeConfig.js");
+  api.addFiles("imports/startup/api/routeHandlers.js");
+  api.addFiles("imports/startup/api/routeRegistration.js");
   api.addFiles("imports/startup/api/version-info.js");
 
   // layouts
@@ -193,6 +196,10 @@ Package.onUse(function (api) {
 
   api.addFiles("templates/graphStandAlone/graphStandAlone.html", "client");
   api.addFiles("templates/graphStandAlone/graphStandAlone.js", "client");
+
+  api.addFiles("templates/head/head.html", "client");
+  api.addFiles("templates/head/analytics.html", "client");
+  api.addFiles("templates/head/analytics.js", "client");
 
   api.addFiles("templates/help/help.html", "client");
 

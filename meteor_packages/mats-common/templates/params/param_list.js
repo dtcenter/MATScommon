@@ -31,12 +31,12 @@ Template.paramList.helpers({
   CurveParamGroups() {
     Session.get("lastUpdate");
     const groupNums = [];
-    const params = matsCollections.CurveParamsInfo.find({
+    const params = matsCollections.CurveParamsInfo.findOne({
       curve_params: { $exists: true },
-    }).fetch()[0].curve_params;
+    }).curve_params;
     let param;
     for (let i = 0; i < params.length; i += 1) {
-      [param] = matsCollections[params[i]].find({}).fetch();
+      param = matsCollections[params[i]].findOne({});
       if (param !== undefined) {
         groupNums.push(param.displayGroup);
       }
@@ -85,13 +85,15 @@ Template.paramList.events({
   "click .reset"(event) {
     event.preventDefault();
     Session.set("paramWellColor", "#ffffff");
-    // eslint-disable-next-line no-unused-vars
-    matsMethods.refreshMetaData.call({}, function (error, result) {
-      if (error !== undefined) {
+    matsMethods.refreshMetaData
+      // eslint-disable-next-line no-unused-vars
+      .callAsync({})
+      .then(function () {
+        matsParamUtils.setAllParamsToDefault();
+      })
+      .catch(function (error) {
         setError(new Error(error.message));
-      }
-      matsParamUtils.setAllParamsToDefault();
-    });
+      });
   },
   "click .expand"() {
     matsParamUtils.expandParams();
@@ -126,16 +128,16 @@ Template.paramList.events({
     const curves = Session.get("Curves");
     const p = {};
     const elems = event.target.valueOf().elements;
-    let curveNames = matsCollections.CurveParamsInfo.find({
+    let curveNames = matsCollections.CurveParamsInfo.findOne({
       curve_params: { $exists: true },
-    }).fetch()[0].curve_params;
+    }).curve_params;
     const dateParamNames = [];
     let param;
     // remove any hidden params (not unused ones  -= 1 unused is a valid state)
     // iterate backwards so that we can splice to remove
     for (let cindex = curveNames.length - 1; cindex >= 0; cindex -= 1) {
       const cname = curveNames[cindex];
-      [param] = matsCollections[cname].find({}).fetch();
+      param = matsCollections[cname].findOne({});
       if (param.type === matsTypes.InputTypes.dateRange) {
         dateParamNames.push(cname);
       }

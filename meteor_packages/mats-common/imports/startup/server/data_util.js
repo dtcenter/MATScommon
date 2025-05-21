@@ -4,7 +4,7 @@
 
 import { matsTypes, matsCollections, matsMethods } from "meteor/randyp:mats-common";
 import { Meteor } from "meteor/meteor";
-import { HTTP } from "meteor/jkuester:http";
+import { fetch } from "meteor/fetch";
 
 /* global Npm */
 /* eslint-disable global-require */
@@ -227,54 +227,18 @@ const getDateRange = function (dateRange) {
   };
 };
 
-// function to manage authorized logins for MATS
-const doAuthorization = function () {
-  if (
-    matsCollections.Settings.findOne({}) === undefined ||
-    matsCollections.Settings.findOne({}).resetFromCode === undefined ||
-    matsCollections.Settings.findOne({}).resetFromCode === true
-  ) {
-    matsCollections.Authorization.remove({});
-  }
-  if (matsCollections.Authorization.find().count() === 0) {
-    matsCollections.Authorization.insert({
-      email: "randy.pierce@noaa.gov",
-      roles: ["administrator"],
-    });
-    matsCollections.Authorization.insert({
-      email: "kirk.l.holub@noaa.gov",
-      roles: ["administrator"],
-    });
-    matsCollections.Authorization.insert({
-      email: "jeffrey.a.hamilton@noaa.gov",
-      roles: ["administrator"],
-    });
-    matsCollections.Authorization.insert({
-      email: "bonny.strong@noaa.gov",
-      roles: ["administrator"],
-    });
-    matsCollections.Authorization.insert({
-      email: "molly.b.smith@noaa.gov",
-      roles: ["administrator"],
-    });
-    matsCollections.Authorization.insert({
-      email: "mats.gsd@noaa.gov",
-      roles: ["administrator"],
-    });
-  }
-};
-
 // master list of colors for MATS curves
-const doColorScheme = function () {
+const doColorScheme = async function () {
+  const settings = await matsCollections.Settings.findOneAsync({});
   if (
-    matsCollections.Settings.findOne({}) === undefined ||
-    matsCollections.Settings.findOne({}).resetFromCode === undefined ||
-    matsCollections.Settings.findOne({}).resetFromCode === true
+    settings === undefined ||
+    settings.resetFromCode === undefined ||
+    settings.resetFromCode === true
   ) {
-    matsCollections.ColorScheme.remove({});
+    await matsCollections.ColorScheme.removeAsync({});
   }
-  if (matsCollections.ColorScheme.find().count() === 0) {
-    matsCollections.ColorScheme.insert({
+  if ((await matsCollections.ColorScheme.find().countAsync()) === 0) {
+    await matsCollections.ColorScheme.insertAsync({
       colors: [
         "rgb(255,0,0)",
         "rgb(0,0,255)",
@@ -290,25 +254,8 @@ const doColorScheme = function () {
   }
 };
 
-// another utility to assist at logging into MATS
-const doRoles = function () {
-  if (
-    matsCollections.Settings.findOne({}) === undefined ||
-    matsCollections.Settings.findOne({}).resetFromCode === undefined ||
-    matsCollections.Settings.findOne({}).resetFromCode === true
-  ) {
-    matsCollections.Roles.remove({});
-  }
-  if (matsCollections.Roles.find().count() === 0) {
-    matsCollections.Roles.insert({
-      name: "administrator",
-      description: "administrator privileges",
-    });
-  }
-};
-
 // for use in matsMethods.resetApp() to establish default settings
-const doSettings = function (
+const doSettings = async function (
   title,
   dbType,
   version,
@@ -327,15 +274,16 @@ const doSettings = function (
   appMessage,
   scorecard
 ) {
+  let settings = await matsCollections.Settings.findOneAsync({});
   if (
-    matsCollections.Settings.findOne({}) === undefined ||
-    matsCollections.Settings.findOne({}).resetFromCode === undefined ||
-    matsCollections.Settings.findOne({}).resetFromCode === true
+    settings === undefined ||
+    settings.resetFromCode === undefined ||
+    settings.resetFromCode === true
   ) {
-    matsCollections.Settings.remove({});
+    await matsCollections.Settings.removeAsync({});
   }
-  if (matsCollections.Settings.find().count() === 0) {
-    matsCollections.Settings.insert({
+  if ((await matsCollections.Settings.find().countAsync()) === 0) {
+    await matsCollections.Settings.insertAsync({
       LabelPrefix: scorecard ? "Block" : "Curve",
       Title: title,
       dbType,
@@ -359,16 +307,16 @@ const doSettings = function (
     });
   }
   // always update the version, roles, and the hostname, not just if it doesn't exist...
-  const settings = matsCollections.Settings.findOne({});
+  settings = await matsCollections.Settings.findOneAsync({});
   const settingsId = settings._id;
   const os = Npm.require("os");
   const hostname = os.hostname().split(".")[0];
   settings.appVersion = version;
   settings.hostname = hostname;
-  matsCollections.Settings.update(settingsId, { $set: settings });
+  await matsCollections.Settings.updateAsync(settingsId, { $set: settings });
 };
 
-const callMetadataAPI = function (
+const callMetadataAPI = async function (
   selector,
   queryURL,
   destinationStructure,
@@ -379,43 +327,40 @@ const callMetadataAPI = function (
   let returnDestinationStructure = destinationStructure;
   const returnHideOtherFor = hideOtherFor;
   let returnExpectedApps = expectedApps;
-  const Future = require("fibers/future");
-  const pFuture = new Future();
-  HTTP.get(queryURL, {}, function (error, response) {
-    if (error) {
-      console.log(error);
-    } else {
-      const metadata = JSON.parse(response.content);
-      if (Array.isArray(returnDestinationStructure)) {
-        // this is the list of apps. It's the only array in the API.
-        returnDestinationStructure = [...returnDestinationStructure, ...metadata];
-        returnExpectedApps = metadata;
-      } else if (Object.keys(metadata).length === 0) {
-        // this metadata type (e.g. 'threshold') is not valid for this app
-        // we need to add placeholder metadata to the destination structure
-        // and add the selector in question to the hideOtherFor map.
-        const dummyMetadata = {};
-        if (!selector.includes("values")) {
-          returnHideOtherFor[selector] =
-            returnHideOtherFor[selector] === undefined
-              ? []
-              : returnHideOtherFor[selector];
-          for (let eidx = 0; eidx < returnExpectedApps.length; eidx += 1) {
-            dummyMetadata[returnExpectedApps[eidx]] = fakeMetadata;
-            returnHideOtherFor[selector].push(returnExpectedApps[eidx]);
-          }
+
+  try {
+    const response = await fetch(queryURL);
+    const metadata = await response.json();
+
+    if (Array.isArray(returnDestinationStructure)) {
+      // this is the list of apps. It's the only array in the API.
+      returnDestinationStructure = [...returnDestinationStructure, ...metadata];
+      returnExpectedApps = metadata;
+    } else if (Object.keys(metadata).length === 0) {
+      // this metadata type (e.g. 'threshold') is not valid for this app
+      // we need to add placeholder metadata to the destination structure
+      // and add the selector in question to the hideOtherFor map.
+      const dummyMetadata = {};
+      if (!selector.includes("values")) {
+        returnHideOtherFor[selector] =
+          returnHideOtherFor[selector] === undefined
+            ? []
+            : returnHideOtherFor[selector];
+        for (let eidx = 0; eidx < returnExpectedApps.length; eidx += 1) {
+          dummyMetadata[returnExpectedApps[eidx]] = fakeMetadata;
+          returnHideOtherFor[selector].push(returnExpectedApps[eidx]);
         }
-        returnDestinationStructure = {
-          ...returnDestinationStructure,
-          ...dummyMetadata,
-        };
-      } else {
-        returnDestinationStructure = { ...returnDestinationStructure, ...metadata };
       }
+      returnDestinationStructure = {
+        ...returnDestinationStructure,
+        ...dummyMetadata,
+      };
+    } else {
+      returnDestinationStructure = { ...returnDestinationStructure, ...metadata };
     }
-    pFuture.return();
-  });
-  pFuture.wait();
+  } catch (err) {
+    console.log(err.message);
+  }
   return [returnDestinationStructure, returnExpectedApps, returnHideOtherFor];
 };
 
@@ -1336,7 +1281,7 @@ const getErr = function (sVals, sSecs, sLevs, appParams) {
 };
 
 // utility for getting CTC error bar length via Python
-const ctcErrorPython = function (statistic, minuendData, subtrahendData) {
+const ctcErrorPython = async function (statistic, minuendData, subtrahendData) {
   if (Meteor.isServer) {
     // send the data to the python script
     const pyOptions = {
@@ -1357,32 +1302,23 @@ const ctcErrorPython = function (statistic, minuendData, subtrahendData) {
       ],
     };
     const pyShell = require("python-shell");
-    const Future = require("fibers/future");
 
-    const future = new Future();
     let error;
     let errorLength = 0;
-    pyShell.PythonShell.run("python_ctc_error.py", pyOptions)
-      .then((results) => {
-        // parse the results or set an error
-        if (results === undefined || results === "undefined") {
-          error =
-            "Error thrown by python_ctc_error.py. Please write down exactly how you produced this error, and submit a ticket at mats.gsl@noaa.gov.";
-        } else {
-          // get the data back from the query
-          const parsedData = JSON.parse(results);
-          errorLength = Number(parsedData.error_length);
-        }
-        // done waiting - have results
-        future.return();
-      })
+    const results = await pyShell.PythonShell.run("python_ctc_error.py", pyOptions)
+      .then()
       .catch((err) => {
         error = err.message;
-        future.return();
       });
-
-    // wait for future to finish
-    future.wait();
+    // parse the results or set an error
+    if (results === undefined || results === "undefined") {
+      error =
+        "Error thrown by python_ctc_error.py. Please write down exactly how you produced this error, and submit a ticket at mats.gsl@noaa.gov.";
+    } else {
+      // get the data back from the query
+      const parsedData = JSON.parse(results);
+      errorLength = Number(parsedData.error_length);
+    }
     if (error) {
       throw new Error(`Error when calculating CTC errorbars: ${error}`);
     }
@@ -1460,7 +1396,7 @@ const isStudentTTestValueSignificant = function (t, df, sigType) {
 };
 
 // find the p-value or significance for this
-const checkDiffContourSignificanceCTC = function (
+const checkDiffContourSignificanceCTC = async function (
   diffValue,
   mH,
   mF,
@@ -1485,7 +1421,7 @@ const checkDiffContourSignificanceCTC = function (
     miss: sM,
     cn: sC,
   };
-  const errorLength = ctcErrorPython(statistic, minuendData, subtrahendData);
+  const errorLength = await ctcErrorPython(statistic, minuendData, subtrahendData);
   const upperBound = diffValue + errorLength;
   const lowerBound = diffValue - errorLength;
   return (upperBound > 0 && lowerBound > 0) || (upperBound < 0 && lowerBound < 0);
@@ -2151,9 +2087,7 @@ export default matsDataUtils = {
   dateConvert,
   getDateRange,
   secsConvert,
-  doAuthorization,
   doColorScheme,
-  doRoles,
   doSettings,
   callMetadataAPI,
   calculateStatCTC,

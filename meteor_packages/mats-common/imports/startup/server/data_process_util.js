@@ -15,7 +15,9 @@ import {
 import { moment } from "meteor/momentjs:moment";
 import { _ } from "meteor/underscore";
 
-const processDataXYCurve = function (
+/* eslint-disable no-await-in-loop */
+
+const processDataXYCurve = async function (
   dataset,
   appParams,
   curveInfoParams,
@@ -29,9 +31,10 @@ const processDataXYCurve = function (
   let errorMax = Number.MIN_VALUE;
   const error = "";
 
-  const { appName } = matsCollections.Settings.findOne({});
+  const { appName } = await matsCollections.Settings.findOneAsync({});
   const isMetexpress =
-    matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
+    (await matsCollections.Settings.findOneAsync({})).appType ===
+    matsTypes.AppTypes.metexpress;
 
   // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
   if (returnCurveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
@@ -147,7 +150,7 @@ const processDataXYCurve = function (
             miss: returnDataset[diffFrom[1]].subMiss[di],
             cn: returnDataset[diffFrom[1]].subCn[di],
           };
-          errorLength = matsDataUtils.ctcErrorPython(
+          errorLength = await matsDataUtils.ctcErrorPython(
             statisticSelect,
             minuendData,
             subtrahendData
@@ -465,38 +468,38 @@ const processDataXYCurve = function (
   switch (appParams.plotType) {
     case matsTypes.PlotTypes.timeSeries:
     case matsTypes.PlotTypes.dailyModelCycle:
-      resultOptions = matsDataPlotOpsUtils.generateSeriesPlotOptions(
+      resultOptions = await matsDataPlotOpsUtils.generateSeriesPlotOptions(
         returnCurveInfoParams.axisMap,
         errorMax
       );
       break;
     case matsTypes.PlotTypes.dieoff:
-      resultOptions = matsDataPlotOpsUtils.generateDieoffPlotOptions(
+      resultOptions = await matsDataPlotOpsUtils.generateDieoffPlotOptions(
         returnCurveInfoParams.axisMap,
         errorMax
       );
       break;
     case matsTypes.PlotTypes.threshold:
-      resultOptions = matsDataPlotOpsUtils.generateThresholdPlotOptions(
+      resultOptions = await matsDataPlotOpsUtils.generateThresholdPlotOptions(
         returnDataset,
         returnCurveInfoParams.axisMap,
         errorMax
       );
       break;
     case matsTypes.PlotTypes.validtime:
-      resultOptions = matsDataPlotOpsUtils.generateValidTimePlotOptions(
+      resultOptions = await matsDataPlotOpsUtils.generateValidTimePlotOptions(
         returnCurveInfoParams.axisMap,
         errorMax
       );
       break;
     case matsTypes.PlotTypes.gridscale:
-      resultOptions = matsDataPlotOpsUtils.generateGridScalePlotOptions(
+      resultOptions = await matsDataPlotOpsUtils.generateGridScalePlotOptions(
         returnCurveInfoParams.axisMap,
         errorMax
       );
       break;
     case matsTypes.PlotTypes.yearToYear:
-      resultOptions = matsDataPlotOpsUtils.generateYearToYearPlotOptions(
+      resultOptions = await matsDataPlotOpsUtils.generateYearToYearPlotOptions(
         returnCurveInfoParams.axisMap,
         errorMax
       );
@@ -560,7 +563,7 @@ const processDataXYCurve = function (
   };
 };
 
-const processDataProfile = function (
+const processDataProfile = async function (
   dataset,
   appParams,
   curveInfoParams,
@@ -574,9 +577,10 @@ const processDataProfile = function (
   let errorMax = Number.MIN_VALUE;
   const error = "";
 
-  const { appName } = matsCollections.Settings.findOne({});
+  const { appName } = await matsCollections.Settings.findOneAsync({});
   const isMetexpress =
-    matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
+    (await matsCollections.Settings.findOneAsync({})).appType ===
+    matsTypes.AppTypes.metexpress;
 
   // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
   if (returnCurveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
@@ -683,7 +687,7 @@ const processDataProfile = function (
             miss: returnDataset[diffFrom[1]].subMiss[di],
             cn: returnDataset[diffFrom[1]].subCn[di],
           };
-          errorLength = matsDataUtils.ctcErrorPython(
+          errorLength = await matsDataUtils.ctcErrorPython(
             statisticSelect,
             minuendData,
             subtrahendData
@@ -957,7 +961,7 @@ const processDataProfile = function (
   }
 
   // generate plot options
-  const resultOptions = matsDataPlotOpsUtils.generateProfilePlotOptions(
+  const resultOptions = await matsDataPlotOpsUtils.generateProfilePlotOptions(
     returnCurveInfoParams.axisMap,
     errorMax
   );
@@ -1017,7 +1021,7 @@ const processDataProfile = function (
   };
 };
 
-const processDataReliability = function (
+const processDataReliability = async function (
   dataset,
   appParams,
   curveInfoParams,
@@ -1030,7 +1034,8 @@ const processDataReliability = function (
   const error = "";
 
   const isMetexpress =
-    matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
+    (await matsCollections.Settings.findOneAsync({})).appType ===
+    matsTypes.AppTypes.metexpress;
 
   // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
   if (returnCurveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
@@ -1092,7 +1097,7 @@ const processDataReliability = function (
   }
 
   // generate plot options
-  const resultOptions = matsDataPlotOpsUtils.generateReliabilityPlotOptions();
+  const resultOptions = await matsDataPlotOpsUtils.generateReliabilityPlotOptions();
 
   // add black perfect reliability line curve
   const perfectLine = matsDataCurveOpsUtils.getLinearValueLine(
@@ -1193,7 +1198,7 @@ const processDataReliability = function (
   };
 };
 
-const processDataROC = function (
+const processDataROC = async function (
   dataset,
   appParams,
   curveInfoParams,
@@ -1206,7 +1211,8 @@ const processDataROC = function (
   const error = "";
 
   const isMetexpress =
-    matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
+    (await matsCollections.Settings.findOneAsync({})).appType ===
+    matsTypes.AppTypes.metexpress;
 
   // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
   if (returnCurveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
@@ -1271,7 +1277,7 @@ const processDataROC = function (
   }
 
   // generate plot options
-  const resultOptions = matsDataPlotOpsUtils.generateROCPlotOptions();
+  const resultOptions = await matsDataPlotOpsUtils.generateROCPlotOptions();
 
   // add black no skill line curve
   const noSkillLine = matsDataCurveOpsUtils.getLinearValueLine(
@@ -1335,7 +1341,7 @@ const processDataROC = function (
   };
 };
 
-const processDataPerformanceDiagram = function (
+const processDataPerformanceDiagram = async function (
   dataset,
   appParams,
   curveInfoParams,
@@ -1348,7 +1354,8 @@ const processDataPerformanceDiagram = function (
   const error = "";
 
   const isMetexpress =
-    matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
+    (await matsCollections.Settings.findOneAsync({})).appType ===
+    matsTypes.AppTypes.metexpress;
 
   // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
   if (returnCurveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
@@ -1408,7 +1415,8 @@ const processDataPerformanceDiagram = function (
   }
 
   // generate plot options
-  const resultOptions = matsDataPlotOpsUtils.generatePerformanceDiagramPlotOptions();
+  const resultOptions =
+    await matsDataPlotOpsUtils.generatePerformanceDiagramPlotOptions();
 
   // add black lines of constant bias
   let biasLine = matsDataCurveOpsUtils.getDashedLinearValueLine(
@@ -1582,7 +1590,7 @@ const processDataPerformanceDiagram = function (
   };
 };
 
-const processDataGridScaleProb = function (
+const processDataGridScaleProb = async function (
   dataset,
   appParams,
   curveInfoParams,
@@ -1595,7 +1603,8 @@ const processDataGridScaleProb = function (
   const error = "";
 
   const isMetexpress =
-    matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
+    (await matsCollections.Settings.findOneAsync({})).appType ===
+    matsTypes.AppTypes.metexpress;
 
   // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
   if (returnCurveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
@@ -1636,7 +1645,7 @@ const processDataGridScaleProb = function (
   }
 
   // generate plot options
-  const resultOptions = matsDataPlotOpsUtils.generateGridScaleProbPlotOptions(
+  const resultOptions = await matsDataPlotOpsUtils.generateGridScaleProbPlotOptions(
     returnCurveInfoParams.axisMap
   );
 
@@ -1694,7 +1703,7 @@ const processDataGridScaleProb = function (
   };
 };
 
-const processDataEnsembleHistogram = function (
+const processDataEnsembleHistogram = async function (
   dataset,
   appParams,
   curveInfoParams,
@@ -1707,7 +1716,8 @@ const processDataEnsembleHistogram = function (
   const error = "";
 
   const isMetexpress =
-    matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
+    (await matsCollections.Settings.findOneAsync({})).appType ===
+    matsTypes.AppTypes.metexpress;
 
   // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
   if (returnCurveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
@@ -1897,7 +1907,7 @@ const processDataEnsembleHistogram = function (
           ].xmin;
   } // end curves
 
-  const resultOptions = matsDataPlotOpsUtils.generateEnsembleHistogramPlotOptions(
+  const resultOptions = await matsDataPlotOpsUtils.generateEnsembleHistogramPlotOptions(
     returnDataset,
     returnCurveInfoParams.curves,
     returnCurveInfoParams.axisMap
@@ -1941,7 +1951,7 @@ const processDataEnsembleHistogram = function (
   };
 };
 
-const processDataHistogram = function (
+const processDataHistogram = async function (
   allReturnedSubStats,
   allReturnedSubSecs,
   allReturnedSubLevs,
@@ -2111,7 +2121,7 @@ const processDataHistogram = function (
     xmax = d.xmax > xmax ? d.xmax : xmax;
     ymin = d.ymin < ymin ? d.ymin : ymin;
     ymax = d.ymax > ymax ? d.ymax : ymax;
-    const cOptions = matsDataCurveOpsUtils.generateBarChartCurveOptions(
+    const cOptions = await matsDataCurveOpsUtils.generateBarChartCurveOptions(
       curve,
       curveIndex,
       returnCurveInfoParams.axisMap,
@@ -2223,7 +2233,7 @@ const processDataHistogram = function (
     data.subLevs = [];
   }
 
-  const resultOptions = matsDataPlotOpsUtils.generateHistogramPlotOptions(
+  const resultOptions = await matsDataPlotOpsUtils.generateHistogramPlotOptions(
     returnCurveInfoParams.curves,
     returnCurveInfoParams.axisMap,
     returnCurveInfoParams.varUnits,
@@ -2254,7 +2264,7 @@ const processDataHistogram = function (
   };
 };
 
-const processDataContour = function (
+const processDataContour = async function (
   dataset,
   curveInfoParams,
   plotParams,
@@ -2264,7 +2274,7 @@ const processDataContour = function (
   const returnCurveInfoParams = curveInfoParams;
   const returnBookkeepingParams = bookkeepingParams;
   const error = "";
-  const { appName } = matsCollections.Settings.findOne({});
+  const { appName } = await matsCollections.Settings.findOneAsync({});
   const statisticSelect =
     appName.indexOf("anomalycor") !== -1
       ? "ACC"
@@ -2307,7 +2317,7 @@ const processDataContour = function (
       }<br>${statisticSelect}: ${
         data.z[j][i] === undefined || data.z[j][i] === null || data.z[j][i] === "null"
           ? null
-          : data.z[j][i].toPrecision(4)
+          : Number(data.z[j][i]).toPrecision(4)
       }<br>n: ${data.n[j][i]}`;
       currYTextArray.push(currText);
     }
@@ -2336,7 +2346,9 @@ const processDataContour = function (
   data.subLevs = [];
 
   // generate plot options
-  const resultOptions = matsDataPlotOpsUtils.generateContourPlotOptions(returnDataset);
+  const resultOptions = await matsDataPlotOpsUtils.generateContourPlotOptions(
+    returnDataset
+  );
 
   const totalProcessingFinish = moment();
   returnBookkeepingParams.dataRequests[
@@ -2363,7 +2375,7 @@ const processDataContour = function (
   };
 };
 
-const processDataSimpleScatter = function (
+const processDataSimpleScatter = async function (
   dataset,
   appParams,
   curveInfoParams,
@@ -2376,7 +2388,8 @@ const processDataSimpleScatter = function (
   const error = "";
 
   const isMetexpress =
-    matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
+    (await matsCollections.Settings.findOneAsync({})).appType ===
+    matsTypes.AppTypes.metexpress;
 
   // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
   if (returnCurveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
@@ -2470,7 +2483,7 @@ const processDataSimpleScatter = function (
   }
 
   // generate plot options
-  const resultOptions = matsDataPlotOpsUtils.generateScatterPlotOptions(
+  const resultOptions = await matsDataPlotOpsUtils.generateScatterPlotOptions(
     returnCurveInfoParams.axisXMap,
     returnCurveInfoParams.axisYMap
   );

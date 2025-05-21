@@ -257,7 +257,7 @@ const getCurveLine = function (
 };
 
 // provides curve options for all plot types with an independent x axis and a dependent y axis
-const generateSeriesCurveOptions = function (
+const generateSeriesCurveOptions = async function (
   curve,
   curveIndex,
   axisMap,
@@ -266,7 +266,7 @@ const generateSeriesCurveOptions = function (
 ) {
   const thisAxisMap = axisMap;
   const { label } = curve;
-  const longLabel = matsPlotUtils.getCurveText(appParams.plotType, curve);
+  const longLabel = await matsPlotUtils.getCurveText(appParams.plotType, curve);
   const { annotation } = curve;
 
   // adjust axes for later setting of the plot options
@@ -350,7 +350,7 @@ const generateSeriesCurveOptions = function (
   // if threshold, determine x-axis units
   if (appParams.plotType === matsTypes.PlotTypes.threshold) {
     const { database } = curve;
-    const { thresholdUnits } = matsCollections.Settings.findOne({});
+    const { thresholdUnits } = await matsCollections.Settings.findOneAsync({});
     if (thresholdUnits === undefined || Object.keys(thresholdUnits).length === 0) {
       curveOptions.thresholdAxisUnits = "";
     } else if (database === undefined) {
@@ -364,7 +364,7 @@ const generateSeriesCurveOptions = function (
 };
 
 // provides curve options for all plot types with an independent y axis and a dependent x axis
-const generateProfileCurveOptions = function (
+const generateProfileCurveOptions = async function (
   curve,
   curveIndex,
   axisMap,
@@ -373,7 +373,7 @@ const generateProfileCurveOptions = function (
 ) {
   const thisAxisMap = axisMap;
   const { label } = curve;
-  const longLabel = matsPlotUtils.getCurveText(appParams.plotType, curve);
+  const longLabel = await matsPlotUtils.getCurveText(appParams.plotType, curve);
   const { annotation } = curve;
 
   // adjust axes for later setting of the plot options
@@ -448,7 +448,7 @@ const generateProfileCurveOptions = function (
 };
 
 // provides curve options for all plot types with an independent x axis and a dependent y axis
-const generateBarChartCurveOptions = function (
+const generateBarChartCurveOptions = async function (
   curve,
   curveIndex,
   axisMap,
@@ -457,7 +457,7 @@ const generateBarChartCurveOptions = function (
 ) {
   const thisAxisMap = axisMap;
   const { label } = curve;
-  const longLabel = matsPlotUtils.getCurveText(appParams.plotType, curve);
+  const longLabel = await matsPlotUtils.getCurveText(appParams.plotType, curve);
   const { annotation } = curve;
 
   // adjust axes for later setting of the plot options
@@ -510,7 +510,12 @@ const generateBarChartCurveOptions = function (
   return curveOptions;
 };
 
-const generateMapCurveOptions = function (curve, dataSeries, appParams, maxValue) {
+const generateMapCurveOptions = async function (
+  curve,
+  dataSeries,
+  appParams,
+  maxValue
+) {
   const markerSizes = dataSeries.queryVal.map(function (val) {
     let size = 2 + Math.ceil(Math.abs((val * 18) / maxValue));
     size = size > 20 ? 20 : size; // prevent really massive bad data from obscuring map
@@ -519,7 +524,7 @@ const generateMapCurveOptions = function (curve, dataSeries, appParams, maxValue
   });
 
   const { label } = curve;
-  const longLabel = matsPlotUtils.getCurveText(appParams.plotType, curve);
+  const longLabel = await matsPlotUtils.getCurveText(appParams.plotType, curve);
 
   const curveOptions = {
     ...{
@@ -545,13 +550,13 @@ const generateMapCurveOptions = function (curve, dataSeries, appParams, maxValue
   return curveOptions;
 };
 
-const generateCTCMapCurveOptions = function (curve, dataSeries, appParams) {
+const generateCTCMapCurveOptions = async function (curve, dataSeries, appParams) {
   const markerSizes = dataSeries.queryVal.map(function () {
     return 10;
   });
 
   const { label } = curve;
-  const longLabel = matsPlotUtils.getCurveText(appParams.plotType, curve);
+  const longLabel = await matsPlotUtils.getCurveText(appParams.plotType, curve);
 
   const curveOptions = {
     ...{
@@ -605,9 +610,14 @@ const generateMapColorTextOptions = function (label, legendText, dataSeries) {
   return curveOptions;
 };
 
-const generateContourCurveOptions = function (curve, axisMap, dataset, appParams) {
+const generateContourCurveOptions = async function (
+  curve,
+  axisMap,
+  dataset,
+  appParams
+) {
   const { label } = curve;
-  const longLabel = matsPlotUtils.getCurveText(appParams.plotType, curve);
+  const longLabel = await matsPlotUtils.getCurveText(appParams.plotType, curve);
   const { annotation } = curve;
   const { unitKey } = curve;
   const { statistic } = curve;
@@ -992,7 +1002,7 @@ const getContourSignificanceLayer = function (dataset) {
 };
 
 // provides curve options for all plot types with an independent x axis and an independent y axis
-const generateScatterCurveOptions = function (
+const generateScatterCurveOptions = async function (
   curve,
   curveIndex,
   axisXMap,
@@ -1003,7 +1013,7 @@ const generateScatterCurveOptions = function (
   const thisAxisXMap = axisXMap;
   const thisAxisYMap = axisYMap;
   const { label } = curve;
-  const longLabel = matsPlotUtils.getCurveText(appParams.plotType, curve);
+  const longLabel = await matsPlotUtils.getCurveText(appParams.plotType, curve);
   const { annotation } = curve;
 
   // adjust axes for later setting of the plot options

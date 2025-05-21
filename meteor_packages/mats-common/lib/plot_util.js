@@ -50,12 +50,12 @@ const getAxisText = function () {
   return text;
 };
 
-// determine the curveText (used in curveItem for example) for a given curve (from Session.get('curves'))
-// that has already been added
-const getCurveText = function (plotType, curve) {
-  const curveTextPattern = matsCollections.CurveTextPatterns.findOne({
-    plotType,
-  }).textPattern;
+const getCurveText = async function (plotType, curve) {
+  const curveTextPattern = (
+    await matsCollections.CurveTextPatterns.findOneAsync({
+      plotType,
+    })
+  ).textPattern;
   let text = "";
 
   for (let i = 0; i < curveTextPattern.length; i += 1) {
@@ -74,8 +74,8 @@ const getCurveText = function (plotType, curve) {
 };
 
 // like getCurveText but with wrapping
-const getCurveTextWrapping = function (plotType, curve) {
-  const curveTextPattern = matsCollections.CurveTextPatterns.findOne({
+const getCurveTextWrapping = async function (plotType, curve) {
+  const curveTextPattern = await matsCollections.CurveTextPatterns.findOne({
     plotType,
   }).textPattern;
   let text = "";
@@ -245,15 +245,15 @@ const restoreSettings = function (p) {
     matsParamUtils.setInputForParamName(plotParam.name, val);
   });
 
-  const paramNames = matsCollections.CurveParamsInfo.find({
+  const paramNames = matsCollections.CurveParamsInfo.findOne({
     curve_params: { $exists: true },
-  }).fetch()[0].curve_params;
+  }).curve_params;
   params = [];
   const superiors = [];
   const dependents = [];
   // get all of the curve param collections in one place
   for (let pidx = 0; pidx < paramNames.length; pidx += 1) {
-    const param = matsCollections[paramNames[pidx]].find({}).fetch()[0];
+    const param = matsCollections[paramNames[pidx]].findOne({});
     // superiors
     if (param.dependentNames !== undefined) {
       superiors.push(param);

@@ -6,7 +6,7 @@ import { Meteor } from "meteor/meteor";
 import matsCollections from "meteor/randyp:mats-common";
 import { curveParamsByApp } from "../both/mats-curve-params";
 
-/* global Accounts, Session, $ */
+/* global Session, $ */
 /* eslint-disable no-console */
 
 if (Meteor.isClient) {
@@ -44,12 +44,6 @@ if (Meteor.isClient) {
   Meteor.subscribe("Scorecard");
   Session.set("Curves", []);
   Session.set("PlotParams", []);
-
-  Accounts.ui.config({
-    requestOfflineToken: {
-      google: true,
-    },
-  });
 
   const ref = window.location.href;
   const pathArray = window.location.href.split("/");

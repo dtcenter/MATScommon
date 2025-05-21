@@ -13,27 +13,24 @@ import { _ } from "meteor/underscore";
 
 /* global Assets */
 /* eslint-disable global-require */
+/* eslint-disable no-console */
 
 // utility for querying the DB
-const simplePoolQueryWrapSynchronous = function (pool, statement) {
-  /*
-     simple synchronous query of statement to the specified pool.
-     params :
-     pool - a predefined db pool (usually defined in main.js). i.e. wfip2Pool = mysql.createPool(wfip2Settings);
-     statement - String - a valid sql statement
-     actions - queries database and will wait until query returns.
-     return: rowset - an array of rows
-     throws: error
-     */
+const queryMySQL = async function (pool, statement) {
   if (Meteor.isServer) {
-    // eslint-disable-next-line global-require
-    const Future = require("fibers/future");
-    const queryWrap = Future.wrap(function (wrappedPool, wrappedStatement, callback) {
-      wrappedPool.query(wrappedStatement, function (err, rows) {
-        return callback(err, rows);
-      });
-    });
-    return queryWrap(pool, statement).wait();
+    try {
+      const appTimeOut = Meteor.settings.public.mysql_wait_timeout
+        ? Meteor.settings.public.mysql_wait_timeout
+        : 300;
+      const mysqlConnection = await pool.getConnection();
+      await mysqlConnection.execute("set group_concat_max_len = 4294967295");
+      await mysqlConnection.execute(`set session wait_timeout = ${appTimeOut}`);
+      const results = await mysqlConnection.query(statement);
+      mysqlConnection.release();
+      return results[0];
+    } catch (err) {
+      return `matsDataQueryUtils.queryMySQL ERROR: ${err.message}`;
+    }
   }
   return null;
 };
@@ -47,7 +44,10 @@ const getModelCadence = async function (pool, dataSource, startDate, endDate) {
     // this query should only return data if the model cadence is irregular.
     // otherwise, the cadence will be calculated later by the query function.
     let cyclesRaw;
-    if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
+    if (
+      (await matsCollections.Settings.findOneAsync()).dbType ===
+      matsTypes.DbTypes.couchbase
+    ) {
       /*
             we have to call the couchbase utilities as async functions but this
             routine  'queryDBTimeSeries' cannot itslef be async because the graph page needs to wait
@@ -60,7 +60,7 @@ const getModelCadence = async function (pool, dataSource, startDate, endDate) {
         : undefined;
     } else {
       // we will default to mysql so old apps won't break
-      rows = simplePoolQueryWrapSynchronous(
+      rows = await queryMySQL(
         pool,
         `select cycle_seconds ` +
           `from mats_common.primary_model_orders ` +
@@ -135,33 +135,23 @@ const getModelCadence = async function (pool, dataSource, startDate, endDate) {
 };
 
 // get stations in a predefined region
-const getStationsInCouchbaseRegion = function (pool, region) {
+const getStationsInCouchbaseRegion = async function (pool, region) {
   if (Meteor.isServer) {
-    let sitesList = [];
-    let statement = Assets.getText(
+    let statement = await Assets.getTextAsync(
       "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_stations_for_region.sql"
     );
     statement = statement.replace(/{{vxREGION}}/g, region);
-
-    const Future = require("fibers/future");
-    const dFuture = new Future();
-    (async () => {
-      sitesList = await pool.queryCB(pool.trfmSQLForDbTarget(statement));
-      // done waiting - have results
-      dFuture.return();
-    })().catch(() => {
-      dFuture.return();
-    });
-    dFuture.wait();
+    const sitesList = await pool.queryCB(pool.trfmSQLForDbTarget(statement));
     return sitesList;
   }
   return null;
 };
 
 // utility for querying the DB via Python
-const queryDBPython = function (pool, queryArray) {
+const queryDBPython = async function (pool, queryArray) {
   if (Meteor.isServer) {
     // send the query statement to the python query function
+    const mysqlConnection = await pool.getConnection();
     const pyOptions = {
       mode: "text",
       pythonPath: Meteor.settings.private.PYTHON_PATH,
@@ -172,15 +162,15 @@ const queryDBPython = function (pool, queryArray) {
           : `${process.env.PWD}/programs/server/assets/packages/randyp_mats-common/public/python/`,
       args: [
         "-h",
-        pool.config.connectionConfig.host,
+        mysqlConnection.config.host,
         "-P",
-        pool.config.connectionConfig.port,
+        mysqlConnection.config.port,
         "-u",
-        pool.config.connectionConfig.user,
+        mysqlConnection.config.user,
         "-p",
-        pool.config.connectionConfig.password,
+        mysqlConnection.config.password,
         "-d",
-        pool.config.connectionConfig.database,
+        mysqlConnection.config.database,
         "-t",
         Meteor.settings.public.mysql_wait_timeout
           ? Meteor.settings.public.mysql_wait_timeout
@@ -189,86 +179,84 @@ const queryDBPython = function (pool, queryArray) {
         JSON.stringify(queryArray),
       ],
     };
+    mysqlConnection.release();
 
-    const Future = require("fibers/future");
-    const future = new Future();
     let d = [];
     let error = "";
     let n0 = [];
     let nTimes = [];
 
     const pyShell = require("python-shell");
-    pyShell.PythonShell.run("python_query_util.py", pyOptions)
-      .then((results) => {
-        // query callback - build the curve data from the results - or set an error
-        if (results === undefined || results === "undefined") {
-          error =
-            "Error thrown by python_query_util.py. Please write down exactly how you produced this error, and submit a ticket at mats.gsl@noaa.gov.";
-        } else {
-          // get the data back from the query
-          const parsedData = JSON.parse(results);
-          d = parsedData.data;
-          n0 = parsedData.n0;
-          nTimes = parsedData.nTimes;
-          error = parsedData.error;
-        }
-        // done waiting - have results
-        future.return();
-      })
+    const results = await pyShell.PythonShell.run("python_query_util.py", pyOptions)
+      .then()
       .catch((err) => {
         error = err.message;
-        future.return();
+        return {
+          data: d,
+          error,
+          n0,
+          nTimes,
+        };
       });
+    if (results === undefined || results === "undefined") {
+      error =
+        "Error thrown by python_query_util.py. Please write down exactly how you produced this error, and submit a ticket at mats.gsl@noaa.gov.";
+    } else {
+      // get the data back from the query
+      const parsedData = JSON.parse(results);
+      d = parsedData.data;
+      n0 = parsedData.n0;
+      nTimes = parsedData.nTimes;
+      error = parsedData.error;
 
-    // wait for future to finish
-    future.wait();
-    // check for nulls in output, since JSON only passes strings
-    for (let idx = 0; idx < d.length; idx += 1) {
-      for (let didx = 0; didx < d[idx].y.length; didx += 1) {
-        if (d[idx].y[didx] === "null") {
-          d[idx].y[didx] = null;
-          if (d[idx].subVals.length > 0) {
-            d[idx].subData[didx] = NaN;
-            d[idx].subHeaders[didx] = NaN;
-            d[idx].subVals[didx] = NaN;
-            if (queryArray[idx].statLineType === "ctc") {
-              d[idx].subHit[didx] = NaN;
-              d[idx].subFa[didx] = NaN;
-              d[idx].subMiss[didx] = NaN;
-              d[idx].subCn[didx] = NaN;
-            } else if (queryArray[idx].statLineType === "mode_pair") {
-              d[idx].subInterest[didx] = NaN;
-            } else if (queryArray[idx].statLineType === "mode_single") {
-              d[idx].nForecast[didx] = 0;
-              d[idx].nMatched[didx] = 0;
-              d[idx].nSimple[didx] = 0;
-              d[idx].nTotal[didx] = 0;
+      // check for nulls in output, since JSON only passes strings
+      for (let idx = 0; idx < d.length; idx += 1) {
+        for (let didx = 0; didx < d[idx].y.length; didx += 1) {
+          if (d[idx].y[didx] === "null") {
+            d[idx].y[didx] = null;
+            if (d[idx].subVals.length > 0) {
+              d[idx].subData[didx] = NaN;
+              d[idx].subHeaders[didx] = NaN;
+              d[idx].subVals[didx] = NaN;
+              if (queryArray[idx].statLineType === "ctc") {
+                d[idx].subHit[didx] = NaN;
+                d[idx].subFa[didx] = NaN;
+                d[idx].subMiss[didx] = NaN;
+                d[idx].subCn[didx] = NaN;
+              } else if (queryArray[idx].statLineType === "mode_pair") {
+                d[idx].subInterest[didx] = NaN;
+              } else if (queryArray[idx].statLineType === "mode_single") {
+                d[idx].nForecast[didx] = 0;
+                d[idx].nMatched[didx] = 0;
+                d[idx].nSimple[didx] = 0;
+                d[idx].nTotal[didx] = 0;
+              }
             }
-          }
-          d[idx].subSecs[didx] = NaN;
-          d[idx].subLevs[didx] = NaN;
-        } else if (d[idx].x[didx] === "null") {
-          d[idx].x[didx] = null;
-          if (d[idx].subVals.length > 0) {
-            d[idx].subData[didx] = NaN;
-            d[idx].subHeaders[didx] = NaN;
-            d[idx].subVals[didx] = NaN;
-            if (queryArray[idx].statLineType === "ctc") {
-              d[idx].subHit[didx] = NaN;
-              d[idx].subFa[didx] = NaN;
-              d[idx].subMiss[didx] = NaN;
-              d[idx].subCn[didx] = NaN;
-            } else if (queryArray[idx].statLineType === "mode_pair") {
-              d[idx].subInterest[didx] = NaN;
-            } else if (queryArray[idx].statLineType === "mode_single") {
-              d[idx].nForecast[didx] = 0;
-              d[idx].nMatched[didx] = 0;
-              d[idx].nSimple[didx] = 0;
-              d[idx].nTotal[didx] = 0;
+            d[idx].subSecs[didx] = NaN;
+            d[idx].subLevs[didx] = NaN;
+          } else if (d[idx].x[didx] === "null") {
+            d[idx].x[didx] = null;
+            if (d[idx].subVals.length > 0) {
+              d[idx].subData[didx] = NaN;
+              d[idx].subHeaders[didx] = NaN;
+              d[idx].subVals[didx] = NaN;
+              if (queryArray[idx].statLineType === "ctc") {
+                d[idx].subHit[didx] = NaN;
+                d[idx].subFa[didx] = NaN;
+                d[idx].subMiss[didx] = NaN;
+                d[idx].subCn[didx] = NaN;
+              } else if (queryArray[idx].statLineType === "mode_pair") {
+                d[idx].subInterest[didx] = NaN;
+              } else if (queryArray[idx].statLineType === "mode_single") {
+                d[idx].nForecast[didx] = 0;
+                d[idx].nMatched[didx] = 0;
+                d[idx].nSimple[didx] = 0;
+                d[idx].nTotal[didx] = 0;
+              }
             }
+            d[idx].subSecs[didx] = NaN;
+            d[idx].subLevs[didx] = NaN;
           }
-          d[idx].subSecs[didx] = NaN;
-          d[idx].subLevs[didx] = NaN;
         }
       }
     }
@@ -3008,7 +2996,7 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
 };
 
 // this method queries the database for timeseries plots
-const queryDBTimeSeries = function (
+const queryDBTimeSeries = async function (
   pool,
   statementOrMwRows,
   dataSource,
@@ -3084,79 +3072,40 @@ const queryDBTimeSeries = function (
     let nTimes = [];
     let parsedData;
 
-    const Future = require("fibers/future");
-    const dFuture = new Future();
-
-    if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
-      /*
-            we have to call the couchbase utilities as async functions but this
-            routine 'queryDBTimeSeries' cannot itself be async because the graph page needs to wait
-            for its result, so we use an anonymous async() function here to wrap the queryCB call
-            */
-      let rows = null;
-      if (Array.isArray(statementOrMwRows)) {
-        rows = statementOrMwRows;
-        dFuture.return();
-      } else {
-        (async () => {
-          rows = await pool.queryCB(statementOrMwRows);
-          // done waiting - have results
-          dFuture.return();
-        })().catch((err) => {
-          error = err.message;
-          dFuture.return();
-        });
-      }
-      dFuture.wait();
-      if (error.length === 0) {
-        if (rows === undefined || rows === null || rows.length === 0) {
-          error = matsTypes.Messages.NO_DATA_FOUND;
-        } else if (rows.includes("queryCB ERROR: ")) {
-          error = rows;
-        } else {
-          parsedData = parseQueryDataXYCurve(
-            rows,
-            d,
-            appParams,
-            statisticStr,
-            forecastOffset,
-            cycles,
-            regular
-          );
-          d = parsedData.d;
-          n0 = parsedData.n0;
-          nTimes = parsedData.nTimes;
-        }
-      }
+    let rows;
+    if (Array.isArray(statementOrMwRows)) {
+      // couchbase and the querying was already done by the middleware
+      rows = statementOrMwRows;
+    } else if (
+      (await matsCollections.Settings.findOneAsync()).dbType ===
+      matsTypes.DbTypes.couchbase
+    ) {
+      // couchbase and we still need to query
+      rows = await pool.queryCB(statementOrMwRows);
     } else {
-      // if this app isn't couchbase, use mysql
-      pool.query(statementOrMwRows, function (err, rows) {
-        // query callback - build the curve data from the results - or set an error
-        if (err !== undefined && err !== null) {
-          error = err.message;
-        } else if (rows === undefined || rows === null || rows.length === 0) {
-          error = matsTypes.Messages.NO_DATA_FOUND;
-        } else {
-          parsedData = parseQueryDataXYCurve(
-            rows,
-            d,
-            appParams,
-            statisticStr,
-            forecastOffset,
-            cycles,
-            regular
-          );
-          d = parsedData.d;
-          n0 = parsedData.n0;
-          nTimes = parsedData.nTimes;
-        }
-        // done waiting - have results
-        dFuture.return();
-      });
+      // mysql and need to query
+      rows = await queryMySQL(pool, statementOrMwRows);
     }
-    // wait for the future to finish - sort of like 'back to the future' ;)
-    dFuture.wait();
-
+    if (error.length === 0) {
+      if (rows === undefined || rows === null || rows.length === 0) {
+        error = matsTypes.Messages.NO_DATA_FOUND;
+      } else if (rows.includes("ERROR: ")) {
+        error = rows;
+      } else {
+        parsedData = parseQueryDataXYCurve(
+          rows,
+          d,
+          appParams,
+          statisticStr,
+          forecastOffset,
+          cycles,
+          regular
+        );
+        d = parsedData.d;
+        n0 = parsedData.n0;
+        nTimes = parsedData.nTimes;
+      }
+    }
     // if we have only null values, return a no data found
     if (
       d.x.length > 0 &&
@@ -3165,7 +3114,6 @@ const queryDBTimeSeries = function (
     ) {
       error = matsTypes.Messages.NO_DATA_FOUND;
     }
-
     return {
       data: d,
       error,
@@ -3177,7 +3125,7 @@ const queryDBTimeSeries = function (
 };
 
 // this method queries the database for specialty curves such as profiles, dieoffs, threshold plots, valid time plots, grid scale plots, and histograms
-const queryDBSpecialtyCurve = function (
+const queryDBSpecialtyCurve = async function (
   pool,
   statementOrMwRows,
   appParams,
@@ -3224,86 +3172,44 @@ const queryDBSpecialtyCurve = function (
     let nTimes = [];
     let parsedData;
 
-    const Future = require("fibers/future");
-    const dFuture = new Future();
-
-    if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
-      /*
-            we have to call the couchbase utilities as async functions but this
-            routine 'queryDBSpecialtyCurve' cannot itself be async because the graph page needs to wait
-            for its result, so we use an anonymous async() function here to wrap the queryCB call
-      */
-      let rows = null;
-      if (Array.isArray(statementOrMwRows)) {
-        rows = statementOrMwRows;
-        dFuture.return();
-      } else {
-        (async () => {
-          rows = await pool.queryCB(statementOrMwRows);
-          dFuture.return();
-        })().catch((err) => {
-          error = err.message;
-          dFuture.return();
-        });
-      }
-      dFuture.wait();
-      if (error.length === 0) {
-        if (rows === undefined || rows === null || rows.length === 0) {
-          error = matsTypes.Messages.NO_DATA_FOUND;
-        } else if (rows.includes("queryCB ERROR: ")) {
-          error = rows;
-        } else {
-          if (appParams.plotType !== matsTypes.PlotTypes.histogram) {
-            parsedData = parseQueryDataXYCurve(
-              rows,
-              d,
-              appParams,
-              statisticStr,
-              null,
-              null,
-              null
-            );
-          } else {
-            parsedData = parseQueryDataHistogram(rows, d, appParams, statisticStr);
-          }
-          d = parsedData.d;
-          n0 = parsedData.n0;
-          nTimes = parsedData.nTimes;
-        }
-      }
+    let rows;
+    if (Array.isArray(statementOrMwRows)) {
+      // couchbase and the querying was already done by the middleware
+      rows = statementOrMwRows;
+    } else if (
+      (await matsCollections.Settings.findOneAsync()).dbType ===
+      matsTypes.DbTypes.couchbase
+    ) {
+      // couchbase and we still need to query
+      rows = await pool.queryCB(statementOrMwRows);
     } else {
-      // if this app isn't couchbase, use mysql
-      pool.query(statementOrMwRows, function (err, rows) {
-        // query callback - build the curve data from the results - or set an error
-        if (err !== undefined && err !== null) {
-          error = err.message;
-        } else if (rows === undefined || rows === null || rows.length === 0) {
-          error = matsTypes.Messages.NO_DATA_FOUND;
-        } else {
-          if (appParams.plotType !== matsTypes.PlotTypes.histogram) {
-            parsedData = parseQueryDataXYCurve(
-              rows,
-              d,
-              appParams,
-              statisticStr,
-              null,
-              null,
-              null
-            );
-          } else {
-            parsedData = parseQueryDataHistogram(rows, d, appParams, statisticStr);
-          }
-          d = parsedData.d;
-          n0 = parsedData.n0;
-          nTimes = parsedData.nTimes;
-        }
-        // done waiting - have results
-        dFuture.return();
-      });
+      // mysql and need to query
+      rows = await queryMySQL(pool, statementOrMwRows);
     }
-    // wait for the future to finish - sort of like 'back to the future' ;)
-    dFuture.wait();
-
+    if (error.length === 0) {
+      if (rows === undefined || rows === null || rows.length === 0) {
+        error = matsTypes.Messages.NO_DATA_FOUND;
+      } else if (rows.includes("ERROR: ")) {
+        error = rows;
+      } else {
+        if (appParams.plotType !== matsTypes.PlotTypes.histogram) {
+          parsedData = parseQueryDataXYCurve(
+            rows,
+            d,
+            appParams,
+            statisticStr,
+            null,
+            null,
+            null
+          );
+        } else {
+          parsedData = parseQueryDataHistogram(rows, d, appParams, statisticStr);
+        }
+        d = parsedData.d;
+        n0 = parsedData.n0;
+        nTimes = parsedData.nTimes;
+      }
+    }
     // if we have only null values, return a no data found
     if (appParams.plotType !== matsTypes.PlotTypes.histogram) {
       if (
@@ -3316,7 +3222,6 @@ const queryDBSpecialtyCurve = function (
     } else if (d.subVals.length > 0 && !d.subVals.some((el) => el !== null)) {
       error = matsTypes.Messages.NO_DATA_FOUND;
     }
-
     return {
       data: d,
       error,
@@ -3328,7 +3233,7 @@ const queryDBSpecialtyCurve = function (
 };
 
 // this method queries the database for performance diagrams
-const queryDBReliability = function (pool, statement, appParams, kernel) {
+const queryDBReliability = async function (pool, statement, appParams, kernel) {
   if (Meteor.isServer) {
     let d = {
       // d will contain the curve data
@@ -3366,49 +3271,25 @@ const queryDBReliability = function (pool, statement, appParams, kernel) {
     let error = "";
     let parsedData;
 
-    const Future = require("fibers/future");
-    const dFuture = new Future();
-
-    if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
-      /*
-            we have to call the couchbase utilities as async functions but this
-            routine 'queryDBReliability' cannot itself be async because the graph page needs to wait
-            for its result, so we use an anonymous async() function here to wrap the queryCB call
-            */
-      (async () => {
-        const rows = await pool.queryCB(statement);
-        if (rows === undefined || rows === null || rows.length === 0) {
-          error = matsTypes.Messages.NO_DATA_FOUND;
-        } else if (rows.includes("queryCB ERROR: ")) {
-          error = rows;
-        } else {
-          parsedData = parseQueryDataReliability(rows, d, appParams, kernel);
-          d = parsedData.d;
-        }
-        dFuture.return();
-      })().catch((err) => {
-        error = err.message;
-        dFuture.return();
-      });
+    let rows;
+    if (
+      (await matsCollections.Settings.findOneAsync()).dbType ===
+      matsTypes.DbTypes.couchbase
+    ) {
+      // couchbase and we still need to query
+      rows = await pool.queryCB(statement);
     } else {
-      // if this app isn't couchbase, use mysql
-      pool.query(statement, function (err, rows) {
-        // query callback - build the curve data from the results - or set an error
-        if (err !== undefined && err !== null) {
-          error = err.message;
-        } else if (rows === undefined || rows === null || rows.length === 0) {
-          error = matsTypes.Messages.NO_DATA_FOUND;
-        } else {
-          parsedData = parseQueryDataReliability(rows, d, appParams, kernel);
-          d = parsedData.d;
-        }
-        // done waiting - have results
-        dFuture.return();
-      });
+      // mysql and need to query
+      rows = await queryMySQL(pool, statement);
     }
-    // wait for the future to finish - sort of like 'back to the future' ;)
-    dFuture.wait();
-
+    if (rows === undefined || rows === null || rows.length === 0) {
+      error = matsTypes.Messages.NO_DATA_FOUND;
+    } else if (rows.includes("ERROR: ")) {
+      error = rows;
+    } else {
+      parsedData = parseQueryDataReliability(rows, d, appParams, kernel);
+      d = parsedData.d;
+    }
     // if we have only null values, return a no data found
     if (
       d.x.length > 0 &&
@@ -3417,7 +3298,6 @@ const queryDBReliability = function (pool, statement, appParams, kernel) {
     ) {
       error = matsTypes.Messages.NO_DATA_FOUND;
     }
-
     return {
       data: d,
       error,
@@ -3427,7 +3307,7 @@ const queryDBReliability = function (pool, statement, appParams, kernel) {
 };
 
 // this method queries the database for performance diagrams
-const queryDBPerformanceDiagram = function (pool, statement, appParams) {
+const queryDBPerformanceDiagram = async function (pool, statement, appParams) {
   if (Meteor.isServer) {
     let d = {
       // d will contain the curve data
@@ -3462,53 +3342,27 @@ const queryDBPerformanceDiagram = function (pool, statement, appParams) {
     let nTimes = [];
     let parsedData;
 
-    const Future = require("fibers/future");
-    const dFuture = new Future();
-
-    if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
-      /*
-            we have to call the couchbase utilities as async functions but this
-            routine 'queryDBSPerformanceDiagram' cannot itself be async because the graph page needs to wait
-            for its result, so we use an anonymous async() function here to wrap the queryCB call
-            */
-      (async () => {
-        const rows = await pool.queryCB(statement);
-        if (rows === undefined || rows === null || rows.length === 0) {
-          error = matsTypes.Messages.NO_DATA_FOUND;
-        } else if (rows.includes("queryCB ERROR: ")) {
-          error = rows;
-        } else {
-          parsedData = parseQueryDataPerformanceDiagram(rows, d, appParams);
-          d = parsedData.d;
-          n0 = parsedData.n0;
-          nTimes = parsedData.nTimes;
-        }
-        dFuture.return();
-      })().catch((err) => {
-        error = err.message;
-        dFuture.return();
-      });
+    let rows;
+    if (
+      (await matsCollections.Settings.findOneAsync()).dbType ===
+      matsTypes.DbTypes.couchbase
+    ) {
+      // couchbase and we still need to query
+      rows = await pool.queryCB(statement);
     } else {
-      // if this app isn't couchbase, use mysql
-      pool.query(statement, function (err, rows) {
-        // query callback - build the curve data from the results - or set an error
-        if (err !== undefined && err !== null) {
-          error = err.message;
-        } else if (rows === undefined || rows === null || rows.length === 0) {
-          error = matsTypes.Messages.NO_DATA_FOUND;
-        } else {
-          parsedData = parseQueryDataPerformanceDiagram(rows, d, appParams);
-          d = parsedData.d;
-          n0 = parsedData.n0;
-          nTimes = parsedData.nTimes;
-        }
-        // done waiting - have results
-        dFuture.return();
-      });
+      // mysql and need to query
+      rows = await queryMySQL(pool, statement);
     }
-    // wait for the future to finish - sort of like 'back to the future' ;)
-    dFuture.wait();
-
+    if (rows === undefined || rows === null || rows.length === 0) {
+      error = matsTypes.Messages.NO_DATA_FOUND;
+    } else if (rows.includes("ERROR: ")) {
+      error = rows;
+    } else {
+      parsedData = parseQueryDataPerformanceDiagram(rows, d, appParams);
+      d = parsedData.d;
+      n0 = parsedData.n0;
+      nTimes = parsedData.nTimes;
+    }
     // if we have only null values, return a no data found
     if (
       d.x.length > 0 &&
@@ -3517,7 +3371,6 @@ const queryDBPerformanceDiagram = function (pool, statement, appParams) {
     ) {
       error = matsTypes.Messages.NO_DATA_FOUND;
     }
-
     return {
       data: d,
       error,
@@ -3529,7 +3382,7 @@ const queryDBPerformanceDiagram = function (pool, statement, appParams) {
 };
 
 // this method queries the database for performance diagrams
-const queryDBSimpleScatter = function (
+const queryDBSimpleScatter = async function (
   pool,
   statement,
   appParams,
@@ -3575,65 +3428,33 @@ const queryDBSimpleScatter = function (
     let nTimes = [];
     let parsedData;
 
-    const Future = require("fibers/future");
-    const dFuture = new Future();
-
-    if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
-      /*
-            we have to call the couchbase utilities as async functions but this
-            routine 'queryDBSPerformanceDiagram' cannot itself be async because the graph page needs to wait
-            for its result, so we use an anonymous async() function here to wrap the queryCB call
-            */
-      (async () => {
-        const rows = await pool.queryCB(statement);
-        if (rows === undefined || rows === null || rows.length === 0) {
-          error = matsTypes.Messages.NO_DATA_FOUND;
-        } else if (rows.includes("queryCB ERROR: ")) {
-          error = rows;
-        } else {
-          parsedData = parseQueryDataSimpleScatter(
-            rows,
-            d,
-            appParams,
-            statisticXStr,
-            statisticYStr
-          );
-          d = parsedData.d;
-          n0 = parsedData.n0;
-          nTimes = parsedData.nTimes;
-        }
-        dFuture.return();
-      })().catch((err) => {
-        error = err.message;
-        dFuture.return();
-      });
+    let rows;
+    if (
+      (await matsCollections.Settings.findOneAsync()).dbType ===
+      matsTypes.DbTypes.couchbase
+    ) {
+      // couchbase and we still need to query
+      rows = await pool.queryCB(statement);
     } else {
-      // if this app isn't couchbase, use mysql
-      pool.query(statement, function (err, rows) {
-        // query callback - build the curve data from the results - or set an error
-        if (err !== undefined && err !== null) {
-          error = err.message;
-        } else if (rows === undefined || rows === null || rows.length === 0) {
-          error = matsTypes.Messages.NO_DATA_FOUND;
-        } else {
-          parsedData = parseQueryDataSimpleScatter(
-            rows,
-            d,
-            appParams,
-            statisticXStr,
-            statisticYStr
-          );
-          d = parsedData.d;
-          n0 = parsedData.n0;
-          nTimes = parsedData.nTimes;
-        }
-        // done waiting - have results
-        dFuture.return();
-      });
+      // mysql and need to query
+      rows = await queryMySQL(pool, statement);
     }
-    // wait for the future to finish - sort of like 'back to the future' ;)
-    dFuture.wait();
-
+    if (rows === undefined || rows === null || rows.length === 0) {
+      error = matsTypes.Messages.NO_DATA_FOUND;
+    } else if (rows.includes("ERROR: ")) {
+      error = rows;
+    } else {
+      parsedData = parseQueryDataSimpleScatter(
+        rows,
+        d,
+        appParams,
+        statisticXStr,
+        statisticYStr
+      );
+      d = parsedData.d;
+      n0 = parsedData.n0;
+      nTimes = parsedData.nTimes;
+    }
     // if we have only null values, return a no data found
     if (
       d.x.length > 0 &&
@@ -3642,7 +3463,6 @@ const queryDBSimpleScatter = function (
     ) {
       error = matsTypes.Messages.NO_DATA_FOUND;
     }
-
     return {
       data: d,
       error,
@@ -3654,7 +3474,7 @@ const queryDBSimpleScatter = function (
 };
 
 // this method queries the database for map plots
-const queryDBMapScalar = function (
+const queryDBMapScalar = async function (
   pool,
   statementOrMwRows,
   dataSource,
@@ -3725,103 +3545,55 @@ const queryDBMapScalar = function (
 
     let error = "";
     let parsedData;
+    let isCouchbase = true;
 
-    const Future = require("fibers/future");
-    const dFuture = new Future();
-
-    if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
-      /*
-            we have to call the couchbase utilities as async functions but this
-            routine 'queryDBSpecialtyCurve' cannot itself be async because the graph page needs to wait
-            for its result, so we use an anonymous async() function here to wrap the queryCB call
-      */
-      let rows = null;
-      if (Array.isArray(statementOrMwRows)) {
-        rows = statementOrMwRows;
-        dFuture.return();
-      } else {
-        (async () => {
-          rows = await pool.queryCB(statementOrMwRows);
-          dFuture.return();
-        })().catch((err) => {
-          error = err.message;
-          dFuture.return();
-        });
-      }
-      dFuture.wait();
-      if (error.length === 0) {
-        if (rows === undefined || rows === null || rows.length === 0) {
-          error = matsTypes.Messages.NO_DATA_FOUND;
-        } else if (rows.includes("queryCB ERROR: ")) {
-          error = rows;
-        } else {
-          parsedData = parseQueryDataMapScalar(
-            rows,
-            d,
-            dLowest,
-            dLow,
-            dModerate,
-            dHigh,
-            dHighest,
-            dataSource,
-            siteMap,
-            statistic,
-            variable,
-            varUnits,
-            appParams,
-            plotParams,
-            true
-          );
-          d = parsedData.d;
-          dLowest = parsedData.dLowest;
-          dLow = parsedData.dLow;
-          dModerate = parsedData.dModerate;
-          dHigh = parsedData.dHigh;
-          dHighest = parsedData.dHighest;
-          valueLimits = parsedData.valueLimits;
-        }
-      }
+    let rows = null;
+    if (Array.isArray(statementOrMwRows)) {
+      // couchbase and the querying was already done by the middleware
+      rows = statementOrMwRows;
+    } else if (
+      (await matsCollections.Settings.findOneAsync()).dbType ===
+      matsTypes.DbTypes.couchbase
+    ) {
+      // couchbase and we still need to query
+      rows = await pool.queryCB(statementOrMwRows);
     } else {
-      // if this app isn't couchbase, use mysql
-      pool.query(statementOrMwRows, function (err, rows) {
-        // query callback - build the curve data from the results - or set an error
-        if (err !== undefined && err !== null) {
-          error = err.message;
-        } else if (rows === undefined || rows === null || rows.length === 0) {
-          error = matsTypes.Messages.NO_DATA_FOUND;
-        } else {
-          parsedData = parseQueryDataMapScalar(
-            rows,
-            d,
-            dLowest,
-            dLow,
-            dModerate,
-            dHigh,
-            dHighest,
-            dataSource,
-            siteMap,
-            statistic,
-            variable,
-            varUnits,
-            appParams,
-            plotParams,
-            false
-          );
-          d = parsedData.d;
-          dLowest = parsedData.dLowest;
-          dLow = parsedData.dLow;
-          dModerate = parsedData.dModerate;
-          dHigh = parsedData.dHigh;
-          dHighest = parsedData.dHighest;
-          valueLimits = parsedData.valueLimits;
-        }
-        // done waiting - have results
-        dFuture.return();
-      });
-      // wait for future to finish
-      dFuture.wait();
+      // mysql and need to query
+      isCouchbase = false;
+      rows = await queryMySQL(pool, statementOrMwRows);
     }
-
+    if (error.length === 0) {
+      if (rows === undefined || rows === null || rows.length === 0) {
+        error = matsTypes.Messages.NO_DATA_FOUND;
+      } else if (rows.includes("ERROR: ")) {
+        error = rows;
+      } else {
+        parsedData = parseQueryDataMapScalar(
+          rows,
+          d,
+          dLowest,
+          dLow,
+          dModerate,
+          dHigh,
+          dHighest,
+          dataSource,
+          siteMap,
+          statistic,
+          variable,
+          varUnits,
+          appParams,
+          plotParams,
+          isCouchbase
+        );
+        d = parsedData.d;
+        dLowest = parsedData.dLowest;
+        dLow = parsedData.dLow;
+        dModerate = parsedData.dModerate;
+        dHigh = parsedData.dHigh;
+        dHighest = parsedData.dHighest;
+        valueLimits = parsedData.valueLimits;
+      }
+    }
     return {
       data: d,
       dataLowest: dLowest,
@@ -3838,7 +3610,6 @@ const queryDBMapScalar = function (
 
 // helper method for function below
 const runMultipleQueries = async function (
-  future,
   pool,
   statement,
   querySites,
@@ -3852,31 +3623,25 @@ const runMultipleQueries = async function (
       .replace(/{{siteName}}/g, querySite.name)
       .replace(/{{siteID}}/g, querySite.id);
 
-    pool.query(thisStatement, function (err, rows) {
-      // query callback - build the curve data from the results - or set an error
-      if (err !== undefined && err !== null) {
-        // eslint-disable-next-line no-param-reassign
-        error = err.message;
-        future.return();
-      } else {
-        allRows.push(rows[0]);
-        runMultipleQueries(
-          future,
-          pool,
-          statement,
-          querySites.filter((x, y) => y !== 0),
-          error,
-          allRows
-        );
-      }
-    });
-  } else {
-    future.return();
+    const rows = await queryMySQL(pool, thisStatement);
+    if (rows.includes("ERROR: ")) {
+      // eslint-disable-next-line no-param-reassign
+      error = rows;
+    } else {
+      allRows.push(rows[0]);
+      await runMultipleQueries(
+        pool,
+        statement,
+        querySites.filter((x, y) => y !== 0),
+        error,
+        allRows
+      );
+    }
   }
 };
 
 // this method queries the database for map plots, in a loop with one query per station
-const queryDBMapScalarLoop = function (
+const queryDBMapScalarLoop = async function (
   pool,
   statement,
   dataSource,
@@ -3948,10 +3713,7 @@ const queryDBMapScalarLoop = function (
     const allRows = [];
     let error = "";
 
-    const Future = require("fibers/future");
-    const dFuture = new Future();
-    runMultipleQueries(dFuture, pool, statement, querySites, error, allRows);
-    dFuture.wait();
+    await runMultipleQueries(pool, statement, querySites, error, allRows);
 
     if (error.length === 0) {
       if (allRows.length === 0) {
@@ -3999,7 +3761,7 @@ const queryDBMapScalarLoop = function (
 };
 
 // this method queries the database for map plots in CTC apps
-const queryDBMapCTC = function (
+const queryDBMapCTC = async function (
   pool,
   statementOrMwRows,
   dataSource,
@@ -4122,117 +3884,62 @@ const queryDBMapCTC = function (
 
     let error = "";
     let parsedData;
+    let isCouchbase = true;
 
-    const Future = require("fibers/future");
-    const dFuture = new Future();
-
-    if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
-      /*
-            we have to call the couchbase utilities as async functions but this
-            routine 'queryDBSpecialtyCurve' cannot itself be async because the graph page needs to wait
-            for its result, so we use an anonymous async() function here to wrap the queryCB call
-      */
-      let rows = null;
-      if (Array.isArray(statementOrMwRows)) {
-        rows = statementOrMwRows;
-        dFuture.return();
-      } else {
-        (async () => {
-          rows = await pool.queryCB(statementOrMwRows);
-          dFuture.return();
-        })().catch((err) => {
-          error = err.message;
-          dFuture.return();
-        });
-      }
-      dFuture.wait();
-      if (error.length === 0) {
-        if (rows === undefined || rows === null || rows.length === 0) {
-          error = matsTypes.Messages.NO_DATA_FOUND;
-        } else if (rows.includes("queryCB ERROR: ")) {
-          error = rows;
-        } else {
-          parsedData = parseQueryDataMapCTC(
-            rows,
-            d,
-            dPurple,
-            dPurpleBlue,
-            dBlue,
-            dBlueGreen,
-            dGreen,
-            dGreenYellow,
-            dYellow,
-            dOrange,
-            dOrangeRed,
-            dRed,
-            dataSource,
-            siteMap,
-            statistic,
-            appParams,
-            true
-          );
-          d = parsedData.d;
-          dPurple = parsedData.dPurple;
-          dPurpleBlue = parsedData.dPurpleBlue;
-          dBlue = parsedData.dBlue;
-          dBlueGreen = parsedData.dBlueGreen;
-          dGreen = parsedData.dGreen;
-          dGreenYellow = parsedData.dGreenYellow;
-          dYellow = parsedData.dYellow;
-          dOrange = parsedData.dOrange;
-          dOrangeRed = parsedData.dOrangeRed;
-          dRed = parsedData.dRed;
-          valueLimits = parsedData.valueLimits;
-        }
-      }
+    let rows;
+    if (Array.isArray(statementOrMwRows)) {
+      // couchbase and the querying was already done by the middleware
+      rows = statementOrMwRows;
+    } else if (
+      (await matsCollections.Settings.findOneAsync()).dbType ===
+      matsTypes.DbTypes.couchbase
+    ) {
+      // couchbase and we still need to query
+      rows = await pool.queryCB(statementOrMwRows);
     } else {
-      // if this app isn't couchbase, use mysql
-      pool.query(statementOrMwRows, function (err, rows) {
-        // query callback - build the curve data from the results - or set an error
-        if (err !== undefined && err !== null) {
-          error = err.message;
-        } else if (rows === undefined || rows === null || rows.length === 0) {
-          error = matsTypes.Messages.NO_DATA_FOUND;
-        } else {
-          parsedData = parseQueryDataMapCTC(
-            rows,
-            d,
-            dPurple,
-            dPurpleBlue,
-            dBlue,
-            dBlueGreen,
-            dGreen,
-            dGreenYellow,
-            dYellow,
-            dOrange,
-            dOrangeRed,
-            dRed,
-            dataSource,
-            siteMap,
-            statistic,
-            appParams,
-            false
-          );
-          d = parsedData.d;
-          dPurple = parsedData.dPurple;
-          dPurpleBlue = parsedData.dPurpleBlue;
-          dBlue = parsedData.dBlue;
-          dBlueGreen = parsedData.dBlueGreen;
-          dGreen = parsedData.dGreen;
-          dGreenYellow = parsedData.dGreenYellow;
-          dYellow = parsedData.dYellow;
-          dOrange = parsedData.dOrange;
-          dOrangeRed = parsedData.dOrangeRed;
-          dRed = parsedData.dRed;
-          valueLimits = parsedData.valueLimits;
-        }
-        // done waiting - have results
-        dFuture.return();
-      });
-      // wait for future to finish
-      dFuture.wait();
+      // mysql and need to query
+      isCouchbase = false;
+      rows = await queryMySQL(pool, statementOrMwRows);
     }
-
+    if (error.length === 0) {
+      if (rows === undefined || rows === null || rows.length === 0) {
+        error = matsTypes.Messages.NO_DATA_FOUND;
+      } else if (rows.includes("ERROR: ")) {
+        error = rows;
+      } else {
+        parsedData = parseQueryDataMapCTC(
+          rows,
+          d,
+          dPurple,
+          dPurpleBlue,
+          dBlue,
+          dBlueGreen,
+          dGreen,
+          dGreenYellow,
+          dYellow,
+          dOrange,
+          dOrangeRed,
+          dRed,
+          dataSource,
+          siteMap,
+          statistic,
+          appParams,
+          isCouchbase
+        );
+        d = parsedData.d;
+        dPurple = parsedData.dPurple;
+        dPurpleBlue = parsedData.dPurpleBlue;
+        dBlue = parsedData.dBlue;
+        dBlueGreen = parsedData.dBlueGreen;
+        dGreen = parsedData.dGreen;
+        dGreenYellow = parsedData.dGreenYellow;
+        dYellow = parsedData.dYellow;
+        dOrange = parsedData.dOrange;
+        dOrangeRed = parsedData.dOrangeRed;
+        dRed = parsedData.dRed;
+        valueLimits = parsedData.valueLimits;
+      }
+    }
     return {
       data: d,
       dataPurple: dPurple,
@@ -4253,7 +3960,7 @@ const queryDBMapCTC = function (
 };
 
 // this method queries the database for contour plots
-const queryDBContour = function (pool, statement, appParams, statisticStr) {
+const queryDBContour = async function (pool, statement, appParams, statisticStr) {
   if (Meteor.isServer) {
     let d = {
       // d will contain the curve data
@@ -4311,54 +4018,29 @@ const queryDBContour = function (pool, statement, appParams, statisticStr) {
     let error = "";
     let parsedData;
 
-    const Future = require("fibers/future");
-    const dFuture = new Future();
-
-    if (matsCollections.Settings.findOne().dbType === matsTypes.DbTypes.couchbase) {
-      /*
-            we have to call the couchbase utilities as async functions but this
-            routine 'queryDBContour' cannot itself be async because the graph page needs to wait
-            for its result, so we use an anonymous async() function here to wrap the queryCB call
-            */
-      (async () => {
-        const rows = await pool.queryCB(statement);
-        if (rows === undefined || rows === null || rows.length === 0) {
-          error = matsTypes.Messages.NO_DATA_FOUND;
-        } else if (rows.includes("queryCB ERROR: ")) {
-          error = rows;
-        } else {
-          parsedData = parseQueryDataContour(rows, d, appParams, statisticStr);
-          d = parsedData.d;
-        }
-        dFuture.return();
-      })().catch((err) => {
-        error = err.message;
-        dFuture.return();
-      });
+    let rows;
+    if (
+      (await matsCollections.Settings.findOneAsync()).dbType ===
+      matsTypes.DbTypes.couchbase
+    ) {
+      // couchbase and we still need to query
+      rows = await pool.queryCB(statement);
     } else {
-      // if this app isn't couchbase, use mysql
-      pool.query(statement, function (err, rows) {
-        // query callback - build the curve data from the results - or set an error
-        if (err !== undefined && err !== null) {
-          error = err.message;
-        } else if (rows === undefined || rows === null || rows.length === 0) {
-          error = matsTypes.Messages.NO_DATA_FOUND;
-        } else {
-          parsedData = parseQueryDataContour(rows, d, appParams, statisticStr);
-          d = parsedData.d;
-        }
-        // done waiting - have results
-        dFuture.return();
-      });
+      // mysql and need to query
+      rows = await queryMySQL(pool, statement);
     }
-    // wait for the future to finish - sort of like 'back to the future' ;)
-    dFuture.wait();
-
+    if (rows === undefined || rows === null || rows.length === 0) {
+      error = matsTypes.Messages.NO_DATA_FOUND;
+    } else if (rows.includes("ERROR: ")) {
+      error = rows;
+    } else {
+      parsedData = parseQueryDataContour(rows, d, appParams, statisticStr);
+      d = parsedData.d;
+    }
     // if we have only null values, return a no data found
     if (d.z.length > 0 && !d.z.some((el) => el !== null)) {
       error = matsTypes.Messages.NO_DATA_FOUND;
     }
-
     return {
       data: d,
       error,
@@ -4369,7 +4051,7 @@ const queryDBContour = function (pool, statement, appParams, statisticStr) {
 
 // eslint-disable-next-line no-undef
 export default matsDataQueryUtils = {
-  simplePoolQueryWrapSynchronous,
+  queryMySQL,
   getStationsInCouchbaseRegion,
   queryDBPython,
   queryDBTimeSeries,

@@ -24,13 +24,14 @@ function toggleDisplay(divId) {
 
 function refreshPage() {
   // refresh the page
-  matsMethods.getScorecardInfo.call(function (error, ret) {
-    if (error !== undefined) {
-      setError(error);
-    } else {
+  matsMethods.getScorecardInfo
+    .callAsync({})
+    .then(function (ret) {
       Session.set("updateStatusPage", ret);
-    }
-  });
+    })
+    .catch(function (error) {
+      setError(error);
+    });
 }
 
 Template.scorecardStatusPage.onCreated = function () {
@@ -153,22 +154,19 @@ Template.scorecardStatusPage.events({
     const submitted = event.currentTarget.dataset.submit_time;
     const processedAt = event.currentTarget.dataset.run_time;
 
-    matsMethods.dropScorecardInstance.call(
-      {
+    matsMethods.dropScorecardInstance
+      .callAsync({
         userName,
         name,
         submitted,
         processedAt,
-      },
-      function (error) {
-        if (error !== undefined) {
-          setError(error);
-        } else {
-          // refresh the page
-          refreshPage();
-        }
-      }
-    );
+      })
+      .then(function () {
+        refreshPage();
+      })
+      .catch(function (error) {
+        setError(error);
+      });
   },
   "click .restore-sc-instance"(event) {
     const userName = event.currentTarget.dataset.user_name;
@@ -176,30 +174,28 @@ Template.scorecardStatusPage.events({
     const submitted = event.currentTarget.dataset.submit_time;
     const processedAt = event.currentTarget.dataset.run_time;
 
-    matsMethods.getPlotParamsFromScorecardInstance.call(
-      {
+    matsMethods.getPlotParamsFromScorecardInstance
+      .callAsync({
         userName,
         name,
         submitted,
         processedAt,
-      },
-      function (error, ret) {
-        if (error !== undefined) {
-          setError(error);
-        } else {
-          const plotParams = ret;
-          matsPlotUtils.enableActionButtons();
-          matsGraphUtils.setDefaultView();
-          matsCurveUtils.resetPlotResultData();
-          const p = { data: {} };
-          p.data = plotParams.plotParams;
-          p.data.paramData = {};
-          p.data.paramData.curveParams = plotParams.plotParams.curves;
-          p.data.paramData.plotParams = plotParams.plotParams;
-          matsPlotUtils.restoreSettings(p);
-        }
-      }
-    );
+      })
+      .then(function (ret) {
+        const plotParams = ret;
+        matsPlotUtils.enableActionButtons();
+        matsGraphUtils.setDefaultView();
+        matsCurveUtils.resetPlotResultData();
+        const p = { data: {} };
+        p.data = plotParams.plotParams;
+        p.data.paramData = {};
+        p.data.paramData.curveParams = plotParams.plotParams.curves;
+        p.data.paramData.plotParams = plotParams.plotParams;
+        matsPlotUtils.restoreSettings(p);
+      })
+      .catch(function (error) {
+        setError(error);
+      });
     return false;
   },
 });

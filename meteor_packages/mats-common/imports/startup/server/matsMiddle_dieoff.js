@@ -62,7 +62,7 @@ class MatsMiddleDieoff {
   /* eslint-disable no-console */
   /* eslint-disable class-methods-use-this */
 
-  processStationQuery = (
+  processStationQuery = async (
     statType,
     varName,
     stationNames,
@@ -76,10 +76,8 @@ class MatsMiddleDieoff {
     singleCycle,
     filterInfo
   ) => {
-    const Future = require("fibers/future");
     let rv = [];
-    const dFuture = new Future();
-    (async () => {
+    try {
       rv = await this.processStationQueryInt(
         statType,
         varName,
@@ -94,13 +92,10 @@ class MatsMiddleDieoff {
         singleCycle,
         filterInfo
       );
-      dFuture.return();
-    })().catch((err) => {
+    } catch (err) {
       console.log(`MatsMiddleDieoff.processStationQuery ERROR: ${err.message}`);
       rv = `MatsMiddleDieoff.processStationQuery ERROR: ${err.message}`;
-      dFuture.return();
-    });
-    dFuture.wait();
+    }
     return rv;
   };
 
@@ -195,7 +190,7 @@ class MatsMiddleDieoff {
 
   createObsData = async () => {
     try {
-      const tmplGetNStationsMfveObs = Assets.getText(
+      const tmplGetNStationsMfveObs = await Assets.getTextAsync(
         "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_obs.sql"
       );
 
@@ -270,7 +265,7 @@ class MatsMiddleDieoff {
 
   createModelData = async () => {
     try {
-      let tmplGetNStationsMfveModel = Assets.getText(
+      let tmplGetNStationsMfveModel = await Assets.getTextAsync(
         "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_model.sql"
       );
       tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(

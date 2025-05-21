@@ -25,7 +25,7 @@ Template.plotType.helpers({
   },
   selected(plotType) {
     // don't display the choice if there is only one choice
-    if (matsCollections.PlotGraphFunctions.find({ plotType }).fetch()[0].checked) {
+    if (matsCollections.PlotGraphFunctions.findOne({ plotType }).checked) {
       return "selected";
     }
     return "";

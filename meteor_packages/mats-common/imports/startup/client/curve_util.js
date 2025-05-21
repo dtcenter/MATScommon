@@ -15,6 +15,7 @@ import {
 
 // var plotResultData = null; -- this was the global variable for the text output data, but now it is set elsewhere
 let graphResult = null; // this is the global variable for the data on the graph
+let plotResultData;
 
 const sizeof = function (val1) {
   const val2 = [val1];
@@ -90,18 +91,15 @@ const setPlotResultData = function () {
           Session.set("textRefreshNeeded", false);
         }
         if (!result) {
-          // eslint-disable-next-line no-undef
           plotResultData = undefined;
           Session.set("textRefreshNeeded", false);
           hideSpinner();
           return;
         }
-        // eslint-disable-next-line no-undef
         plotResultData = result;
         Session.set("pageIndex", result.dsiRealPageIndex);
         Session.set("pageTextDirection", result.dsiTextDirection);
         Session.set("textLoaded", new Date());
-        // eslint-disable-next-line no-undef
         console.log("size of plotResultData is ", sizeof(plotResultData));
         Session.set("textRefreshNeeded", false);
         hideSpinner();
@@ -114,21 +112,17 @@ const setPlotResultData = function () {
 // Re-sets the plotResultData if the requested page range has changed, or if it has not been previously set.
 const getPlotResultData = function () {
   if (
-    // eslint-disable-next-line no-undef
     plotResultData === undefined ||
-    // eslint-disable-next-line no-undef
     plotResultData === null ||
     Session.get("textRefreshNeeded") === true
   ) {
     setPlotResultData();
   }
-  // eslint-disable-next-line no-undef
   return plotResultData;
 };
 
 // resets the global plotResultData variable for the text output to null
 const resetPlotResultData = function () {
-  // eslint-disable-next-line no-undef
   plotResultData = null;
   Session.set("textLoaded", new Date());
 };
@@ -156,18 +150,17 @@ const resetGraphResult = function () {
 
 const setCurveParamDisplayText = function (paramName, newText) {
   if (document.getElementById(`${paramName}-item`)) {
-    matsMethods.setCurveParamDisplayText.call(
-      {
+    matsMethods.setCurveParamDisplayText
+      .callAsync({
         paramName,
         newText,
-      },
-      // eslint-disable-next-line no-unused-vars
-      function (error, res) {
+      })
+      .then()
+      .catch(function (error) {
         if (error !== undefined) {
           setError(error);
         }
-      }
-    );
+      });
   }
 };
 

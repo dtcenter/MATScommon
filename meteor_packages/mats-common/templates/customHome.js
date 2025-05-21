@@ -29,11 +29,13 @@ Template.customHome.helpers({
     );
   },
   resetDefaults() {
-    matsMethods.refreshMetaData.call({}, function (error) {
-      if (error !== undefined) {
+    matsMethods.refreshMetaData
+      .callAsync({})
+      .then(function () {
+        matsParamUtils.setAllParamsToDefault();
+      })
+      .catch(function (error) {
         setError(new Error(error.message));
-      }
-      matsParamUtils.setAllParamsToDefault();
-    });
+      });
   },
 });

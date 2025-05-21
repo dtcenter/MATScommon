@@ -2,10 +2,27 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import { matsTypes, matsCurveUtils } from "meteor/randyp:mats-common";
+import { Meteor } from "meteor/meteor";
+import { matsCollections, matsTypes, matsCurveUtils } from "meteor/randyp:mats-common";
 
 /* global $, Session */
 /* eslint-disable no-console */
+
+// get the app's base URL
+const getBaseURL = function () {
+  const urlComponents = document.location.href.split("/");
+  const baseURL =
+    Meteor.settings.public.home === undefined
+      ? `https://${urlComponents[2]}`
+      : Meteor.settings.public.home;
+  const appName =
+    matsCollections.Settings === undefined ||
+    matsCollections.Settings.findOne({}) === undefined ||
+    matsCollections.Settings.findOne({}).appName === undefined
+      ? `${urlComponents[urlComponents.length - 1]}`
+      : matsCollections.Settings.findOne({}).appName;
+  return { appName, baseURL };
+};
 
 // set the label for the hide show buttons (NO DATA) for the initial time here
 const setNoDataLabels = function (dataset) {
@@ -624,6 +641,7 @@ const downloadFile = function (fileURL, fileName) {
 
 // eslint-disable-next-line no-undef
 export default matsGraphUtils = {
+  getBaseURL,
   setNoDataLabels,
   setNoDataLabelsMap,
   width,

@@ -7,18 +7,16 @@ import { Meteor } from "meteor/meteor";
 import { moment } from "meteor/momentjs:moment";
 import { _ } from "meteor/underscore";
 
-const noaaDisclaimer = function () {
-  if (
-    matsCollections.Settings.findOne({}) !== undefined &&
-    matsCollections.Settings.findOne({}).displayDisclaimer
-  ) {
+const noaaDisclaimer = async function () {
+  const settings = await matsCollections.Settings.findOneAsync({});
+  if (settings !== undefined && settings.displayDisclaimer) {
     return "This plot is for research purposes only, and should not be used to make decisions related to the safety of life and property.";
   }
   return "";
 };
 
 // sets plot options for timeseries plots
-const generateSeriesPlotOptions = function (axisMap, errorMax) {
+const generateSeriesPlotOptions = async function (axisMap, errorMax) {
   let { xmin } = axisMap[Object.keys(axisMap)[0]];
   let { xmax } = axisMap[Object.keys(axisMap)[0]];
   const yAxisNumber = Object.keys(axisMap).length;
@@ -26,7 +24,7 @@ const generateSeriesPlotOptions = function (axisMap, errorMax) {
   // overall plot options
   const layout = {
     title: {
-      text: noaaDisclaimer(),
+      text: await noaaDisclaimer(),
       font: {
         size: 10,
       },
@@ -171,7 +169,7 @@ const generateSeriesPlotOptions = function (axisMap, errorMax) {
 };
 
 // sets plot options for profile plots
-const generateProfilePlotOptions = function (axisMap, errorMax) {
+const generateProfilePlotOptions = async function (axisMap, errorMax) {
   let { ymin } = axisMap[Object.keys(axisMap)[0]];
   let { ymax } = axisMap[Object.keys(axisMap)[0]];
   const xAxisNumber = Object.keys(axisMap).length;
@@ -179,7 +177,7 @@ const generateProfilePlotOptions = function (axisMap, errorMax) {
   // overall plot options
   const layout = {
     title: {
-      text: noaaDisclaimer(),
+      text: await noaaDisclaimer(),
       y: 0.87,
       font: {
         size: 10,
@@ -213,7 +211,10 @@ const generateProfilePlotOptions = function (axisMap, errorMax) {
 
   // y-axis options
   let tickVals;
-  if (matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress) {
+  if (
+    (await matsCollections.Settings.findOneAsync({})).appType ===
+    matsTypes.AppTypes.metexpress
+  ) {
     tickVals = [1000, 850, 700, 600, 500, 400, 300, 250, 200, 150, 100, 50, 10];
   } else {
     tickVals = [1000, 900, 800, 700, 600, 500, 400, 300, 200, 100];
@@ -337,7 +338,7 @@ const generateProfilePlotOptions = function (axisMap, errorMax) {
 };
 
 // sets plot options for dieoff plots
-const generateDieoffPlotOptions = function (axisMap, errorMax) {
+const generateDieoffPlotOptions = async function (axisMap, errorMax) {
   let { xmin } = axisMap[Object.keys(axisMap)[0]];
   let { xmax } = axisMap[Object.keys(axisMap)[0]];
   const yAxisNumber = Object.keys(axisMap).length;
@@ -345,7 +346,7 @@ const generateDieoffPlotOptions = function (axisMap, errorMax) {
   // overall plot options
   const layout = {
     title: {
-      text: noaaDisclaimer(),
+      text: await noaaDisclaimer(),
       font: {
         size: 10,
       },
@@ -498,7 +499,7 @@ const generateDieoffPlotOptions = function (axisMap, errorMax) {
 };
 
 // sets plot options for threshold plots
-const generateThresholdPlotOptions = function (dataset, axisMap, errorMax) {
+const generateThresholdPlotOptions = async function (dataset, axisMap, errorMax) {
   let { xmin } = axisMap[Object.keys(axisMap)[0]];
   let { xmax } = axisMap[Object.keys(axisMap)[0]];
   const yAxisNumber = Object.keys(axisMap).length;
@@ -523,7 +524,7 @@ const generateThresholdPlotOptions = function (dataset, axisMap, errorMax) {
   // overall plot options
   const layout = {
     title: {
-      text: noaaDisclaimer(),
+      text: await noaaDisclaimer(),
       font: {
         size: 10,
       },
@@ -665,7 +666,7 @@ const generateThresholdPlotOptions = function (dataset, axisMap, errorMax) {
 };
 
 // sets plot options for valid time plots
-const generateValidTimePlotOptions = function (axisMap, errorMax) {
+const generateValidTimePlotOptions = async function (axisMap, errorMax) {
   let xmin = 0;
   let xmax = 23;
   const yAxisNumber = Object.keys(axisMap).length;
@@ -673,7 +674,7 @@ const generateValidTimePlotOptions = function (axisMap, errorMax) {
   // overall plot options
   const layout = {
     title: {
-      text: noaaDisclaimer(),
+      text: await noaaDisclaimer(),
       font: {
         size: 10,
       },
@@ -841,12 +842,12 @@ const generateValidTimePlotOptions = function (axisMap, errorMax) {
 };
 
 // sets plot options for grid scale plots
-const generateGridScalePlotOptions = function (axisMap, errorMax) {
+const generateGridScalePlotOptions = async function (axisMap, errorMax) {
   let { xmin } = axisMap[Object.keys(axisMap)[0]];
   let { xmax } = axisMap[Object.keys(axisMap)[0]];
   const yAxisNumber = Object.keys(axisMap).length;
 
-  const { appName } = matsCollections.Settings.findOne({});
+  const { appName } = await matsCollections.Settings.findOneAsync({});
   let xLabel;
   if (appName.includes("met-")) {
     xLabel = "Interpolation Points";
@@ -857,7 +858,7 @@ const generateGridScalePlotOptions = function (axisMap, errorMax) {
   // overall plot options
   const layout = {
     title: {
-      text: noaaDisclaimer(),
+      text: await noaaDisclaimer(),
       font: {
         size: 10,
       },
@@ -997,7 +998,7 @@ const generateGridScalePlotOptions = function (axisMap, errorMax) {
 };
 
 // sets plot options for grid scale plots
-const generateYearToYearPlotOptions = function (axisMap, errorMax) {
+const generateYearToYearPlotOptions = async function (axisMap, errorMax) {
   let { xmin } = axisMap[Object.keys(axisMap)[0]];
   let { xmax } = axisMap[Object.keys(axisMap)[0]];
   const yAxisNumber = Object.keys(axisMap).length;
@@ -1005,7 +1006,7 @@ const generateYearToYearPlotOptions = function (axisMap, errorMax) {
   // overall plot options
   const layout = {
     title: {
-      text: noaaDisclaimer(),
+      text: await noaaDisclaimer(),
       font: {
         size: 10,
       },
@@ -1149,7 +1150,7 @@ const generateYearToYearPlotOptions = function (axisMap, errorMax) {
 };
 
 // sets plot options for reliability plots
-const generateReliabilityPlotOptions = function () {
+const generateReliabilityPlotOptions = async function () {
   const xmin = 0;
   const xmax = 1;
   const ymin = 0;
@@ -1158,7 +1159,7 @@ const generateReliabilityPlotOptions = function () {
   // overall plot options
   const layout = {
     title: {
-      text: noaaDisclaimer(),
+      text: await noaaDisclaimer(),
       y: 0.87,
       font: {
         size: 10,
@@ -1263,7 +1264,7 @@ const generateReliabilityPlotOptions = function () {
 };
 
 // sets plot options for ROC plots
-const generateROCPlotOptions = function () {
+const generateROCPlotOptions = async function () {
   const xmin = 0;
   const xmax = 1;
   const ymin = 0;
@@ -1272,7 +1273,7 @@ const generateROCPlotOptions = function () {
   // overall plot options
   const layout = {
     title: {
-      text: noaaDisclaimer(),
+      text: await noaaDisclaimer(),
       y: 0.87,
       font: {
         size: 10,
@@ -1377,7 +1378,7 @@ const generateROCPlotOptions = function () {
 };
 
 // sets plot options for performance diagrams
-const generatePerformanceDiagramPlotOptions = function () {
+const generatePerformanceDiagramPlotOptions = async function () {
   const xmin = 0;
   const xmax = 1;
   const ymin = 0;
@@ -1386,7 +1387,7 @@ const generatePerformanceDiagramPlotOptions = function () {
   // overall plot options
   const layout = {
     title: {
-      text: noaaDisclaimer(),
+      text: await noaaDisclaimer(),
       y: 0.87,
       font: {
         size: 10,
@@ -1491,7 +1492,7 @@ const generatePerformanceDiagramPlotOptions = function () {
 };
 
 // sets plot options for grid scale probability plots
-const generateGridScaleProbPlotOptions = function (axisMap) {
+const generateGridScaleProbPlotOptions = async function (axisMap) {
   const { xmin } = axisMap[Object.keys(axisMap)[0]];
   const { xmax } = axisMap[Object.keys(axisMap)[0]];
   const { ymin } = axisMap[Object.keys(axisMap)[0]];
@@ -1500,7 +1501,7 @@ const generateGridScaleProbPlotOptions = function (axisMap) {
   // overall plot options
   const layout = {
     title: {
-      text: noaaDisclaimer(),
+      text: await noaaDisclaimer(),
       font: {
         size: 10,
       },
@@ -1585,7 +1586,7 @@ const generateGridScaleProbPlotOptions = function (axisMap) {
 };
 
 // sets plot options for map plots
-const generateMapPlotOptions = function (extraLegendSpace) {
+const generateMapPlotOptions = async function (extraLegendSpace) {
   const layout = {
     autosize: true,
     hovermode: "closest",
@@ -1604,7 +1605,7 @@ const generateMapPlotOptions = function (extraLegendSpace) {
       style: "light",
     },
     title: {
-      text: noaaDisclaimer(),
+      text: await noaaDisclaimer(),
       y: extraLegendSpace ? 0.89 : 0.94,
       font: {
         size: 10,
@@ -1639,7 +1640,12 @@ const generateMapPlotOptions = function (extraLegendSpace) {
 };
 
 // sets plot options for histograms
-const generateHistogramPlotOptions = function (curves, axisMap, varUnits, plotBins) {
+const generateHistogramPlotOptions = async function (
+  curves,
+  axisMap,
+  varUnits,
+  plotBins
+) {
   const { axisKey } = curves[0];
   const { axisLabel } = axisMap[axisKey];
   const { xmin } = axisMap[axisKey];
@@ -1652,7 +1658,7 @@ const generateHistogramPlotOptions = function (curves, axisMap, varUnits, plotBi
   // overall plot options
   const layout = {
     title: {
-      text: noaaDisclaimer(),
+      text: await noaaDisclaimer(),
       font: {
         size: 10,
       },
@@ -1732,7 +1738,7 @@ const generateHistogramPlotOptions = function (curves, axisMap, varUnits, plotBi
 };
 
 // sets plot options for histograms
-const generateEnsembleHistogramPlotOptions = function (dataset, curves, axisMap) {
+const generateEnsembleHistogramPlotOptions = async function (dataset, curves, axisMap) {
   const { axisKey } = curves[0];
   const { axisLabel } = axisMap[axisKey];
   const xmin = dataset[0].x[0];
@@ -1754,7 +1760,7 @@ const generateEnsembleHistogramPlotOptions = function (dataset, curves, axisMap)
   // overall plot options
   const layout = {
     title: {
-      text: noaaDisclaimer(),
+      text: await noaaDisclaimer(),
       font: {
         size: 10,
       },
@@ -1833,7 +1839,7 @@ const generateEnsembleHistogramPlotOptions = function (dataset, curves, axisMap)
 };
 
 // sets plot options for contour plots
-const generateContourPlotOptions = function (dataset) {
+const generateContourPlotOptions = async function (dataset) {
   const { xAxisKey } = dataset[0];
   const { yAxisKey } = dataset[0];
   const { xmin } = dataset[0];
@@ -1844,7 +1850,7 @@ const generateContourPlotOptions = function (dataset) {
   // overall plot options
   const layout = {
     title: {
-      text: noaaDisclaimer(),
+      text: await noaaDisclaimer(),
       y: 0.93,
       font: {
         size: 10,
@@ -1981,14 +1987,14 @@ const generateContourPlotOptions = function (dataset) {
 };
 
 // sets plot options for simple scatter plots
-const generateScatterPlotOptions = function (axisXMap, axisYMap) {
+const generateScatterPlotOptions = async function (axisXMap, axisYMap) {
   const xAxisNumber = Object.keys(axisXMap).length;
   const yAxisNumber = Object.keys(axisYMap).length;
 
   // overall plot options
   const layout = {
     title: {
-      text: noaaDisclaimer(),
+      text: await noaaDisclaimer(),
       y: 0.87,
       font: {
         size: 10,

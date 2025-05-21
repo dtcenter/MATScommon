@@ -58,7 +58,7 @@ class MatsMiddleMap {
   /* eslint-disable no-console */
   /* eslint-disable class-methods-use-this */
 
-  processStationQuery = (
+  processStationQuery = async (
     statType,
     varName,
     stationNames,
@@ -70,10 +70,8 @@ class MatsMiddleMap {
     validTimes,
     filterInfo
   ) => {
-    const Future = require("fibers/future");
     let rv = "";
-    const dFuture = new Future();
-    (async () => {
+    try {
       rv = await this.processStationQueryInt(
         statType,
         varName,
@@ -86,13 +84,10 @@ class MatsMiddleMap {
         validTimes,
         filterInfo
       );
-      dFuture.return();
-    })().catch((err) => {
+    } catch (err) {
       console.log(`MatsMiddleMap.processStationQuery ERROR: ${err.message}`);
       rv = `MatsMiddleMap.processStationQuery ERROR: ${err.message}`;
-      dFuture.return();
-    });
-    dFuture.wait();
+    }
     return rv;
   };
 
@@ -168,7 +163,7 @@ class MatsMiddleMap {
     try {
       this.fveObs = {};
 
-      const tmplGetNStationsMfveObs = Assets.getText(
+      const tmplGetNStationsMfveObs = await Assets.getTextAsync(
         "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_obs.sql"
       );
 
@@ -240,7 +235,7 @@ class MatsMiddleMap {
     try {
       this.fveModels = {};
 
-      let tmplGetNStationsMfveModel = Assets.getText(
+      let tmplGetNStationsMfveModel = await Assets.getTextAsync(
         "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_model.sql"
       );
       tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(

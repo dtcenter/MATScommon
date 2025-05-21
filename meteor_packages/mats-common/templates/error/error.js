@@ -19,7 +19,8 @@ Template.error.helpers({
 Template.error.events({
   "click .clear-error"() {
     clearError();
-    document.getElementById("stack").style.display = "none";
+    if (document.getElementById("stack"))
+      document.getElementById("stack").style.display = "none";
     matsPlotUtils.enableActionButtons();
     return false;
   },

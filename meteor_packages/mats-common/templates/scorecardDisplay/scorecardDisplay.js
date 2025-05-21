@@ -174,18 +174,14 @@ const refreshScorecard = function (userName, name, submitted, processedAt) {
 // userName, name, submitted, and processedAt
 // The insertCBscorecard needs to be synchronous because the page needs the data from the mongo scorecard
 const getScorecard = function (userName, name, submitted, processedAt) {
-  matsMethods.getScorecardData.call(
-    {
+  matsMethods.getScorecardData
+    .callAsync({
       userName,
       name,
       submitted,
       processedAt,
-    },
-    function (error, scorecard) {
-      if (error !== undefined) {
-        setError(error);
-        return;
-      }
+    })
+    .then(function (scorecard) {
       Session.set("myScorecard", scorecard);
       const cursor = matsCollections.Scorecard.find({ _id: scorecard.docID });
       cursor.observeChanges({
@@ -193,8 +189,10 @@ const getScorecard = function (userName, name, submitted, processedAt) {
           refreshScorecard(userName, name, submitted, processedAt);
         },
       });
-    }
-  );
+    })
+    .catch(function (error) {
+      setError(error);
+    });
 };
 
 const hideLoading = function () {
