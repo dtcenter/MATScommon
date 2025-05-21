@@ -39,13 +39,10 @@ const isEmpty = function (map) {
   return mapKeys.length === 0;
 };
 
-// private middleware for getting the status - think health check
-const status = async function (res) {
+// private middleware for determining if the app is running
+const getHealth = async function (res) {
   if (Meteor.isServer) {
-    const settings = await matsCollections.Settings.findOneAsync();
-    res.end(
-      `<body><div id='status'>Running: version - ${settings.appVersion} </div></body>`
-    );
+    res.sendStatus(200);
   }
 };
 
@@ -2958,373 +2955,236 @@ if (Meteor.isServer) {
     Meteor.settings.public.proxy_prefix_path = "";
   }
 
+  const proxyPrefixPath = Meteor.settings.public.proxy_prefix_path;
+
   // needed for middleware routes
   const app = WebApp.express();
   const router = WebApp.express.Router();
 
-  // eslint-disable-next-line no-unused-vars
-  router.use("/status", async function (req, res, next) {
-    await status(res);
+  router.get("/healthz", async (req, res) => {
+    await getHealth(res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/status`,
-    // eslint-disable-next-line no-unused-vars
-    async function (req, res, next) {
-      await status(res);
-    }
-  );
+  router.get(`${proxyPrefixPath}/:app/healthz`, async (req, res) => {
+    await getHealth(res);
+  });
 
-  // eslint-disable-next-line no-unused-vars
-  router.use("/CSV/:f/:key/:m/:a", function (req, res, next) {
+  router.get("/CSV/:f/:key/:m/:a", (req, res) => {
     getCSV(req.params, res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/CSV/:f/:key/:m/:a`,
-    // eslint-disable-next-line no-unused-vars
-    function (req, res, next) {
-      getCSV(req.params, res);
-    }
-  );
+  router.get(`${proxyPrefixPath}/:app/CSV/:f/:key/:m/:a`, (req, res) => {
+    getCSV(req.params, res);
+  });
 
-  // eslint-disable-next-line no-unused-vars
-  router.use("/JSON/:f/:key/:m/:a", function (req, res, next) {
+  router.get("/JSON/:f/:key/:m/:a", (req, res) => {
     getJSON(req.params, res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/JSON/:f/:key/:m/:a`,
-    // eslint-disable-next-line no-unused-vars
-    function (req, res, next) {
-      getJSON(req.params, res);
-    }
-  );
+  router.get(`${proxyPrefixPath}/:app/JSON/:f/:key/:m/:a`, (req, res) => {
+    getJSON(req.params, res);
+  });
 
-  // eslint-disable-next-line no-unused-vars
-  router.use("/clearCache", function (req, res, next) {
+  router.get("/clearCache", (req, res) => {
     clearCache(res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/clearCache`,
-    // eslint-disable-next-line no-unused-vars
-    function (req, res, next) {
-      clearCache(res);
-    }
-  );
+  router.get(`${proxyPrefixPath}/:app/clearCache`, (req, res) => {
+    clearCache(res);
+  });
 
-  // eslint-disable-next-line no-unused-vars
-  router.use("/getApps", async function (req, res, next) {
+  router.get("/getApps", async (req, res) => {
     await getApps(res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getApps`,
-    // eslint-disable-next-line no-unused-vars
-    async function (req, res, next) {
-      await getApps(res);
-    }
-  );
+  router.get(`${proxyPrefixPath}/:app/getApps`, async (req, res) => {
+    await getApps(res);
+  });
 
-  // eslint-disable-next-line no-unused-vars
-  router.use("/getAppSumsDBs", async function (req, res, next) {
+  router.get("/getAppSumsDBs", async (req, res) => {
     await getAppSumsDBs(res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getAppSumsDBs`,
-    // eslint-disable-next-line no-unused-vars
-    async function (req, res, next) {
-      await getAppSumsDBs(res);
-    }
-  );
+  router.get(`${proxyPrefixPath}/:app/getAppSumsDBs`, async (req, res) => {
+    await getAppSumsDBs(res);
+  });
 
-  // eslint-disable-next-line no-unused-vars
-  router.use("/getModels", async function (req, res, next) {
+  router.get("/getModels", async (req, res) => {
     await getModels(res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getModels`,
-    // eslint-disable-next-line no-unused-vars
-    async function (req, res, next) {
-      await getModels(res);
-    }
-  );
+  router.get(`${proxyPrefixPath}/:app/getModels`, async (req, res) => {
+    await getModels(res);
+  });
 
-  // eslint-disable-next-line no-unused-vars
-  router.use("/getRegions", async function (req, res, next) {
+  router.get("/getRegions", async (req, res) => {
     await getRegions(res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getRegions`,
-    // eslint-disable-next-line no-unused-vars
-    async function (req, res, next) {
-      await getRegions(res);
-    }
-  );
+  router.get(`${proxyPrefixPath}/:app/getRegions`, async (req, res) => {
+    await getRegions(res);
+  });
 
-  // eslint-disable-next-line no-unused-vars
-  router.use("/getRegionsValuesMap", async function (req, res, next) {
+  router.get("/getRegionsValuesMap", async (req, res) => {
     await getRegionsValuesMap(res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getRegionsValuesMap`,
-    // eslint-disable-next-line no-unused-vars
-    async function (req, res, next) {
-      await getRegionsValuesMap(res);
-    }
-  );
+  router.get(`${proxyPrefixPath}/:app/getRegionsValuesMap`, async (req, res) => {
+    await getRegionsValuesMap(res);
+  });
 
-  // eslint-disable-next-line no-unused-vars
-  router.use("/getStatistics", async function (req, res, next) {
+  router.get("/getStatistics", async (req, res) => {
     await getStatistics(res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getStatistics`,
-    // eslint-disable-next-line no-unused-vars
-    async function (req, res, next) {
-      await getStatistics(res);
-    }
-  );
+  router.get(`${proxyPrefixPath}/:app/getStatistics`, async (req, res) => {
+    await getStatistics(res);
+  });
 
-  // eslint-disable-next-line no-unused-vars
-  router.use("/getStatisticsValuesMap", async function (req, res, next) {
+  router.get("/getStatisticsValuesMap", async (req, res) => {
     await getStatisticsValuesMap(res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getStatisticsValuesMap`,
-    // eslint-disable-next-line no-unused-vars
-    async function (req, res, next) {
-      await getStatisticsValuesMap(res);
-    }
-  );
+  router.get(`${proxyPrefixPath}/:app/getStatisticsValuesMap`, async (req, res) => {
+    await getStatisticsValuesMap(res);
+  });
 
-  // eslint-disable-next-line no-unused-vars
-  router.use("/getVariables", async function (req, res, next) {
+  router.get("/getVariables", async (req, res) => {
     await getVariables(res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getVariables`,
-    // eslint-disable-next-line no-unused-vars
-    async function (req, res, next) {
-      await getVariables(res);
-    }
-  );
+  router.get(`${proxyPrefixPath}/:app/getVariables`, async (req, res) => {
+    await getVariables(res);
+  });
 
-  // eslint-disable-next-line no-unused-vars
-  router.use("/getVariablesValuesMap", async function (req, res, next) {
+  router.get("/getVariablesValuesMap", async (req, res) => {
     await getVariablesValuesMap(res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getVariablesValuesMap`,
-    // eslint-disable-next-line no-unused-vars
-    async function (req, res, next) {
-      await getVariablesValuesMap(res);
-    }
-  );
+  router.get(`${proxyPrefixPath}/:app/getVariablesValuesMap`, async (req, res) => {
+    await getVariablesValuesMap(res);
+  });
 
-  // eslint-disable-next-line no-unused-vars
-  router.use("/getThresholds", async function (req, res, next) {
+  router.get("/getThresholds", async (req, res) => {
     await getThresholds(res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getThresholds`,
-    // eslint-disable-next-line no-unused-vars
-    async function (req, res, next) {
-      await getThresholds(res);
-    }
-  );
+  router.get(`${proxyPrefixPath}/:app/getThresholds`, async (req, res) => {
+    await getThresholds(res);
+  });
 
-  // eslint-disable-next-line no-unused-vars
-  router.use("/getThresholdsValuesMap", async function (req, res, next) {
+  router.get("/getThresholdsValuesMap", async (req, res) => {
     await getThresholdsValuesMap(res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getThresholdsValuesMap`,
-    // eslint-disable-next-line no-unused-vars
-    async function (req, res, next) {
-      await getThresholdsValuesMap(res);
-    }
-  );
+  router.get(`${proxyPrefixPath}/:app/getThresholdsValuesMap`, async (req, res) => {
+    await getThresholdsValuesMap(res);
+  });
 
-  // eslint-disable-next-line no-unused-vars
-  router.use("/getScales", async function (req, res, next) {
+  router.get("/getScales", async (req, res) => {
     await getScales(res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getScales`,
-    // eslint-disable-next-line no-unused-vars
-    async function (req, res, next) {
-      await getScales(res);
-    }
-  );
+  router.get(`${proxyPrefixPath}/:app/getScales`, async (req, res) => {
+    await getScales(res);
+  });
 
-  // eslint-disable-next-line no-unused-vars
-  router.use("/getScalesValuesMap", async function (req, res, next) {
+  router.get("/getScalesValuesMap", async (req, res) => {
     await getScalesValuesMap(res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getScalesValuesMap`,
-    // eslint-disable-next-line no-unused-vars
-    async function (req, res, next) {
-      await getScalesValuesMap(res);
-    }
-  );
+  router.get(`${proxyPrefixPath}/:app/getScalesValuesMap`, async (req, res) => {
+    await getScalesValuesMap(res);
+  });
 
-  // eslint-disable-next-line no-unused-vars
-  router.use("/getTruths", async function (req, res, next) {
+  router.get("/getTruths", async (req, res) => {
     await getTruths(res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getTruths`,
-    // eslint-disable-next-line no-unused-vars
-    async function (req, res, next) {
-      await getTruths(res);
-    }
-  );
+  router.get(`${proxyPrefixPath}/:app/getTruths`, async (req, res) => {
+    await getTruths(res);
+  });
 
-  // eslint-disable-next-line no-unused-vars
-  router.use("/getTruthsValuesMap", async function (req, res, next) {
+  router.get("/getTruthsValuesMap", async (req, res) => {
     await getTruthsValuesMap(res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getTruthsValuesMap`,
-    // eslint-disable-next-line no-unused-vars
-    async function (req, res, next) {
-      await getTruthsValuesMap(res);
-    }
-  );
+  router.get(`${proxyPrefixPath}/:app/getTruthsValuesMap`, async (req, res) => {
+    await getTruthsValuesMap(res);
+  });
 
-  // eslint-disable-next-line no-unused-vars
-  router.use("/getFcstLengths", async function (req, res, next) {
+  router.get("/getFcstLengths", async (req, res) => {
     await getFcstLengths(res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getFcstLengths`,
-    // eslint-disable-next-line no-unused-vars
-    async function (req, res, next) {
-      await getFcstLengths(res);
-    }
-  );
+  router.get(`${proxyPrefixPath}/:app/getFcstLengths`, async (req, res) => {
+    await getFcstLengths(res);
+  });
 
-  // eslint-disable-next-line no-unused-vars
-  router.use("/getFcstTypes", async function (req, res, next) {
+  router.get("/getFcstTypes", async (req, res) => {
     await getFcstTypes(res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getFcstTypes`,
-    // eslint-disable-next-line no-unused-vars
-    async function (req, res, next) {
-      await getFcstTypes(res);
-    }
-  );
+  router.get(`${proxyPrefixPath}/:app/getFcstTypes`, async (req, res) => {
+    await getFcstTypes(res);
+  });
 
-  // eslint-disable-next-line no-unused-vars
-  router.use("/getFcstTypesValuesMap", async function (req, res, next) {
+  router.get("/getFcstTypesValuesMap", async (req, res) => {
     await getFcstTypesValuesMap(res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getFcstTypesValuesMap`,
-    // eslint-disable-next-line no-unused-vars
-    async function (req, res, next) {
-      await getFcstTypesValuesMap(res);
-    }
-  );
+  router.get(`${proxyPrefixPath}/:app/getFcstTypesValuesMap`, async (req, res) => {
+    await getFcstTypesValuesMap(res);
+  });
 
-  // eslint-disable-next-line no-unused-vars
-  router.use("/getValidTimes", async function (req, res, next) {
+  router.get("/getValidTimes", async (req, res) => {
     await getValidTimes(res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getValidTimes`,
-    // eslint-disable-next-line no-unused-vars
-    async function (req, res, next) {
-      await getValidTimes(res);
-    }
-  );
+  router.get(`${proxyPrefixPath}/:app/getValidTimes`, async (req, res) => {
+    await getValidTimes(res);
+  });
 
-  // eslint-disable-next-line no-unused-vars
-  router.use("/getLevels", async function (req, res, next) {
+  router.get("/getLevels", async (req, res) => {
     await getLevels(res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getLevels`,
-    // eslint-disable-next-line no-unused-vars
-    async function (req, res, next) {
-      await getLevels(res);
-    }
-  );
+  router.get(`${proxyPrefixPath}/:app/getLevels`, async (req, res) => {
+    await getLevels(res);
+  });
 
-  // eslint-disable-next-line no-unused-vars
-  router.use("/getDates", async function (req, res, next) {
+  router.get("/getDates", async (req, res) => {
     await getDates(res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/getDates`,
-    // eslint-disable-next-line no-unused-vars
-    async function (req, res, next) {
-      await getDates(res);
-    }
-  );
+  router.get(`${proxyPrefixPath}/:app/getDates`, async (req, res) => {
+    await getDates(res);
+  });
 
-  // create picker routes for refreshMetaData
-  // eslint-disable-next-line no-unused-vars
-  router.use("/refreshMetadata", async function (req, res, next) {
+  // users manually enter this URL to refresh the metadata
+  router.get("/refreshMetadata", async (req, res) => {
     await refreshMetadataMWltData(res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/refreshMetadata`,
-    // eslint-disable-next-line no-unused-vars
-    async function (req, res, next) {
-      await refreshMetadataMWltData(res);
-    }
-  );
-  // eslint-disable-next-line no-unused-vars
-  router.use("/refreshScorecard/:docId", function (req, res, next) {
+  router.get(`${proxyPrefixPath}/:app/refreshMetadata`, async (req, res) => {
+    await refreshMetadataMWltData(res);
+  });
+
+  router.post("/refreshScorecard/:docId", (req, res) => {
     refreshScorecard(req.params, res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/refreshScorecard/:docId`,
-    // eslint-disable-next-line no-unused-vars
-    function (req, res, next) {
-      refreshScorecard(req.params, res);
-    }
-  );
+  router.post(`${proxyPrefixPath}/:app/refreshScorecard/:docId`, (req, res) => {
+    refreshScorecard(req.params, res);
+  });
 
-  // eslint-disable-next-line no-unused-vars
-  router.use("/setStatusScorecard/:docId", function (req, res, next) {
+  router.post("/setStatusScorecard/:docId", (req, res) => {
     setStatusScorecard(req.params, req, res);
   });
 
-  router.use(
-    `${Meteor.settings.public.proxy_prefix_path}/:app/setStatusScorecard/:docId`,
-    // eslint-disable-next-line no-unused-vars
-    function (req, res, next) {
-      setStatusScorecard(req.params, req, res);
-    }
-  );
+  router.post(`${proxyPrefixPath}/:app/setStatusScorecard/:docId`, (req, res) => {
+    setStatusScorecard(req.params, req, res);
+  });
 
   // mount the router on the app
   app.use("/", router);
