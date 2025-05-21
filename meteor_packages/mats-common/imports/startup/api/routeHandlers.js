@@ -34,8 +34,15 @@ export const getHealth = async function ({ res }) {
 
 // handler for CSV route
 export const getCSV = function ({ req, res }) {
-  const { params } = req;
   if (Meteor.isServer) {
+    // Make sure req exists and has params
+    if (!req || !req.params) {
+      console.error("Request or request parameters missing in getCSV handler");
+      res.status(400).send("Bad request - missing parameters");
+      return;
+    }
+
+    const { params } = req;
     // eslint-disable-next-line global-require
     const stringify = require("csv-stringify");
     let csv = "";
@@ -386,8 +393,15 @@ export const refreshMetadataMWltData = async function ({ res }) {
 
 // handler for causing the scorecard to refresh its mongo collection for a given document
 export const refreshScorecard = function ({ req, res }) {
-  const { params } = req;
   if (Meteor.isServer) {
+    // Make sure req exists and has params
+    if (!req || !req.params) {
+      console.error("Request or request parameters missing in getCSV handler");
+      res.status(400).send("Bad request - missing parameters");
+      return;
+    }
+
+    const { params } = req;
     const docId = decodeURIComponent(params.docId);
     // get userName, name, submitted, processedAt from id
     // SC:anonymous -= 1submitted:20230322230435 -= 11block:0:02/19/2023_20_00_-_03/21/2023_20_00
@@ -439,8 +453,15 @@ export const refreshScorecard = function ({ req, res }) {
 };
 
 export const setStatusScorecard = function ({ req, res }) {
-  const { params } = req;
   if (Meteor.isServer) {
+    // Make sure req exists and has params
+    if (!req || !req.params) {
+      console.error("Request or request parameters missing in getCSV handler");
+      res.status(400).send("Bad request - missing parameters");
+      return;
+    }
+
+    const { params } = req;
     const docId = decodeURIComponent(params.docId);
     let body = "";
     req.on(
