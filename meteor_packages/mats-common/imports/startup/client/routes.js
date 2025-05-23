@@ -27,6 +27,22 @@ FlowRouter.route("/", {
   },
 });
 
+FlowRouter.route("/CSV/:graphFunction/:key/:matching/:appName", {
+  name: "csv",
+  action() {
+    // eslint-disable-next-line no-self-assign
+    window.location.href = window.location.href;
+  },
+});
+
+FlowRouter.route("/JSON/:graphFunction/:key/:matching/:appName", {
+  name: "json",
+  action() {
+    // eslint-disable-next-line no-self-assign
+    window.location.href = window.location.href;
+  },
+});
+
 FlowRouter.route("/preview/:graphFunction/:key/:matching/:appName", {
   name: "preview",
   action(params) {
@@ -71,6 +87,28 @@ FlowRouter.route(`${Meteor.settings.public.proxy_prefix_path}/:appName`, {
     }
   },
 });
+
+FlowRouter.route(
+  `${Meteor.settings.public.proxy_prefix_path}/*/CSV/:graphFunction/:key/:matching/:appName`,
+  {
+    name: "csv",
+    action() {
+      // eslint-disable-next-line no-self-assign
+      window.location.href = window.location.href;
+    },
+  }
+);
+
+FlowRouter.route(
+  `${Meteor.settings.public.proxy_prefix_path}/*/JSON/:graphFunction/:key/:matching/:appName`,
+  {
+    name: "json",
+    action() {
+      // eslint-disable-next-line no-self-assign
+      window.location.href = window.location.href;
+    },
+  }
+);
 
 FlowRouter.route(
   `${Meteor.settings.public.proxy_prefix_path}/*/preview/:graphFunction/:key/:matching/:appName`,
