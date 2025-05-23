@@ -30,16 +30,16 @@ FlowRouter.route("/", {
 FlowRouter.route("/CSV/:graphFunction/:key/:matching/:appName", {
   name: "csv",
   action() {
-    // eslint-disable-next-line no-self-assign
-    window.location.href = window.location.href;
+    // eslint-disable-next-line no-underscore-dangle
+    window.location.href = FlowRouter._current.path;
   },
 });
 
 FlowRouter.route("/JSON/:graphFunction/:key/:matching/:appName", {
   name: "json",
   action() {
-    // eslint-disable-next-line no-self-assign
-    window.location.href = window.location.href;
+    // eslint-disable-next-line no-underscore-dangle
+    window.location.href = FlowRouter._current.path;
   },
 });
 
@@ -92,9 +92,9 @@ FlowRouter.route(
   `${Meteor.settings.public.proxy_prefix_path}/*/CSV/:graphFunction/:key/:matching/:appName`,
   {
     name: "csv",
-    action() {
-      // eslint-disable-next-line no-self-assign
-      window.location.href = window.location.href;
+    action(params) {
+      // eslint-disable-next-line no-underscore-dangle
+      window.location.href = `${Meteor.settings.public.proxy_prefix_path}/${params.appName}/FlowRouter._current.path`;
     },
   }
 );
@@ -103,9 +103,9 @@ FlowRouter.route(
   `${Meteor.settings.public.proxy_prefix_path}/*/JSON/:graphFunction/:key/:matching/:appName`,
   {
     name: "json",
-    action() {
-      // eslint-disable-next-line no-self-assign
-      window.location.href = window.location.href;
+    action(params) {
+      // eslint-disable-next-line no-underscore-dangle
+      window.location.href = `${Meteor.settings.public.proxy_prefix_path}/${params.appName}/FlowRouter._current.path`;
     },
   }
 );
