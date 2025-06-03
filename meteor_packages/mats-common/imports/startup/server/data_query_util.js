@@ -1903,7 +1903,7 @@ const parseQueryDataMapScalar = function (
     lowLimit = -1 * maxValue;
   }
 
-  for (let didx = 0; didx < returnD.queryVal.length - 1; didx += 1) {
+  for (let didx = 0; didx < returnD.queryVal.length; didx += 1) {
     queryVal = returnD.queryVal[didx];
     let textMarker;
     if (variable.includes("2m") || variable.includes("10m")) {

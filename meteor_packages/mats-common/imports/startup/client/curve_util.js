@@ -15,6 +15,7 @@ import {
 
 // var plotResultData = null; -- this was the global variable for the text output data, but now it is set elsewhere
 let graphResult = null; // this is the global variable for the data on the graph
+let plotResultData;
 
 const sizeof = function (val1) {
   const val2 = [val1];
@@ -90,16 +91,16 @@ const setPlotResultData = function () {
           Session.set("textRefreshNeeded", false);
         }
         if (!result) {
-          global.plotResultData = undefined;
+          plotResultData = undefined;
           Session.set("textRefreshNeeded", false);
           hideSpinner();
           return;
         }
-        global.plotResultData = result;
+        plotResultData = result;
         Session.set("pageIndex", result.dsiRealPageIndex);
         Session.set("pageTextDirection", result.dsiTextDirection);
         Session.set("textLoaded", new Date());
-        console.log("size of plotResultData is ", sizeof(global.plotResultData));
+        console.log("size of plotResultData is ", sizeof(plotResultData));
         Session.set("textRefreshNeeded", false);
         hideSpinner();
       }
@@ -111,18 +112,18 @@ const setPlotResultData = function () {
 // Re-sets the plotResultData if the requested page range has changed, or if it has not been previously set.
 const getPlotResultData = function () {
   if (
-    global.plotResultData === undefined ||
-    global.plotResultData === null ||
+    plotResultData === undefined ||
+    plotResultData === null ||
     Session.get("textRefreshNeeded") === true
   ) {
     setPlotResultData();
   }
-  return global.plotResultData;
+  return plotResultData;
 };
 
 // resets the global plotResultData variable for the text output to null
 const resetPlotResultData = function () {
-  global.plotResultData = null;
+  plotResultData = null;
   Session.set("textLoaded", new Date());
 };
 

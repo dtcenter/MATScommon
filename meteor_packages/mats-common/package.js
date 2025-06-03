@@ -103,6 +103,11 @@ Package.onUse(function (api) {
 
   // api
   api.addFiles("imports/startup/api/matsMethods.js");
+  api.addFiles("imports/startup/api/matsHelpers.js");
+  api.addFiles("imports/startup/api/handlerHelpers.js");
+  api.addFiles("imports/startup/api/routeConfig.js");
+  api.addFiles("imports/startup/api/routeHandlers.js");
+  api.addFiles("imports/startup/api/routeRegistration.js");
   api.addFiles("imports/startup/api/version-info.js");
 
   // layouts
