@@ -130,7 +130,9 @@ class MatsMiddleMap {
       for (let iofve = 0; iofve < this.stationNames.length; iofve += 100) {
         const stationNamesSlice = this.stationNames.slice(iofve, iofve + 100);
 
+        // eslint-disable-next-line no-await-in-loop
         await this.createObsData(stationNamesSlice);
+        // eslint-disable-next-line no-await-in-loop
         await this.createModelData(stationNamesSlice);
       }
 

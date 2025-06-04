@@ -147,6 +147,62 @@ const getStationsInCouchbaseRegion = async function (pool, region) {
   return null;
 };
 
+// utility for performing couchbase METplus queries before passing the results set to Python
+const queryDBMetplus = async function (pool, queryArray) {
+  if (Meteor.isServer) {
+    const queryResults = [];
+    for (let qidx = 0; qidx < queryArray.length; qidx += 1) {
+      const { statement } = queryArray[qidx];
+      const { fcsts } = queryArray[qidx];
+      const { levels } = queryArray[qidx];
+      const { statField } = queryArray[qidx];
+
+      // eslint-disable-next-line no-await-in-loop
+      const rows = await pool.queryCB(statement);
+      const parsedRows = [];
+
+      for (let ridx = 0; ridx < rows.length; ridx += 1) {
+        const thisRow = rows[ridx];
+        const parsedRow = {
+          avtime: thisRow.avtime,
+          nTimes: 0,
+          min_secs: Number.MAX_VALUE,
+          max_secs: Number.MIN_VALUE,
+          stat: null,
+          sub_data: null,
+        };
+
+        let subData = "";
+        const subSecs = new Set();
+        for (let didx = 0; didx < thisRow.data.length; didx += 1) {
+          const thisData = thisRow.data[didx];
+          for (let fidx = 0; fidx < fcsts.length; fidx += 1) {
+            const thisFcst = fcsts[fidx];
+            if (thisData[2][thisFcst] && levels.includes(thisData[2][thisFcst].level)) {
+              const dataSnippet = `${thisData[2][thisFcst][statField]};9999;${thisData[0]};${thisData[1]}`;
+              subData =
+                subData.length === 0 ? `${dataSnippet}` : `${subData},${dataSnippet}`;
+              subSecs.add(Number(thisData[0]));
+            }
+          }
+        }
+
+        if (subData.length > 0) {
+          parsedRow.nTimes = subSecs.size;
+          parsedRow.min_secs = Math.min.apply(this, [...subSecs]);
+          parsedRow.max_secs = Math.max.apply(this, [...subSecs]);
+          parsedRow.stat = 0; // dummy value, change from null to number to show that we do have a result, though
+          parsedRow.sub_data = subData;
+          parsedRows.push(JSON.parse(JSON.stringify(parsedRow)));
+        }
+      }
+      queryResults.push(JSON.parse(JSON.stringify(parsedRows)));
+    }
+    debugger;
+  }
+  return null;
+};
+
 // utility for querying the DB via Python
 const queryDBPython = async function (pool, queryArray) {
   if (Meteor.isServer) {
@@ -4053,6 +4109,7 @@ const queryDBContour = async function (pool, statement, appParams, statisticStr)
 export default matsDataQueryUtils = {
   queryMySQL,
   getStationsInCouchbaseRegion,
+  queryDBMetplus,
   queryDBPython,
   queryDBTimeSeries,
   queryDBSpecialtyCurve,

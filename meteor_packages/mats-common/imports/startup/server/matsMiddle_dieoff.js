@@ -345,6 +345,7 @@ class MatsMiddleDieoff {
             }
           });
         }
+        // eslint-disable-next-line no-await-in-loop
         await Promise.all(promises).catch((err) => {
           console.log(`${err.message}`);
           throw new Error(`${err.message}`);
