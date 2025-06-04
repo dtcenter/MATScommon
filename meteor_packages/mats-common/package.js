@@ -298,6 +298,7 @@ Package.onUse(function (api) {
   api.addAssets("public/MATSReleaseNotes.html", "server");
   api.addAssets("public/python/python_query_util.py", "server");
   api.addAssets("public/python/python_ctc_error.py", "server");
+  api.addAssets("public/python/parse_query_data.py", "server");
   api.addAssets("public/python/calc_stats.py", "server");
   api.addAssets("public/python/calc_ens_stats.py", "server");
   api.addAssets("public/python/mode_stats.py", "server");
