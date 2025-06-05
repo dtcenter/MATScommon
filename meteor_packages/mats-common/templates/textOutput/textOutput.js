@@ -2,10 +2,10 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
+import { Meteor } from "meteor/meteor";
 import {
   matsCollections,
   matsCurveUtils,
-  matsGraphUtils,
   matsPlotUtils,
   matsTypes,
 } from "meteor/randyp:mats-common";
@@ -1082,17 +1082,13 @@ Template.textOutput.helpers({
 Template.textOutput.events({
   "click .export"() {
     Session.get("plotType");
-    const urlParams = matsGraphUtils.getBaseURL();
-    let url = `${urlParams.baseURL}/${urlParams.appName}`;
-    if (urlParams.baseURL.includes("localhost")) {
-      url = `${urlParams.baseURL}`;
-    }
+    const appName = Meteor.settings.public.app;
     const graphFunction = Session.get("graphFunction");
     const plotResultKey = Session.get("plotResultKey");
     const plotParameter = Session.get("plotParameter");
     // open a new window with
     window.open(
-      `${url}/CSV/${graphFunction}/${plotResultKey}/${plotParameter}/${urlParams.appName}`
+      `${window.location}/CSV/${graphFunction}/${plotResultKey}/${plotParameter}/${appName}`
     );
   },
 });
