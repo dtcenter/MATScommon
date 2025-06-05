@@ -1088,7 +1088,7 @@ Template.textOutput.events({
     const plotParameter = Session.get("plotParameter");
     // open a new window with
     window.open(
-      `${window.location}/CSV/${graphFunction}/${plotResultKey}/${plotParameter}/${appName}`
+      `${window.location.href}/CSV/${graphFunction}/${plotResultKey}/${plotParameter}/${appName}`
     );
   },
 });

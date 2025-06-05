@@ -1438,7 +1438,7 @@ Template.graph.events({
     const graphFunction = Session.get("graphFunction");
     const plotParameter = Session.get("plotParameter");
     const wind = window.open(
-      `${window.location}/preview/${graphFunction}/${key}/${plotParameter}/${appName}`,
+      `${window.location.href}/preview/${graphFunction}/${key}/${plotParameter}/${appName}`,
       "_blank",
       "status=no,titlebar=no,toolbar=no,scrollbars=no,menubar=no,resizable=yes",
       `height=${h},width=${w}`
@@ -1495,7 +1495,7 @@ Template.graph.events({
     const plotResultKey = Session.get("plotResultKey");
     const plotParameter = Session.get("plotParameter");
     window.open(
-      `${window.location}/JSON/${graphFunction}/${plotResultKey}/${plotParameter}/${appName}`,
+      `${window.location.href}/JSON/${graphFunction}/${plotResultKey}/${plotParameter}/${appName}`,
       "_blank",
       "resizable=yes"
     );

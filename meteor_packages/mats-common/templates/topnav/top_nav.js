@@ -9,16 +9,16 @@ import { Template } from "meteor/templating";
 
 Template.topNav.helpers({
   govLogo() {
-    return `${window.location}/packages/randyp_mats-common/public/img/icon-dot-gov.svg`;
+    return `${window.location.href}/packages/randyp_mats-common/public/img/icon-dot-gov.svg`;
   },
   httpsLogo() {
-    return `${window.location}/packages/randyp_mats-common/public/img/icon-https.svg`;
+    return `${window.location.href}/packages/randyp_mats-common/public/img/icon-https.svg`;
   },
   flagLogo() {
-    return `${window.location}/packages/randyp_mats-common/public/img/us_flag_small.png`;
+    return `${window.location.href}/packages/randyp_mats-common/public/img/us_flag_small.png`;
   },
   transparentGif() {
-    return `${window.location}/packages/randyp_mats-common/public/img/noaa_transparent.png`;
+    return `${window.location.href}/packages/randyp_mats-common/public/img/noaa_transparent.png`;
   },
   emailText() {
     if (

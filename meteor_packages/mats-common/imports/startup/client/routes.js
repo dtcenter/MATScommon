@@ -30,14 +30,14 @@ FlowRouter.route("/", {
 FlowRouter.route("/CSV/:graphFunction/:key/:matching/:appName", {
   name: "csv",
   action() {
-    window.location.href = FlowRouter.current.path;
+    window.location.href = FlowRouter.current().path;
   },
 });
 
 FlowRouter.route("/JSON/:graphFunction/:key/:matching/:appName", {
   name: "json",
   action() {
-    window.location.href = FlowRouter.current.path;
+    window.location.href = FlowRouter.current().path;
   },
 });
 
