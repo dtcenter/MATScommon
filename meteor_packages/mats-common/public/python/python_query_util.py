@@ -20,7 +20,7 @@ class NpEncoder(json.JSONEncoder):
             return float(obj)
 
 
-class QueryUtil:
+class ParseUtil:
     """class that contains all of the tools necessary for querying the db and calculating statistics from the
     returned data. In the future, we plan to split this into two classes, one for querying and one for statistics."""
     error = []  # one of the four fields to return at the end -- records any error message
@@ -172,62 +172,36 @@ class QueryUtil:
         }
         self.output_JSON = json.dumps(self.output_JSON, cls=NpEncoder)
 
-    def query_db(self, cursor, query_array):
-        """function for querying the database and sending the returned data to the parser"""
+    def parse_query(self, options):
+        """function for handling the query results and sending the returned data to the parser"""
+        query_array = options["query_array"]
+        results_array = options["results_array"]
+
         idx = 0
         return_obj = {"data": self.data, "error": self.error, "n0": self.n0, "nTimes": self.nTimes}
         for query in query_array:
-            statement = query["statement"]
-            results_full = []
-            try:
-                if query["appParams"]["plotType"] == 'SimpleScatter':
-                    # there are two queries
-                    cursor.execute(statement[0])
-                    results_x = cursor.fetchall()
-                    cursor.execute(statement[1])
-                    results_y = cursor.fetchall()
-
-                    #combine the results
-                    current_y = 0
-                    for result_x in results_x:
-                        bin_val = result_x["binVal"]
-                        for idx_y in range(current_y, len(results_y)):
-                            result_y = results_y[idx_y]
-                            if bin_val == result_y["binVal"]:
-                                result_full = copy.deepcopy(result_x)
-                                result_full["nY"] = result_y["nY"]
-                                result_full["fbarY"] = result_y["fbarY"]
-                                result_full["obarY"] = result_y["obarY"]
-                                result_full["sub_dataY"] = result_y["sub_dataY"]
-                                results_full.append(result_full)
-                                current_y = idx_y + 1
-                                break
-                else:
-                    cursor.execute(statement)
-            except pymysql.Error as e:
-                self.error[idx] = "Error executing query: " + str(e)
+            result = results_array[idx]
+            if len(result) == 0:
+                return_obj["error"][idx] = "INFO:0 data records found"
             else:
-                if cursor.rowcount == 0:
-                    self.error[idx] = "INFO:0 data records found"
+                if query["appParams"]["plotType"] == 'Histogram':
+                    return_obj = parse_query_data_histogram(idx, result, query["statLineType"], query["statistic"],
+                                                    query["appParams"], return_obj)
+                elif query["appParams"]["plotType"] == 'Contour':
+                    return_obj = parse_query_data_contour(idx, result, query["statLineType"], query["statistic"],
+                                                    query["appParams"], return_obj)
+                elif query["appParams"]["plotType"] == 'SimpleScatter':
+                    return_obj = parse_query_data_simple_scatter(idx, result, query["statLineType"], query["statistic"],
+                                                            query["appParams"], return_obj)
+                elif query["appParams"]["plotType"] == 'Reliability' or query["appParams"]["plotType"] == 'ROC' or \
+                        query["appParams"]["plotType"] == 'PerformanceDiagram':
+                    return_obj = parse_query_data_ensemble(idx, result, query["appParams"], return_obj)
+                elif query["appParams"]["plotType"] == 'EnsembleHistogram':
+                    return_obj = parse_query_data_ensemble_histogram(idx, result, query["statLineType"],
+                                                                query["statistic"], query["appParams"], return_obj)
                 else:
-                    if query["appParams"]["plotType"] == 'Histogram':
-                        return_obj = parse_query_data_histogram(idx, cursor.fetchall(), query["statLineType"], query["statistic"],
-                                                        query["appParams"], return_obj)
-                    elif query["appParams"]["plotType"] == 'Contour':
-                        return_obj = parse_query_data_contour(idx, cursor.fetchall(), query["statLineType"], query["statistic"],
-                                                      query["appParams"], return_obj)
-                    elif query["appParams"]["plotType"] == 'SimpleScatter':
-                        return_obj = parse_query_data_simple_scatter(idx, results_full, query["statLineType"], query["statistic"],
-                                                             query["appParams"], return_obj)
-                    elif query["appParams"]["plotType"] == 'Reliability' or query["appParams"]["plotType"] == 'ROC' or \
-                            query["appParams"]["plotType"] == 'PerformanceDiagram':
-                        return_obj = parse_query_data_ensemble(idx, cursor.fetchall(), query["appParams"], return_obj)
-                    elif query["appParams"]["plotType"] == 'EnsembleHistogram':
-                        return_obj = parse_query_data_ensemble_histogram(idx, cursor.fetchall(), query["statLineType"],
-                                                                 query["statistic"], query["appParams"], return_obj)
-                    else:
-                        return_obj = parse_query_data_xy_curve(idx, cursor.fetchall(), query["statLineType"], query["statistic"],
-                                                       query["appParams"], query["fcstOffset"], query["vts"], return_obj)
+                    return_obj = parse_query_data_xy_curve(idx, result, query["statLineType"], query["statistic"],
+                                                    query["appParams"], query["fcstOffset"], query["vts"], return_obj)
             idx = idx + 1
 
         self.data = return_obj["data"]
@@ -243,17 +217,12 @@ class QueryUtil:
 
     def get_options(self, args):
         """process 'c' style options - using getopt - usage describes options"""
-        usage = ["(h)ost=", "(P)ort=", "(u)ser=", "(p)assword=", "(d)atabase=", "(t)imeout=", "(q)uery_array="]
-        host = None
-        port = None
-        user = None
-        password = None
-        database = None
-        timeout = 300
+        usage = ["(q)uery_array=", "(r)esults_array="]
         query_array = None
+        results_array = None
 
         try:
-            opts, args = getopt.getopt(args[1:], "h:p:u:P:d:t:q:", usage)
+            opts, args = getopt.getopt(args[1:], "q:r:", usage)
         except getopt.GetoptError as err:
             # print help information and exit:
             print(str(err))  # will print something like "option -a not recognized"
@@ -263,60 +232,31 @@ class QueryUtil:
             if o == "-?":
                 print(usage)
                 sys.exit(2)
-            if o == "-h":
-                host = a
-            elif o == "-P":
-                port = int(a)
-            elif o == "-u":
-                user = a
-            elif o == "-p":
-                password = a
-            elif o == "-d":
-                database = a
-            elif o == "-t":
-                timeout = int(a)
-            elif o == "-q":
+            if o == "-q":
                 query_array = json.loads(a)
+            elif o == "-r":
+                results_array = json.loads(a)
             else:
                 assert False, "unhandled option"
         # make sure none were left out...
-        assert True, host is not None and port is not None and user is not None and password is not None \
-                     and database is not None and query_array is not None
+        assert True, query_array is not None and results_array is not None
         options = {
-            "host": host,
-            "port": port,
-            "user": user,
-            "password": password,
-            "database": database,
-            "timeout": timeout,
-            "query_array": query_array
+            "query_array": query_array,
+            "results_array": results_array
         }
         return options
 
-    def do_query(self, options):
-        """function for validating options and passing them to the query function"""
-        self.validate_options(options)
-        cnx = pymysql.Connect(host=options["host"], port=options["port"], user=options["user"],
-                              passwd=options["password"],
-                              db=options["database"], charset='utf8',
-                              cursorclass=pymysql.cursors.DictCursor)
-        with closing(cnx.cursor()) as cursor:
-            cursor.execute('set group_concat_max_len = 4294967295')
-            cursor.execute('set session wait_timeout = ' + str(options["timeout"]))
-            self.query_db(cursor, options["query_array"])
-        cnx.close()
-
 
 if __name__ == '__main__':
-    qutil = QueryUtil()
-    options = qutil.get_options(sys.argv)
-    qutil.set_up_output_fields(len(options["query_array"]))
-    qutil.do_query(options)
+    putil = ParseUtil()
+    options = putil.get_options(sys.argv)
+    putil.set_up_output_fields(len(options["query_array"]))
+    putil.parse_query(options)
     if options["query_array"][0]["appParams"]["matching"]:
-        return_obj = do_matching(options, {"data": qutil.data, "error": qutil.error, "n0": qutil.n0, "nTimes": qutil.nTimes})
-        qutil.data = return_obj["data"]
-        qutil.error = return_obj["error"]
-        qutil.n0 = return_obj["n0"]
-        qutil.nTimes = return_obj["nTimes"]
-    qutil.construct_output_json(options["query_array"][0]["appParams"]["plotType"], options["query_array"])
-    print(qutil.output_JSON)
+        return_obj = do_matching(options, {"data": putil.data, "error": putil.error, "n0": putil.n0, "nTimes": putil.nTimes})
+        putil.data = return_obj["data"]
+        putil.error = return_obj["error"]
+        putil.n0 = return_obj["n0"]
+        putil.nTimes = return_obj["nTimes"]
+    putil.construct_output_json(options["query_array"][0]["appParams"]["plotType"], options["query_array"])
+    print(putil.output_JSON)
