@@ -201,7 +201,7 @@ class ParseUtil:
                                                                 query["statistic"], query["appParams"], return_obj)
                 else:
                     return_obj = parse_query_data_xy_curve(idx, result, query["statLineType"], query["statistic"],
-                                                    query["appParams"], query["fcstOffset"], query["vts"], return_obj)
+                                                    query["appParams"], query["fcsts"], query["vts"], return_obj)
             idx = idx + 1
 
         self.data = return_obj["data"]

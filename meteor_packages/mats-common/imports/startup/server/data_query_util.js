@@ -178,6 +178,8 @@ const parseQueryDataPython = async function (queryArray, queryResults) {
           nTimes,
         };
       });
+
+debugger;
     if (results === undefined || results === "undefined") {
       error =
         "Error thrown by python_query_util.py. Please write down exactly how you produced this error, and submit a ticket at mats.gsl@noaa.gov.";
@@ -323,6 +325,7 @@ const queryMETplusMysqlDB = async function (pool, queryArray) {
 
         // combine the results
         let currentY = 0;
+        const scatterResults = [];
         for (let xidx = 0; xidx < rowsX.length; xidx += 1) {
           const rowX = rowsX[xidx];
           const { binVal } = rowX;
@@ -334,12 +337,13 @@ const queryMETplusMysqlDB = async function (pool, queryArray) {
               resultFull.fbarY = rowY.fbarY;
               resultFull.obarY = rowY.obarY;
               resultFull.sub_dataY = rowY.sub_dataY;
-              queryResults.push(resultFull);
+              scatterResults.push(resultFull);
               currentY = yidx + 1;
               break;
             }
           }
         }
+        queryResults.push(scatterResults);
       } else {
         // eslint-disable-next-line no-await-in-loop
         const rows = await queryMySQL(pool, statement);
@@ -3094,15 +3098,30 @@ const queryDBTimeSeries = async function (
 ) {
   if (Meteor.isServer) {
     // upper air is only verified at 00Z and 12Z, so you need to force irregular models to verify at that regular cadence
-    let cycles = getModelCadence(pool, dataSource, startDate, endDate); // if irregular model cadence, get cycle times. If regular, get empty array.
+    let cycles = await getModelCadence(pool, dataSource, startDate, endDate); // if irregular model cadence, get cycle times. If regular, get empty array.
     let theseValidTimes = validTimes;
     if (theseValidTimes.length > 0 && theseValidTimes !== matsTypes.InputTypes.unused) {
       if (typeof theseValidTimes === "string" || theseValidTimes instanceof String) {
         theseValidTimes = theseValidTimes.split(",");
       }
-      let vtCycles = theseValidTimes.map(function (x) {
-        return (Number(x) - forecastOffset) * 3600 * 1000;
-      }); // selecting validTimes makes the cadence irregular
+      let vtCycles;
+      if (Array.isArray(forecastOffset)) {
+        vtCycles = new Set();
+        for (let fidx = 0; fidx < forecastOffset.length; fidx += 1) {
+          for (let vidx = 0; vidx < theseValidTimes.length; vidx += 1) {
+            vtCycles.add(
+              (Number(theseValidTimes[vidx]) - Number(forecastOffset[fidx])) *
+                3600 *
+                1000
+            );
+          }
+        }
+        vtCycles = [...vtCycles];
+      } else {
+        vtCycles = theseValidTimes.map(function (x) {
+          return (Number(x) - Number(forecastOffset)) * 3600 * 1000;
+        }); // selecting validTimes makes the cadence irregular
+      }
       vtCycles = vtCycles.map(function (x) {
         return x < 0 ? x + 24 * 3600 * 1000 : x;
       }); // make sure no cycles are negative

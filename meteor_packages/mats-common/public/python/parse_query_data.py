@@ -115,7 +115,7 @@ def _is_number(s):
         return False
 
 
-def parse_query_data_xy_curve(idx, query_data, stat_line_type, statistic, app_params, fcst_offset, vts, return_obj):
+def parse_query_data_xy_curve(idx, query_data, stat_line_type, statistic, app_params, fcsts, vts, return_obj):
     """function for parsing the data returned by an x-y curve query"""
     # initialize local variables
     plot_type = app_params["plotType"]
@@ -360,18 +360,20 @@ def parse_query_data_xy_curve(idx, query_data, stat_line_type, statistic, app_pa
                 if not regular:
                     # if it's not a regular model, we only want to add a null point if
                     # this is an init time that should have had a forecast.
-                    this_cadence = (new_time % day_in_milli_seconds)
-                    # check to see if cycle time was on a previous day -- if so, need to
-                    # wrap around 00Z to get current hour of day (cycle time)
-                    if float(this_cadence) - (float(fcst_offset) * 3600 * 1000) < 0:
-                        number_of_days_back = math.ceil(-1 * (float(this_cadence)
-                                        - (float(fcst_offset) * 3600 * 1000)) / day_in_milli_seconds)
-                        this_cadence = (float(this_cadence) - (float(fcst_offset) * 3600 * 1000)
-                                        + number_of_days_back * day_in_milli_seconds)
-                    else:
-                        this_cadence = (float(this_cadence) - (float(fcst_offset) * 3600 * 1000))
-                    if this_cadence in vts:
-                        _add_null_point(return_obj['data'][idx], d_idx + 1, plot_type, 'x', new_time, 'y', has_levels)
+                    for fcst in fcsts:
+                        this_cadence = (new_time % day_in_milli_seconds)
+                        # check to see if cycle time was on a previous day -- if so, need to
+                        # wrap around 00Z to get current hour of day (cycle time)
+                        if float(this_cadence) - (float(fcst) * 3600 * 1000) < 0:
+                            number_of_days_back = math.ceil(-1 * (float(this_cadence)
+                                            - (float(fcst) * 3600 * 1000)) / day_in_milli_seconds)
+                            this_cadence = (float(this_cadence) - (float(fcst) * 3600 * 1000)
+                                            + number_of_days_back * day_in_milli_seconds)
+                        else:
+                            this_cadence = (float(this_cadence) - (float(fcst) * 3600 * 1000))
+                        if this_cadence in vts:
+                            _add_null_point(return_obj['data'][idx], d_idx + 1, plot_type, 'x', new_time, 'y', has_levels)
+                            break; # don't need more than one null in a gap
                 else:
                     _add_null_point(return_obj['data'][idx], d_idx + 1, plot_type, 'x', new_time, 'y', has_levels)
 
