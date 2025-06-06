@@ -2,39 +2,23 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 import { Meteor } from "meteor/meteor";
-import { matsCollections, matsTypes, matsGraphUtils } from "meteor/randyp:mats-common";
+import { matsCollections, matsTypes } from "meteor/randyp:mats-common";
 import { Template } from "meteor/templating";
 
 /* global $ */
 
 Template.topNav.helpers({
   govLogo() {
-    const urlParams = matsGraphUtils.getBaseURL();
-    if (urlParams.baseURL.includes("localhost")) {
-      return `${urlParams.baseURL}/packages/randyp_mats-common/public/img/icon-dot-gov.svg`;
-    }
-    return `${urlParams.baseURL}/${urlParams.appName}/packages/randyp_mats-common/public/img/icon-dot-gov.svg`;
+    return `${window.location.href}/packages/randyp_mats-common/public/img/icon-dot-gov.svg`;
   },
   httpsLogo() {
-    const urlParams = matsGraphUtils.getBaseURL();
-    if (urlParams.baseURL.includes("localhost")) {
-      return `${urlParams.baseURL}/packages/randyp_mats-common/public/img/icon-https.svg`;
-    }
-    return `${urlParams.baseURL}/${urlParams.appName}/packages/randyp_mats-common/public/img/icon-https.svg`;
+    return `${window.location.href}/packages/randyp_mats-common/public/img/icon-https.svg`;
   },
   flagLogo() {
-    const urlParams = matsGraphUtils.getBaseURL();
-    if (urlParams.baseURL.includes("localhost")) {
-      return `${urlParams.baseURL}/packages/randyp_mats-common/public/img/us_flag_small.png`;
-    }
-    return `${urlParams.baseURL}/${urlParams.appName}/packages/randyp_mats-common/public/img/us_flag_small.png`;
+    return `${window.location.href}/packages/randyp_mats-common/public/img/us_flag_small.png`;
   },
   transparentGif() {
-    const urlParams = matsGraphUtils.getBaseURL();
-    if (urlParams.baseURL.includes("localhost")) {
-      return `${urlParams.baseURL}/packages/randyp_mats-common/public/img/noaa_transparent.png`;
-    }
-    return `${urlParams.baseURL}/${urlParams.appName}/packages/randyp_mats-common/public/img/noaa_transparent.png`;
+    return `${window.location.href}/packages/randyp_mats-common/public/img/noaa_transparent.png`;
   },
   emailText() {
     if (
@@ -80,7 +64,7 @@ Template.topNav.helpers({
   },
   productLink() {
     return Meteor.settings.public.home === undefined
-      ? `https://${document.location.href.split("/")[2]}`
+      ? `https://${window.location.href.split("/")[2]}`
       : Meteor.settings.public.home;
   },
   bugsText() {
