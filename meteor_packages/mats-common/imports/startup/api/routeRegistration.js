@@ -42,11 +42,10 @@ const handleRoute = async (route, req, res, next) => {
 /**
  * Registers all routes with the Express router
  * @param {Object} router - Express router instance
- * @param {string|null} prefix - Optional prefix for routes (e.g. '/mats', '/mats-int')
  */
-export const registerRoutes = (router, prefix = "") => {
+export const registerRoutes = (router) => {
   routes.forEach((route) => {
-    const path = prefix ? `${prefix}/:app${route.path}` : route.path;
+    const { path } = route;
 
     // Determine HTTP method (default to GET)
     const method = route.method?.toLowerCase() || "get";
@@ -65,6 +64,7 @@ export const registerRoutes = (router, prefix = "") => {
       default:
         throw new Error(`Unsupported HTTP method: ${method}`);
     }
+    console.log(`Registered route: ${method.toUpperCase()} ${path}`);
   });
 };
 
@@ -75,34 +75,15 @@ export const registerRoutes = (router, prefix = "") => {
 export const setupRouter = () => {
   if (!Meteor.isServer) return;
 
-  // set the default proxy prefix path to ""
-  // If the settings are not complete, they will be set by the configuration and written out, which will cause the app to reset
-  if (Meteor.settings.public && !Meteor.settings.public.proxy_prefix_path) {
-    Meteor.settings.public.proxy_prefix_path = "";
-  }
-
-  const proxyPrefixPath = Meteor.settings.public.proxy_prefix_path;
-
   // Create Express app and router
   const app = WebApp.express();
   const router = WebApp.express.Router();
 
-  // Register routes with or without prefix
-  if (!proxyPrefixPath) {
-    registerRoutes(router);
-  } else {
-    registerRoutes(router, proxyPrefixPath);
-  }
+  registerRoutes(router);
 
   // Mount router on app
   app.use("/", router);
 
   // Add router to WebApp handlers
   WebApp.handlers.use(app);
-
-  console.log(
-    `MATS API routes registered${
-      proxyPrefixPath ? ` with prefix ${proxyPrefixPath}` : ""
-    }`
-  );
 };

@@ -1434,15 +1434,11 @@ Template.graph.events({
         w = h * 1.35;
         break;
     }
-    const urlParams = matsGraphUtils.getBaseURL();
-    let url = `${urlParams.baseURL}/${urlParams.appName}`;
-    if (urlParams.baseURL.includes("localhost")) {
-      url = `${urlParams.baseURL}`;
-    }
+    const appName = Meteor.settings.public.app;
     const graphFunction = Session.get("graphFunction");
     const plotParameter = Session.get("plotParameter");
     const wind = window.open(
-      `${url}/preview/${graphFunction}/${key}/${plotParameter}/${urlParams.appName}`,
+      `${window.location.href}/preview/${graphFunction}/${key}/${plotParameter}/${appName}`,
       "_blank",
       "status=no,titlebar=no,toolbar=no,scrollbars=no,menubar=no,resizable=yes",
       `height=${h},width=${w}`
@@ -1494,16 +1490,12 @@ Template.graph.events({
     return null;
   },
   "click .basis"() {
-    const urlParams = matsGraphUtils.getBaseURL();
-    let url = `${urlParams.baseURL}/${urlParams.appName}`;
-    if (urlParams.baseURL.includes("localhost")) {
-      url = `${urlParams.baseURL}`;
-    }
+    const appName = Meteor.settings.public.app;
     const graphFunction = Session.get("graphFunction");
     const plotResultKey = Session.get("plotResultKey");
     const plotParameter = Session.get("plotParameter");
     window.open(
-      `${url}/JSON/${graphFunction}/${plotResultKey}/${plotParameter}/${urlParams.appName}`,
+      `${window.location.href}/JSON/${graphFunction}/${plotResultKey}/${plotParameter}/${appName}`,
       "_blank",
       "resizable=yes"
     );
