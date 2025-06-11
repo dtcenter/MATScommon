@@ -147,62 +147,126 @@ const getStationsInCouchbaseRegion = async function (pool, region) {
   return null;
 };
 
-// utility for performing couchbase METplus queries before passing the results set to Python
-const queryDBMetplus = async function (pool, queryArray) {
+// utility for querying the Coushbase DB via Python
+const queryCBPython = async function (pool, queryArray) {
   if (Meteor.isServer) {
-    const queryResults = [];
-    for (let qidx = 0; qidx < queryArray.length; qidx += 1) {
-      const { statement } = queryArray[qidx];
-      const { fcsts } = queryArray[qidx];
-      const { levels } = queryArray[qidx];
-      const { statField } = queryArray[qidx];
+    // send the query statement to the python query function
+    const pyOptions = {
+      mode: "text",
+      pythonPath: Meteor.settings.private.PYTHON_PATH,
+      pythonOptions: ["-u"], // get print results in real-time
+      scriptPath:
+        process.env.NODE_ENV === "development"
+          ? `${process.env.PWD}/.meteor/local/build/programs/server/assets/packages/randyp_mats-common/public/python/`
+          : `${process.env.PWD}/programs/server/assets/packages/randyp_mats-common/public/python/`,
+      args: [
+        "-h",
+        pool.host,
+        "-u",
+        pool.user,
+        "-p",
+        pool.pwd,
+        "-b",
+        pool.bucketName,
+        "-s",
+        pool.scope,
+        "-c",
+        pool.collection,
+        "-q",
+        JSON.stringify(queryArray),
+      ],
+    };
 
-      // eslint-disable-next-line no-await-in-loop
-      const rows = await pool.queryCB(statement);
-      const parsedRows = [];
+    let d = [];
+    let error = "";
+    let n0 = [];
+    let nTimes = [];
 
-      for (let ridx = 0; ridx < rows.length; ridx += 1) {
-        const thisRow = rows[ridx];
-        const parsedRow = {
-          avtime: thisRow.avtime,
-          nTimes: 0,
-          min_secs: Number.MAX_VALUE,
-          max_secs: Number.MIN_VALUE,
-          stat: null,
-          sub_data: null,
+    const pyShell = require("python-shell");
+    const results = await pyShell.PythonShell.run("couchbase_query_util.py", pyOptions)
+      .then()
+      .catch((err) => {
+        error = err.message;
+        return {
+          data: d,
+          error,
+          n0,
+          nTimes,
         };
+      });
+    if (results === undefined || results === "undefined") {
+      error =
+        "Error thrown by couchbase_query_util.py. Please write down exactly how you produced this error, and submit a ticket at mats.gsl@noaa.gov.";
+    } else {
+      // get the data back from the query
+      const parsedData = JSON.parse(results);
+      d = parsedData.data;
+      n0 = parsedData.n0;
+      nTimes = parsedData.nTimes;
+      error = parsedData.error;
 
-        let subData = "";
-        const subSecs = new Set();
-        for (let didx = 0; didx < thisRow.data.length; didx += 1) {
-          const thisData = thisRow.data[didx];
-          for (let fidx = 0; fidx < fcsts.length; fidx += 1) {
-            const thisFcst = fcsts[fidx];
-            if (thisData[2][thisFcst] && levels.includes(thisData[2][thisFcst].level)) {
-              const dataSnippet = `${thisData[2][thisFcst][statField]};9999;${thisData[0]};${thisData[1]}`;
-              subData =
-                subData.length === 0 ? `${dataSnippet}` : `${subData},${dataSnippet}`;
-              subSecs.add(Number(thisData[0]));
+      // check for nulls in output, since JSON only passes strings
+      for (let idx = 0; idx < d.length; idx += 1) {
+        for (let didx = 0; didx < d[idx].y.length; didx += 1) {
+          if (d[idx].y[didx] === "null") {
+            d[idx].y[didx] = null;
+            if (d[idx].subVals.length > 0) {
+              d[idx].subData[didx] = NaN;
+              d[idx].subHeaders[didx] = NaN;
+              d[idx].subVals[didx] = NaN;
+              if (queryArray[idx].statLineType === "ctc") {
+                d[idx].subHit[didx] = NaN;
+                d[idx].subFa[didx] = NaN;
+                d[idx].subMiss[didx] = NaN;
+                d[idx].subCn[didx] = NaN;
+              } else if (queryArray[idx].statLineType === "mode_pair") {
+                d[idx].subInterest[didx] = NaN;
+              } else if (queryArray[idx].statLineType === "mode_single") {
+                d[idx].nForecast[didx] = 0;
+                d[idx].nMatched[didx] = 0;
+                d[idx].nSimple[didx] = 0;
+                d[idx].nTotal[didx] = 0;
+              }
             }
+            d[idx].subSecs[didx] = NaN;
+            d[idx].subLevs[didx] = NaN;
+          } else if (d[idx].x[didx] === "null") {
+            d[idx].x[didx] = null;
+            if (d[idx].subVals.length > 0) {
+              d[idx].subData[didx] = NaN;
+              d[idx].subHeaders[didx] = NaN;
+              d[idx].subVals[didx] = NaN;
+              if (queryArray[idx].statLineType === "ctc") {
+                d[idx].subHit[didx] = NaN;
+                d[idx].subFa[didx] = NaN;
+                d[idx].subMiss[didx] = NaN;
+                d[idx].subCn[didx] = NaN;
+              } else if (queryArray[idx].statLineType === "mode_pair") {
+                d[idx].subInterest[didx] = NaN;
+              } else if (queryArray[idx].statLineType === "mode_single") {
+                d[idx].nForecast[didx] = 0;
+                d[idx].nMatched[didx] = 0;
+                d[idx].nSimple[didx] = 0;
+                d[idx].nTotal[didx] = 0;
+              }
+            }
+            d[idx].subSecs[didx] = NaN;
+            d[idx].subLevs[didx] = NaN;
           }
         }
-
-        if (subData.length > 0) {
-          parsedRow.nTimes = subSecs.size;
-          parsedRow.min_secs = Math.min.apply(this, [...subSecs]);
-          parsedRow.max_secs = Math.max.apply(this, [...subSecs]);
-          parsedRow.stat = 0; // dummy value, change from null to number to show that we do have a result, though
-          parsedRow.sub_data = subData;
-          parsedRows.push(JSON.parse(JSON.stringify(parsedRow)));
-        }
       }
-      queryResults.push(JSON.parse(JSON.stringify(parsedRows)));
     }
+    return {
+      data: d,
+      error,
+      n0,
+      nTimes,
+    };
   }
   return null;
 };
 
-// utility for querying the DB via Python
+// utility for querying the MySQL DB via Python
 const queryDBPython = async function (pool, queryArray) {
   if (Meteor.isServer) {
     // send the query statement to the python query function
@@ -242,7 +306,7 @@ const queryDBPython = async function (pool, queryArray) {
     let nTimes = [];
 
     const pyShell = require("python-shell");
-    const results = await pyShell.PythonShell.run("python_query_util.py", pyOptions)
+    const results = await pyShell.PythonShell.run("mysql_query_util.py", pyOptions)
       .then()
       .catch((err) => {
         error = err.message;
@@ -255,7 +319,7 @@ const queryDBPython = async function (pool, queryArray) {
       });
     if (results === undefined || results === "undefined") {
       error =
-        "Error thrown by python_query_util.py. Please write down exactly how you produced this error, and submit a ticket at mats.gsl@noaa.gov.";
+        "Error thrown by mysql_query_util.py. Please write down exactly how you produced this error, and submit a ticket at mats.gsl@noaa.gov.";
     } else {
       // get the data back from the query
       const parsedData = JSON.parse(results);
@@ -4123,7 +4187,7 @@ const queryDBContour = async function (pool, statement, appParams, statisticStr)
 export default matsDataQueryUtils = {
   queryMySQL,
   getStationsInCouchbaseRegion,
-  queryDBMetplus,
+  queryCBPython,
   queryDBPython,
   queryDBTimeSeries,
   queryDBSpecialtyCurve,
