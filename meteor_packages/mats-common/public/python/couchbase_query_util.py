@@ -178,7 +178,7 @@ class CBQueryUtil:
 
 
     def get_date_array(self, from_secs, to_secs, vts):
-        date_array = range(math.floor(int(from_secs) / 3600) * 3600, (math.ceil(int(to_secs) / 3600) * 3600) + 3600, 3600)
+        date_array = list(range(math.floor(int(from_secs) / 3600) * 3600, (math.ceil(int(to_secs) / 3600) * 3600) + 3600, 3600))
         if date_array[0] < int(from_secs):
             date_array.pop(0)
         if date_array[len(date_array) - 1] > int(to_secs):
@@ -229,7 +229,7 @@ class CBQueryUtil:
             doc_ID_template = query["docIDTemplate"]
             from_secs = query["fromSecs"]
             to_secs = query["toSecs"]
-            vts = query["vts"]
+            vts = query["vts"].replace("'", "").split(",")
             fcsts = query["fcsts"]
             levels = query["levels"]
             versions = query["versions"]
