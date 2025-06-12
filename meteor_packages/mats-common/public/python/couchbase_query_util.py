@@ -183,7 +183,7 @@ class CBQueryUtil:
             date_array.pop(0)
         if date_array[len(date_array) - 1] > int(to_secs):
             date_array.pop()
-        if len(vts):
+        if len(vts) and len(vts[0]):
             refined_date_array = []
             for date in date_array:
                 add = False
@@ -259,8 +259,19 @@ class CBQueryUtil:
                     sub_secs = set()
                     for datum in row["data"]:
                         for forecast in fcsts:
-                            if forecast in datum[2] and datum[2][forecast]["level"] in levels and stat_field in datum[2][forecast]:
-                                data_snippet = str(datum[2][forecast][stat_field]) + ";9999;" + str(datum[0]) + ";" + datum[1]
+                            if forecast in datum[2] and datum[2][forecast]["level"] in levels:
+                                data_snippet = ""
+                                if isinstance(stat_field, list) and stat_field[0] in datum[2][forecast] and stat_field[1] in datum[2][forecast]:
+                                    if stat_field[2] == "minus":
+                                        data_snippet = str(datum[2][forecast][stat_field[0]] - datum[2][forecast][stat_field[1]]) + ";9999;" + str(datum[0]) + ";" + datum[1]
+                                    elif stat_field[2] == "plus":
+                                        data_snippet = str(datum[2][forecast][stat_field[0]] + datum[2][forecast][stat_field[1]]) + ";9999;" + str(datum[0]) + ";" + datum[1]
+                                    elif stat_field[2] == "times":
+                                        data_snippet = str(datum[2][forecast][stat_field[0]] * datum[2][forecast][stat_field[1]]) + ";9999;" + str(datum[0]) + ";" + datum[1]
+                                    elif stat_field[2] == "divided by":
+                                        data_snippet = str(datum[2][forecast][stat_field[0]] / datum[2][forecast][stat_field[1]]) + ";9999;" + str(datum[0]) + ";" + datum[1]
+                                elif stat_field in datum[2][forecast]:
+                                    data_snippet = str(datum[2][forecast][stat_field]) + ";9999;" + str(datum[0]) + ";" + datum[1]
                                 if len(sub_data):
                                     sub_data = sub_data + "," + data_snippet
                                 else:
