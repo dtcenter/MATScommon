@@ -177,22 +177,23 @@ class CBQueryUtil:
         self.output_JSON = json.dumps(self.output_JSON, cls=NpEncoder)
 
 
-    def get_date_array(self, from_secs, to_secs, vts):
-        date_array = list(range(math.floor(int(from_secs) / 3600) * 3600, (math.ceil(int(to_secs) / 3600) * 3600) + 3600, 3600))
-        if date_array[0] < int(from_secs):
-            date_array.pop(0)
-        if date_array[len(date_array) - 1] > int(to_secs):
-            date_array.pop()
+    def get_date_array(self, idx, cluster, options, line_type, database, date_variable, from_secs, to_secs, vts):
+        date_statement = 'SELECT DISTINCT ' + date_variable + ' FROM `' + options["bucket"] + '`.' +\
+              options["scope"] + '.' + options["collection"] + ' WHERE type = "DD" AND subtype = "MET" AND LINE_TYPE = "' +\
+                  line_type + '" AND dataSetName = "' + database + '" AND ' + date_variable +\
+                      ' BETWEEN ' + str(from_secs) + ' AND ' + str(to_secs) + ' ORDER BY ' + date_variable
+        try:
+            result = cluster.query(date_statement, QueryOptions(metrics=True))
+            rows = result.rows()
+        except CouchbaseException as e:
+            self.error[idx] = "Error executing query: " + str(e)
+            date_array = [from_secs, to_secs]
+        else:
+            date_array = [row[date_variable] for row in rows]
+
         if len(vts) and len(vts[0]):
-            refined_date_array = []
-            for date in date_array:
-                add = False
-                for vt in vts:
-                    if (date % (24 * 3600)) / 3600 == int(vt):
-                        add = True
-                        break
-                if add:
-                    refined_date_array.append(date)
+            int_vts = [int(vt) for vt in vts]
+            refined_date_array = list(filter(lambda x: (x % (24 * 3600)) / 3600 in int_vts, date_array))
             date_array = refined_date_array
         return date_array
 
@@ -219,14 +220,18 @@ class CBQueryUtil:
         return these_doc_IDs
 
 
-    def query_db(self, cluster, query_array):
+    def query_db(self, cluster, options):
         """function for querying the database and sending the returned data to the parser"""
         idx = 0
         return_obj = {"data": self.data, "error": self.error, "n0": self.n0, "nTimes": self.nTimes}
-        for query in query_array:
+        for query in options["query_array"]:
+            plot_type = query["appParams"]["plotType"]
+            database = query["database"]
+            line_type = query["lineType"]
             stat_field = query["statField"]
             statement = query["statement"]
             doc_ID_template = query["docIDTemplate"]
+            date_variable = query["dateVariable"]
             from_secs = query["fromSecs"]
             to_secs = query["toSecs"]
             vts = query["vts"].replace("'", "").split(",")
@@ -235,7 +240,7 @@ class CBQueryUtil:
             versions = query["versions"]
             storms = query["storms"]
 
-            date_array = self.get_date_array(from_secs, to_secs, vts)
+            date_array = self.get_date_array(idx, cluster, options, line_type, database, date_variable, from_secs, to_secs, vts)
             doc_IDs = self.get_doc_IDs(doc_ID_template, versions, date_array, storms)
             statement = statement.replace("{{docIDTemplate}}", json.dumps(doc_IDs))
 
@@ -246,15 +251,30 @@ class CBQueryUtil:
                 self.error[idx] = "Error executing query: " + str(e)
             else:
                 parsed_rows = []
+                if plot_type == 'ValidTime':
+                    ind_var = 'hr_of_day'
+                elif plot_type == 'GridScale':
+                    ind_var = 'gridscale'
+                elif plot_type == 'Profile':
+                    ind_var = 'avVal'
+                elif plot_type == 'Dieoff':
+                    ind_var = 'fcst_lead'
+                elif plot_type == 'Threshold':
+                    ind_var = 'thresh'
+                elif plot_type == 'YearToYear':
+                    ind_var = 'year'
+                else:
+                    ind_var = 'avtime'
+
                 for row in rows:
                     parsed_row = {
-                        "avtime": row["avtime"],
                         "nTimes": 0,
                         "min_secs": sys.float_info.max,
                         "max_secs": sys.float_info.min,
                         "stat": "null",
                         "sub_data": np.nan,
                     }
+                    parsed_row[ind_var] = row[ind_var]
                     sub_data = ""
                     sub_secs = set()
                     for datum in row["data"]:
@@ -270,11 +290,11 @@ class CBQueryUtil:
                                         data_snippet = str(datum[2][forecast][stat_field[0]] * datum[2][forecast][stat_field[1]]) + ";9999;" + str(datum[0]) + ";" + datum[1]
                                     elif stat_field[2] == "divided by":
                                         data_snippet = str(datum[2][forecast][stat_field[0]] / datum[2][forecast][stat_field[1]]) + ";9999;" + str(datum[0]) + ";" + datum[1]
-                                elif stat_field in datum[2][forecast]:
+                                elif not isinstance(stat_field, list) and stat_field in datum[2][forecast]:
                                     data_snippet = str(datum[2][forecast][stat_field]) + ";9999;" + str(datum[0]) + ";" + datum[1]
-                                if len(sub_data):
+                                if len(sub_data) and len(data_snippet):
                                     sub_data = sub_data + "," + data_snippet
-                                else:
+                                elif len(data_snippet):
                                     sub_data = data_snippet
                                 sub_secs.add(int(datum[0]))
                     
@@ -287,19 +307,18 @@ class CBQueryUtil:
                         parsed_rows.append(parsed_row)
 
                 if len(parsed_rows):
-                    if query["appParams"]["plotType"] == 'Histogram':
+                    if plot_type == 'Histogram':
                         return_obj = parse_query_data_histogram(idx, parsed_rows, query["statLineType"], query["statistic"],
                                                         query["appParams"], return_obj)
-                    elif query["appParams"]["plotType"] == 'Contour':
+                    elif plot_type == 'Contour':
                         return_obj = parse_query_data_contour(idx, parsed_rows, query["statLineType"], query["statistic"],
                                                       query["appParams"], return_obj)
-                    elif query["appParams"]["plotType"] == 'SimpleScatter':
+                    elif plot_type == 'SimpleScatter':
                         return_obj = parse_query_data_simple_scatter(idx, parsed_rows, query["statLineType"], query["statistic"],
                                                              query["appParams"], return_obj)
-                    elif query["appParams"]["plotType"] == 'Reliability' or query["appParams"]["plotType"] == 'ROC' or \
-                            query["appParams"]["plotType"] == 'PerformanceDiagram':
+                    elif plot_type == 'Reliability' or plot_type == 'ROC' or plot_type == 'PerformanceDiagram':
                         return_obj = parse_query_data_ensemble(idx, parsed_rows, query["appParams"], return_obj)
-                    elif query["appParams"]["plotType"] == 'EnsembleHistogram':
+                    elif plot_type == 'EnsembleHistogram':
                         return_obj = parse_query_data_ensemble_histogram(idx, parsed_rows, query["statLineType"],
                                                                  query["statistic"], query["appParams"], return_obj)
                     else:
@@ -381,7 +400,7 @@ class CBQueryUtil:
         timeout_opts = ClusterTimeoutOptions(kv_timeout=timedelta(seconds=3600),
                             query_timeout=timedelta(seconds=3600))
         cluster = Cluster(options["host"], ClusterOptions(pa, timeout_options=timeout_opts))
-        self.query_db(cluster, options["query_array"])
+        self.query_db(cluster, options)
 
 
 if __name__ == '__main__':
