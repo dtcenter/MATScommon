@@ -292,11 +292,12 @@ class CBQueryUtil:
                                         data_snippet = str(datum[2][forecast][stat_field[0]] / datum[2][forecast][stat_field[1]]) + ";9999;" + str(datum[0]) + ";" + datum[1]
                                 elif not isinstance(stat_field, list) and stat_field in datum[2][forecast]:
                                     data_snippet = str(datum[2][forecast][stat_field]) + ";9999;" + str(datum[0]) + ";" + datum[1]
-                                if len(sub_data) and len(data_snippet):
-                                    sub_data = sub_data + "," + data_snippet
-                                elif len(data_snippet):
-                                    sub_data = data_snippet
-                                sub_secs.add(int(datum[0]))
+                                if len(data_snippet):
+                                    if len(sub_data):
+                                        sub_data = sub_data + "," + data_snippet
+                                    else:
+                                        sub_data = data_snippet
+                                    sub_secs.add(int(datum[0]))
                     
                     if len(sub_data):
                         parsed_row["nTimes"] = len(sub_secs)
