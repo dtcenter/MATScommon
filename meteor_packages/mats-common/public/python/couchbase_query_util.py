@@ -259,6 +259,17 @@ class CBQueryUtil:
                     ind_var = 'avVal'
                 elif plot_type == 'Dieoff':
                     ind_var = 'fcst_lead'
+                    for forecast in fcsts:
+                        row_bits = {
+                            "fcst_lead": forecast,
+                            "nTimes": 0,
+                            "min_secs": sys.float_info.max,
+                            "max_secs": sys.float_info.min,
+                            "stat": "null",
+                            "sub_data": "",
+                            "sub_secs": set()
+                        }
+                        parsed_rows.append(row_bits)
                 elif plot_type == 'Threshold':
                     ind_var = 'thresh'
                 elif plot_type == 'YearToYear':
@@ -267,17 +278,19 @@ class CBQueryUtil:
                     ind_var = 'avtime'
 
                 for row in rows:
-                    parsed_row = {
-                        "nTimes": 0,
-                        "min_secs": sys.float_info.max,
-                        "max_secs": sys.float_info.min,
-                        "stat": "null",
-                        "sub_data": np.nan,
-                    }
-                    parsed_row[ind_var] = row[ind_var]
-                    sub_data = ""
-                    sub_secs = set()
+                    if plot_type != "Dieoff":
+                        parsed_row = {
+                            "nTimes": 0,
+                            "min_secs": sys.float_info.max,
+                            "max_secs": sys.float_info.min,
+                            "stat": "null",
+                            "sub_data": np.nan,
+                        }
+                        parsed_row[ind_var] = row[ind_var]
+                        sub_data = ""
+                        sub_secs = set()
                     for datum in row["data"]:
+                        idx = 0
                         for forecast in fcsts:
                             if forecast in datum[2] and datum[2][forecast]["level"] in levels:
                                 data_snippet = ""
@@ -293,20 +306,38 @@ class CBQueryUtil:
                                 elif not isinstance(stat_field, list) and stat_field in datum[2][forecast]:
                                     data_snippet = str(datum[2][forecast][stat_field]) + ";9999;" + str(datum[0]) + ";" + datum[1]
                                 if len(data_snippet):
-                                    if len(sub_data):
-                                        sub_data = sub_data + "," + data_snippet
+                                    if plot_type == "Dieoff":
+                                        if len(parsed_rows[idx]["sub_data"]):
+                                            parsed_rows[idx]["sub_data"] = parsed_rows[idx]["sub_data"] + "," + data_snippet
+                                        else:
+                                            parsed_rows[idx]["sub_data"] = data_snippet
+                                        parsed_rows[idx]["sub_secs"].add(int(datum[0]))
                                     else:
-                                        sub_data = data_snippet
-                                    sub_secs.add(int(datum[0]))
-                    
-                    if len(sub_data):
-                        parsed_row["nTimes"] = len(sub_secs)
-                        parsed_row["min_secs"] = min(sub_secs)
-                        parsed_row["max_secs"] = max(sub_secs)
-                        parsed_row["stat"] = 0 # dummy value, change from null to number to show that we do have a result, though
-                        parsed_row["sub_data"] = sub_data
-                        parsed_rows.append(parsed_row)
+                                        if len(sub_data):
+                                            sub_data = sub_data + "," + data_snippet
+                                        else:
+                                            sub_data = data_snippet
+                                        sub_secs.add(int(datum[0]))
+                            idx = idx + 1
+                    if plot_type != "Dieoff":
+                        if len(sub_data):
+                            parsed_row["nTimes"] = len(sub_secs)
+                            parsed_row["min_secs"] = min(sub_secs)
+                            parsed_row["max_secs"] = max(sub_secs)
+                            parsed_row["stat"] = 0 # dummy value, change from null to number to show that we do have a result, though
+                            parsed_row["sub_data"] = sub_data
+                            parsed_rows.append(parsed_row)
 
+                if plot_type == "Dieoff":
+                    for parsed_row in parsed_rows:
+                        if len(parsed_row["sub_data"]):
+                            parsed_row["nTimes"] = len(parsed_row["sub_secs"])
+                            parsed_row["min_secs"] = min(parsed_row["sub_secs"])
+                            parsed_row["max_secs"] = max(parsed_row["sub_secs"])
+                            parsed_row["stat"] = 0 # dummy value, change from null to number to show that we do have a result, though
+                        else:
+                            parsed_rows.remove(parsed_row)
+                
                 if len(parsed_rows):
                     if plot_type == 'Histogram':
                         return_obj = parse_query_data_histogram(idx, parsed_rows, query["statLineType"], query["statistic"],
