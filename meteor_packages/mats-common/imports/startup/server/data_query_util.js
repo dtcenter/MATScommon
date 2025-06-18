@@ -22,11 +22,9 @@ const queryMySQL = async function (pool, statement) {
       const appTimeOut = Meteor.settings.public.mysql_wait_timeout
         ? Meteor.settings.public.mysql_wait_timeout
         : 300;
-      const mysqlConnection = await pool.getConnection();
-      await mysqlConnection.execute("set group_concat_max_len = 4294967295");
-      await mysqlConnection.execute(`set session wait_timeout = ${appTimeOut}`);
-      const results = await mysqlConnection.query(statement);
-      mysqlConnection.release();
+      await pool.execute("set group_concat_max_len = 4294967295");
+      await pool.execute(`set session wait_timeout = ${appTimeOut}`);
+      const results = await pool.query(statement);
       return results[0];
     } catch (err) {
       return `matsDataQueryUtils.queryMySQL ERROR: ${err.message}`;
