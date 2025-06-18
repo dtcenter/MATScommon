@@ -912,7 +912,7 @@ const showYearToYearFace = function () {
   const plotType = matsTypes.PlotTypes.yearToYear;
   let faceOptions = {
     "curve-dates": "none",
-    dates: "none",
+    dates: "block",
     statistic: "block",
     "x-statistic": "none",
     "y-statistic": "none",
