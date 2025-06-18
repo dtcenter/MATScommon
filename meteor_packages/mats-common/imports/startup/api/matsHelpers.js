@@ -11,14 +11,10 @@ import {
   matsTypes,
 } from "meteor/randyp:mats-common";
 import { _ } from "meteor/underscore";
-import { Mongo } from "meteor/mongo";
 import { moment } from "meteor/momentjs:moment";
 
 /* eslint-disable no-console */
 /* eslint-disable no-await-in-loop */
-
-// local collection used to keep the table update times for refresh - won't ever be synchronized or persisted.
-const metaDataTableUpdates = new Mongo.Collection(null);
 
 // private - used to see if the main page needs to update its selectors
 export const checkMetaDataRefresh = async function () {
@@ -35,7 +31,7 @@ export const checkMetaDataRefresh = async function () {
         }
      */
   let refresh = false;
-  const tableUpdates = await metaDataTableUpdates.find({}).fetchAsync();
+  const tableUpdates = await matsCollections.metaDataTableUpdates.find({}).fetchAsync();
   const settings = await matsCollections.Settings.findOneAsync();
   const dbType = settings !== undefined ? settings.dbType : matsTypes.DbTypes.mysql;
   for (let tui = 0; tui < tableUpdates.length; tui += 1) {
@@ -109,7 +105,7 @@ export const checkMetaDataRefresh = async function () {
         await global.appSpecificResetRoutines[ai]();
       }
       // remember that we updated ALL the metadata tables just now
-      await metaDataTableUpdates.updateAsync(
+      await matsCollections.metaDataTableUpdates.updateAsync(
         {
           _id: id,
         },

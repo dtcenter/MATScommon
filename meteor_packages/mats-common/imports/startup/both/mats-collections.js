@@ -27,6 +27,7 @@ for (let i = 0; i < params.length; i += 1) {
   paramCollections[currParam] = new Mongo.Collection(currParam);
 }
 
+const metaDataTableUpdates = new Mongo.Collection("metaDataTableUpdates");
 const CurveParamsInfo = new Mongo.Collection("CurveParamsInfo");
 const AppsToScore = new Mongo.Collection("AppsToScore");
 const Scatter2dParams = new Mongo.Collection("Scatter2dParams");
@@ -60,6 +61,7 @@ if (Meteor.isServer) {
 }
 
 const explicitCollections = {
+  metaDataTableUpdates,
   CurveParamsInfo,
   AppsToScore,
   Scatter2dParams,
