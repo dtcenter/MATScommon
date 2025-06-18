@@ -33,6 +33,13 @@ if (Meteor.isServer) {
     currParam = params[i];
     publishField(currParam);
   }
+  Meteor.publish("metaDataTableUpdates", function () {
+    const data = matsCollections.metaDataTableUpdates.find({});
+    if (data) {
+      return data;
+    }
+    return this.ready();
+  });
   Meteor.publish("CurveParamsInfo", function () {
     const data = matsCollections.CurveParamsInfo.find({});
     if (data) {
