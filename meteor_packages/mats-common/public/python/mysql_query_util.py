@@ -22,7 +22,7 @@ class NpEncoder(json.JSONEncoder):
 
 class QueryUtil:
     """class that contains all of the tools necessary for querying the db and calculating statistics from the
-    returned data. In the future, we plan to split this into two classes, one for querying and one for statistics."""
+    returned data."""
     error = []  # one of the four fields to return at the end -- records any error message
     n0 = []  # one of the four fields to return at the end -- number of sub_values for each independent variable
     nTimes = []  # one of the four fields to return at the end -- number of sub_secs for each independent variable

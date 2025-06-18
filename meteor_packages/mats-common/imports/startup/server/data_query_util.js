@@ -145,6 +145,67 @@ const getStationsInCouchbaseRegion = async function (pool, region) {
   return null;
 };
 
+// utility to parse query results from python shell
+const parsePythonShellQueryResults = function (results, queryArray) {
+  const parsedData = JSON.parse(results);
+  const d = parsedData.data;
+  const { n0 } = parsedData;
+  const { nTimes } = parsedData;
+  const { error } = parsedData;
+
+  // check for nulls in output, since JSON only passes strings
+  for (let idx = 0; idx < d.length; idx += 1) {
+    for (let didx = 0; didx < d[idx].y.length; didx += 1) {
+      if (d[idx].y[didx] === "null") {
+        d[idx].y[didx] = null;
+        if (d[idx].subVals.length > 0) {
+          d[idx].subData[didx] = NaN;
+          d[idx].subHeaders[didx] = NaN;
+          d[idx].subVals[didx] = NaN;
+          if (queryArray[idx].statLineType === "ctc") {
+            d[idx].subHit[didx] = NaN;
+            d[idx].subFa[didx] = NaN;
+            d[idx].subMiss[didx] = NaN;
+            d[idx].subCn[didx] = NaN;
+          } else if (queryArray[idx].statLineType === "mode_pair") {
+            d[idx].subInterest[didx] = NaN;
+          } else if (queryArray[idx].statLineType === "mode_single") {
+            d[idx].nForecast[didx] = 0;
+            d[idx].nMatched[didx] = 0;
+            d[idx].nSimple[didx] = 0;
+            d[idx].nTotal[didx] = 0;
+          }
+        }
+        d[idx].subSecs[didx] = NaN;
+        d[idx].subLevs[didx] = NaN;
+      } else if (d[idx].x[didx] === "null") {
+        d[idx].x[didx] = null;
+        if (d[idx].subVals.length > 0) {
+          d[idx].subData[didx] = NaN;
+          d[idx].subHeaders[didx] = NaN;
+          d[idx].subVals[didx] = NaN;
+          if (queryArray[idx].statLineType === "ctc") {
+            d[idx].subHit[didx] = NaN;
+            d[idx].subFa[didx] = NaN;
+            d[idx].subMiss[didx] = NaN;
+            d[idx].subCn[didx] = NaN;
+          } else if (queryArray[idx].statLineType === "mode_pair") {
+            d[idx].subInterest[didx] = NaN;
+          } else if (queryArray[idx].statLineType === "mode_single") {
+            d[idx].nForecast[didx] = 0;
+            d[idx].nMatched[didx] = 0;
+            d[idx].nSimple[didx] = 0;
+            d[idx].nTotal[didx] = 0;
+          }
+        }
+        d[idx].subSecs[didx] = NaN;
+        d[idx].subLevs[didx] = NaN;
+      }
+    }
+  }
+  return { d, n0, nTimes, error };
+};
+
 // utility for querying the Coushbase DB via Python
 const queryCBPython = async function (pool, queryArray) {
   if (Meteor.isServer) {
@@ -197,62 +258,7 @@ const queryCBPython = async function (pool, queryArray) {
         "Error thrown by couchbase_query_util.py. Please write down exactly how you produced this error, and submit a ticket at mats.gsl@noaa.gov.";
     } else {
       // get the data back from the query
-      const parsedData = JSON.parse(results);
-      d = parsedData.data;
-      n0 = parsedData.n0;
-      nTimes = parsedData.nTimes;
-      error = parsedData.error;
-
-      // check for nulls in output, since JSON only passes strings
-      for (let idx = 0; idx < d.length; idx += 1) {
-        for (let didx = 0; didx < d[idx].y.length; didx += 1) {
-          if (d[idx].y[didx] === "null") {
-            d[idx].y[didx] = null;
-            if (d[idx].subVals.length > 0) {
-              d[idx].subData[didx] = NaN;
-              d[idx].subHeaders[didx] = NaN;
-              d[idx].subVals[didx] = NaN;
-              if (queryArray[idx].statLineType === "ctc") {
-                d[idx].subHit[didx] = NaN;
-                d[idx].subFa[didx] = NaN;
-                d[idx].subMiss[didx] = NaN;
-                d[idx].subCn[didx] = NaN;
-              } else if (queryArray[idx].statLineType === "mode_pair") {
-                d[idx].subInterest[didx] = NaN;
-              } else if (queryArray[idx].statLineType === "mode_single") {
-                d[idx].nForecast[didx] = 0;
-                d[idx].nMatched[didx] = 0;
-                d[idx].nSimple[didx] = 0;
-                d[idx].nTotal[didx] = 0;
-              }
-            }
-            d[idx].subSecs[didx] = NaN;
-            d[idx].subLevs[didx] = NaN;
-          } else if (d[idx].x[didx] === "null") {
-            d[idx].x[didx] = null;
-            if (d[idx].subVals.length > 0) {
-              d[idx].subData[didx] = NaN;
-              d[idx].subHeaders[didx] = NaN;
-              d[idx].subVals[didx] = NaN;
-              if (queryArray[idx].statLineType === "ctc") {
-                d[idx].subHit[didx] = NaN;
-                d[idx].subFa[didx] = NaN;
-                d[idx].subMiss[didx] = NaN;
-                d[idx].subCn[didx] = NaN;
-              } else if (queryArray[idx].statLineType === "mode_pair") {
-                d[idx].subInterest[didx] = NaN;
-              } else if (queryArray[idx].statLineType === "mode_single") {
-                d[idx].nForecast[didx] = 0;
-                d[idx].nMatched[didx] = 0;
-                d[idx].nSimple[didx] = 0;
-                d[idx].nTotal[didx] = 0;
-              }
-            }
-            d[idx].subSecs[didx] = NaN;
-            d[idx].subLevs[didx] = NaN;
-          }
-        }
-      }
+      ({ d, n0, nTimes, error } = parsePythonShellQueryResults(results, queryArray));
     }
     return {
       data: d,
@@ -320,62 +326,7 @@ const queryDBPython = async function (pool, queryArray) {
         "Error thrown by mysql_query_util.py. Please write down exactly how you produced this error, and submit a ticket at mats.gsl@noaa.gov.";
     } else {
       // get the data back from the query
-      const parsedData = JSON.parse(results);
-      d = parsedData.data;
-      n0 = parsedData.n0;
-      nTimes = parsedData.nTimes;
-      error = parsedData.error;
-
-      // check for nulls in output, since JSON only passes strings
-      for (let idx = 0; idx < d.length; idx += 1) {
-        for (let didx = 0; didx < d[idx].y.length; didx += 1) {
-          if (d[idx].y[didx] === "null") {
-            d[idx].y[didx] = null;
-            if (d[idx].subVals.length > 0) {
-              d[idx].subData[didx] = NaN;
-              d[idx].subHeaders[didx] = NaN;
-              d[idx].subVals[didx] = NaN;
-              if (queryArray[idx].statLineType === "ctc") {
-                d[idx].subHit[didx] = NaN;
-                d[idx].subFa[didx] = NaN;
-                d[idx].subMiss[didx] = NaN;
-                d[idx].subCn[didx] = NaN;
-              } else if (queryArray[idx].statLineType === "mode_pair") {
-                d[idx].subInterest[didx] = NaN;
-              } else if (queryArray[idx].statLineType === "mode_single") {
-                d[idx].nForecast[didx] = 0;
-                d[idx].nMatched[didx] = 0;
-                d[idx].nSimple[didx] = 0;
-                d[idx].nTotal[didx] = 0;
-              }
-            }
-            d[idx].subSecs[didx] = NaN;
-            d[idx].subLevs[didx] = NaN;
-          } else if (d[idx].x[didx] === "null") {
-            d[idx].x[didx] = null;
-            if (d[idx].subVals.length > 0) {
-              d[idx].subData[didx] = NaN;
-              d[idx].subHeaders[didx] = NaN;
-              d[idx].subVals[didx] = NaN;
-              if (queryArray[idx].statLineType === "ctc") {
-                d[idx].subHit[didx] = NaN;
-                d[idx].subFa[didx] = NaN;
-                d[idx].subMiss[didx] = NaN;
-                d[idx].subCn[didx] = NaN;
-              } else if (queryArray[idx].statLineType === "mode_pair") {
-                d[idx].subInterest[didx] = NaN;
-              } else if (queryArray[idx].statLineType === "mode_single") {
-                d[idx].nForecast[didx] = 0;
-                d[idx].nMatched[didx] = 0;
-                d[idx].nSimple[didx] = 0;
-                d[idx].nTotal[didx] = 0;
-              }
-            }
-            d[idx].subSecs[didx] = NaN;
-            d[idx].subLevs[didx] = NaN;
-          }
-        }
-      }
+      ({ d, n0, nTimes, error } = parsePythonShellQueryResults(results, queryArray));
     }
     return {
       data: d,
@@ -3136,6 +3087,7 @@ const queryDBTimeSeries = async function (
       }
       let vtCycles;
       if (Array.isArray(forecastOffset)) {
+        // handle multiple forecast lead times
         vtCycles = new Set();
         for (let fidx = 0; fidx < forecastOffset.length; fidx += 1) {
           for (let vidx = 0; vidx < theseValidTimes.length; vidx += 1) {

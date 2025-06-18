@@ -111,7 +111,7 @@ const objectContainsObject = function (superObject, subObject) {
   return false;
 };
 
-// utility for calculating the sum of an array
+// utility for producing a range array with start, stop, stride
 const range = function (start, stop, stride) {
   const arr = [];
   for (let idx = start; idx < stop; idx += stride || 1) {

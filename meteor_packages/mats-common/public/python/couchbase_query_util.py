@@ -26,7 +26,7 @@ class NpEncoder(json.JSONEncoder):
 
 class CBQueryUtil:
     """class that contains all of the tools necessary for querying the db and calculating statistics from the
-    returned data. In the future, we plan to split this into two classes, one for querying and one for statistics."""
+    returned data."""
     error = []  # one of the four fields to return at the end -- records any error message
     n0 = []  # one of the four fields to return at the end -- number of sub_values for each independent variable
     nTimes = []  # one of the four fields to return at the end -- number of sub_secs for each independent variable
@@ -178,6 +178,7 @@ class CBQueryUtil:
 
 
     def get_date_array(self, idx, cluster, options, line_type, database, date_variable, from_secs, to_secs, vts):
+        """function for getting an array of all valid dates to query"""
         date_statement = 'SELECT DISTINCT ' + date_variable + ' FROM `' + options["bucket"] + '`.' +\
               options["scope"] + '.' + options["collection"] + ' WHERE type = "DD" AND subtype = "MET" AND LINE_TYPE = "' +\
                   line_type + '" AND dataSetName = "' + database + '" AND ' + date_variable +\
@@ -199,6 +200,7 @@ class CBQueryUtil:
 
 
     def get_doc_IDs(self, doc_ID_template, versions, date_array, storms):
+        """function for getting an array of all valid doc IDs to query"""
         these_doc_IDs = []
         for version in versions:
             versioned_doc_ID = copy.deepcopy(doc_ID_template)
