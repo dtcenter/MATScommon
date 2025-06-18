@@ -290,7 +290,7 @@ class CBQueryUtil:
                         sub_data = ""
                         sub_secs = set()
                     for datum in row["data"]:
-                        idx = 0
+                        didx = 0
                         for forecast in fcsts:
                             if forecast in datum[2] and datum[2][forecast]["level"] in levels:
                                 data_snippet = ""
@@ -307,18 +307,18 @@ class CBQueryUtil:
                                     data_snippet = str(datum[2][forecast][stat_field]) + ";9999;" + str(datum[0]) + ";" + datum[1]
                                 if len(data_snippet):
                                     if plot_type == "Dieoff":
-                                        if len(parsed_rows[idx]["sub_data"]):
-                                            parsed_rows[idx]["sub_data"] = parsed_rows[idx]["sub_data"] + "," + data_snippet
+                                        if len(parsed_rows[didx]["sub_data"]):
+                                            parsed_rows[didx]["sub_data"] = parsed_rows[didx]["sub_data"] + "," + data_snippet
                                         else:
-                                            parsed_rows[idx]["sub_data"] = data_snippet
-                                        parsed_rows[idx]["sub_secs"].add(int(datum[0]))
+                                            parsed_rows[didx]["sub_data"] = data_snippet
+                                        parsed_rows[didx]["sub_secs"].add(int(datum[0]))
                                     else:
                                         if len(sub_data):
                                             sub_data = sub_data + "," + data_snippet
                                         else:
                                             sub_data = data_snippet
                                         sub_secs.add(int(datum[0]))
-                            idx = idx + 1
+                            didx = didx + 1
                     if plot_type != "Dieoff":
                         if len(sub_data):
                             parsed_row["nTimes"] = len(sub_secs)
