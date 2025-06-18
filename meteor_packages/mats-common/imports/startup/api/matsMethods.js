@@ -30,8 +30,6 @@ import { checkMetaDataRefresh, getFlattenedResultData } from "./matsHelpers";
 
 // PRIVATE
 
-// local collection used to keep the table update times for refresh - won't ever be synchronized or persisted.
-const metaDataTableUpdates = new Mongo.Collection(null);
 // initialize collection used for pop-out window functionality
 const LayoutStoreCollection = new Mongo.Collection("LayoutStoreCollection");
 // initialize collection used to cache previously downsampled plots
@@ -885,7 +883,7 @@ const refreshMetaData = new ValidatedMethod({
         throw new Meteor.Error("Server error: ", e.message);
       }
     }
-    return metaDataTableUpdates.find({}).fetchAsync();
+    return matsCollections.metaDataTableUpdates.find({}).fetchAsync();
   },
 });
 
@@ -1148,10 +1146,11 @@ const resetApp = async function (appRef) {
         const metaDataRef = metaDataTables[mdti];
         metaDataRef.lastRefreshed = moment().format();
         if (
-          (await metaDataTableUpdates.find({ name: metaDataRef.name }).countAsync()) ===
-          0
+          (await matsCollections.metaDataTableUpdates
+            .find({ name: metaDataRef.name })
+            .countAsync()) === 0
         ) {
-          await metaDataTableUpdates.updateAsync(
+          await matsCollections.metaDataTableUpdates.updateAsync(
             {
               name: metaDataRef.name,
             },
@@ -1345,7 +1344,7 @@ const testGetMetaDataTableUpdates = new ValidatedMethod({
   name: "matsMethods.testGetMetaDataTableUpdates",
   validate: new SimpleSchema({}).validator(),
   async run() {
-    return metaDataTableUpdates.find({}).fetchAsync();
+    return matsCollections.metaDataTableUpdates.find({}).fetchAsync();
   },
 });
 
@@ -1424,9 +1423,9 @@ const testSetMetaDataTableUpdatesLastRefreshedBack = new ValidatedMethod({
   name: "matsMethods.testSetMetaDataTableUpdatesLastRefreshedBack",
   validate: new SimpleSchema({}).validator(),
   async run() {
-    const mtu = await metaDataTableUpdates.find({}).fetchAsync();
+    const mtu = await matsCollections.metaDataTableUpdates.find({}).fetchAsync();
     const id = mtu[0]._id;
-    await metaDataTableUpdates.updateAsync(
+    await matsCollections.metaDataTableUpdates.updateAsync(
       {
         _id: id,
       },
@@ -1436,7 +1435,7 @@ const testSetMetaDataTableUpdatesLastRefreshedBack = new ValidatedMethod({
         },
       }
     );
-    return metaDataTableUpdates.find({}).fetchAsync();
+    return matsCollections.metaDataTableUpdates.find({}).fetchAsync();
   },
 });
 
