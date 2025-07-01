@@ -121,7 +121,10 @@ Template.map.onRendered(function () {
       );
     } else {
       // draw the map for the first time
-      Plotly.newPlot($(divId)[0], [dataset], layout);
+      Plotly.newPlot($(divId)[0], [dataset], layout, {
+        showLink: false,
+        scrollZoom: true,
+      });
 
       /*
 

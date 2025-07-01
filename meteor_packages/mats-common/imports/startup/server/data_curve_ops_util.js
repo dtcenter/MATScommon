@@ -503,6 +503,7 @@ const generateBarChartCurveOptions = async function (
       type: "bar",
       visible: true,
       showlegend: true,
+      textposition: "none",
     },
     ...dataBars,
   };
@@ -594,8 +595,6 @@ const generateMapColorTextOptions = function (label, legendText, dataSeries) {
         opacity: 0,
       },
       textfont: {
-        family: "sans serif",
-        // size: 18,
         color: dataSeries.color,
       },
       hoverinfo: "skip",

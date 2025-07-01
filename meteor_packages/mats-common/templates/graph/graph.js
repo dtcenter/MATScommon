@@ -48,7 +48,10 @@ Template.graph.onCreated(function () {
     const dataset = matsCurveUtils.getGraphResult().data;
     const { options } = matsCurveUtils.getGraphResult();
     if (dataset !== undefined && options !== undefined) {
-      Plotly.newPlot($("#placeholder")[0], dataset, options, { showLink: true });
+      Plotly.newPlot($("#placeholder")[0], dataset, options, {
+        showLink: false,
+        scrollZoom: true,
+      });
     }
   });
 });
@@ -170,7 +173,10 @@ Template.graph.helpers({
     if (!dataset || !options) {
       return false;
     }
-    Plotly.newPlot($("#placeholder")[0], dataset, options, { showLink: true });
+    Plotly.newPlot($("#placeholder")[0], dataset, options, {
+      showLink: false,
+      scrollZoom: true,
+    });
     matsGraphUtils.setGraphView(plotType);
 
     // there seems to be a bug in the plotly API, where if you have a handler for plotly_legendclick,

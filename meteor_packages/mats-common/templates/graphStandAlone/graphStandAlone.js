@@ -41,7 +41,10 @@ Template.graphStandAlone.onRendered(function () {
     document.getElementById("placeholder").style.height =
       matsGraphUtils.standAloneHeight(plotType);
     const dataset = matsCurveUtils.getGraphResult().data;
-    Plotly.newPlot($("#placeholder")[0], dataset, resizeOptions, { showLink: true });
+    Plotly.newPlot($("#placeholder")[0], dataset, resizeOptions, {
+      showLink: false,
+      scrollZoom: true,
+    });
   });
   document.getElementById("graph-container").style.backgroundColor = "white";
 });
@@ -100,6 +103,7 @@ Template.graphStandAlone.helpers({
               Plotly.newPlot($("#placeholder")[0], dataset, options, {
                 showLink: false,
                 displayModeBar: false,
+                scrollZoom: true,
               });
               // update changes to the curve ops -- need to pause if we're doing a map so the map can finish loading before we try to edit it
               setTimeout(function () {
