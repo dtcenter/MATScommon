@@ -57,10 +57,12 @@ const generateSeriesPlotOptions = async function (axisMap, errorMax) {
 
   // x-axis options
   layout.xaxis = {
-    title: "Time",
-    titlefont: {
-      size: 24,
-      color: "#000000",
+    title: {
+      text: "Time",
+      font: {
+        size: 24,
+        color: "#000000",
+      },
     },
     tickfont: {
       size: 16,
@@ -115,10 +117,12 @@ const generateSeriesPlotOptions = async function (axisMap, errorMax) {
     axisLabel = axisMap[axisKey].axisLabel;
     let axisObjectKey;
     const axisObjectBegin = {
-      title: axisLabel,
-      titlefont: {
-        size: 24,
-        color: "#000000",
+      title: {
+        text: axisLabel,
+        font: {
+          size: 24,
+          color: "#000000",
+        },
       },
       tickfont: {
         size: 18,
@@ -221,10 +225,12 @@ const generateProfilePlotOptions = async function (axisMap, errorMax) {
   }
   const tickText = tickVals.map(String);
   layout.yaxis = {
-    title: "Pressure Level (hPa)",
-    titlefont: {
-      size: 24,
-      color: "#000000",
+    title: {
+      text: "Pressure Level (hPa)",
+      font: {
+        size: 24,
+        color: "#000000",
+      },
     },
     tickfont: {
       size: 18,
@@ -289,10 +295,12 @@ const generateProfilePlotOptions = async function (axisMap, errorMax) {
     axisLabel = axisMap[axisKey].axisLabel;
     let axisObjectKey;
     const axisObjectBegin = {
-      title: axisLabel,
-      titlefont: {
-        size: 24,
-        color: "#000000",
+      title: {
+        text: axisLabel,
+        font: {
+          size: 24,
+          color: "#000000",
+        },
       },
       tickfont: {
         size: 18,
@@ -391,10 +399,12 @@ const generateDieoffPlotOptions = async function (axisMap, errorMax) {
 
   // x-axis options
   layout.xaxis = {
-    title: "Forecast Hour",
-    titlefont: {
-      size: 24,
-      color: "#000000",
+    title: {
+      text: "Forecast Hour",
+      font: {
+        size: 24,
+        color: "#000000",
+      },
     },
     tickfont: {
       size: 18,
@@ -450,10 +460,12 @@ const generateDieoffPlotOptions = async function (axisMap, errorMax) {
     axisLabel = axisMap[axisKey].axisLabel;
     let axisObjectKey;
     const axisObjectBegin = {
-      title: axisLabel,
-      titlefont: {
-        size: 24,
-        color: "#000000",
+      title: {
+        text: axisLabel,
+        font: {
+          size: 24,
+          color: "#000000",
+        },
       },
       tickfont: {
         size: 18,
@@ -557,10 +569,12 @@ const generateThresholdPlotOptions = async function (dataset, axisMap, errorMax)
 
   // x-axis options
   layout.xaxis = {
-    title: xLabel,
-    titlefont: {
-      size: 24,
-      color: "#000000",
+    title: {
+      text: xLabel,
+      font: {
+        size: 24,
+        color: "#000000",
+      },
     },
     tickfont: {
       size: 18,
@@ -617,10 +631,12 @@ const generateThresholdPlotOptions = async function (dataset, axisMap, errorMax)
     axisLabel = axisMap[axisKey].axisLabel;
     let axisObjectKey;
     const axisObjectBegin = {
-      title: axisLabel,
-      titlefont: {
-        size: 24,
-        color: "#000000",
+      title: {
+        text: axisLabel,
+        font: {
+          size: 24,
+          color: "#000000",
+        },
       },
       tickfont: {
         size: 18,
@@ -707,10 +723,12 @@ const generateValidTimePlotOptions = async function (axisMap, errorMax) {
 
   // x-axis options
   layout.xaxis = {
-    title: "Hour of Day",
-    titlefont: {
-      size: 24,
-      color: "#000000",
+    title: {
+      text: "Hour of Day",
+      font: {
+        size: 24,
+        color: "#000000",
+      },
     },
     tickfont: {
       size: 16,
@@ -793,10 +811,12 @@ const generateValidTimePlotOptions = async function (axisMap, errorMax) {
     axisLabel = axisMap[axisKey].axisLabel;
     let axisObjectKey;
     const axisObjectBegin = {
-      title: axisLabel,
-      titlefont: {
-        size: 24,
-        color: "#000000",
+      title: {
+        text: axisLabel,
+        font: {
+          size: 24,
+          color: "#000000",
+        },
       },
       tickfont: {
         size: 18,
@@ -891,10 +911,12 @@ const generateGridScalePlotOptions = async function (axisMap, errorMax) {
 
   // x-axis options
   layout.xaxis = {
-    title: xLabel,
-    titlefont: {
-      size: 24,
-      color: "#000000",
+    title: {
+      text: xLabel,
+      font: {
+        size: 24,
+        color: "#000000",
+      },
     },
     tickfont: {
       size: 18,
@@ -949,10 +971,12 @@ const generateGridScalePlotOptions = async function (axisMap, errorMax) {
     axisLabel = axisMap[axisKey].axisLabel;
     let axisObjectKey;
     const axisObjectBegin = {
-      title: axisLabel,
-      titlefont: {
-        size: 24,
-        color: "#000000",
+      title: {
+        text: axisLabel,
+        font: {
+          size: 24,
+          color: "#000000",
+        },
       },
       tickfont: {
         size: 18,
@@ -1041,10 +1065,12 @@ const generateYearToYearPlotOptions = async function (axisMap, errorMax) {
   const tickVals = _.range(xmin, xmax + 1, 1);
   const tickText = tickVals.map(String);
   layout.xaxis = {
-    title: "Year",
-    titlefont: {
-      size: 24,
-      color: "#000000",
+    title: {
+      text: "Year",
+      font: {
+        size: 24,
+        color: "#000000",
+      },
     },
     tickfont: {
       size: 18,
@@ -1101,10 +1127,12 @@ const generateYearToYearPlotOptions = async function (axisMap, errorMax) {
     axisLabel = axisMap[axisKey].axisLabel;
     let axisObjectKey;
     const axisObjectBegin = {
-      title: axisLabel,
-      titlefont: {
-        size: 24,
-        color: "#000000",
+      title: {
+        text: axisLabel,
+        font: {
+          size: 24,
+          color: "#000000",
+        },
       },
       tickfont: {
         size: 18,
@@ -1194,10 +1222,12 @@ const generateReliabilityPlotOptions = async function () {
 
   // x-axis options
   layout.xaxis = {
-    title: "Forecast Probability",
-    titlefont: {
-      size: 24,
-      color: "#000000",
+    title: {
+      text: "Forecast Probability",
+      font: {
+        size: 24,
+        color: "#000000",
+      },
     },
     tickfont: {
       size: 18,
@@ -1228,10 +1258,12 @@ const generateReliabilityPlotOptions = async function () {
 
   // y-axis options
   layout.yaxis = {
-    title: "Observed Relative Frequency",
-    titlefont: {
-      size: 24,
-      color: "#000000",
+    title: {
+      text: "Observed Relative Frequency",
+      font: {
+        size: 24,
+        color: "#000000",
+      },
     },
     tickfont: {
       size: 18,
@@ -1308,10 +1340,12 @@ const generateROCPlotOptions = async function () {
 
   // x-axis options
   layout.xaxis = {
-    title: "Probability of False Detection",
-    titlefont: {
-      size: 24,
-      color: "#000000",
+    title: {
+      text: "Probability of False Detection",
+      font: {
+        size: 24,
+        color: "#000000",
+      },
     },
     tickfont: {
       size: 18,
@@ -1342,10 +1376,12 @@ const generateROCPlotOptions = async function () {
 
   // y-axis options
   layout.yaxis = {
-    title: "Probability of Detection",
-    titlefont: {
-      size: 24,
-      color: "#000000",
+    title: {
+      text: "Probability of Detection",
+      font: {
+        size: 24,
+        color: "#000000",
+      },
     },
     tickfont: {
       size: 18,
@@ -1422,10 +1458,12 @@ const generatePerformanceDiagramPlotOptions = async function () {
 
   // x-axis options
   layout.xaxis = {
-    title: "Success Ratio (1-FAR)",
-    titlefont: {
-      size: 24,
-      color: "#000000",
+    title: {
+      text: "Success Ratio (1-FAR)",
+      font: {
+        size: 24,
+        color: "#000000",
+      },
     },
     tickfont: {
       size: 18,
@@ -1456,10 +1494,12 @@ const generatePerformanceDiagramPlotOptions = async function () {
 
   // y-axis options
   layout.yaxis = {
-    title: "Probability of Detection",
-    titlefont: {
-      size: 24,
-      color: "#000000",
+    title: {
+      text: "Probability of Detection",
+      font: {
+        size: 24,
+        color: "#000000",
+      },
     },
     tickfont: {
       size: 18,
@@ -1534,10 +1574,12 @@ const generateGridScaleProbPlotOptions = async function (axisMap) {
 
   // x-axis options
   layout.xaxis = {
-    title: "Probability Bin",
-    titlefont: {
-      size: 24,
-      color: "#000000",
+    title: {
+      text: "Probability Bin",
+      font: {
+        size: 24,
+        color: "#000000",
+      },
     },
     tickfont: {
       size: 18,
@@ -1554,10 +1596,12 @@ const generateGridScaleProbPlotOptions = async function (axisMap) {
 
   // x-axis options
   layout.yaxis = {
-    title: "Number of Grid Points",
-    titlefont: {
-      size: 24,
-      color: "#000000",
+    title: {
+      text: "Number of Grid Points",
+      font: {
+        size: 24,
+        color: "#000000",
+      },
     },
     tickfont: {
       size: 18,
@@ -1694,10 +1738,12 @@ const generateHistogramPlotOptions = async function (
   // x-axis options
   layout.xaxis = {
     // put units on the x-axis if we have them
-    title: varUnits !== undefined && varUnits.length > 0 ? `Bin (${varUnits})` : "Bin",
-    titlefont: {
-      size: 24,
-      color: "#000000",
+    title: {
+      text: varUnits !== undefined && varUnits.length > 0 ? `Bin (${varUnits})` : "Bin",
+      font: {
+        size: 24,
+        color: "#000000",
+      },
     },
     tickfont: {
       size: 14,
@@ -1716,10 +1762,12 @@ const generateHistogramPlotOptions = async function (
 
   // y-axis options
   layout.yaxis = {
-    title: axisLabel,
-    titlefont: {
-      size: 24,
-      color: "#000000",
+    title: {
+      text: axisLabel,
+      font: {
+        size: 24,
+        color: "#000000",
+      },
     },
     tickfont: {
       size: 18,
@@ -1795,10 +1843,12 @@ const generateEnsembleHistogramPlotOptions = async function (dataset, curves, ax
 
   // x-axis options
   layout.xaxis = {
-    title: "Bin",
-    titlefont: {
-      size: 24,
-      color: "#000000",
+    title: {
+      text: "Bin",
+      font: {
+        size: 24,
+        color: "#000000",
+      },
     },
     tickfont: {
       size: 14,
@@ -1817,10 +1867,12 @@ const generateEnsembleHistogramPlotOptions = async function (dataset, curves, ax
 
   // y-axis options
   layout.yaxis = {
-    title: axisLabel,
-    titlefont: {
-      size: 24,
-      color: "#000000",
+    title: {
+      text: axisLabel,
+      font: {
+        size: 24,
+        color: "#000000",
+      },
     },
     tickfont: {
       size: 18,
@@ -1884,10 +1936,12 @@ const generateContourPlotOptions = async function (dataset) {
 
   // x-axis options
   layout.xaxis = {
-    title: xAxisKey,
-    titlefont: {
-      size: 24,
-      color: "#000000",
+    title: {
+      text: xAxisKey,
+      font: {
+        size: 24,
+        color: "#000000",
+      },
     },
     tickfont: {
       size: 18,
@@ -1925,10 +1979,12 @@ const generateContourPlotOptions = async function (dataset) {
   // y-axis options
   if (yAxisKey === "Pressure level") {
     layout.yaxis = {
-      title: yAxisKey,
-      titlefont: {
-        size: 24,
-        color: "#000000",
+      title: {
+        text: yAxisKey,
+        font: {
+          size: 24,
+          color: "#000000",
+        },
       },
       tickfont: {
         size: 18,
@@ -1944,10 +2000,12 @@ const generateContourPlotOptions = async function (dataset) {
     };
   } else {
     layout.yaxis = {
-      title: yAxisKey,
-      titlefont: {
-        size: 24,
-        color: "#000000",
+      title: {
+        text: yAxisKey,
+        font: {
+          size: 24,
+          color: "#000000",
+        },
       },
       tickfont: {
         size: 18,
@@ -2062,10 +2120,12 @@ const generateScatterPlotOptions = async function (axisXMap, axisYMap) {
     axisLabel = axisXMap[axisKey].axisLabel;
     let axisObjectKey;
     const axisObjectBegin = {
-      title: axisLabel,
-      titlefont: {
-        size: 24,
-        color: "#000000",
+      title: {
+        text: axisLabel,
+        font: {
+          size: 24,
+          color: "#000000",
+        },
       },
       tickfont: {
         size: 18,
@@ -2114,10 +2174,12 @@ const generateScatterPlotOptions = async function (axisXMap, axisYMap) {
     axisLabel = axisYMap[axisKey].axisLabel;
     let axisObjectKey;
     const axisObjectBegin = {
-      title: axisLabel,
-      titlefont: {
-        size: 24,
-        color: "#000000",
+      title: {
+        text: axisLabel,
+        font: {
+          size: 24,
+          color: "#000000",
+        },
       },
       tickfont: {
         size: 18,

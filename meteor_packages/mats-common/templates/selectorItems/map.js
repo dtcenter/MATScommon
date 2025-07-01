@@ -13,7 +13,7 @@ Template.map.onRendered(function () {
   let targetElement; // save so the event handlers can talk to the two selectors
   const settings = matsCollections.Settings.findOne({});
 
-  $.getScript("https://cdn.plot.ly/plotly-latest.min.js", function () {
+  $.getScript("https://cdn.plot.ly/plotly-3.0.1.min.js", function () {
     let targetId = "";
     let peerName = "";
     let markers = [];

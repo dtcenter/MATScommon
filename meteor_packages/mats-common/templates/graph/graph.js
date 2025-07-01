@@ -180,7 +180,7 @@ Template.graph.helpers({
     // be the reality (the broader plotly_click and plotly_doubleclick work as expected, accurately
     // recognizing double clicks even if a single click handler exists). I'm going to add handlers
     // for both plotly_legendclick and plotly_legenddoubleclick anyway, in the hopes that they
-    // eventually fix this and it gets pushed to https://cdn.plot.ly/plotly-latest.min.js, but
+    // eventually fix this and it gets pushed to https://cdn.plot.ly/plotly-3.0.1.min.js, but
     // until then, the double click show/hide all curves functionality will not exist.
     $("#placeholder")[0].on("plotly_legendclick", function (data) {
       const resultDataset = matsCurveUtils.getGraphResult().data;
@@ -1136,9 +1136,10 @@ Template.graph.helpers({
     if (
       options !== undefined &&
       options[xAxisKey] !== undefined &&
-      options[xAxisKey].title !== undefined
+      options[xAxisKey].title !== undefined &&
+      options[xAxisKey].title.text !== undefined
     ) {
-      return options[xAxisKey].title;
+      return options[xAxisKey].title.text;
     }
     return "";
   },
@@ -1149,10 +1150,11 @@ Template.graph.helpers({
     if (
       options !== undefined &&
       options[xAxisKey] !== undefined &&
-      options[xAxisKey].titlefont !== undefined &&
-      options[xAxisKey].titlefont.size !== undefined
+      options[xAxisKey].title !== undefined &&
+      options[xAxisKey].title.font !== undefined &&
+      options[xAxisKey].title.font.size !== undefined
     ) {
-      return options[xAxisKey].titlefont.size;
+      return options[xAxisKey].title.font.size;
     }
     return "";
   },
@@ -1215,9 +1217,10 @@ Template.graph.helpers({
     if (
       options !== undefined &&
       options[yAxisKey] !== undefined &&
-      options[yAxisKey].title !== undefined
+      options[yAxisKey].title !== undefined &&
+      options[yAxisKey].title.text !== undefined
     ) {
-      return options[yAxisKey].title;
+      return options[yAxisKey].title.text;
     }
     return "";
   },
@@ -1228,10 +1231,11 @@ Template.graph.helpers({
     if (
       options !== undefined &&
       options[yAxisKey] !== undefined &&
-      options[yAxisKey].titlefont !== undefined &&
-      options[yAxisKey].titlefont.size !== undefined
+      options[yAxisKey].title !== undefined &&
+      options[yAxisKey].title.font !== undefined &&
+      options[yAxisKey].title.font.size !== undefined
     ) {
-      return options[yAxisKey].titlefont.size;
+      return options[yAxisKey].title.font.size;
     }
     return "";
   },
@@ -1581,14 +1585,14 @@ Template.graph.events({
           for (xidx = 0; xidx < xAxes.length; xidx += 1) {
             newAxisLabel =
               newAxisLabel === ""
-                ? options[xAxes[xidx]].title
-                : `${newAxisLabel}/${options[xAxes[xidx]].title}`;
+                ? options[xAxes[xidx]].title.text
+                : `${newAxisLabel}/${options[xAxes[xidx]].title.text}`;
             min =
               options[xAxes[xidx]].range[0] < min ? options[xAxes[xidx]].range[0] : min;
             max =
               options[xAxes[xidx]].range[1] > max ? options[xAxes[xidx]].range[1] : max;
           }
-          newOpts["xaxis.title"] = newAxisLabel;
+          newOpts["xaxis.title.text"] = newAxisLabel;
           newOpts["xaxis.range[0]"] = min - (max - min) * 0.125;
           newOpts["xaxis.range[1]"] = max + (max - min) * 0.125;
         }
@@ -1597,14 +1601,14 @@ Template.graph.events({
           for (yidx = 0; yidx < yAxes.length; yidx += 1) {
             newAxisLabel =
               newAxisLabel === ""
-                ? options[yAxes[yidx]].title
-                : `${newAxisLabel}/${options[yAxes[yidx]].title}`;
+                ? options[yAxes[yidx]].title.text
+                : `${newAxisLabel}/${options[yAxes[yidx]].title.text}`;
             min =
               options[yAxes[yidx]].range[0] < min ? options[yAxes[yidx]].range[0] : min;
             max =
               options[yAxes[yidx]].range[1] > max ? options[yAxes[yidx]].range[1] : max;
           }
-          newOpts["yaxis.title"] = newAxisLabel;
+          newOpts["yaxis.title.text"] = newAxisLabel;
           newOpts["yaxis.range[0]"] = min - (max - min) * 0.125;
           newOpts["yaxis.range[1]"] = max + (max - min) * 0.125;
         }
@@ -1640,14 +1644,14 @@ Template.graph.events({
           plotType === matsTypes.PlotTypes.simpleScatter
         ) {
           for (xidx = 0; xidx < xAxes.length; xidx += 1) {
-            newOpts[`${xAxes[xidx]}.title`] = options[xAxes[xidx]].title;
+            newOpts[`${xAxes[xidx]}.title.text`] = options[xAxes[xidx]].title.text;
             [newOpts[`${xAxes[xidx]}.range[0]`]] = options[xAxes[xidx]].range;
             [, newOpts[`${xAxes[xidx]}.range[1]`]] = options[xAxes[xidx]].range;
           }
         }
         if (plotType !== matsTypes.PlotTypes.profile) {
           for (yidx = 0; yidx < yAxes.length; yidx += 1) {
-            newOpts[`${yAxes[yidx]}.title`] = options[yAxes[yidx]].title;
+            newOpts[`${yAxes[yidx]}.title.text`] = options[yAxes[yidx]].title.text;
             [newOpts[`${yAxes[yidx]}.range[0]`]] = options[yAxes[yidx]].range;
             [, newOpts[`${yAxes[yidx]}.range[1]`]] = options[yAxes[yidx]].range;
           }
@@ -2363,7 +2367,7 @@ Template.graph.events({
         if (elem.value !== undefined && elem.value !== "") {
           if (!axesCollapsed || index === 0) {
             // if we've collapsed the axes we only want to process the first one
-            newOpts[`xaxis${index === 0 ? "" : index + 1}.title`] = elem.value;
+            newOpts[`xaxis${index === 0 ? "" : index + 1}.title.text`] = elem.value;
           }
         }
       });
@@ -2373,7 +2377,8 @@ Template.graph.events({
         if (elem.value !== undefined && elem.value !== "") {
           if (!axesCollapsed || index === 0) {
             // if we've collapsed the axes we only want to process the first one
-            newOpts[`xaxis${index === 0 ? "" : index + 1}.titlefont.size`] = elem.value;
+            newOpts[`xaxis${index === 0 ? "" : index + 1}.title.font.size`] =
+              elem.value;
           }
         }
       });
@@ -2469,7 +2474,7 @@ Template.graph.events({
         if (elem.value !== undefined && elem.value !== "") {
           if (!axesCollapsed || index === 0) {
             // if we've collapsed the axes we only want to process the first one
-            newOpts[`yaxis${index === 0 ? "" : index + 1}.title`] = elem.value;
+            newOpts[`yaxis${index === 0 ? "" : index + 1}.title.text`] = elem.value;
           }
         }
       });
@@ -2479,7 +2484,8 @@ Template.graph.events({
         if (elem.value !== undefined && elem.value !== "") {
           if (!axesCollapsed || index === 0) {
             // if we've collapsed the axes we only want to process the first one
-            newOpts[`yaxis${index === 0 ? "" : index + 1}.titlefont.size`] = elem.value;
+            newOpts[`yaxis${index === 0 ? "" : index + 1}.title.font.size`] =
+              elem.value;
           }
         }
       });
