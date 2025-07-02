@@ -936,11 +936,13 @@ const generateContourCurveOptions = async function (
       colorscale, // bias uses the diff colormap
       reversescale: false,
       colorbar: {
-        title: unitKey,
-        titleside: "right",
-        titlefont: {
-          size: 20,
-          family: "Arial, sans-serif",
+        title: {
+          text: unitKey,
+          side: "right",
+          font: {
+            size: 20,
+            family: "Arial, sans-serif",
+          },
         },
       },
       connectgaps: appParams.hideGaps, // this option will interpolate to fill in nulls

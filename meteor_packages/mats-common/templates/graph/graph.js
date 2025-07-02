@@ -80,7 +80,7 @@ Template.graph.helpers({
         Session.set("colorbarResetOpts", {
           name: dataset[0].name,
           showlegend: dataset[0].showlegend,
-          "colorbar.title": dataset[0].colorbar.title,
+          "colorbar.title.text": dataset[0].colorbar.title.text,
           autocontour: dataset[0].autocontour,
           ncontours: dataset[0].ncontours,
           "contours.start": dataset[0].contours.start,
@@ -679,6 +679,30 @@ Template.graph.helpers({
   },
   color() {
     return this.color;
+  },
+  colorbarTitle() {
+    Session.get("PlotResultsUpDated");
+    const dataset = matsCurveUtils.getGraphResult().data;
+    if (dataset) return dataset[0].colorbar.title.text;
+    return "";
+  },
+  colorbarMin() {
+    Session.get("PlotResultsUpDated");
+    const dataset = matsCurveUtils.getGraphResult().data;
+    if (dataset) return dataset[0].contours.start;
+    return "";
+  },
+  colorbarMax() {
+    Session.get("PlotResultsUpDated");
+    const dataset = matsCurveUtils.getGraphResult().data;
+    if (dataset) return dataset[0].contours.end;
+    return "";
+  },
+  colorbarStep() {
+    Session.get("PlotResultsUpDated");
+    const dataset = matsCurveUtils.getGraphResult().data;
+    if (dataset) return dataset[0].contours.size;
+    return "";
   },
   xAxes() {
     Session.get("PlotResultsUpDated");
@@ -2995,9 +3019,7 @@ Template.graph.events({
       // eslint-disable-next-line no-unused-vars
       .forEach(function (elem, index) {
         if (elem.value !== undefined && elem.value !== "") {
-          update["colorbar.title"] = elem.value;
-          update["colorbar.titleside"] = "right";
-          update["colorbar.titlefont"] = { size: 16, family: "Arial, sans-serif" };
+          update["colorbar.title.text"] = elem.value;
         }
       });
     $("input[id=colorbarMin]")
