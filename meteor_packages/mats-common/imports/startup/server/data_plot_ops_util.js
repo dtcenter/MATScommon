@@ -45,9 +45,10 @@ const generateSeriesPlotOptions = async function (axisMap, errorMax) {
       },
     },
     legend: {
-      orientation: "h",
       x: 0,
       y: 1,
+      xanchor: "left",
+      yanchor: "top",
       font: {
         size: 12,
         color: "#000000",
@@ -203,9 +204,10 @@ const generateProfilePlotOptions = async function (axisMap, errorMax) {
       },
     },
     legend: {
-      orientation: "h",
       x: 0,
       y: 1.2,
+      xanchor: "left",
+      yanchor: "top",
       font: {
         size: 12,
         color: "#000000",
@@ -375,9 +377,10 @@ const generateDieoffPlotOptions = async function (axisMap, errorMax) {
       },
     },
     legend: {
-      orientation: "h",
       x: 0,
       y: 1,
+      xanchor: "left",
+      yanchor: "top",
       font: {
         size: 12,
         color: "#000000",
@@ -557,9 +560,10 @@ const generateThresholdPlotOptions = async function (dataset, axisMap, errorMax)
       },
     },
     legend: {
-      orientation: "h",
       x: 0,
       y: 1,
+      xanchor: "left",
+      yanchor: "top",
       font: {
         size: 12,
         color: "#000000",
@@ -711,9 +715,10 @@ const generateValidTimePlotOptions = async function (axisMap, errorMax) {
       },
     },
     legend: {
-      orientation: "h",
       x: 0,
       y: 1,
+      xanchor: "left",
+      yanchor: "top",
       font: {
         size: 12,
         color: "#000000",
@@ -899,9 +904,10 @@ const generateGridScalePlotOptions = async function (axisMap, errorMax) {
       },
     },
     legend: {
-      orientation: "h",
       x: 0,
       y: 1,
+      xanchor: "left",
+      yanchor: "top",
       font: {
         size: 12,
         color: "#000000",
@@ -1051,9 +1057,10 @@ const generateYearToYearPlotOptions = async function (axisMap, errorMax) {
       },
     },
     legend: {
-      orientation: "h",
       x: 0,
       y: 1,
+      xanchor: "left",
+      yanchor: "top",
       font: {
         size: 12,
         color: "#000000",
@@ -1210,9 +1217,10 @@ const generateReliabilityPlotOptions = async function () {
       },
     },
     legend: {
-      orientation: "h",
       x: 0,
       y: 1.2,
+      xanchor: "left",
+      yanchor: "top",
       font: {
         size: 12,
         color: "#000000",
@@ -1328,9 +1336,10 @@ const generateROCPlotOptions = async function () {
       },
     },
     legend: {
-      orientation: "h",
       x: 0,
       y: 1.2,
+      xanchor: "left",
+      yanchor: "top",
       font: {
         size: 12,
         color: "#000000",
@@ -1446,9 +1455,10 @@ const generatePerformanceDiagramPlotOptions = async function () {
       },
     },
     legend: {
-      orientation: "h",
       x: 0,
       y: 1.2,
+      xanchor: "left",
+      yanchor: "top",
       font: {
         size: 12,
         color: "#000000",
@@ -1562,9 +1572,10 @@ const generateGridScaleProbPlotOptions = async function (axisMap) {
       },
     },
     legend: {
-      orientation: "h",
       x: 0,
       y: 1,
+      xanchor: "left",
+      yanchor: "top",
       font: {
         size: 12,
         color: "#000000",
@@ -1663,9 +1674,10 @@ const generateMapPlotOptions = async function (extraLegendSpace) {
       pad: 4,
     },
     legend: {
-      orientation: "h",
       x: 0,
       y: extraLegendSpace ? 1.13 : 1.07,
+      xanchor: "left",
+      yanchor: "top",
       font: {
         size: 14,
         color: "#000000",
@@ -1725,9 +1737,10 @@ const generateHistogramPlotOptions = async function (
       },
     },
     legend: {
-      orientation: "h",
       x: 0,
       y: 1,
+      xanchor: "left",
+      yanchor: "top",
       font: {
         size: 12,
         color: "#000000",
@@ -1831,9 +1844,10 @@ const generateEnsembleHistogramPlotOptions = async function (dataset, curves, ax
       },
     },
     legend: {
-      orientation: "h",
       x: 0,
       y: 1,
+      xanchor: "left",
+      yanchor: "top",
       font: {
         size: 12,
         color: "#000000",
@@ -1924,9 +1938,10 @@ const generateContourPlotOptions = async function (dataset) {
       },
     },
     legend: {
-      orientation: "h",
       x: 0,
       y: 1.09,
+      xanchor: "left",
+      yanchor: "top",
       font: {
         size: 12,
         color: "#000000",
@@ -2074,9 +2089,10 @@ const generateScatterPlotOptions = async function (axisXMap, axisYMap) {
       },
     },
     legend: {
-      orientation: "h",
       x: 0,
       y: 1.2,
+      xanchor: "left",
+      yanchor: "top",
       font: {
         size: 12,
         color: "#000000",

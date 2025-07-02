@@ -2813,7 +2813,7 @@ Template.graph.events({
   "click #legendTextSubmit"(event) {
     event.preventDefault();
     const updates = [];
-    // get input line style change
+    // get input legend text change
     $("[id$=LegendText]")
       .get()
       .forEach(function (elem, index) {
@@ -2833,6 +2833,34 @@ Template.graph.events({
         curveOpsUpdate[uidx] === undefined ? {} : curveOpsUpdate[uidx];
       curveOpsUpdate[uidx].name = updates[uidx].name;
     }
+
+    // get input legend position change
+    const options = Session.get("options");
+    const newOpts = {};
+    const legendPosition = document.getElementById("legendPositionSelect").value;
+    if (legendPosition === "TL") {
+      newOpts["legend.x"] = 0;
+      newOpts["legend.y"] = options.legend.y;
+      newOpts["legend.xanchor"] = "left";
+      newOpts["legend.yanchor"] = "top";
+    } else if (legendPosition === "TR") {
+      newOpts["legend.x"] = 1;
+      newOpts["legend.y"] = options.legend.y;
+      newOpts["legend.xanchor"] = "right";
+      newOpts["legend.yanchor"] = "top";
+    } else if (legendPosition === "BL") {
+      newOpts["legend.x"] = 0;
+      newOpts["legend.y"] = 0;
+      newOpts["legend.xanchor"] = "left";
+      newOpts["legend.yanchor"] = "bottom";
+    } else {
+      newOpts["legend.x"] = 1;
+      newOpts["legend.y"] = 0;
+      newOpts["legend.xanchor"] = "right";
+      newOpts["legend.yanchor"] = "bottom";
+    }
+    Plotly.relayout($("#placeholder")[0], newOpts);
+
     $("#legendTextModal").modal("hide");
   },
   // add filter points modal submit button
