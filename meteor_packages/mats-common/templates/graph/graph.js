@@ -2497,6 +2497,20 @@ Template.graph.events({
             }
           }
         });
+      $("input[id^=x][id$=TickInterval]")
+        .get()
+        .forEach(function (elem, index) {
+          if (elem.value !== undefined && elem.value !== "") {
+            if (!axesCollapsed || index === 0) {
+              // if we've collapsed the axes we only want to process the first one
+              if (!matsMethods.isThisANaN(elem.value)) {
+                newOpts[`xaxis${index === 0 ? "" : index + 1}.dtick`] = Number(
+                  elem.value
+                );
+              }
+            }
+          }
+        });
     }
     $("input[id^=y][id$=AxisLabel]")
       .get()
@@ -2611,6 +2625,20 @@ Template.graph.events({
                 newOpts[
                   `yaxis${index === 0 ? "" : index + 1}.tickformat`
                 ] = `.${elem.value.toString()}r`;
+              }
+            }
+          }
+        });
+      $("input[id^=y][id$=TickInterval]")
+        .get()
+        .forEach(function (elem, index) {
+          if (elem.value !== undefined && elem.value !== "") {
+            if (!axesCollapsed || index === 0) {
+              // if we've collapsed the axes we only want to process the first one
+              if (!matsMethods.isThisANaN(elem.value)) {
+                newOpts[`yaxis${index === 0 ? "" : index + 1}.dtick`] = Number(
+                  elem.value
+                );
               }
             }
           }
