@@ -48,7 +48,10 @@ Template.graph.onCreated(function () {
     const dataset = matsCurveUtils.getGraphResult().data;
     const { options } = matsCurveUtils.getGraphResult();
     if (dataset !== undefined && options !== undefined) {
-      Plotly.newPlot($("#placeholder")[0], dataset, options, { showLink: true });
+      Plotly.newPlot($("#placeholder")[0], dataset, options, {
+        showLink: false,
+        scrollZoom: true,
+      });
     }
   });
 });
@@ -77,7 +80,7 @@ Template.graph.helpers({
         Session.set("colorbarResetOpts", {
           name: dataset[0].name,
           showlegend: dataset[0].showlegend,
-          "colorbar.title": dataset[0].colorbar.title,
+          "colorbar.title.text": dataset[0].colorbar.title.text,
           autocontour: dataset[0].autocontour,
           ncontours: dataset[0].ncontours,
           "contours.start": dataset[0].contours.start,
@@ -170,7 +173,10 @@ Template.graph.helpers({
     if (!dataset || !options) {
       return false;
     }
-    Plotly.newPlot($("#placeholder")[0], dataset, options, { showLink: true });
+    Plotly.newPlot($("#placeholder")[0], dataset, options, {
+      showLink: false,
+      scrollZoom: true,
+    });
     matsGraphUtils.setGraphView(plotType);
 
     // there seems to be a bug in the plotly API, where if you have a handler for plotly_legendclick,
@@ -180,7 +186,7 @@ Template.graph.helpers({
     // be the reality (the broader plotly_click and plotly_doubleclick work as expected, accurately
     // recognizing double clicks even if a single click handler exists). I'm going to add handlers
     // for both plotly_legendclick and plotly_legenddoubleclick anyway, in the hopes that they
-    // eventually fix this and it gets pushed to https://cdn.plot.ly/plotly-latest.min.js, but
+    // eventually fix this and it gets pushed to https://cdn.plot.ly/plotly-3.0.1.min.js, but
     // until then, the double click show/hide all curves functionality will not exist.
     $("#placeholder")[0].on("plotly_legendclick", function (data) {
       const resultDataset = matsCurveUtils.getGraphResult().data;
@@ -674,6 +680,30 @@ Template.graph.helpers({
   color() {
     return this.color;
   },
+  colorbarTitle() {
+    Session.get("PlotResultsUpDated");
+    const dataset = matsCurveUtils.getGraphResult().data;
+    if (dataset) return dataset[0].colorbar.title.text;
+    return "";
+  },
+  colorbarMin() {
+    Session.get("PlotResultsUpDated");
+    const dataset = matsCurveUtils.getGraphResult().data;
+    if (dataset) return dataset[0].contours.start;
+    return "";
+  },
+  colorbarMax() {
+    Session.get("PlotResultsUpDated");
+    const dataset = matsCurveUtils.getGraphResult().data;
+    if (dataset) return dataset[0].contours.end;
+    return "";
+  },
+  colorbarStep() {
+    Session.get("PlotResultsUpDated");
+    const dataset = matsCurveUtils.getGraphResult().data;
+    if (dataset) return dataset[0].contours.size;
+    return "";
+  },
   xAxes() {
     Session.get("PlotResultsUpDated");
     const plotType = Session.get("plotType");
@@ -1136,9 +1166,10 @@ Template.graph.helpers({
     if (
       options !== undefined &&
       options[xAxisKey] !== undefined &&
-      options[xAxisKey].title !== undefined
+      options[xAxisKey].title !== undefined &&
+      options[xAxisKey].title.text !== undefined
     ) {
-      return options[xAxisKey].title;
+      return options[xAxisKey].title.text;
     }
     return "";
   },
@@ -1149,10 +1180,11 @@ Template.graph.helpers({
     if (
       options !== undefined &&
       options[xAxisKey] !== undefined &&
-      options[xAxisKey].titlefont !== undefined &&
-      options[xAxisKey].titlefont.size !== undefined
+      options[xAxisKey].title !== undefined &&
+      options[xAxisKey].title.font !== undefined &&
+      options[xAxisKey].title.font.size !== undefined
     ) {
-      return options[xAxisKey].titlefont.size;
+      return options[xAxisKey].title.font.size;
     }
     return "";
   },
@@ -1215,9 +1247,10 @@ Template.graph.helpers({
     if (
       options !== undefined &&
       options[yAxisKey] !== undefined &&
-      options[yAxisKey].title !== undefined
+      options[yAxisKey].title !== undefined &&
+      options[yAxisKey].title.text !== undefined
     ) {
-      return options[yAxisKey].title;
+      return options[yAxisKey].title.text;
     }
     return "";
   },
@@ -1228,10 +1261,11 @@ Template.graph.helpers({
     if (
       options !== undefined &&
       options[yAxisKey] !== undefined &&
-      options[yAxisKey].titlefont !== undefined &&
-      options[yAxisKey].titlefont.size !== undefined
+      options[yAxisKey].title !== undefined &&
+      options[yAxisKey].title.font !== undefined &&
+      options[yAxisKey].title.font.size !== undefined
     ) {
-      return options[yAxisKey].titlefont.size;
+      return options[yAxisKey].title.font.size;
     }
     return "";
   },
@@ -1581,14 +1615,14 @@ Template.graph.events({
           for (xidx = 0; xidx < xAxes.length; xidx += 1) {
             newAxisLabel =
               newAxisLabel === ""
-                ? options[xAxes[xidx]].title
-                : `${newAxisLabel}/${options[xAxes[xidx]].title}`;
+                ? options[xAxes[xidx]].title.text
+                : `${newAxisLabel}/${options[xAxes[xidx]].title.text}`;
             min =
               options[xAxes[xidx]].range[0] < min ? options[xAxes[xidx]].range[0] : min;
             max =
               options[xAxes[xidx]].range[1] > max ? options[xAxes[xidx]].range[1] : max;
           }
-          newOpts["xaxis.title"] = newAxisLabel;
+          newOpts["xaxis.title.text"] = newAxisLabel;
           newOpts["xaxis.range[0]"] = min - (max - min) * 0.125;
           newOpts["xaxis.range[1]"] = max + (max - min) * 0.125;
         }
@@ -1597,14 +1631,14 @@ Template.graph.events({
           for (yidx = 0; yidx < yAxes.length; yidx += 1) {
             newAxisLabel =
               newAxisLabel === ""
-                ? options[yAxes[yidx]].title
-                : `${newAxisLabel}/${options[yAxes[yidx]].title}`;
+                ? options[yAxes[yidx]].title.text
+                : `${newAxisLabel}/${options[yAxes[yidx]].title.text}`;
             min =
               options[yAxes[yidx]].range[0] < min ? options[yAxes[yidx]].range[0] : min;
             max =
               options[yAxes[yidx]].range[1] > max ? options[yAxes[yidx]].range[1] : max;
           }
-          newOpts["yaxis.title"] = newAxisLabel;
+          newOpts["yaxis.title.text"] = newAxisLabel;
           newOpts["yaxis.range[0]"] = min - (max - min) * 0.125;
           newOpts["yaxis.range[1]"] = max + (max - min) * 0.125;
         }
@@ -1640,14 +1674,14 @@ Template.graph.events({
           plotType === matsTypes.PlotTypes.simpleScatter
         ) {
           for (xidx = 0; xidx < xAxes.length; xidx += 1) {
-            newOpts[`${xAxes[xidx]}.title`] = options[xAxes[xidx]].title;
+            newOpts[`${xAxes[xidx]}.title.text`] = options[xAxes[xidx]].title.text;
             [newOpts[`${xAxes[xidx]}.range[0]`]] = options[xAxes[xidx]].range;
             [, newOpts[`${xAxes[xidx]}.range[1]`]] = options[xAxes[xidx]].range;
           }
         }
         if (plotType !== matsTypes.PlotTypes.profile) {
           for (yidx = 0; yidx < yAxes.length; yidx += 1) {
-            newOpts[`${yAxes[yidx]}.title`] = options[yAxes[yidx]].title;
+            newOpts[`${yAxes[yidx]}.title.text`] = options[yAxes[yidx]].title.text;
             [newOpts[`${yAxes[yidx]}.range[0]`]] = options[yAxes[yidx]].range;
             [, newOpts[`${yAxes[yidx]}.range[1]`]] = options[yAxes[yidx]].range;
           }
@@ -2363,7 +2397,7 @@ Template.graph.events({
         if (elem.value !== undefined && elem.value !== "") {
           if (!axesCollapsed || index === 0) {
             // if we've collapsed the axes we only want to process the first one
-            newOpts[`xaxis${index === 0 ? "" : index + 1}.title`] = elem.value;
+            newOpts[`xaxis${index === 0 ? "" : index + 1}.title.text`] = elem.value;
           }
         }
       });
@@ -2373,7 +2407,8 @@ Template.graph.events({
         if (elem.value !== undefined && elem.value !== "") {
           if (!axesCollapsed || index === 0) {
             // if we've collapsed the axes we only want to process the first one
-            newOpts[`xaxis${index === 0 ? "" : index + 1}.titlefont.size`] = elem.value;
+            newOpts[`xaxis${index === 0 ? "" : index + 1}.title.font.size`] =
+              elem.value;
           }
         }
       });
@@ -2462,6 +2497,20 @@ Template.graph.events({
             }
           }
         });
+      $("input[id^=x][id$=TickInterval]")
+        .get()
+        .forEach(function (elem, index) {
+          if (elem.value !== undefined && elem.value !== "") {
+            if (!axesCollapsed || index === 0) {
+              // if we've collapsed the axes we only want to process the first one
+              if (!matsMethods.isThisANaN(elem.value)) {
+                newOpts[`xaxis${index === 0 ? "" : index + 1}.dtick`] = Number(
+                  elem.value
+                );
+              }
+            }
+          }
+        });
     }
     $("input[id^=y][id$=AxisLabel]")
       .get()
@@ -2469,7 +2518,7 @@ Template.graph.events({
         if (elem.value !== undefined && elem.value !== "") {
           if (!axesCollapsed || index === 0) {
             // if we've collapsed the axes we only want to process the first one
-            newOpts[`yaxis${index === 0 ? "" : index + 1}.title`] = elem.value;
+            newOpts[`yaxis${index === 0 ? "" : index + 1}.title.text`] = elem.value;
           }
         }
       });
@@ -2479,7 +2528,8 @@ Template.graph.events({
         if (elem.value !== undefined && elem.value !== "") {
           if (!axesCollapsed || index === 0) {
             // if we've collapsed the axes we only want to process the first one
-            newOpts[`yaxis${index === 0 ? "" : index + 1}.titlefont.size`] = elem.value;
+            newOpts[`yaxis${index === 0 ? "" : index + 1}.title.font.size`] =
+              elem.value;
           }
         }
       });
@@ -2575,6 +2625,20 @@ Template.graph.events({
                 newOpts[
                   `yaxis${index === 0 ? "" : index + 1}.tickformat`
                 ] = `.${elem.value.toString()}r`;
+              }
+            }
+          }
+        });
+      $("input[id^=y][id$=TickInterval]")
+        .get()
+        .forEach(function (elem, index) {
+          if (elem.value !== undefined && elem.value !== "") {
+            if (!axesCollapsed || index === 0) {
+              // if we've collapsed the axes we only want to process the first one
+              if (!matsMethods.isThisANaN(elem.value)) {
+                newOpts[`yaxis${index === 0 ? "" : index + 1}.dtick`] = Number(
+                  elem.value
+                );
               }
             }
           }
@@ -2777,7 +2841,7 @@ Template.graph.events({
   "click #legendTextSubmit"(event) {
     event.preventDefault();
     const updates = [];
-    // get input line style change
+    // get input legend text change
     $("[id$=LegendText]")
       .get()
       .forEach(function (elem, index) {
@@ -2797,6 +2861,34 @@ Template.graph.events({
         curveOpsUpdate[uidx] === undefined ? {} : curveOpsUpdate[uidx];
       curveOpsUpdate[uidx].name = updates[uidx].name;
     }
+
+    // get input legend position change
+    const options = Session.get("options");
+    const newOpts = {};
+    const legendPosition = document.getElementById("legendPositionSelect").value;
+    if (legendPosition === "TL") {
+      newOpts["legend.x"] = 0;
+      newOpts["legend.y"] = options.legend.y;
+      newOpts["legend.xanchor"] = "left";
+      newOpts["legend.yanchor"] = "top";
+    } else if (legendPosition === "TR") {
+      newOpts["legend.x"] = 1;
+      newOpts["legend.y"] = options.legend.y;
+      newOpts["legend.xanchor"] = "right";
+      newOpts["legend.yanchor"] = "top";
+    } else if (legendPosition === "BL") {
+      newOpts["legend.x"] = 0;
+      newOpts["legend.y"] = 0;
+      newOpts["legend.xanchor"] = "left";
+      newOpts["legend.yanchor"] = "bottom";
+    } else {
+      newOpts["legend.x"] = 1;
+      newOpts["legend.y"] = 0;
+      newOpts["legend.xanchor"] = "right";
+      newOpts["legend.yanchor"] = "bottom";
+    }
+    Plotly.relayout($("#placeholder")[0], newOpts);
+
     $("#legendTextModal").modal("hide");
   },
   // add filter points modal submit button
@@ -2983,9 +3075,7 @@ Template.graph.events({
       // eslint-disable-next-line no-unused-vars
       .forEach(function (elem, index) {
         if (elem.value !== undefined && elem.value !== "") {
-          update["colorbar.title"] = elem.value;
-          update["colorbar.titleside"] = "right";
-          update["colorbar.titlefont"] = { size: 16, family: "Arial, sans-serif" };
+          update["colorbar.title.text"] = elem.value;
         }
       });
     $("input[id=colorbarMin]")

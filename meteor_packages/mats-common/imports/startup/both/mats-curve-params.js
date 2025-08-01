@@ -301,6 +301,7 @@ export const curveParamsByApp = {
   ],
   precipGauge: [
     "label",
+    "region-type",
     "data-source",
     "region",
     "statistic",
@@ -311,6 +312,8 @@ export const curveParamsByApp = {
     "valid-time",
     "utc-cycle-start",
     "average",
+    "sites",
+    "sitesMap",
     "bin-parameter",
     "curve-dates",
   ],
