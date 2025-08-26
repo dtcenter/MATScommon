@@ -17,7 +17,6 @@ import "./graphStandAlone.html";
 /* global Session, Plotly, $, setError */
 /* eslint-disable no-console */
 
-const { jsPDF: JsPDF } = require("jspdf");
 const html2canvas = require("html2canvas");
 
 let resizeOptions;
@@ -239,30 +238,6 @@ Template.graphStandAlone.helpers({
 });
 
 Template.graphStandAlone.events({
-  "click .exportpdf"() {
-    $(".previewCurveButtons").each(function (i, obj) {
-      // eslint-disable-next-line no-param-reassign
-      obj.style.display = "none";
-    });
-    html2canvas(document.querySelector("#graph-container"), { scale: 3.0 }).then(
-      (canvas) => {
-        const h = 419.53;
-        const w = 595.28;
-        const filename = document.getElementById("exportFileName").value;
-        const pdf = new JsPDF({
-          orientation: "landscape",
-          unit: "pt",
-          format: [w, h],
-        });
-        pdf.addImage(canvas.toDataURL("image/jpeg"), "JPEG", 0, 0, w, h);
-        pdf.save(filename);
-        $(".previewCurveButtons").each(function (i, obj) {
-          // eslint-disable-next-line no-param-reassign
-          obj.style.display = "block";
-        });
-      }
-    );
-  },
   "click .exportpng"() {
     $(".previewCurveButtons").each(function (i, obj) {
       // eslint-disable-next-line no-param-reassign
