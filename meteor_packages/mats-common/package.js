@@ -20,19 +20,19 @@ Package.onUse(function (api) {
   api.versionsFrom("3.3");
   Npm.depends({
     "@fortawesome/fontawesome-free": "6.7.2",
-    "fs-extra": "11.3.0",
-    "@babel/runtime": "7.27.6",
-    "meteor-node-stubs": "1.2.21",
+    "fs-extra": "11.3.1",
+    "@babel/runtime": "7.28.3",
+    "meteor-node-stubs": "1.2.22",
     url: "0.11.4",
     jquery: "3.7.1",
     "jquery-ui": "1.14.1",
-    "datatables.net-bs": "2.3.2",
-    "datatables.net-dt": "2.3.2",
-    "csv-stringify": "6.5.2",
+    "datatables.net-bs": "2.3.3",
+    "datatables.net-dt": "2.3.3",
+    "csv-stringify": "6.6.0",
     "node-file-cache": "1.0.2",
     "python-shell": "5.0.0",
     couchbase: "4.5.0",
-    mysql2: "3.14.1",
+    mysql2: "3.14.3",
     "vanillajs-datepicker": "1.3.4",
     daterangepicker: "3.1.0",
     "lighten-darken-color": "1.0.0",
@@ -54,8 +54,6 @@ Package.onUse(function (api) {
   api.use("session");
   api.imply("session");
   api.use("webapp");
-  api.use("twbs:bootstrap");
-  api.use("risul:bootstrap-colorpicker");
   api.use("logging");
   api.use("reload");
   api.use("random");
