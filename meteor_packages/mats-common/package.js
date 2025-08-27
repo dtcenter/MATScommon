@@ -46,6 +46,7 @@ Package.onUse(function (api) {
     "csv-stringify": "6.6.0",
 
     // dates
+    moment: "2.30.1",
     daterangepicker: "3.1.0",
     "vanillajs-datepicker": "1.3.4",
 
