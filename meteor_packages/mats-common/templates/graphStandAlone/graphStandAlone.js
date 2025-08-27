@@ -11,7 +11,7 @@ import {
 } from "meteor/randyp:mats-common";
 import { Template } from "meteor/templating";
 import { FlowRouter } from "meteor/ostrio:flow-router-extra";
-import { moment } from "meteor/momentjs:moment";
+import moment from "moment";
 import "./graphStandAlone.html";
 
 /* global Session, Plotly, $, setError */

@@ -6,7 +6,7 @@
 
 Package.describe({
   name: "randyp:mats-common",
-  version: "6.1.4",
+  version: "6.2.0",
   // Brief, one-line summary of the package.
   summary: "MATScommon files provides common functionality for MATS/METexpress apps",
   // URL to the Git repository containing the source code for this package.
@@ -19,52 +19,67 @@ Package.describe({
 Package.onUse(function (api) {
   api.versionsFrom("3.3");
   Npm.depends({
-    "@fortawesome/fontawesome-free": "6.7.2",
-    "fs-extra": "11.3.1",
-    "@babel/runtime": "7.28.3",
+    // ******* npm packages
+
+    // core functionality packages
     "meteor-node-stubs": "1.2.22",
-    url: "0.11.4",
-    jquery: "3.7.1",
-    "jquery-ui": "1.14.1",
-    "datatables.net-bs": "2.3.3",
-    "datatables.net-dt": "2.3.3",
-    "csv-stringify": "6.6.0",
-    "node-file-cache": "1.0.2",
+    "fs-extra": "11.3.1",
+
+    // things to do with querying
     "python-shell": "5.0.0",
     couchbase: "4.5.0",
     mysql2: "3.14.3",
-    "vanillajs-datepicker": "1.3.4",
+    url: "0.11.4",
+
+    // things to do with downsizing and caching data
+    "node-file-cache": "1.0.2",
+    "downsample-lttb": "0.0.1",
+    "object-hash": "3.0.0",
+    "object-sizeof": "2.6.5",
+
+    // data tables for scorecard
+    "datatables.net-bs": "2.3.3",
+    "datatables.net-dt": "2.3.3",
+
+    // saving to png or csv files
+    html2canvas: "1.4.1",
+    "csv-stringify": "6.6.0",
+
+    // dates
     daterangepicker: "3.1.0",
+    "vanillajs-datepicker": "1.3.4",
+
+    // make things pretty
     "lighten-darken-color": "1.0.0",
     "rgb-hex": "4.1.0",
   });
   api.mainModule("server/main.js", "server");
   api.mainModule("client/main.js", "client");
 
-  // meteor packages
-  api.use("natestrauser:select2", "client");
-  api.use("mdg:validated-method");
-  api.use("ecmascript");
-  api.use("modules");
-  api.imply("ecmascript");
-  api.use(["templating"], "client");
-  api.use("service-configuration", "server");
-  api.use("yasinuslu:json-view", "client");
-  api.use("mdg:validated-method");
+  // ******* meteor packages
+
+  // core meteor packages
+  api.use("webapp");
   api.use("session");
   api.imply("session");
-  api.use("webapp");
+  api.use("reactive-var");
+  api.use(["templating"], "client");
+  api.use("ecmascript");
+  api.imply("ecmascript");
   api.use("logging");
   api.use("reload");
   api.use("random");
   api.use("ejson");
   api.use("spacebars");
   api.use("check");
-  api.use("momentjs:moment");
-  api.use("reactive-var");
   api.use("fetch");
-  api.use("aldeed:simple-schema");
   api.use("accounts-password");
+
+  // Needed for client-server interactions.
+  // They are 3rd party, but specifically designed
+  // for meteor so there aren't any npm equivalents.
+  api.use("mdg:validated-method");
+  api.use("aldeed:simple-schema");
 
   // modules
   api.export("matsCollections", ["client", "server"]);

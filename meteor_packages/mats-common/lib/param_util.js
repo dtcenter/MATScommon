@@ -13,7 +13,7 @@ import {
   matsCurveUtils,
   matsSelectUtils,
 } from "meteor/randyp:mats-common";
-import { moment } from "meteor/momentjs:moment";
+import moment from "moment";
 
 // get the document id for the control button element that corresponds to the param name
 const getControlButtonIdForParamName = function (paramName) {

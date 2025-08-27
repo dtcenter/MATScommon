@@ -4,7 +4,7 @@
 
 import { matsCollections, matsTypes, matsMethods } from "meteor/randyp:mats-common";
 import { Meteor } from "meteor/meteor";
-import { moment } from "meteor/momentjs:moment";
+import moment from "moment";
 import { _ } from "meteor/underscore";
 
 const noaaDisclaimer = async function () {

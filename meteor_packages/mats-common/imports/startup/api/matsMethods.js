@@ -18,7 +18,7 @@ import {
   matsTypes,
   versionInfo,
 } from "meteor/randyp:mats-common";
-import { moment } from "meteor/momentjs:moment";
+import moment from "moment";
 import { Mongo } from "meteor/mongo";
 import { curveParamsByApp } from "../both/mats-curve-params";
 import { setupRouter } from "./routeRegistration";

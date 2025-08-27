@@ -11,7 +11,7 @@ import {
   matsSelectUtils,
 } from "meteor/randyp:mats-common";
 import { Template } from "meteor/templating";
-import { moment } from "meteor/momentjs:moment";
+import moment from "moment";
 
 /* global Session, jQuery, $, _ */
 /* eslint-disable no-console */

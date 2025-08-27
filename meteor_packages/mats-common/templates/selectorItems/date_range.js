@@ -4,7 +4,7 @@
 
 import { matsCollections, matsParamUtils, matsTypes } from "meteor/randyp:mats-common";
 import { Template } from "meteor/templating";
-import { moment } from "meteor/momentjs:moment";
+import moment from "moment";
 
 // eslint-disable-next-line no-unused-vars
 const daterangepicker = require("daterangepicker");

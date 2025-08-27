@@ -12,7 +12,7 @@ import {
   matsDataCurveOpsUtils,
   matsDataPlotOpsUtils,
 } from "meteor/randyp:mats-common";
-import { moment } from "meteor/momentjs:moment";
+import moment from "moment";
 import { _ } from "meteor/underscore";
 
 /* eslint-disable no-await-in-loop */

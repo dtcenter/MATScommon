@@ -6,7 +6,7 @@
 
 import { Meteor } from "meteor/meteor";
 import { matsCache, matsCollections } from "meteor/randyp:mats-common";
-import { moment } from "meteor/momentjs:moment";
+import moment from "moment";
 import {
   stringifyCurveData,
   getListOfApps,

@@ -8,7 +8,7 @@ import {
   matsCurveUtils,
   matsTypes,
 } from "meteor/randyp:mats-common";
-import { moment } from "meteor/momentjs:moment";
+import moment from "moment";
 
 /* global $, Session, _ */
 
