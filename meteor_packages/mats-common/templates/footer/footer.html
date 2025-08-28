@@ -1,100 +1,83 @@
-<template name="footer" xmlns="http://www.w3.org/1999/html">
-  <nav
-    id="footnav"
-    class="navbar navbar-default"
-    style="display: block"
-    aria-label="footer bar"
-  >
-    <div
-      class="container-fluid"
-      style="
-        background-color: #eeeeee;
-        height: 100%;
-        margin-bottom: 0;
-        margin-top: 0;
-        padding-bottom: 1em;
-        padding-top: 1em;
-      "
-    >
-      <div class="row" style="background-color: #eeeeee; height: 100%; display: flex">
-        <span style="width: 20%; text-align: left; padding-left: 1em"
-          >{{>version}}</span
+<template name="footer">
+  <div id="footer" class="container-fluid bg-lightgray mt-4">
+    <nav id="footnav" class="navbar navbar-expand-sm" aria-label="MATS footer navbar">
+      <div class="navbar-header">
+        <button
+          type="button"
+          class="navbar-toggler"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbar-collapse-3"
+          aria-expanded="false"
+          aria-label="Toggle footer navigation"
         >
-        <span style="width: 80%; text-align: right; padding-right: 1em">
-          <span
-            ><a
-              href="http://www.noaa.gov/privacy"
-              target="_blank"
-              style="color: black; font-size: small"
-              >NOAA Privacy Statement<span class="sr-only">Opens in new window</span></a
-            >
-            &nbsp;
-          </span>
-          <span
-            ><a
-              href="http://www.noaa.gov/accessibility"
-              target="_blank"
-              style="color: black; font-size: small"
-              >Web Accessibility Statement<span class="sr-only"
-                >Opens in new window</span
-              ></a
-            >
-            &nbsp;
-          </span>
-          <span
-            ><a
-              href="http://www.noaa.gov/disclaimer"
-              target="_blank"
-              style="color: black; font-size: small"
-              >Disclaimer for External Links<span class="sr-only"
-                >Opens in new window</span
-              ></a
-            >
-            &nbsp;
-          </span>
-          <span
-            ><a
-              href="http://www.noaa.gov/"
-              target="_blank"
-              style="color: black; font-size: small"
-              >NOAA<span class="sr-only">Opens in new window</span></a
-            >
-            &nbsp;
-          </span>
-          {{#if isMetexpress}}
-          <span
-            ><a
-              href="http://www.commerce.gov/"
-              target="_blank"
-              style="color: black; font-size: small"
-              >U.S. Department of Commerce<span class="sr-only"
-                >Opens in new window</span
-              ></a
-            ></span
-          >
-          {{else}}
-          <span
-            ><a
-              href="http://www.commerce.gov/"
-              target="_blank"
-              style="color: black; font-size: small"
-              >U.S. Department of Commerce<span class="sr-only"
-                >Opens in new window</span
-              ></a
-            >
-            &nbsp;
-          </span>
-          <span
-            ><a
-              href="http://research.noaa.gov/"
-              target="_blank"
-              style="color: black; font-size: small"
-              >NOAA Research<span class="sr-only">Opens in new window</span></a
-            ></span
-          >
-          {{/if}}
-        </span>
+          <span class="navbar-toggler-icon"></span>
+        </button>
       </div>
-    </div>
-  </nav>
+      <!-- Collect the nav links, forms, and other content for toggling -->
+      <div
+        class="collapse navbar-collapse justify-content-center bg-lightgray"
+        id="navbar-collapse-3"
+      >
+        <ul class="nav navbar-nav bg-lightgray">
+          <li class="navbar-item">
+            <a
+              href="http://www.noaa.gov/privacy"
+              class="nav-link text-black"
+              target="_blank"
+              >NOAA Privacy Statement</a
+            >
+          </li>
+          <li class="navbar-item">
+            <a
+              href="http://www.noaa.gov/accessibility"
+              class="nav-link text-black"
+              target="_blank"
+              >Web Accessibility Statement</a
+            >
+          </li>
+          <li class="navbar-item">
+            <a
+              href="http://www.noaa.gov/disclaimer"
+              class="nav-link text-black"
+              target="_blank"
+              >Disclaimer for External Links</a
+            >
+          </li>
+          <li class="navbar-item">
+            <a href="http://www.noaa.gov/" class="nav-link text-black" target="_blank"
+              >NOAA</a
+            >
+          </li>
+          <li class="navbar-item">
+            <a
+              href="http://www.commerce.gov/"
+              class="nav-link text-black"
+              target="_blank"
+              >U.S. Department of Commerce</a
+            >
+          </li>
+          {{#if isMetexpress}}
+          <li class="navbar-item">
+            <a
+              href="https://weather.noaa.gov/"
+              class="nav-link text-black"
+              target="_blank"
+              >National Weather Service</a
+            >
+          </li>
+          {{else}}
+          <li class="navbar-item">
+            <a
+              href="http://research.noaa.gov/"
+              class="nav-link text-black"
+              target="_blank"
+              >NOAA Research</a
+            >
+          </li>
+          {{/if}}
+        </ul>
+      </div>
+      <!-- /.navbar-collapse -->
+    </nav>
+  </div>
 </template>
