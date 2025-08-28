@@ -40,12 +40,7 @@
         >
           <div class="d-flex w-100">
             <div class="w-50 p-4 col">
-              <img
-                class="icon-size"
-                src="{{govLogo}}"
-                alt=""
-                aria-hidden="true"
-              />
+              <img class="icon-size" src="{{govLogo}}" alt="" aria-hidden="true" />
               <small>
                 <strong>Official websites use .gov</strong><br />
                 A<strong>.gov</strong> website belongs to an official government
@@ -53,12 +48,7 @@
               </small>
             </div>
             <div class="w-50 p-4 col">
-              <img
-                class="icon-size"
-                src="{{httpsLogo}}"
-                alt=""
-                aria-hidden="true"
-              />
+              <img class="icon-size" src="{{httpsLogo}}" alt="" aria-hidden="true" />
               <small>
                 <strong>Secure .gov websites use HTTPS</strong>
                 <br />
@@ -77,103 +67,77 @@
       </div>
     </nav>
     <nav
-      id="MATSNavigationBar"
-      class="navbar navbar-default"
-      style="
-        color: white;
-        background: #000066;
-        height: 100%;
-        margin-bottom: 0;
-        margin-top: 0;
-        padding-top: 0;
-        padding-bottom: 1%;
-      "
+      class="navbar navbar-expand-sm bg-noaa-blue text-white"
+      data-bs-theme="dark"
       aria-label="MATS navigation bar"
     >
       <div class="container-fluid">
-        <div class="navbar-header">
-          <button
-            type="button"
-            class="navbar-toggle collapsed"
-            data-toggle="collapse"
-            data-target="#navbar-collapse"
-            aria-expanded="false"
-          >
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a
-            style="margin-bottom: 0; margin-top: 0; padding: 0"
-            class="navbar-brand"
-            href="{{productLink}}"
-            ><img
-              style="
-                height: 100%;
-                margin-bottom: 0;
-                margin-top: 0.5em;
-                padding-left: 1em;
-                padding-right: 1em;
-              "
-              src="{{transparentGif}}"
-              alt="NOAA logo"
-          /></a>
-        </div>
-        <div class="collapse navbar-collapse" id="navbar-collapse">
-          <ul class="nav navbar-nav">
-            <li>
-              <div style="margin-top: 0.5em">
+        <a class="navbar-brand w-100 h-100" href="#">
+          <div class="row w-100 h-100">
+            <div class="col-1 align-text-center">
+              <a class="navbar-brand" href="{{productLink}}">
+                <img class="noaa-logo-size" src="{{transparentGif}}" alt="NOAA Logo" />
+              </a>
+            </div>
+            <div class="col-lg-8 col-5 align-text-left">
+              <div class="row">
                 <a
+                  class="white-link-text fs-6"
                   href="{{agencyLink}}"
                   target="_blank"
-                  style="color: white; font-size: small"
-                  >{{agencyText}}<span class="sr-only">Opens in new window</span></a
-                ><br />
-                <a href="{{productLink}}"
-                  ><span style="color: white; font-size: x-large"
-                    >{{productText}}</span
-                  ></a
-                ><br />
+                >
+                  {{agencyText}}
+                  <span class="sr-only">Opens in new window</span>
+                </a>
               </div>
-            </li>
-          </ul>
-          <ul class="nav navbar-nav navbar-right">
-            <li style="margin-top: 0.5em">
+              <div class="row">
+                <a
+                  href="{{productLink}}"
+                  class="white-link-text fs-4"
+                  >{{productText}}</a
+                >
+              </div>
+            </div>
+            <div class="col-md-1 col-2 align-text-center mt-2">
               <a
-                href="{{bugsLink}}"
+                class="white-link-text fs-6"
+                href="{{githubLink}}"
                 target="_blank"
-                style="color: white; font-size: medium"
-                >{{bugsText}}<span class="sr-only">Opens in new window</span></a
+                >{{githubText}}<span class="sr-only">Opens in new window</span></a
               >
-            </li>
-            <li style="margin-top: 0.5em">
-              <a href="" class="about" style="color: white; font-size: medium">About</a>
-            </li>
-            <li style="margin-top: 0.5em">
+            </div>
+            <div class="col-md-1 col-2 align-text-center mt-2">
+              <a href="" class="about white-link-text fs-6"
+                >About</a
+              >
+            </div>
+            <div class="col-md-1 col-2 align-text-center mt-2">
               <a
+                class="white-link-text fs-6"
                 href="mailto:mats.gsl@noaa.gov?Subject=Feedback from {{emailText}}"
                 target="_blank"
-                style="color: white; font-size: medium"
                 >Contact Us<span class="sr-only">Opens in new window</span></a
               >
-            </li>
-          </ul>
-        </div>
+            </div>
+          </div>
+        </a>
       </div>
     </nav>
-    <div id="disclaimerBar" class="alert alert-info" style="color: black">
+    <div
+      id="disclaimerBar"
+      class="alert alert-info rounded-0 text-black m-0 br-0 bg-disclaimer"
+    >
       PLEASE NOTE: The information on this website is for RESEARCH PURPOSES ONLY. No
       data from this site should be used to make decisions related to the safety of life
       and property. There is no guarantee that data will be updated or that any product
       will continue to be available.
     </div>
-  </div>
-  <div
-    id="alertBar"
-    class="alert alert-danger"
-    style="color: black; width: 90%; margin-right: auto; margin-left: auto; font-size: small; display:{{alertMessageHidden}}"
-  >
-    {{alertMessage}}
+    <div
+      id="alertBar"
+      class="alert alert-danger"
+      style="color: black; width: 90%; margin-right: auto; margin-left: auto; font-size: small; display:{{alertMessageHidden}}"
+    >
+      {{alertMessage}}
+    </div>
   </div>
 </template>

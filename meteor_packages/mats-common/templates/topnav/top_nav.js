@@ -70,20 +70,20 @@ Template.topNav.helpers({
       ? `https://${window.location.href.split("/")[2]}`
       : Meteor.settings.public.home;
   },
-  bugsText() {
-    return "Bugs/Issues (GitHub)";
+  githubText() {
+    return "GitHub";
   },
-  bugsLink() {
+  githubLink() {
     if (
       matsCollections.Settings.findOne({}) !== undefined &&
       matsCollections.Settings.findOne({}).appType !== undefined
     ) {
       const { appType } = matsCollections.Settings.findOne({});
       return appType === matsTypes.AppTypes.metexpress
-        ? "https://github.com/dtcenter/METexpress/issues"
-        : "https://github.com/NOAA-GSL/MATS/issues";
+        ? "https://github.com/dtcenter/METexpress"
+        : "https://github.com/NOAA-GSL/MATS";
     }
-    return "https://github.com/NOAA-GSL/MATS/issues";
+    return "https://github.com/NOAA-GSL/MATS";
   },
   isMetexpress() {
     if (
