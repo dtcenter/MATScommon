@@ -14,6 +14,9 @@ Template.topNav.helpers({
   httpsLogo() {
     return `${window.location.href}/packages/randyp_mats-common/public/img/icon-https.svg`;
   },
+  lockLogo() {
+    return `${window.location.href}/packages/randyp_mats-common/public/img/lock-fill.svg`;
+  },
   flagLogo() {
     return `${window.location.href}/packages/randyp_mats-common/public/img/us_flag_small.png`;
   },

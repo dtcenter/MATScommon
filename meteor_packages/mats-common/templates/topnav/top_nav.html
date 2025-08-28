@@ -2,90 +2,74 @@
   <div id="topNav">
     <nav
       id="officialUSABanner"
-      class="navbar navbar-default"
-      style="
-        height: 100%;
-        margin-bottom: 0;
-        margin-top: 0;
-        padding-top: 0;
-        padding-bottom: 0;
-      "
-      aria-label="official USA governent website banner"
+      class="navbar navbar-expand-sm bg-white text-black p-0 container-fluid"
+      aria-label="Official government website"
     >
-      <div class="container-fluid">
-        <div
-          class="row"
-          style="
-            height: 100%;
-            margin-bottom: 0;
-            margin-top: 0.75em;
-            padding-left: 2em;
-            padding-right: 1em;
-          "
-        >
-          <div class="col-12" id="usaAccordion">
-            <header class="header" id="usaHeadingOne">
-              <div
-                aria-controls="usaCollapseOne"
-                class="collapsed small row"
-                data-target="#usaCollapseOne"
-                data-toggle="collapse"
-              >
-                <div class="col-sm d-flex">
-                  <div>
-                    <img style="width: 15px" src="{{flagLogo}}" alt="U.S. flag" />
-                    <span
-                      >An official website of the United States government
-                      <button
-                        style="
-                          cursor: pointer;
-                          text-transform: none;
-                          border: none;
-                          background-color: inherit;
-                        "
-                      >
-                        <span style="color: #005ea2; text-decoration: underline"
-                          >Here's how you know<i
-                            class="fa-solid fa-caret-down"
-                            style="margin-left: 5px"
-                            alt="down caret icon"
-                          ></i
-                        ></span></button
-                    ></span>
-                  </div>
-                </div>
+      <div class="accordion h-100 ps-5 pe-3 row" id="usaAccordion">
+        <div class="accordian-item">
+          <header class="accordian-header" id="usaHeadingOne">
+            <button
+              class="accordion-button collapsed"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#usaCollapseOne"
+              aria-expanded="true"
+              aria-controls="usaCollapseOne"
+            >
+              <div class="d-flex col">
+                <p class="m-0 p-0">
+                  <img
+                    class="icon-size-small"
+                    src="{{flagLogo}}"
+                    alt="U.S. flag"
+                  />&nbsp;
+                  <span class="small-text"
+                    >An official website of the United States government.&nbsp;
+                    <u class="text-blue">Here's how you know</u>
+                  </span>
+                </p>
               </div>
-            </header>
-          </div>
+            </button>
+          </header>
         </div>
         <div
-          aria-labelledby="usaHeadingOne"
-          class="collapse"
-          data-parent="#usaAccordion"
           id="usaCollapseOne"
+          class="accordion-collapse collapse row accordian-body"
+          aria-labelledby="usaHeadingOne"
+          data-bs-parent="#usaAccordion"
         >
-          <div style="display: flex; width: 100%">
-            <div style="width: 50%; padding: 2em">
+          <div class="d-flex w-100">
+            <div class="w-50 p-4 col">
               <img
-                style="width: 25px"
+                class="icon-size"
                 src="{{govLogo}}"
-                alt="Official US Government Icon"
+                alt=""
+                aria-hidden="true"
               />
-              <small
-                ><strong>Official websites use .gov</strong><br />A
-                <strong>.gov</strong> website belongs to an official government
-                organization in the United States.</small
-              >
+              <small>
+                <strong>Official websites use .gov</strong><br />
+                A<strong>.gov</strong> website belongs to an official government
+                organization in the United States.
+              </small>
             </div>
-            <div style="width: 50%; padding: 2em">
-              <img style="width: 25px" src="{{httpsLogo}}" alt="Secure Site Icon" />
+            <div class="w-50 p-4 col">
+              <img
+                class="icon-size"
+                src="{{httpsLogo}}"
+                alt=""
+                aria-hidden="true"
+              />
               <small>
                 <strong>Secure .gov websites use HTTPS</strong>
                 <br />
-                A <strong>lock</strong> (
-                <i class="fa-solid fa-lock" alt="lock icon"></i>
-                ) or <strong>https://</strong> means you’ve safely connected to the .gov
-                website. Share sensitive information only on official, secure websites.
+                A <strong>lock</strong> (<img
+                  src="{{lockLogo}}"
+                  fill="currentColor"
+                  aria-label="Locked padlock icon"
+                  focusable="false"
+                />) or <strong>https://</strong> means you’ve safely connected to the
+                .gov website. Share sensitive information only on official, secure
+                websites.
               </small>
             </div>
           </div>

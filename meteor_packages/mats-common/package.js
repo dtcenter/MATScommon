@@ -302,6 +302,7 @@ Package.onUse(function (api) {
   api.addAssets("public/img/us_flag_small.png", "client");
   api.addAssets("public/img/icon-dot-gov.svg", "client");
   api.addAssets("public/img/icon-https.svg", "client");
+  api.addAssets("public/img/lock-fill.svg", "client");
   api.addAssets("public/img/noaa_transparent.png", "client");
   api.addAssets("public/img/spinner.gif", "client");
   api.addAssets("public/img/building_spinner.gif", "client");
