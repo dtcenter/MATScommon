@@ -29,8 +29,8 @@ Template.about.helpers({
       version = settings.appVersion;
       commit = settings.commit;
     }
-    const versionStr = `<div class='row' style='text-align:center'>Version: ${version}</div>`;
-    return `${versionStr}<div class='row' style='text-align:center'> Last commit: ${commit}</div>`;
+    const versionStr = `<div class="mt-3">Version: ${version}</div>`;
+    return `${versionStr}<div> Last commit: ${commit}</div>`;
   },
   releaseNotes() {
     Session.get("notesUpdated");
@@ -50,12 +50,14 @@ Template.about.events({
       return null;
     });
     document.getElementById("showNotes").style.display = "none";
-    document.getElementById("hideNotes").style.display = "block";
+    document.getElementById("hideNotesLower").style.display = "block";
+    document.getElementById("hideNotesUpper").style.display = "block";
     document.getElementById("releaseNotes").style.display = "block";
   },
   "click .hide-release-notes"() {
     document.getElementById("showNotes").style.display = "block";
-    document.getElementById("hideNotes").style.display = "none";
+    document.getElementById("hideNotesLower").style.display = "none";
+    document.getElementById("hideNotesUpper").style.display = "none";
     document.getElementById("releaseNotes").style.display = "none";
   },
 });

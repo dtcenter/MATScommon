@@ -120,10 +120,3 @@ Template.topNav.helpers({
     return alertMessage;
   },
 });
-
-Template.topNav.events({
-  "click .about"() {
-    $("#modal-display-about").modal();
-    return false;
-  },
-});

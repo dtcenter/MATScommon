@@ -1,51 +1,65 @@
 <template name="about">
   <div
     class="modal fade"
-    id="modal-display-about"
-    role="dialog"
-    aria-labelledby="displayAboutDialog"
-    aria-hidden="true"
+    id="aboutModal"
+    data-bs-backdrop="static"
+    data-bs-keyboard="false"
+    tabindex="-1"
+    aria-labelledby="aboutModalLabel"
   >
-    <div class="modal-dialog" style="background-color: #cccccc; overflow-y: initial">
-      <div class="modal-content" style="padding-top: 1em">
-        <div class="modal-header">
-          <div>
-            <h2 class="modal-title" style="text-align: center; color: black">About</h2>
-          </div>
-          <div>
-            {{#if isMetexpress}}
-            <h3 style="text-align: center">METexpress</h3>
-            {{else}}
-            <h3 style="text-align: center">Model Analysis Tool Suite (MATS)</h3>
-            {{/if}} {{{version}}}
+    <div class="modal-dialog modal-style">
+      <div class="modal-content pt-3">
+        <div class="modal-header border-bottom-0">
+          <h2 id="aboutModalLabel" class="modal-title text-dark-blue">About</h2>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="text-center mt-4 mb-3">
+          {{#if isMetexpress}}
+          <h3>METexpress</h3>
+          {{else}}
+          <h3>Model Analysis Tool Suite (MATS)</h3>
+          {{/if}} {{{version}}}
+        </div>
+        <div id="hideNotesUpper" class="modal-footer border-top-0" style="display: none">
+          <button type="button" class="btn btn-warning hide-release-notes">
+            <span
+              ><i class="fa-solid fa-eye-slash"></i>&nbsp;&nbsp;Hide Release Notes</span
+            >
+          </button>
+          <button type="button" data-bs-dismiss="modal" class="btn btn-danger">
+            <span><i class="fa-solid fa-xmark"></i>&nbsp;&nbsp;Close</span>
+          </button>
+        </div>
+        <div class="modal-body h-30">
+          <div id="releaseNotes" style="display: none; overflow-y: auto">
+            {{{releaseNotes}}}
           </div>
         </div>
-        <div id="showNotes" class="modal-footer btn-group" style="display: block">
-          <button class="clear-info btn btn-success btn-sm show-release-notes">
+        <div id="showNotes" class="modal-footer border-top-0" style="display: block">
+          <button type="button" class="btn btn-warning show-release-notes">
             <span
               ><i class="fa-solid fa-note-sticky"></i>&nbsp;&nbsp;Show Release
               Notes</span
             >
           </button>
-          <button data-dismiss="modal" class="clear-info btn btn-success btn-sm">
+          <button type="button" data-bs-dismiss="modal" class="btn btn-danger">
             <span><i class="fa-solid fa-xmark"></i>&nbsp;&nbsp;Close</span>
           </button>
         </div>
-        <div id="hideNotes" class="modal-footer btn-group" style="display: none">
-          <button class="clear-info btn btn-success btn-sm hide-release-notes">
+        <div id="hideNotesLower" class="modal-footer border-top-0" style="display: none">
+          <button type="button" class="btn btn-warning hide-release-notes">
             <span
               ><i class="fa-solid fa-eye-slash"></i>&nbsp;&nbsp;Hide Release Notes</span
             >
           </button>
-          <button data-dismiss="modal" class="clear-info btn btn-success btn-sm">
+          <button type="button" data-bs-dismiss="modal" class="btn btn-danger">
             <span><i class="fa-solid fa-xmark"></i>&nbsp;&nbsp;Close</span>
           </button>
-        </div>
-        <div class="modal-body" style="height: 30%">
-          <div id="releaseNotes" style="display: none; overflow-y: auto">
-            <h3>RELEASE NOTES</h3>
-            {{{releaseNotes}}}
-          </div>
         </div>
       </div>
     </div>
