@@ -256,7 +256,7 @@ const changePlotType = function (plotType, selectorsToInitialize, dateSelector) 
     Session.set("plotChangeType", "");
   } else if (Session.get("Curves").length > 0) {
     Session.set("plotChangeType", plotType);
-    $("#modal-change-plot-type").modal();
+    $("#changePlotTypeModal").modal("show");
   } else {
     // no curves - just set the new plot type face
     // the MET apps have a hidden plot-type selector than needs to match the actual plot type

@@ -1,20 +1,30 @@
 <template name="changePlotType">
   <div
-    class="modal modal-dialog fade"
-    id="modal-change-plot-type"
+    class="modal fade"
+    id="changePlotTypeModal"
+    data-bs-backdrop="static"
+    data-bs-keyboard="false"
     tabindex="-1"
-    role="dialog"
-    aria-labelledby="confirmChangePlotType"
-    aria-hidden="true"
-    style="background-color: #cccccc"
+    aria-labelledby="changePlotTypeModalLabel"
   >
-    <div class="modal-dialog">
-      <div class="modal-content" style="padding-top: 2em">
-        <h2 class="modal-title" style="text-align: center; color: black">
-          Change Plot Type?
-        </h2>
-        <div class="modal-body">
-          <h4 style="color: black">
+    <div class="modal-dialog modal-style">
+      <div class="modal-content pt-3">
+        <div class="modal-header border-bottom-0">
+          <h2 id="changePlotTypeModalLabel" class="modal-title text-dark-blue">
+            Plot Type
+          </h2>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="text-center mt-4 mb-3">
+          <h3>Change plot type?</h3>
+        </div>
+        <div class="modal-body h-50">
+          <h5 class="text-dark">
             <p>
               If you change plot types and have already added curves, it is possible
               that the parameters for the new plot type may be incomplete.
@@ -26,22 +36,24 @@
             </p>
             Do you want to proceed and remove all existing curves, or proceed and retain
             existing curves with possibly incomplete parameters?
-          </h4>
+          </h5>
         </div>
-        <div class="modal-footer">
+        <div class="modal-footer border-top-0">
           <button
-            id="confirm-remove-all"
-            class="btn btn-danger confirm-remove-all"
-            data-dismiss="modal"
-          >
-            Proceed and remove all the existing curves
-          </button>
-          <button
+            type="button"
             id="confirm-keep-all"
             class="btn btn-warning confirm-keep-all"
-            data-dismiss="modal"
+            data-bs-dismiss="modal"
           >
             Proceed and keep all the existing curves
+          </button>
+          <button
+            type="button"
+            id="confirm-remove-all"
+            class="btn btn-danger confirm-remove-all"
+            data-bs-dismiss="modal"
+          >
+            Proceed and remove all the existing curves
           </button>
         </div>
       </div>
