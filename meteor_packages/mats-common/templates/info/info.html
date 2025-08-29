@@ -1,21 +1,36 @@
 <template name="info">
-  <div id="info" name="infoModal" class="modal" role="dialog">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h4 class="modal-title">
-            <i class="fa-solid fa-circle-exclamation"></i> Info:
-          </h4>
+  <div
+    class="modal fade"
+    id="infoModal"
+    data-bs-backdrop="static"
+    data-bs-keyboard="false"
+    tabindex="-1"
+    aria-labelledby="infoModalLabel"
+  >
+    <div class="modal-dialog modal-style">
+      <div class="modal-content pt-3">
+        <div class="modal-header border-bottom-0">
+          <h2 id="errorModalLabel" class="modal-title text-dark-blue">
+            <i class="fa-solid fa-circle-exclamation"></i> Info
+          </h2>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
         </div>
-        <div class="modal-body">
-          <div>
-            <p style="color: black">{{{infoMessage}}}</p>
-          </div>
-          <div class="modal-footer btn-group">
-            <button id="clear-info" class="clear-info btn btn-success btn-sm">
-              <i class="fa-solid fa-xmark"></i>&nbsp;&nbsp;Clear
-            </button>
-          </div>
+        <div class="modal-body h-50">
+          <h5 style="color: #000000">{{{infoMessage}}}</h5>
+        </div>
+        <div class="modal-footer border-top-0">
+          <button
+            type="button"
+            id="clear-info"
+            class="clear-info btn btn-success btn-sm"
+          >
+            <i class="fa-solid fa-xmark"></i>&nbsp;&nbsp;Clear
+          </button>
         </div>
       </div>
     </div>

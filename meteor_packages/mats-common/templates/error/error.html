@@ -1,33 +1,49 @@
 <template name="error">
-  <div id="error" name="errorModal" class="modal" role="dialog">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h4 class="modal-title">
-            <i class="fa-solid fa-circle-exclamation"></i> Error:
-          </h4>
+  <div
+    class="modal fade"
+    id="errorModal"
+    data-bs-backdrop="static"
+    data-bs-keyboard="false"
+    tabindex="-1"
+    aria-labelledby="errorModalLabel"
+  >
+    <div class="modal-dialog modal-style">
+      <div class="modal-content pt-3">
+        <div class="modal-header border-bottom-0">
+          <h2 id="errorModalLabel" class="modal-title text-dark-blue">
+            <i class="fa-solid fa-circle-exclamation"></i> Error
+          </h2>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
         </div>
-        <div class="modal-body">
-          <div>
-            <p style="color: #aa0000">{{{errorMessage}}}</p>
-          </div>
+        <div class="modal-body h-50">
+          <h5 style="color: #aa0000">{{{errorMessage}}}</h5>
           <div id="error-stack" style="display: none">
             <p>{{{stackTrace}}}</p>
             <button
+              type="button"
               class="hide-stack btn btn-success btn-sm"
               style="margin-bottom: 1em"
             >
               <i class="fa-solid fa-eye-slash"></i>&nbsp;&nbsp;Hide Stack
             </button>
           </div>
-          <div class="modal-footer btn-group">
-            <button class="show-stack btn btn-success btn-sm">
-              <i class="fa-solid fa-layer-group"></i>&nbsp;&nbsp;Stack?
-            </button>
-            <button id="clear-error" class="clear-error btn btn-success btn-sm">
-              <i class="fa-solid fa-xmark"></i>&nbsp;&nbsp;Clear
-            </button>
-          </div>
+        </div>
+        <div class="modal-footer border-top-0">
+          <button type="button" class="show-stack btn btn-success btn-sm">
+            <i class="fa-solid fa-layer-group"></i>&nbsp;&nbsp;Stack?
+          </button>
+          <button
+            type="button"
+            id="clear-error"
+            class="clear-error btn btn-success btn-sm"
+          >
+            <i class="fa-solid fa-xmark"></i>&nbsp;&nbsp;Clear
+          </button>
         </div>
       </div>
     </div>

@@ -27,13 +27,13 @@ setError = function (error) {
     myStackTrace = "StackTrace unavailable";
   }
   Session.set("stackTrace", myStackTrace);
-  $("#error").modal("show");
+  $("#errorModal").modal("show");
 };
 
 clearError = function () {
   Session.set("errorMessage", "");
   Session.set("stackTrace", "");
-  $("#error").modal("hide");
+  $("#errorModal").modal("hide");
 };
 
 getError = function () {

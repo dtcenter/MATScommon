@@ -7,12 +7,12 @@
 
 setInfo = function (info) {
   Session.set("infoMessage", info);
-  $("#info").modal("show");
+  $("#infoModal").modal("show");
 };
 
 clearInfo = function () {
   Session.set("infoMessage", "");
-  $("#info").modal("hide");
+  $("#infoModal").modal("hide");
 };
 
 getInfo = function () {
