@@ -5,9 +5,7 @@
     <div class="container row pull-left col-lg-8 w-100">
       {{>error}}
       <div id="appTitleText" class="row text-center mt-5 mb-3">
-        <h1 class="boldedPublicSans text-center fs-2" id="main-content">
-          {{title}}
-        </h1>
+        <h1 class="boldedPublicSans text-center fs-2" id="main-content">{{title}}</h1>
       </div>
       <div class="row pull-left col-lg-8" id="plotTypeContainer">{{>plotType}}</div>
       {{>about}} {{#if Template.subscriptionsReady}} {{#if isUnderConstruction}}

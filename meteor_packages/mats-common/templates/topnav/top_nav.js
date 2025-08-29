@@ -5,8 +5,6 @@ import { Meteor } from "meteor/meteor";
 import { matsCollections, matsTypes } from "meteor/randyp:mats-common";
 import { Template } from "meteor/templating";
 
-/* global $ */
-
 Template.topNav.helpers({
   govLogo() {
     return `${window.location.href}/packages/randyp_mats-common/public/img/icon-dot-gov.svg`;
