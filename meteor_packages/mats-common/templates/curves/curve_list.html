@@ -1,32 +1,47 @@
 <template name="curveList">
   <div
-    class="modal modal-dialog fade"
-    id="modal-confirm-remove-all"
+    class="modal fade"
+    id="removeAllModal"
+    data-bs-backdrop="static"
+    data-bs-keyboard="false"
     tabindex="-1"
-    role="dialog"
-    aria-labelledby="confirmRemoveAll"
-    style="background-color: #cccccc"
+    aria-labelledby="removeAllModalLabel"
   >
-    <div class="modal-dialog">
-      <div class="modal-content" style="padding-top: 2em">
-        <h2 class="modal-title" style="text-align: center; color: black">
-          Remove All Curves?
-        </h2>
-        <div class="modal-body">
-          <h4 style="color: black">Are you sure you want to remove all the curves?</h4>
-        </div>
-        <div class="modal-footer">
+    <div class="modal-dialog modal-style">
+      <div class="modal-content pt-3">
+        <div class="modal-header border-bottom-0">
+          <h2 id="removeAllModalLabel" class="modal-title text-dark-blue">
+            Curve Removal
+          </h2>
           <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="text-center mt-4 mb-3">
+          <h3>Remove all curves?</h3>
+        </div>
+        <div class="modal-body h-50">
+          <h5 style="color: black">
+            Are you sure you want to remove all the curves?
+          </h5>
+        </div>
+        <div class="modal-footer border-top-0">
+          <button
+            type="button"
             id="cancle-remove-all"
             class="cancle-remove-all btn btn-success"
-            data-dismiss="modal"
+            data-bs-dismiss="modal"
           >
             Cancel the Remove
           </button>
           <button
+            type="button"
             id="confirm-remove-all"
             class="btn btn-danger confirm-remove-all"
-            data-dismiss="modal"
+            data-bs-dismiss="modal"
           >
             Remove all the curves
           </button>

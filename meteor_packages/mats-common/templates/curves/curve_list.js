@@ -167,7 +167,7 @@ Template.curveList.events({
       Session.set("confirmRemoveAll", "");
     }
     if (Session.get("Curves").length > 0) {
-      $("#modal-confirm-remove-all").modal();
+      $("#removeAllModal").modal("show");
     }
   },
   "click .confirm-remove-all"() {
