@@ -30,7 +30,6 @@ Template.scorecardCurveList.helpers({
     }
     return "none";
   },
-
   curves() {
     return Session.get("Curves");
   },
@@ -50,6 +49,7 @@ Template.scorecardCurveList.helpers({
     return `Changing ${Session.get("editMode")}`;
   },
 });
+
 /*
     A note about how things get to the backend, and then to the graph or display view.
     When the user clicks "Submit Scorecard" on the curve-list page
@@ -66,6 +66,7 @@ Template.scorecardCurveList.helpers({
     is what invokes the data method in the backend, and the success handler of that call
     is what sets up the graph page.
     */
+
 Template.scorecardCurveList.events({
   "click .remove-all"() {
     if (Session.get("confirmRemoveAll")) {
@@ -77,7 +78,7 @@ Template.scorecardCurveList.events({
       Session.set("confirmRemoveAll", "");
     }
     if (Session.get("Curves").length > 0) {
-      $("#modal-confirm-remove-all").modal();
+      $("#removeAllModal").modal("show");
     }
   },
   "click .confirm-remove-all"() {
