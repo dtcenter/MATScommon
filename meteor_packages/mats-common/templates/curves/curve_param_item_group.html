@@ -1,38 +1,48 @@
 <template name="curveParamItemGroup">
   <div id="curveParamItemGroup">
     <div
-      class="modal modal-dialog fade"
-      id="confirm-lost-edits"
+      class="modal fade"
+      id="confirmLostEditsModal"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
       tabindex="-1"
-      role="dialog"
-      aria-labelledby="confirmLostEdits"
-      style="background-color: #cccccc"
+      aria-labelledby="confirmLostEditsModalLabel"
     >
-      <div class="modal-dialog">
-        <div class="modal-content" style="padding-top: 2em">
-          <h2 class="modal-title" style="text-align: center; color: black">
-            Lose Edits?
-          </h2>
-          <div class="modal-body">
-            <h4 style="color: black">
-              You were editing {{editCurve}} and clicked on controls for {{editTarget}}
-            </h4>
-            <h4 style="color: #aa0000">
-              Any changes to {{editCurve}} will be lost if you continue.
-            </h4>
-          </div>
-          <div class="modal-footer">
+      <div class="modal-dialog modal-style">
+        <div class="modal-content pt-3">
+          <div class="modal-header border-bottom-0">
+            <h2 id="confirmLostEditsModalLabel" class="modal-title text-dark-blue">
+              Lose Edits?
+            </h2>
             <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body h-50">
+            <h5 style="color: black">
+              You were editing {{editCurve}} and clicked on controls for {{editTarget}}.
+            </h5>
+            <h5 style="color: #aa0000">
+              Any changes to {{editCurve}} will be lost if you continue.
+            </h5>
+          </div>
+          <div class="modal-footer border-top-0">
+            <button
+              type="button"
               id="cancle-lose-edits"
               class="cancle-lose-edits btn btn-success"
-              data-dismiss="modal"
+              data-bs-dismiss="modal"
             >
               Cancel and keep editing {{editCurve}}
             </button>
             <button
+              type="button"
               id="continue-lose-edits"
               class="btn btn-danger continue-lose-edits"
-              data-dismiss="modal"
+              data-bs-dismiss="modal"
             >
               Edit {{editTarget}} and lose changes to {{editCurve}}
             </button>
@@ -46,15 +56,12 @@
       {{#each curveParams this}}
       <button
         type="button"
-        class="displayBtn btn btn-sm btn-default"
+        class="displayBtn btn btn-sm btn-default rounded m-1"
         name="{{name this}}"
         id="{{buttonId this}}"
-        style="margin:3px 3px 3px 3px;border:{{border this}};border-radius:10px;display:{{displayParam this}}"
+        style="display:{{displayParam this}}"
       >
-        <label
-          class="mediumPublicSans"
-          style="font-weight: normal"
-          for="{{buttonId this}}"
+        <label class="regularPublicSans" for="{{buttonId this}}"
           >{{label this}}:&nbsp;&nbsp;</label
         >
         <span class="display-item" id="{{spanId this}}">{{value this}}</span>

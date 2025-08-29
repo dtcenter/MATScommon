@@ -289,9 +289,6 @@ Template.curveItem.events({
       matsCurveUtils.checkDiffs();
       Session.set("confirmRemoveCurve", "");
       Session.set("lastUpdate", Date.now());
-      if (Curves.length === 0) {
-        window.location.reload(true);
-      }
       return false;
     }
     Session.set("confirmRemoveCurve", { label: this.label, color: this.color });
@@ -339,7 +336,7 @@ Template.curveItem.events({
       editingCurve !== eventTargetCurve
     ) {
       // editing a different curve // have to do the modal for confirmation
-      $("#confirm-lost-edits").modal();
+      $("#confirmLostEditsModal").modal("show");
       return;
     }
     Session.set("editMode", this.label);
@@ -458,7 +455,7 @@ Template.curveItem.events({
       editingCurve !== eventTargetCurve
     ) {
       // editing a different curve // have to do the modal for confirmation
-      $("#confirm-lost-edits").modal();
+      $("#confirmLostEditsModal").modal("show");
       return;
     }
     if (inputElem) {
