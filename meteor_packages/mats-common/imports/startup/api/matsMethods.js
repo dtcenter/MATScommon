@@ -18,6 +18,7 @@ import {
   matsTypes,
   versionInfo,
 } from "meteor/randyp:mats-common";
+// eslint-disable-next-line import/no-unresolved
 import moment from "moment";
 import { Mongo } from "meteor/mongo";
 import { curveParamsByApp } from "../both/mats-curve-params";

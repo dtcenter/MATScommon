@@ -8,6 +8,7 @@ import {
   matsCurveUtils,
   matsTypes,
 } from "meteor/randyp:mats-common";
+// eslint-disable-next-line import/no-unresolved
 import moment from "moment";
 
 /* global $, Session, _ */

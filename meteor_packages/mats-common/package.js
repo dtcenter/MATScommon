@@ -53,6 +53,7 @@ Package.onUse(function (api) {
     // make things pretty
     "lighten-darken-color": "1.0.0",
     "rgb-hex": "4.1.0",
+    "hex-rgb": "5.0.0",
   });
   api.mainModule("server/main.js", "server");
   api.mainModule("client/main.js", "client");

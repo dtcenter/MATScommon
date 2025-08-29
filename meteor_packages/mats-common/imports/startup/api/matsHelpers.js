@@ -11,6 +11,7 @@ import {
   matsTypes,
 } from "meteor/randyp:mats-common";
 import { _ } from "meteor/underscore";
+// eslint-disable-next-line import/no-unresolved
 import moment from "moment";
 
 /* eslint-disable no-console */

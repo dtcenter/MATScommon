@@ -12,6 +12,7 @@ import {
   matsTypes,
 } from "meteor/randyp:mats-common";
 import { Template } from "meteor/templating";
+// eslint-disable-next-line import/no-unresolved
 import moment from "moment";
 // eslint-disable-next-line import/no-unresolved
 import rgbHex from "rgb-hex";

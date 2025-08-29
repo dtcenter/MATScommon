@@ -6,6 +6,7 @@
 
 import { Meteor } from "meteor/meteor";
 import { matsCache, matsCollections } from "meteor/randyp:mats-common";
+// eslint-disable-next-line import/no-unresolved
 import moment from "moment";
 import {
   stringifyCurveData,

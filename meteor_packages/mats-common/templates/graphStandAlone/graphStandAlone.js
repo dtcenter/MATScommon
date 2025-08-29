@@ -11,6 +11,7 @@ import {
 } from "meteor/randyp:mats-common";
 import { Template } from "meteor/templating";
 import { FlowRouter } from "meteor/ostrio:flow-router-extra";
+// eslint-disable-next-line import/no-unresolved
 import moment from "moment";
 import "./graphStandAlone.html";
 

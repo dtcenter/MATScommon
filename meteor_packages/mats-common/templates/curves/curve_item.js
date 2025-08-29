@@ -11,19 +11,15 @@ import {
   matsSelectUtils,
 } from "meteor/randyp:mats-common";
 import { Template } from "meteor/templating";
+// eslint-disable-next-line import/no-unresolved
 import moment from "moment";
+// eslint-disable-next-line import/no-unresolved
+import rgbHex from "rgb-hex";
+// eslint-disable-next-line import/no-unresolved
+import hexRgb from "hex-rgb";
 
 /* global Session, jQuery, $, _ */
 /* eslint-disable no-console */
-
-Template.curveItem.onRendered(function () {
-  // the value used for the colorpicker (l) MUST match the returned value in the colorpick helper
-  const { label } = this.data;
-  $(function () {
-    const l = `.${label}-colorpick`;
-    $(l).colorpicker({ format: "rgb", align: "left" });
-  });
-});
 
 Template.curveItem.helpers({
   removeCurve() {
@@ -48,10 +44,6 @@ Template.curveItem.helpers({
     }
     return "block";
   },
-  colorpick() {
-    const l = `${this.label}-colorpick`;
-    return l;
-  },
   text() {
     if (this.diffFrom === undefined) {
       let plotType = Session.get("plotType");
@@ -74,6 +66,9 @@ Template.curveItem.helpers({
   color() {
     return this.color;
   },
+  colorHex() {
+    return `#${rgbHex(this.color)}`;
+  },
   label() {
     return this.label;
   },
@@ -83,6 +78,16 @@ Template.curveItem.helpers({
     for (let i = 0; i < curves.length; i += 1) {
       if (curves[i].label === label) {
         return curves[i].color;
+      }
+    }
+    return null;
+  },
+  defaultColorHex() {
+    const curves = Session.get("Curves");
+    const { label } = this;
+    for (let i = 0; i < curves.length; i += 1) {
+      if (curves[i].label === label) {
+        return `#${rgbHex(curves[i].color)}`;
       }
     }
     return null;
@@ -290,7 +295,7 @@ Template.curveItem.events({
       return false;
     }
     Session.set("confirmRemoveCurve", { label: this.label, color: this.color });
-    $("#modal-confirm-remove-curve").modal();
+    $("#removeCurveModal").modal("show");
     return null;
   },
   "click .confirm-remove-curve"() {
@@ -322,7 +327,7 @@ Template.curveItem.events({
       event.currentTarget.parentNode.parentNode.parentNode.parentNode
     ).find("#curve-list-edit");
     const eventTargetCurve = $(event.currentTarget.parentNode.parentNode.parentNode)
-      .find(".displayItemLabelSpan")
+      .find(".display-item-label")
       .text()
       .trim();
     Session.set("eventTargetCurve", eventTargetCurve);
@@ -416,17 +421,6 @@ Template.curveItem.events({
     }
     matsParamUtils.collapseParams();
   },
-  hidePicker() {
-    const Curves = Session.get("Curves");
-    const { label } = this;
-    for (let i = 0; i < Curves.length; i += 1) {
-      if (label === Curves[i].label) {
-        Curves[i].color = document.getElementById(`${label}-color-value`).value;
-      }
-    }
-    Session.set("Curves", Curves);
-    return false;
-  },
   "click .displayBtn"(event) {
     const srcDisplayButton = event.currentTarget;
     const { name } = srcDisplayButton;
@@ -452,7 +446,7 @@ Template.curveItem.events({
       ).find("#curve-list-edit");
     }
     const eventTargetCurve = $(event.currentTarget.parentNode.parentNode.parentNode)
-      .find(".displayItemLabelSpan")
+      .find(".display-item-label")
       .text()
       .trim();
     Session.set("eventTargetCurve", eventTargetCurve);
@@ -504,5 +498,21 @@ Template.curveItem.events({
       controlElem.click();
     }
     Session.set("elementChanged", Date.now());
+  },
+  "change .color-picker"() {
+    const curves = Session.get("Curves");
+    $("input[id$=color-picker]")
+      .get()
+      .forEach(function (elem) {
+        if (elem.value !== undefined && elem.value !== "") {
+          const label = elem.id.split("-")[0];
+          for (let i = 0; i < curves.length; i += 1) {
+            if (curves[i].label === label) {
+              curves[i].color = hexRgb(elem.value, { format: "css" });
+            }
+          }
+        }
+      });
+    Session.set("Curves", curves);
   },
 });

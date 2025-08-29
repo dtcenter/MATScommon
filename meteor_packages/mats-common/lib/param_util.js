@@ -13,6 +13,7 @@ import {
   matsCurveUtils,
   matsSelectUtils,
 } from "meteor/randyp:mats-common";
+// eslint-disable-next-line import/no-unresolved
 import moment from "moment";
 
 // get the document id for the control button element that corresponds to the param name

@@ -12,6 +12,7 @@ import {
   matsDataCurveOpsUtils,
   matsDataPlotOpsUtils,
 } from "meteor/randyp:mats-common";
+// eslint-disable-next-line import/no-unresolved
 import moment from "moment";
 import { _ } from "meteor/underscore";
 

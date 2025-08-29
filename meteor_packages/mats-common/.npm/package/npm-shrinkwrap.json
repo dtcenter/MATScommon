@@ -293,6 +293,11 @@
       "resolved": "https://registry.npmjs.org/hasown/-/hasown-2.0.2.tgz",
       "integrity": "sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ=="
     },
+    "hex-rgb": {
+      "version": "5.0.0",
+      "resolved": "https://registry.npmjs.org/hex-rgb/-/hex-rgb-5.0.0.tgz",
+      "integrity": "sha512-NQO+lgVUCtHxZ792FodgW0zflK+ozS9X9dwGp9XvvmPlH7pyxd588cn24TD3rmPm/N0AIRXF10Otah8yKqGw4w=="
+    },
     "html2canvas": {
       "version": "1.4.1",
       "resolved": "https://registry.npmjs.org/html2canvas/-/html2canvas-1.4.1.tgz",

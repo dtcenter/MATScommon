@@ -1,35 +1,47 @@
 <template name="curveItem">
   <div
-    class="modal modal-dialog fade"
-    id="modal-confirm-remove-curve"
+    class="modal fade"
+    id="removeCurveModal"
+    data-bs-backdrop="static"
+    data-bs-keyboard="false"
     tabindex="-1"
-    role="dialog"
-    aria-labelledby="confirmRemoveCurve"
-    aria-hidden="true"
-    style="background-color: #cccccc"
+    aria-labelledby="removeCurveModalLabel"
   >
-    <div class="modal-dialog">
-      <div class="modal-content" style="padding-top: 2em">
-        <h2 class="modal-title" style="text-align: center; color: black">
-          Remove {{removeCurve}}?
-        </h2>
-        <div class="modal-body">
-          <h4 style="color: black">
-            Are you sure you want to remove curve {{removeCurve}}?
-          </h4>
-        </div>
-        <div class="modal-footer">
+    <div class="modal-dialog modal-style">
+      <div class="modal-content pt-3">
+        <div class="modal-header border-bottom-0">
+          <h2 id="removeCurveModalLabel" class="modal-title text-dark-blue">
+            Curve Removal
+          </h2>
           <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="text-center mt-4 mb-3">
+          <h3>Remove {{removeCurve}}?</h3>
+        </div>
+        <div class="modal-body h-50">
+          <h5 style="color: black">
+            Are you sure you want to remove curve {{removeCurve}}?
+          </h5>
+        </div>
+        <div class="modal-footer border-top-0">
+          <button
+            type="button"
             id="cancel-remove-curve"
             class="cancel-remove-curve btn btn-success"
-            data-dismiss="modal"
+            data-bs-dismiss="modal"
           >
             Cancel the Remove
           </button>
           <button
+            type="button"
             id="confirm-remove-curve"
             class="btn btn-danger confirm-remove-curve"
-            data-dismiss="modal"
+            data-bs-dismiss="modal"
           >
             Remove curve {{removeCurve}}
           </button>
@@ -40,30 +52,23 @@
 
   <div id="curveItem-{{label}}">
     <div class="pull-left clearfix col-lg-12">
-      <div
-        style="padding:0.5%;margin-bottom:0.5%;display:inline-block;background-color: #f5f5f5;border:solid;border-width:thick;border-color: {{defaultColor}};border-radius: 10px;"
-      >
-        <span>
+      <div class="p-2 mt-3 mb-3 added-curve" style="border-color: {{defaultColor}};">
+        <div class="d-flex align-items-center">
           <span
-            class="rounded input-group displayItemLabelSpan label label-default"
-            style="
-              vertical-align: middle;
-              align-content: center;
-              font-size: large;
-              margin: 5px;
-            "
+            class="m-2 px-2 py-1 rounded bg-darkgray text-white d-inline-block display-item-label label label-default text-center align-middle fs-5"
             id="LABEL-curve-{{curveNumber}}-Item"
-            >{{label}}</span
-          >
+            >{{label}}
+          </span>
           <input
-            id="{{label}}-color-value"
-            type="text"
-            class="input-sm form-control {{colorpick}}"
-            value="{{defaultColor}}"
-            style="display: inline-block; width: 10em"
+            id="{{label}}-color-picker"
+            type="color"
+            class="form-control form-control-color d-inline-block color-picker"
+            value="{{defaultColorHex}}"
+            style="margin-right: 0.5em"
+            title="Choose a color"
           />
           {{#if DBcurve }} {{#if editingThis}}
-          <div id="editMode" class="btn-toolbar-sm btn-group">
+          <div id="editMode" class="d-inline-block btn-toolbar-sm btn-group">
             <button
               name="save"
               id="curve-list-save"
@@ -106,7 +111,7 @@
             </button>
           </div>
           {{/if}} {{/if}}
-        </span>
+        </div>
         {{> curveParamItemGroup this}}
       </div>
     </div>
