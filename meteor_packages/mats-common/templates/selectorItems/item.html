@@ -1,8 +1,9 @@
 <template name="item">
   <div
     id="{{name}}-item"
-    class="item btn-group"
-    style="display:{{display}}"
+    class="item-button-group item btn-group"
+    role="group"
+    style="display: {{display}}"
     data-toggle="tooltip"
     data-placement="{{tooltipPlacement}}"
     title="{{tooltipTitle}}"
@@ -10,103 +11,62 @@
     {{#if isColor}}
     <button
       type="button"
-      class="control-button btn btn-primary mediumPublicSans"
+      class="control-button btn btn-primary regularPublicSans bg-transparent fs-6 border-0"
       id="{{controlButton}}"
-      style="display:{{controlButtonCovered}}; background-color: transparent; margin-left: 0; font-size: 1.0em;border-style:none;"
     >
-      {{{fa}}}
-    </button>
-    {{else}}
-    <button
+      {{{fa}}}</button
+    >{{else}}<button
       type="button"
-      class="control-button btn btn-primary mediumPublicSans"
+      class="control-button btn btn-primary regularPublicSans fs-6 border-end-0"
       id="{{controlButton}}"
-      style="display:{{controlButtonCovered}}; margin-left: 0"
     >
-      {{tcname}}
-    </button>
-    {{/if}}
-    <span style="display: inline-block">&nbsp;</span>
-    <div
+      {{tcname}}</button
+    >{{/if}}<div
+    class="bg-white float-right"
       id="{{element}}"
-      style="display:{{elementHidden}};{{position}};z-index: {{zIndexVal}};float:right;background-color: white;"
+      style="display: {{elementHidden}}; {{position}}; z-index: {{zIndexVal}};"
     >
       {{#if isSelect}} {{> select this}} {{else}} {{#if isSpinner}} {{>numberSpinner
       this}} {{else}} {{#if isInput}} {{> textInput this}} {{else}} {{#if isColor}} {{>
       color this}} {{else}} {{#if isDateRange}} {{> dateRange this}} {{else}} {{#if
       isCheckBoxGroup}}
       <div
-        class="container"
+        class="container bg-info-subtle border border-info border-1 rounded-1 text-nowrap fs-5 w-100"
         id="{{name}}-{{type}}"
-        style="
-          font-size: large;
-          background-color: #ccffff;
-          border-style: solid;
-          border-color: #99cccc;
-          border-width: 1px;
-          border-radius: 4px;
-          width: 100%;
-          white-space: nowrap;
-        "
       >
         {{lcname}}: {{#each options}} {{> checkboxGroup this}} {{/each}}
       </div>
       {{else}} {{#if isRadioGroup}}
       <div
-        class="container btn-group"
+        class="container btn-group bg-info-subtle border border-info border-1 rounded-1 text-nowrap fs-5 w-100"
         id="{{name}}-{{type}}"
-        style="
-          font-size: large;
-          background-color: #ccffff;
-          border-style: solid;
-          border-color: #99cccc;
-          border-width: 1px;
-          border-radius: 4px;
-          width: 100%;
-          white-space: nowrap;
-        "
       >
         <span>{{lcname}}:</span>
         {{#each options}} {{> radioGroup this}} {{/each}}
       </div>
       {{else}} {{#if isSelectMap}} {{> map this}} {{/if}} {{/if}} {{/if}} {{/if}}
       {{/if}} {{/if}} {{/if}} {{/if}}
-    </div>
-    {{#if hasHelp}}
-    <button
+    </div>{{#if hasHelp}}<button
       type="button"
-      class="control-button btn btn-info mediumPublicSans"
+      class="control-button btn btn-info regularPublicSans fs-6 border-start-0"
       name="{{controlButton}}-value"
       id="{{controlButton}}-value"
-      style="display:{{controlButtonCovered}}; border-left: none;"
+    >
+      {{textValue}}</button
+    ><button
+      type="button"
+      class="btn btn-info regularPublicSans fs-6 help"
+      style="background-color: #fff3cd; color: #000000"
+    >
+      ?</button
+    >{{else}}<button
+      type="button"
+      class="control-button btn btn-info regularPublicSans fs-6 border-start-0"
+      name="{{controlButton}}-value"
+      id="{{controlButton}}-value"
     >
       {{textValue}}
     </button>
-    <button
-      style="
-        background-color: #fff3cd;
-        color: #000000;
-        margin-left: 0;
-        margin-right: 1em;
-        border-left: none;
-      "
-      type="button"
-      class="btn btn-info mediumPublicSans help"
-    >
-      ?
-    </button>
-    {{else}} {{#if isColor}}
-    <span style="display: inline-block">&nbsp;</span>
-    {{else}}
-    <button
-      type="button"
-      class="control-button btn btn-info mediumPublicSans"
-      name="{{controlButton}}-value"
-      id="{{controlButton}}-value"
-      style="display:{{controlButtonCovered}}; margin-right: 1em; border-left: none;"
-    >
-      {{textValue}}
-    </button>
-    {{/if}} {{/if}}
+    {{/if}}
   </div>
 </template>

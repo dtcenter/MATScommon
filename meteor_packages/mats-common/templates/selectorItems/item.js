@@ -169,27 +169,24 @@ Template.item.helpers({
   },
   display() {
     if (this.hidden) {
-      return "none;margin-top: 1.5em;";
+      return "none;";
     }
     if (
       this.displayPriority !== undefined &&
       this.displayPriority > Session.get("displayPriority")
     ) {
-      return "none;margin-top: 1.5em;";
+      return "none;";
     }
     if (
       this.controlButtonVisibility !== undefined &&
       this.controlButtonVisibility === "none"
     ) {
-      return "none;margin-top: 1.5em;";
+      return "none;";
     }
-    return "block;margin-top: 1.5em;";
-  },
-  controlButtonCovered() {
-    if (this.controlButtonCovered) {
-      return "block;";
+    if (!this.controlButtonCovered) {
+      return "none;";
     }
-    return "none";
+    return "block; margin-top: 1.5em;";
   },
   elementHidden() {
     if (this.controlButtonCovered) {
