@@ -1,25 +1,16 @@
 <template name="plotType">
-  <div id="plotType" class="container pull-left" style="display: block">
+  <div id="plotType" class="container">
     <div
-      class="row well well-sm pull-left"
-      style="
-        background-color: #ccffff;
-        border-style: solid;
-        border-color: #99cccc;
-        border-width: 1px;
-        margin-left: 2px;
-      "
+      class="row bg-info-subtle border border-info border-1 rounded-1 mt-4 p-2 w-50"
     >
       <label
         for="plotTypes-selector"
-        class="mediumPublicSans"
-        style="font-size: large; font-weight: normal"
+        class="col-xl-3 col-lg-4 col-md-5 col-6 regularPublicSans fs-5"
         >Plot Type:&nbsp;&nbsp;</label
       >
       <select
         id="plotTypes-selector"
-        class="boldedPublicSans plotTypes-selector"
-        style="font-size: large"
+        class="col-xl-9 col-lg-8 col-md-7 col-6 mediumPublicSans fs-5 plotTypes-selector"
         aria-label="plot type options"
       >
         {{#each plotTypes}}

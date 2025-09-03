@@ -8,14 +8,14 @@
     >
       <div
         id="paramWell"
-        class="clearfix well well-sm pull-left"
+        class="clearfix well well-sm bg-white pull-left"
         style="background-blend-mode: lighten; background-color: {{paramWellColor}}; padding: 1em;"
       >
         {{#each CurveParamGroups}} {{> curveParamGroup}} {{/each}}
       </div>
       {{#if isEdit}}
       <div
-        class="row clearfix well-sm col-lg-12 pull-left btn-toolbar btn-group btn-lg"
+        class="row clearfix well-sm bg-white col-lg-12 pull-left btn-toolbar btn-group btn-lg"
         style="padding: 1em"
       >
         <button type="submit" name="save" id="save" class="btn btn-success">
@@ -32,7 +32,7 @@
       </div>
       {{else}}
       <div
-        class="row clearfix well-sm col-lg-12 pull-left btn-toolbar btn-group btn-lg"
+        class="row clearfix well-sm bg-white col-lg-12 pull-left btn-toolbar btn-group btn-lg"
         style="padding: 1em"
       >
         <button type="submit" name="add" id="add" class="btn btn-success">
