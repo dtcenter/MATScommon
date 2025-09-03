@@ -1,11 +1,10 @@
 <template name="radioGroup">
   <label
-    class="radio-inline"
-    style="display: inline-block"
+    class="radio-inline d-inline-block"
     for="{{../../name}}-{{../../type}}-{{this}}"
     >{{labelValue ../../optionsMap}}</label
   >
-  <input type="radio" style="display: inline-block" class="data-input"
-  name="{{../../name}}" id="{{../../name}}-{{../../type}}-{{this}}" value="{{this}}"
-  {{checkedByDefault ../../default}} />
+  <input type="radio d-inline-block" class="data-input" name="{{../../name}}"
+  id="{{../../name}}-{{../../type}}-{{this}}" value="{{this}}" {{checkedByDefault
+  ../../default}} />
 </template>
