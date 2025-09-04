@@ -81,7 +81,7 @@ Template.curveParamGroup.helpers({
     const params = getParams(num);
     for (let i = 0; i < params.length; i += 1) {
       if (params[i].gapAbove) {
-        return "margin-top: 1em; border-top: 2px solid gray;";
+        return "margin-top: 2em; border-top: 2px solid gray;";
       }
     }
     return "";

@@ -3,8 +3,8 @@
     id="curveParamGroup-{{this}}"
     style="display: {{displayGroup}}; {{gapAbove this}} {{gapBelow this}}"
   >
+    <div style="{{gapMessageSpacing this}}">{{gapMessage this}}</div>
     <div class="btn-toolbar btn-group-inline">
-      <div style="{{gapMessageSpacing this}}">{{gapMessage this}}</div>
       {{#each CurveParams this}} {{> item}} {{/each}}
     </div>
   </div>
