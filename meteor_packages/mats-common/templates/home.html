@@ -9,12 +9,11 @@
       </div>
       <div class="row mx-4" id="plotTypeContainer">{{>plotType}}</div>
       {{>about}} {{#if Template.subscriptionsReady}} {{#if isUnderConstruction}}
-      <div class="row mx-3">{{>underConstruction}}</div>
+      <div class="row mx-4">{{>underConstruction}}</div>
       {{else}}
       <div class="row">{{>changePlotType}}</div>
-      <div class="row mx-3">{{>curveList}}</div>
-      <div class="row mx-3">{{>error}} {{>info}}</div>
-      <div id="scatterView" class="row mx-3">{{>scatter2d}}</div>
+      <div class="row mx-2">{{>curveList}}</div>
+      <div class="row">{{>error}} {{>info}}</div>
       <div id="paramView" class="row">{{>paramList}}</div>
       <div id="plotView" class="row mx-3">{{>plotList}}</div>
       {{resetDefaults}} {{/if}} {{else}} Loading... {{/if}}

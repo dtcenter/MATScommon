@@ -1,5 +1,5 @@
 <template name="scorecardParamList">
-  <div id="paramList" class="clearfix pull-left">
+  <div id="paramList">
     <form
       id="paramForm"
       name="paramForm"
@@ -8,16 +8,13 @@
     >
       <div
         id="paramWell"
-        class="clearfix well well-sm pull-left"
-        style="background-blend-mode: lighten; background-color: {{paramWellColor}}; padding: 1em;"
+        class="clearfix well well-sm bg-white p-3"
+        style="background-color: {{paramWellColor}};"
       >
         {{#each CurveParamGroups}} {{> curveParamGroup}} {{/each}}
       </div>
       {{#if isEdit}}
-      <div
-        class="row clearfix well-sm col-lg-12 pull-left btn-toolbar btn-group btn-lg"
-        style="padding: 1em"
-      >
+      <div class="row clearfix well-sm bg-white btn-toolbar btn-group btn-lg p-2">
         <button type="submit" name="save" id="save" class="btn btn-success">
           <i class="fa-regular fa-floppy-disk"></i>&nbsp;&nbsp;Save Changes
         </button>
@@ -31,10 +28,7 @@
         </button>
       </div>
       {{else}}
-      <div
-        class="row clearfix well-sm col-lg-12 pull-left btn-toolbar btn-group btn-lg"
-        style="padding: 1em"
-      >
+      <div class="btn-group mx-3 my-4">
         <button type="submit" name="add" id="add" class="btn btn-success">
           <i class="fa-solid fa-plus"></i>&nbsp;&nbsp;Add Block
         </button>
