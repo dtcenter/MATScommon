@@ -1,170 +1,200 @@
 <template name="plotList">
-  <div id="plotList" class="clearfix well span12">
-    <form
-      id="plotForm"
-      name="plotForm"
-      aria-label="form to save or restore curve settings"
-      novalidate
+  <div id="plotList" class="clearfix well">
+    <div class="w-100">{{#each PlotParamGroups}} {{> plotParamGroup}} {{/each}}</div>
+    <div
+      class="modal fade"
+      id="saveModal"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+      tabindex="-1"
+      aria-labelledby="saveModalLabel"
     >
-      <div style="display: inline-block; width: 100%">
-        {{#each PlotParamGroups}} {{> plotParamGroup}} {{/each}}
-      </div>
-      <div id="saveModal" class="modal" role="dialog">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h4>Save Settings</h4>
-            </div>
-            <div class="modal-body">
-              <div>
-                <label>Save Settings to new entry ...</label>
-                <input
-                  id="save_as"
-                  class="data-input textInput"
-                  type="text"
-                  name="save_as"
-                />
-                <input
-                  id="save-private"
-                  type="radio"
-                  name="save-public-private"
-                  value="private"
-                  {{privateDisabled}}
-                />Private
+      <div class="modal-dialog modal-style">
+        <div class="modal-content bg-white pt-3">
+          <div class="modal-header border-bottom-0">
+            <h2 id="saveModalLabel" class="modal-title text-dark-blue">
+              Save Settings
+            </h2>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body h-50">
+            <div>
+              <label for="save_as" class="form-label fs-5"
+                >Save new settings as:
+              </label>
+              <input
+                id="save_as"
+                class="data-input form-control bg-white textInput"
+                type="text"
+                name="save_as"
+              />
+
+              <div class="form-check">
                 <input
                   id="save-public"
                   type="radio"
                   name="save-public-private"
+                  class="form-check-input"
                   value="public"
                   checked
-                />Public
+                />
+                <label class="form-check-label" for="save-public">
+                  Save in public directory
+                </label>
               </div>
-              <div>
-                <label>Overwrite Settings to entry...</label>
-                <select
-                  class="data-input save-to"
-                  size="5"
-                  name="save_selector"
-                  id="save_to"
-                  aria-label="saved curve settings options"
-                >
-                  {{#each privateRestoreNames}}
-                  <option>{{this}}</option>
-                  {{/each}}
-                </select>
+              <div class="form-check">
+                <input
+                  id="save-private"
+                  type="radio"
+                  name="save-public-private"
+                  class="form-check-input"
+                  value="private"
+                  disabled
+                />
+                <label class="form-check-label" for="save-private">
+                  Save in private directory (currently unavailable)
+                </label>
               </div>
             </div>
-            <div class="modal-footer btn-group">
-              <button
-                type="button"
-                class="cancel-save btn btn-info"
-                data-dismiss="modal"
-              >
-                &nbsp;&nbsp;Cancel
-              </button>
-              <button
-                name="delete"
-                type="button"
-                class="delete-selected btn btn-primary"
-              >
-                &nbsp;&nbsp;Delete Selected
-              </button>
-              <button name="save" type="submit" class="submit-params btn btn-primary">
-                &nbsp;&nbsp;Save Settings
-              </button>
-            </div>
-          </div>
-          <!-- /.modal-content -->
-        </div>
-        <!-- /.modal-dialog -->
-      </div>
-      <!-- /.modal -->
-      <div id="restoreModal" class="modal" role="dialog">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h4>Restore Settings</h4>
-            </div>
-            <div class="modal-body">
-              <label>Restore Settings from private...</label>
+            <br />
+            <br />
+            <div>
+              <label for="save_to" class="form-label fs-6 text-muted"
+                >Overwrite privately saved settings (currently unavailable):
+              </label>
               <select
-                class="data-input restore-from-private"
-                size="5"
-                name="restore_from_private"
-                id="restore_from_private"
-                aria-label="saved curve settings options"
+                class="data-input form-select save-to bg-white"
+                name="save_selector"
+                id="save_to"
+                aria-label="private saved curve settings options"
+                disabled
               >
                 {{#each privateRestoreNames}}
                 <option>{{this}}</option>
                 {{/each}}
               </select>
             </div>
-            <div class="modal-body">
-              <label>Restore Settings from public...</label>
-              <select
-                class="data-input restore-from-public"
-                size="5"
-                name="restore_from_public"
-                id="restore_from_public"
-                aria-label="saved curve settings options"
-              >
-                {{#each publicRestoreNames}}
-                <option>{{this}}</option>
-                {{/each}}
-              </select>
-            </div>
-            <div class="modal-footer btn-group">
-              <button
-                type="button"
-                class="cancel-restore btn btn-info"
-                data-dismiss="modal"
-              >
-                &nbsp;&nbsp;Cancel
-              </button>
-              <button
-                name="restore"
-                type="submit"
-                class="submit-params btn btn-primary"
-              >
-                &nbsp;&nbsp;Restore Settings
-              </button>
-            </div>
           </div>
-          <!-- /.modal-content -->
+          <div class="modal-footer btn-group border-top-0">
+            <button
+              type="button"
+              class="cancel-save btn btn-info"
+              data-bs-dismiss="modal"
+            >
+              Cancel
+            </button>
+            <button name="delete" type="button" class="delete-selected btn btn-danger">
+              Delete Selected
+            </button>
+            <button name="save" type="submit" class="submit-params btn btn-success">
+              Save Settings
+            </button>
+          </div>
         </div>
-        <!-- /.modal-dialog -->
       </div>
-      <!-- /.modal -->
-      <div id="plot-buttons" class="btn-group">
-        <button
-          type="submit"
-          name="plot"
-          id="plot-curves"
-          class="submit-params btn btn-success btn-sm"
-          style="display: none"
-        >
-          <i class="fa-solid fa-diagram-project"></i>
-        </button>
-        <button
-          type="submit"
-          name="save"
-          id="save-settings"
-          class="submit-params btn btn-success btn-sm"
-          style="display: none"
-        >
-          <i class="fa-solid fa-cloud-arrow-up"></i>
-        </button>
-        <button
-          type="submit"
-          name="restore"
-          id="restore-settings"
-          class="submit-params btn btn-success btn-sm"
-          style="display: none"
-        >
-          <i class="fa-solid fa-cloud-arrow-down"></i>
-        </button>
+    </div>
+    <div
+      class="modal fade"
+      id="restoreModal"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+      tabindex="-1"
+      aria-labelledby="restoreModalLabel"
+    >
+      <div class="modal-dialog modal-style">
+        <div class="modal-content bg-white pt-3">
+          <div class="modal-header border-bottom-0">
+            <h2 id="restoreModalLabel" class="modal-title text-dark-blue">
+              Restore Settings
+            </h2>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <label for="restore_from_public" class="form-label fs-6"
+              >Restore public settings:
+            </label>
+            <select
+              class="data-input form-select restore-from-public bg-white"
+              name="restore_from_public"
+              id="restore_from_public"
+              aria-label="restore public curve settings options"
+            >
+              <option selected value="">Select curve settings</option>
+              {{#each publicRestoreNames}}
+              <option>{{this}}</option>
+              {{/each}}
+            </select>
+            <br />
+            <br />
+            <label for="restore_from_private" class="form-label text-muted fs-6"
+              >Restore private settings (currently unavailable):
+            </label>
+            <select
+              class="data-input form-select restore-from-private bg-white"
+              name="restore_from_private"
+              id="restore_from_private"
+              aria-label="restore private curve settings options"
+              disabled
+            >
+              {{#each privateRestoreNames}}
+              <option>{{this}}</option>
+              {{/each}}
+            </select>
+          </div>
+          <div class="modal-footer btn-group border-top-0">
+            <button
+              type="button"
+              class="cancel-save btn btn-info"
+              data-bs-dismiss="modal"
+            >
+              Cancel
+            </button>
+            <button name="restore" type="submit" class="submit-params btn btn-success">
+              &nbsp;&nbsp;Restore Settings
+            </button>
+          </div>
+        </div>
       </div>
-      <div>{{> qcParamGroup}}</div>
-    </form>
+    </div>
+    <div id="plot-buttons" class="btn-group">
+      <button
+        type="submit"
+        name="plot"
+        id="plot-curves"
+        class="submit-params btn btn-success btn-sm"
+        style="display: none"
+      >
+        <i class="fa-solid fa-diagram-project"></i>
+      </button>
+      <button
+        type="submit"
+        name="save"
+        id="save-settings"
+        class="submit-params btn btn-success btn-sm"
+        style="display: none"
+      >
+        <i class="fa-solid fa-cloud-arrow-down"></i>
+      </button>
+      <button
+        type="submit"
+        name="restore"
+        id="restore-settings"
+        class="submit-params btn btn-success btn-sm"
+        style="display: none"
+      >
+        <i class="fa-solid fa-cloud-arrow-up"></i>
+      </button>
+    </div>
+    <div>{{> qcParamGroup}}</div>
   </div>
 </template>
