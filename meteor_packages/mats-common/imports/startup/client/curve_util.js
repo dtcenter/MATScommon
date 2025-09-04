@@ -521,6 +521,14 @@ const setSelectorVisibility = function (plotType, faceOptions, selectorsToReset)
 // method to display the appropriate selectors for a timeseries curve
 const showTimeseriesFace = function () {
   const plotType = matsTypes.PlotTypes.timeSeries;
+
+  // set appropriate QC parameter visibility
+  if (document.getElementById("qcParamGroup-item").classList.contains("d-none"))
+    document.getElementById("qcParamGroup-item").classList.remove("d-none");
+  document.getElementById("qcParamGroup-gaps-item").classList.add("d-none");
+  document.getElementById("qcParamGroup-lite-item").classList.add("d-none");
+
+  // set selector visibility
   let faceOptions = {
     "curve-dates": "none",
     dates: "block",
@@ -560,9 +568,6 @@ const showTimeseriesFace = function () {
     "bin-parameter": "none",
     significance: "none",
     plotFormat: "block",
-    qcParamGroup: "block",
-    "qcParamGroup-gaps": "none",
-    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -576,6 +581,14 @@ const showTimeseriesFace = function () {
 // method to display the appropriate selectors for a profile curve
 const showProfileFace = function () {
   const plotType = matsTypes.PlotTypes.profile;
+
+  // set appropriate QC parameter visibility
+  if (document.getElementById("qcParamGroup-item").classList.contains("d-none"))
+    document.getElementById("qcParamGroup-item").classList.remove("d-none");
+  document.getElementById("qcParamGroup-gaps-item").classList.add("d-none");
+  document.getElementById("qcParamGroup-lite-item").classList.add("d-none");
+
+  // set selector visibility
   let faceOptions = {
     "curve-dates": "block",
     dates: "none",
@@ -615,9 +628,6 @@ const showProfileFace = function () {
     "bin-parameter": "none",
     significance: "none",
     plotFormat: "block",
-    qcParamGroup: "block",
-    "qcParamGroup-gaps": "none",
-    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -631,6 +641,14 @@ const showProfileFace = function () {
 // method to display the appropriate selectors for a dieoff curve
 const showDieoffFace = function () {
   const plotType = matsTypes.PlotTypes.dieoff;
+
+  // set appropriate QC parameter visibility
+  if (document.getElementById("qcParamGroup-item").classList.contains("d-none"))
+    document.getElementById("qcParamGroup-item").classList.remove("d-none");
+  document.getElementById("qcParamGroup-gaps-item").classList.add("d-none");
+  document.getElementById("qcParamGroup-lite-item").classList.add("d-none");
+
+  // set selector visibility
   let faceOptions = {
     "curve-dates": "block",
     dates: "none",
@@ -670,9 +688,6 @@ const showDieoffFace = function () {
     "bin-parameter": "none",
     significance: "none",
     plotFormat: "block",
-    qcParamGroup: "block",
-    "qcParamGroup-gaps": "none",
-    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -686,6 +701,14 @@ const showDieoffFace = function () {
 // method to display the appropriate selectors for a threshold curve
 const showThresholdFace = function () {
   const plotType = matsTypes.PlotTypes.threshold;
+
+  // set appropriate QC parameter visibility
+  if (document.getElementById("qcParamGroup-item").classList.contains("d-none"))
+    document.getElementById("qcParamGroup-item").classList.remove("d-none");
+  document.getElementById("qcParamGroup-gaps-item").classList.add("d-none");
+  document.getElementById("qcParamGroup-lite-item").classList.add("d-none");
+
+  // set selector visibility
   let faceOptions = {
     "curve-dates": "block",
     dates: "none",
@@ -725,9 +748,6 @@ const showThresholdFace = function () {
     "bin-parameter": "none",
     significance: "none",
     plotFormat: "block",
-    qcParamGroup: "block",
-    "qcParamGroup-gaps": "none",
-    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -745,6 +765,14 @@ const showThresholdFace = function () {
 // method to display the appropriate selectors for a valid time curve
 const showValidTimeFace = function () {
   const plotType = matsTypes.PlotTypes.validtime;
+
+  // set appropriate QC parameter visibility
+  if (document.getElementById("qcParamGroup-item").classList.contains("d-none"))
+    document.getElementById("qcParamGroup-item").classList.remove("d-none");
+  document.getElementById("qcParamGroup-gaps-item").classList.add("d-none");
+  document.getElementById("qcParamGroup-lite-item").classList.add("d-none");
+
+  // set selector visibility
   let faceOptions = {
     "curve-dates": "block",
     dates: "none",
@@ -784,9 +812,6 @@ const showValidTimeFace = function () {
     "bin-parameter": "none",
     significance: "none",
     plotFormat: "block",
-    qcParamGroup: "block",
-    "qcParamGroup-gaps": "none",
-    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -800,6 +825,14 @@ const showValidTimeFace = function () {
 // method to display the appropriate selectors for a grid scale curve
 const showGridScaleFace = function () {
   const plotType = matsTypes.PlotTypes.gridscale;
+
+  // set appropriate QC parameter visibility
+  if (document.getElementById("qcParamGroup-item").classList.contains("d-none"))
+    document.getElementById("qcParamGroup-item").classList.remove("d-none");
+  document.getElementById("qcParamGroup-gaps-item").classList.add("d-none");
+  document.getElementById("qcParamGroup-lite-item").classList.add("d-none");
+
+  // set selector visibility
   let faceOptions = {
     "curve-dates": "block",
     dates: "none",
@@ -839,9 +872,6 @@ const showGridScaleFace = function () {
     "bin-parameter": "none",
     significance: "none",
     plotFormat: "block",
-    qcParamGroup: "block",
-    "qcParamGroup-gaps": "none",
-    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -855,6 +885,14 @@ const showGridScaleFace = function () {
 // method to display the appropriate selectors for a daily model cycle curve
 const showDailyModelCycleFace = function () {
   const plotType = matsTypes.PlotTypes.dailyModelCycle;
+
+  // set appropriate QC parameter visibility
+  if (document.getElementById("qcParamGroup-item").classList.contains("d-none"))
+    document.getElementById("qcParamGroup-item").classList.remove("d-none");
+  document.getElementById("qcParamGroup-gaps-item").classList.add("d-none");
+  document.getElementById("qcParamGroup-lite-item").classList.add("d-none");
+
+  // set selector visibility
   let faceOptions = {
     "curve-dates": "none",
     dates: "block",
@@ -894,9 +932,6 @@ const showDailyModelCycleFace = function () {
     "bin-parameter": "none",
     significance: "none",
     plotFormat: "block",
-    qcParamGroup: "block",
-    "qcParamGroup-gaps": "none",
-    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff for a specified UTC cycle init hour",
@@ -910,6 +945,14 @@ const showDailyModelCycleFace = function () {
 // method to display the appropriate selectors for a year to year curve
 const showYearToYearFace = function () {
   const plotType = matsTypes.PlotTypes.yearToYear;
+
+  // set appropriate QC parameter visibility
+  if (document.getElementById("qcParamGroup-item").classList.contains("d-none"))
+    document.getElementById("qcParamGroup-item").classList.remove("d-none");
+  document.getElementById("qcParamGroup-gaps-item").classList.add("d-none");
+  document.getElementById("qcParamGroup-lite-item").classList.add("d-none");
+
+  // set selector visibility
   let faceOptions = {
     "curve-dates": "none",
     dates: "block",
@@ -949,9 +992,6 @@ const showYearToYearFace = function () {
     "bin-parameter": "none",
     significance: "none",
     plotFormat: "block",
-    qcParamGroup: "block",
-    "qcParamGroup-gaps": "none",
-    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -965,6 +1005,13 @@ const showYearToYearFace = function () {
 // method to display the appropriate selectors for a reliability curve
 const showReliabilityFace = function () {
   const plotType = matsTypes.PlotTypes.reliability;
+
+  // set appropriate QC parameter visibility
+  document.getElementById("qcParamGroup-item").classList.add("d-none");
+  document.getElementById("qcParamGroup-gaps-item").classList.add("d-none");
+  document.getElementById("qcParamGroup-lite-item").classList.add("d-none");
+
+  // set selector visibility
   const faceOptions = {
     "curve-dates": "none",
     dates: "block",
@@ -1004,9 +1051,6 @@ const showReliabilityFace = function () {
     "bin-parameter": "none",
     significance: "none",
     plotFormat: "none",
-    qcParamGroup: "none",
-    "qcParamGroup-gaps": "none",
-    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -1020,6 +1064,13 @@ const showReliabilityFace = function () {
 // method to display the appropriate selectors for a ROC curve
 const showROCFace = function () {
   const plotType = matsTypes.PlotTypes.roc;
+
+  // set appropriate QC parameter visibility
+  document.getElementById("qcParamGroup-item").classList.add("d-none");
+  document.getElementById("qcParamGroup-gaps-item").classList.add("d-none");
+  document.getElementById("qcParamGroup-lite-item").classList.add("d-none");
+
+  // set selector visibility
   const faceOptions = {
     "curve-dates": "block",
     dates: "none",
@@ -1059,9 +1110,6 @@ const showROCFace = function () {
     "bin-parameter": "block",
     significance: "none",
     plotFormat: "none",
-    qcParamGroup: "none",
-    "qcParamGroup-gaps": "none",
-    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -1075,6 +1123,13 @@ const showROCFace = function () {
 // method to display the appropriate selectors for a performance diagram curve
 const showPerformanceDiagramFace = function () {
   const plotType = matsTypes.PlotTypes.performanceDiagram;
+
+  // set appropriate QC parameter visibility
+  document.getElementById("qcParamGroup-item").classList.add("d-none");
+  document.getElementById("qcParamGroup-gaps-item").classList.add("d-none");
+  document.getElementById("qcParamGroup-lite-item").classList.add("d-none");
+
+  // set selector visibility
   const isMetexpress =
     matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
   const faceOptions = {
@@ -1116,9 +1171,6 @@ const showPerformanceDiagramFace = function () {
     "bin-parameter": "block",
     significance: "none",
     plotFormat: "none",
-    qcParamGroup: "none",
-    "qcParamGroup-gaps": "none",
-    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -1140,6 +1192,13 @@ const showPerformanceDiagramFace = function () {
 // method to display the appropriate selectors for a performance diagram curve
 const showGridScaleProbFace = function () {
   const plotType = matsTypes.PlotTypes.gridscaleProb;
+
+  // set appropriate QC parameter visibility
+  document.getElementById("qcParamGroup-item").classList.add("d-none");
+  document.getElementById("qcParamGroup-gaps-item").classList.add("d-none");
+  document.getElementById("qcParamGroup-lite-item").classList.add("d-none");
+
+  // set selector visibility
   let faceOptions = {
     "curve-dates": "block",
     dates: "none",
@@ -1179,9 +1238,6 @@ const showGridScaleProbFace = function () {
     "bin-parameter": "none",
     significance: "none",
     plotFormat: "block",
-    qcParamGroup: "none",
-    "qcParamGroup-gaps": "none",
-    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -1195,6 +1251,14 @@ const showGridScaleProbFace = function () {
 // method to display the appropriate selectors for a map
 const showMapFace = function () {
   const plotType = matsTypes.PlotTypes.map;
+
+  // set appropriate QC parameter visibility
+  document.getElementById("qcParamGroup-item").classList.add("d-none");
+  document.getElementById("qcParamGroup-gaps-item").classList.add("d-none");
+  if (document.getElementById("qcParamGroup-lite-item").classList.contains("d-none"))
+    document.getElementById("qcParamGroup-lite-item").classList.add("d-none");
+
+  // set selector visibility
   const { appName } = matsCollections.Settings.findOne({});
   let faceOptions = {
     "curve-dates": "none",
@@ -1235,9 +1299,6 @@ const showMapFace = function () {
     "bin-parameter": "none",
     significance: "none",
     plotFormat: "none",
-    qcParamGroup: "none",
-    "qcParamGroup-gaps": "none",
-    "qcParamGroup-lite": "block",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -1260,6 +1321,13 @@ const showMapFace = function () {
 // method to display the appropriate selectors for a histogram
 const showHistogramFace = function () {
   const plotType = matsTypes.PlotTypes.histogram;
+
+  // set appropriate QC parameter visibility
+  document.getElementById("qcParamGroup-item").classList.add("d-none");
+  document.getElementById("qcParamGroup-gaps-item").classList.add("d-none");
+  document.getElementById("qcParamGroup-lite-item").classList.add("d-none");
+
+  // set selector visibility
   const faceOptions = {
     "curve-dates": "block",
     dates: "none",
@@ -1299,9 +1367,6 @@ const showHistogramFace = function () {
     "bin-parameter": "none",
     significance: "none",
     plotFormat: "block",
-    qcParamGroup: "none",
-    "qcParamGroup-gaps": "none",
-    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -1324,6 +1389,13 @@ const showHistogramFace = function () {
 // method to display the appropriate selectors for a histogram
 const showEnsembleHistogramFace = function () {
   const plotType = matsTypes.PlotTypes.ensembleHistogram;
+
+  // set appropriate QC parameter visibility
+  document.getElementById("qcParamGroup-item").classList.add("d-none");
+  document.getElementById("qcParamGroup-gaps-item").classList.add("d-none");
+  document.getElementById("qcParamGroup-lite-item").classList.add("d-none");
+
+  // set selector visibility
   const faceOptions = {
     "curve-dates": "block",
     dates: "none",
@@ -1363,9 +1435,6 @@ const showEnsembleHistogramFace = function () {
     "bin-parameter": "none",
     significance: "none",
     plotFormat: "block",
-    qcParamGroup: "none",
-    "qcParamGroup-gaps": "none",
-    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -1381,6 +1450,13 @@ const showContourFace = function () {
     document.getElementById("plotTypes-selector").value === matsTypes.PlotTypes.contour
       ? matsTypes.PlotTypes.contour
       : matsTypes.PlotTypes.contourDiff;
+
+  // set appropriate QC parameter visibility
+  document.getElementById("qcParamGroup-item").classList.add("d-none");
+  document.getElementById("qcParamGroup-gaps-item").classList.add("d-none");
+  document.getElementById("qcParamGroup-lite-item").classList.add("d-none");
+
+  // set selector visibility
   const faceOptions = {
     "curve-dates": "none",
     dates: "block",
@@ -1420,9 +1496,6 @@ const showContourFace = function () {
     "bin-parameter": "none",
     significance: plotType === matsTypes.PlotTypes.contourDiff ? "block" : "none",
     plotFormat: "none",
-    qcParamGroup: "none",
-    "qcParamGroup-gaps": "none",
-    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -1442,6 +1515,13 @@ const showSimpleScatterFace = function () {
   const plotType = matsTypes.PlotTypes.simpleScatter;
   const isMetexpress =
     matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
+
+  // set appropriate QC parameter visibility
+  document.getElementById("qcParamGroup-item").classList.add("d-none");
+  document.getElementById("qcParamGroup-gaps-item").classList.add("d-none");
+  document.getElementById("qcParamGroup-lite-item").classList.add("d-none");
+
+  // set selector visibility
   const faceOptions = {
     "curve-dates": "block",
     dates: "none",
@@ -1481,9 +1561,6 @@ const showSimpleScatterFace = function () {
     "bin-parameter": "block",
     significance: "none",
     plotFormat: "none",
-    qcParamGroup: "none",
-    "qcParamGroup-gaps": "none",
-    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
@@ -1506,6 +1583,13 @@ const showSimpleScatterFace = function () {
 // method to display the appropriate selectors for a scatter plot
 const showScatterFace = function () {
   const plotType = matsTypes.PlotTypes.scatter2d;
+
+  // set appropriate QC parameter visibility
+  document.getElementById("qcParamGroup-item").classList.add("d-none");
+  document.getElementById("qcParamGroup-gaps-item").classList.add("d-none");
+  document.getElementById("qcParamGroup-lite-item").classList.add("d-none");
+
+  // set selector visibility
   const faceOptions = {
     "curve-dates": "none",
     dates: "block",
@@ -1545,9 +1629,6 @@ const showScatterFace = function () {
     "bin-parameter": "none",
     significance: "none",
     plotFormat: "none",
-    qcParamGroup: "none",
-    "qcParamGroup-gaps": "none",
-    "qcParamGroup-lite": "none",
   };
   const selectorsToReset = {
     "dieoff-type": "Dieoff",

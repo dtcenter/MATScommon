@@ -2,52 +2,51 @@
   {{#if notScorecard}}
   <div
     id="qcParamGroup-item"
-    style="
-      background-color: #ccffff;
-      border-style: solid;
-      border-color: #99cccc;
-      border-width: 1px;
-      border-radius: 4px;
-      margin-top: 1.5em;
-      padding: 0.5em 0.5em 0.5em 0;
-      float: left;
-      display: block;
-    "
+    class="row bg-info-subtle border border-info border-1 rounded-1 mt-2 p-2"
   >
-    <label style="padding-left: 1em; font-size: large; font-weight: normal"
-      >QC parameters:
-    </label>
-    <span style="font-size: large; font-weight: normal">
-      <label
-        for="completeness"
-        style="padding-left: 1em; font-size: large; font-weight: normal"
-        >Data completeness percentage:
+    <label for="plotTypes-selector" class="col-2 regularPublicSans fs-5"
+      >Quality Control</label
+    >
+    <span class="col-4 text-end">
+      <label for="completeness" class="regularPublicSans fs-5 pl-2"
+        >Completeness threshold (%):&nbsp;
       </label>
+    </span>
+    <span class="col-1 text-start">
       <input
         type="number"
+        class="form-control bg-white"
         name="quantity"
         id="completeness"
         min="0"
         max="100"
         value="{{completenessNumber}}"
-        aria-label="Data completeness percentage:"
+        aria-label="Completeness threshold (%)"
       />
     </span>
-    <span style="font-size: large; font-weight: normal">
-      <label
-        for="outliers"
-        style="padding-left: 1em; font-size: large; font-weight: normal"
-        >Stdev filter level:
+    <span class="col-3 text-end">
+      <label for="outliers" class="regularPublicSans fs-5 pl-2"
+        >StDev filter level:&nbsp;
       </label>
+    </span>
+    <span class="col-2 text-start">
       {{#if noQC}}
-      <select id="outliers" aria-label="Stdev filter level:">
+      <select
+        id="outliers"
+        class="form-select bg-white"
+        aria-label="StDev filter level"
+      >
         <option value="all" selected="selected">All Data</option>
         <option value="3">3 sd</option>
         <option value="2">2 sd</option>
         <option value="1">1 sd</option>
       </select>
       {{else}}
-      <select id="outliers" aria-label="Stdev filter level:">
+      <select
+        id="outliers"
+        class="form-select bg-white"
+        aria-label="Stdev filter level"
+      >
         <option value="all">All Data</option>
         <option value="3" selected="selected">3 sd</option>
         <option value="2">2 sd</option>
@@ -58,36 +57,34 @@
   </div>
   <div
     id="qcParamGroup-lite-item"
-    style="
-      background-color: #ccffff;
-      border-style: solid;
-      border-color: #99cccc;
-      border-width: 1px;
-      border-radius: 4px;
-      margin-top: 1.5em;
-      padding: 0.5em 0.5em 0.5em 0;
-      float: left;
-      display: none;
-    "
+    class="d-none row bg-info-subtle border border-info border-1 rounded-1 mt-2 p-2"
   >
-    <label style="padding-left: 1em; font-size: large; font-weight: normal"
-      >QC parameters:
-    </label>
-    <span style="font-size: large; font-weight: normal">
-      <label
-        for="outliers-lite"
-        style="padding-left: 1em; font-size: large; font-weight: normal"
-        >Stdev filter level:
+    <label for="plotTypes-selector" class="col-2 regularPublicSans fs-5"
+      >Quality Control</label
+    >
+    <span class="col-3 text-end">
+      <label for="outliers-lite" class="regularPublicSans fs-5 pl-2"
+        >StDev filter level:&nbsp;
       </label>
+    </span>
+    <span class="col-2 text-start">
       {{#if noQC}}
-      <select id="outliers-lite" aria-label="Stdev filter level:">
+      <select
+        id="outliers-lite"
+        class="form-select bg-white"
+        aria-label="StDev filter level"
+      >
         <option value="all" selected="selected">All Data</option>
         <option value="3">3 sd</option>
         <option value="2">2 sd</option>
         <option value="1">1 sd</option>
       </select>
       {{else}}
-      <select id="outliers-lite" aria-label="Stdev filter level:">
+      <select
+        id="outliers-lite"
+        class="form-select bg-white"
+        aria-label="Stdev filter level"
+      >
         <option value="all">All Data</option>
         <option value="3" selected="selected">3 sd</option>
         <option value="2">2 sd</option>
@@ -98,35 +95,26 @@
   </div>
   <div
     id="qcParamGroup-gaps-item"
-    style="
-      background-color: #ccffff;
-      border-style: solid;
-      border-color: #99cccc;
-      border-width: 1px;
-      border-radius: 4px;
-      margin-top: 1.5em;
-      padding: 0.5em 0.5em 0.5em 0;
-      float: left;
-      display: none;
-    "
+    class="d-none row bg-info-subtle border border-info border-1 rounded-1 mt-2 p-2"
   >
-    <label style="padding-left: 1em; font-size: large; font-weight: normal"
-      >QC parameters:
-    </label>
-    <span style="font-size: large; font-weight: normal">
-      <label
-        for="completeness-gaps"
-        style="padding-left: 1em; font-size: large; font-weight: normal"
-        >Data completeness percentage:
+    <label for="plotTypes-selector" class="col-2 regularPublicSans fs-5"
+      >Quality Control</label
+    >
+    <span class="col-4 text-end">
+      <label for="completeness-gaps" class="regularPublicSans fs-5 pl-2"
+        >Completeness threshold (%):&nbsp;
       </label>
+    </span>
+    <span class="col-1 text-start">
       <input
         type="number"
+        class="form-control bg-white"
         name="quantity"
         id="completeness-gaps"
         min="0"
         max="100"
         value="{{completenessNumber}}"
-        aria-label="Data completeness percentage:"
+        aria-label="Completeness threshold (%)"
       />
     </span>
   </div>
