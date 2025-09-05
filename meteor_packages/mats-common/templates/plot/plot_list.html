@@ -1,6 +1,8 @@
 <template name="plotList">
-  <div id="plotList" class="clearfix well">
-    <div class="w-100">{{#each PlotParamGroups}} {{> plotParamGroup}} {{/each}}</div>
+  <div id="plotList">
+    <div id="plotWell" class="clearfix well well-sm bg-white p-3">
+      {{#each PlotParamGroups}} {{> plotParamGroup}} {{/each}}
+    </div>
     <div
       class="modal fade"
       id="saveModal"

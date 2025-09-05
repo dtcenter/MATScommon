@@ -47,11 +47,11 @@
 
   <div
     id="curveList"
-    class="well-sm clearfix col-lg-12 my-2"
-    style="display:{{displayCurves}};"
+    class="well-sm clearfix col-lg-12 my-2 mx-2"
+    style="display:{{displayCurves}}; width: 90%;"
   >
     {{#each curves}} {{> curveItem this}} {{/each}}
-    <div class="clearfix btn-toolbar well well-sm pull-left">
+    <div class="clearfix btn-toolbar well well-sm">
       <button id="remove-all" class="remove-all btn btn-danger">
         <i class="fa-solid fa-xmark"></i>&nbsp;&nbsp;Remove All
       </button>
@@ -84,18 +84,17 @@
         <i class="fa-solid fa-diagram-project"></i> Plot Matched
       </button>
       <button type="button" class="btn spacebutton"></button>
-      <span
+      <span class="p-2"
         ><input
           id="noGapsCheck"
-          class="no-gaps-check data-input checkboxInput"
+          class="no-gaps-check data-input checkboxInput ml-2"
           type="checkbox"
           value=""
           name="noGapsCheck"
-          style="margin: 10px 0 0 0"
         />&nbsp;<b>Hide Gaps</b></span
       >
       <div id="metarMismatch" style="display:{{metarMismatchHidden}}">
-        <span style="color: #aa0000; font-size: large"
+        <span class="text-danger fs-5"
           ><br />CAUTION: Your curves do not all have the same truth dataset. Is this
           intentional?</span
         >

@@ -148,10 +148,10 @@ Template.curveParamGroup.helpers({
     const params = getParams(num);
     for (let i = 0; i < params.length; i += 1) {
       if (params[i].gapAbove) {
-        return "margin-left: 10px; margin-top: 1em;";
+        return "margin-top: 1em;";
       }
     }
-    return "margin-left: 10px;";
+    return "";
   },
   gapBelow(num) {
     Session.get("restoreSettingsTime"); // used to force re-render
