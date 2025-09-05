@@ -345,74 +345,89 @@
             <div><br /></div>
             <div id="x{{xAxis.label}}AxisCustomControls" style="display: block">
               <div class="row">
-                <label class="col-sm-2">X{{xAxis}} label: </label>
-                <input
-                  id="x{{xAxis}}AxisLabel"
-                  class="x{{xAxis}}-axis-label data-input textInput col-sm-3"
-                  type="text"
-                  value="{{xAxisTitle xAxis}}"
-                  name="x{{xAxis}}AxisLabel"
-                />
-                <label class="col-sm-4">&nbsp;&nbsp;X{{xAxis}} label font size: </label>
-                <input
-                  id="x{{xAxis}}AxisFont"
-                  class="x{{xAxis}}-axis-font data-input numberInput col-sm-2"
-                  type="number"
-                  value="{{xAxisTitleFont xAxis}}"
-                  name="x{{xAxis}}AxisFont"
-                />
+                <label for="x{{xAxis}}AxisLabel" class="col-2"
+                  >X{{xAxis}} label:
+                </label>
+                <span class="col-3">
+                  <input
+                    id="x{{xAxis}}AxisLabel"
+                    class="x{{xAxis}}-axis-label data-input form-control bg-white textInput w-100"
+                    type="text"
+                    value="{{xAxisTitle xAxis}}"
+                    name="x{{xAxis}}AxisLabel"
+                /></span>
+                <label for="x{{xAxis}}AxisFont" class="col-4"
+                  >&nbsp;&nbsp;X{{xAxis}} label font size:
+                </label>
+                <span class="col-2">
+                  <input
+                    id="x{{xAxis}}AxisFont"
+                    class="x{{xAxis}}-axis-font data-input form-control bg-white numberInput w-100"
+                    type="number"
+                    value="{{xAxisTitleFont xAxis}}"
+                    name="x{{xAxis}}AxisFont"
+                /></span>
               </div>
               <div
                 id="xAxisControlsNumber"
                 style="display:{{xAxisControlsNumberVisibility}};"
               >
                 <div class="row">
-                  <label class="col-sm-2">X{{xAxis}} min: </label>
-                  <input
-                    id="x{{xAxis}}AxisMin"
-                    class="x{{xAxis}}-axis-min data-input numberInput col-sm-3"
-                    type="number"
-                    value="{{xAxisMin xAxis}}"
-                    name="x{{xAxis}}AxisMin"
-                  />
-                  <label class="col-sm-4"
+                  <label for="x{{xAxis}}AxisMin" class="col-2">X{{xAxis}} min: </label>
+                  <span class="col-3">
+                    <input
+                      id="x{{xAxis}}AxisMin"
+                      class="x{{xAxis}}-axis-min data-input form-control bg-white numberInput w-100"
+                      type="number"
+                      value="{{xAxisMin xAxis}}"
+                      name="x{{xAxis}}AxisMin"
+                  /></span>
+                  <label for="x{{xAxis}}TickFont" class="col-4"
                     >&nbsp;&nbsp;X{{xAxis}} tick font size:
                   </label>
-                  <input
-                    id="x{{xAxis}}TickFont"
-                    class="x{{xAxis}}-tick-font data-input numberInput col-sm-2"
-                    type="number"
-                    value="{{xAxisTickFont xAxis}}"
-                    name="x{{xAxis}}TickFont"
-                  />
+                  <span class="col-2">
+                    <input
+                      id="x{{xAxis}}TickFont"
+                      class="x{{xAxis}}-tick-font data-input form-control bg-white numberInput w-100"
+                      type="number"
+                      value="{{xAxisTickFont xAxis}}"
+                      name="x{{xAxis}}TickFont"
+                  /></span>
                 </div>
                 <div class="row">
-                  <label class="col-sm-2">X{{xAxis}} max: </label>
-                  <input
-                    id="x{{xAxis}}AxisMax"
-                    class="x{{xAxis}}-axis-max data-input numberInput col-sm-3"
-                    type="number"
-                    value="{{xAxisMax xAxis}}"
-                    name="x{{xAxis}}AxisMax"
-                  />
-                  <label class="col-sm-4">&nbsp;&nbsp;X{{xAxis}} sign. figures: </label>
-                  <input
-                    id="x{{xAxis}}SigFigs"
-                    class="x{{xAxis}}-sig-figures data-input textInput col-sm-2"
-                    type="text"
-                    value="Auto"
-                    name="x{{xAxis}}SigFigs"
-                  />
+                  <label for="x{{xAxis}}AxisMax" class="col-2">X{{xAxis}} max: </label>
+                  <span class="col-3">
+                    <input
+                      id="x{{xAxis}}AxisMax"
+                      class="x{{xAxis}}-axis-max data-input form-control bg-white numberInput w-100"
+                      type="number"
+                      value="{{xAxisMax xAxis}}"
+                      name="x{{xAxis}}AxisMax"
+                  /></span>
+                  <label for="x{{xAxis}}SigFigs" class="col-4"
+                    >&nbsp;&nbsp;X{{xAxis}} sign. figures:
+                  </label>
+                  <span class="col-2">
+                    <input
+                      id="x{{xAxis}}SigFigs"
+                      class="x{{xAxis}}-sig-figures data-input form-control bg-white textInput w-100"
+                      type="text"
+                      value="Auto"
+                      name="x{{xAxis}}SigFigs"
+                  /></span>
                 </div>
                 <div class="row">
-                  <label class="col-sm-2">X{{xAxis}} step: </label>
-                  <input
-                    id="x{{xAxis}}TickInterval"
-                    class="x{{xAxis}}-tick-interval data-input textInput col-sm-3"
-                    type="text"
-                    value="Auto"
-                    name="x{{xAxis}}TickInterval"
-                  />
+                  <label for="x{{xAxis}}TickInterval" class="col-2"
+                    >X{{xAxis}} step:
+                  </label>
+                  <span class="col-3">
+                    <input
+                      id="x{{xAxis}}TickInterval"
+                      class="x{{xAxis}}-tick-interval data-input form-control bg-white textInput w-100"
+                      type="text"
+                      value="Auto"
+                      name="x{{xAxis}}TickInterval"
+                  /></span>
                 </div>
               </div>
               <div
@@ -420,37 +435,44 @@
                 style="display:{{xAxisControlsTextVisibility}};"
               >
                 <div class="row">
-                  <label class="col-sm-2">X{{xAxis}} min: </label>
-                  <input
-                    id="x{{xAxis}}AxisMinText"
-                    class="x{{xAxis}}-axis-min data-input textInput col-sm-3"
-                    type="text"
-                    value="{{xAxisMin xAxis}}"
-                    name="x{{xAxis}}AxisMinText"
-                  />
-                  <label class="col-sm-4"
+                  <label for="x{{xAxis}}AxisMinText" class="col-2"
+                    >X{{xAxis}} min:
+                  </label>
+                  <span class="col-3">
+                    <input
+                      id="x{{xAxis}}AxisMinText"
+                      class="x{{xAxis}}-axis-min data-input form-control bg-white textInput w-100"
+                      type="text"
+                      value="{{xAxisMin xAxis}}"
+                      name="x{{xAxis}}AxisMinText"
+                  /></span>
+                  <label for="x{{xAxis}}TickFontText" class="col-4"
                     >&nbsp;&nbsp;X{{xAxis}} tick font size:
                   </label>
-                  <input
-                    id="x{{xAxis}}TickFontText"
-                    class="x{{xAxis}}-text-tick-font data-input numberInput col-sm-2"
-                    type="number"
-                    value="{{xAxisTickFont xAxis}}"
-                    name="x{{xAxis}}TextTickFont"
-                  />
+                  <span class="col-2">
+                    <input
+                      id="x{{xAxis}}TickFontText"
+                      class="x{{xAxis}}-text-tick-font data-input form-control bg-white numberInput w-100"
+                      type="number"
+                      value="{{xAxisTickFont xAxis}}"
+                      name="x{{xAxis}}TextTickFont"
+                  /></span>
                 </div>
                 <div class="row">
-                  <label class="col-sm-2">X{{xAxis}} max: </label>
-                  <input
-                    id="x{{xAxis}}AxisMaxText"
-                    class="x{{xAxis}}-axis-max data-input textInput col-sm-3"
-                    type="text"
-                    value="{{xAxisMax xAxis}}"
-                    name="x{{xAxis}}AxisMaxText"
-                  />
+                  <label for="x{{xAxis}}AxisMaxText" class="col-2"
+                    >X{{xAxis}} max:
+                  </label>
+                  <span class="col-3">
+                    <input
+                      id="x{{xAxis}}AxisMaxText"
+                      class="x{{xAxis}}-axis-max data-input form-control bg-white textInput w-100"
+                      type="text"
+                      value="{{xAxisMax xAxis}}"
+                      name="x{{xAxis}}AxisMaxText"
+                  /></span>
                 </div>
                 <div class="row">
-                  <span class="col-sm-8"
+                  <span class="col-8"
                     >&nbsp;&nbsp; (Enter dates in YYYY-MM-DD HH:MM format)</span
                   >
                 </div>
@@ -460,74 +482,93 @@
             <div><br /></div>
             <div id="y{{yAxis.label}}AxisCustomControls" style="display: block">
               <div class="row">
-                <label class="col-sm-2">Y{{yAxis}} label: </label>
-                <input
-                  id="y{{yAxis}}AxisLabel"
-                  class="y{{yAxis}}-axis-label data-input textInput col-sm-3"
-                  type="text"
-                  value="{{yAxisTitle yAxis}}"
-                  name="y{{yAxis}}AxisLabel"
-                />
-                <label class="col-sm-4">&nbsp;&nbsp;Y{{yAxis}} label font size: </label>
-                <input
-                  id="y{{yAxis}}AxisFont"
-                  class="y{{yAxis}}-axis-font data-input numberInput col-sm-2"
-                  type="number"
-                  value="{{yAxisTitleFont yAxis}}"
-                  name="y{{yAxis}}AxisFont"
-                />
+                <label for="y{{yAxis}}AxisLabel" class="col-2"
+                  >Y{{yAxis}} label:
+                </label>
+                <span class="col-3">
+                  <input
+                    id="y{{yAxis}}AxisLabel"
+                    class="y{{yAxis}}-axis-label data-input form-control bg-white textInput w-100"
+                    type="text"
+                    value="{{yAxisTitle yAxis}}"
+                    name="y{{yAxis}}AxisLabel"
+                /></span>
+                <label for="y{{yAxis}}AxisFont" class="col-4"
+                  >&nbsp;&nbsp;Y{{yAxis}} label font size:
+                </label>
+                <span class="col-2">
+                  <input
+                    id="y{{yAxis}}AxisFont"
+                    class="y{{yAxis}}-axis-font data-input form-control bg-white numberInput w-100"
+                    type="number"
+                    value="{{yAxisTitleFont yAxis}}"
+                    name="y{{yAxis}}AxisFont"
+                /></span>
               </div>
               <div
                 id="yAxisControlsNumber"
                 style="display:{{yAxisControlsNumberVisibility}};"
               >
                 <div class="row">
-                  <label class="col-sm-2">Y{{yAxis}} min{{logScaleText}}: </label>
-                  <input
-                    id="y{{yAxis}}AxisMin"
-                    class="y{{yAxis}}-axis-min data-input numberInput col-sm-3"
-                    type="number"
-                    value="{{yAxisMin yAxis}}"
-                    name="y{{yAxis}}AxisMin"
-                  />
-                  <label class="col-sm-4"
+                  <label for="y{{yAxis}}AxisMin" class="col-2"
+                    >Y{{yAxis}} min{{logScaleText}}:
+                  </label>
+                  <span class="col-3">
+                    <input
+                      id="y{{yAxis}}AxisMin"
+                      class="y{{yAxis}}-axis-min data-input form-control bg-white numberInput w-100"
+                      type="number"
+                      value="{{yAxisMin yAxis}}"
+                      name="y{{yAxis}}AxisMin"
+                  /></span>
+                  <label for="y{{yAxis}}TickFont" class="col-4"
                     >&nbsp;&nbsp;Y{{yAxis}} tick font size:
                   </label>
-                  <input
-                    id="y{{yAxis}}TickFont"
-                    class="y{{yAxis}}-tick-font data-input numberInput col-sm-2"
-                    type="number"
-                    value="{{yAxisTickFont yAxis}}"
-                    name="y{{yAxis}}TickFont"
-                  />
+                  <span class="col-2">
+                    <input
+                      id="y{{yAxis}}TickFont"
+                      class="y{{yAxis}}-tick-font data-input form-control bg-white numberInput w-100"
+                      type="number"
+                      value="{{yAxisTickFont yAxis}}"
+                      name="y{{yAxis}}TickFont"
+                  /></span>
                 </div>
                 <div class="row">
-                  <label class="col-sm-2">Y{{yAxis}} max{{logScaleText}}: </label>
-                  <input
-                    id="y{{yAxis}}AxisMax"
-                    class="y{{yAxis}}-axis-max data-input numberInput col-sm-3"
-                    type="number"
-                    value="{{yAxisMax yAxis}}"
-                    name="y{{yAxis}}AxisMax"
-                  />
-                  <label class="col-sm-4">&nbsp;&nbsp;Y{{yAxis}} sign. figures: </label>
-                  <input
-                    id="y{{yAxis}}SigFigs"
-                    class="y{{yAxis}}-sig-figures data-input textInput col-sm-2"
-                    type="text"
-                    value="Auto"
-                    name="y{{yAxis}}SigFigs"
-                  />
+                  <label for="y{{yAxis}}AxisMax" class="col-2"
+                    >Y{{yAxis}} max{{logScaleText}}:
+                  </label>
+                  <span class="col-3">
+                    <input
+                      id="y{{yAxis}}AxisMax"
+                      class="y{{yAxis}}-axis-max data-input form-control bg-white numberInput w-100"
+                      type="number"
+                      value="{{yAxisMax yAxis}}"
+                      name="y{{yAxis}}AxisMax"
+                  /></span>
+                  <label for="y{{yAxis}}SigFigs" class="col-4"
+                    >&nbsp;&nbsp;Y{{yAxis}} sign. figures:
+                  </label>
+                  <span class="col-2">
+                    <input
+                      id="y{{yAxis}}SigFigs"
+                      class="y{{yAxis}}-sig-figures data-input form-control bg-white textInput w-100"
+                      type="text"
+                      value="Auto"
+                      name="y{{yAxis}}SigFigs"
+                  /></span>
                 </div>
                 <div class="row">
-                  <label class="col-sm-2">Y{{yAxis}} step: </label>
-                  <input
-                    id="y{{yAxis}}TickInterval"
-                    class="y{{yAxis}}-tick-interval data-input textInput col-sm-3"
-                    type="text"
-                    value="Auto"
-                    name="y{{yAxis}}TickInterval"
-                  />
+                  <label for="y{{yAxis}}TickInterval" class="col-2"
+                    >Y{{yAxis}} step:
+                  </label>
+                  <span class="col-3">
+                    <input
+                      id="y{{yAxis}}TickInterval"
+                      class="y{{yAxis}}-tick-interval data-input form-control bg-white textInput w-100"
+                      type="text"
+                      value="Auto"
+                      name="y{{yAxis}}TickInterval"
+                  /></span>
                 </div>
               </div>
               <div
@@ -535,37 +576,44 @@
                 style="display:{{yAxisControlsTextVisibility}};"
               >
                 <div class="row">
-                  <label class="col-sm-2">Y{{yAxis}} min: </label>
-                  <input
-                    id="y{{yAxis}}AxisMinText"
-                    class="y{{yAxis}}-axis-min data-input textInput col-sm-3"
-                    type="text"
-                    value="{{yAxisMin yAxis}}"
-                    name="y{{yAxis}}AxisMinText"
-                  />
-                  <label class="col-sm-4"
+                  <label for="y{{yAxis}}AxisMinText" class="col-2"
+                    >Y{{yAxis}} min:
+                  </label>
+                  <span class="col-3">
+                    <input
+                      id="y{{yAxis}}AxisMinText"
+                      class="y{{yAxis}}-axis-min data-input form-control bg-white textInput w-100"
+                      type="text"
+                      value="{{yAxisMin yAxis}}"
+                      name="y{{yAxis}}AxisMinText"
+                  /></span>
+                  <label for="y{{yAxis}}TickFontText" class="col-4"
                     >&nbsp;&nbsp;Y{{yAxis}} tick font size:
                   </label>
-                  <input
-                    id="y{{yAxis}}TickFontText"
-                    class="y{{yAxis}}-text-tick-font data-input numberInput col-sm-2"
-                    type="number"
-                    value="{{yAxisTickFont yAxis}}"
-                    name="y{{yAxis}}TextTickFont"
-                  />
+                  <span class="col-2">
+                    <input
+                      id="y{{yAxis}}TickFontText"
+                      class="y{{yAxis}}-text-tick-font data-input form-control bg-white numberInput w-100"
+                      type="number"
+                      value="{{yAxisTickFont yAxis}}"
+                      name="y{{yAxis}}TextTickFont"
+                  /></span>
                 </div>
                 <div class="row">
-                  <label class="col-sm-2">Y{{yAxis}} max: </label>
-                  <input
-                    id="y{{yAxis}}AxisMaxText"
-                    class="y{{yAxis}}-axis-max data-input textInput col-sm-3"
-                    type="text"
-                    value="{{yAxisMax yAxis}}"
-                    name="y{{yAxis}}AxisMaxText"
-                  />
+                  <label for="y{{yAxis}}AxisMaxText" class="col-2"
+                    >Y{{yAxis}} max:
+                  </label>
+                  <span class="col-3">
+                    <input
+                      id="y{{yAxis}}AxisMaxText"
+                      class="y{{yAxis}}-axis-max data-input form-control bg-white textInput w-100"
+                      type="text"
+                      value="{{yAxisMax yAxis}}"
+                      name="y{{yAxis}}AxisMaxText"
+                  /></span>
                 </div>
                 <div class="row">
-                  <span class="col-sm-8"
+                  <span class="col-8"
                     >&nbsp;&nbsp; (Enter dates in YYYY-MM-DD HH:MM format)</span
                   >
                 </div>
@@ -574,47 +622,57 @@
             {{/each}}
             <div class="row">
               <div><br /></div>
-              <label class="col-sm-4">&nbsp;&nbsp;Legend font size: </label>
-              <input
-                id="legendFontSize"
-                class="legend-font-size data-input numberInput col-sm-2"
-                type="number"
-                value="{{legendFontSize}}"
-                name="legendFontSize"
-              />
+              <label for="legendFontSize" class="col-4"
+                >&nbsp;&nbsp;Legend font size:
+              </label>
+              <span class="col-2">
+                <input
+                  id="legendFontSize"
+                  class="legend-font-size data-input form-control bg-white numberInput w-100"
+                  type="number"
+                  value="{{legendFontSize}}"
+                  name="legendFontSize"
+              /></span>
             </div>
             <div class="row">
-              <label class="col-sm-4">&nbsp;&nbsp;Legend font color: </label>
-              <input
-                id="legendFontColor"
-                type="color"
-                class="col-sm-5 form-control form-control-color d-inline-block color-picker legendFontColor-graphColorpick"
-                value="#000000"
-                style="margin-right: 0.5em"
-                title="Choose a color"
-              />
+              <label for="legendFontColor" class="col-4"
+                >&nbsp;&nbsp;Legend font color:
+              </label>
+              <span class="col-5">
+                <input
+                  id="legendFontColor"
+                  type="color"
+                  class="form-control form-control-color d-inline-block color-picker bg-white legendFontColor-graphColorpick"
+                  value="#000000"
+                  style="margin-right: 0.5em"
+                  title="Choose a color"
+              /></span>
             </div>
             <div class="row">
               <div><br /></div>
-              <label class="col-sm-4">&nbsp;&nbsp;Grid line weight: </label>
-              <input
-                id="gridWeight"
-                class="grid-weight data-input numberInput col-sm-2"
-                type="number"
-                value="{{gridWeight}}"
-                name="gridWeight"
-              />
+              <label for="gridWeight" class="col-4"
+                >&nbsp;&nbsp;Grid line weight:
+              </label>
+              <span class="col-2">
+                <input
+                  id="gridWeight"
+                  class="grid-weight data-input form-control bg-white numberInput w-100"
+                  type="number"
+                  value="{{gridWeight}}"
+                  name="gridWeight"
+              /></span>
             </div>
             <div class="row">
-              <label class="col-sm-4">&nbsp;&nbsp;Grid line color: </label>
-              <input
-                id="gridColor"
-                type="color"
-                class="col-sm-5 form-control form-control-color d-inline-block color-picker gridColor-graphColorpick"
-                value="#eeeeee"
-                style="margin-right: 0.5em"
-                title="Choose a color"
-              />
+              <label for="gridColor" class="col-4">&nbsp;&nbsp;Grid line color: </label>
+              <span class="col-5">
+                <input
+                  id="gridColor"
+                  type="color"
+                  class="form-control form-control-color d-inline-block color-picker bg-white gridColor-graphColorpick"
+                  value="#eeeeee"
+                  style="margin-right: 0.5em"
+                  title="Choose a color"
+              /></span>
             </div>
           </div>
           <div class="modal-footer border-top-0">
