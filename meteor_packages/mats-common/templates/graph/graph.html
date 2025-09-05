@@ -884,14 +884,32 @@
         </div>
       </div>
     </div>
-    <div id="legendTextModal" class="modal container" role="dialog">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
+    <div
+      class="modal fade"
+      id="legendTextModal"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+      tabindex="-1"
+      aria-labelledby="legendTextModalLabel"
+    >
+      <div class="modal-dialog modal-lg modal-style">
+        <div class="modal-content bg-white pt-3">
+          <div class="modal-header border-bottom-0">
+            <h2 id="legendTextModalLabel" class="modal-title text-dark-blue">
+              Edit Legend
+            </h2>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="text-center mt-4 mb-3">
             <h3>Edit text for each curve's legend:</h3>
             <h4>* Leave a field blank to preserve its original value.</h4>
           </div>
-          <div class="modal-body">
+          <div class="modal-body h-50">
             <label>Legend position:&nbsp;&nbsp;</label>
             <select id="legendPositionSelect" aria-label="legend location options">
               <option value="TL">Top Left</option>
@@ -913,11 +931,11 @@
             </div>
             {{/each}}
           </div>
-          <div class="modal-footer btn-group">
+          <div class="modal-footer border-top-0">
             <button
               type="button"
               class="cancel-send btn btn-primary"
-              data-dismiss="modal"
+              data-bs-dismiss="modal"
             >
               &nbsp;&nbsp;Cancel
             </button>
@@ -931,9 +949,7 @@
             </button>
           </div>
         </div>
-        <!-- /.modal-content -->
       </div>
-      <!-- /.modal-dialog -->
     </div>
     {{#if isLineOrScatterPlot}}
     <div id="filterPointsModal" class="modal container" role="dialog">
