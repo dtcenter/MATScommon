@@ -314,17 +314,33 @@
       </span>
     </div>
     {{#if isNotMap}}
-    <div id="axisLimitModal" class="modal container" role="dialog">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h3>Select axis limits and labels:</h3>
+    <div
+      class="modal fade"
+      id="axisLimitModal"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+      tabindex="-1"
+      aria-labelledby="axisLimitModalLabel"
+    >
+      <div class="modal-dialog modal-lg modal-style">
+        <div class="modal-content bg-white pt-3">
+          <div class="modal-header border-bottom-0">
+            <h2 id="axisLimitModalLabel" class="modal-title text-dark-blue">Axes</h2>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="text-center mt-4 mb-3">
+            <h3>Select axis limits and labels</h3>
             <h4>
               * Only data from your original time range has been queried and is
               available to plot.
             </h4>
           </div>
-          <div class="modal-body">
+          <div class="modal-body h-50">
             {{#each xAxis in xAxes}}
             <div><br /></div>
             <div id="x{{xAxis.label}}AxisCustomControls" style="display: block">
@@ -601,11 +617,11 @@
               />
             </div>
           </div>
-          <div class="modal-footer btn-group">
+          <div class="modal-footer border-top-0">
             <button
               type="button"
               class="cancel-send btn btn-primary"
-              data-dismiss="modal"
+              data-bs-dismiss="modal"
             >
               &nbsp;&nbsp;Cancel
             </button>
@@ -655,7 +671,7 @@
                 id="{{this.label}}LineColor"
                 type="color"
                 class="col-sm-2 form-control form-control-color d-inline-block color-picker {{this.label}}-graphColorpick"
-                value={{colorHex}}
+                value="{{colorHex}}"
                 style="margin-right: 0.5em"
                 title="Choose a color"
               />
