@@ -268,12 +268,12 @@ Template.curveItem.events({
   "click .save-changes"() {
     $(".displayBtn").css({ border: "" }); // clear any borders from any display buttons
     document.getElementById("save").click();
-    Session.set("paramWellColor", "#f5f5f5");
+    Session.set("paramWellColor", "#ffffff");
   },
   "click .cancel"() {
     $(".displayBtn").css({ border: "" }); // clear any borders from any display buttons
     document.getElementById("cancel").click();
-    Session.set("paramWellColor", "#f5f5f5");
+    Session.set("paramWellColor", "#ffffff");
   },
   "click .remove-curve"() {
     const removeCurve = Session.get("confirmRemoveCurve");

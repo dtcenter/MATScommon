@@ -398,12 +398,6 @@ Template.graph.helpers({
         yAxes = Object.keys($("#placeholder")[0].layout).filter(function (k) {
           return k.startsWith("yaxis");
         });
-
-        // enable colorpickers on curve styles modal
-        const l = `${dataset[i].label}LineColor`;
-        if (document.getElementById(l) !== undefined) {
-          $(`#${l}`).colorpicker({ format: "rgb", align: "left" });
-        }
       }
     }
 
@@ -417,7 +411,6 @@ Template.graph.helpers({
         dataset[lastCurveIndex].label === matsTypes.ReservedWords.contourSigLabel &&
         dataset[lastCurveIndex].x.length > 0
       ) {
-        $("#sigDotColor").colorpicker({ format: "rgb", align: "left" });
         $("#sigDotContainer")[0].style.display = "block";
       } else {
         $("#sigDotContainer")[0].style.display = "none";
@@ -427,12 +420,6 @@ Template.graph.helpers({
       const colorscale = JSON.stringify(dataset[0].colorscale);
       const elem = document.getElementById("colormapSelect");
       elem.value = colorscale;
-    }
-
-    // enable colorpickers on axes modal, if applicable.
-    if (plotType !== matsTypes.PlotTypes.map) {
-      $("#gridColor").colorpicker({ format: "rgb", align: "left" });
-      $("#legendFontColor").colorpicker({ format: "rgb", align: "left" });
     }
 
     // store annotation
@@ -686,6 +673,9 @@ Template.graph.helpers({
   },
   color() {
     return this.color;
+  },
+  colorHex() {
+    return `#${rgbHex(this.color)}`;
   },
   colorbarTitle() {
     Session.get("PlotResultsUpDated");

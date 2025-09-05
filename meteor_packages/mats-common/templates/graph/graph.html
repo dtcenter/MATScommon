@@ -571,10 +571,11 @@
               <label class="col-sm-4">&nbsp;&nbsp;Legend font color: </label>
               <input
                 id="legendFontColor"
-                type="text"
-                class="col-sm-5 form-control legendFontColor-graphColorpick"
-                value="rgb(0,0,0)"
-                style="display: inline-block; width: 12em; font-size: small"
+                type="color"
+                class="col-sm-5 form-control form-control-color d-inline-block color-picker legendFontColor-graphColorpick"
+                value="#000000"
+                style="margin-right: 0.5em"
+                title="Choose a color"
               />
             </div>
             <div class="row">
@@ -592,10 +593,11 @@
               <label class="col-sm-4">&nbsp;&nbsp;Grid line color: </label>
               <input
                 id="gridColor"
-                type="text"
-                class="col-sm-5 form-control gridColor-graphColorpick"
-                value="rgb(238,238,238)"
-                style="display: inline-block; width: 12em; font-size: small"
+                type="color"
+                class="col-sm-5 form-control form-control-color d-inline-block color-picker gridColor-graphColorpick"
+                value="#eeeeee"
+                style="margin-right: 0.5em"
+                title="Choose a color"
               />
             </div>
           </div>
@@ -651,10 +653,11 @@
             <div class="row">
               <input
                 id="{{this.label}}LineColor"
-                type="text"
-                class="col-sm-2 form-control {{this.label}}-graphColorpick"
-                value="{{this.color}}"
-                style="font-size: small; height: 2em; width: 15.67%; margin-left: 1%"
+                type="color"
+                class="col-sm-2 form-control form-control-color d-inline-block color-picker {{this.label}}-graphColorpick"
+                value={{colorHex}}
+                style="margin-right: 0.5em"
+                title="Choose a color"
               />
               {{#if isLinePlot}}
               <select
@@ -1050,10 +1053,11 @@
                   <label class="col-sm-5">Significance dot color: </label>
                   <input
                     id="sigDotColor"
-                    type="text"
-                    class="col-sm-5 form-control sigDot-graphColorpick"
-                    value="rgb(0,0,0)"
-                    style="display: inline-block; width: 8em; font-size: small"
+                    type="color"
+                    class="col-sm-5 form-control form-control-color d-inline-block color-picker sigDot-graphColorpick"
+                    value="#000000"
+                    style="margin-right: 0.5em"
+                    title="Choose a color"
                   />
                 </div>
               </div>
