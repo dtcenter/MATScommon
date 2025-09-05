@@ -2698,7 +2698,7 @@ Template.graph.events({
 
           // annotation color needs to be darkened for proper section 508 contrast compliance
           const darkerAnnotationColor = LightenDarkenColor.LightenDarkenColor(
-            rgbHex(elem.value),
+            elem.value,
             -75
           )
             .toString()
