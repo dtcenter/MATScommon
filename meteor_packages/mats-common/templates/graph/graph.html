@@ -635,19 +635,35 @@
             </button>
           </div>
         </div>
-        <!-- /.modal-content -->
       </div>
-      <!-- /.modal-dialog -->
     </div>
     {{/if}}
-    <div id="lineTypeModal" class="modal container" role="dialog">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
+    <div
+      class="modal fade"
+      id="lineTypeModal"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+      tabindex="-1"
+      aria-labelledby="lineTypeModalLabel"
+    >
+      <div class="modal-dialog modal-lg modal-style">
+        <div class="modal-content bg-white pt-3">
+          <div class="modal-header border-bottom-0">
+            <h2 id="lineTypeModalLabel" class="modal-title text-dark-blue">
+              Curve Styles
+            </h2>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="text-center mt-4 mb-3">
             <h3>Select line styles and markers:</h3>
             <h4>* Leave a field blank to preserve its original value.</h4>
           </div>
-          <div class="modal-body">
+          <div class="modal-body h-50">
             {{#each curves}}
             <div class="row">
               <h3 class="col-12" style="text-align: center; margin-bottom: 1em">
@@ -736,11 +752,11 @@
             <div><br /></div>
             {{/each}}
           </div>
-          <div class="modal-footer btn-group">
+          <div class="modal-footer border-top-0">
             <button
               type="button"
               class="cancel-send btn btn-primary"
-              data-dismiss="modal"
+              data-bs-dismiss="modal"
             >
               &nbsp;&nbsp;Cancel
             </button>
@@ -754,9 +770,7 @@
             </button>
           </div>
         </div>
-        <!-- /.modal-content -->
       </div>
-      <!-- /.modal-dialog -->
     </div>
     <div id="showHideModal" class="modal container" role="dialog">
       <div class="modal-dialog">
