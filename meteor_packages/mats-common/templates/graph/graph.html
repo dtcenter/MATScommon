@@ -1036,48 +1036,59 @@
       </div>
     </div>
 
-
-
-
-
-
-
-
     {{#if isLineOrScatterPlot}}
-    <div id="filterPointsModal" class="modal container" role="dialog">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
+    <div
+      class="modal fade"
+      id="filterPointsModal"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+      tabindex="-1"
+      aria-labelledby="filterPointsModalLabel"
+    >
+      <div class="modal-dialog modal-lg modal-style">
+        <div class="modal-content bg-white pt-3">
+          <div class="modal-header border-bottom-0">
+            <h2 id="filterPointsModalLabel" class="modal-title text-dark-blue">
+              Filter Points
+            </h2>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="text-center mt-4 mb-3">
             <h3>Uncheck points to exclude from graph:</h3>
           </div>
-          <div class="modal-body" style="overflow-x: hidden; overflow-y: auto">
+          <div class="modal-body h-50" style="overflow-x: hidden; overflow-y: auto">
             {{#each curves}}
             <div class="row">
-              <label class="col-12"
-                ><h3>&nbsp;&nbsp;{{this.label}}{{indValLabel}}</h3></label
-              >
+              <span class="col-12"
+                ><h4>&nbsp;&nbsp;{{this.label}}{{indValLabel}}</h4></span>
             </div>
             {{#each indVals this.label}}
             <div class="row">
-              <label class="col-8"
+              <label for="{{this.label}}---filterPoint" class="col-8"
                 >&nbsp;&nbsp;&nbsp;&nbsp;{{this.val}}&nbsp;&nbsp;</label
               >
+              <span class="col-4">
               <input
                 id="{{this.label}}---filterPoint"
-                class="filter-point data-input checkboxInput col-4"
+                class="filter-point data-input checkboxInput"
                 type="checkbox"
                 value=""
                 name="filterPoint"
                 checked
-              />
+              /></span>
             </div>
             {{/each}} {{/each}}
           </div>
-          <div class="modal-footer btn-group">
+          <div class="modal-footer border-top-0">
             <button
               type="button"
               class="cancel-send btn btn-primary"
-              data-dismiss="modal"
+              data-bs-dismiss="modal"
             >
               &nbsp;&nbsp;Cancel
             </button>
@@ -1091,10 +1102,9 @@
             </button>
           </div>
         </div>
-        <!-- /.modal-content -->
       </div>
-      <!-- /.modal-dialog -->
     </div>
+
     {{/if}} {{#if isContour}}
     <div id="colorbarModal" class="modal container" role="dialog">
       <div class="modal-dialog">
