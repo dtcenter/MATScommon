@@ -772,13 +772,31 @@
         </div>
       </div>
     </div>
-    <div id="showHideModal" class="modal container" role="dialog">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-body">
-            <div class="modal-header">
-              <h3>Show/hide curve elements</h3>
-            </div>
+    <div
+      class="modal fade"
+      id="showHideModal"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+      tabindex="-1"
+      aria-labelledby="showHideModalLabel"
+    >
+      <div class="modal-dialog modal-lg modal-style">
+        <div class="modal-content bg-white pt-3">
+          <div class="modal-header border-bottom-0">
+            <h2 id="showHideModalLabel" class="modal-title text-dark-blue">
+              Show/Hide
+            </h2>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="text-center mt-4 mb-3">
+            <h3>Show/hide curve elements</h3>
+          </div>
+          <div class="modal-body h-50">
             <div class="row">
               <label class="col-8"
                 >&nbsp;&nbsp;&nbsp;&nbsp;Show NOAA Disclaimer&nbsp;&nbsp;</label
@@ -846,11 +864,11 @@
             </div>
             {{/each}}
           </div>
-          <div class="modal-footer btn-group">
+          <div class="modal-footer border-top-0">
             <button
               type="button"
               class="cancel-send btn btn-primary"
-              data-dismiss="modal"
+              data-bs-dismiss="modal"
             >
               &nbsp;&nbsp;Cancel
             </button>
@@ -864,9 +882,7 @@
             </button>
           </div>
         </div>
-        <!-- /.modal-content -->
       </div>
-      <!-- /.modal-dialog -->
     </div>
     <div id="legendTextModal" class="modal container" role="dialog">
       <div class="modal-dialog">
