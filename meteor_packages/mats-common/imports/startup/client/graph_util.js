@@ -406,6 +406,8 @@ const resizeGraph = function (plotType) {
 // helper to bring up the text page
 const setTextView = function (plotType) {
   // shows text page and proper text output, hides everything else
+  Session.set("isTextPage", true);
+  Session.set("isGraphPage", false);
   document.getElementById("appTitleText").style.display = "none";
   document.getElementById("placeholder").style.width = width(plotType);
   document.getElementById("placeholder").style.height = height(plotType);
@@ -425,9 +427,6 @@ const setTextView = function (plotType) {
   document.getElementById("exportButton").style.display = "block";
   document.getElementById("plotButton").style.display = "block";
   document.getElementById("textButton").style.display = "none";
-  document.getElementById("text-page-button-group").style.display = "block";
-  document.getElementById("plot-page-button-group").style.display = "none";
-  document.getElementById("plot-control-button-group").style.display = "none";
   document.getElementById("curves").style.display = "none";
   document.getElementById("graphView").style.display = "none";
   document.getElementById("textView").style.display = "block";
@@ -442,6 +441,8 @@ const setTextView = function (plotType) {
 // helper to bring up the graph page
 const setGraphView = function (plotType) {
   // shows graph page, hides everything else
+  Session.set("isTextPage", false);
+  Session.set("isGraphPage", true);
   document.getElementById("appTitleText").style.display = "none";
   document.getElementById("placeholder").style.width = width(plotType);
   document.getElementById("placeholder").style.height = height(plotType);
@@ -461,9 +462,6 @@ const setGraphView = function (plotType) {
   document.getElementById("exportButton").style.display = "none";
   document.getElementById("plotButton").style.display = "none";
   document.getElementById("textButton").style.display = "block";
-  document.getElementById("text-page-button-group").style.display = "none";
-  document.getElementById("plot-page-button-group").style.display = "block";
-  document.getElementById("plot-control-button-group").style.display = "block";
   document.getElementById("curves").style.display = "block";
   document.getElementById("graphView").style.display = "block";
   document.getElementById("textView").style.display = "none";
@@ -477,6 +475,8 @@ const setGraphView = function (plotType) {
 
 const setScorecardDisplayView = function () {
   // shows scorecardStatusPage template, hides everything else
+  Session.set("isTextPage", false);
+  Session.set("isGraphPage", false);
   document.getElementById("appTitleText").style.display = "none";
   document.getElementById("graph-container").style.display = "none";
   document.getElementById("paramList").style.display = "none";
@@ -494,9 +494,6 @@ const setScorecardDisplayView = function () {
   document.getElementById("exportButton").style.display = "none";
   document.getElementById("plotButton").style.display = "none";
   document.getElementById("textButton").style.display = "none";
-  document.getElementById("text-page-button-group").style.display = "none";
-  document.getElementById("plot-page-button-group").style.display = "none";
-  document.getElementById("plot-control-button-group").style.display = "none";
   document.getElementById("curves").style.display = "none";
   document.getElementById("graphView").style.display = "none";
   document.getElementById("textView").style.display = "none";
@@ -524,6 +521,8 @@ const standAloneSetGraphView = function () {
 // helper to bring up the main selector page
 const setDefaultView = function () {
   // show elements of the main page
+  Session.set("isTextPage", false);
+  Session.set("isGraphPage", true);
   document.getElementById("appTitleText").style.display = "block";
   document.getElementById("graph-container").style.display = "none";
   document.getElementById("paramList").style.display = "block";
@@ -545,9 +544,6 @@ const setDefaultView = function () {
   document.getElementById("exportButton").style.display = "none";
   document.getElementById("plotButton").style.display = "none";
   document.getElementById("textButton").style.display = "block";
-  document.getElementById("text-page-button-group").style.display = "none";
-  document.getElementById("plot-page-button-group").style.display = "block";
-  document.getElementById("plot-control-button-group").style.display = "block";
   document.getElementById("curves").style.display = "none";
   document.getElementById("graphView").style.display = "none";
   document.getElementById("textView").style.display = "none";

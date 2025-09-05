@@ -449,6 +449,12 @@ Template.graph.helpers({
     }
     return matsCollections.Settings.findOne({}, { fields: { Title: 1 } }).Title;
   },
+  isTextPage() {
+    return Session.get("isTextPage");
+  },
+  isGraphPage() {
+    return Session.get("isGraphPage");
+  },
   width() {
     return matsGraphUtils.width(matsPlotUtils.getPlotType());
   },
