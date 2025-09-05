@@ -1065,7 +1065,8 @@
             {{#each curves}}
             <div class="row">
               <span class="col-12"
-                ><h4>&nbsp;&nbsp;{{this.label}}{{indValLabel}}</h4></span>
+                ><h4>&nbsp;&nbsp;{{this.label}}{{indValLabel}}</h4></span
+              >
             </div>
             {{#each indVals this.label}}
             <div class="row">
@@ -1073,13 +1074,13 @@
                 >&nbsp;&nbsp;&nbsp;&nbsp;{{this.val}}&nbsp;&nbsp;</label
               >
               <span class="col-4">
-              <input
-                id="{{this.label}}---filterPoint"
-                class="filter-point data-input checkboxInput"
-                type="checkbox"
-                value=""
-                name="filterPoint"
-                checked
+                <input
+                  id="{{this.label}}---filterPoint"
+                  class="filter-point data-input checkboxInput"
+                  type="checkbox"
+                  value=""
+                  name="filterPoint"
+                  checked
               /></span>
             </div>
             {{/each}} {{/each}}
