@@ -724,17 +724,29 @@
           <div class="modal-body h-50">
             {{#each curves}}
             <div class="row">
-              <span class="col-12 text-center fs-5 mb-2">{{this.label}}</span>
+              <label class="col-12 text-center fs-5 mb-2">{{this.label}}</label>
             </div>
             <div class="row">
-              <div class="col-2 text-center">Color</div>
+              <label for="{{this.label}}LineColor" class="col-2 text-center"
+                >Color</label
+              >
               {{#if isLinePlot}}
-              <div class="col-2 text-center">Line Style</div>
-              <div class="col-2 text-center">Line Weight</div>
-              <div class="col-2 text-center">Errorbar Weight</div>
+              <label for="{{this.label}}LineStyle" class="col-2 text-center"
+                >Line Style</label
+              >
+              <label for="{{this.label}}LineWeight" class="col-2 text-center"
+                >Line Weight</label
+              >
+              <label for="{{this.label}}ErrorWeight" class="col-2 text-center"
+                >Errorbar Weight</label
+              >
               {{/if}} {{#if isLineOrScatterPlot}}
-              <div class="col-2 text-center">Marker Style</div>
-              <div class="col-2 text-center">Marker Weight</div>
+              <label for="{{this.label}}LineMarker" class="col-2 text-center"
+                >Marker Style</label
+              >
+              <label for="{{this.label}}MarkerWeight" class="col-2 text-center"
+                >Marker Weight</label
+              >
               {{/if}}
             </div>
             <div class="row">
@@ -861,7 +873,7 @@
           </div>
           <div class="modal-body h-50">
             <div class="row">
-              <label class="col-8"
+              <label class="col-8 fs-5"
                 >&nbsp;&nbsp;&nbsp;&nbsp;Show NOAA Disclaimer&nbsp;&nbsp;</label
               >
               <input
@@ -876,52 +888,52 @@
             {{#each curves}}
             <div class="row">
               <div><br /></div>
-              <label class="col-sm-2">{{this.label}}: </label>
+              <label class="col-2 fs-6">{{this.label}}: </label>
               <span
                 id="curve-text-buttons-grp-{{this.label}}"
                 class="btn-group btn-group-xs"
               >
                 <input
                   type="button"
-                  class="curveVisibility btn btn-info"
+                  class="curveVisibility btn btn-info rounded"
                   value="{{hideButtonText}}"
                   id="{{this.label}}-curve-show-hide"
-                  style="border-radius: 5px; display:{{curveShowHideDisplay}}; background-color: #FFFFFF; border-color: {{this.color}}; color: {{this.color}}"
+                  style="display:{{curveShowHideDisplay}}; background-color: #FFFFFF; border-color: {{this.color}}; color: {{this.color}}"
                 />
                 <input
                   type="button"
-                  class="pointsVisibility btn btn-info"
+                  class="pointsVisibility btn btn-info rounded"
                   value="{{pointsButtonText}}"
                   id="{{this.label}}-curve-show-hide-points"
-                  style="border-radius: 5px; display:{{pointsShowHideDisplay}}; background-color: #FFFFFF; border-color: {{this.color}}; color: {{this.color}}"
+                  style="display:{{pointsShowHideDisplay}}; background-color: #FFFFFF; border-color: {{this.color}}; color: {{this.color}}"
                 />
                 <input
                   type="button"
-                  class="errorBarVisibility btn btn-info"
+                  class="errorBarVisibility btn btn-info rounded"
                   value="{{errorBarButtonText}}"
                   id="{{this.label}}-curve-show-hide-errorbars"
-                  style="border-radius: 5px; display:{{errorbarsShowHideDisplay}}; background-color: #FFFFFF; border-color: {{this.color}}; color: {{this.color}}"
+                  style="display:{{errorbarsShowHideDisplay}}; background-color: #FFFFFF; border-color: {{this.color}}; color: {{this.color}}"
                 />
                 <input
                   type="button"
-                  class="barVisibility btn btn-info"
+                  class="barVisibility btn btn-info rounded"
                   value="{{barChartButtonText}}"
                   id="{{this.label}}-curve-show-hide-bars"
-                  style="border-radius: 5px; display:{{barsShowHideDisplay}}; background-color: #FFFFFF; border-color: {{this.color}}; color: {{this.color}}"
+                  style="display:{{barsShowHideDisplay}}; background-color: #FFFFFF; border-color: {{this.color}}; color: {{this.color}}"
                 />
                 <input
                   type="button"
-                  class="annotateVisibility btn btn-info"
+                  class="annotateVisibility btn btn-info rounded"
                   value="{{annotateButtonText}}"
                   id="{{this.label}}-curve-show-hide-annotate"
-                  style="border-radius: 5px; display:{{annotateShowHideDisplay}}; background-color: #FFFFFF; border-color: {{this.color}}; color: {{this.color}}"
+                  style="display:{{annotateShowHideDisplay}}; background-color: #FFFFFF; border-color: {{this.color}}; color: {{this.color}}"
                 />
                 <input
                   type="button"
-                  class="legendVisibility btn btn-info"
+                  class="legendVisibility btn btn-info rounded"
                   value="{{legendButtonText}}"
                   id="{{this.label}}-curve-show-hide-legend"
-                  style="border-radius: 5px; display:{{legendShowHideDisplay}}; background-color: #FFFFFF; border-color: {{this.color}}; color: {{this.color}}"
+                  style="display:{{legendShowHideDisplay}}; background-color: #FFFFFF; border-color: {{this.color}}; color: {{this.color}}"
                 />
               </span>
             </div>
@@ -973,8 +985,14 @@
             <h4>* Leave a field blank to preserve its original value.</h4>
           </div>
           <div class="modal-body h-50">
-            <label>Legend position:&nbsp;&nbsp;</label>
-            <select id="legendPositionSelect" aria-label="legend location options">
+            <label for="legendPositionSelect" class="fs-5 col-form-label"
+              >Legend position:&nbsp;&nbsp;</label
+            >
+            <select
+              id="legendPositionSelect"
+              class="form-select bg-white"
+              aria-label="legend location options"
+            >
               <option value="TL">Top Left</option>
               <option value="TR">Top Right</option>
               <option value="BL">Bottom Left</option>
@@ -983,14 +1001,17 @@
             <div><br /></div>
             {{#each curves}}
             <div class="row">
-              <label class="col-sm-2">{{this.label}}: </label>
-              <input
-                id="{{this.label}}LegendText"
-                class="{{this.label}}-legend-text data-input textInput col-sm-6"
-                type="text"
-                value="{{curveText}}"
-                name="{{this.label}}LegendText"
-              />
+              <label for="{{this.label}}LegendText" class="col-2 fs-5"
+                >{{this.label}}:
+              </label>
+              <span class="col-10">
+                <input
+                  id="{{this.label}}LegendText"
+                  class="{{this.label}}-legend-text data-input form-control bg-white textInput w-100"
+                  type="text"
+                  value="{{curveText}}"
+                  name="{{this.label}}LegendText"
+              /></span>
             </div>
             {{/each}}
           </div>
@@ -1014,6 +1035,14 @@
         </div>
       </div>
     </div>
+
+
+
+
+
+
+
+
     {{#if isLineOrScatterPlot}}
     <div id="filterPointsModal" class="modal container" role="dialog">
       <div class="modal-dialog">
