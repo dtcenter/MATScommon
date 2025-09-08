@@ -1107,143 +1107,179 @@
     </div>
 
     {{/if}} {{#if isContour}}
-    <div id="colorbarModal" class="modal container" role="dialog">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h3>Select colorbar limits and label:</h3>
-            <h4>* Leave a field blank to preserve its original value.</h4>
-            <h4>
-              * Choose either a contour step OR a number of contours. If both are given,
-              the number of contours will be used.
-            </h4>
+    <div
+      class="modal fade"
+      id="colorbarModal"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+      tabindex="-1"
+      aria-labelledby="colorbarModalLabel"
+    >
+      <div class="modal-dialog modal-lg modal-style">
+        <div class="modal-content bg-white pt-3">
+          <div class="modal-header border-bottom-0">
+            <h2 id="colorbarModalLabel" class="modal-title text-dark-blue">
+              Contour Styles
+            </h2>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
           </div>
-          <div class="modal-body">
+          <div class="text-center mt-4 mb-3">
+            <h3>Select colorbar limits and label</h3>
+            <h4>* Leave a field blank to preserve its original value.</h4>
+            <div class="fs-5 text-center text-dark-blue mt-3">
+              Choose either a contour step OR a number of contours.<br />If both are
+              given, the number of contours will be used.
+            </div>
+          </div>
+          <div class="modal-body h-50">
             <div><br /></div>
-            <div id="colorbarCustomControls" style="display: block">
+            <div id="colorbarCustomControls">
               <div class="row">
-                <label class="col-sm-5">Colorbar label: </label>
-                <input
-                  id="colorbarLabel"
-                  class="colorbar-label data-input textInput col-sm-5"
-                  type="text"
-                  value="{{colorbarTitle}}"
-                  name="colorbarLabel"
-                />
+                <label for="colorbarLabel" class="col-5">Colorbar label: </label>
+                <span class="col-7">
+                  <input
+                    id="colorbarLabel"
+                    class="colorbar-label data-input form-control textInput bg-white w-100"
+                    type="text"
+                    value="{{colorbarTitle}}"
+                    name="colorbarLabel"
+                /></span>
               </div>
               <div><br /></div>
               <div class="row">
-                <label class="col-sm-5">Minimum contour value: </label>
-                <input
-                  id="colorbarMin"
-                  class="colorbar-min data-input numberInput col-sm-5"
-                  type="number"
-                  value="{{colorbarMin}}"
-                  name="colorbarMin"
-                />
+                <label for="colorbarMin" class="col-5">Minimum contour value: </label>
+                <span class="col-7">
+                  <input
+                    id="colorbarMin"
+                    class="colorbar-min data-input form-control numberInput bg-white w-100"
+                    type="number"
+                    value="{{colorbarMin}}"
+                    name="colorbarMin"
+                /></span>
               </div>
               <div class="row">
-                <label class="col-sm-5">Maximum contour value: </label>
-                <input
-                  id="colorbarMax"
-                  class="colorbar-max data-input numberInput col-sm-5"
-                  type="number"
-                  value="{{colorbarMax}}"
-                  name="colorbarMax"
-                />
+                <label for="colorbarMax" class="col-5">Maximum contour value: </label>
+                <span class="col-7">
+                  <input
+                    id="colorbarMax"
+                    class="colorbar-max data-input form-control numberInput bg-white w-100"
+                    type="number"
+                    value="{{colorbarMax}}"
+                    name="colorbarMax"
+                /></span>
               </div>
               <div><br /></div>
               <div class="row">
-                <label class="col-sm-5">Number of contours: </label>
-                <input
-                  id="colorbarNumber"
-                  class="colorbar-number data-input numberInput col-sm-5"
-                  type="number"
-                  value=""
-                  name="colorbarNumber"
-                />
+                <label for="colorbarNumber" class="col-5">Number of contours: </label>
+                <span class="col-7">
+                  <input
+                    id="colorbarNumber"
+                    class="colorbar-number data-input form-control numberInput bg-white w-100"
+                    type="number"
+                    value=""
+                    name="colorbarNumber"
+                /></span>
               </div>
               <div>OR</div>
               <div class="row">
-                <label class="col-sm-5">Contour value step: </label>
-                <input
-                  id="colorbarStep"
-                  class="colorbar-step data-input numberInput col-sm-5"
-                  type="number"
-                  value="{{colorbarStep}}"
-                  name="colorbarStep"
-                />
+                <label for="colorbarStep" class="col-5">Contour value step: </label>
+                <span class="col-7">
+                  <input
+                    id="colorbarStep"
+                    class="colorbar-step data-input form-control numberInput bg-white w-100"
+                    type="number"
+                    value="{{colorbarStep}}"
+                    name="colorbarStep"
+                /></span>
               </div>
               <div><br /></div>
               <div class="row">
-                <label class="col-sm-5">Reverse colormap: </label>
-                <input
-                  id="colorbarReverse"
-                  class="colorbar-reverse data-input checkboxInput col-sm-5"
-                  type="checkbox"
-                  value=""
-                  name="colorbarReverse"
-                />
+                <label for="colorbarReverse" class="col-5">Reverse colormap: </label>
+                <span class="col-7">
+                  <input
+                    id="colorbarReverse"
+                    class="colorbar-reverse fs-5 data-input checkboxInput"
+                    type="checkbox"
+                    value=""
+                    name="colorbarReverse"
+                /></span>
               </div>
               <div><br /></div>
               <div class="row">
-                <label class="col-sm-5">Select colormap: </label>
-                <select id="colormapSelect" aria-label="preset colorbar options">
-                  <option value="RdBu">RedBlue</option>
-                  <option value="{{RdWhBuTriplet}}">RedWhiteBlue</option>
-                  <option value="{{MPL_BrBGTriplet}}">Wet/Dry (No White)</option>
-                  <option value="{{MPL_BrBWGTriplet}}">Wet/Dry (Center White)</option>
-                  <option value="Jet">Jet</option>
-                  <option value="Portland">Portland</option>
-                  <option value="Rainbow">Rainbow</option>
-                  <option value="Blackbody">Blackbody</option>
-                  <option value="Earth">Earth</option>
-                  <option value="Electric">Electric</option>
-                  <option value="Hot">Hot</option>
-                  <option value="Picnic">Picnic</option>
-                  <option value="Reds">Reds</option>
-                  <option value="Greens">Greens</option>
-                  <option value="Blues">Blues</option>
-                  <option value="Greys">Greys</option>
-                  <option value="Viridis">Viridis</option>
-                  <option value="Cividis">Cividis</option>
-                  <option value="Bluered">BlueRed</option>
-                  <option value="YlGnBu">YellowGreenBlue</option>
-                  <option value="YlOrRd">YellowOrangeRed</option>
-                </select>
+                <label for="colormapSelect" class="col-5 col-form-label"
+                  >Select colormap:
+                </label>
+                <span class="col-7">
+                  <select
+                    id="colormapSelect"
+                    class="form-select bg-white"
+                    aria-label="preset colorbar options"
+                  >
+                    <option value="RdBu">RedBlue</option>
+                    <option value="{{RdWhBuTriplet}}">RedWhiteBlue</option>
+                    <option value="{{MPL_BrBGTriplet}}">Wet/Dry (No White)</option>
+                    <option value="{{MPL_BrBWGTriplet}}">Wet/Dry (Center White)</option>
+                    <option value="Jet">Jet</option>
+                    <option value="Portland">Portland</option>
+                    <option value="Rainbow">Rainbow</option>
+                    <option value="Blackbody">Blackbody</option>
+                    <option value="Earth">Earth</option>
+                    <option value="Electric">Electric</option>
+                    <option value="Hot">Hot</option>
+                    <option value="Picnic">Picnic</option>
+                    <option value="Reds">Reds</option>
+                    <option value="Greens">Greens</option>
+                    <option value="Blues">Blues</option>
+                    <option value="Greys">Greys</option>
+                    <option value="Viridis">Viridis</option>
+                    <option value="Cividis">Cividis</option>
+                    <option value="Bluered">BlueRed</option>
+                    <option value="YlGnBu">YellowGreenBlue</option>
+                    <option value="YlOrRd">YellowOrangeRed</option>
+                  </select></span
+                >
               </div>
               <div id="sigDotContainer" style="display: block">
                 <div><br /></div>
                 <div class="row">
-                  <label class="col-sm-5">Significance dot color: </label>
-                  <input
-                    id="sigDotColor"
-                    type="color"
-                    class="col-sm-5 form-control form-control-color d-inline-block color-picker sigDot-graphColorpick"
-                    value="#000000"
-                    style="margin-right: 0.5em"
-                    title="Choose a color"
-                  />
+                  <label for="sigDotColor" class="col-5"
+                    >Significance dot color:
+                  </label>
+                  <span class="col-7">
+                    <input
+                      id="sigDotColor"
+                      type="color"
+                      class="form-control form-control-color d-inline-block color-picker bg-white gridColor-graphColorpick"
+                      value="#000000"
+                      style="margin-right: 0.5em"
+                      title="Choose a color"
+                  /></span>
                 </div>
               </div>
               <div><br /></div>
               <div class="row">
-                <label class="col-sm-5">Interpolate over nulls: </label>
-                <input
-                  id="nullSmooth"
-                  class="null-smooth data-input checkboxInput col-sm-5"
-                  type="checkbox"
-                  value=""
-                  name="nullSmooth"
-                />
+                <label for="nullSmooth" class="col-5">Interpolate over nulls: </label>
+                <span class="col-7">
+                  <input
+                    id="nullSmooth"
+                    class="null-smooth data-input checkboxInput"
+                    type="checkbox"
+                    value=""
+                    name="nullSmooth"
+                /></span>
               </div>
             </div>
           </div>
-          <div class="modal-footer btn-group">
+          <div class="modal-footer border-top-0">
             <button
               type="button"
               class="cancel-send btn btn-primary"
-              data-dismiss="modal"
+              data-bs-dismiss="modal"
             >
               &nbsp;&nbsp;Cancel
             </button>
@@ -1257,9 +1293,7 @@
             </button>
           </div>
         </div>
-        <!-- /.modal-content -->
       </div>
-      <!-- /.modal-dialog -->
     </div>
     {{/if}}
     <div id="header" class="row px-4">
