@@ -718,7 +718,7 @@
             ></button>
           </div>
           <div class="text-center mt-4 mb-3">
-            <h3>Select line styles and markers:</h3>
+            <h3>Select line styles and markers</h3>
             <h4>* Leave a field blank to preserve its original value.</h4>
           </div>
           <div class="modal-body h-50">
@@ -981,7 +981,7 @@
             ></button>
           </div>
           <div class="text-center mt-4 mb-3">
-            <h3>Edit text for each curve's legend:</h3>
+            <h3>Edit text for each curve's legend</h3>
             <h4>* Leave a field blank to preserve its original value.</h4>
           </div>
           <div class="modal-body h-50">
@@ -1059,7 +1059,7 @@
             ></button>
           </div>
           <div class="text-center mt-4 mb-3">
-            <h3>Uncheck points to exclude from graph:</h3>
+            <h3>Uncheck points to exclude from graph</h3>
           </div>
           <div class="modal-body h-50" style="overflow-x: hidden; overflow-y: auto">
             {{#each curves}}
@@ -1296,13 +1296,13 @@
       </span>
       <span style="display: none">{{graphFunction}}</span>
     </div>
-    <div id="curves" class="row px-5">
+    <div id="curves" class="row px-5 mt-2 mb-4">
       {{#each curves}}
-      <span
+      <div
         id="legendContainer{{this.label}}"
         class="col-12"
         style="font-size: smaller"
-      ></span>
+      ></div>
       <input
         type="button"
         class="heatMapVisibility btn btn-primary"
