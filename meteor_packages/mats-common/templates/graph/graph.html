@@ -9,7 +9,7 @@
         <button
           id="backButton"
           type="button"
-          class="back btn btn-sm btn-info rounded f-6"
+          class="back btn btn-sm btn-info rounded"
           data-placement="top"
           title="Return to main page"
         >
@@ -24,8 +24,8 @@
         <button
           id="previewButton"
           type="button"
-          class="preview btn btn-info"
-          style="border-top-left-radius: 5px; border-bottom-left-radius: 5px"
+          class="preview btn btn-info rounded-start"
+          style="display: block"
           data-placement="top"
           title="Open graph in preview window"
         >
@@ -44,7 +44,6 @@
           id="exportButton"
           type="button"
           class="export btn btn-info"
-          style="display: block"
           data-placement="top"
           title="Export current text data to csv file"
         >
@@ -53,12 +52,8 @@
         <button
           id="plotButton"
           type="button"
-          class="plotButton btn btn-info"
-          style="
-            display: block;
-            border-top-right-radius: 5px;
-            border-bottom-right-radius: 5px;
-          "
+          class="plotButton btn btn-info rounded-end"
+          style="display: block"
           data-placement="top"
           title="Display plot"
         >
@@ -67,12 +62,8 @@
         <button
           id="textButton"
           type="button"
-          class="textButton btn btn-info"
-          style="
-            display: block;
-            border-top-right-radius: 5px;
-            border-bottom-right-radius: 5px;
-          "
+          class="textButton btn btn-info rounded-end"
+          style="display: block"
           data-placement="top"
           title="Display text"
         >
@@ -88,12 +79,7 @@
         <button
           id="firstPageButton"
           type="button"
-          class="firstPageButton btn btn-primary"
-          style="
-            border-top-left-radius: 5px;
-            border-bottom-left-radius: 5px;
-            display: block;
-          "
+          class="firstPageButton btn btn-primary rounded-start"
           data-placement="top"
           title="First page"
         >
@@ -146,8 +132,7 @@
         <button
           id="lastPageButton"
           type="button"
-          class="lastPageButton btn btn-primary"
-          style="border-top-right-radius: 5px; border-bottom-right-radius: 5px"
+          class="lastPageButton btn btn-primary rounded-end"
           data-placement="top"
           title="Last page"
         >
@@ -164,8 +149,7 @@
         <button
           id="axisLimitButton"
           type="button"
-          class="axisLimitButton btn btn-info"
-          style="border-top-left-radius: 5px; border-bottom-left-radius: 5px"
+          class="axisLimitButton btn btn-info rounded-start"
           data-placement="top"
           title="Edit axes"
         >
@@ -303,8 +287,7 @@
         <button
           id="reCacheButton"
           type="button"
-          class="reCacheButton btn btn-info"
-          style="border-top-left-radius: {{recacheButtonRadius}}; border-bottom-left-radius: {{recacheButtonRadius}}; border-top-right-radius: 5px; border-bottom-right-radius: 5px;"
+          class="reCacheButton btn btn-info {{recacheButtonRadius}} rounded-end"
           data-placement="top"
           title="Replot graph without using cache"
         >

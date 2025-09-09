@@ -5,18 +5,19 @@
     </button>
     <br />
     {{#each curves}}
-    <h5>{{curveText}}</h5>
-    {{/each}} {{#if notScatter}}
+    <div class="fs-6">{{curveText}}</div>
+    {{/each}} <br />
+    {{#if notScatter}}
     <table
       id="textStatsTable"
-      class="table table-condensed table-striped table-bordered"
+      class="table table-light table-striped table-hover table-bordered rounded"
     >
       <thead>
         <tr>
           {{{statHeaders}}}
         </tr>
       </thead>
-      <tbody>
+      <tbody class="table-group-divider">
         {{#each curves}}
         <tr>
           {{{stats this}}}
@@ -27,14 +28,14 @@
     {{/if}} {{#each curves}}
     <table
       id="textElementsTable"
-      class="table table-condensed table-bordered table-striped table-hover table-sm"
+      class="table table-light table-striped table-hover table-bordered rounded"
     >
       <thead class="thead-inverse">
         <tr>
           {{{elementHeaders this}}}
         </tr>
       </thead>
-      <tbody>
+      <tbody class="table-group-divider">
         {{#each elements this}}
         <tr>
           {{{elementHtml this}}}

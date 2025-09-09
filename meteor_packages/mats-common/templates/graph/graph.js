@@ -1139,9 +1139,9 @@ Template.graph.helpers({
     Session.get("PlotResultsUpDated");
     const plotType = Session.get("plotType");
     if (plotType === matsTypes.PlotTypes.map) {
-      return "5px";
+      return "rounded-start";
     }
-    return "0";
+    return "";
   },
   metApp() {
     Session.get("PlotParams");
