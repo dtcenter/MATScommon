@@ -246,8 +246,7 @@ Template.item.events({
       if (elem !== null) {
         elem.style.display = "block";
         if (this.type === matsTypes.InputTypes.select) {
-          const ref = `#${this.name}-${this.type}`;
-          $(ref).select2("open"); // need to foricibly open the selector for the select2
+          document.getElementById(`${this.name}-${this.type}`).tomselect.open(); // need to foricibly open the selector for the select
         }
         if (this.type === matsTypes.InputTypes.selectMap) {
           $("#mapModal").modal("show");

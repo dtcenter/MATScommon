@@ -10,6 +10,7 @@ import {
   matsSelectUtils,
 } from "meteor/randyp:mats-common";
 import { Template } from "meteor/templating";
+import TomSelect from "tom-select";
 
 /* global Session, $, setError */
 
@@ -19,11 +20,8 @@ import { Template } from "meteor/templating";
  */
 Template.select.onRendered(function () {
   const ref = `${this.data.name}-${this.data.type}`;
-  $(`#${ref}`).select2({
-    minimumResultsForSearch: 20,
-    closeOnSelect: false,
-    dropdownAutoWidth: true,
-  });
+  // eslint-disable-next-line no-new
+  new TomSelect(this.find(`#${ref}`), {});
 
   const elem = document.getElementById(ref);
   try {
@@ -172,7 +170,7 @@ Template.select.events({
     if (this.multiple) {
       return true; // prevents the select 2 from closing on multiple selectors
     }
-    $(`#${this.name}-${this.type}`).select2("close");
+    document.getElementById(`${this.name}-${this.type}`).tomselect.close();
     matsSelectUtils.refreshDependents(event, this);
     if (this.name === "plotFormat") {
       matsCurveUtils.checkDiffs();
@@ -183,7 +181,6 @@ Template.select.events({
   "click .doneSelecting"() {
     Session.set("elementChanged", Date.now());
     const controlElem = matsParamUtils.getControlElementForParamName(this.name);
-    $(`#${this.name}-${this.type}`).select2("close").trigger("change"); // apply the selection choices to the select2
     const editMode = Session.get("editMode");
     const curveItem =
       editMode === undefined && editMode === ""
@@ -193,10 +190,10 @@ Template.select.events({
       $("#save").trigger("click");
     }
     if (editMode) {
-      $(`#${this.name}-${this.type}`).select2("close"); // use the close on the selector when editing
+      document.getElementById(`${this.name}-${this.type}`).tomselect.close(); // use the close on the selector when editing
     } else {
       $(controlElem).trigger("click"); // clicking the control element hides the selector when not editing
-      $(`#${this.name}-${this.type}`).select2("close");
+      document.getElementById(`${this.name}-${this.type}`).tomselect.close();
     }
     return false;
   },
@@ -206,15 +203,13 @@ Template.select.events({
     for (let i = 0; i < elem.options.length; i += 1) {
       values.push(elem.options[i].text);
     }
-    $(`#${this.name}-${this.type}`).select2().val(values).trigger("change");
+    document
+      .getElementById(`${this.name}-${this.type}`)
+      .tomselect.setValue(values, true);
     return false;
   },
   "click .clearSelections"() {
-    $(`#${this.name}-${this.type}`).select2().val(null).trigger("change");
-    return false;
-  },
-  "click .doNotUse"() {
-    $(`#${this.name}-${this.type}`).select2().val(null).trigger("change");
+    document.getElementById(`${this.name}-${this.type}`).tomselect.setValue(null, true);
     return false;
   },
   "change, blur .item"(event) {
@@ -295,7 +290,6 @@ Template.select.events({
           event.currentTarget.selectedIndex === -1)
       ) {
         text = matsTypes.InputTypes.unused;
-        // $('#' + this.name + "-" + this.type).select2().val(null).trigger('change');
       }
       matsParamUtils.setValueTextForParamName(event.target.name, text);
     } catch (error) {
@@ -312,7 +306,7 @@ Template.select.events({
     if (event.target.multiple) {
       Session.set("editMode", editMode); // restore the editing of the curve item for muli selects
       const controlElem = matsParamUtils.getControlElementForParamName(this.name);
-      $(controlElem).trigger("click"); // reopen the select2 - the regular open is not located properly so do it by clicking the control element button
+      controlElem.tomselect.open(); // reopen the select - the regular open is not located properly so do it by clicking the control element button
     }
     return false;
   },

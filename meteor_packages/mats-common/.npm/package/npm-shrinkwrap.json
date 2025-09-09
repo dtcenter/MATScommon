@@ -6,6 +6,16 @@
       "resolved": "https://registry.npmjs.org/@couchbase/couchbase-darwin-arm64-napi/-/couchbase-darwin-arm64-napi-4.5.0.tgz",
       "integrity": "sha512-8oO+gdSSPbB7QoRkwvo5eHNUKBm7v7+i3f2dIN4r0XhEamDJOLtthkpAwDK2qVfSxVTdGyW0uoLrU5XX7+U28Q=="
     },
+    "@orchidjs/sifter": {
+      "version": "1.1.0",
+      "resolved": "https://registry.npmjs.org/@orchidjs/sifter/-/sifter-1.1.0.tgz",
+      "integrity": "sha512-mYwHCfr736cIWWdhhSZvDbf90AKt2xyrJspKFC3qyIJG1LtrJeJunYEqCGG4Aq2ijENbc4WkOjszcvNaIAS/pQ=="
+    },
+    "@orchidjs/unicode-variants": {
+      "version": "1.1.2",
+      "resolved": "https://registry.npmjs.org/@orchidjs/unicode-variants/-/unicode-variants-1.1.2.tgz",
+      "integrity": "sha512-5DobW1CHgnBROOEpFlEXytED5OosEWESFvg/VYmH0143oXcijYTprRYJTs+55HzGM4IqxiLFSuqEzu9mPNwVsA=="
+    },
     "ansi-regex": {
       "version": "5.0.1",
       "resolved": "https://registry.npmjs.org/ansi-regex/-/ansi-regex-5.0.1.tgz",
@@ -1009,6 +1019,11 @@
       "version": "1.0.3",
       "resolved": "https://registry.npmjs.org/text-segmentation/-/text-segmentation-1.0.3.tgz",
       "integrity": "sha512-iOiPUo/BGnZ6+54OsWxZidGCsdU8YbE4PSpdPinp7DeMtUJNJBoJ/ouUSTJjHkh1KntHaltHl/gDs2FC4i5+Nw=="
+    },
+    "tom-select": {
+      "version": "2.4.3",
+      "resolved": "https://registry.npmjs.org/tom-select/-/tom-select-2.4.3.tgz",
+      "integrity": "sha512-MFFrMxP1bpnAMPbdvPCZk0KwYxLqhYZso39torcdoefeV/NThNyDu8dV96/INJ5XQVTL3O55+GqQ78Pkj5oCfw=="
     },
     "universalify": {
       "version": "2.0.1",

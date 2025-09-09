@@ -51,6 +51,7 @@ Package.onUse(function (api) {
     "vanillajs-datepicker": "1.3.4",
 
     // make things pretty
+    "tom-select": "2.4.3",
     "lighten-darken-color": "1.0.0",
     "rgb-hex": "4.1.0",
     "hex-rgb": "5.0.0",
