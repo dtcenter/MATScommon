@@ -4,8 +4,8 @@
   </head>
   <div
     id="graph-container"
-    class="container-fluid pull-left"
-    style="padding-left: 5%; display:{{graphFunctionDispay}};"
+    class="container-fluid p-4"
+    style="display:{{graphFunctionDispay}};"
   >
     <div id="header" class="row">
       <h4>
@@ -16,28 +16,24 @@
       <img src="{{spinnerUrl}}" alt="In-progress spinner" height="5%" width="5%" />
       <span style="color: red">Loading ...</span>
     </div>
-    <div class="row form-inline previewCurveButtons" style="margin: 0 2em 1em 2em">
-      <span>
+    <div id="previewCurveButtons" class="row form-inline my-3">
+      <span class="col-5">
         <input
-          class="input-sm col-sm-5"
+          class="input form-control bg-white"
           id="exportFileName"
           value="{{matsplotFilemname}}"
+          aria-label="export file name"
         />
-        <button
-          class="btn btn-xs col-sm-3 pull-right btn-primary exportpng"
-          id="exportpng"
-        >
-          save png
-        </button>
       </span>
+      <button class="btn btn-info col-3 exportpng" id="exportpng">Save as PNG</button>
     </div>
-    <div id="graphView" style="height: 100%; margin: 0; padding: 0" class="row">
-      <div id="legendContainer" name="legendContainer" style="font-size: smaller"></div>
+    <div id="graphView" class="h-100 m-0 p-0">
+      <div id="legendContainer" class="my-2" style="font-size: smaller"></div>
       <div
         id="placeholder"
-        class="row"
+        class="row text-start"
         name="placeholder"
-        style="float:left;width:{{width}}; height:{{height}};"
+        style="width:{{width}}; height:{{height}};"
       >
         {{! This is where plotly will place the graph - there is nothing here when the
         page loads}}

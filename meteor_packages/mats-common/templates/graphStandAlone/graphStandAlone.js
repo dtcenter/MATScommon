@@ -240,10 +240,7 @@ Template.graphStandAlone.helpers({
 
 Template.graphStandAlone.events({
   "click .exportpng"() {
-    $(".previewCurveButtons").each(function (i, obj) {
-      // eslint-disable-next-line no-param-reassign
-      obj.style.display = "none";
-    });
+    document.getElementById("previewCurveButtons").classList.add("d-none");
     function saveAs(uri, filename) {
       const link = document.createElement("a");
       if (typeof link.download === "string") {
@@ -266,10 +263,7 @@ Template.graphStandAlone.events({
       (canvas) => {
         const filename = document.getElementById("exportFileName").value;
         saveAs(canvas.toDataURL(), `${filename}.png`);
-        $(".previewCurveButtons").each(function (i, obj) {
-          // eslint-disable-next-line no-param-reassign
-          obj.style.display = "block";
-        });
+        document.getElementById("previewCurveButtons").classList.remove("d-none");
       }
     );
   },
