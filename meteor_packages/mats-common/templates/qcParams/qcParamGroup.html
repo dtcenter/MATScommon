@@ -1,122 +1,132 @@
 <template name="qcParamGroup">
   {{#if notScorecard}}
-  <div
-    id="qcParamGroup-item"
-    class="row bg-info-subtle border border-info border-1 rounded-1 mt-1 mx-2 p-2"
-  >
-    <label for="plotTypes-selector" class="col-2 col-form-label regularPublicSans fs-5"
-      >Quality Control</label
-    >
-    <span class="col-4 text-end">
-      <label for="completeness" class="col-form-label regularPublicSans fs-5 pl-2"
-        >Completeness threshold (%):&nbsp;
-      </label>
-    </span>
-    <span class="col-1 text-start">
-      <input
-        type="number"
-        class="form-control bg-white"
-        name="completeness"
-        id="completeness"
-        min="0"
-        max="100"
-        value="{{completenessNumber}}"
-        aria-label="Completeness threshold (%)"
-      />
-    </span>
-    <span class="col-3 text-end">
-      <label for="outliers" class="col-form-label regularPublicSans fs-5 pl-2"
-        >StDev filter level:&nbsp;
-      </label>
-    </span>
-    <span class="col-2 text-start">
-      {{#if noQC}}
-      <select
-        id="outliers"
-        class="form-select bg-white"
-        aria-label="StDev filter level"
+  <div id="qualityControl" class="container-fluid w-100 m-0 g-0">
+    <div class="row mt-1 mx-2">
+      <div
+        id="qcParamGroup-item"
+        class="row col-xl-9 col-lg-10 col-md-11 col-12 bg-info-subtle border border-info border-1 rounded-1 p-2 g-0"
       >
-        <option value="all" selected="selected">All Data</option>
-        <option value="3">3 sd</option>
-        <option value="2">2 sd</option>
-        <option value="1">1 sd</option>
-      </select>
-      {{else}}
-      <select
-        id="outliers"
-        class="form-select bg-white"
-        aria-label="Stdev filter level"
+        <div
+          class="col-2 col-form-label regularPublicSans fs-6 ml-2"
+          >Quality Control</div
+        >
+        <span class="col-4 text-end">
+          <label for="completeness" class="col-form-label regularPublicSans fs-6 pl-2"
+            >Completeness threshold (%):&nbsp;
+          </label>
+        </span>
+        <span class="col-1 text-start">
+          <input
+            type="number"
+            class="form-control bg-white"
+            name="completeness"
+            id="completeness"
+            min="0"
+            max="100"
+            value="{{completenessNumber}}"
+            aria-label="Completeness threshold (%)"
+          />
+        </span>
+        <span class="col-3 text-end">
+          <label for="outliers" class="col-form-label regularPublicSans fs-6 pl-2"
+            >StDev filter level:&nbsp;
+          </label>
+        </span>
+        <span class="col-2 text-start">
+          {{#if noQC}}
+          <select
+            id="outliers"
+            class="form-select bg-white"
+            aria-label="StDev filter level"
+          >
+            <option value="all" selected="selected">All Data</option>
+            <option value="3">3 sd</option>
+            <option value="2">2 sd</option>
+            <option value="1">1 sd</option>
+          </select>
+          {{else}}
+          <select
+            id="outliers"
+            class="form-select bg-white"
+            aria-label="Stdev filter level"
+          >
+            <option value="all">All Data</option>
+            <option value="3" selected="selected">3 sd</option>
+            <option value="2">2 sd</option>
+            <option value="1">1 sd</option>
+          </select>
+          {{/if}}
+        </span>
+      </div>
+      <div
+        id="qcParamGroup-lite-item"
+        class="d-none row col-xl-9 col-lg-10 col-md-11 col-12 bg-info-subtle border border-info border-1 rounded-1 p-2 g-0"
       >
-        <option value="all">All Data</option>
-        <option value="3" selected="selected">3 sd</option>
-        <option value="2">2 sd</option>
-        <option value="1">1 sd</option>
-      </select>
-      {{/if}}
-    </span>
-  </div>
-  <div
-    id="qcParamGroup-lite-item"
-    class="d-none row bg-info-subtle border border-info border-1 rounded-1 mt-3 p-2"
-  >
-    <label for="plotTypes-selector" class="col-2 col-form-label regularPublicSans fs-5"
-      >Quality Control</label
-    >
-    <span class="col-3 text-end">
-      <label for="outliers-lite" class="col-form-label egularPublicSans fs-5 pl-2"
-        >StDev filter level:&nbsp;
-      </label>
-    </span>
-    <span class="col-2 text-start">
-      {{#if noQC}}
-      <select
-        id="outliers-lite"
-        class="form-select bg-white"
-        aria-label="StDev filter level"
+        <div
+          class="col-2 col-form-label regularPublicSans fs-6 ml-2"
+          >Quality Control</div
+        >
+        <span class="col-3 text-end">
+          <label for="outliers-lite" class="col-form-label egularPublicSans fs-6 pl-2"
+            >StDev filter level:&nbsp;
+          </label>
+        </span>
+        <span class="col-2 text-start">
+          {{#if noQC}}
+          <select
+            id="outliers-lite"
+            class="form-select bg-white"
+            aria-label="StDev filter level"
+          >
+            <option value="all" selected="selected">All Data</option>
+            <option value="3">3 sd</option>
+            <option value="2">2 sd</option>
+            <option value="1">1 sd</option>
+          </select>
+          {{else}}
+          <select
+            id="outliers-lite"
+            class="form-select bg-white"
+            aria-label="Stdev filter level"
+          >
+            <option value="all">All Data</option>
+            <option value="3" selected="selected">3 sd</option>
+            <option value="2">2 sd</option>
+            <option value="1">1 sd</option>
+          </select>
+          {{/if}}
+        </span>
+      </div>
+      <div
+        id="qcParamGroup-gaps-item"
+        class="d-none row col-xl-9 col-lg-10 col-md-11 col-12 bg-info-subtle border border-info border-1 rounded-1 p-2 g-0"
       >
-        <option value="all" selected="selected">All Data</option>
-        <option value="3">3 sd</option>
-        <option value="2">2 sd</option>
-        <option value="1">1 sd</option>
-      </select>
-      {{else}}
-      <select
-        id="outliers-lite"
-        class="form-select bg-white"
-        aria-label="Stdev filter level"
-      >
-        <option value="all">All Data</option>
-        <option value="3" selected="selected">3 sd</option>
-        <option value="2">2 sd</option>
-        <option value="1">1 sd</option>
-      </select>
-      {{/if}}
-    </span>
-  </div>
-  <div
-    id="qcParamGroup-gaps-item"
-    class="d-none row bg-info-subtle border border-info border-1 rounded-1 mt-3 p-2"
-  >
-    <label for="plotTypes-selector" class="col-2 col-form-label regularPublicSans fs-5"
-      >Quality Control</label
-    >
-    <span class="col-4 text-end">
-      <label for="completeness-gaps" class="col-form-label regularPublicSans fs-5 pl-2"
-        >Completeness threshold (%):&nbsp;
-      </label>
-    </span>
-    <span class="col-1 text-start">
-      <input
-        type="number"
-        class="form-control bg-white"
-        name="quantity"
-        id="completeness-gaps"
-        min="0"
-        max="100"
-        value="{{completenessNumber}}"
-        aria-label="Completeness threshold (%)"
-      />
-    </span>
+        <div
+          class="col-2 col-form-label regularPublicSans fs-6 ml-2 "
+          >Quality Control</div
+        >
+        <span class="col-4 text-end">
+          <label
+            for="completeness-gaps"
+            class="col-form-label regularPublicSans fs-6 pl-2"
+            >Completeness threshold (%):&nbsp;
+          </label>
+        </span>
+        <span class="col-1 text-start">
+          <input
+            type="number"
+            class="form-control bg-white"
+            name="quantity"
+            id="completeness-gaps"
+            min="0"
+            max="100"
+            value="{{completenessNumber}}"
+            aria-label="Completeness threshold (%)"
+          />
+        </span>
+      </div>
+      <div class="col-xl-3 col-lg-2 col-md-1 col-0"></div>
+    </div>
   </div>
   {{/if}}
 </template>
