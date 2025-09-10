@@ -4,17 +4,17 @@
     <div class="row mt-1 mx-2">
       <div
         id="qcParamGroup-item"
-        class="row col-xl-9 col-lg-10 col-md-11 col-12 bg-info-subtle border border-info border-1 rounded-1 p-2 g-0"
+        class="row col-xl-7 col-lg-8 col-md-10 col-sm-11 col-12 bg-info-subtle align-middle border border-info border-1 rounded-1 p-2 g-0"
       >
-        <div class="col-2 col-form-label regularPublicSans fs-5">
+        <div class="col-2 col-form-label regularPublicSans fs-6">
           &nbsp;Quality Control
         </div>
-        <span class="col-4 text-end pt-1">
+        <span class="col-4 text-end">
           <label for="completeness" class="col-form-label regularPublicSans fs-6"
             >Completeness threshold (%):&nbsp;
           </label>
         </span>
-        <span class="col-1 text-start pt-1">
+        <span class="col-1 text-start">
           <input
             type="number"
             class="form-control bg-white"
@@ -26,12 +26,12 @@
             aria-label="Completeness threshold (%)"
           />
         </span>
-        <span class="col-3 text-end pt-1">
+        <span class="col-3 text-end">
           <label for="outliers" class="col-form-label regularPublicSans fs-6"
             >StDev filter level:&nbsp;
           </label>
         </span>
-        <span class="col-2 text-start pt-1">
+        <span class="col-2 text-start">
           {{#if noQC}}
           <select
             id="outliers"
@@ -59,17 +59,17 @@
       </div>
       <div
         id="qcParamGroup-lite-item"
-        class="d-none row col-xl-9 col-lg-10 col-md-11 col-12 bg-info-subtle border border-info border-1 rounded-1 p-2 g-0"
+        class="d-none row col-xl-7 col-lg-8 col-md-10 col-sm-11 col-12 bg-info-subtle align-middle border border-info border-1 rounded-1 p-2 g-0"
       >
         <div class="col-2 col-form-label regularPublicSans fs-5">
           &nbsp;Quality Control
         </div>
-        <span class="col-3 text-end pt-1">
-          <label for="outliers-lite" class="col-form-label egularPublicSans fs-6"
+        <span class="col-3 text-end">
+          <label for="outliers-lite" class="col-form-label regularPublicSans fs-6"
             >StDev filter level:&nbsp;
           </label>
         </span>
-        <span class="col-2 text-start pt-1">
+        <span class="col-2 text-start">
           {{#if noQC}}
           <select
             id="outliers-lite"
@@ -97,19 +97,19 @@
       </div>
       <div
         id="qcParamGroup-gaps-item"
-        class="d-none row col-xl-9 col-lg-10 col-md-11 col-12 bg-info-subtle border border-info border-1 rounded-1 p-2 g-0"
+        class="d-none row col-xl-7 col-lg-8 col-md-10 col-sm-11 col-12 bg-info-subtle align-middle border border-info border-1 rounded-1 p-2 g-0"
       >
-        <div class="col-2 col-form-label regularPublicSans fs-5">
+        <div class="col-2 col-form-label regularPublicSans fs-6">
           &nbsp;Quality Control
         </div>
-        <span class="col-4 text-end pt-1">
+        <span class="col-4 text-end">
           <label
             for="completeness-gaps"
             class="col-form-label regularPublicSans fs-6"
             >Completeness threshold (%):&nbsp;
           </label>
         </span>
-        <span class="col-1 text-start pt-1">
+        <span class="col-1 text-start">
           <input
             type="number"
             class="form-control bg-white"
@@ -122,7 +122,7 @@
           />
         </span>
       </div>
-      <div class="col-xl-3 col-lg-2 col-md-1 col-0"></div>
+      <div class="col-xl-5 col-lg-4 col-md-2 col-sm-1 col-0"></div>
     </div>
   </div>
   {{/if}}
