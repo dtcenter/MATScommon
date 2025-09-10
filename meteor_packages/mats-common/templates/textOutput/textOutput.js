@@ -72,7 +72,8 @@ Template.textOutput.helpers({
           "<th class='table-info' scope='col'>label</th><th class='table-info' scope='col'>mean</th><th class='table-info' scope='col'>standard deviation</th><th class='table-info' scope='col'>n</th><th class='table-info' scope='col'>minimum</th><th class='table-info' scope='col'>maximum</th>";
         break;
       case matsTypes.PlotTypes.reliability:
-        header += "<th class='table-info' scope='col'>label</th><th class='table-info' scope='col'>sample climatology</th>";
+        header +=
+          "<th class='table-info' scope='col'>label</th><th class='table-info' scope='col'>sample climatology</th>";
         break;
       case matsTypes.PlotTypes.roc:
         header +=
