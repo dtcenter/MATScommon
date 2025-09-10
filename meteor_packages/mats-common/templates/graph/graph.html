@@ -968,19 +968,23 @@
             <h4>* Leave a field blank to preserve its original value.</h4>
           </div>
           <div class="modal-body h-50">
-            <label for="legendPositionSelect" class="fs-5 col-form-label"
-              >Legend position:&nbsp;&nbsp;</label
-            >
-            <select
-              id="legendPositionSelect"
-              class="form-select bg-white"
-              aria-label="legend location options"
-            >
-              <option value="TL">Top Left</option>
-              <option value="TR">Top Right</option>
-              <option value="BL">Bottom Left</option>
-              <option value="BR">Bottom Right</option>
-            </select>
+            <div class="row">
+              <label for="legendPositionSelect" class="fs-5 col-lg-4 col-5"
+                >Legend position:&nbsp;&nbsp;</label
+              >
+              <span class="col-lg-8 col-7">
+                <select
+                  id="legendPositionSelect"
+                  class="form-select bg-white"
+                  aria-label="legend location options"
+                >
+                  <option value="TL">Top Left</option>
+                  <option value="TR">Top Right</option>
+                  <option value="BL">Bottom Left</option>
+                  <option value="BR">Bottom Right</option>
+                </select></span
+              >
+            </div>
             <div><br /></div>
             {{#each curves}}
             <div class="row">
