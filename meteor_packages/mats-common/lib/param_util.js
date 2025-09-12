@@ -9,7 +9,6 @@ import {
   matsTypes,
   matsCollections,
   matsMethods,
-  matsPlotUtils,
   matsCurveUtils,
   matsSelectUtils,
 } from "meteor/randyp:mats-common";
@@ -18,10 +17,8 @@ import moment from "moment";
 
 // get the document id for the control button element that corresponds to the param name
 const getControlButtonIdForParamName = function (paramName) {
-  // scatter axis don't really exist in CurveParams-related matsCollections but they are elements
-  const pname = paramName.replace(/^.axis-/, "");
-  if (matsCollections[pname] !== undefined) {
-    const param = matsCollections[pname].findOne({ name: pname });
+  if (matsCollections[paramName] !== undefined) {
+    const param = matsCollections[paramName].findOne({ name: paramName });
     if (param !== undefined) {
       const id = `controlButton-${param.name}`;
       return id;
@@ -32,24 +29,17 @@ const getControlButtonIdForParamName = function (paramName) {
 
 // get the control Button Element that corresponds to the param name
 const getControlElementForParamName = function (paramName) {
-  // scatter axis don't really exist in CurveParams-related matsCollections but they are elements
-  const pname = paramName.replace(/^.axis-/, "");
-  return document.getElementById(getControlButtonIdForParamName(pname));
+  return document.getElementById(getControlButtonIdForParamName(paramName));
 };
 
 // get the VALUE BOX id for the element that corresponds to the param name
 const getValueIdForParamName = function (paramName) {
-  // scatter axis don't really exist in CurveParams-related matsCollections but they are elements
-  const pname = paramName.replace(/^.axis-/, "");
-  return `controlButton-${pname}-value`;
+  return `controlButton-${paramName}-value`;
 };
 
 // get the document element that corresponds to the param name
 const getValueElementForParamName = function (paramName) {
-  // scatter axis don't really exist in CurveParams-related matsCollections but they are elements
-  const pname = paramName.replace(/^.axis-/, "");
-  const val = getValueIdForParamName(pname);
-  return document.getElementById(val);
+  return document.getElementById(getValueIdForParamName(paramName));
 };
 
 // get the current selected value in the document element that corresponds to the param name
@@ -64,17 +54,12 @@ const getValueForParamName = function (paramName) {
 
 // get the document id for the element that corresponds to the param name
 const getInputIdForParamName = function (paramName) {
-  // scatter axis don't really exist in CurveParams-related matsCollections but they are elements
-  const pname = paramName.replace(/^.axis-/, "");
   let param;
-  if (matsCollections[pname] !== undefined) {
-    param = matsCollections[pname].findOne({ name: pname });
+  if (matsCollections[paramName] !== undefined) {
+    param = matsCollections[paramName].findOne({ name: paramName });
   }
   if (param === undefined) {
-    param = matsCollections.PlotParams.findOne({ name: pname });
-  }
-  if (param === undefined) {
-    param = matsCollections.Scatter2dParams.findOne({ name: pname });
+    param = matsCollections.PlotParams.findOne({ name: paramName });
     if (param === undefined) {
       return undefined;
     }
@@ -87,8 +72,7 @@ const getInputIdForParamName = function (paramName) {
 
 // get the document element that corresponds to the param name
 const getInputElementForParamName = function (paramName) {
-  const name = paramName.replace(/^.axis-/, "");
-  const id = getInputIdForParamName(name);
+  const id = getInputIdForParamName(paramName);
   if (id === undefined) {
     return undefined;
   }
@@ -105,13 +89,13 @@ const setValueTextForParamName = function (paramName, text) {
     }
     if (param === undefined) {
       param = matsCollections.PlotParams.findOne({ name: paramName });
-    }
-    if (param === undefined) {
-      return;
+      if (param === undefined) {
+        return;
+      }
     }
     if (thisText === undefined) {
       if (param.multiple) {
-        // .... if multi selected  get the first .. last
+        // .... if multi selected get the first .. last
         const selection = getInputElementForParamName(paramName).selectedOptions;
         if (selection.length === 0) {
           thisText = "";
@@ -144,18 +128,12 @@ const setValueTextForParamName = function (paramName, text) {
 
 // get the parameter for the element that corresponds to the param name
 const getParameterForName = function (paramName) {
-  // scatter axis don't really exist in CurveParams-related matsCollections but they are elements
-  const pname = paramName.replace(/^.axis-/, "");
-
   let param;
-  if (matsCollections[pname] !== undefined) {
-    param = matsCollections[pname].findOne({ name: pname });
+  if (matsCollections[paramName] !== undefined) {
+    param = matsCollections[paramName].findOne({ name: paramName });
   }
   if (param === undefined) {
-    param = matsCollections.PlotParams.findOne({ name: pname });
-  }
-  if (param === undefined) {
-    param = matsCollections.Scatter2dParams.findOne({ name: pname });
+    param = matsCollections.PlotParams.findOne({ name: paramName });
     if (param === undefined) {
       return undefined;
     }
@@ -171,9 +149,6 @@ const getParameterForNameAsync = async function (pname) {
   }
   if (param === undefined) {
     param = await matsCollections.PlotParams.findOneAsync({ name: pname });
-  }
-  if (param === undefined) {
-    param = await matsCollections.Scatter2dParams.findOneAsync({ name: pname });
     if (param === undefined) {
       return undefined;
     }
@@ -183,12 +158,7 @@ const getParameterForNameAsync = async function (pname) {
 
 // get a param disabledOptions list - if any.
 const getDisabledOptionsForParamName = function (paramName) {
-  const name = paramName.replace(/^.axis-/, "");
-  const id = getInputIdForParamName(name);
-  if (id === undefined) {
-    return undefined;
-  }
-  const param = getParameterForName(name);
+  const param = getParameterForName(paramName);
   if (!param) {
     return undefined;
   }
@@ -200,8 +170,7 @@ const getDisabledOptionsForParamName = function (paramName) {
 const setInputForParamName = function (paramName, value) {
   const param = getParameterForName(paramName);
   const id = getInputIdForParamName(paramName);
-  const idSelectorStr = `#${id}`;
-  const idSelector = $(idSelectorStr);
+  const idSelector = $(`#${id}`);
 
   // SHOULD DEAL WITH CHECKBOXES HERE
   if (param.type === matsTypes.InputTypes.radioGroup) {
@@ -218,10 +187,7 @@ const getElementValues = function () {
     plotParams: {},
     scatterParams: {},
   };
-  const axis = ["xaxis-", "yaxis-"];
-  let params = matsCollections.CurveParamsInfo.findOne({
-    curve_params: { $exists: true },
-  }).curve_params;
+  let params = matsCollections.CurveParamsInfo.findOne({}).curve_params;
   let param;
   for (let pidx = 0; pidx < params.length; pidx += 1) {
     param = matsCollections[params[pidx]].findOne({});
@@ -243,28 +209,6 @@ const getElementValues = function () {
       val = $(idSelect).val();
     }
     data.curveParams[param.name] = val;
-    if (matsPlotUtils.getPlotType() === matsTypes.PlotTypes.scatter2d) {
-      for (let a = 0; a < axis.length; a += 1) {
-        const axisStr = axis[a];
-        const name = axisStr + param.name;
-        val = "";
-        if (param.type === matsTypes.InputTypes.radioGroup) {
-          const selector = `input:radio[name='${name}']:checked`;
-          val = $(selector).val();
-        } else if (param.type === matsTypes.InputTypes.checkBoxGroup) {
-          const selector = `input[name='${name}']:checked`;
-          val = $(selector)
-            .map(function (_, el) {
-              return $(el).val();
-            })
-            .get();
-        } else {
-          const idSelect = `#${getInputIdForParamName(name)}`;
-          val = $(idSelect).val();
-        }
-        data.curveParams[name] = val;
-      }
-    }
   }
 
   params = matsCollections.PlotParams.find({}).fetch();
@@ -289,79 +233,11 @@ const getElementValues = function () {
     data.plotParams[p.name] = val;
   });
 
-  params = matsCollections.Scatter2dParams.find({}).fetch();
-  params.forEach(function (p) {
-    let val = "";
-    if (p.type === matsTypes.InputTypes.radioGroup) {
-      const selector = `input:radio[name='${p.name}']:checked`;
-      val = $(selector).val();
-    } else if (p.type === matsTypes.InputTypes.checkBoxGroup) {
-      const selector = `input[name='${p.name}']:checked`;
-      val = $(selector)
-        .map(function (_, el) {
-          return $(el).val();
-        })
-        .get();
-    } else if (p.type === matsTypes.InputTypes.color) {
-      val = document.querySelector(`[name='${p.name}-icon']`).style.color;
-    } else {
-      const idSelect = `#${getInputIdForParamName(p.name)}`;
-      val = $(idSelect).val();
-    }
-    data.scatterParams[p.name] = val;
-    if (matsPlotUtils.getPlotType() === matsTypes.PlotTypes.scatter2d) {
-      for (let a = 0; a < axis.length; a += 1) {
-        const axisStr = axis[a];
-        const name = axisStr + p.name;
-        val = "";
-        if (p.type === matsTypes.InputTypes.radioGroup) {
-          const selector = `input:radio[name='${name}']:checked`;
-          val = $(selector).val();
-        } else if (p.type === matsTypes.InputTypes.checkBoxGroup) {
-          const selector = `input[name='${name}']:checked`;
-          val = $(selector)
-            .map(function (_, el) {
-              return $(el).val();
-            })
-            .get();
-        } else if (p.type === matsTypes.InputTypes.color) {
-          val = document.querySelector(`[name='${p.name}-icon']`).style.color;
-        } else {
-          const idSelect = `#${getInputIdForParamName(name)}`;
-          val = $(idSelect).val();
-        }
-        data.scatterParams[name] = val;
-      }
-    }
-  });
   return data;
 };
 
-const expandParams = function () {
-  const params = matsCollections.CurveParamsInfo.findOne({
-    curve_params: { $exists: true },
-  }).curve_params;
-  let param;
-  for (let pidx = 0; pidx < params.length; pidx += 1) {
-    param = matsCollections[params[pidx]].findOne({});
-    if (param.type !== matsTypes.InputTypes.selectMap) {
-      const selector = `element-${param.name}`;
-      const elem = document.getElementById(selector);
-      if (elem) {
-        elem.style.display = "block";
-        const dataElem = document.getElementById(`${param.name}-${param.type}`);
-        if (dataElem && dataElem.options && dataElem.selectedIndex >= 0) {
-          dataElem.options[dataElem.selectedIndex].scrollIntoView();
-        }
-      }
-    }
-  }
-};
-
 const collapseParams = function () {
-  const params = matsCollections.CurveParamsInfo.findOne({
-    curve_params: { $exists: true },
-  }).curve_params;
+  const params = matsCollections.CurveParamsInfo.findOne({}).curve_params;
   let param;
   for (let pidx = 0; pidx < params.length; pidx += 1) {
     param = matsCollections[params[pidx]].find({});
@@ -427,7 +303,7 @@ const setDefaultForParamName = function (param) {
   const defaultValue = param.default;
   if (paramName === "label") {
     setInputForParamName(paramName, Session.get("NextCurveLabel"));
-  } else if (defaultValue !== "undefined") {
+  } else {
     if (
       type === matsTypes.InputTypes.select &&
       (defaultValue === -1 ||
@@ -489,9 +365,7 @@ const getMinMaxDatesTC = function (minDate, maxDate) {
 
 const setAllParamsToDefault = function () {
   // default the superiors and refresh them so that they cause the dependent options to refresh
-  const paramNames = matsCollections.CurveParamsInfo.findOne({
-    curve_params: { $exists: true },
-  }).curve_params;
+  const paramNames = matsCollections.CurveParamsInfo.findOne({}).curve_params;
   let params = [];
   const superiors = [];
   const dependents = [];
@@ -561,24 +435,22 @@ const setAllParamsToDefault = function () {
       }
     });
 };
+
 // is the input element displaying? used by curve_param_item_group
 const isInputElementVisible = function (paramName) {
-  const name = paramName.replace(/^.axis-/, ""); // need to acount for scatter plots params
-  const inputElement = getInputElementForParamName(name);
+  const inputElement = getInputElementForParamName(paramName);
   return $(inputElement).is(":visible");
 };
 
 // is the input element displaying? used by curve_param_item_group
 const isParamVisible = function (paramName) {
-  const name = paramName.replace(/^.axis-/, ""); // need to acount for scatter plots params
-  const paramRef = `#${name}-item`;
+  const paramRef = `#${paramName}-item`;
   return $(paramRef).is(":visible");
 };
 
 // is the input element displaying? used by curve_param_item_group
 const isControlButtonVisible = function (paramName) {
-  const name = paramName.replace(/^.axis-/, ""); // need to acount for scatter plots params
-  const paramRef = `#controlButton-${name}`;
+  const paramRef = `#controlButton-${paramName}`;
   return $(paramRef).is(":visible");
 };
 
@@ -592,7 +464,7 @@ const setInputValueForParamAndTriggerChange = function (paramName, value) {
 const getOptionsMapForParam = function (paramName) {
   let param;
   if (matsCollections[paramName] !== undefined) {
-    param = matsCollections[paramName].findOne({ name: paramName });
+    param = matsCollections[paramName].findOne({});
   }
   if (param === undefined) {
     param = matsCollections.PlotParams.findOne({ name: paramName });
@@ -606,7 +478,7 @@ const getOptionsMapForParam = function (paramName) {
 const getOptionsForParam = function (paramName) {
   let param;
   if (matsCollections[paramName] !== undefined) {
-    param = matsCollections[paramName].findOne({ name: paramName });
+    param = matsCollections[paramName].findOne({});
   }
   if (param === undefined) {
     param = matsCollections.PlotParams.findOne({ name: paramName });
@@ -629,9 +501,7 @@ const visibilityControllerForParam = function (paramName) {
     If it exists, that param is returned. Otherwise return undefined.
      */
   let found;
-  const params = matsCollections.CurveParamsInfo.findOne({
-    curve_params: { $exists: true },
-  }).curve_params;
+  const params = matsCollections.CurveParamsInfo.findOne({}).curve_params;
   let param;
   for (let pidx = 0; pidx < params.length; pidx += 1) {
     param = matsCollections[params[pidx]].findOne({});
@@ -647,9 +517,8 @@ const visibilityControllerForParam = function (paramName) {
 };
 
 const getMultiSelectCurveParamNames = async function () {
-  const curveParamNames = (
-    await matsCollections.CurveParamsInfo.findOneAsync({}, { curve_params: 1 })
-  ).curve_params;
+  const curveParamNames = (await matsCollections.CurveParamsInfo.findOneAsync({}))
+    .curve_params;
   const multiParamNames = [];
   await Promise.all(
     curveParamNames.map(async function (paramName) {
@@ -663,9 +532,8 @@ const getMultiSelectCurveParamNames = async function () {
 };
 
 const getSingleSelectCurveParamNames = async function () {
-  const curveParamNames = (
-    await matsCollections.CurveParamsInfo.findOneAsync({}, { curve_params: 1 })
-  ).curve_params;
+  const curveParamNames = (await matsCollections.CurveParamsInfo.findOneAsync({}))
+    .curve_params;
   const multiParamNames = await getMultiSelectCurveParamNames();
   const singleParamNames = curveParamNames.filter(function (n) {
     return !multiParamNames.includes(n);
@@ -674,16 +542,14 @@ const getSingleSelectCurveParamNames = async function () {
 };
 
 const getPlotParamNames = function () {
-  const paramNames = matsCollections.PlotParams.find({}, { _id: 0, name: 1 }).fetch();
+  const paramNames = matsCollections.PlotParams.find({}).fetch();
   return paramNames;
 };
 
 const addImportedCurve = function () {
   const curves = Session.get("Curves");
   const p = {};
-  const curveParamNames = matsCollections.CurveParamsInfo.findOne({
-    curve_params: { $exists: true },
-  }).curve_params;
+  const curveParamNames = matsCollections.CurveParamsInfo.findOne({}).curve_params;
   for (let i = 0; i < curveParamNames.length; i += 1) {
     const currentParam = matsCollections[curveParamNames[i]].findOne({});
     if (
@@ -721,7 +587,6 @@ export default matsParamUtils = {
   getInputElementForParamName,
   getElementValues,
   setInputForParamName,
-  expandParams,
   collapseParams,
   collapseParam,
   getParameterForName,

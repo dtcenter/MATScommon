@@ -98,12 +98,6 @@ Template.scorecardParamList.events({
         setError(new Error(error.message));
       });
   },
-  "click .expand"() {
-    matsParamUtils.expandParams();
-  },
-  "click .collapse"() {
-    matsParamUtils.collapseParams();
-  },
   // restore settings
   "click .restore-settings"(event) {
     Session.set("paramWellColor", "#ffffff");
