@@ -245,7 +245,7 @@ Template.curveParamItemGroup.helpers({
     }
     const value = curve[elem.name];
     let text = "";
-    if (Object.prototype.toString.call(value) === "[object Array]") {
+    if (Array.isArray(value)) {
       if (value.length === 1) {
         [text] = value;
       } else if (value.length > 1) {

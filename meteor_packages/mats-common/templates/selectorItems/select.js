@@ -4,12 +4,12 @@
 
 import {
   matsTypes,
-  matsCollections,
   matsCurveUtils,
   matsParamUtils,
   matsSelectUtils,
 } from "meteor/randyp:mats-common";
 import { Template } from "meteor/templating";
+// eslint-disable-next-line import/no-unresolved
 import TomSelect from "tom-select";
 
 /* global Session, $, setError */
@@ -20,34 +20,14 @@ import TomSelect from "tom-select";
  */
 Template.select.onRendered(function () {
   const ref = `${this.data.name}-${this.data.type}`;
-  // eslint-disable-next-line no-new
-  new TomSelect(this.find(`#${ref}`), {});
-
   const elem = document.getElementById(ref);
+  if (!elem.tomselect) {
+    // the tom-select hasn't been initialized yet
+    // eslint-disable-next-line no-new
+    new TomSelect(elem, {});
+  }
+
   try {
-    // register refresh event for axis change to use to enforce a refresh
-
-    if (elem) {
-      elem.addEventListener("axisRefresh", function (event) {
-        // Don't know why I have to do this, I expected the parameter data to be in the context....
-        if (matsCollections[this.name] !== undefined) {
-          const paramData = matsCollections[this.name].findOne(
-            { name: this.name },
-            {
-              dependentNames: 1,
-              peerName: 1,
-            }
-          );
-          matsSelectUtils.refreshPeer(event, paramData);
-        }
-      });
-    }
-
-    // register refresh event for any superior to use to enforce a refresh of the options list
-    if (ref.search("axis") === 1) {
-      // this is a "brother" (hidden) scatterplot param. There is no need to refresh it or add event listeners etc.
-      return;
-    }
     elem.options = [];
     if (elem) {
       elem.addEventListener("refresh", function (event) {
@@ -160,7 +140,6 @@ Template.select.events({
     // These need to be done in the right order!
     // always check to see if an "other" needs to be hidden or disabled before refreshing
     matsSelectUtils.checkHideOther(this, false);
-    matsSelectUtils.refreshPeer(event, this);
     document.getElementById(`element-${this.name}`).style.display = "none"; // be sure to hide the element div
     const curveItem = document.getElementById(`curveItem-${Session.get("editMode")}`);
     if (curveItem) {
@@ -181,6 +160,7 @@ Template.select.events({
   "click .doneSelecting"() {
     Session.set("elementChanged", Date.now());
     const controlElem = matsParamUtils.getControlElementForParamName(this.name);
+    $(`#${this.name}-${this.type}`).tomselect.close().trigger("change"); // apply the selection choices to the select2
     const editMode = Session.get("editMode");
     const curveItem =
       editMode === undefined && editMode === ""

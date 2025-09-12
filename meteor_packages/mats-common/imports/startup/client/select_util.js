@@ -8,6 +8,8 @@ import {
   matsPlotUtils,
   matsTypes,
 } from "meteor/randyp:mats-common";
+// eslint-disable-next-line import/no-unresolved
+import TomSelect from "tom-select";
 
 /* global $, _, Session, setInfo */
 
@@ -15,11 +17,7 @@ import {
 const refreshDependents = function (event, param) {
   try {
     const { dependentNames } = param;
-    if (
-      dependentNames &&
-      Object.prototype.toString.call(dependentNames) === "[object Array]" &&
-      dependentNames.length > 0
-    ) {
+    if (dependentNames && Array.isArray(dependentNames) && dependentNames.length > 0) {
       // refresh the dependents
       let selectAllbool = false;
       for (let i = 0; i < dependentNames.length; i += 1) {
@@ -32,10 +30,15 @@ const refreshDependents = function (event, param) {
           targetId = `${targetParam.name}-${targetParam.type}`;
         }
         const targetElem = document.getElementById(targetId);
-
+        if (!targetElem.tomselect && targetParam.type === "select") {
+          // the tom-select hasn't been initialized yet
+          // eslint-disable-next-line no-new
+          new TomSelect(targetElem, {});
+        }
         if (document.getElementById("selectAll")) {
           selectAllbool = document.getElementById("selectAll").checked;
         }
+
         try {
           if (
             !(
@@ -50,50 +53,35 @@ const refreshDependents = function (event, param) {
           re.message = `INFO: refreshDependents of: ${param.name} dependent: ${targetParam.name} - error: ${re.message}`;
           setInfo(re.message);
         }
-        const elements = targetElem.options;
+        const targetOptions = targetElem.options;
         const select = true;
-        if (targetElem.multiple && elements !== undefined && elements.length > 0) {
+        if (
+          targetElem.multiple &&
+          targetOptions !== undefined &&
+          targetOptions.length > 0
+        ) {
           if (selectAllbool) {
-            for (let i1 = 0; i1 < elements.length; i1 += 1) {
-              elements[i1].selected = select;
+            for (let i1 = 0; i1 < targetOptions.length; i1 += 1) {
+              targetOptions[i1].selected = select;
             }
             matsParamUtils.setValueTextForParamName(name, "");
           } else {
             const previouslySelected = Session.get("selected");
-            for (let i2 = 0; i2 < elements.length; i2 += 1) {
-              if (_.indexOf(previouslySelected, elements[i2].text) !== -1) {
-                elements[i2].selected = select;
+            for (let i2 = 0; i2 < targetOptions.length; i2 += 1) {
+              if (_.indexOf(previouslySelected, targetOptions[i2].text) !== -1) {
+                targetOptions[i2].selected = select;
               }
             }
           }
+        }
+        if (targetElem.tomselect) {
+          targetElem.tomselect.clearOptions();
+          targetElem.tomselect.sync();
         }
       }
     }
   } catch (e) {
     e.message = `INFO: Error in select.js refreshDependents: ${e.message}`;
-    setInfo(e.message);
-  }
-};
-
-// method to refresh the peers of the current selector
-const refreshPeer = function (event, param) {
-  try {
-    const { peerName } = param;
-    if (peerName !== undefined) {
-      // refresh the peer
-      const targetParam = matsParamUtils.getParameterForName(peerName);
-      const targetId = `${targetParam.name}-${targetParam.type}`;
-      const targetElem = document.getElementById(targetId);
-      const refreshMapEvent = new CustomEvent("refresh", {
-        detail: {
-          refElement: null,
-        },
-      });
-      targetElem.dispatchEvent(refreshMapEvent);
-    }
-    refreshDependents(event, param);
-  } catch (e) {
-    e.message = `INFO: Error in select.js refreshPeer: ${e.message}`;
     setInfo(e.message);
   }
 };
@@ -267,10 +255,6 @@ const checkHideOther = function (param, firstRender) {
 
 // refresh the selector in question to the appropriate options indicated by the values of any superior selectors
 const refresh = function (event, paramName) {
-  if (paramName.search("axis") === 1) {
-    // this is a "brother" (hidden) scatterplot param. There is no need to refresh it or add event listeners etc.
-    return;
-  }
   const param = matsParamUtils.getParameterForName(paramName);
   const elem = matsParamUtils.getInputElementForParamName(paramName);
 
@@ -721,13 +705,16 @@ const refresh = function (event, paramName) {
   // These need to be done in the right order!
   // always check to see if an "other" needs to be hidden or disabled before refreshing
   checkHideOther(param, false);
-  refreshPeer(event, param);
+  refreshDependents(event, param);
+  if (elem.tomselect) {
+    elem.tomselect.clearOptions();
+    elem.tomselect.sync();
+  }
 }; // refresh function
 
 // eslint-disable-next-line no-undef
 export default matsSelectUtils = {
   refresh,
-  refreshPeer,
   refreshDependents,
   checkDisableOther,
   checkHideOther,

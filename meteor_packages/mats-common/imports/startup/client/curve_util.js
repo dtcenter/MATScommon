@@ -34,7 +34,7 @@ const sizeof = function (val1) {
         break;
       case "object":
         val24Keys = Object.keys(val2[val4]);
-        if (Object.prototype.toString.call(val2[val4]) !== "[object Array]") {
+        if (Array.isArray(val2[val4])) {
           for (let v24idx = 0; v24idx < val24Keys.length; v24idx += 1) {
             const val5 = val2[val4][val24Keys[v24idx]];
             val3 += 2 * val5.length;
