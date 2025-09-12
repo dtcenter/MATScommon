@@ -117,17 +117,10 @@ Template.scorecardParamList.events({
       setError("Label cannot be blank");
       return false;
     }
-    const isScatter = matsPlotUtils.getPlotType() === matsTypes.PlotTypes.scatter2d;
-    const isMap = matsPlotUtils.getPlotType() === matsTypes.PlotTypes.map;
-    const isContour = matsPlotUtils.getPlotType() === matsTypes.PlotTypes.contour;
-    const isContourDiff =
-      matsPlotUtils.getPlotType() === matsTypes.PlotTypes.contourDiff;
     const curves = Session.get("Curves");
     const p = {};
     const elems = event.target.valueOf().elements;
-    let curveNames = matsCollections.CurveParamsInfo.findOne({
-      curve_params: { $exists: true },
-    }).curve_params;
+    const curveNames = matsCollections.CurveParamsInfo.findOne({}).curve_params;
     const dateParamNames = [];
     let param;
     // remove any hidden params (not unused ones  -= 1 unused is a valid state)
@@ -161,26 +154,11 @@ Template.scorecardParamList.events({
         dateParamNames.splice(dindex, 1);
       }
     }
-    if (isScatter) {
-      const scatterCurveNames = [];
-      for (let i = 0; i < curveNames.length; i += 1) {
-        scatterCurveNames.push(curveNames[i]);
-        scatterCurveNames.push(`xaxis-${curveNames[i]}`);
-        scatterCurveNames.push(`yaxis-${curveNames[i]}`);
-      }
-      curveNames = scatterCurveNames;
-    }
     const paramElems = _.filter(elems, function (elem) {
       return _.contains(curveNames, elem.name);
     });
     // add in any date params (they aren't technically elements)
     paramElems.concat(dateParamNames);
-    // add in the scatter2d parameters if it is a scatter plot.
-    if (isScatter) {
-      $(":input[id^='Fit-Type']:input[name*='Fit-Type']").each(function () {
-        paramElems.push(this);
-      });
-    }
     const l = paramElems.length;
     if (Session.get("editMode")) {
       const changingCurveLabel = Session.get("editMode");
@@ -235,36 +213,9 @@ Template.scorecardParamList.events({
         }
       }
       if (index !== -1) {
-        if (isScatter) {
-          // copy the params to the current axis paremeters
-          const axis = Session.get("axis");
-          const axisParams = Object.keys(p).filter(function (key) {
-            return key.startsWith(axis);
-          });
-          for (let api = 0; api < axisParams.length; api += 1) {
-            const ap = axisParams[api];
-            const pp = ap.replace(`${axis}-`, "");
-            p[ap] = p[pp];
-            curves[index][ap] = p[pp];
-          }
-          curves[index]["Fit-Type"] = p["Fit-Type"];
-        } else {
-          curves[index] = p;
-        }
+        curves[index] = p;
       }
     } else {
-      if (isMap && curves.length >= 1) {
-        setError(new Error("ERROR: Map plot-type can only have one curve!"));
-        return false;
-      }
-      if (isContour && curves.length >= 1) {
-        setError(new Error("ERROR: Contour plot-type can only have one curve!"));
-        return false;
-      }
-      if (isContourDiff && curves.length >= 2) {
-        setError(new Error("ERROR: Contour Diff plot-type can only have two curves!"));
-        return false;
-      }
       for (let i = 0; i < l; i += 1) {
         if (paramElems[i] instanceof Element === false) {
           // isn't really an element - must be a date field - these are only strings
@@ -296,8 +247,6 @@ Template.scorecardParamList.events({
           }
         } else if (paramElems[i].type === "button") {
           p[paramElems[i].id] = paramElems[i].value;
-        } else if (isScatter) {
-          p[paramElems[i].name] = paramElems[i].value;
         } else {
           p[paramElems[i].name] = matsParamUtils.getValueForParamName(
             paramElems[i].name

@@ -162,7 +162,6 @@ Template.graph.helpers({
         }
         Session.set("mapResetOpts", mapResetOpts);
         break;
-      case matsTypes.PlotTypes.scatter2d:
       default:
         break;
     }
@@ -210,7 +209,6 @@ Template.graph.helpers({
           document.getElementById(`${label}-curve-show-hide`).click();
           return false;
         case matsTypes.PlotTypes.simpleScatter:
-        case matsTypes.PlotTypes.scatter2d:
           document.getElementById(`${label}-curve-show-hide-points`).click();
           return false;
         case matsTypes.PlotTypes.histogram:
@@ -253,7 +251,6 @@ Template.graph.helpers({
             document.getElementById(`${label}-curve-show-hide`).click();
             break;
           case matsTypes.PlotTypes.simpleScatter:
-          case matsTypes.PlotTypes.scatter2d:
             document.getElementById(`${label}-curve-show-hide-points`).click();
             break;
           case matsTypes.PlotTypes.histogram:
@@ -293,7 +290,6 @@ Template.graph.helpers({
           label = returnDataset[i].label;
           switch (thisPlotType) {
             case matsTypes.PlotTypes.simpleScatter:
-            case matsTypes.PlotTypes.scatter2d:
               if (
                 (hideAllOtherCurves && returnDataset[i].visible !== "legendonly") ||
                 (!hideAllOtherCurves && returnDataset[i].visible === "legendonly")
@@ -363,7 +359,6 @@ Template.graph.helpers({
           case matsTypes.PlotTypes.gridscale:
           case matsTypes.PlotTypes.dailyModelCycle:
           case matsTypes.PlotTypes.yearToYear:
-          case matsTypes.PlotTypes.scatter2d:
             localAnnotation = `<div id='${dataset[i].curveId}-annotation' style='color:#${darkerAnnotationColor}'>${dataset[i].annotation} </div>`;
             break;
           case matsTypes.PlotTypes.map:
@@ -601,7 +596,6 @@ Template.graph.helpers({
         case matsTypes.PlotTypes.histogram:
         case matsTypes.PlotTypes.ensembleHistogram:
         case matsTypes.PlotTypes.simpleScatter:
-        case matsTypes.PlotTypes.scatter2d:
         case matsTypes.PlotTypes.contour:
         case matsTypes.PlotTypes.contourDiff:
         default:
@@ -660,7 +654,6 @@ Template.graph.helpers({
               : `${plotType.replace(/([A-Z][a-z])/g, " $1").trim()}`;
             return `${ensembleType}: ${format}`;
           }
-          case matsTypes.PlotTypes.scatter2d:
           default:
             return `Scatter: ${p.dates} : ${format}`;
         }
@@ -769,7 +762,6 @@ Template.graph.helpers({
       case matsTypes.PlotTypes.map:
       case matsTypes.PlotTypes.histogram:
       case matsTypes.PlotTypes.ensembleHistogram:
-      case matsTypes.PlotTypes.scatter2d:
       case matsTypes.PlotTypes.simpleScatter:
       case matsTypes.PlotTypes.contour:
       case matsTypes.PlotTypes.contourDiff:
@@ -792,7 +784,6 @@ Template.graph.helpers({
       case matsTypes.PlotTypes.roc:
       case matsTypes.PlotTypes.performanceDiagram:
       case matsTypes.PlotTypes.gridscaleProb:
-      case matsTypes.PlotTypes.scatter2d:
       case matsTypes.PlotTypes.simpleScatter:
         return true;
       case matsTypes.PlotTypes.map:
@@ -824,7 +815,6 @@ Template.graph.helpers({
       case matsTypes.PlotTypes.map:
       case matsTypes.PlotTypes.histogram:
       case matsTypes.PlotTypes.ensembleHistogram:
-      case matsTypes.PlotTypes.scatter2d:
       case matsTypes.PlotTypes.contour:
       case matsTypes.PlotTypes.contourDiff:
       default:
@@ -928,7 +918,6 @@ Template.graph.helpers({
       case matsTypes.PlotTypes.gridscaleProb:
         return "block";
       case matsTypes.PlotTypes.simpleScatter:
-      case matsTypes.PlotTypes.scatter2d:
       case matsTypes.PlotTypes.map:
       case matsTypes.PlotTypes.histogram:
       case matsTypes.PlotTypes.ensembleHistogram:
@@ -954,7 +943,6 @@ Template.graph.helpers({
       case matsTypes.PlotTypes.performanceDiagram:
       case matsTypes.PlotTypes.gridscaleProb:
       case matsTypes.PlotTypes.simpleScatter:
-      case matsTypes.PlotTypes.scatter2d:
         return "block";
       case matsTypes.PlotTypes.map:
       case matsTypes.PlotTypes.histogram:
@@ -986,7 +974,6 @@ Template.graph.helpers({
         case matsTypes.PlotTypes.map:
         case matsTypes.PlotTypes.histogram:
         case matsTypes.PlotTypes.ensembleHistogram:
-        case matsTypes.PlotTypes.scatter2d:
         case matsTypes.PlotTypes.simpleScatter:
         case matsTypes.PlotTypes.contour:
         case matsTypes.PlotTypes.contourDiff:
@@ -1015,7 +1002,6 @@ Template.graph.helpers({
       case matsTypes.PlotTypes.gridscale:
       case matsTypes.PlotTypes.dailyModelCycle:
       case matsTypes.PlotTypes.yearToYear:
-      case matsTypes.PlotTypes.scatter2d:
       case matsTypes.PlotTypes.map:
         return "block";
       case matsTypes.PlotTypes.reliability:
@@ -1053,7 +1039,6 @@ Template.graph.helpers({
       case matsTypes.PlotTypes.contourDiff:
         return "block";
       case matsTypes.PlotTypes.map:
-      case matsTypes.PlotTypes.scatter2d:
       default:
         return "none";
     }
@@ -1437,7 +1422,6 @@ Template.graph.events({
       case matsTypes.PlotTypes.roc:
       case matsTypes.PlotTypes.performanceDiagram:
       case matsTypes.PlotTypes.simpleScatter:
-      case matsTypes.PlotTypes.scatter2d:
         // set the dimensions square
         h =
           Math.max(document.documentElement.clientHeight, window.innerWidth || 0) *
@@ -2323,7 +2307,6 @@ Template.graph.events({
                 case matsTypes.PlotTypes.gridscale:
                 case matsTypes.PlotTypes.dailyModelCycle:
                 case matsTypes.PlotTypes.yearToYear:
-                case matsTypes.PlotTypes.scatter2d:
                 case matsTypes.PlotTypes.map:
                   thisAnnotation = $(`#legendContainer${dataset[lidx].label}`);
                   annotationCurrentlyHidden = thisAnnotation[0].hidden;
@@ -2373,7 +2356,6 @@ Template.graph.events({
           }
           $(`#${dataset[0].label}-curve-show-hide-heatmap`)[0].value = "show heat map";
           break;
-        case matsTypes.PlotTypes.scatter2d:
         default:
           break;
       }
@@ -2755,7 +2737,6 @@ Template.graph.events({
             case matsTypes.PlotTypes.contour:
             case matsTypes.PlotTypes.contourDiff:
             case matsTypes.PlotTypes.map:
-            case matsTypes.PlotTypes.scatter2d:
             default:
               break;
           }

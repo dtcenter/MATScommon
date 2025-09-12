@@ -591,9 +591,6 @@ Template.plotList.onRendered(function () {
       case matsTypes.PlotTypes.simpleScatter:
         matsCurveUtils.showSimpleScatterFace();
         break;
-      case matsTypes.PlotTypes.scatter2d:
-        matsCurveUtils.showScatterFace();
-        break;
       case matsTypes.PlotTypes.timeSeries:
       default:
         matsCurveUtils.showTimeseriesFace();

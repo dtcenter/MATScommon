@@ -286,7 +286,6 @@ const width = function (plotType) {
     case matsTypes.PlotTypes.roc:
     case matsTypes.PlotTypes.performanceDiagram:
     case matsTypes.PlotTypes.simpleScatter:
-    case matsTypes.PlotTypes.scatter2d:
       // set the width square
       return squareWidthHeight();
     case matsTypes.PlotTypes.timeSeries:
@@ -316,7 +315,6 @@ const height = function (plotType) {
     case matsTypes.PlotTypes.roc:
     case matsTypes.PlotTypes.performanceDiagram:
     case matsTypes.PlotTypes.simpleScatter:
-    case matsTypes.PlotTypes.scatter2d:
       // set the height square
       return squareWidthHeight();
     case matsTypes.PlotTypes.timeSeries:
@@ -346,7 +344,6 @@ const standAloneWidth = function (plotType) {
     case matsTypes.PlotTypes.roc:
     case matsTypes.PlotTypes.performanceDiagram:
     case matsTypes.PlotTypes.simpleScatter:
-    case matsTypes.PlotTypes.scatter2d:
       // set the width square
       return standAloneSquareWidthHeight();
     case matsTypes.PlotTypes.timeSeries:
@@ -376,7 +373,6 @@ const standAloneHeight = function (plotType) {
     case matsTypes.PlotTypes.roc:
     case matsTypes.PlotTypes.performanceDiagram:
     case matsTypes.PlotTypes.simpleScatter:
-    case matsTypes.PlotTypes.scatter2d:
       // set the height square
       return standAloneSquareWidthHeight();
     case matsTypes.PlotTypes.timeSeries:
@@ -415,15 +411,7 @@ const setTextView = function (plotType) {
   document.getElementById("paramList").style.display = "none";
   document.getElementById("plotList").style.display = "none";
   document.getElementById("curveList").style.display = "none";
-  if (document.getElementById("plotTypeContainer")) {
-    document.getElementById("plotTypeContainer").style.display = "none";
-  }
-  if (document.getElementById("scatter2d")) {
-    document.getElementById("scatter2d").style.display = "none";
-  }
-  if (document.getElementById("scatterView")) {
-    document.getElementById("scatterView").style.display = "none";
-  }
+  document.getElementById("plotTypeContainer").style.display = "none";
   document.getElementById("exportButton").style.display = "block";
   document.getElementById("plotButton").style.display = "block";
   document.getElementById("textButton").style.display = "none";
@@ -450,15 +438,7 @@ const setGraphView = function (plotType) {
   document.getElementById("paramList").style.display = "none";
   document.getElementById("plotList").style.display = "none";
   document.getElementById("curveList").style.display = "none";
-  if (document.getElementById("plotTypeContainer")) {
-    document.getElementById("plotTypeContainer").style.display = "none";
-  }
-  if (document.getElementById("scatter2d")) {
-    document.getElementById("scatter2d").style.display = "none";
-  }
-  if (document.getElementById("scatterView")) {
-    document.getElementById("scatterView").style.display = "none";
-  }
+  document.getElementById("plotTypeContainer").style.display = "none";
   document.getElementById("exportButton").style.display = "none";
   document.getElementById("plotButton").style.display = "none";
   document.getElementById("textButton").style.display = "block";
@@ -482,15 +462,7 @@ const setScorecardDisplayView = function () {
   document.getElementById("paramList").style.display = "none";
   document.getElementById("plotList").style.display = "none";
   document.getElementById("curveList").style.display = "none";
-  if (document.getElementById("plotTypeContainer")) {
-    document.getElementById("plotTypeContainer").style.display = "none";
-  }
-  if (document.getElementById("scatter2d")) {
-    document.getElementById("scatter2d").style.display = "none";
-  }
-  if (document.getElementById("scatterView")) {
-    document.getElementById("scatterView").style.display = "none";
-  }
+  document.getElementById("plotTypeContainer").style.display = "none";
   document.getElementById("exportButton").style.display = "none";
   document.getElementById("plotButton").style.display = "none";
   document.getElementById("textButton").style.display = "none";
@@ -532,15 +504,7 @@ const setDefaultView = function () {
   } else {
     document.getElementById("curveList").style.display = "none";
   }
-  if (document.getElementById("plotTypeContainer")) {
-    document.getElementById("plotTypeContainer").style.display = "block";
-  }
-  if (document.getElementById("scatter2d")) {
-    document.getElementById("scatter2d").style.display = "block";
-  }
-  if (document.getElementById("scatterView")) {
-    document.getElementById("scatterView").style.display = "block";
-  }
+  document.getElementById("plotTypeContainer").style.display = "block";
   document.getElementById("exportButton").style.display = "none";
   document.getElementById("plotButton").style.display = "none";
   document.getElementById("textButton").style.display = "block";

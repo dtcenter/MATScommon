@@ -82,13 +82,6 @@ if (Meteor.isServer) {
     }
     return this.ready();
   });
-  Meteor.publish("Scatter2dParams", function () {
-    const data = matsCollections.Scatter2dParams.find({});
-    if (data) {
-      return data;
-    }
-    return this.ready();
-  });
   Meteor.publish("PlotGraphFunctions", function () {
     const data = matsCollections.PlotGraphFunctions.find({});
     if (data) {

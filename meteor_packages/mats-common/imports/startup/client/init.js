@@ -23,7 +23,6 @@ if (Meteor.isClient) {
     Meteor.subscribe(params[i]);
   }
   Meteor.subscribe("metaDataTableUpdates");
-  Meteor.subscribe("Scatter2dParams");
   Meteor.subscribe("CurveParamsInfo");
   Meteor.subscribe("AppsToScore");
   Meteor.subscribe("SavedCurveParams");

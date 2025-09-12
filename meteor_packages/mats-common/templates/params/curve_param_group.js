@@ -2,56 +2,18 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import { matsTypes, matsCollections, matsPlotUtils } from "meteor/randyp:mats-common";
+import { matsTypes, matsCollections } from "meteor/randyp:mats-common";
 import { Template } from "meteor/templating";
 
 /* global Session */
 /* eslint-disable no-console */
-
-const duplicate = function (param) {
-  const obj = {};
-  const keys = Object.keys(param);
-  for (let i = 0; i < keys.length; i += 1) {
-    if (keys[i] !== "_id") {
-      obj[keys[i]] = param[keys[i]];
-    }
-  }
-  return obj;
-};
-
-const filterParams = function (params) {
-  /*
-    If the plottype is a 2d scatter plot we need to basically create a new set of parameters (except for the label)
-    for each axis. The double set of parameters will get sent back to the backend.
-     */
-  if (matsPlotUtils.getPlotType() === matsTypes.PlotTypes.scatter2d) {
-    const xparams = [];
-    const yparams = [];
-    let newParams = [];
-    for (let i = 0; i < params.length; i += 1) {
-      const xp = duplicate(params[i]);
-      xp.name = `xaxis-${params[i].name}`;
-      xp.hidden = true;
-      xparams.push(xp);
-      const yp = duplicate(params[i]);
-      yp.name = `yaxis-${params[i].name}`;
-      yp.hidden = true;
-      yparams.push(yp);
-    }
-    newParams = newParams.concat(params);
-    newParams = newParams.concat(xparams);
-    newParams = newParams.concat(yparams);
-    return newParams;
-  }
-  return params;
-};
 
 const getParams = function (num) {
   const paramNames = matsCollections.CurveParamsInfo.findOne({
     curve_params: { $exists: true },
   }).curve_params;
   const paramMap = {};
-  let params = [];
+  const params = [];
   let param;
   for (let i = 0; i < paramNames.length; i += 1) {
     [param] = matsCollections[paramNames[i]].find({}).fetch();
@@ -65,7 +27,6 @@ const getParams = function (num) {
   for (let dor = 0; dor < displayOrders.length; dor += 1) {
     params.push(paramMap[displayOrders[dor]]);
   }
-  params = filterParams(params);
   return params;
 };
 
@@ -126,7 +87,6 @@ Template.curveParamGroup.helpers({
               case matsTypes.PlotTypes.map:
               case matsTypes.PlotTypes.contour:
               case matsTypes.PlotTypes.contourDiff:
-              case matsTypes.PlotTypes.scatter2d:
                 return "Aggregation:";
               case matsTypes.PlotTypes.reliability:
               default:

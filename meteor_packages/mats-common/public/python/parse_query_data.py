@@ -866,7 +866,7 @@ def do_matching(options, return_obj):
     if plot_type in ["EnsembleHistogram"]:
         remove_non_matching_ind_vars = False
     elif plot_type in ["TimeSeries", "Profile", "Dieoff", "Threshold", "ValidTime", "GridScale", "DailyModelCycle",
-                        "YearToYear", "SimpleScatter", "Scatter2d", "Contour", "ContourDiff"]:
+                        "YearToYear", "SimpleScatter", "Contour", "ContourDiff"]:
         remove_non_matching_ind_vars = True
     else:
         # Either matching is not supported for this pot type, or it's a histogram and we do the matching later

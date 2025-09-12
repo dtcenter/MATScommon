@@ -30,7 +30,6 @@ for (let i = 0; i < params.length; i += 1) {
 const metaDataTableUpdates = new Mongo.Collection("metaDataTableUpdates");
 const CurveParamsInfo = new Mongo.Collection("CurveParamsInfo");
 const AppsToScore = new Mongo.Collection("AppsToScore");
-const Scatter2dParams = new Mongo.Collection("Scatter2dParams");
 const CurveTextPatterns = new Mongo.Collection("CurveTextPatterns");
 const ScatterAxisTextPattern = new Mongo.Collection("ScatterAxisTextPattern");
 const SavedCurveParams = new Mongo.Collection("SavedCurveParams");
@@ -64,7 +63,6 @@ const explicitCollections = {
   metaDataTableUpdates,
   CurveParamsInfo,
   AppsToScore,
-  Scatter2dParams,
   CurveTextPatterns,
   ScatterAxisTextPattern,
   SavedCurveParams,

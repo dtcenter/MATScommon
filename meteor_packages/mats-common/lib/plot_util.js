@@ -217,9 +217,6 @@ const restoreSettings = function (p) {
         case matsTypes.PlotTypes.simpleScatter:
           matsCurveUtils.showSimpleScatterFace();
           break;
-        case matsTypes.PlotTypes.scatter2d:
-          matsCurveUtils.showScatterFace();
-          break;
         case matsTypes.PlotTypes.timeSeries:
         default:
           matsCurveUtils.showTimeseriesFace();
@@ -322,17 +319,6 @@ const restoreSettings = function (p) {
           : p.data.paramData.curveParams[plotParam.name];
       matsParamUtils.setInputForParamName(plotParam.name, val);
     }
-  });
-
-  // reset the scatter parameters
-  params = matsCollections.Scatter2dParams.find({}).fetch();
-  params.forEach(function (plotParam) {
-    const val =
-      p.data.paramData.scatterParams[plotParam.name] === null ||
-      p.data.paramData.scatterParams[plotParam.name] === undefined
-        ? matsTypes.InputTypes.unused
-        : p.data.paramData.scatterParams[plotParam.name];
-    matsParamUtils.setInputForParamName(plotParam.name, val);
   });
 
   // reset the dates

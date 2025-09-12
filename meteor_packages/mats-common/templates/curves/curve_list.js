@@ -16,10 +16,6 @@ import { Template } from "meteor/templating";
 
 Template.curveList.helpers({
   displayPlotUnMatched() {
-    // scatter plots can't match
-    if (Session.get("plotType") === matsTypes.PlotTypes.scatter2d) {
-      return "none";
-    }
     // don't allow plotting when editing
     const mode = Session.get("editMode");
     if (mode === undefined || mode === "") {
@@ -66,7 +62,6 @@ Template.curveList.helpers({
         case matsTypes.PlotTypes.ensembleHistogram:
         case matsTypes.PlotTypes.contourDiff:
         case matsTypes.PlotTypes.simpleScatter:
-        case matsTypes.PlotTypes.scatter2d:
         default:
           return "block";
       }

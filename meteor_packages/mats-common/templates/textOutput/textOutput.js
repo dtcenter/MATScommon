@@ -30,9 +30,6 @@ const getDataForCurve = function (curve) {
   if (matsCurveUtils.getPlotResultData() === null) {
     return [];
   }
-  if (Session.get("plotType") === matsTypes.PlotTypes.scatter2d) {
-    return matsCurveUtils.getPlotResultData()[curve.label];
-  }
   return matsCurveUtils.getPlotResultData().data[curve.label];
 };
 
@@ -49,10 +46,6 @@ Template.textOutput.onRendered(function () {
 });
 
 Template.textOutput.helpers({
-  notScatter() {
-    return Session.get("plotType") !== matsTypes.PlotTypes.scatter2d;
-  },
-
   // get the table header for the summary stats at the top of the text page
   statHeaders() {
     let header = "";
@@ -99,9 +92,6 @@ Template.textOutput.helpers({
         break;
       case matsTypes.PlotTypes.simpleScatter:
         header += "";
-        break;
-      case matsTypes.PlotTypes.scatter2d:
-        // no stat for scatter
         break;
       default:
         break;
@@ -283,9 +273,6 @@ Template.textOutput.helpers({
         break;
       case matsTypes.PlotTypes.simpleScatter:
         header += `<th class='table-info' scope='col'>${curve.label} bin value</th><th class='table-info' scope='col'>x-statistic</th><th class='table-info' scope='col'>y-statistic</th><th class='table-info' scope='col'>n</th>`;
-        break;
-      case matsTypes.PlotTypes.scatter2d:
-        header += `<th class='table-info' scope='col'>${curve.label} x axis</th><th class='table-info' scope='col'>${curve.label} y axis</th><th class='table-info' scope='col'>best fit</th>`;
         break;
       default:
         break;
@@ -838,24 +825,6 @@ Template.textOutput.helpers({
             element.n !== undefined && element.n !== null ? element.n : fillStr
           }</td>`;
         break;
-      case matsTypes.PlotTypes.scatter2d:
-        line +=
-          `<td>${
-            element.xAxis !== undefined && element.xAxis !== null
-              ? element.xAxis.toPrecision(4)
-              : fillStr
-          }</td>` +
-          `<td>${
-            element.yAxis !== undefined && element.yAxis !== null
-              ? element.yAxis.toPrecision(4)
-              : fillStr
-          }</td>` +
-          `<td>${
-            element["best fit"] !== undefined && element["best fit"] !== null
-              ? element["best fit"]
-              : fillStr
-          }</td>`;
-        break;
       default:
         break;
     }
@@ -1041,37 +1010,6 @@ Template.textOutput.helpers({
         break;
       case matsTypes.PlotTypes.simpleScatter:
         line += "";
-        break;
-      case matsTypes.PlotTypes.scatter2d:
-        line +=
-          `<td>${curve.label}</td>` +
-          `<td>${(stats.mean !== undefined && stats.mean !== null
-            ? stats.mean.toPrecision(4)
-            : "undefined"
-          ).toString()}</td>` +
-          `<td>${(stats["standard deviation"] !== undefined &&
-          stats["standard deviation"] !== null
-            ? stats["standard deviation"].toPrecision(4)
-            : "undefined"
-          ).toString()}</td>` +
-          `<td>${stats.n.toString()}</td>` +
-          `<td>${(stats["standard error"] !== undefined &&
-          stats["standard error"] !== null
-            ? stats["standard error"].toPrecision(4)
-            : "undefined"
-          ).toString()}</td>` +
-          `<td>${(stats.lag1 !== undefined && stats.lag1 !== null
-            ? stats.lag1.toPrecision(4)
-            : "undefined"
-          ).toString()}</td>` +
-          `<td>${(stats.minimum !== undefined && stats.minimum !== null
-            ? stats.minimum.toPrecision(4)
-            : "undefined"
-          ).toString()}</td>` +
-          `<td>${(stats.maximum !== undefined && stats.maximum !== null
-            ? stats.maximum.toPrecision(4)
-            : "undefined"
-          ).toString()}</td>`;
         break;
       default:
         break;

@@ -26,24 +26,6 @@ Template.curveItem.helpers({
     const confirmRemoveCurve = Session.get("confirmRemoveCurve");
     return confirmRemoveCurve ? confirmRemoveCurve.label : null;
   },
-  displayEditXaxis() {
-    if (Session.get("plotType") === matsTypes.PlotTypes.scatter2d) {
-      return "block";
-    }
-    return "none";
-  },
-  displayEditYaxis() {
-    if (Session.get("plotType") === matsTypes.PlotTypes.scatter2d) {
-      return "block";
-    }
-    return "none";
-  },
-  displayEdit() {
-    if (Session.get("plotType") === matsTypes.PlotTypes.scatter2d) {
-      return "none";
-    }
-    return "block";
-  },
   text() {
     if (this.diffFrom === undefined) {
       let plotType = Session.get("plotType");
@@ -126,7 +108,7 @@ const setParamsToAxis = function (newAxis, currentParams) {
   const paramNames = matsCollections.CurveParamsInfo.findOne({
     curve_params: { $exists: true },
   }).curve_params;
-  let params = [];
+  const params = [];
   const superiors = [];
   const dependents = [];
   // get all of the curve param collections in one place
@@ -206,21 +188,6 @@ const setParamsToAxis = function (newAxis, currentParams) {
           : currentParams[currentParamName];
       matsParamUtils.setInputForParamName(plotParam.name, val);
     }
-  }
-  // reset the scatter parameters
-  params = matsCollections.Scatter2dParams.find({}).fetch();
-  for (let p = 0; p < params.length; p += 1) {
-    const plotParam = params[p];
-    currentParamName =
-      currentParams[`${newAxis}-${plotParam.name}`] === undefined
-        ? plotParam.name
-        : `${newAxis}-${plotParam.name}`;
-    const val =
-      currentParams[currentParamName] === null ||
-      currentParams[currentParamName] === undefined
-        ? matsTypes.InputTypes.unused
-        : currentParams[currentParamName];
-    matsParamUtils.setInputForParamName(plotParam.name, val);
   }
   matsParamUtils.collapseParams();
   return false;
@@ -349,7 +316,7 @@ Template.curveItem.events({
     const paramNames = matsCollections.CurveParamsInfo.findOne({
       curve_params: { $exists: true },
     }).curve_params;
-    let params = [];
+    const params = [];
     const superiors = [];
     const hidden = [];
     // get all of the curve param collections in one place
@@ -405,17 +372,6 @@ Template.curveItem.events({
     // now reset the form parameters for everything else
     correlateEditPanelToCurveItems(params, currentParams, false);
 
-    // reset the scatter parameters
-    params = matsCollections.Scatter2dParams.find({}).fetch();
-    for (let p = 0; p < params.length; p += 1) {
-      const plotParam = params[p];
-      const val =
-        currentParams[plotParam.name] === null ||
-        currentParams[plotParam.name] === undefined
-          ? matsTypes.InputTypes.unused
-          : currentParams[plotParam.name];
-      matsParamUtils.setInputForParamName(plotParam.name, val);
-    }
     matsParamUtils.collapseParams();
   },
   "click .displayBtn"(event) {
@@ -432,11 +388,6 @@ Template.curveItem.events({
       curveListEditNode = $(
         event.currentTarget.parentNode.parentNode.parentNode.parentNode
       ).find("#curve-list-edit-yaxis");
-    } else if (matsPlotUtils.getPlotType() === matsTypes.PlotTypes.scatter2d) {
-      // for a scatter param that is not axis specific we still have to choos an axis - just choose x
-      curveListEditNode = $(
-        event.currentTarget.parentNode.parentNode.parentNode.parentNode
-      ).find("#curve-list-edit-xaxis");
     } else {
       curveListEditNode = $(
         event.currentTarget.parentNode.parentNode.parentNode.parentNode

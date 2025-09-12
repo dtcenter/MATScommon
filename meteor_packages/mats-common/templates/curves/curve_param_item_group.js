@@ -114,11 +114,6 @@ Template.curveParamItemGroup.helpers({
           plotType: matsTypes.PlotTypes.simpleScatter,
         });
         break;
-      case matsTypes.PlotTypes.scatter2d:
-        pattern = matsCollections.CurveTextPatterns.findOne({
-          plotType: matsTypes.PlotTypes.scatter2d,
-        });
-        break;
       case matsTypes.PlotTypes.scorecard:
         pattern = matsCollections.CurveTextPatterns.findOne({
           plotType: matsTypes.PlotTypes.scorecard,
@@ -182,22 +177,7 @@ Template.curveParamItemGroup.helpers({
   },
   label(elem) {
     let pLabel = "";
-    if (matsPlotUtils.getPlotType() === matsTypes.PlotTypes.scatter2d) {
-      const pNameArr = elem.name.match(/([xy]axis-)(.*)/);
-      if (pNameArr === null) {
-        pLabel = elem.name;
-      }
-      const prefix = pNameArr[1];
-      const pName = pNameArr[2];
-      if (matsCollections[pName] !== undefined) {
-        const p = matsCollections[pName].findOne({ name: pName });
-        if (p.controlButtonText) {
-          pLabel = prefix + p.controlButtonText;
-        } else {
-          pLabel = elem.name;
-        }
-      }
-    } else if (matsCollections[elem.name] !== undefined) {
+    if (matsCollections[elem.name] !== undefined) {
       const p = matsCollections[elem.name].findOne({ name: elem.name });
       if (p.controlButtonText) {
         pLabel = p.controlButtonText;

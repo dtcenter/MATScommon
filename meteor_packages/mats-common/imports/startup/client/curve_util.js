@@ -324,19 +324,6 @@ const setUsedColorsAndLabels = function () {
   setUsedLabels();
 };
 
-const resetScatterApply = function () {
-  if (matsPlotUtils.getPlotType() === matsTypes.PlotTypes.scatter2d) {
-    Session.set("axisCurveIcon", "fa-solid fa-asterisk");
-    Session.set("xaxisCurveText", "XAXIS NOT YET APPLIED");
-    Session.set("yaxisCurveText", "YAXIS NOT YET APPLIED");
-    Session.set("xaxisCurveColor", "red");
-    Session.set("yaxisCurveColor", "red");
-    if (document.getElementById("Fit-Type-radioGroup-none") !== null) {
-      document.getElementById("Fit-Type-radioGroup-none").checked = true;
-    }
-  }
-};
-
 // add the difference curves
 // private - not exported
 const addDiffs = function () {
@@ -417,10 +404,6 @@ const removeDiffs = function () {
 // (used after adding or removing a curve while the show diffs box is checked)
 const checkDiffs = function () {
   const curves = Session.get("Curves");
-  if (matsPlotUtils.getPlotType() === matsTypes.PlotTypes.scatter2d) {
-    // scatter plots have no concept of difference curves.
-    return;
-  }
   const plotFormat = matsPlotUtils.getPlotFormat();
   if (curves.length > 1) {
     if (plotFormat !== matsTypes.PlotFormats.none) {
@@ -507,11 +490,6 @@ const setSelectorVisibility = function (plotType, faceOptions, selectorsToReset)
       ) {
         elem.style.display = faceOptions[faceSelectors[fidx]];
       }
-    }
-    elem = document.getElementById(matsTypes.PlotTypes.scatter2d);
-    if (elem && elem.style) {
-      elem.style.display =
-        plotType === matsTypes.PlotTypes.scatter2d ? "block" : "none";
     }
     Session.set("plotType", plotType);
     Session.set("lastUpdate", Date.now());
@@ -1580,65 +1558,6 @@ const showSimpleScatterFace = function () {
   return selectorsToReset;
 };
 
-// method to display the appropriate selectors for a scatter plot
-const showScatterFace = function () {
-  const plotType = matsTypes.PlotTypes.scatter2d;
-
-  // set appropriate QC parameter visibility
-  document.getElementById("qcParamGroup-item").classList.add("d-none");
-  document.getElementById("qcParamGroup-gaps-item").classList.add("d-none");
-  document.getElementById("qcParamGroup-lite-item").classList.add("d-none");
-
-  // set selector visibility
-  const faceOptions = {
-    "curve-dates": "none",
-    dates: "block",
-    statistic: "block",
-    "x-statistic": "none",
-    "y-statistic": "none",
-    variable: "block",
-    "x-variable": "none",
-    "y-variable": "none",
-    threshold: "block",
-    scale: "block",
-    level: "block",
-    "forecast-length": "block",
-    "dieoff-type": "none",
-    "probability-bins": "block",
-    average: "none",
-    "valid-time": "block",
-    "utc-cycle-start": "none",
-    "aggregation-method": "none",
-    "histogram-type-controls": "none",
-    "histogram-bin-controls": "none",
-    "histogram-yaxis-controls": "none",
-    "bin-number": "none",
-    "bin-start": "none",
-    "bin-stride": "none",
-    "bin-pivot": "none",
-    "bin-bounds": "none",
-    "map-range-controls": "none",
-    "map-low-limit": "none",
-    "map-high-limit": "none",
-    truth: "block",
-    year: "block",
-    storm: "block",
-    "region-type": "block",
-    "x-axis-parameter": "none",
-    "y-axis-parameter": "none",
-    "bin-parameter": "none",
-    significance: "none",
-    plotFormat: "none",
-  };
-  const selectorsToReset = {
-    "dieoff-type": "Dieoff",
-    "bin-parameter": "Valid Date",
-    plotFormat: matsTypes.PlotFormats.none,
-  };
-  setSelectorVisibility(plotType, faceOptions, selectorsToReset);
-  return selectorsToReset;
-};
-
 // eslint-disable-next-line no-undef
 export default matsCurveUtils = {
   addDiffs,
@@ -1655,7 +1574,6 @@ export default matsCurveUtils = {
   removeDiffs,
   resetGraphResult,
   resetPlotResultData,
-  resetScatterApply,
   setGraphResult,
   setUsedColorsAndLabels,
   setUsedLabels,
@@ -1678,5 +1596,4 @@ export default matsCurveUtils = {
   showEnsembleHistogramFace,
   showContourFace,
   showSimpleScatterFace,
-  showScatterFace,
 };

@@ -214,9 +214,8 @@ Template.graphStandAlone.helpers({
             return `${plotType.replace(/([A-Z][a-z])/g, " $1").trim()}: ${format}`;
           case matsTypes.PlotTypes.map:
             return `Map ${p.dates} `;
-          case matsTypes.PlotTypes.scatter2d:
           default:
-            return `Scatter: ${p.dates} : ${format}`;
+            return `${p.dates} : ${format}`;
         }
       } else {
         return "";

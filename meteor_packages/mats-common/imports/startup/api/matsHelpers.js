@@ -628,44 +628,6 @@ export const getFlattenedResultData = function (rk, p, np) {
           }
           returnData.data[data[0].label] = curveData;
           break;
-        case matsTypes.PlotTypes.scatter2d:
-          firstBestFitIndex = -1;
-          bestFitIndexes = {};
-
-          curveData = []; // array of maps
-          for (let ci = 0; ci < data.length; ci += 1) {
-            if (ci === firstBestFitIndex) {
-              break; // best fit curves are at the end so do not do further processing
-            }
-            curveData = data[ci];
-            // look for a best fit curve - only have to look at curves with higher index than this one
-            for (let cbi = ci + 1; cbi < data.length; cbi += 1) {
-              if (
-                data[cbi].label.indexOf(curveData.label) !== -1 &&
-                data[cbi].label.indexOf("-best fit") !== -1
-              ) {
-                bestFitIndexes[ci] = cbi;
-                if (firstBestFitIndex === -1) {
-                  firstBestFitIndex = cbi;
-                }
-                break;
-              }
-            }
-            const curveTextData = [];
-            for (let cdi = 0; cdi < curveData.data.length; cdi += 1) {
-              const element = {};
-              [element.xAxis] = curveData.data[cdi];
-              [, element.yAxis] = curveData.data[cdi];
-              if (bestFitIndexes[ci] === undefined) {
-                element["best fit"] = "none;";
-              } else {
-                [, element["best fit"]] = data[bestFitIndexes[ci]].data[cdi];
-              }
-              curveTextData.push(element);
-            }
-            returnData[curveData.label] = curveTextData;
-          }
-          break;
         default:
           return undefined;
       }

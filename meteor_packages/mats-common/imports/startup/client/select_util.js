@@ -334,12 +334,6 @@ const refresh = function (event, paramName) {
     or they might be [[{element:anElement,value:aValue},{element:anElement,value:aValue}...],[{element:anElement,value:aValue},{element:anElement,value:aValue}...],...]
 
 
-     Axis-brothers:
-     Axis-brothers are for scatter plots. They are a second hidden set of parameters that apply to a different axis.
-     Because there may be axis "brothers" This refresh must go and
-     see if there are any brother elements that are essentially hidden copies
-     of this one, and also refresh their options lists
-
      Superior Heirarchy:
      There can be a heirarchy of superiors and dependents. The superiorNames are a list of paramNames. The most superior has the 0th index and
      the least superior has the highest index.
@@ -369,7 +363,6 @@ const refresh = function (event, paramName) {
      }
      */
 
-  // find all the elements that have ids like .... "x|y|z" + "axis-" + this.name
   const { name } = param;
   const elems =
     document.getElementsByClassName("data-input") === undefined
