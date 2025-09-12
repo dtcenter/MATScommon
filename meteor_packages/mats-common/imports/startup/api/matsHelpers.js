@@ -233,8 +233,6 @@ export const getFlattenedResultData = function (rk, p, np) {
       const { data } = result;
       const { dsiRealPageIndex } = result;
       const { dsiTextDirection } = result;
-      let firstBestFitIndex = -1;
-      let bestFitIndexes = {};
       switch (plotType) {
         case matsTypes.PlotTypes.timeSeries:
         case matsTypes.PlotTypes.profile:
