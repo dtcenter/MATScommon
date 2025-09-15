@@ -534,7 +534,7 @@ const generateMapCurveOptions = async function (
       name: longLabel,
       annotateColor: curve.color,
       datatype: "scalar",
-      type: "scattermapbox",
+      type: "scattermap",
       mode: "markers",
       marker: {
         color: dataSeries.color,
@@ -565,7 +565,7 @@ const generateCTCMapCurveOptions = async function (curve, dataSeries, appParams)
       curveId: label,
       name: longLabel,
       datatype: "ctc",
-      type: "scattermapbox",
+      type: "scattermap",
       mode: "markers",
       marker: {
         color: dataSeries.color,
@@ -589,7 +589,7 @@ const generateMapColorTextOptions = function (label, legendText, dataSeries) {
       curveId: label,
       name: legendText,
       reserved: label,
-      type: "scattermapbox",
+      type: "scattermap",
       mode: "markers+text",
       marker: {
         opacity: 0,

@@ -1014,7 +1014,6 @@ const resetApp = async function (appRef) {
         ? Meteor.settings.public.apps_to_score
         : [];
     }
-    let mapboxKey = "undefined";
 
     // see if there's any messages to display to the users
     const appMessage = Meteor.settings.public.alert_message
@@ -1036,7 +1035,6 @@ const resetApp = async function (appRef) {
         private: {
           databases: [],
           PYTHON_PATH: "/usr/bin/python3",
-          MAPBOX_KEY: mapboxKey,
         },
         public: {
           run_environment: depEnv,
@@ -1070,10 +1068,6 @@ const resetApp = async function (appRef) {
       depEnv = Meteor.settings.public.run_environment;
     } else {
       depEnv = process.env.NODE_ENV;
-    }
-    // get the mapbox key out of the settings file, if it exists
-    if (Meteor.settings.private && Meteor.settings.private.MAPBOX_KEY) {
-      mapboxKey = Meteor.settings.private.MAPBOX_KEY;
     }
     delete Meteor.settings.public.undefinedRoles;
     for (let pi = 0; pi < appPools.length; pi += 1) {
@@ -1181,7 +1175,6 @@ const resetApp = async function (appRef) {
       agencyURL,
       displayDisclaimer,
       appType,
-      mapboxKey,
       appDefaultGroup,
       appDefaultDB,
       appDefaultModel,

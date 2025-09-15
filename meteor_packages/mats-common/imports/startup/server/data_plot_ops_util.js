@@ -3,7 +3,6 @@
  */
 
 import { matsCollections, matsTypes, matsMethods } from "meteor/randyp:mats-common";
-import { Meteor } from "meteor/meteor";
 // eslint-disable-next-line import/no-unresolved
 import moment from "moment";
 import { _ } from "meteor/underscore";
@@ -1646,7 +1645,7 @@ const generateMapPlotOptions = async function (extraLegendSpace) {
   const layout = {
     autosize: true,
     hovermode: "closest",
-    mapbox: {
+    map: {
       bearing: 0,
       center: {
         lat: 50,
@@ -1654,10 +1653,6 @@ const generateMapPlotOptions = async function (extraLegendSpace) {
       },
       pitch: 0,
       zoom: 2,
-      accesstoken:
-        Meteor.settings.private && Meteor.settings.private.MAPBOX_KEY
-          ? Meteor.settings.private.MAPBOX_KEY
-          : "undefined",
       style: "light",
     },
     title: {
@@ -1685,14 +1680,6 @@ const generateMapPlotOptions = async function (extraLegendSpace) {
       },
     },
   };
-  // make sure this instance of MATS actually has a key for mapbox
-  if (!layout.mapbox.accesstoken || layout.mapbox.accesstoken === "undefined") {
-    throw new Error(
-      "The mapbox access token is currently undefined, so MATS cannot produce a map " +
-        "plot at this time. To fix this, create an account at mapbox.com, " +
-        "generate a free access token, and add it to your settings.json file as private.MAPBOX_KEY."
-    );
-  }
   return layout;
 };
 

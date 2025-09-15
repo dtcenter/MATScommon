@@ -88,7 +88,7 @@ Template.graphStandAlone.helpers({
             let mapLoadPause = 0;
             options = r.layout;
             if (plotType === matsTypes.PlotTypes.map) {
-              options.mapbox.zoom = 2.75;
+              options.map.zoom = 2.75;
               mapLoadPause = 1000;
             }
             options.hovermode = false;

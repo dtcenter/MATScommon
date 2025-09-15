@@ -2,18 +2,17 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import { matsParamUtils, matsCollections } from "meteor/randyp:mats-common";
+import { matsParamUtils } from "meteor/randyp:mats-common";
 import { Template } from "meteor/templating";
 
-/* global Plotly, $, setError */
+/* global Plotly, $ */
 
 Template.map.onRendered(function () {
   const defaultAttrs = this; // save for when we need to reset to defaults
   let divElement; // save so the event handlers can talk to the two selectors
   let targetElement; // save so the event handlers can talk to the two selectors
-  const settings = matsCollections.Settings.findOne({});
 
-  $.getScript("https://cdn.plot.ly/plotly-3.0.1.min.js", function () {
+  $.getScript("https://cdn.plot.ly/plotly-3.1.0.min.js", function () {
     let targetId = "";
     let peerName = "";
     let markers = [];
@@ -56,7 +55,7 @@ Template.map.onRendered(function () {
         // height: 500,
         // width: 840,
         hovermode: "closest",
-        mapbox: {
+        map: {
           bearing: 0,
           center: {
             lat: defaultPoint[0],
@@ -64,7 +63,6 @@ Template.map.onRendered(function () {
           },
           pitch: 0,
           zoom: defaultZoomLevel,
-          accesstoken: settings.mapboxKey,
           style: "light",
         },
         margin: {
@@ -83,7 +81,7 @@ Template.map.onRendered(function () {
         lat: [],
         lon: [],
         text: [],
-        type: "scattermapbox",
+        type: "scattermap",
         mode: "markers",
         marker: {
           color: [],
@@ -112,21 +110,13 @@ Template.map.onRendered(function () {
     // call the above initialization for the first time
     initializeSelectorMap(defaultAttrs);
 
-    // make sure this instance of MATS actually has a key for mapbox
-    if (!layout.mapbox.accesstoken || layout.mapbox.accesstoken === "undefined") {
-      setError(
-        "The mapbox access token is currently undefined, so the sitesMap selector " +
-          "and map plots will not work as expected. To fix this, create an account at mapbox.com, " +
-          "generate a free access token, and add it to your settings.json file as private.MAPBOX_KEY."
-      );
-    } else {
-      // draw the map for the first time
-      Plotly.newPlot($(divId)[0], [dataset], layout, {
-        showLink: false,
-        scrollZoom: true,
-      });
+    // draw the map for the first time
+    Plotly.newPlot($(divId)[0], [dataset], layout, {
+      showLink: false,
+      scrollZoom: true,
+    });
 
-      /*
+    /*
 
             The following lines of code are event handlers for if a user clicks on a single station, or uses the area select
             tools to highlight a group of stations. For now, the logic is such that individual stations can toggle between
@@ -149,160 +139,158 @@ Template.map.onRendered(function () {
 
              */
 
-      // event handler for clicking individual stations
-      $(divId)[0].on("plotly_click", function (eventdata) {
-        // get index of current station
-        const currPoint = eventdata.points[0].pointNumber;
-        if (dataset.marker.color[currPoint] === thisMarkers[currPoint].options.color) {
-          // switch to selected color and add this station to our selected values array
-          dataset.marker.color[currPoint] =
-            thisMarkers[currPoint].options.highLightColor;
-          selectedValues.push(eventdata.points[0].text);
-        } else {
-          // switch to deselected color and remove this station from our selected values array
-          dataset.marker.color[currPoint] = thisMarkers[currPoint].options.color;
-          const tidx = selectedValues.indexOf(eventdata.points[0].text);
-          if (tidx > -1) {
-            selectedValues.splice(tidx, 1);
-          }
+    // event handler for clicking individual stations
+    $(divId)[0].on("plotly_click", function (eventdata) {
+      // get index of current station
+      const currPoint = eventdata.points[0].pointNumber;
+      if (dataset.marker.color[currPoint] === thisMarkers[currPoint].options.color) {
+        // switch to selected color and add this station to our selected values array
+        dataset.marker.color[currPoint] = thisMarkers[currPoint].options.highLightColor;
+        selectedValues.push(eventdata.points[0].text);
+      } else {
+        // switch to deselected color and remove this station from our selected values array
+        dataset.marker.color[currPoint] = thisMarkers[currPoint].options.color;
+        const tidx = selectedValues.indexOf(eventdata.points[0].text);
+        if (tidx > -1) {
+          selectedValues.splice(tidx, 1);
         }
+      }
+      // update the marker color on the plot and the values in the site selector
+      const update = { marker: { color: dataset.marker.color, opacity: 1 } };
+      Plotly.restyle($(divId)[0], update, eventdata.points[0].curveNumber);
+      $(targetId).val(selectedValues).trigger("change");
+      matsParamUtils.collapseParam(peerName);
+      $(targetId).select2("close");
+    });
+
+    // event handler for outlining multiple stations
+    $(divId)[0].on("plotly_selected", function (eventdata) {
+      if (eventdata === undefined || eventdata.points.length < 1) {
+        // the user has clicked outside of the select area, so make sure plotly's area select is disabled.
+        // otherwise the user won't be able to choose individual stations after choosing an area select
+        $(`${divId} .select-outline`).remove();
+        Plotly.restyle($(divId)[0], { selectedpoints: [null] });
+      } else {
+        // the user has selected all the points in an area. Iterate through them and select any that are not already selected.
+        let currPoint;
+        eventdata.points.forEach(function (pt) {
+          currPoint = pt.pointNumber;
+          if (
+            dataset.marker.color[currPoint] === thisMarkers[currPoint].options.color
+          ) {
+            // switch to selected color and add this station to our selected values array
+            dataset.marker.color[currPoint] =
+              thisMarkers[currPoint].options.highLightColor;
+            selectedValues.push(pt.text);
+          }
+        });
         // update the marker color on the plot and the values in the site selector
         const update = { marker: { color: dataset.marker.color, opacity: 1 } };
         Plotly.restyle($(divId)[0], update, eventdata.points[0].curveNumber);
         $(targetId).val(selectedValues).trigger("change");
         matsParamUtils.collapseParam(peerName);
         $(targetId).select2("close");
-      });
 
-      // event handler for outlining multiple stations
-      $(divId)[0].on("plotly_selected", function (eventdata) {
-        if (eventdata === undefined || eventdata.points.length < 1) {
-          // the user has clicked outside of the select area, so make sure plotly's area select is disabled.
-          // otherwise the user won't be able to choose individual stations after choosing an area select
-          $(`${divId} .select-outline`).remove();
-          Plotly.restyle($(divId)[0], { selectedpoints: [null] });
+        // As per the comment block above, we're done here, so make sure plotly's area select is disabled.
+        // otherwise the user won't be able to choose individual stations after choosing an area select.
+        $(`${divId} .select-outline`).remove();
+        Plotly.restyle($(divId)[0], { selectedpoints: [null] });
+      }
+    });
+
+    // event handler for selecting all stations
+    $(".selectSites").on("click", function (event) {
+      event.preventDefault();
+      // fill the selected values array with all available options and change the marker to its highlight color
+      $(targetId).val(peerOptions).trigger("change");
+      matsParamUtils.collapseParam(peerName);
+      $(targetId).select2("close");
+      for (let sidx = 0; sidx < thisMarkers.length; sidx += 1) {
+        dataset.marker.color[sidx] = thisMarkers[sidx].options.highLightColor;
+      }
+      const update = { marker: { color: dataset.marker.color, opacity: 1 } };
+      Plotly.restyle($(divId)[0], update, [0]);
+    });
+
+    // event handler for deselecting all stations
+    $(".deselectSites").on("click", function (event) {
+      event.preventDefault();
+      // empty the selected values array and return the marker to its original color
+      $(targetId).val([]).trigger("change");
+      matsParamUtils.collapseParam(peerName);
+      $(targetId).select2("close");
+      for (let sidx = 0; sidx < thisMarkers.length; sidx += 1) {
+        dataset.marker.color[sidx] = thisMarkers[sidx].options.color;
+      }
+      const update = { marker: { color: dataset.marker.color, opacity: 1 } };
+      Plotly.restyle($(divId)[0], update, [0]);
+    });
+
+    // method to see if the available sites have changed for this data source
+    const refreshOptionsForPeer = function (peerElement) {
+      // find out what peer options are available
+      const thesePeerOptions = [];
+      if (peerElement.options) {
+        for (let i = 0; i < peerElement.options.length; i += 1) {
+          thesePeerOptions.push(peerElement.options[i].text);
+        }
+      }
+      peerOptions = thesePeerOptions;
+    };
+
+    // method to sync the map up with the sites selector
+    const refresh = function (peerElement) {
+      if (!peerElement) {
+        return;
+      }
+      const thesePeerOptions = peerOptions;
+      const peerId = peerElement.id;
+      refreshOptionsForPeer(peerElement);
+      selectedValues = $(`#${peerId}`).val() ? $(`#${peerId}`).val() : [];
+
+      // need to redo these in case the available sites have changed for this data source
+      thisMarkers = [];
+      dataset.siteName = [];
+      dataset.text = [];
+      dataset.lat = [];
+      dataset.lon = [];
+      dataset.marker.color = [];
+      let marker;
+      for (let sidx = 0; sidx < thesePeerOptions.length; sidx += 1) {
+        marker = markers.find((obj) => obj.name === thesePeerOptions[sidx]);
+        thisMarkers[sidx] = marker;
+        dataset.siteName[sidx] = marker.name;
+        dataset.text[sidx] = marker.name;
+        [dataset.lat[sidx]] = marker.point;
+        [, dataset.lon[sidx]] = marker.point;
+        if (selectedValues.indexOf(marker.name) === -1) {
+          dataset.marker.color[sidx] = marker.options.color;
         } else {
-          // the user has selected all the points in an area. Iterate through them and select any that are not already selected.
-          let currPoint;
-          eventdata.points.forEach(function (pt) {
-            currPoint = pt.pointNumber;
-            if (
-              dataset.marker.color[currPoint] === thisMarkers[currPoint].options.color
-            ) {
-              // switch to selected color and add this station to our selected values array
-              dataset.marker.color[currPoint] =
-                thisMarkers[currPoint].options.highLightColor;
-              selectedValues.push(pt.text);
-            }
-          });
-          // update the marker color on the plot and the values in the site selector
-          const update = { marker: { color: dataset.marker.color, opacity: 1 } };
-          Plotly.restyle($(divId)[0], update, eventdata.points[0].curveNumber);
-          $(targetId).val(selectedValues).trigger("change");
-          matsParamUtils.collapseParam(peerName);
-          $(targetId).select2("close");
-
-          // As per the comment block above, we're done here, so make sure plotly's area select is disabled.
-          // otherwise the user won't be able to choose individual stations after choosing an area select.
-          $(`${divId} .select-outline`).remove();
-          Plotly.restyle($(divId)[0], { selectedpoints: [null] });
+          dataset.marker.color[sidx] = marker.options.highLightColor;
         }
-      });
+      }
+      $(divId)[0].data[0] = dataset;
+      Plotly.redraw($(divId)[0]);
+    };
 
-      // event handler for selecting all stations
-      $(".selectSites").on("click", function (event) {
-        event.preventDefault();
-        // fill the selected values array with all available options and change the marker to its highlight color
-        $(targetId).val(peerOptions).trigger("change");
-        matsParamUtils.collapseParam(peerName);
-        $(targetId).select2("close");
-        for (let sidx = 0; sidx < thisMarkers.length; sidx += 1) {
-          dataset.marker.color[sidx] = thisMarkers[sidx].options.highLightColor;
-        }
-        const update = { marker: { color: dataset.marker.color, opacity: 1 } };
-        Plotly.restyle($(divId)[0], update, [0]);
-      });
+    // method to reset the map to defaults
+    const resetMap = function (item) {
+      initializeSelectorMap(item);
+      $(divId)[0].data[0] = dataset;
+      $(divId)[0].layout = layout;
+      Plotly.redraw($(divId)[0]);
+    };
 
-      // event handler for deselecting all stations
-      $(".deselectSites").on("click", function (event) {
-        event.preventDefault();
-        // empty the selected values array and return the marker to its original color
-        $(targetId).val([]).trigger("change");
-        matsParamUtils.collapseParam(peerName);
-        $(targetId).select2("close");
-        for (let sidx = 0; sidx < thisMarkers.length; sidx += 1) {
-          dataset.marker.color[sidx] = thisMarkers[sidx].options.color;
-        }
-        const update = { marker: { color: dataset.marker.color, opacity: 1 } };
-        Plotly.restyle($(divId)[0], update, [0]);
-      });
+    // register an event listener so that the select.js can ask the map div to refresh after a selection
+    let elem = document.getElementById(divElement);
+    elem.addEventListener("refresh", function () {
+      refresh(targetElement);
+    });
 
-      // method to see if the available sites have changed for this data source
-      const refreshOptionsForPeer = function (peerElement) {
-        // find out what peer options are available
-        const thesePeerOptions = [];
-        if (peerElement.options) {
-          for (let i = 0; i < peerElement.options.length; i += 1) {
-            thesePeerOptions.push(peerElement.options[i].text);
-          }
-        }
-        peerOptions = thesePeerOptions;
-      };
-
-      // method to sync the map up with the sites selector
-      const refresh = function (peerElement) {
-        if (!peerElement) {
-          return;
-        }
-        const thesePeerOptions = peerOptions;
-        const peerId = peerElement.id;
-        refreshOptionsForPeer(peerElement);
-        selectedValues = $(`#${peerId}`).val() ? $(`#${peerId}`).val() : [];
-
-        // need to redo these in case the available sites have changed for this data source
-        thisMarkers = [];
-        dataset.siteName = [];
-        dataset.text = [];
-        dataset.lat = [];
-        dataset.lon = [];
-        dataset.marker.color = [];
-        let marker;
-        for (let sidx = 0; sidx < thesePeerOptions.length; sidx += 1) {
-          marker = markers.find((obj) => obj.name === thesePeerOptions[sidx]);
-          thisMarkers[sidx] = marker;
-          dataset.siteName[sidx] = marker.name;
-          dataset.text[sidx] = marker.name;
-          [dataset.lat[sidx]] = marker.point;
-          [, dataset.lon[sidx]] = marker.point;
-          if (selectedValues.indexOf(marker.name) === -1) {
-            dataset.marker.color[sidx] = marker.options.color;
-          } else {
-            dataset.marker.color[sidx] = marker.options.highLightColor;
-          }
-        }
-        $(divId)[0].data[0] = dataset;
-        Plotly.redraw($(divId)[0]);
-      };
-
-      // method to reset the map to defaults
-      const resetMap = function (item) {
-        initializeSelectorMap(item);
-        $(divId)[0].data[0] = dataset;
-        $(divId)[0].layout = layout;
-        Plotly.redraw($(divId)[0]);
-      };
-
-      // register an event listener so that the select.js can ask the map div to refresh after a selection
-      let elem = document.getElementById(divElement);
-      elem.addEventListener("refresh", function () {
-        refresh(targetElement);
-      });
-
-      // register an event listener so that the param_util.js can ask the map div to reset when someone clicks 'reset to defaults'
-      elem = document.getElementById(divElement);
-      elem.addEventListener("reset", function () {
-        resetMap(defaultAttrs);
-      });
-    }
+    // register an event listener so that the param_util.js can ask the map div to reset when someone clicks 'reset to defaults'
+    elem = document.getElementById(divElement);
+    elem.addEventListener("reset", function () {
+      resetMap(defaultAttrs);
+    });
   });
 });

@@ -186,7 +186,7 @@ Template.graph.helpers({
     // be the reality (the broader plotly_click and plotly_doubleclick work as expected, accurately
     // recognizing double clicks even if a single click handler exists). I'm going to add handlers
     // for both plotly_legendclick and plotly_legenddoubleclick anyway, in the hopes that they
-    // eventually fix this and it gets pushed to https://cdn.plot.ly/plotly-3.0.1.min.js, but
+    // eventually fix this and it gets pushed to https://cdn.plot.ly/plotly-3.1.0.min.js, but
     // until then, the double click show/hide all curves functionality will not exist.
     $("#placeholder")[0].on("plotly_legendclick", function (data) {
       const resultDataset = matsCurveUtils.getGraphResult().data;
