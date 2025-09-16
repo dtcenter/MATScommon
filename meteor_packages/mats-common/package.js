@@ -101,7 +101,6 @@ Package.onUse(function (api) {
   api.export("matsDataCurveOpsUtils", ["server"]);
   api.export("matsDataPlotOpsUtils", ["server"]);
   api.export("matsDataProcessUtils", ["server"]);
-  api.export("regression", ["client", "server"]);
   api.export("matsCache", ["server"]);
   api.export("versionInfo", ["server", "client"]);
   api.export("matsMiddleCommon", ["server"]);
@@ -166,7 +165,6 @@ Package.onUse(function (api) {
   api.addFiles("client/info.js", "client");
 
   // lib
-  api.addFiles("lib/regression.js", ["client", "server"]);
   api.addFiles("lib/param_util.js", ["client", "server"]);
   api.addFiles("lib/plot_util.js", ["client", "server"]);
 
