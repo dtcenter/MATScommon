@@ -18,12 +18,17 @@
             class="btn-close"
             data-bs-dismiss="modal"
             aria-label="Close"
-          ></button
-          ><br />
-          <button class="btn col-2 btn-danger deselectSites">Deselect All Sites</button>
+          ></button>
         </div>
-        <div class="modal-body h-50">
-          <div class="modal-body" id="{{name}}-{{type}}" style="margin-top: -2em"></div>
+        <div class="modal-body">
+          <button
+            class="btn btn-danger deselectSites"
+            style="margin-top: -1em; margin-left: 1em"
+          >
+            Deselect All Sites
+          </button>
+          <br />
+          <div id="{{name}}-{{type}}" class="modal-body" style="margin-top: -1em"></div>
         </div>
         <div class="modal-footer border-top-0">
           <button
