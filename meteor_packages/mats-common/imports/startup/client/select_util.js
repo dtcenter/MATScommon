@@ -8,8 +8,6 @@ import {
   matsPlotUtils,
   matsTypes,
 } from "meteor/randyp:mats-common";
-// eslint-disable-next-line import/no-unresolved
-import TomSelect from "tom-select";
 
 /* global $, _, Session, setInfo */
 
@@ -30,15 +28,10 @@ const refreshDependents = function (event, param) {
           targetId = `${targetParam.name}-${targetParam.type}`;
         }
         const targetElem = document.getElementById(targetId);
-        if (!targetElem.tomselect && targetParam.type === "select") {
-          // the tom-select hasn't been initialized yet
-          // eslint-disable-next-line no-new
-          new TomSelect(targetElem, {});
-        }
+
         if (document.getElementById("selectAll")) {
           selectAllbool = document.getElementById("selectAll").checked;
         }
-
         try {
           if (
             !(
@@ -73,10 +66,6 @@ const refreshDependents = function (event, param) {
               }
             }
           }
-        }
-        if (targetElem.tomselect) {
-          targetElem.tomselect.clearOptions();
-          targetElem.tomselect.sync();
         }
       }
     }
@@ -364,10 +353,6 @@ const refresh = function (event, paramName) {
      */
 
   const { name } = param;
-  const elems =
-    document.getElementsByClassName("data-input") === undefined
-      ? []
-      : document.getElementsByClassName("data-input");
   Session.set("selected", $(elem).val());
 
   if (elem && elem.options) {
@@ -392,12 +377,6 @@ const refresh = function (event, paramName) {
         elem.selectedIndex >= 0
           ? elem.options[elem.selectedIndex].text
           : matsTypes.InputTypes.unused;
-    }
-
-    const brothers = [];
-    for (let i = 0; i < elems.length; i += 1) {
-      if (elems[i].id.indexOf(name) >= 0 && elems[i].id !== elem.id)
-        brothers.push(elems[i]);
     }
 
     let myOptions = [];
@@ -671,25 +650,6 @@ const refresh = function (event, paramName) {
           );
         }
       }
-      for (let i = 0; i < brothers.length; i += 1) {
-        const belem = brothers[i];
-        const belemSelectedOptions = $(belem.selectedOptions)
-          .map(function () {
-            return this.value;
-          })
-          .get();
-        if (belemSelectedOptions === undefined || belemSelectedOptions.length === 0) {
-          belem.options = [];
-          for (let i1 = 0; i1 < myOptions.length; i1 += 1) {
-            belem.options[belem.options.length] = new Option(
-              myOptions[i1],
-              myOptions[i1],
-              i1 === 0,
-              i1 === 0
-            );
-          }
-        }
-      }
     } catch (e) {
       e.message = `INFO: Error in select.js refresh: resetting selected options: ${e.message}`;
       setInfo(e.message);
@@ -699,10 +659,6 @@ const refresh = function (event, paramName) {
   // always check to see if an "other" needs to be hidden or disabled before refreshing
   checkHideOther(param, false);
   refreshDependents(event, param);
-  if (elem.tomselect) {
-    elem.tomselect.clearOptions();
-    elem.tomselect.sync();
-  }
 }; // refresh function
 
 // eslint-disable-next-line no-undef
