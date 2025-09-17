@@ -19,11 +19,11 @@ import { Template } from "meteor/templating";
 Template.select.onRendered(function () {
   const ref = `${this.data.name}-${this.data.type}`;
   const elem = document.getElementById(ref);
-
   try {
     elem.options = [];
     if (elem) {
       elem.addEventListener("refresh", function (event) {
+        // if the sellector changes we need to update both it and any dependents
         matsSelectUtils.refresh(event, this.name);
       });
     }
@@ -32,6 +32,7 @@ Template.select.onRendered(function () {
     setError(e);
   }
   try {
+    // do initial refresh of all selectors and dependents
     matsSelectUtils.checkHideOther(this.data, true); // calls checkDisable
     matsSelectUtils.refresh(null, this.data.name);
   } catch (e) {
@@ -41,52 +42,6 @@ Template.select.onRendered(function () {
 });
 
 Template.select.helpers({
-  optionMaxLength() {
-    if (!this.options) {
-      return 10;
-    }
-    const longest = this.options.reduce(function (a, b) {
-      if (a === null && b === null) {
-        return null;
-      }
-      if (a === null) {
-        return b;
-      }
-      if (b === null) {
-        return a;
-      }
-      return a.length > b.length ? a : b;
-    });
-    if (!longest) {
-      return 10;
-    }
-    const ret = longest.length <= 10 ? 10 : Math.round(longest.length * 0.8);
-
-    return ret;
-  },
-
-  isSelectedByDefault(p) {
-    if (p.default === this) {
-      return "selected"; // the selected option
-    }
-    return ""; // not the selected option
-  },
-  options() {
-    let sOptions = [];
-    // process options as an option list
-    if (this.options === matsTypes.InputTypes.unused) {
-      return [];
-    }
-    if (this.optionsGroups) {
-      // options have optionGroups
-      this.optionsGroups.foreach(function (value) {
-        sOptions.concat(value);
-      });
-    } else {
-      sOptions = matsParamUtils.typeSort(this.options);
-    }
-    return sOptions;
-  },
   multiple() {
     if (this.multiple === true) {
       return "multiple";
@@ -96,26 +51,23 @@ Template.select.helpers({
   isMultiple() {
     return this.multiple === true;
   },
-  selectionIsOptional() {
-    return this.selectionOptional === true;
-  },
 });
 
 const setValue = function (pName) {
   const elem = matsParamUtils.getInputElementForParamName(pName);
   const { selectedOptions } = elem;
-
   if (
     selectedOptions === undefined ||
     selectedOptions.length === 0 ||
     elem.selectedIndex === -1
   ) {
-    // set to the default - the 0th one
+    // nothing is selected so set the selector to unused
     matsParamUtils.setValueTextForParamName(pName, matsTypes.InputTypes.unused);
   } else if (selectedOptions.length === 1) {
+    // set the selector to the single item
     matsParamUtils.setValueTextForParamName(pName, selectedOptions[0].text);
   } else {
-    // selected options is greater than 1 - must be a multiple
+    // multiselect with more than one selected item, so shorten the display text
     const firstOption = selectedOptions[0];
     const lastOption = selectedOptions[selectedOptions.length - 1];
     const text = `${firstOption.text} .. ${lastOption.text}`;
@@ -127,46 +79,42 @@ Template.select.events({
   "change .data-input"(event) {
     Session.set("elementChanged", Date.now());
     const paramName = event.target.name;
-    if (paramName === undefined) {
-      return false;
+    if (paramName) {
+      // These need to be done in the right order!
+      // always check to see if an "other" needs to be hidden or disabled before refreshing
+      matsSelectUtils.checkHideOther(this, false);
+      document.getElementById(`element-${this.name}`).style.display = "none"; // be sure to hide the element div
+      // if we're editing a curve with this change, update the curve
+      const curveItem = document.getElementById(`curveItem-${Session.get("editMode")}`);
+      if (curveItem) {
+        curveItem.scrollIntoView(false);
+      }
+      // update value text on the selctor button
+      setValue(paramName);
+      if (this.multiple) {
+        return true; // prevents the select 2 from closing on multiple selectors
+      }
+      matsSelectUtils.refreshDependents(event, this);
+      if (this.name === "plotFormat") {
+        // update difference curves if necessary
+        matsCurveUtils.checkDiffs();
+      }
+      Session.set("lastUpdate", Date.now());
     }
-    // These need to be done in the right order!
-    // always check to see if an "other" needs to be hidden or disabled before refreshing
-    matsSelectUtils.checkHideOther(this, false);
-    document.getElementById(`element-${this.name}`).style.display = "none"; // be sure to hide the element div
-    const curveItem = document.getElementById(`curveItem-${Session.get("editMode")}`);
-    if (curveItem) {
-      curveItem.scrollIntoView(false);
-    }
-    setValue(paramName);
-    if (this.multiple) {
-      return true; // prevents the select 2 from closing on multiple selectors
-    }
-    $(`#${this.name}-${this.type}`).select2("close");
-    matsSelectUtils.refreshDependents(event, this);
-    if (this.name === "plotFormat") {
-      matsCurveUtils.checkDiffs();
-    }
-    Session.set("lastUpdate", Date.now());
     return false;
   },
   "click .doneSelecting"() {
     Session.set("elementChanged", Date.now());
     const controlElem = matsParamUtils.getControlElementForParamName(this.name);
-    $(`#${this.name}-${this.type}`).select2("close").trigger("change"); // apply the selection choices to the select2
+    $(controlElem).trigger("click").trigger("change"); // close the selector and fire an event to apply changes
     const editMode = Session.get("editMode");
     const curveItem =
       editMode === undefined && editMode === ""
         ? undefined
         : document.getElementById(`curveItem-${editMode}`);
     if (curveItem && this.type !== matsTypes.InputTypes.dateRange) {
+      // if we're editing a curve, propagate changes to that curve
       $("#save").trigger("click");
-    }
-    if (editMode) {
-      $(`#${this.name}-${this.type}`).select2("close"); // use the close on the selector when editing
-    } else {
-      $(controlElem).trigger("click"); // clicking the control element hides the selector when not editing
-      $(`#${this.name}-${this.type}`).select2("close");
     }
     return false;
   },
@@ -176,84 +124,35 @@ Template.select.events({
     for (let i = 0; i < elem.options.length; i += 1) {
       values.push(elem.options[i].text);
     }
-    $(`#${this.name}-${this.type}`).select2().val(values).trigger("change");
+    // assign all of the values to the selector
+    $(`#${this.name}-${this.type}`).val(values).trigger("change");
     return false;
   },
   "click .clearSelections"() {
-    $(`#${this.name}-${this.type}`).select2().val(null).trigger("change");
+    // make selected values null
+    $(`#${this.name}-${this.type}`).val(null).trigger("change");
     return false;
   },
   "change, blur .item"(event) {
     try {
       let text = "";
-      if (this.type === matsTypes.InputTypes.selectOrderEnforced) {
-        /* check the validity of the order enforcement.
-                   The requirement for order enforced selectors is that
-                   some curve must have previously selected the earlier (lower ordered)
-                   options in the options array, not counting the default option to make this a valid selection.
-                   For example if my options are... ['auto by variable','y1','y2',y3'] and 'auto by variable'
-                   is the selectors default then choosing 'y2' or 'y3' prior to choosing 'y1' is not valid and
-                   choosing 'y3' prior to choosing 'y1' and 'y2' is not valid.
-                 */
-        // what is the default?
-        const defaultOption = this.default;
-        const selection = $(event.target).val();
-        const curves = Session.get("Curves");
-        const { options } = this;
-        const priorSelected = [defaultOption];
-        for (let ci = 0; ci < curves.length; ci += 1) {
-          const curve = curves[ci];
-          const curveOption = curve[this.name];
-          priorSelected.push(curveOption);
-        }
-        let unusedOption = "";
-        if (!priorSelected.includes(selection)) {
-          // this option has not been selected prior
-          // check to see if all the prior options to this one are selected
-          for (let oi = 0; oi < options.length; oi += 1) {
-            const option = options[oi];
-            // We reached the selected option
-            if (option === selection) {
-              break;
-            }
-            if (!priorSelected.includes(option)) {
-              unusedOption = option;
-              break;
-            }
-          }
-          if (unusedOption === "") {
-            // is valid all prior options were selected
-            event.target.setCustomValidity(this.name, "");
-          } else {
-            // HACK ALERT! the customValidity stuff seems to have been overridden in the invalid event event handler of item.js
-            Session.set(
-              "errorMessage",
-              `The prior option: ${unusedOption} was not selected for this selector, you must use that first.`
-            );
-            event.target.setCustomValidity(
-              this.name,
-              `The prior option: ${unusedOption} was not selected for this selector, you must use that first.`
-            );
-            event.target.checkValidity();
-            //                        matsParamUtils.setInputForParamName(this.name,this.default);
-          }
-        }
-      }
       if (event.target.multiple) {
         const values = $(event.target).val();
-        if (values === null) {
-          // happens if unused or empty
+        if (!values || !values.length) {
+          // nothing is selected so set the selector to unused
           text = matsTypes.InputTypes.unused;
         } else {
+          // multiselect with more than one selected item, so shorten the display text
           const firstOption = values[0];
           const lastOption = values[values.length - 1];
           text = `${firstOption} .. ${lastOption}`;
         }
       } else {
+        // set the selector to the single item
         text = $(event.target).val();
       }
       if (
-        this.type === matsTypes.InputTypes.select &&
+        // something is wrong so set the selector to unused
         (text === "" || text === undefined || text === null) &&
         (this.default === -1 ||
           this.default === undefined ||
@@ -266,6 +165,7 @@ Template.select.events({
     } catch (error) {
       matsParamUtils.setValueTextForParamName(event.target.name, "");
     }
+    // afterwards just propagate changes to curves being edited, if any.
     const editMode = Session.get("editMode");
     const curveItem =
       editMode === undefined && editMode === ""
@@ -275,14 +175,11 @@ Template.select.events({
       $("#save").trigger("click");
     }
     if (event.target.multiple) {
-      Session.set("editMode", editMode); // restore the editing of the curve item for muli selects
+      Session.set("editMode", editMode);
       const controlElem = matsParamUtils.getControlElementForParamName(this.name);
-      $(controlElem).trigger("click"); // reopen the select2 - the regular open is not located properly so do it by clicking the control element button
+      // prevent the selector from closing before we are done
+      $(controlElem).trigger("click");
     }
     return false;
-  },
-  focusout() {
-    // close the selector if it is left open
-    // event.currentTarget....
   },
 });

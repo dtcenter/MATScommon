@@ -97,7 +97,7 @@ const setValueTextForParamName = function (paramName, text) {
       if (param.multiple) {
         // .... if multi selected get the first .. last
         const selection = getInputElementForParamName(paramName).selectedOptions;
-        if (selection.length === 0) {
+        if (!selection || selection.length === 0) {
           thisText = "";
         } else if (selection.length === 1) {
           thisText = selection[0].textContent;

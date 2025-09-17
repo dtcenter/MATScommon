@@ -100,15 +100,16 @@ const getCurveTextWrapping = async function (plotType, curve) {
   return text;
 };
 
-// Determine which BestFit radio button is checked
-const getBestFit = function () {
-  const buttons = document.getElementsByName("Fit Type");
-  for (let i = 0, len = buttons.length; i < len; i += 1) {
-    if (buttons[i].checked) {
-      return buttons[i].value;
-    }
-  }
-  return ""; // error condition actually - shouldn't ever happen
+const shadeRGBColor = function (color, percent) {
+  const f = color.split(",");
+  const t = percent < 0 ? 0 : 255;
+  const p = percent < 0 ? percent * -1 : percent;
+  const R = parseInt(f[0].slice(4), 10);
+  const G = parseInt(f[1], 10);
+  const B = parseInt(f[2], 10);
+  return `rgb(${Math.round((t - R) * p) + R},${Math.round((t - G) * p) + G},${
+    Math.round((t - B) * p) + B
+  })`;
 };
 
 const containsPoint = function (pointArray, point) {
@@ -355,7 +356,7 @@ export default matsPlotUtils = {
   getCurveTextWrapping,
   getPlotType,
   getPlotFormat,
-  getBestFit,
+  shadeRGBColor,
   containsPoint,
   disableActionButtons,
   enableActionButtons,

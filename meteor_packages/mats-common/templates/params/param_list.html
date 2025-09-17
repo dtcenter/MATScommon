@@ -6,11 +6,7 @@
       aria-label="form to set the curve parameters"
       novalidate
     >
-      <div
-        id="paramWell"
-        class="clearfix well well-sm p-3"
-        style="background-color: {{paramWellColor}};"
-      >
+      <div id="paramWell" class="clearfix well well-sm p-3">
         {{#each CurveParamGroups}} {{> curveParamGroup}} {{/each}}
       </div>
       {{#if isEdit}}

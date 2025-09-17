@@ -2,10 +2,10 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import { matsTypes, matsCollections } from "meteor/randyp:mats-common";
+import { matsTypes, matsPlotUtils, matsCollections } from "meteor/randyp:mats-common";
 import { Template } from "meteor/templating";
 
-/* global Session */
+/* global Session, $ */
 /* eslint-disable no-console */
 
 const getParams = function (num) {
@@ -123,6 +123,25 @@ Template.curveParamGroup.helpers({
       }
     }
     return "";
+  },
+  paramWellColor() {
+    if (Session.get("paramWellColor") === undefined) {
+      Session.set("paramWellColor", "#ffffff");
+    }
+    if (Session.get("editMode") !== "") {
+      const curveBeingEdited = $.grep(Session.get("Curves"), function (c) {
+        return c.label === Session.get("editMode");
+      });
+      if (curveBeingEdited === undefined || curveBeingEdited[0] === undefined) {
+        Session.set("paramWellColor", "#ffffff");
+        return "#ffffff";
+      }
+      const { color } = curveBeingEdited[0];
+      const lighterShadeOfColor = matsPlotUtils.shadeRGBColor(color, 0.2);
+      Session.set("paramWellColor", lighterShadeOfColor);
+    }
+
+    return Session.get("paramWellColor");
   },
   displayGroup() {
     return "block";

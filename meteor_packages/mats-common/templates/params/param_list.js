@@ -15,18 +15,6 @@ import { Template } from "meteor/templating";
 /* global Session, $, _, setError */
 /* eslint-disable no-console */
 
-function shadeRGBColor(color, percent) {
-  const f = color.split(",");
-  const t = percent < 0 ? 0 : 255;
-  const p = percent < 0 ? percent * -1 : percent;
-  const R = parseInt(f[0].slice(4), 10);
-  const G = parseInt(f[1], 10);
-  const B = parseInt(f[2], 10);
-  return `rgb(${Math.round((t - R) * p) + R},${Math.round((t - G) * p) + G},${
-    Math.round((t - B) * p) + B
-  })`;
-}
-
 Template.paramList.helpers({
   CurveParamGroups() {
     Session.get("lastUpdate");
@@ -49,25 +37,6 @@ Template.paramList.helpers({
   },
   log() {
     console.log(this);
-  },
-  paramWellColor() {
-    if (Session.get("paramWellColor") === undefined) {
-      Session.set("paramWellColor", "#ffffff");
-    }
-    if (Session.get("editMode") !== "") {
-      const curveBeingEdited = $.grep(Session.get("Curves"), function (c) {
-        return c.label === Session.get("editMode");
-      });
-      if (curveBeingEdited === undefined || curveBeingEdited[0] === undefined) {
-        Session.set("paramWellColor", "#ffffff");
-        return "#ffffff";
-      }
-      const { color } = curveBeingEdited[0];
-      const lighterShadeOfColor = shadeRGBColor(color, 0.2);
-      Session.set("paramWellColor", lighterShadeOfColor);
-    }
-
-    return Session.get("paramWellColor");
   },
 });
 

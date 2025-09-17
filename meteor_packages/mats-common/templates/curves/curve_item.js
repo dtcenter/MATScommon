@@ -100,8 +100,6 @@ Template.curveItem.helpers({
 });
 
 const setParamsToAxis = function (newAxis, currentParams) {
-  // reset scatter plot apply stuff
-  matsCurveUtils.resetScatterApply();
   // set param values to this curve
   // reset the form parameters for the superiors first
   let currentParamName;
@@ -307,8 +305,6 @@ Template.curveItem.events({
       return;
     }
     Session.set("editMode", this.label);
-    // reset scatter plot apply stuff
-    matsCurveUtils.resetScatterApply();
     // capture the current parameters from the curveItem
     const currentParams = jQuery.extend({}, this);
     // set param values to this curve
@@ -422,7 +418,7 @@ Template.curveItem.events({
     const intendedName = Session.get("intendedActiveDisplayButton");
     Session.set("activeDisplayButton", intendedName);
     document.getElementById("cancel").click();
-    Session.set("paramWellColor", "#f5f5f5");
+    Session.set("paramWellColor", "#ffffff");
     const controlElem = matsParamUtils.getControlElementForParamName(intendedName);
     const inputElem = matsParamUtils.getInputElementForParamName(intendedName);
     if (inputElem) {

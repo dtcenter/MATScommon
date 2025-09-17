@@ -17,8 +17,8 @@ const refreshDependents = function (event, param) {
     const { dependentNames } = param;
     if (dependentNames && Array.isArray(dependentNames) && dependentNames.length > 0) {
       // refresh the dependents
-      let selectAllbool = false;
       for (let i = 0; i < dependentNames.length; i += 1) {
+        // get this dependent's element
         const name = dependentNames[i];
         const targetParam = matsParamUtils.getParameterForName(name);
         let targetId;
@@ -28,18 +28,17 @@ const refreshDependents = function (event, param) {
           targetId = `${targetParam.name}-${targetParam.type}`;
         }
         const targetElem = document.getElementById(targetId);
-
-        if (document.getElementById("selectAll")) {
-          selectAllbool = document.getElementById("selectAll").checked;
-        }
         try {
           if (
             !(
-              Session.get("confirmPlotChange") &&
-              targetParam.type === matsTypes.InputTypes.dateRange
+              // don't refresh the dates if we're just changing the plot type
+              (
+                Session.get("confirmPlotChange") &&
+                targetParam.type === matsTypes.InputTypes.dateRange
+              )
             )
           ) {
-            // don't refresh the dates if we're just changing the plot type
+            // refresh this element and any of its own dependents
             targetElem.dispatchEvent(new CustomEvent("refresh"));
           }
         } catch (re) {
@@ -53,17 +52,11 @@ const refreshDependents = function (event, param) {
           targetOptions !== undefined &&
           targetOptions.length > 0
         ) {
-          if (selectAllbool) {
-            for (let i1 = 0; i1 < targetOptions.length; i1 += 1) {
-              targetOptions[i1].selected = select;
-            }
-            matsParamUtils.setValueTextForParamName(name, "");
-          } else {
-            const previouslySelected = Session.get("selected");
-            for (let i2 = 0; i2 < targetOptions.length; i2 += 1) {
-              if (_.indexOf(previouslySelected, targetOptions[i2].text) !== -1) {
-                targetOptions[i2].selected = select;
-              }
+          // if it's a multiselect then restore anything that was previously selected
+          const previouslySelected = Session.get("selected");
+          for (let i2 = 0; i2 < targetOptions.length; i2 += 1) {
+            if (_.indexOf(previouslySelected, targetOptions[i2].text) !== -1) {
+              targetOptions[i2].selected = select;
             }
           }
         }
@@ -75,37 +68,39 @@ const refreshDependents = function (event, param) {
   }
 };
 
-// check for enable controlled - This select might have control of another selector
+// check if this selector has control over whether any others are disabled
 const checkDisableOther = function (param, firstRender) {
   try {
     if (param.disableOtherFor !== undefined) {
       // this param controls the enable/disable properties of at least one other param.
-      // Use the options to enable disable that param.
+      // Use the options to enable or disable that param.
       const controlledSelectors = Object.keys(param.disableOtherFor);
       for (let i = 0; i < controlledSelectors.length; i += 1) {
         const elem = matsParamUtils.getInputElementForParamName(param.name);
-        if (!elem) {
-          return;
-        }
-        const { selectedOptions } = elem;
-        const selectedText =
-          selectedOptions && selectedOptions.length > 0 ? selectedOptions[0].text : "";
-        if (
-          (firstRender &&
-            param.default.toString() ===
-              param.hideOtherFor[controlledSelectors[i]].toString()) ||
-          (param.disableOtherFor[controlledSelectors[i]] ===
-            matsTypes.InputTypes.unused &&
-            selectedText === "") ||
-          $.inArray(selectedText, param.disableOtherFor[controlledSelectors[i]]) !== -1
-        ) {
-          matsParamUtils.getInputElementForParamName(
-            controlledSelectors[i]
-          ).disabled = true;
-        } else {
-          matsParamUtils.getInputElementForParamName(
-            controlledSelectors[i]
-          ).disabled = false;
+        if (elem) {
+          const { selectedOptions } = elem;
+          const selectedText =
+            selectedOptions && selectedOptions.length > 0
+              ? selectedOptions[0].text
+              : "";
+          if (
+            (firstRender &&
+              param.default.toString() ===
+                param.hideOtherFor[controlledSelectors[i]].toString()) ||
+            (param.disableOtherFor[controlledSelectors[i]] ===
+              matsTypes.InputTypes.unused &&
+              selectedText === "") ||
+            $.inArray(selectedText, param.disableOtherFor[controlledSelectors[i]]) !==
+              -1
+          ) {
+            matsParamUtils.getInputElementForParamName(
+              controlledSelectors[i]
+            ).disabled = true;
+          } else {
+            matsParamUtils.getInputElementForParamName(
+              controlledSelectors[i]
+            ).disabled = false;
+          }
         }
       }
     }
@@ -115,7 +110,7 @@ const checkDisableOther = function (param, firstRender) {
   }
 };
 
-// check for hide controlled - This select might have control of another selector's visibility
+// check if this selector has control over whether any others are hidden
 const checkHideOther = function (param, firstRender) {
   try {
     if (param.hideOtherFor !== undefined) {
@@ -123,114 +118,115 @@ const checkHideOther = function (param, firstRender) {
       const controlledSelectors = Object.keys(param.hideOtherFor);
       for (let i = 0; i < controlledSelectors.length; i += 1) {
         const elem = matsParamUtils.getInputElementForParamName(param.name);
-        if (!elem) {
-          return;
-        }
-        let selectedOptions;
-        let selectedText;
-        if (param.type === matsTypes.InputTypes.radioGroup) {
-          const radioButtons = elem.getElementsByTagName("input");
-          for (let ridx = 0; ridx < radioButtons.length; ridx += 1) {
-            if (radioButtons[ridx].checked) {
-              selectedOptions = radioButtons[ridx].id.split("-radioGroup-");
-              selectedText = selectedOptions[selectedOptions.length - 1];
-              break;
-            }
-          }
-          selectedOptions = selectedOptions || [];
-          selectedText = selectedText || "";
-        } else {
-          selectedOptions = elem.selectedOptions;
-          selectedText =
-            selectedOptions && selectedOptions.length > 0
-              ? selectedOptions[0].text
-              : "";
-        }
-
-        let doNotShow = false;
-        if (
-          param.type === matsTypes.InputTypes.radioGroup &&
-          param.superiorRadioGroups !== undefined
-        ) {
-          // if a superior radio group wants the target element hidden and it already is, leave it be.
-          for (let sidx = 0; sidx < param.superiorRadioGroups.length; sidx += 1) {
-            const superiorName = param.superiorRadioGroups[sidx];
-            const superiorHideOtherFor = matsCollections.PlotParams.findOne({
-              name: superiorName,
-            }).hideOtherFor;
-            const superiorInputElementOptions = matsParamUtils
-              .getInputElementForParamName(superiorName)
-              .getElementsByTagName("input");
-            let superiorSelectedText = "";
-            for (
-              let seidx = 0;
-              seidx < superiorInputElementOptions.length;
-              seidx += 1
-            ) {
-              if (superiorInputElementOptions[seidx].checked) {
-                const superiorSelectedOptions =
-                  superiorInputElementOptions[seidx].id.split("-radioGroup-");
-                superiorSelectedText =
-                  superiorSelectedOptions[superiorSelectedOptions.length - 1];
+        if (elem) {
+          let selectedOptions;
+          let selectedText;
+          if (param.type === matsTypes.InputTypes.radioGroup) {
+            const radioButtons = elem.getElementsByTagName("input");
+            for (let ridx = 0; ridx < radioButtons.length; ridx += 1) {
+              if (radioButtons[ridx].checked) {
+                selectedOptions = radioButtons[ridx].id.split("-radioGroup-");
+                selectedText = selectedOptions[selectedOptions.length - 1];
                 break;
               }
             }
-            if (
-              superiorHideOtherFor !== undefined &&
-              Object.keys(superiorHideOtherFor).indexOf(controlledSelectors[i]) !==
-                -1 &&
-              superiorHideOtherFor[controlledSelectors[i]].indexOf(
-                superiorSelectedText
-              ) !== -1
-            ) {
-              doNotShow = true;
-            }
+            selectedOptions = selectedOptions || [];
+            selectedText = selectedText || "";
+          } else {
+            selectedOptions = elem.selectedOptions;
+            selectedText =
+              selectedOptions && selectedOptions.length > 0
+                ? selectedOptions[0].text
+                : "";
           }
-        }
-
-        const otherInputElement = matsParamUtils.getInputElementForParamName(
-          controlledSelectors[i]
-        );
-        let selectorControlElem;
-        if (
-          (firstRender &&
-            param.default.toString() ===
-              param.hideOtherFor[controlledSelectors[i]].toString()) ||
-          (param.hideOtherFor[controlledSelectors[i]] === matsTypes.InputTypes.unused &&
-            selectedText === "") ||
-          $.inArray(selectedText, param.hideOtherFor[controlledSelectors[i]]) !== -1
-        ) {
-          selectorControlElem = document.getElementById(
-            `${controlledSelectors[i]}-item`
-          );
-          if (selectorControlElem && selectorControlElem.style) {
-            selectorControlElem.style.display = "none";
-            selectorControlElem.purposelyHidden = true;
-          }
-        } else if (
-          !(
-            (selectedText === matsTypes.InputTypes.unused || selectedText === "") &&
-            param.hideOtherFor[controlledSelectors[i]].indexOf(
-              matsTypes.InputTypes.unused
-            ) === -1
-          )
-        ) {
-          // don't change anything if the parent parameter is unused in this curve and that situation isn't specified in hideOtherFor.
-          selectorControlElem = document.getElementById(
-            `${controlledSelectors[i]}-item`
-          );
-          if (selectorControlElem && selectorControlElem.style) {
-            if (param.controlButtonVisibility !== "none" && !doNotShow) {
-              selectorControlElem.style.display = "block";
-              selectorControlElem.purposelyHidden = false;
-            }
-          }
+          let doNotShow = false;
           if (
-            otherInputElement &&
-            otherInputElement.options &&
-            otherInputElement.selectedIndex >= 0
+            param.type === matsTypes.InputTypes.radioGroup &&
+            param.superiorRadioGroups !== undefined
           ) {
-            otherInputElement.options[otherInputElement.selectedIndex].scrollIntoView();
+            // if a superior radio group wants the target element hidden and it already is, leave it be.
+            for (let sidx = 0; sidx < param.superiorRadioGroups.length; sidx += 1) {
+              const superiorName = param.superiorRadioGroups[sidx];
+              const superiorHideOtherFor = matsCollections.PlotParams.findOne({
+                name: superiorName,
+              }).hideOtherFor;
+              const superiorInputElementOptions = matsParamUtils
+                .getInputElementForParamName(superiorName)
+                .getElementsByTagName("input");
+              let superiorSelectedText = "";
+              for (
+                let seidx = 0;
+                seidx < superiorInputElementOptions.length;
+                seidx += 1
+              ) {
+                if (superiorInputElementOptions[seidx].checked) {
+                  const superiorSelectedOptions =
+                    superiorInputElementOptions[seidx].id.split("-radioGroup-");
+                  superiorSelectedText =
+                    superiorSelectedOptions[superiorSelectedOptions.length - 1];
+                  break;
+                }
+              }
+              if (
+                superiorHideOtherFor !== undefined &&
+                Object.keys(superiorHideOtherFor).indexOf(controlledSelectors[i]) !==
+                  -1 &&
+                superiorHideOtherFor[controlledSelectors[i]].indexOf(
+                  superiorSelectedText
+                ) !== -1
+              ) {
+                doNotShow = true;
+              }
+            }
+          }
+
+          const otherInputElement = matsParamUtils.getInputElementForParamName(
+            controlledSelectors[i]
+          );
+          let selectorControlElem;
+          if (
+            (firstRender &&
+              param.default.toString() ===
+                param.hideOtherFor[controlledSelectors[i]].toString()) ||
+            (param.hideOtherFor[controlledSelectors[i]] ===
+              matsTypes.InputTypes.unused &&
+              selectedText === "") ||
+            $.inArray(selectedText, param.hideOtherFor[controlledSelectors[i]]) !== -1
+          ) {
+            selectorControlElem = document.getElementById(
+              `${controlledSelectors[i]}-item`
+            );
+            if (selectorControlElem && selectorControlElem.style) {
+              selectorControlElem.style.display = "none";
+              selectorControlElem.purposelyHidden = true;
+            }
+          } else if (
+            !(
+              (selectedText === matsTypes.InputTypes.unused || selectedText === "") &&
+              param.hideOtherFor[controlledSelectors[i]].indexOf(
+                matsTypes.InputTypes.unused
+              ) === -1
+            )
+          ) {
+            // don't change anything if the parent parameter is unused in this curve and that situation isn't specified in hideOtherFor.
+            selectorControlElem = document.getElementById(
+              `${controlledSelectors[i]}-item`
+            );
+            if (selectorControlElem && selectorControlElem.style) {
+              if (param.controlButtonVisibility !== "none" && !doNotShow) {
+                selectorControlElem.style.display = "block";
+                selectorControlElem.purposelyHidden = false;
+              }
+            }
+            if (
+              otherInputElement &&
+              otherInputElement.options &&
+              otherInputElement.selectedIndex >= 0
+            ) {
+              otherInputElement.options[
+                otherInputElement.selectedIndex
+              ].scrollIntoView();
+            }
           }
         }
       }
@@ -247,14 +243,6 @@ const refresh = function (event, paramName) {
   const param = matsParamUtils.getParameterForName(paramName);
   const elem = matsParamUtils.getInputElementForParamName(paramName);
 
-  /*
-    OptionsGroups are a mechanism for displaying the select options in groups.
-    A disabled option is used for the group header. Disabled options simply show up
-    in the selector list in bold font and act as group titles. They are disabled so that
-    they cannot be clicked. DisabledOptions are the headers that the options are to be grouped under.
-    disabledOptions are optional so if there are disabledOptions they are the keys in the optionsGroups
-    and they are the sort order of those keys.
-    */
   const disabledOptions = matsParamUtils.getDisabledOptionsForParamName(paramName);
   const { optionsGroups } = param;
   const { optionsMap } = param;
@@ -268,27 +256,30 @@ const refresh = function (event, paramName) {
     }).valuesMap;
   }
 
+  // we need to get the values of any superior parameters (like database is superior to model)
+  // in order to display only relevent options (e.g. only models available in that database)
   const { superiorNames } = param;
   const superiorDimensionality =
-    superiorNames !== undefined &&
-    superiorNames !== null &&
-    superiorNames.length > 0 &&
-    Array.isArray(superiorNames[0])
+    superiorNames && superiorNames.length > 0 && Array.isArray(superiorNames[0])
       ? superiorNames.length
       : 1;
   const superiors = [];
-  // get a list of the current superior selected values - in order of superiority i.e. [databaseValue,dataSourceValue]
+  // get a list of the current superior selected values in order of superiority i.e. [databaseValue,dataSourceValue]
   let sNames;
-  if (superiorNames !== undefined) {
+  if (superiorNames) {
     if (superiorDimensionality === 1) {
       sNames = superiorNames;
     } else {
       [sNames] = superiorNames;
     }
     for (let sn = 0; sn < sNames.length; sn += 1) {
+      // first dimension of superiors--pretty much everything in MATS will only have one dimension of superiors
       const superiorElement = matsParamUtils.getInputElementForParamName(sNames[sn]);
       let selectedSuperiorValue =
-        superiorElement.options[superiorElement.selectedIndex] === undefined
+        !superiorElement.options[superiorElement.selectedIndex] ||
+        !superiorElement.options[superiorElement.selectedIndex].text ||
+        !superiorElement.options[superiorElement.selectedIndex].text.length ||
+        superiorElement.options[superiorElement.selectedIndex].text === "initial"
           ? matsParamUtils.getParameterForName(sNames[sn]).default
           : superiorElement.options[superiorElement.selectedIndex].text;
       if (sNames[sn].includes("statistic") && isMetexpress) {
@@ -298,11 +289,15 @@ const refresh = function (event, paramName) {
       superiors[0].push({ element: superiorElement, value: selectedSuperiorValue });
     }
     for (let sNameIndex = 1; sNameIndex < superiorDimensionality; sNameIndex += 1) {
+      // if we do have something with multi-dimention superiors (see comment below), handle them here
       sNames = superiorNames[sNameIndex];
       for (let sn = 0; sn < sNames.length; sn += 1) {
         const superiorElement = matsParamUtils.getInputElementForParamName(sNames[sn]);
         let selectedSuperiorValue =
-          superiorElement.options[superiorElement.selectedIndex] === undefined
+          !superiorElement.options[superiorElement.selectedIndex] ||
+          !superiorElement.options[superiorElement.selectedIndex].text ||
+          !superiorElement.options[superiorElement.selectedIndex].text.length ||
+          superiorElement.options[superiorElement.selectedIndex].text === "initial"
             ? matsParamUtils.getParameterForName(sNames[sn]).default
             : superiorElement.options[superiorElement.selectedIndex].text;
         if (sNames[sn].includes("statistic") && isMetexpress) {
@@ -321,7 +316,6 @@ const refresh = function (event, paramName) {
     So what are superiors now.....
     superiors = [[{element:anElement,value:aValue},{element:anElement,value:aValue}...]]
     or they might be [[{element:anElement,value:aValue},{element:anElement,value:aValue}...],[{element:anElement,value:aValue},{element:anElement,value:aValue}...],...]
-
 
      Superior Heirarchy:
      There can be a heirarchy of superiors and dependents. The superiorNames are a list of paramNames. The most superior has the 0th index and
@@ -356,7 +350,7 @@ const refresh = function (event, paramName) {
   Session.set("selected", $(elem).val());
 
   if (elem && elem.options) {
-    if (elem.selectedIndex === undefined || elem.selectedIndex === -1) {
+    if (!elem.selectedIndex || elem.selectedIndex === -1) {
       if (param.default !== matsTypes.InputTypes.unused) {
         elem.selectedIndex = 0;
       }
@@ -380,7 +374,6 @@ const refresh = function (event, paramName) {
     }
 
     let myOptions = [];
-    const selectedSuperiorValues = [];
 
     try {
       // index down through the options for the list of superiors
@@ -578,33 +571,13 @@ const refresh = function (event, paramName) {
       } else {
         selectedOptionIndex = myOptions.indexOf(selectedText);
       }
-      let sviText = "";
+      // if the selectedText existed in the new options list then the selectedOptionIndex won't be -1 and we have to choose the default option
       if (selectedOptionIndex === -1) {
         if (name === "plot-type") {
           setInfo(
             `INFO:  Plot type ${matsPlotUtils.getPlotType()} is not available for this database/model combination.`
           );
         }
-        if (elem.selectedIndex >= 0) {
-          for (let svi = 0; svi < selectedSuperiorValues.length; svi += 1) {
-            const superior = superiors[svi];
-            if (
-              matsParamUtils.getControlElementForParamName(superior.element.name)
-                .offsetParent !== null
-            ) {
-              if (svi > 0) {
-                sviText += " and ";
-              }
-              sviText += selectedSuperiorValues[svi];
-            }
-          }
-          setInfo(
-            `I changed your selected ${name}: '${selectedText}' to '${myOptions[0]}' because '${selectedText}' is no longer an option for ${sviText}`
-          );
-        }
-      }
-      // if the selectedText existed in the new options list then the selectedOptionIndex won't be -1 and we have to choose the default option
-      if (selectedOptionIndex === -1) {
         // if the param default is unused set it to unused
         // else just choose the 0th element in the element options. default?
         if (param.default === matsTypes.InputTypes.unused) {

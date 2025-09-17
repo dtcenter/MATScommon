@@ -1,7 +1,7 @@
 <template name="select">
   <div>
+    {{#if isMultiple}}
     <div class="btn-group btn-group-sm">
-      {{#if isMultiple}}
       <button
         type="button"
         class="btn btn-info btn-sm border border-black selectAll"
@@ -23,12 +23,15 @@
       >
         Done
       </button>
-      {{/if}}
     </div>
+    <div class="bg-white" style="font-size: smaller">
+      Use ctrl + click (PC) or cmnd + click (Mac) to select multiple values.
+    </div>
+    {{/if}}
   </div>
   <div>
     <select
-      class="data-input {{name}} w-100"
+      class="data-input form-select bg-white fs-6 {{name}}"
       name="{{name}}"
       id="{{name}}-{{type}}"
       aria-label="{{name}} options"

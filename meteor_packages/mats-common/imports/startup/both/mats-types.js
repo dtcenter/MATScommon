@@ -48,7 +48,6 @@ const InputTypes = {
   textInput: "textInput",
   color: "color",
   select: "select",
-  selectOrderEnforced: "selectOrderEnforced",
   numberSpinner: "numberSpinner",
   dateRange: "dateRange",
   radioGroup: "radioGroup",

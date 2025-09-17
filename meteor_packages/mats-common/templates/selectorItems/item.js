@@ -112,15 +112,8 @@ Template.item.helpers({
     return this.help !== undefined;
   },
   isSelect() {
-    /* A selectOrderEnforced differs from a select
-            only in that the options - other than the default first option -
-            must be chosen in order. In other words if the user attempts to select
-            the second option prior to selecting the first option a validation error occurs.
-         */
     return (
-      typeof this.type !== "undefined" &&
-      (this.type === matsTypes.InputTypes.select ||
-        this.type === matsTypes.InputTypes.selectOrderEnforced)
+      typeof this.type !== "undefined" && this.type === matsTypes.InputTypes.select
     );
   },
   isSelectMap() {
@@ -246,7 +239,7 @@ Template.item.events({
       if (elem !== null) {
         elem.style.display = "block";
         if (this.type === matsTypes.InputTypes.select) {
-          document.getElementById(`${this.name}-${this.type}`).tomselect.open(); // need to foricibly open the selector for the select
+          $(`#${this.name}-${this.type}`).trigger("click"); // need to foricibly open the selector for the select
         }
         if (this.type === matsTypes.InputTypes.selectMap) {
           $("#mapModal").modal("show");
@@ -264,15 +257,6 @@ Template.item.events({
     const formats = Object.keys(matsTypes.PlotFormats);
     if ($.inArray(this, formats) !== -1) {
       Session.set("diffStatus", this);
-    }
-    if (
-      !this.multiple &&
-      this.type !== matsTypes.InputTypes.numberSpinner &&
-      this.type !== matsTypes.InputTypes.textInput &&
-      this.type !== matsTypes.InputTypes.dateRange
-    ) {
-      // not too cool to collapse when trying to do a multi-select, a textInput, or a numberspinner
-      matsParamUtils.collapseParam(this.name);
     }
   },
   "change .data-input"(event) {

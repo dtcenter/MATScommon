@@ -73,7 +73,7 @@ Template.scorecardCurveList.events({
       matsCurveUtils.clearAllUsed();
       matsParamUtils.setAllParamsToDefault();
       Session.set("editMode", "");
-      Session.set("paramWellColor", "#f5f5f5"); // default grey
+      Session.set("paramWellColor", "#ffffff"); // default grey
       Session.set("lastUpdate", Date.now());
       Session.set("confirmRemoveAll", "");
     }
