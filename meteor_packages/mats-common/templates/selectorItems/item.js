@@ -5,6 +5,7 @@
 import {
   matsTypes,
   matsSelectUtils,
+  matsPlotUtils,
   matsParamUtils,
   matsCollections,
 } from "meteor/randyp:mats-common";
@@ -52,10 +53,7 @@ Template.item.helpers({
   fa() {
     // font awesome helper
     if (this.controlButtonFA !== undefined) {
-      return (
-        `<i name="${this.name}-icon` +
-        `" style="color:${this.default}"  class="${this.controlButtonFA}"></i>`
-      );
+      return `<i name="${this.name}-icon" class="${this.controlButtonFA} text-white"></i>`;
     }
     return "";
   },
@@ -214,6 +212,9 @@ Template.item.helpers({
   },
   defaultColor() {
     return this.default;
+  },
+  textColor() {
+    return matsPlotUtils.textColorFromRgbBackground(this.default);
   },
   tooltipPlacement() {
     return this.tooltipPlacement === undefined ? "top" : this.tooltipPlacement;

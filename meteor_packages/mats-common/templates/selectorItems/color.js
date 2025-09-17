@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import { matsParamUtils } from "meteor/randyp:mats-common";
+import { matsParamUtils, matsPlotUtils } from "meteor/randyp:mats-common";
 import { Template } from "meteor/templating";
 
 Template.color.helpers({
@@ -29,6 +29,11 @@ Template.color.events({
       document.getElementById(
         `controlButton-${event.currentTarget.name}-value`
       ).style.backgroundColor = event.currentTarget.value;
+      document.getElementById(
+        `controlButton-${event.currentTarget.name}-value`
+      ).style.color = matsPlotUtils.textColorFromRgbBackground(
+        event.currentTarget.value
+      );
       this.value = event.currentTarget.value;
     } else {
       document.querySelector(`[name="${event.currentTarget.name}-icon"]`).style.color =

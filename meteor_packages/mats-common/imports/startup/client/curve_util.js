@@ -501,10 +501,12 @@ const showTimeseriesFace = function () {
   const plotType = matsTypes.PlotTypes.timeSeries;
 
   // set appropriate QC parameter visibility
-  if (document.getElementById("qcParamGroup-item").classList.contains("d-none"))
-    document.getElementById("qcParamGroup-item").classList.remove("d-none");
-  document.getElementById("qcParamGroup-gaps-item").classList.add("d-none");
-  document.getElementById("qcParamGroup-lite-item").classList.add("d-none");
+  if (Session.get("plotType") !== matsTypes.PlotTypes.scorecard) {
+    if (document.getElementById("qcParamGroup-item").classList.contains("d-none"))
+      document.getElementById("qcParamGroup-item").classList.remove("d-none");
+    document.getElementById("qcParamGroup-gaps-item").classList.add("d-none");
+    document.getElementById("qcParamGroup-lite-item").classList.add("d-none");
+  }
 
   // set selector visibility
   let faceOptions = {

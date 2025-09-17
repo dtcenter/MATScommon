@@ -10,6 +10,8 @@ import {
 } from "meteor/randyp:mats-common";
 // eslint-disable-next-line import/no-unresolved
 import moment from "moment";
+// eslint-disable-next-line import/no-unresolved
+import hexRgb from "hex-rgb";
 
 /* global $, Session, _ */
 
@@ -110,6 +112,18 @@ const shadeRGBColor = function (color, percent) {
   return `rgb(${Math.round((t - R) * p) + R},${Math.round((t - G) * p) + G},${
     Math.round((t - B) * p) + B
   })`;
+};
+
+const textColorFromRgbBackground = function (color) {
+  const bgColor = hexRgb(color);
+  const { red } = bgColor;
+  const { green } = bgColor;
+  const { blue } = bgColor;
+  const brightness = 0.299 * red + 0.587 * green * 0.114 * blue;
+  if (brightness >= 128) {
+    return "#000000";
+  }
+  return "#ffffff";
 };
 
 const containsPoint = function (pointArray, point) {
@@ -357,6 +371,7 @@ export default matsPlotUtils = {
   getPlotType,
   getPlotFormat,
   shadeRGBColor,
+  textColorFromRgbBackground,
   containsPoint,
   disableActionButtons,
   enableActionButtons,

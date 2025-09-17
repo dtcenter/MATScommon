@@ -11,7 +11,7 @@
     {{#if isColor}}
     <button
       type="button"
-      class="control-button btn btn-primary regularPublicSans bg-transparent fs-6 border-0"
+      class="control-button btn btn-primary regularPublicSans fs-6 border-end-0"
       id="{{controlButton}}"
     >
       {{{fa}}}</button
@@ -22,7 +22,7 @@
     >
       {{tcname}}</button
     >{{/if}}<div
-    class="bg-white float-right"
+      class="bg-white float-right"
       id="{{element}}"
       style="display: {{elementHidden}}; {{position}}; z-index: {{zIndexVal}};"
     >
@@ -46,27 +46,34 @@
       </div>
       {{else}} {{#if isSelectMap}} {{> map this}} {{/if}} {{/if}} {{/if}} {{/if}}
       {{/if}} {{/if}} {{/if}} {{/if}}
-    </div>{{#if hasHelp}}<button
+    </div>{{#if hasHelp}}{{#if isColor}}<button
       type="button"
       class="control-button btn btn-info regularPublicSans fs-6 border-start-0"
       name="{{controlButton}}-value"
       id="{{controlButton}}-value"
-    >
-      {{textValue}}</button
-    ><button
+      style="background-color: {{defaultColor}}; color: {{textColor}};"
+    >{{textValue}}</button>{{else}}<button
+      type="button"
+      class="control-button btn btn-info regularPublicSans fs-6 border-start-0"
+      name="{{controlButton}}-value"
+      id="{{controlButton}}-value"
+    >{{textValue}}</button>{{/if}}<button
       type="button"
       class="btn btn-info regularPublicSans fs-6 help"
       style="background-color: #fff3cd; color: #000000"
-    >
-      ?</button
-    >{{else}}<button
+    >?</button
+    >{{else}}{{#if isColor}}<button
       type="button"
       class="control-button btn btn-info regularPublicSans fs-6 border-start-0"
       name="{{controlButton}}-value"
       id="{{controlButton}}-value"
-    >
-      {{textValue}}
-    </button>
-    {{/if}}
+      style="background-color: {{defaultColor}}; color: {{textColor}};"
+    >{{textValue}}</button>{{else}}<button
+      type="button"
+      class="control-button btn btn-info regularPublicSans fs-6 border-start-0"
+      name="{{controlButton}}-value"
+      id="{{controlButton}}-value"
+    >{{textValue}}</button>
+    {{/if}}{{/if}}
   </div>
 </template>
