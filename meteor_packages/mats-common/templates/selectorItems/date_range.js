@@ -13,6 +13,51 @@ const daterangepicker = require("daterangepicker");
 /* global Session, $, setError, setInfo */
 /* eslint-disable no-console */
 
+const dateRangeOptions = function (idref, startDate, endDate) {
+  return {
+    autoApply: true,
+    parentEL: $(`#${idref}`),
+    timePicker: true,
+    timePicker24Hour: true,
+    timePickerIncrement: 1,
+    startDate,
+    endDate,
+    showDropdowns: true,
+    drops: "up",
+    locale: {
+      format: "MM/DD/YYYY HH:mm",
+    },
+    ranges: {
+      Today: [moment.utc().startOf("day"), moment.utc().endOf("day")],
+      Yesterday: [
+        moment.utc().subtract(1, "days").startOf("day"),
+        moment.utc().subtract(1, "days").endOf("day"),
+      ],
+      "Last 7 Full Days": [
+        moment.utc().subtract(7, "days").startOf("day"),
+        moment.utc().startOf("day"),
+      ],
+      "Last 30 Full Days": [
+        moment.utc().subtract(30, "days").startOf("day"),
+        moment.utc().startOf("day"),
+      ],
+      "Last 60 Full Days": [
+        moment.utc().subtract(60, "days").startOf("day"),
+        moment.utc().startOf("day"),
+      ],
+      "Last 90 Full Days": [
+        moment.utc().subtract(90, "days").startOf("day"),
+        moment.utc().startOf("day"),
+      ],
+      "Last 180 Full Days": [
+        moment.utc().subtract(180, "days").startOf("day"),
+        moment.utc().startOf("day"),
+      ],
+    },
+    alwaysShowCalendars: true,
+  };
+};
+
 Template.dateRange.helpers({
   defaultDate() {
     const defaultDateRange = matsParamUtils.getDefaultDateRange(this.name);
@@ -45,48 +90,7 @@ Template.dateRange.onRendered(function () {
   }
 
   $(function () {
-    $(`#${idref}`).daterangepicker({
-      autoApply: true,
-      parentEL: $(`#${idref}`),
-      timePicker: true,
-      timePicker24Hour: true,
-      timePickerIncrement: 1,
-      startDate: startInit,
-      endDate: stopInit,
-      showDropdowns: true,
-      drops: "up",
-      locale: {
-        format: "MM/DD/YYYY HH:mm",
-      },
-      ranges: {
-        Today: [moment.utc().startOf("day"), moment.utc().endOf("day")],
-        Yesterday: [
-          moment.utc().subtract(1, "days").startOf("day"),
-          moment.utc().subtract(1, "days").endOf("day"),
-        ],
-        "Last 7 Full Days": [
-          moment.utc().subtract(7, "days").startOf("day"),
-          moment.utc().startOf("day"),
-        ],
-        "Last 30 Full Days": [
-          moment.utc().subtract(30, "days").startOf("day"),
-          moment.utc().startOf("day"),
-        ],
-        "Last 60 Full Days": [
-          moment.utc().subtract(60, "days").startOf("day"),
-          moment.utc().startOf("day"),
-        ],
-        "Last 90 Full Days": [
-          moment.utc().subtract(90, "days").startOf("day"),
-          moment.utc().startOf("day"),
-        ],
-        "Last 180 Full Days": [
-          moment.utc().subtract(180, "days").startOf("day"),
-          moment.utc().startOf("day"),
-        ],
-      },
-      alwaysShowCalendars: true,
-    });
+    $(`#${idref}`).daterangepicker(dateRangeOptions(idref, startInit, stopInit));
     matsParamUtils.setValueTextForParamName(name, dstr);
   });
 
@@ -296,8 +300,7 @@ Template.dateRange.onRendered(function () {
       }
       // now reset the DSR with the evaluated date range
       const jqIdRef = `#${idref}`;
-      $(jqIdRef).data("daterangepicker").setStartDate(startDsr);
-      $(jqIdRef).data("daterangepicker").setEndDate(endDsr);
+      $(jqIdRef).daterangepicker(dateRangeOptions(idref, startDsr, endDsr));
       const newDateStr = `${moment
         .utc(startDsr)
         .locale("en")

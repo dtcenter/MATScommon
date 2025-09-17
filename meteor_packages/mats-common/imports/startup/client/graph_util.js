@@ -258,23 +258,14 @@ const squareWidthHeight = function () {
   const vpw = Math.min(document.documentElement.clientWidth, window.innerWidth || 0);
   const vph = Math.min(document.documentElement.clientHeight, window.innerHeight || 0);
   const min = Math.min(vpw, vph);
-  if (min < 400) {
-    return `${(0.9 * min).toString()}px`;
-  }
   return `${(0.7 * min).toString()}px`;
 };
 const rectangleWidth = function () {
   const vpw = Math.min(document.documentElement.clientWidth, window.innerWidth || 0);
-  if (vpw < 400) {
-    return `${(0.9 * vpw).toString()}px`;
-  }
-  return `${(0.9 * vpw).toString()}px`;
+  return `${vpw.toString()}px`;
 };
 const rectangleHeight = function () {
   const vph = Math.min(document.documentElement.clientHeight, window.innerHeight || 0);
-  if (vph < 400) {
-    return `${(0.8 * vph).toString()}px`;
-  }
   return `${(0.7 * vph).toString()}px`;
 };
 
