@@ -107,6 +107,15 @@ Template.select.events({
     Session.set("elementChanged", Date.now());
     const controlElem = matsParamUtils.getControlElementForParamName(this.name);
     $(controlElem).trigger("click").trigger("change"); // close the selector and fire an event to apply changes
+    if (
+      this.name === "sites" &&
+      matsParamUtils.getInputElementForParamName("sitesMap")
+    ) {
+      // let the map selector know that it needs to reflect changes in the sites selector.
+      matsParamUtils
+        .getInputElementForParamName("sitesMap")
+        .dispatchEvent(new CustomEvent("refresh"));
+    }
     const editMode = Session.get("editMode");
     const curveItem =
       editMode === undefined && editMode === ""
