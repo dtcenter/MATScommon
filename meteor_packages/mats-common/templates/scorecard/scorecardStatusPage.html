@@ -76,12 +76,36 @@
                           >
                             <thead>
                               <tr class="info">
-                                <th class="bg-info-subtle border-top border-bottom border-black">Submitted</th>
-                                <th class="bg-info-subtle border-top border-bottom border-black">Processed</th>
-                                <th class="bg-info-subtle border-top border-bottom border-black">Status</th>
-                                <th class="bg-info-subtle border-top border-bottom border-black">View</th>
-                                <th class="bg-info-subtle border-top border-bottom border-black">Drop</th>
-                                <th class="bg-info-subtle border-top border-bottom border-black">Restore</th>
+                                <th
+                                  class="bg-info-subtle border-top border-bottom border-black"
+                                >
+                                  Submitted
+                                </th>
+                                <th
+                                  class="bg-info-subtle border-top border-bottom border-black"
+                                >
+                                  Processed
+                                </th>
+                                <th
+                                  class="bg-info-subtle border-top border-bottom border-black"
+                                >
+                                  Status
+                                </th>
+                                <th
+                                  class="bg-info-subtle border-top border-bottom border-black"
+                                >
+                                  View
+                                </th>
+                                <th
+                                  class="bg-info-subtle border-top border-bottom border-black"
+                                >
+                                  Drop
+                                </th>
+                                <th
+                                  class="bg-info-subtle border-top border-bottom border-black"
+                                >
+                                  Restore
+                                </th>
                               </tr>
                             </thead>
                             <tbody>
@@ -91,9 +115,15 @@
                               <tr
                                 class="{{statusType userName name submitted processedAt}}"
                               >
-                                <td class="bg-white border-bottom border-black">{{timeStr submitted}}</td>
-                                <td class="bg-white border-bottom border-black">{{timeStr processedAt}}</td>
-                                <td class="bg-white border-bottom border-black">{{status userName name submitted processedAt}}</td>
+                                <td class="bg-white border-bottom border-black">
+                                  {{timeStr submitted}}
+                                </td>
+                                <td class="bg-white border-bottom border-black">
+                                  {{timeStr processedAt}}
+                                </td>
+                                <td class="bg-white border-bottom border-black">
+                                  {{status userName name submitted processedAt}}
+                                </td>
                                 <td class="bg-white border-bottom border-black">
                                   <a
                                     href="{{visitLink userName name submitted processedAt}}"
