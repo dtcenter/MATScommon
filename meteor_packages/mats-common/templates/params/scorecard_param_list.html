@@ -6,11 +6,7 @@
       aria-label="form to set the scorecard parameters"
       novalidate
     >
-      <div
-        id="paramWell"
-        class="clearfix well well-sm bg-white p-3"
-        style="background-color: {{paramWellColor}};"
-      >
+      <div id="paramWell" class="clearfix well well-sm p-3">
         {{#each CurveParamGroups}} {{> curveParamGroup}} {{/each}}
       </div>
       {{#if isEdit}}
@@ -28,7 +24,7 @@
         </button>
       </div>
       {{else}}
-      <div class="btn-group mx-3 my-4">
+      <div class="btn-group mx-1 mt-4">
         <button type="submit" name="add" id="add" class="btn btn-success">
           <i class="fa-solid fa-plus"></i>&nbsp;&nbsp;Add Block
         </button>

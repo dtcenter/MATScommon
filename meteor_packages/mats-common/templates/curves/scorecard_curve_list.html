@@ -47,15 +47,14 @@
 
   <div
     id="curveList"
-    class="well-sm clearfix col-lg-12"
-    style="display:{{displayCurves}};"
+    class="well-sm clearfix col-lg-12 my-2 mx-3"
+    style="display:{{displayCurves}}; width: 90%;"
   >
     {{#each curves}} {{> curveItem this}} {{/each}}
-    <div class="clearfix btn-toolbar well well-sm pull-left">
+    <div class="clearfix btn-toolbar gap-2 well well-sm">
       <button id="remove-all" class="remove-all btn btn-danger">
         <i class="fa-solid fa-xmark"></i>&nbsp;&nbsp;Remove All
       </button>
-      <button type="button" class="btn spacebutton" id="cl-spacer"></button>
       <button
         type="button"
         name="submitScorecard"
