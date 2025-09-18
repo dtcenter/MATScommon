@@ -1,45 +1,38 @@
 <template name="scorecardStatusPage">
   {{refresh}}
-  <div
-    id="scorecardStatus"
-    class="container-fluid pull-left"
-    style="margin-top: 0.5em; padding-left: 5%; display: none"
-  >
-    <div id="scorecardStatusPage-control" class="row">
-      <span id="all-plot-buttons-grp" class="btn-group btn-group-sm">
-        <button
-          id="backButton"
-          type="button"
-          class="back btn btn-primary"
-          style="border-radius: 5px"
-        >
+  <div id="scorecardStatus" class="container-fluid mt-1 pl-2" style="display: none">
+    <div id="scorecardStatusPage-control" class="row mx-3">
+      <span id="all-plot-buttons-grp" class="btn-group">
+        <button id="backButton" type="button" class="back btn btn-primary rounded">
           <i class="fa-solid fa-arrow-left-long"></i>&nbsp;&nbsp;<strong>Back</strong>
         </button>
+        <button id="gc-spacer" type="button" class="btn spacebutton"></button>
+        <button id="gc-spacer" type="button" class="btn spacebutton"></button>
+        <button id="gc-spacer" type="button" class="btn spacebutton"></button>
         <button id="gc-spacer" type="button" class="btn spacebutton"></button>
         <button
           id="refresh-scorecard"
           type="button"
-          class="refresh-scorecard btn btn-info"
-          style="border-radius: 15px; background-color: #00badb"
+          class="refresh-scorecard btn btn-primary rounded-pill"
         >
           <i class="fa-solid fa-arrows-rotate"></i>
         </button>
       </span>
     </div>
-    <h1>Scorecard Status Panel</h1>
-    <div id="statusPanel" class="row">
+    <h1 class="mt-5 mx-5">Scorecard Status Panel</h1>
+    <div id="statusPanel" class="row mt-4 mx-5">
       <table
         id="userTable"
-        class="table table-condensed table-responsive table-sm"
+        class="table table-condensed table-responsive table-sm border border-0"
         cellspacing="0"
       >
         <thead>
-          <th>User Name</th>
+          <th class="bg-white">User Name</th>
         </thead>
         <tbody>
           {{#each userName in userNames}}
-          <tr style="padding: 0">
-            <td style="vertical-align: top; padding: 0">
+          <tr class="">
+            <td class="bg-white align-top border-top border-black">
               <button
                 type="button"
                 id="{{userName}}-control"
@@ -50,44 +43,45 @@
                 {{userName}}
               </button>
             </td>
-            <td colspan="12" style="padding: 0; vertical-align: top">
-              <div id="{{userName}}" style="background-color: #d4f6fb; display: none">
+            <td colspan="12" class="align-top bg-white border-top border-black">
+              <div id="{{userName}}" class="bg-info-subtle" style="display: none">
                 <table
                   id="{{userName}}-Table"
-                  class="table table-condensed table-responsive table-bordered table-sm"
+                  class="table table-condensed table-responsive table-sm"
                   cellspacing="0"
                 >
                   <tbody>
                     {{#each name in names userName}}
-                    <tr style="padding: 0">
-                      <td style="vertical-align: top; padding: 0">
+                    <tr>
+                      <td class="align-top bg-white border border-0">
                         <button
                           type="button"
                           id="{{userName}}-{{name}}-control"
-                          class="btn btn-info btn-xs userName-name-control"
-                          style="width: 100%"
+                          class="btn btn-info btn-xs userName-name-control w-100"
                           data-target="{{userName}}-{{name}}"
                           role="button"
                         >
                           {{name}}
                         </button>
                       </td>
-                      <td colspan="12" style="vertical-align: top">
+                      <td colspan="12" class="align-top bg-white border border-0">
                         <div
                           id="{{userName}}-{{name}}"
-                          style="background-color: #e9fcfe; display: none"
+                          class="bg-info-subtle"
+                          style="display: none"
                         >
                           <table
                             id="{{userName}}-{{name}}-Table"
-                            class="table table-condensed table-responsive table-stripedtable-bordered"
+                            class="table table-condensed table-responsive bg-white"
                           >
                             <thead>
                               <tr class="info">
-                                <th>submitted</th>
-                                <th>processedAt</th>
-                                <th>status</th>
-                                <th>visit link</th>
-                                <th></th>
+                                <th class="bg-info-subtle border-top border-bottom border-black">Submitted</th>
+                                <th class="bg-info-subtle border-top border-bottom border-black">Processed</th>
+                                <th class="bg-info-subtle border-top border-bottom border-black">Status</th>
+                                <th class="bg-info-subtle border-top border-bottom border-black">View</th>
+                                <th class="bg-info-subtle border-top border-bottom border-black">Drop</th>
+                                <th class="bg-info-subtle border-top border-bottom border-black">Restore</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -97,10 +91,10 @@
                               <tr
                                 class="{{statusType userName name submitted processedAt}}"
                               >
-                                <td>{{timeStr submitted}}</td>
-                                <td>{{timeStr processedAt}}</td>
-                                <td>{{status userName name submitted processedAt}}</td>
-                                <td>
+                                <td class="bg-white border-bottom border-black">{{timeStr submitted}}</td>
+                                <td class="bg-white border-bottom border-black">{{timeStr processedAt}}</td>
+                                <td class="bg-white border-bottom border-black">{{status userName name submitted processedAt}}</td>
+                                <td class="bg-white border-bottom border-black">
                                   <a
                                     href="{{visitLink userName name submitted processedAt}}"
                                     target="_blank"
@@ -108,7 +102,7 @@
                                     >display</a
                                   >
                                 </td>
-                                <td>
+                                <td class="bg-white border-bottom border-black">
                                   <button
                                     type="button"
                                     class="btn btn-danger btn-xs drop-sc-instance"
@@ -121,7 +115,7 @@
                                     Drop
                                   </button>
                                 </td>
-                                <td>
+                                <td class="bg-white border-bottom border-black">
                                   <button
                                     type="button"
                                     class="btn btn-success btn-xs restore-sc-instance"
