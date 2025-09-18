@@ -5,21 +5,25 @@ import { Meteor } from "meteor/meteor";
 import { matsCollections, matsTypes } from "meteor/randyp:mats-common";
 import { Template } from "meteor/templating";
 
+const windowLocation = window.location.href.includes("scorecardDisplay")
+  ? window.location.href.split("/scorecardDisplay/")[0]
+  : window.location.href;
+
 Template.topNav.helpers({
   govLogo() {
-    return `${window.location.href}/packages/randyp_mats-common/public/img/icon-dot-gov.svg`;
+    return `${windowLocation}/packages/randyp_mats-common/public/img/icon-dot-gov.svg`;
   },
   httpsLogo() {
-    return `${window.location.href}/packages/randyp_mats-common/public/img/icon-https.svg`;
+    return `${windowLocation}/packages/randyp_mats-common/public/img/icon-https.svg`;
   },
   lockLogo() {
-    return `${window.location.href}/packages/randyp_mats-common/public/img/lock-fill.svg`;
+    return `${windowLocation}/packages/randyp_mats-common/public/img/lock-fill.svg`;
   },
   flagLogo() {
-    return `${window.location.href}/packages/randyp_mats-common/public/img/us_flag_small.png`;
+    return `${windowLocation}/packages/randyp_mats-common/public/img/us_flag_small.png`;
   },
   transparentGif() {
-    return `${window.location.href}/packages/randyp_mats-common/public/img/noaa_transparent.png`;
+    return `${windowLocation}/packages/randyp_mats-common/public/img/noaa_transparent.png`;
   },
   emailText() {
     if (
@@ -65,7 +69,7 @@ Template.topNav.helpers({
   },
   productLink() {
     return Meteor.settings.public.home === undefined
-      ? `https://${window.location.href.split("/")[2]}`
+      ? `https://${windowLocation.split("/")[2]}`
       : Meteor.settings.public.home;
   },
   githubText() {
