@@ -233,7 +233,7 @@ const checkHideOther = function (param, firstRender) {
       checkDisableOther(param, firstRender);
     }
   } catch (e) {
-    e.message = `INFO: Error in select.js checkHideOther: ${e.message}`;
+    e.message = `ERROR: Error in select_util.js checkHideOther: ${e.message}`;
     setInfo(e.message);
   }
 };

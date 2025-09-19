@@ -174,10 +174,13 @@ Template.item.helpers({
     ) {
       return "none;";
     }
-    if (!this.controlButtonCovered) {
-      return "none;";
-    }
     return "block; margin-top: 1.5em;";
+  },
+  controlButtonCovered() {
+    if (this.controlButtonCovered) {
+      return "inline-block;";
+    }
+    return "none";
   },
   elementHidden() {
     if (this.controlButtonCovered) {

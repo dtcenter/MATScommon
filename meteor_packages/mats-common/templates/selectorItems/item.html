@@ -13,15 +13,16 @@
       type="button"
       class="control-button btn btn-primary regularPublicSans fs-6 border-end-0"
       id="{{controlButton}}"
+      style="display:{{controlButtonCovered}};" 
     >
       {{{fa}}}</button
-    >{{else}}<button
+    >{{else}}{{#unless isRadioGroup}}<button
       type="button"
       class="control-button btn btn-primary regularPublicSans fs-6 border-end-0"
       id="{{controlButton}}"
     >
       {{tcname}}</button
-    >{{/if}}<div
+    >{{/unless}}{{/if}}<div
       class="bg-white float-right"
       id="{{element}}"
       style="display: {{elementHidden}}; {{position}}; z-index: {{zIndexVal}};"
@@ -38,15 +39,15 @@
       </div>
       {{else}} {{#if isRadioGroup}}
       <div
-        class="container btn-group bg-info-subtle border border-info border-1 rounded-1 text-nowrap fs-5 w-100"
+        class="container btn-group bg-info-subtle border border-info border-1 rounded-1 text-nowrap fs-6 w-100 p-2"
         id="{{name}}-{{type}}"
       >
-        <span>{{lcname}}:</span>
+        <span>{{lcname}}:&nbsp;&nbsp;&nbsp;</span>
         {{#each options}} {{> radioGroup this}} {{/each}}
       </div>
       {{else}} {{#if isSelectMap}} {{> map this}} {{/if}} {{/if}} {{/if}} {{/if}}
       {{/if}} {{/if}} {{/if}} {{/if}}
-    </div>{{#if hasHelp}}{{#if isColor}}<button
+    </div>{{#unless isRadioGroup}}{{#if hasHelp}}{{#if isColor}}<button
       type="button"
       class="control-button btn btn-info regularPublicSans fs-6 border-start-0"
       name="{{controlButton}}-value"
@@ -78,6 +79,6 @@
       id="{{controlButton}}-value"
     >{{textValue}}
     </button>
-    {{/if}}{{/if}}
+    {{/if}}{{/if}}{{/unless}}
   </div>
 </template>
