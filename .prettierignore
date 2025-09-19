@@ -28,3 +28,6 @@ settings
 *.swp
 tmp
 bundle*
+
+# Temporarily ignore until we can fix the button whitespace issue
+meteor_packages/mats-common/templates/selectorItems/item.html

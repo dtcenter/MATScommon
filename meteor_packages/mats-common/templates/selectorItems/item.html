@@ -16,13 +16,13 @@
       style="display:{{controlButtonCovered}};"
     >
       {{{fa}}}</button
-    >{{else}}{{#unless isRadioGroup}}<button
+    >{{else}}{{#unless isRadioGroup}}{{#unless isCheckBoxGroup}}<button
       type="button"
       class="control-button btn btn-primary regularPublicSans fs-6 border-end-0"
       id="{{controlButton}}"
     >
       {{tcname}}</button
-    >{{/unless}}{{/if}}<div
+    >{{/unless}}{{/unless}}{{/if}}<div
       class="bg-white float-right"
       id="{{element}}"
       style="display: {{elementHidden}}; {{position}}; z-index: {{zIndexVal}};"
@@ -47,7 +47,7 @@
       </div>
       {{else}} {{#if isSelectMap}} {{> map this}} {{/if}} {{/if}} {{/if}} {{/if}}
       {{/if}} {{/if}} {{/if}} {{/if}}
-    </div>{{#unless isRadioGroup}}{{#if hasHelp}}{{#if isColor}}<button
+    </div>{{#unless isRadioGroup}}{{#unless isCheckBoxGroup}}{{#if hasHelp}}{{#if isColor}}<button
       type="button"
       class="control-button btn btn-info regularPublicSans fs-6 border-start-0"
       name="{{controlButton}}-value"
@@ -79,6 +79,6 @@
       id="{{controlButton}}-value"
     >{{textValue}}
     </button>
-    {{/if}}{{/if}}{{/unless}}
+    {{/if}}{{/if}}{{/unless}}{{/unless}}
   </div>
 </template>
