@@ -51,6 +51,7 @@ Package.onUse(function (api) {
     "vanillajs-datepicker": "1.3.4",
 
     // make things pretty
+    "@uswds/uswds": "3.13.0",
     "lighten-darken-color": "1.0.0",
     "rgb-hex": "4.1.0",
     "hex-rgb": "5.0.0",
@@ -286,11 +287,6 @@ Package.onUse(function (api) {
   api.addFiles("templates/version/version.js", "client");
 
   // static assets
-  api.addAssets("public/img/bootstrap-colorpicker/alpha-horizontal.png", "client");
-  api.addAssets("public/img/bootstrap-colorpicker/alpha.png", "client");
-  api.addAssets("public/img/bootstrap-colorpicker/hue-horizontal.png", "client");
-  api.addAssets("public/img/bootstrap-colorpicker/hue.png", "client");
-  api.addAssets("public/img/bootstrap-colorpicker/saturation.png", "client");
   api.addAssets("public/img/arrow-down.gif", "client");
   api.addAssets("public/img/arrow-left.gif", "client");
   api.addAssets("public/img/arrow-right.gif", "client");
