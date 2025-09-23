@@ -31,7 +31,6 @@ const metaDataTableUpdates = new Mongo.Collection("metaDataTableUpdates");
 const CurveParamsInfo = new Mongo.Collection("CurveParamsInfo");
 const AppsToScore = new Mongo.Collection("AppsToScore");
 const CurveTextPatterns = new Mongo.Collection("CurveTextPatterns");
-const ScatterAxisTextPattern = new Mongo.Collection("ScatterAxisTextPattern");
 const SavedCurveParams = new Mongo.Collection("SavedCurveParams");
 const PlotParams = new Mongo.Collection("PlotParams");
 const SavedPlotParams = new Mongo.Collection("SavedPlotParams");
@@ -40,9 +39,6 @@ const SavedPlotGraphFunctions = new Mongo.Collection("SavedPlotGraphFunctions");
 const CurveSettings = new Mongo.Collection("CurveSettings");
 const Settings = new Mongo.Collection("Settings");
 const ColorScheme = new Mongo.Collection("ColorScheme");
-const SentAddresses = new Mongo.Collection("SentAddresses");
-const Authorization = new Mongo.Collection("Authorization");
-const Roles = new Mongo.Collection("Roles");
 const SavedRoles = new Mongo.Collection("SavedRoles");
 const Databases = new Mongo.Collection("Databases");
 const SavedDatabases = new Mongo.Collection("SavedDatabases");
@@ -64,7 +60,6 @@ const explicitCollections = {
   CurveParamsInfo,
   AppsToScore,
   CurveTextPatterns,
-  ScatterAxisTextPattern,
   SavedCurveParams,
   PlotParams,
   SavedPlotParams,
@@ -73,9 +68,6 @@ const explicitCollections = {
   CurveSettings,
   Settings,
   ColorScheme,
-  SentAddresses,
-  Authorization,
-  Roles,
   SavedRoles,
   Databases,
   SavedDatabases,

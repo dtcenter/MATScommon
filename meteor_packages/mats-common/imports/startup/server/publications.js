@@ -61,13 +61,6 @@ if (Meteor.isServer) {
     }
     return this.ready();
   });
-  Meteor.publish("ScatterAxisTextPattern", function () {
-    const data = matsCollections.ScatterAxisTextPattern.find({});
-    if (data) {
-      return data;
-    }
-    return this.ready();
-  });
   Meteor.publish("SavedCurveParams", function () {
     const data = matsCollections.SavedCurveParams.find({});
     if (data) {
@@ -110,22 +103,13 @@ if (Meteor.isServer) {
     }
     return this.ready();
   });
-  Meteor.publish("SentAddresses", function () {
-    const data = matsCollections.SentAddresses.find({ userId: this.userId });
+  Meteor.publish("Databases", function () {
+    const data = matsCollections.Databases.find({});
     if (data) {
       return data;
     }
     return this.ready();
   });
-
-  // do not publish databases
-  // Meteor.publish("Databases", function () {
-  //     var data = matsCollections.Databases.find({});
-  //     if (data) {
-  //         return data;
-  //     }
-  //     return this.ready();
-  // });
   Meteor.publish("SiteMap", function () {
     const data = matsCollections.SiteMap.find({});
     if (data) {

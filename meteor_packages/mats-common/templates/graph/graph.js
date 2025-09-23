@@ -833,17 +833,6 @@ Template.graph.helpers({
   isNotMap() {
     return Session.get("plotType") !== matsTypes.PlotTypes.map;
   },
-  sentAddresses() {
-    const addresses = [];
-    const a = matsCollections.SentAddresses.find(
-      {},
-      { fields: { address: 1 } }
-    ).fetch();
-    for (let i = 0; i < a.length; i += 1) {
-      addresses.push(a[i].address);
-    }
-    return addresses;
-  },
   hideButtonText() {
     const sval = `${this.label}hideButtonText`;
     if (Session.get(sval) === undefined) {

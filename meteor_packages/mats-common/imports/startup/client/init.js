@@ -31,13 +31,8 @@ if (Meteor.isClient) {
   Meteor.subscribe("ColorScheme");
   Meteor.subscribe("Settings");
   Meteor.subscribe("CurveSettings");
-  Meteor.subscribe("SentAddresses");
-  Meteor.subscribe("Roles");
-  Meteor.subscribe("Authorization");
   Meteor.subscribe("Databases");
   Meteor.subscribe("CurveTextPatterns");
-  Meteor.subscribe("ScatterAxisTextPattern");
-  Meteor.subscribe("RangePerDescriptor");
   Meteor.subscribe("SiteMap");
   Meteor.subscribe("StationMap");
   Meteor.subscribe("LayoutStoreCollection");

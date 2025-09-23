@@ -15,11 +15,6 @@ import hexRgb from "hex-rgb";
 
 /* global $, Session, _ */
 
-// determine the axisText (used in scatter_axis.js for example)
-// according to the Scatter Axis Text Patterns Pattern defined in
-// ScatterAxisTextPatterns according to plotType - and derived from
-// currently selected inputs in the document.
-// determine which plotType radio button is checked
 const getPlotType = function () {
   return document.getElementById("plotTypes-selector")
     ? document.getElementById("plotTypes-selector").value
@@ -33,24 +28,6 @@ const getPlotFormat = function () {
     return ""; // app may not have plotFormat?
   }
   return matsParamUtils.getValueForParamName("plotFormat");
-};
-
-const getAxisText = function () {
-  const scatterAxisTextPattern = matsCollections.ScatterAxisTextPattern.findOne({
-    plotType: getPlotType(),
-  });
-  if (scatterAxisTextPattern === undefined) {
-    return "";
-  }
-  let text = "";
-  for (let i = 0; i < scatterAxisTextPattern.length; i += 1) {
-    const pName = scatterAxisTextPattern[i][0];
-    const delimiter = scatterAxisTextPattern[i][1];
-    const value = matsParamUtils.getValueForParamName(pName);
-    text += value;
-    text += delimiter;
-  }
-  return text;
 };
 
 const getCurveText = async function (plotType, curve) {
@@ -365,7 +342,6 @@ const restoreSettings = function (p) {
 
 // eslint-disable-next-line no-undef
 export default matsPlotUtils = {
-  getAxisText,
   getCurveText,
   getCurveTextWrapping,
   getPlotType,
