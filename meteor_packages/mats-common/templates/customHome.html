@@ -7,16 +7,16 @@
       <div id="appTitleText" class="row text-center mt-5 mb-4">
         <h1 class="regularPublicSans text-center fs-1" id="main-content">{{title}}</h1>
       </div>
-      <div class="row" id="plotTypeContainer">{{>plotType}}</div>
       {{>about}} {{#if Template.subscriptionsReady}} {{#if isUnderConstruction}}
       <div class="row">{{>underConstruction}}</div>
       {{else}}
+      <div class="row" id="plotTypeContainer">{{>plotType}}</div>
       <div class="row">{{>changePlotType}}</div>
       <div class="row">{{>curveList}}</div>
       <div class="row">{{>error}} {{>info}}</div>
       <div id="paramView" class="row">{{>paramList}}</div>
       <div id="plotView" class="row">{{>plotList}}</div>
-      {{resetDefaults}} {{/if}} {{else}} Loading... {{/if}}
+      {{resetDefaults}} {{/if}} {{else}} <div class="fs-3 text-primary-emphasis">Loading app metadata...</div>{{/if}}
     </div>
     <div>{{>graph}}</div>
   </main>
