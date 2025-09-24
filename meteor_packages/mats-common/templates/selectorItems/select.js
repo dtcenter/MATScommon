@@ -39,6 +39,13 @@ Template.select.onRendered(function () {
     e.message = `Error in select.js rendered function checking to hide or disable other elements: ${e.message}`;
     setError(e);
   }
+
+  // eslint-disable-next-line global-require
+  const ComboBox = require("@uswds/uswds/packages/usa-combo-box/src/index");
+  const component = this.find(".usa-combo-box");
+  if (component) {
+    ComboBox.enhanceComboBox(component);
+  }
 });
 
 Template.select.helpers({
