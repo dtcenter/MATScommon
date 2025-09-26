@@ -170,13 +170,15 @@ const getDisabledOptionsForParamName = function (paramName) {
 const setInputForParamName = function (paramName, value) {
   const param = getParameterForName(paramName);
   const id = getInputIdForParamName(paramName);
-  const idSelector = $(`#${id}`);
 
   // SHOULD DEAL WITH CHECKBOXES HERE
   if (param.type === matsTypes.InputTypes.radioGroup) {
     $(`#${id}-${value}`).prop("checked", true);
-  } else {
-    idSelector.val(value);
+  } else if (
+    document.getElementById(id) &&
+    document.getElementById(id).value !== value
+  ) {
+    document.getElementById(id).value = value;
     setValueTextForParamName(paramName, value);
   }
 };

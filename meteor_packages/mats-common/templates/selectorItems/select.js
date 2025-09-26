@@ -40,11 +40,27 @@ Template.select.onRendered(function () {
     setError(e);
   }
 
+  /*
+  Some parts of the USWDS combo boxes are broken with Blaze, so this 
+  hacky nonsense lets them work for our purposes.
+  */
   // eslint-disable-next-line global-require
   const ComboBox = require("@uswds/uswds/packages/usa-combo-box/src/index");
   const component = this.find(".usa-combo-box");
   if (component) {
     ComboBox.enhanceComboBox(component);
+  }
+  const componentClearImage = this.find(".usa-combo-box__clear-input__wrapper");
+  if (componentClearImage) {
+    componentClearImage.style.display = "none";
+  }
+  const componentSeparator = this.find(".usa-combo-box__input-button-separator");
+  if (componentSeparator) {
+    componentSeparator.style.display = "none";
+  }
+  const componentDropdown = this.find(".usa-combo-box__toggle-list__wrapper");
+  if (componentDropdown) {
+    componentDropdown.style.display = "none";
   }
 });
 

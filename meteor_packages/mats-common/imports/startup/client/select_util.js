@@ -276,12 +276,11 @@ const refresh = function (event, paramName) {
       // first dimension of superiors--pretty much everything in MATS will only have one dimension of superiors
       const superiorElement = matsParamUtils.getInputElementForParamName(sNames[sn]);
       let selectedSuperiorValue =
-        !superiorElement.options[superiorElement.selectedIndex] ||
-        !superiorElement.options[superiorElement.selectedIndex].text ||
-        !superiorElement.options[superiorElement.selectedIndex].text.length ||
-        superiorElement.options[superiorElement.selectedIndex].text === "initial"
+        !superiorElement.value ||
+        !superiorElement.value.length ||
+        superiorElement.value === "initial"
           ? matsParamUtils.getParameterForName(sNames[sn]).default
-          : superiorElement.options[superiorElement.selectedIndex].text;
+          : superiorElement.value;
       if (sNames[sn].includes("statistic") && isMetexpress) {
         [selectedSuperiorValue] = statisticTranslations[selectedSuperiorValue];
       }
@@ -294,12 +293,11 @@ const refresh = function (event, paramName) {
       for (let sn = 0; sn < sNames.length; sn += 1) {
         const superiorElement = matsParamUtils.getInputElementForParamName(sNames[sn]);
         let selectedSuperiorValue =
-          !superiorElement.options[superiorElement.selectedIndex] ||
-          !superiorElement.options[superiorElement.selectedIndex].text ||
-          !superiorElement.options[superiorElement.selectedIndex].text.length ||
-          superiorElement.options[superiorElement.selectedIndex].text === "initial"
+          !superiorElement.value ||
+          !superiorElement.value.length ||
+          superiorElement.value === "initial"
             ? matsParamUtils.getParameterForName(sNames[sn]).default
-            : superiorElement.options[superiorElement.selectedIndex].text;
+            : superiorElement.value;
         if (sNames[sn].includes("statistic") && isMetexpress) {
           [selectedSuperiorValue] = statisticTranslations[selectedSuperiorValue];
         }

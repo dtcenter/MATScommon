@@ -27,11 +27,22 @@
     <div class="bg-white" style="font-size: smaller">
       Use ctrl + click (PC) or cmnd + click (Mac) to select multiple values.
     </div>
+    <div>
+      <select
+        class="data-input form-select bg-white fs-6 {{name}}"
+        name="{{name}}"
+        id="{{name}}-{{type}}"
+        aria-label="{{name}} options"
+        {{multiple}}
+      >
+        <option initial>initial</option> 
+      </select>
+    </div>
     {{/if}}
   </div>
-  <div class="usa-form-group">
-    <label class="usa-label" for="{{name}}-{{type}}">Select a {{name}}</label>
-    <div class="usa-combo-box">
+  <div class="usa-form-group m-0 width-mobile-lg">
+    <label class="usa-label fs-6 pt-1 width-mobile-lg" for="{{name}}-{{type}}">Delete the default text directly below this message to display all {{name}} options</label>
+    <div class="usa-combo-box width-mobile-lg">
       <select
         class="usa-select {{name}}"
         name="{{name}}"
