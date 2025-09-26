@@ -65,10 +65,6 @@ Template.numberSpinner.onRendered(function () {
   // register an event listener so that the select.js can ask the map div to refresh after a selection
   const ref = `${this.data.name}-${this.data.type}`;
   const elem = document.getElementById(ref);
-  if (ref.search("axis") === 1) {
-    // this is a "brother" (hidden) scatterplot param. There is no need to refresh it or add event listeners etc.
-    return;
-  }
   elem.addEventListener("refresh", function () {
     refresh(this.name);
   });

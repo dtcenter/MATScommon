@@ -99,98 +99,6 @@ Template.curveItem.helpers({
   },
 });
 
-const setParamsToAxis = function (newAxis, currentParams) {
-  // set param values to this curve
-  // reset the form parameters for the superiors first
-  let currentParamName;
-  const paramNames = matsCollections.CurveParamsInfo.findOne({
-    curve_params: { $exists: true },
-  }).curve_params;
-  const params = [];
-  const superiors = [];
-  const dependents = [];
-  // get all of the curve param collections in one place
-  for (let pidx = 0; pidx < paramNames.length; pidx += 1) {
-    const param = matsCollections[paramNames[pidx]].findOne({});
-    // superiors
-    if (param.dependentNames !== undefined) {
-      superiors.push(param);
-      // dependents
-    } else if (param.superiorNames !== undefined) {
-      dependents.push(param);
-      // everything else
-    } else {
-      params.push(param);
-    }
-  }
-  for (let s = 0; s < superiors.length; s += 1) {
-    const plotParam = superiors[s];
-    // do any date parameters - there are no axis date params in a scatter plot
-    if (plotParam.type === matsTypes.InputTypes.dateRange) {
-      if (currentParams[plotParam.name] !== undefined) {
-        const dateArr = currentParams[plotParam.name].split(" - ");
-        const from = dateArr[0];
-        const to = dateArr[1];
-        const idref = `#${plotParam.name}-${plotParam.type}`;
-        $(idref)
-          .data("daterangepicker")
-          .setStartDate(moment.utc(from, "MM-DD-YYYY HH:mm"));
-        $(idref).data("daterangepicker").setEndDate(moment.utc(to, "MM-DD-YYYY HH:mm"));
-        matsParamUtils.setValueTextForParamName(
-          plotParam.name,
-          currentParams[plotParam.name]
-        );
-      }
-    } else {
-      currentParamName =
-        currentParams[`${newAxis}-${plotParam.name}`] === undefined
-          ? plotParam.name
-          : `${newAxis}-${plotParam.name}`;
-      const val =
-        currentParams[currentParamName] === null ||
-        currentParams[currentParamName] === undefined
-          ? matsTypes.InputTypes.unused
-          : currentParams[currentParamName];
-      matsParamUtils.setInputForParamName(plotParam.name, val);
-    }
-  }
-  // now reset the form parameters for the dependents
-  const combParams = _.union(params, dependents);
-  for (let p = 0; p < combParams.length; p += 1) {
-    const plotParam = combParams[p];
-    // do any plot date parameters
-    currentParamName =
-      currentParams[`${newAxis}-${plotParam.name}`] === undefined
-        ? plotParam.name
-        : `${newAxis}-${plotParam.name}`;
-    if (plotParam.type === matsTypes.InputTypes.dateRange) {
-      if (currentParams[currentParamName] !== undefined) {
-        const dateArr = currentParams[currentParamName].split(" - ");
-        const from = dateArr[0];
-        const to = dateArr[1];
-        const idref = `#${plotParam.name}-${plotParam.type}`;
-        $(idref)
-          .data("daterangepicker")
-          .setStartDate(moment.utc(from, "MM-DD-YYYY HH:mm"));
-        $(idref).data("daterangepicker").setEndDate(moment.utc(to, "MM-DD-YYYY HH:mm"));
-        matsParamUtils.setValueTextForParamName(
-          plotParam.name,
-          currentParams[currentParamName]
-        );
-      }
-    } else {
-      const val =
-        currentParams[currentParamName] === null ||
-        currentParams[currentParamName] === undefined
-          ? matsTypes.InputTypes.unused
-          : currentParams[currentParamName];
-      matsParamUtils.setInputForParamName(plotParam.name, val);
-    }
-  }
-  matsParamUtils.collapseParams();
-  return false;
-};
-
 const correlateEditPanelToCurveItems = function (
   params,
   currentParams,
@@ -268,18 +176,6 @@ Template.curveItem.events({
       confirm: true,
     });
     $("#curve-list-remove").trigger("click");
-  },
-  "click .edit-curve-xaxis"() {
-    Session.set("axis", "xaxis");
-    Session.set("editMode", this.label);
-    const currentParams = jQuery.extend({}, this);
-    setParamsToAxis("xaxis", currentParams);
-  },
-  "click .edit-curve-yaxis"() {
-    Session.set("axis", "yaxis");
-    Session.set("editMode", this.label);
-    const currentParams = jQuery.extend({}, this);
-    setParamsToAxis("yaxis", currentParams);
   },
   "click .edit-curve"(event) {
     const srcEditButton = event.currentTarget;
@@ -376,19 +272,9 @@ Template.curveItem.events({
     const inputElem = matsParamUtils.getInputElementForParamName(name);
     const controlElem = matsParamUtils.getControlElementForParamName(name);
     const editingCurve = Session.get("editMode");
-    if (name.startsWith("xaxis")) {
-      curveListEditNode = $(
-        event.currentTarget.parentNode.parentNode.parentNode.parentNode
-      ).find("#curve-list-edit-xaxis");
-    } else if (name.startsWith("yaxis")) {
-      curveListEditNode = $(
-        event.currentTarget.parentNode.parentNode.parentNode.parentNode
-      ).find("#curve-list-edit-yaxis");
-    } else {
-      curveListEditNode = $(
-        event.currentTarget.parentNode.parentNode.parentNode.parentNode
-      ).find("#curve-list-edit");
-    }
+    curveListEditNode = $(
+      event.currentTarget.parentNode.parentNode.parentNode.parentNode
+    ).find("#curve-list-edit");
     const eventTargetCurve = $(event.currentTarget.parentNode.parentNode.parentNode)
       .find(".display-item-label")
       .text()

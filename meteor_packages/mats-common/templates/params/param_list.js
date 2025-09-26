@@ -79,10 +79,6 @@ Template.paramList.events({
   },
   // add curve
   // save changes
-  /*
-        Note: when adding a curve or saving changes after editing a curve there is a special
-        case for scatter plots. Each hidden axis parameter must get set with the value from the regular parameter.
-     */
   "submit form"(event) {
     event.preventDefault();
     if (!matsParamUtils.getValueForParamName("label")) {

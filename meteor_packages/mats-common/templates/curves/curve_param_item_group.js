@@ -143,16 +143,6 @@ Template.curveParamItemGroup.helpers({
     let groupParams = [];
     let pvi = 0;
     while (pvi < pValues.length) {
-      if (
-        pValues[pvi] &&
-        (pValues[pvi].name === "xaxis" || pValues[pvi].name === "yaxis")
-      ) {
-        if (groupParams.length > 0) {
-          // finish the old group and make a new group for 'xaxis' or 'yaxis'
-          pGroups.push(groupParams);
-        }
-        groupParams = [];
-      }
       if (pValues[pvi]) {
         groupParams.push(pValues[pvi]);
       }
@@ -241,7 +231,7 @@ Template.curveParamItemGroup.helpers({
   },
   border(elem) {
     Session.get("elementChanged");
-    const { name } = elem; // for xaxis params
+    const { name } = elem;
     const { curve } = elem;
     const adb = name === Session.get("activeDisplayButton");
     const isEditMode = curve === Session.get("editMode");
