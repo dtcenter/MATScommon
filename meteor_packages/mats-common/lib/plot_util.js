@@ -2,6 +2,7 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
+import { Meteor } from "meteor/meteor";
 import {
   matsCollections,
   matsParamUtils,
@@ -14,6 +15,24 @@ import moment from "moment";
 import hexRgb from "hex-rgb";
 
 /* global $, Session, _ */
+
+const getBaseURL = function () {
+  const urlComponents = document.location.href.split("/");
+  const baseURL =
+    Meteor.settings.public.home === undefined
+      ? `https://${urlComponents}`
+      : Meteor.settings.public.home;
+  const appName =
+    matsCollections.Settings === undefined ||
+    matsCollections.Settings.findOne({}) === undefined ||
+    matsCollections.Settings.findOne({}).appName === undefined
+      ? `${urlComponents[urlComponents.length - 1]}`
+      : matsCollections.Settings.findOne({}).appName;
+  if (baseURL.includes("localhost")) {
+    return baseURL;
+  }
+  return `${baseURL}/${appName}`;
+};
 
 const getPlotType = function () {
   return document.getElementById("plotTypes-selector")
@@ -342,6 +361,7 @@ const restoreSettings = function (p) {
 
 // eslint-disable-next-line no-undef
 export default matsPlotUtils = {
+  getBaseURL,
   getCurveText,
   getCurveTextWrapping,
   getPlotType,

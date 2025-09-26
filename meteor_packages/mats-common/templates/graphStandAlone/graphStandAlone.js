@@ -4,6 +4,7 @@
 
 import {
   matsCollections,
+  matsPlotUtils,
   matsCurveUtils,
   matsGraphUtils,
   matsMethods,
@@ -231,9 +232,7 @@ Template.graphStandAlone.helpers({
     return `newplot-${moment(new Date()).format("DD-MM-YYYY-hh:mm:ss")}`;
   },
   spinnerUrl() {
-    return `${
-      document.location.href.split("preview")[0]
-    }/packages/randyp_mats-common/public/img/spinner.gif`;
+    return `${matsPlotUtils.getBaseURL()}/packages/randyp_mats-common/public/img/spinner.gif`;
   },
 });
 

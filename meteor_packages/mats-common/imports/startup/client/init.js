@@ -47,6 +47,7 @@ if (Meteor.isClient) {
   const hostName = hostport.split(":")[0];
   const app = pathArray[3] === "" ? "/" : pathArray[3];
   const matsRef = `${protocol}//${hostport}`;
+  // Can't use the matsPlotUtils.getBaseURL function for this one because it's not yet loaded
   const baseURL =
     Meteor.settings.public.home === undefined
       ? `https://${hostport}`
