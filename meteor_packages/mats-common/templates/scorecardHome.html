@@ -16,7 +16,9 @@
       <div class="row">{{>error}} {{>info}}</div>
       <div id="paramView" class="row">{{>scorecardParamList}}</div>
       <div id="plotView" class="row">{{>plotList}}</div>
-      {{resetDefaults}} {{/if}} {{else}} <div class="fs-3 text-center text-info-emphasis">Loading app metadata...</div>{{/if}}
+      {{resetDefaults}} {{/if}} {{else}}
+      <div class="fs-3 text-center text-info-emphasis">Loading app metadata...</div>
+      {{/if}}
     </div>
     <div>{{>scorecardStatusPage}}</div>
     <div>
