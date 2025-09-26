@@ -110,7 +110,7 @@ const setValueTextForParamName = function (paramName, text) {
     }
     const elem = getValueElementForParamName(paramName);
     if (elem && elem.textContent !== thisText) {
-      delete elem.textContent;
+      elem.textContent = "";
       elem.textContent = thisText;
     }
     if (
@@ -118,7 +118,7 @@ const setValueTextForParamName = function (paramName, text) {
       document.getElementById(`${paramName}-dateRange`) !== undefined &&
       document.getElementById(`${paramName}-dateRange`) !== null
     ) {
-      delete document.getElementById(`${paramName}-dateRange`).value;
+      document.getElementById(`${paramName}-dateRange`).value = "";
       document.getElementById(`${paramName}-dateRange`).value = thisText;
     }
   } catch (error) {
