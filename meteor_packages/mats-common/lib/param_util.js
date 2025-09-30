@@ -52,8 +52,8 @@ const getValueForParamName = function (paramName) {
   }
 };
 
-// get the document id for the element that corresponds to the param name
-const getInputIdForParamName = function (paramName) {
+// get the parameter for the element that corresponds to the param name
+const getParameterForName = function (paramName) {
   let param;
   if (matsCollections[paramName] !== undefined) {
     param = matsCollections[paramName].findOne({ name: paramName });
@@ -64,6 +64,29 @@ const getInputIdForParamName = function (paramName) {
       return undefined;
     }
   }
+  return param;
+};
+
+// async version of above
+const getParameterForNameAsync = async function (pname) {
+  let param;
+  if (matsCollections[pname] !== undefined) {
+    param = await matsCollections[pname].findOneAsync({ name: pname });
+  }
+  if (param === undefined) {
+    param = await matsCollections.PlotParams.findOneAsync({ name: pname });
+    if (param === undefined) {
+      return undefined;
+    }
+  }
+  return param;
+};
+
+// get the document id for the element that corresponds to the param name
+const getInputIdForParam = function (param) {
+  if (param === undefined) {
+    return undefined;
+  }
   if (param.type === matsTypes.InputTypes.dateRange) {
     return `element-${param.name}`.replace(/ /g, "-");
   }
@@ -72,7 +95,16 @@ const getInputIdForParamName = function (paramName) {
 
 // get the document element that corresponds to the param name
 const getInputElementForParamName = function (paramName) {
-  const id = getInputIdForParamName(paramName);
+  const param = getParameterForName(paramName);
+  if (param.type === matsTypes.InputTypes.select && !param.multiple) {
+    const classElem = document.getElementsByClassName(
+      `data-input usa-select ${param.name} usa-sr-only usa-combo-box__select`
+    )[0];
+    if (classElem) {
+      return classElem;
+    }
+  }
+  const id = getInputIdForParam(param);
   if (id === undefined) {
     return undefined;
   }
@@ -126,36 +158,6 @@ const setValueTextForParamName = function (paramName, text) {
   }
 };
 
-// get the parameter for the element that corresponds to the param name
-const getParameterForName = function (paramName) {
-  let param;
-  if (matsCollections[paramName] !== undefined) {
-    param = matsCollections[paramName].findOne({ name: paramName });
-  }
-  if (param === undefined) {
-    param = matsCollections.PlotParams.findOne({ name: paramName });
-    if (param === undefined) {
-      return undefined;
-    }
-  }
-  return param;
-};
-
-// async version of above
-const getParameterForNameAsync = async function (pname) {
-  let param;
-  if (matsCollections[pname] !== undefined) {
-    param = await matsCollections[pname].findOneAsync({ name: pname });
-  }
-  if (param === undefined) {
-    param = await matsCollections.PlotParams.findOneAsync({ name: pname });
-    if (param === undefined) {
-      return undefined;
-    }
-  }
-  return param;
-};
-
 // get a param disabledOptions list - if any.
 const getDisabledOptionsForParamName = function (paramName) {
   const param = getParameterForName(paramName);
@@ -169,16 +171,14 @@ const getDisabledOptionsForParamName = function (paramName) {
 // also sets a data-mats-currentValue attribute
 const setInputForParamName = function (paramName, value) {
   const param = getParameterForName(paramName);
-  const id = getInputIdForParamName(paramName);
+  const id = getInputIdForParam(param);
+  const elem = getInputElementForParamName(paramName);
 
   // SHOULD DEAL WITH CHECKBOXES HERE
   if (param.type === matsTypes.InputTypes.radioGroup) {
     $(`#${id}-${value}`).prop("checked", true);
-  } else if (
-    document.getElementById(id) &&
-    document.getElementById(id).value !== value
-  ) {
-    document.getElementById(id).value = value;
+  } else if (elem && elem.value !== value) {
+    elem.value = value;
     setValueTextForParamName(paramName, value);
   }
 };
@@ -207,7 +207,7 @@ const getElementValues = function () {
     } else if (param.type === matsTypes.InputTypes.dateRange) {
       val = getValueForParamName(param.name);
     } else {
-      const idSelect = `#${getInputIdForParamName(param.name)}`;
+      const idSelect = `#${getInputIdForParam(param)}`;
       val = $(idSelect).val();
     }
     data.curveParams[param.name] = val;
@@ -229,7 +229,7 @@ const getElementValues = function () {
     } else if (p.type === matsTypes.InputTypes.color) {
       val = document.querySelector(`[name='${p.name}-icon']`).style.color;
     } else {
-      const idSelect = `#${getInputIdForParamName(p.name)}`;
+      const idSelect = `#${getInputIdForParam(p)}`;
       val = $(idSelect).val();
     }
     data.plotParams[p.name] = val;
@@ -414,8 +414,7 @@ const setAllParamsToDefault = function () {
       const { dstr } = getDefaultDateRange(param.name);
       setValueTextForParamName(param.name, dstr);
     } else if (param !== undefined && param.type === matsTypes.InputTypes.selectMap) {
-      const targetId = `${param.name}-${param.type}`;
-      const targetElem = document.getElementById(targetId);
+      const targetElem = getInputElementForParamName(param.name);
       const resetMapEvent = new CustomEvent("reset", {
         detail: {
           refElement: null,
@@ -585,7 +584,7 @@ export default matsParamUtils = {
   getValueForParamName,
   setValueTextForParamName,
   getValueIdForParamName,
-  getInputIdForParamName,
+  getInputIdForParam,
   getInputElementForParamName,
   getElementValues,
   setInputForParamName,

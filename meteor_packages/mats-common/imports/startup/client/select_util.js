@@ -21,13 +21,7 @@ const refreshDependents = function (event, param) {
         // get this dependent's element
         const name = dependentNames[i];
         const targetParam = matsParamUtils.getParameterForName(name);
-        let targetId;
-        if (targetParam.type === matsTypes.InputTypes.dateRange) {
-          targetId = `element-${targetParam.name}`;
-        } else {
-          targetId = `${targetParam.name}-${targetParam.type}`;
-        }
-        const targetElem = document.getElementById(targetId);
+        const targetElem = matsParamUtils.getInputElementForParamName(targetParam.name);
         try {
           if (
             !(

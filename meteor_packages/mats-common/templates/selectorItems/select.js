@@ -17,8 +17,7 @@ import { Template } from "meteor/templating";
     routine which sets all the options. Don't forget to look there for much of the handling.
  */
 Template.select.onRendered(function () {
-  const ref = `${this.data.name}-${this.data.type}`;
-  const elem = document.getElementById(ref);
+  const elem = matsParamUtils.getInputElementForParamName(this.data.name);
   try {
     elem.options = [];
     if (elem) {
@@ -106,7 +105,6 @@ Template.select.events({
       // These need to be done in the right order!
       // always check to see if an "other" needs to be hidden or disabled before refreshing
       matsSelectUtils.checkHideOther(this, false);
-      document.getElementById(`element-${this.name}`).style.display = "none"; // be sure to hide the element div
       // if we're editing a curve with this change, update the curve
       const curveItem = document.getElementById(`curveItem-${Session.get("editMode")}`);
       if (curveItem) {
@@ -115,13 +113,15 @@ Template.select.events({
       // update value text on the selctor button
       setValue(paramName);
       if (this.multiple) {
-        return true; // prevents the select 2 from closing on multiple selectors
+        // prevents the selector from closing on multiple selectors
+        return true;
       }
       matsSelectUtils.refreshDependents(event, this);
       if (this.name === "plotFormat") {
         // update difference curves if necessary
         matsCurveUtils.checkDiffs();
       }
+      document.getElementById(`element-${paramName}`).style.display = "none"; // be sure to hide the element div
       Session.set("lastUpdate", Date.now());
     }
     return false;

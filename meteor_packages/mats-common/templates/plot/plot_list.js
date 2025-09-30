@@ -235,14 +235,8 @@ Template.plotList.events({
           }
         } else if (type === matsTypes.InputTypes.dateRange) {
           p[name] = matsParamUtils.getValueForParamName(name);
-        } else if (type === matsTypes.InputTypes.numberSpinner) {
-          p[name] = document.getElementById(`${name}-${type}`).value;
-        } else if (type === matsTypes.InputTypes.select) {
-          p[name] = document.getElementById(`${name}-${type}`).value;
-        } else if (type === matsTypes.InputTypes.textInput) {
-          p[name] = document.getElementById(`${name}-${type}`).value;
-        } else if (type === matsTypes.InputTypes.color) {
-          p[name] = document.getElementById(`${name}-${type}`).value;
+        } else {
+          p[name] = matsParamUtils.getInputElementForParamName(name).value;
         }
       });
     if (
