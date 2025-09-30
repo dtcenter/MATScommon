@@ -1108,14 +1108,44 @@ Template.graph.helpers({
     return "none";
   },
   recacheButtonRadius() {
-    // Make sure the button group is rounded for maps
+    // Make sure the button group is rounded when needed
     Session.get("PlotParams");
     Session.get("PlotResultsUpDated");
     const plotType = Session.get("plotType");
-    if (plotType === matsTypes.PlotTypes.map) {
-      return "rounded-start";
+    if (
+      plotType === matsTypes.PlotTypes.timeSeries ||
+      plotType === matsTypes.PlotTypes.dailyModelCycle
+    ) {
+      return "";
     }
-    return "";
+    return "rounded-start";
+  },
+  editLegendButtonRadius() {
+    // Make sure the button group is rounded when needed
+    const plotType = Session.get("plotType");
+    switch (plotType) {
+      case matsTypes.PlotTypes.map:
+      case matsTypes.PlotTypes.histogram:
+      case matsTypes.PlotTypes.ensembleHistogram:
+      case matsTypes.PlotTypes.contour:
+      case matsTypes.PlotTypes.contourDiff:
+        return "rounded-end";
+      case matsTypes.PlotTypes.timeSeries:
+      case matsTypes.PlotTypes.profile:
+      case matsTypes.PlotTypes.dieoff:
+      case matsTypes.PlotTypes.threshold:
+      case matsTypes.PlotTypes.validtime:
+      case matsTypes.PlotTypes.gridscale:
+      case matsTypes.PlotTypes.dailyModelCycle:
+      case matsTypes.PlotTypes.yearToYear:
+      case matsTypes.PlotTypes.reliability:
+      case matsTypes.PlotTypes.roc:
+      case matsTypes.PlotTypes.performanceDiagram:
+      case matsTypes.PlotTypes.gridscaleProb:
+      case matsTypes.PlotTypes.simpleScatter:
+      default:
+        return "";
+    }
   },
   metApp() {
     Session.get("PlotParams");

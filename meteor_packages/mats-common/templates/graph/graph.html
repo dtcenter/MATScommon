@@ -6,293 +6,312 @@
   <div id="graph-container" class="container-fluid p-2" style="display: none">
     <div id="graph-control" class="row px-3 mb-4">
       <span id="all-plot-buttons-grp" class="btn-group btn-group-sm flex-wrap">
-        <button
-          id="backButton"
-          type="button"
-          class="back btn btn-sm btn-info rounded"
-          data-placement="top"
-          title="Return to main page"
-        >
-          <i class="fa-solid fa-arrow-left-long"></i>&nbsp;&nbsp;<strong>Back</strong>
-        </button>
-        <button
-          id="backToPreviewSpacer"
-          type="button"
-          class="btn spacebutton"
-          aria-label="spacer"
-        ></button>
-        <button
-          id="previewButton"
-          type="button"
-          class="preview btn btn-info rounded-start"
-          style="display: block"
-          data-placement="top"
-          title="Open graph in preview window"
-        >
-          <i class="fa-solid fa-print"></i>&nbsp;&nbsp;<strong>Preview</strong>
-        </button>
-        <button
-          id="basisButton"
-          type="button"
-          class="basis btn btn-info"
-          data-placement="top"
-          title="View data details"
-        >
-          <i class="fa-solid fa-info"></i>&nbsp;&nbsp;<strong>Data Lineage</strong>
-        </button>
-        <button
-          id="exportButton"
-          type="button"
-          class="export btn btn-info"
-          data-placement="top"
-          title="Export current text data to csv file"
-        >
-          <i class="fa-solid fa-download"></i>&nbsp;&nbsp;<strong>Export</strong>
-        </button>
-        <button
-          id="plotButton"
-          type="button"
-          class="plotButton btn btn-info rounded-end"
-          style="display: block"
-          data-placement="top"
-          title="Display plot"
-        >
-          <i class="fa-solid fa-chart-line"></i>&nbsp;&nbsp;<strong>Plot</strong>
-        </button>
-        <button
-          id="textButton"
-          type="button"
-          class="textButton btn btn-info rounded-end"
-          style="display: block"
-          data-placement="top"
-          title="Display text"
-        >
-          <i class="fa-regular fa-file-lines"></i>&nbsp;&nbsp;<strong>Text</strong>
-        </button>
+        <span id="sub-plot-buttons-grp-1" class="btn-group btn-group-sm flex-wrap">
+          <button
+            id="backButton"
+            type="button"
+            class="back btn btn-sm btn-info rounded"
+            data-placement="top"
+            title="Return to main page"
+          >
+            <i class="fa-solid fa-arrow-left-long"></i>&nbsp;&nbsp;<strong>Back</strong>
+          </button>
+          <button
+            id="backToPreviewSpacer"
+            type="button"
+            class="btn spacebutton"
+            aria-label="spacer"
+          ></button>
+          <button
+            id="previewButton"
+            type="button"
+            class="preview btn btn-info rounded-start"
+            style="display: block"
+            data-placement="top"
+            title="Open graph in preview window"
+          >
+            <i class="fa-solid fa-print"></i>&nbsp;&nbsp;<strong>Preview</strong>
+          </button>
+          <button
+            id="basisButton"
+            type="button"
+            class="basis btn btn-info"
+            data-placement="top"
+            title="View data details"
+          >
+            <i class="fa-solid fa-info"></i>&nbsp;&nbsp;<strong>Data Lineage</strong>
+          </button>
+          <button
+            id="exportButton"
+            type="button"
+            class="export btn btn-info"
+            data-placement="top"
+            title="Export current text data to csv file"
+          >
+            <i class="fa-solid fa-download"></i>&nbsp;&nbsp;<strong>Export</strong>
+          </button>
+          <button
+            id="plotButton"
+            type="button"
+            class="plotButton btn btn-info rounded-end"
+            style="display: block"
+            data-placement="top"
+            title="Display plot"
+          >
+            <i class="fa-solid fa-chart-line"></i>&nbsp;&nbsp;<strong>Plot</strong>
+          </button>
+          <button
+            id="textButton"
+            type="button"
+            class="textButton btn btn-info rounded-end"
+            style="display: block"
+            data-placement="top"
+            title="Display text"
+          >
+            <i class="fa-regular fa-file-lines"></i>&nbsp;&nbsp;<strong>Text</strong>
+          </button>
+        </span>
         {{#if isTextPage}}
-        <button
-          id="textToTextSpacer"
-          type="button"
-          class="btn spacebutton"
-          aria-label="2nd spacer"
-        ></button>
-        <button
-          id="firstPageButton"
-          type="button"
-          class="firstPageButton btn btn-primary rounded-start"
-          data-placement="top"
-          title="First page"
-        >
-          <i class="fa-solid fa-backward-fast"></i>&nbsp;&nbsp;<strong
-            >First Page</strong
+        <span id="sub-plot-buttons-grp-2" class="btn-group btn-group-sm flex-wrap">
+          <button
+            id="textToTextSpacer"
+            type="button"
+            class="btn spacebutton"
+            aria-label="2nd spacer"
+          ></button>
+          <button
+            id="firstPageButton"
+            type="button"
+            class="firstPageButton btn btn-primary rounded-start"
+            data-placement="top"
+            title="First page"
           >
-        </button>
-        <button
-          id="previousTenPageButton"
-          type="button"
-          class="previousTenPageButton btn btn-primary"
-          data-placement="top"
-          title="Previous 10 pages"
-        >
-          <i class="fa-solid fa-backward-step"></i>&nbsp;&nbsp;<strong
-            >Back 10 Pages</strong
+            <i class="fa-solid fa-backward-fast"></i>&nbsp;&nbsp;<strong
+              >First Page</strong
+            >
+          </button>
+          <button
+            id="previousTenPageButton"
+            type="button"
+            class="previousTenPageButton btn btn-primary"
+            data-placement="top"
+            title="Previous 10 pages"
           >
-        </button>
-        <button
-          id="previousPageButton"
-          type="button"
-          class="previousPageButton btn btn-primary"
-          data-placement="top"
-          title="Previous page"
-        >
-          <i class="fa-solid fa-chevron-left"></i>&nbsp;&nbsp;<strong>Prev Page</strong>
-        </button>
-        <button
-          id="nextPageButton"
-          type="button"
-          class="nextPageButton btn btn-primary"
-          data-placement="top"
-          title="Next page"
-        >
-          <i class="fa-solid fa-chevron-right"></i>&nbsp;&nbsp;<strong
-            >Next Page</strong
+            <i class="fa-solid fa-backward-step"></i>&nbsp;&nbsp;<strong
+              >Back 10 Pages</strong
+            >
+          </button>
+          <button
+            id="previousPageButton"
+            type="button"
+            class="previousPageButton btn btn-primary"
+            data-placement="top"
+            title="Previous page"
           >
-        </button>
-        <button
-          id="nextTenPageButton"
-          type="button"
-          class="nextTenPageButton btn btn-primary"
-          data-placement="top"
-          title="Next 10 pages"
-        >
-          <i class="fa-solid fa-forward-step"></i>&nbsp;&nbsp;<strong
-            >Forward 10 Pages</strong
+            <i class="fa-solid fa-chevron-left"></i>&nbsp;&nbsp;<strong
+              >Prev Page</strong
+            >
+          </button>
+          <button
+            id="nextPageButton"
+            type="button"
+            class="nextPageButton btn btn-primary"
+            data-placement="top"
+            title="Next page"
           >
-        </button>
-        <button
-          id="lastPageButton"
-          type="button"
-          class="lastPageButton btn btn-primary rounded-end"
-          data-placement="top"
-          title="Last page"
-        >
-          <i class="fa-solid fa-forward-fast"></i>&nbsp;&nbsp;<strong>Last Page</strong>
-        </button>
+            <i class="fa-solid fa-chevron-right"></i>&nbsp;&nbsp;<strong
+              >Next Page</strong
+            >
+          </button>
+          <button
+            id="nextTenPageButton"
+            type="button"
+            class="nextTenPageButton btn btn-primary"
+            data-placement="top"
+            title="Next 10 pages"
+          >
+            <i class="fa-solid fa-forward-step"></i>&nbsp;&nbsp;<strong
+              >Forward 10 Pages</strong
+            >
+          </button>
+          <button
+            id="lastPageButton"
+            type="button"
+            class="lastPageButton btn btn-primary rounded-end"
+            data-placement="top"
+            title="Last page"
+          >
+            <i class="fa-solid fa-forward-fast"></i>&nbsp;&nbsp;<strong
+              >Last Page</strong
+            >
+          </button>
+        </span>
         {{/if}}{{#if isGraphPage}}
-        <button
-          id="textToAxesSpacer"
-          type="button"
-          class="btn spacebutton"
-          aria-label="3rd spacer"
-        ></button>
-        {{#if isNotMap}}
-        <button
-          id="axisLimitButton"
-          type="button"
-          class="axisLimitButton btn btn-info rounded-start"
-          data-placement="top"
-          title="Edit axes"
-        >
-          <i class="fa-solid fa-arrows-up-down-left-right"></i>&nbsp;&nbsp;<strong
-            >Axes</strong
+        <span id="sub-plot-buttons-grp-3" class="btn-group btn-group-sm flex-wrap">
+          <button
+            id="textToAxesSpacer"
+            type="button"
+            class="btn spacebutton"
+            aria-label="3rd spacer"
+          ></button>
+          {{#if isNotMap}}
+          <button
+            id="axisLimitButton"
+            type="button"
+            class="axisLimitButton btn btn-info rounded-start"
+            data-placement="top"
+            title="Edit axes"
           >
-        </button>
-        {{/if}} {{#if isProfile}}
-        <button
-          id="axisYScale"
-          type="button"
-          class="axisYScale btn btn-info"
-          data-placement="top"
-          title="Toggle linear/log Y axis"
-        >
-          <i class="fa-solid fa-arrow-up-short-wide"></i>&nbsp;&nbsp;<strong
-            >Y Linear/Log</strong
+            <i class="fa-solid fa-arrows-up-down-left-right"></i>&nbsp;&nbsp;<strong
+              >Axes</strong
+            >
+          </button>
+          {{/if}} {{#if isProfile}}
+          <button
+            id="axisYScale"
+            type="button"
+            class="axisYScale btn btn-info"
+            data-placement="top"
+            title="Toggle linear/log Y axis"
           >
-        </button>
-        {{/if}} {{#if isThreshold}}
-        <button
-          id="axisXSpace"
-          type="button"
-          class="axisXSpace btn btn-info"
-          data-placement="top"
-          title="Toggle equi-spaced X axis"
-        >
-          <i class="fa-solid fa-arrows-to-circle"></i>&nbsp;&nbsp;<strong
-            >Equi-space X</strong
+            <i class="fa-solid fa-arrow-up-short-wide"></i>&nbsp;&nbsp;<strong
+              >Y Linear/Log</strong
+            >
+          </button>
+          {{/if}} {{#if isThreshold}}
+          <button
+            id="axisXSpace"
+            type="button"
+            class="axisXSpace btn btn-info"
+            data-placement="top"
+            title="Toggle equi-spaced X axis"
           >
-        </button>
-        {{/if}} {{#if isMultiAxisLinePlot}} {{#if isProfile}}
-        <button
-          id="xAxisCombineButton"
-          type="button"
-          class="axisCombineButton btn btn-info"
-          data-placement="top"
-          title="Combine x-axes"
-        >
-          <i class="fa-solid fa-arrows-left-right"></i>&nbsp;&nbsp;<strong
-            >Merge X Axes</strong
+            <i class="fa-solid fa-arrows-to-circle"></i>&nbsp;&nbsp;<strong
+              >Equi-space X</strong
+            >
+          </button>
+          {{/if}} {{#if isMultiAxisLinePlot}} {{#if isProfile}}
+          <button
+            id="xAxisCombineButton"
+            type="button"
+            class="axisCombineButton btn btn-info"
+            data-placement="top"
+            title="Combine x-axes"
           >
-        </button>
-        {{/if}} {{#if isSimpleScatter}}
-        <button
-          id="axisCombineButton"
-          type="button"
-          class="axisCombineButton btn btn-info"
-          data-placement="top"
-          title="Combine axes"
-        >
-          <i class="fa-solid fa-maximize"></i>&nbsp;&nbsp;<strong
-            >Merge X/Y Axes</strong
+            <i class="fa-solid fa-arrows-left-right"></i>&nbsp;&nbsp;<strong
+              >Merge X Axes</strong
+            >
+          </button>
+          {{/if}} {{#if isSimpleScatter}}
+          <button
+            id="axisCombineButton"
+            type="button"
+            class="axisCombineButton btn btn-info"
+            data-placement="top"
+            title="Combine axes"
           >
-        </button>
-        {{else}}
-        <button
-          id="yAxisCombineButton"
-          type="button"
-          class="axisCombineButton btn btn-info"
-          data-placement="top"
-          title="Combine y-axes"
-        >
-          <i class="fa-solid fa-arrows-up-down"></i>&nbsp;&nbsp;<strong
-            >Merge Y Axes</strong
+            <i class="fa-solid fa-maximize"></i>&nbsp;&nbsp;<strong
+              >Merge X/Y Axes</strong
+            >
+          </button>
+          {{else}} {{#unless isProfile}}
+          <button
+            id="yAxisCombineButton"
+            type="button"
+            class="axisCombineButton btn btn-info"
+            data-placement="top"
+            title="Combine y-axes"
           >
-        </button>
-        {{/if}} {{/if}} {{#if isContour}}
-        <button
-          id="colorbarButton"
-          type="button"
-          class="colorbarButton btn btn-info"
-          data-placement="top"
-          title="Edit colorbar"
-        >
-          <i class="fa-solid fa-palette"></i>&nbsp;&nbsp;<strong>Colorbar</strong>
-        </button>
-        {{else}} {{#if isNotMap}}
-        <button
-          id="lineTypeButton"
-          type="button"
-          class="lineTypeButton btn btn-info"
-          data-placement="top"
-          title="Edit curve styles"
-        >
-          <i class="fa-solid fa-xmarks-lines"></i>&nbsp;&nbsp;<strong
-            >Curve Styles</strong
+            <i class="fa-solid fa-arrows-up-down"></i>&nbsp;&nbsp;<strong
+              >Merge Y Axes</strong
+            >
+          </button>
+          {{/unless}} {{/if}} {{/if}} {{#if isContour}}
+          <button
+            id="colorbarButton"
+            type="button"
+            class="colorbarButton btn btn-info"
+            data-placement="top"
+            title="Edit colorbar"
           >
-        </button>
-        <button
-          id="showHideButton"
-          type="button"
-          class="showHideButton btn btn-info"
-          data-placement="top"
-          title="Show/hide elements"
-        >
-          <i class="fa-solid fa-eye-slash"></i>&nbsp;&nbsp;<strong>Show/Hide</strong>
-        </button>
-        {{/if}} {{/if}} {{#if isNotMap}}
-        <button
-          id="legendTextButton"
-          type="button"
-          class="legendTextButton btn btn-info"
-          data-placement="top"
-          title="Edit legend text"
-        >
-          <i class="fa-solid fa-pencil"></i>&nbsp;&nbsp;<strong>Edit Legend</strong>
-        </button>
-        {{#if isLineOrScatterPlot}}
-        <button
-          id="filterPointsButton"
-          type="button"
-          class="filterPointsButton btn btn-info"
-          data-placement="top"
-          title="Filter graph points"
-        >
-          <i class="fa-regular fa-square-check"></i>&nbsp;&nbsp;<strong
-            >Filter Points</strong
+            <i class="fa-solid fa-palette"></i>&nbsp;&nbsp;<strong>Colorbar</strong>
+          </button>
+          {{else}} {{#if isNotMap}}
+          <button
+            id="lineTypeButton"
+            type="button"
+            class="lineTypeButton btn btn-info"
+            data-placement="top"
+            title="Edit curve styles"
           >
-        </button>
-        {{/if}}
-        <button
-          id="replotZoomButton"
-          type="button"
-          class="replotZoomButton btn btn-info"
-          style="display: {{displayReplotZoom}};"
-          data-placement="top"
-          title="Re-query data within current zoom range"
-        >
-          <i class="fa-solid fa-magnifying-glass-chart"></i>&nbsp;&nbsp;<strong
-            >Re-sample</strong
+            <i class="fa-solid fa-xmarks-lines"></i>&nbsp;&nbsp;<strong
+              >Curve Styles</strong
+            >
+          </button>
+          <button
+            id="showHideButton"
+            type="button"
+            class="showHideButton btn btn-info"
+            data-placement="top"
+            title="Show/hide elements"
           >
-        </button>
-        {{/if}}
-        <button
-          id="reCacheButton"
-          type="button"
-          class="reCacheButton btn btn-info {{recacheButtonRadius}} rounded-end"
-          data-placement="top"
-          title="Replot graph without using cache"
-        >
-          <i class="fa-solid fa-chart-line"></i>&nbsp;&nbsp;<strong>Re-cache</strong>
-        </button>
+            <i class="fa-solid fa-eye-slash"></i>&nbsp;&nbsp;<strong>Show/Hide</strong>
+          </button>
+          {{/if}} {{/if}} {{#if isNotMap}}
+          <button
+            id="legendTextButton"
+            type="button"
+            class="legendTextButton btn btn-info  {{editLegendButtonRadius}} "
+            data-placement="top"
+            title="Edit legend text"
+          >
+            <i class="fa-solid fa-pencil"></i>&nbsp;&nbsp;<strong>Edit Legend</strong>
+          </button>
+          {{#if isLineOrScatterPlot}}
+          <button
+            id="filterPointsButton"
+            type="button"
+            class="filterPointsButton btn btn-info rounded-end"
+            data-placement="top"
+            title="Filter graph points"
+          >
+            <i class="fa-regular fa-square-check"></i>&nbsp;&nbsp;<strong
+              >Filter Points</strong
+            >
+          </button>
+          {{/if}} {{/if}}
+        </span>
+        <span id="sub-plot-buttons-grp-4" class="btn-group btn-group-sm flex-wrap">
+          {{#if isNotMap}}
+          <button
+            id="replotSpacer"
+            type="button"
+            class="btn spacebutton"
+            aria-label="4th spacer"
+          ></button>
+          {{/if}}
+          <button
+            id="replotZoomButton"
+            type="button"
+            class="replotZoomButton btn btn-info rounded-start"
+            style="display: {{displayReplotZoom}};"
+            data-placement="top"
+            title="Re-query data within current zoom range"
+          >
+            <i class="fa-solid fa-magnifying-glass-chart"></i>&nbsp;&nbsp;<strong
+              >Re-sample</strong
+            >
+          </button>
+          <button
+            id="reCacheButton"
+            type="button"
+            class="reCacheButton btn btn-info {{recacheButtonRadius}} rounded-end"
+            data-placement="top"
+            title="Replot graph without using cache"
+          >
+            <i class="fa-solid fa-chart-line"></i>&nbsp;&nbsp;<strong>Re-cache</strong>
+          </button>
+        </span>
         {{/if}}
       </span>
     </div>
@@ -1326,10 +1345,10 @@
       ></div>
       <input
         type="button"
-        class="heatMapVisibility btn btn-primary"
+        class="heatMapVisibility btn btn-primary rounded col-2"
         value="{{heatMapButtonText}}"
         id="{{this.label}}-curve-show-hide-heatmap"
-        style="border-radius: 5px; display:{{heatMapShowHideDisplay}};"
+        style="display:{{heatMapShowHideDisplay}};"
       />
       {{/each}}
     </div>
