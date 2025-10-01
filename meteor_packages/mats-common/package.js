@@ -23,12 +23,12 @@ Package.onUse(function (api) {
 
     // core functionality packages
     "meteor-node-stubs": "1.2.22",
-    "fs-extra": "11.3.1",
+    "fs-extra": "11.3.2",
 
     // things to do with querying
     "python-shell": "5.0.0",
-    couchbase: "4.5.0",
-    mysql2: "3.14.3",
+    couchbase: "4.6.0",
+    mysql2: "3.15.1",
     url: "0.11.4",
 
     // things to do with downsizing and caching data
@@ -38,8 +38,8 @@ Package.onUse(function (api) {
     "object-sizeof": "2.6.5",
 
     // data tables for scorecard
-    "datatables.net-bs": "2.3.3",
-    "datatables.net-dt": "2.3.3",
+    "datatables.net-bs": "2.3.4",
+    "datatables.net-dt": "2.3.4",
 
     // saving to png or csv files
     html2canvas: "1.4.1",
