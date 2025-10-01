@@ -1,6 +1,6 @@
 <template name="select">
+  {{#if isMultiple}}
   <div>
-    {{#if isMultiple}}
     <div class="btn-group btn-group-sm">
       <button
         type="button"
@@ -32,14 +32,15 @@
         class="data-input form-select bg-white fs-6 {{name}}"
         name="{{name}}"
         id="{{name}}-{{type}}"
+        size="10"
         aria-label="{{name}} options"
         {{multiple}}
       >
         <option initial>initial</option>
       </select>
     </div>
-    {{/if}}
   </div>
+  {{else}}
   <div class="usa-form-group m-0 width-mobile-lg">
     <label class="usa-label fs-6 pt-1 width-mobile-lg" for="{{name}}-{{type}}"
       >Type into the textbox directly below this message to filter {{name}}
@@ -57,4 +58,5 @@
       </select>
     </div>
   </div>
+  {{/if}}
 </template>

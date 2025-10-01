@@ -208,9 +208,6 @@ Template.select.events({
     }
     if (event.target.multiple) {
       Session.set("editMode", editMode);
-      const controlElem = matsParamUtils.getControlElementForParamName(this.name);
-      // prevent the selector from closing before we are done
-      $(controlElem).trigger("click");
     }
     return false;
   },
