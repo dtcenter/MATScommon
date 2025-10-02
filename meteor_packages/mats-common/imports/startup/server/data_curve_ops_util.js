@@ -592,6 +592,7 @@ const generateMapColorTextOptions = function (label, legendText, dataSeries) {
       type: "scattermap",
       mode: "markers+text",
       marker: {
+        color: dataSeries.color,
         opacity: 0,
       },
       textfont: {

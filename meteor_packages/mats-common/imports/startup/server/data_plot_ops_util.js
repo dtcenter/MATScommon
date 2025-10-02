@@ -1672,6 +1672,7 @@ const generateMapPlotOptions = async function (extraLegendSpace) {
     legend: {
       x: 0,
       y: extraLegendSpace ? 1.13 : 1.07,
+      orientation: "h",
       xanchor: "left",
       yanchor: "top",
       font: {
