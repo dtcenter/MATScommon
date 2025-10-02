@@ -476,7 +476,7 @@ const calculateStatScalar = function (
       queryVal = Math.sqrt(squareDiffSum / NSum);
       break;
     case "Bias (Model - Obs)":
-      queryVal = (modelSum - obsSum) / NSum;
+      queryVal = (-1 * obsModelDiffSum) / NSum;
       break;
     case "N":
       queryVal = NSum;
