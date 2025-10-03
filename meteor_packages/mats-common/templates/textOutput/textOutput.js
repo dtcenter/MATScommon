@@ -300,8 +300,8 @@ Template.textOutput.helpers({
         return `${curve.label} x-value`;
     }
   },
-  curveText() {
-    const text = matsPlotUtils.getCurveText(matsPlotUtils.getPlotType(), this);
+  async curveText() {
+    const text = await matsPlotUtils.getCurveText(matsPlotUtils.getPlotType(), this);
     return text;
   },
 
