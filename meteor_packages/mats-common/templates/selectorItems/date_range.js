@@ -309,6 +309,15 @@ Template.dateRange.onRendered(function () {
         .locale("en")
         .format("MM/DD/YYYY HH:mm")}`;
       matsParamUtils.setValueTextForParamName(name, newDateStr);
+      $(".drp-buttons").each(function () {
+        if ($(this).find("span.newRangeLabel").length === 0) {
+          $(this).prepend(
+            "<span class='newRangeLabel' style='text-align: right; font-size: 16px;'>Apply this range?&nbsp;&nbsp;</span>"
+          );
+          $(this).find("button.applyBtn").attr("id", `${name}-applyBtn`);
+        }
+      });
+
       if (elem && elem.style && elem.style.display === "block") {
         elem.style.display = "none";
       }
