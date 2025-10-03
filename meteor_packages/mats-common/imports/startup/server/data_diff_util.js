@@ -1414,10 +1414,10 @@ const getDataForDiffContour = async function (
   diffDataset.autocontour = false;
   diffDataset.ncontours = 15;
   diffDataset.colorbar = dataset[0].colorbar;
-  diffDataset.colorbar.title =
-    dataset[0].colorbar.title === dataset[1].colorbar.title
-      ? dataset[0].colorbar.title
-      : `${dataset[1].colorbar.title} - ${dataset[0].colorbar.title}`;
+  diffDataset.colorbar.title.text =
+    dataset[0].colorbar.title.text === dataset[1].colorbar.title.text
+      ? dataset[0].colorbar.title.text
+      : `${dataset[1].colorbar.title.text} - ${dataset[0].colorbar.title.text}`;
   diffDataset.colorscale = dataset[0].colorscale;
   diffDataset.reversescale = dataset[0].reversescale;
   diffDataset.connectgaps = dataset[0].connectgaps;
