@@ -21,22 +21,22 @@
           ></button>
         </div>
         <div class="modal-body h-50">
-          <h5 style="color: #aa0000">{{{errorMessage}}}</h5>
+          <h5 id="errorModalText" style="color: #aa0000">{{{errorMessage}}}</h5>
           <div id="error-stack" style="display: none">
             <p>{{{stackTrace}}}</p>
-            <button type="button" class="hide-stack btn btn-success btn-sm mb-2">
+            <button type="button" class="hide-stack btn btn-success mb-2">
               <i class="fa-solid fa-eye-slash"></i>&nbsp;&nbsp;Hide Stack
             </button>
           </div>
         </div>
         <div class="modal-footer border-top-0">
-          <button type="button" class="show-stack btn btn-success btn-sm">
+          <button type="button" class="show-stack btn btn-success">
             <i class="fa-solid fa-layer-group"></i>&nbsp;&nbsp;Stack?
           </button>
           <button
             type="button"
             id="clear-error"
-            class="clear-error btn btn-success btn-sm"
+            class="clear-error btn btn-success"
           >
             <i class="fa-solid fa-xmark"></i>&nbsp;&nbsp;Clear
           </button>
