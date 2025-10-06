@@ -334,14 +334,6 @@ Template.dateRange.onRendered(function () {
 });
 
 Template.dateRange.events({
-  "click, blur"(event) {
-    try {
-      const text = event.currentTarget.value;
-      matsParamUtils.setValueTextForParamName(event.target.name, text);
-    } catch (error) {
-      matsParamUtils.setValueTextForParamName(event.target.name, "");
-    }
-  },
   change(event) {
     try {
       const text = event.currentTarget.value;
