@@ -17,12 +17,11 @@ Package.describe({
 });
 
 Package.onUse(function (api) {
-  api.versionsFrom("3.3");
+  api.versionsFrom("3.3.2");
   Npm.depends({
     // ******* npm packages
 
     // core functionality packages
-    "meteor-node-stubs": "1.2.22",
     "fs-extra": "11.3.2",
 
     // things to do with querying
