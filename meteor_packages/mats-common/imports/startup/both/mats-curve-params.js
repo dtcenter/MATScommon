@@ -1,5 +1,24 @@
 // eslint-disable-next-line no-undef, import/prefer-default-export
 export const curveParamsByApp = {
+  airQuality: [
+    "label",
+    "variable",
+    "region-type",
+    "data-source",
+    "region",
+    "statistic",
+    "threshold",
+    "scale",
+    "forecast-length",
+    "dieoff-type",
+    "valid-time",
+    "utc-cycle-start",
+    "average",
+    "sites",
+    "sitesMap",
+    "bin-parameter",
+    "curve-dates",
+  ],
   "cb-metar": [
     "label",
     "plot-type",
