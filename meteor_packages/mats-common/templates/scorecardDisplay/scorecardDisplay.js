@@ -517,11 +517,14 @@ Template.scorecardDisplay.helpers({
   },
 
   Title() {
-    let processedAtstamp = "unprocessed";
+    return `${this.name}`;
+  },
+  subTitle() {
+    let processedAtStamp = "unprocessed";
     if (Number(this.processedAt) !== 0) {
-      processedAtstamp = new Date(this.processedAt * 1000).toUTCString();
+      processedAtStamp = new Date(this.processedAt * 1000).toUTCString();
     }
-    return `${this.userName} : ${this.name} : ${processedAtstamp}`;
+    return `Processing complete at ${processedAtStamp}`;
   },
   fileNamePlaceholder() {
     const x = new Date(this.submitted * 1000);

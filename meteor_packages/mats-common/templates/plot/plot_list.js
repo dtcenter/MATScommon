@@ -459,12 +459,12 @@ Template.plotList.events({
         if (sec.length === 1) {
           sec = `0${sec}`;
         }
-        submitTime = y + m + d + h + min + sec;
+        submitTime = `${y}-${m}-${d} ${h}:${min}:${sec}`;
         // stash the submit epoch in the params
         p.submitEpoch = Math.floor(x.getTime() / 1000);
         p[
           "scorecard-name"
-        ] = `${p.userName}--submitted:${submitTime}--${p.curves.length}block`;
+        ] = `${p["name-this-scorecard"]} -- ${p.userName} -- submitted: ${submitTime}`;
         matsMethods.getGraphData
           .callAsync({ plotParams: p, plotType: pt, expireKey })
           .then(function (ret) {
