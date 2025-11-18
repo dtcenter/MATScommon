@@ -11,11 +11,12 @@ import { Meteor } from "meteor/meteor";
 import { matsMethods, matsCollections } from "meteor/randyp:mats-common";
 import "./scorecardDisplay.html";
 import { Template } from "meteor/templating";
+// eslint-disable-next-line import/no-unresolved
+import { LightenDarkenColor } from "lighten-darken-color";
 
 /* global Session, $, setError */
 
 const html2canvas = require("html2canvas");
-const LightenDarkenColor = require("lighten-darken-color");
 const hash = require("object-hash");
 
 const getTableCellId = function (
