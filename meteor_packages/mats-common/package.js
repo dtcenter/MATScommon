@@ -222,9 +222,6 @@ Package.onUse(function (api) {
   api.addFiles("templates/params/plot_param_group.html", "client");
   api.addFiles("templates/params/plot_param_group.js", "client");
 
-  api.addFiles("templates/params/scorecard_param_list.html", "client");
-  api.addFiles("templates/params/scorecard_param_list.js", "client");
-
   api.addFiles("templates/plot/plot_list.html", "client");
   api.addFiles("templates/plot/plot_list.js", "client");
 

@@ -26,15 +26,28 @@
       {{else}}
       <div class="btn-group mx-1 mt-4">
         <button type="submit" name="add" id="add" class="btn btn-success">
-          <i class="fa-solid fa-plus"></i>&nbsp;&nbsp;Add Curve</button
-        ><button
+          <i class="fa-solid fa-plus"></i>&nbsp;&nbsp;{{addButtonText}}
+        </button>
+        {{#if isScorecard}}
+        <button
+          type="button"
+          name="displayStatus"
+          id="display-status"
+          class="display-status btn btn-success"
+        >
+          <i class="fa-solid fa-list-check"></i>&nbsp;&nbsp;Scorecards Status
+        </button>
+        {{else}}
+        <button
           type="button"
           name="restore"
           id="restore"
           class="restore-settings btn btn-success"
         >
-          <i class="fa-solid fa-cloud-arrow-up"></i>&nbsp;&nbsp;Restore Settings</button
-        ><button type="button" name="reset" id="reset" class="reset btn btn-success">
+          <i class="fa-solid fa-cloud-arrow-up"></i>&nbsp;&nbsp;Restore Settings
+        </button>
+        {{/if}}
+        <button type="button" name="reset" id="reset" class="reset btn btn-success">
           <i class="fa-solid fa-rotate"></i>&nbsp;&nbsp;Reset to Defaults
         </button>
       </div>

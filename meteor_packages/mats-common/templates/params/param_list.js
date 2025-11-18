@@ -15,6 +15,18 @@ import { Template } from "meteor/templating";
 /* global Session, $, _, setError */
 /* eslint-disable no-console */
 
+function shadeRGBColor(color, percent) {
+  const f = color.split(",");
+  const t = percent < 0 ? 0 : 255;
+  const p = percent < 0 ? percent * -1 : percent;
+  const R = parseInt(f[0].slice(4), 10);
+  const G = parseInt(f[1], 10);
+  const B = parseInt(f[2], 10);
+  return `rgb(${Math.round((t - R) * p) + R},${Math.round((t - G) * p) + G},${
+    Math.round((t - B) * p) + B
+  })`;
+}
+
 Template.paramList.helpers({
   CurveParamGroups() {
     Session.get("lastUpdate");
@@ -37,6 +49,35 @@ Template.paramList.helpers({
   },
   log() {
     console.log(this);
+  },
+  paramWellColor() {
+    if (Session.get("paramWellColor") === undefined) {
+      Session.set("paramWellColor", "#ffffff");
+    }
+    if (Session.get("editMode") !== "") {
+      const curveBeingEdited = $.grep(Session.get("Curves"), function (c) {
+        return c.label === Session.get("editMode");
+      });
+      if (curveBeingEdited === undefined || curveBeingEdited[0] === undefined) {
+        Session.set("paramWellColor", "#ffffff");
+        return "#ffffff";
+      }
+      const { color } = curveBeingEdited[0];
+      const lighterShadeOfColor = shadeRGBColor(color, 0.2);
+      Session.set("paramWellColor", lighterShadeOfColor);
+    }
+
+    return Session.get("paramWellColor");
+  },
+  addButtonText() {
+    const isScorecard = matsCollections.Settings.findOne({}).scorecard;
+    if (isScorecard) {
+      return "Add Block";
+    }
+    return "Add Curve";
+  },
+  isScorecard() {
+    return matsCollections.Settings.findOne({}).scorecard;
   },
 });
 
@@ -92,7 +133,7 @@ Template.paramList.events({
     const curves = Session.get("Curves");
     const p = {};
     const elems = event.target.valueOf().elements;
-    const curveNames = matsCollections.CurveParamsInfo.findOne().curve_params;
+    const curveNames = matsCollections.CurveParamsInfo.findOne({}).curve_params;
     const dateParamNames = [];
     let param;
     // remove any hidden params (not unused ones  -= 1 unused is a valid state)
@@ -103,12 +144,25 @@ Template.paramList.events({
       if (param.type === matsTypes.InputTypes.dateRange) {
         dateParamNames.push(cname);
       }
+      if (matsCollections.Settings.findOne({}).scorecard) {
+        const ctlElem = document.getElementById(`${cname}-item`);
+        const isHidden =
+          (matsParamUtils.getInputElementForParamName(cname) &&
+            matsParamUtils.getInputElementForParamName(cname).style &&
+            matsParamUtils.getInputElementForParamName(cname).style.display ===
+              "none") ||
+          (ctlElem && ctlElem.style && ctlElem.style.display === "none");
+        if (isHidden && cname !== "plot-type" && cname !== "phase") {
+          // MET apps have a hidden plot-type selector that needs to be included in the curve
+          // phase needs to be preserved in the raobamdar app
+          curveNames.splice(cindex, 1);
+        }
+      }
     }
 
     // remove any hidden date params or unused ones
     // iterate backwards so that we can splice to remove
-    // dates are a little different - there is no element named paramName-paramtype
-    // because of the way daterange widgets are attached ( -= 1There is now but this still works -= 1)
+    // dates are a little different - there is no element named paramName-paramtype because of the way daterange widgets are attached
     // Instead we have to look for a document element with an id element-paramName
     for (let dindex = dateParamNames.length - 1; dindex >= 0; dindex -= 1) {
       const dElem = document.getElementById(`${dateParamNames[dindex]}-item`);
