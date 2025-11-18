@@ -93,15 +93,17 @@ Template.scorecardStatusPage.helpers({
       : Object.keys(Session.get("updateStatusPage")[userName][name][submitted]).sort();
   },
   status(userName, name, submitted, processedAt) {
-    return Session.get("updateStatusPage") === undefined ||
+    return !Session.get("updateStatusPage") ||
+      !Session.get("updateStatusPage")[userName][name][submitted][processedAt] ||
       typeof Session.get("updateStatusPage") === "number"
       ? ""
       : Session.get("updateStatusPage")[userName][name][submitted][processedAt].status;
   },
   statusType(userName, name, submitted, processedAt) {
     if (
-      Session.get("updateStatusPage") !== undefined &&
+      Session.get("updateStatusPage") &&
       typeof Session.get("updateStatusPage") !== "number" &&
+      Session.get("updateStatusPage")[userName][name][submitted][processedAt] &&
       Session.get("updateStatusPage")[userName][name][submitted][processedAt].status ===
         "Pending"
     ) {
