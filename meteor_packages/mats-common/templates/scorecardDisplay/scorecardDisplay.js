@@ -558,10 +558,6 @@ Template.scorecardDisplay.events({
     refreshScorecard(this.userName, this.name, this.submitted, this.processedAt);
   },
   "click .exportpng"() {
-    $(".previewCurveButtons").each(function (i, obj) {
-      // eslint-disable-next-line no-param-reassign
-      obj.style.display = "none";
-    });
     function saveAs(uri, filename) {
       const link = document.createElement("a");
       if (typeof link.download === "string") {
@@ -580,15 +576,11 @@ Template.scorecardDisplay.events({
         window.open(uri);
       }
     }
-    html2canvas(document.querySelector("#graph-container"), {
+    html2canvas(document.querySelector("#scorecard-display-container"), {
       scale: 3.0,
     }).then((canvas) => {
       const filename = document.getElementById("exportFileName").value;
       saveAs(canvas.toDataURL(), `${filename}.png`);
-      $(".previewCurveButtons").each(function (i, obj) {
-        // eslint-disable-next-line no-param-reassign
-        obj.style.display = "block";
-      });
     });
   },
 
