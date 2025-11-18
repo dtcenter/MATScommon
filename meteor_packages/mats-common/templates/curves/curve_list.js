@@ -15,6 +15,14 @@ import { Template } from "meteor/templating";
 /* eslint-disable no-console */
 
 Template.curveList.helpers({
+  displayScorecardStatus() {
+    // don't allow plotting when editing
+    const mode = Session.get("editMode");
+    if (mode === undefined || mode === "") {
+      return "block";
+    }
+    return "none";
+  },
   displayPlotUnMatched() {
     // don't allow plotting when editing
     const mode = Session.get("editMode");
@@ -192,6 +200,15 @@ Template.curveList.events({
   "click .confirm-remove-all"() {
     Session.set("confirmRemoveAll", Date.now());
     $("#remove-all").trigger("click");
+  },
+  "click .submitScorecard"(event) {
+    document.getElementById("spinner").style.display = "block";
+    matsPlotUtils.disableActionButtons();
+    event.preventDefault();
+    // trigger the submit-params event (plot-curves) on plot_list.js - click plot-curves
+    Session.set("plotParameter", matsTypes.PlotActions.scorecard);
+    document.getElementById("plot-curves").click();
+    return false;
   },
   "click .plot-curves-unmatched"(event) {
     document.getElementById("spinner").style.display = "block";
