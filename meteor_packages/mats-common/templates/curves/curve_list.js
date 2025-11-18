@@ -132,6 +132,30 @@ Template.curveList.helpers({
     }
     return Session.get("matchName");
   },
+  removeAllLabelText() {
+    const isScorecard = matsCollections.Settings.findOne({}).scorecard;
+    if (isScorecard) {
+      return "Remove all blocks?";
+    }
+    return "Remove all curves?";
+  },
+  removeAllText() {
+    const isScorecard = matsCollections.Settings.findOne({}).scorecard;
+    if (isScorecard) {
+      return "Are you sure you want to remove all the blocks?";
+    }
+    return "Are you sure you want to remove all the curves?";
+  },
+  removeAllButtonText() {
+    const isScorecard = matsCollections.Settings.findOne({}).scorecard;
+    if (isScorecard) {
+      return "Remove all the blocks";
+    }
+    return "Remove all the curves";
+  },
+  isScorecard() {
+    return matsCollections.Settings.findOne({}).scorecard;
+  },
 });
 
 /*

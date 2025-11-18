@@ -11,7 +11,7 @@
       <div class="modal-content bg-white pt-3">
         <div class="modal-header border-bottom-0">
           <h2 id="removeAllModalLabel" class="modal-title text-dark-blue">
-            Remove all curves?
+            {{removeAllLabelText}}
           </h2>
           <button
             type="button"
@@ -21,7 +21,7 @@
           ></button>
         </div>
         <div class="modal-body h-50">
-          <h5 style="color: black">Are you sure you want to remove all the curves?</h5>
+          <h5 style="color: black">{{removeAllText}}</h5>
         </div>
         <div class="modal-footer border-top-0">
           <button
@@ -38,7 +38,7 @@
             class="btn btn-danger confirm-remove-all"
             data-bs-dismiss="modal"
           >
-            Remove all the curves
+            {{removeAllButtonText}}
           </button>
         </div>
       </div>
@@ -50,7 +50,23 @@
     class="well-sm clearfix col-lg-12 my-2 mx-2"
     style="display:{{displayCurves}}; width: 90%;"
   >
-    {{#each curves}} {{> curveItem this}} {{/each}}
+    {{#each curves}} {{> curveItem this}} {{/each}} {{#if isScorecard}}
+    <div class="clearfix btn-toolbar gap-2 well well-sm">
+      <button id="remove-all" class="remove-all btn btn-danger">
+        <i class="fa-solid fa-xmark"></i>&nbsp;&nbsp;Remove All
+      </button>
+      <button
+        type="button"
+        name="submitScorecard"
+        id="submitScorecard"
+        class="submitScorecard btn btn-success"
+        style="display:{{displaySubmitScorecard}};"
+      >
+        <i class="fa-solid fa-diagram-project"></i> Submit Scorecard
+      </button>
+      <button type="button" class="btn spacebutton" id="cl-spacer"></button>
+    </div>
+    {{else}}
     <div class="clearfix btn-toolbar gap-2 well well-sm">
       <button id="remove-all" class="remove-all btn btn-danger">
         <i class="fa-solid fa-xmark"></i>&nbsp;&nbsp;Remove All
@@ -99,5 +115,6 @@
         >
       </div>
     </div>
+    {{/if}}
   </div>
 </template>

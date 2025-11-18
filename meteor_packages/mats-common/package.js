@@ -192,9 +192,6 @@ Package.onUse(function (api) {
   api.addFiles("templates/curves/curve_param_item_group.html", "client");
   api.addFiles("templates/curves/curve_param_item_group.js", "client");
 
-  api.addFiles("templates/curves/scorecard_curve_list.html", "client");
-  api.addFiles("templates/curves/scorecard_curve_list.js", "client");
-
   api.addFiles("templates/error/error.html", "client");
   api.addFiles("templates/error/error.js", "client");
 
