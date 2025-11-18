@@ -170,8 +170,6 @@ Package.onUse(function (api) {
   // templates
   api.addFiles("templates/home.html", "client");
   api.addFiles("templates/home.js", "client");
-  api.addFiles("templates/scorecardHome.html", "client");
-  api.addFiles("templates/scorecardHome.js", "client");
   api.addFiles("templates/customHome.html", "client");
   api.addFiles("templates/customHome.js", "client");
   api.addFiles("templates/configure.html", "client");

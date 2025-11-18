@@ -9,8 +9,11 @@
       </div>
       {{>about}} {{#if Template.subscriptionsReady}} {{#if isUnderConstruction}}
       <div class="row">{{>underConstruction}}</div>
+      {{else}} {{#if isScorecard}}
+      <div class="row" id="plotTypeContainer" hidden>{{>plotType}}</div>
       {{else}}
       <div class="row" id="plotTypeContainer">{{>plotType}}</div>
+      {{/if}}
       <div class="row">{{>changePlotType}}</div>
       <div class="row">{{>curveList}}</div>
       <div class="row">{{>error}} {{>info}}</div>
@@ -20,7 +23,15 @@
       <div class="fs-3 text-center text-info-emphasis">Loading app metadata...</div>
       {{/if}}
     </div>
+    {{#if isScorecard}}
+    <div>{{>scorecardStatusPage}}</div>
+    <div>
+      {{! there is no graph on a scorecard but this is here }} {{! to make scorecard
+      play well with other common code}} {{>graph}}
+    </div>
+    {{else}}
     <div>{{>graph}}</div>
+    {{/if}}
   </main>
   {{>footer}}
 </template>

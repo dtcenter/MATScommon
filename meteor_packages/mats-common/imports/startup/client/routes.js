@@ -12,9 +12,7 @@ import { FlowRouter } from "meteor/ostrio:flow-router-extra";
 FlowRouter.route("/", {
   name: "main",
   action() {
-    if (Meteor.settings.public.scorecard) {
-      this.render("scorecardHome");
-    } else if (Meteor.settings.public.custom) {
+    if (Meteor.settings.public.custom) {
       this.render("customHome");
     } else if (
       Meteor.settings.public.undefinedRoles !== undefined &&
