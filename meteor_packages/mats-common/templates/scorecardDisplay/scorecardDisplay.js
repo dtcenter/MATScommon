@@ -295,7 +295,7 @@ Template.scorecardDisplay.helpers({
     for (let i = 0; i < fcstLength; i += 1) {
       myFcstLengths[i] = (Number(myFcstlenStrs[i]) < 10 ? "0" : "") + myFcstlenStrs[i];
     }
-    return myFcstLengths.sort();
+    return myFcstLengths.sort((a, b) => Number(a) - Number(b));
   },
   numFcsts(blockName) {
     const myScorecard = Session.get("myScorecard");
