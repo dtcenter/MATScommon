@@ -265,7 +265,9 @@ Template.curveParamItemGroup.helpers({
       if (
         curve !== undefined &&
         curve[visibilityControllingParam.name] !== undefined &&
-        hideOtherFor.indexOf(curve[visibilityControllingParam.name]) !== -1
+        hideOtherFor.indexOf(curve[visibilityControllingParam.name]) !== -1 &&
+        (matsParamUtils.isParamVisible(visibilityControllingParam.name) ||
+          visibilityControllingParam.name === "plot-type")
       ) {
         thisElem.purposelyHidden = true;
         return "none";
