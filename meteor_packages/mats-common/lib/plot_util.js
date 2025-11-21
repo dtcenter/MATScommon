@@ -59,7 +59,12 @@ const getCurveText = async function (plotType, curve) {
 
   for (let i = 0; i < curveTextPattern.length; i += 1) {
     const a = curveTextPattern[i];
-    if (a !== undefined && a !== null && curve[a[1]] !== undefined) {
+    if (
+      a &&
+      curve[a[1]] &&
+      curve.visibleParams &&
+      curve.visibleParams.indexOf(a[1]) !== -1
+    ) {
       text += a[0];
       if (curve[a[1]] instanceof Array && curve[a[1]].length > 2) {
         text += `${curve[a[1]][0]}..${curve[a[1]][curve[a[1]].length - 1]}`;
@@ -81,7 +86,12 @@ const getCurveTextWrapping = async function (plotType, curve) {
   let wrapLimit = 40;
   for (let i = 0; i < curveTextPattern.length; i += 1) {
     const a = curveTextPattern[i];
-    if (a !== undefined && a !== null && curve[a[1]] !== undefined) {
+    if (
+      a &&
+      curve[a[1]] &&
+      curve.visibleParams &&
+      curve.visibleParams.indexOf(a[1]) !== -1
+    ) {
       text += a[0];
       if (curve[a[1]] instanceof Array && curve[a[1]].length > 2) {
         text += `${curve[a[1]][0]}..${curve[a[1]][curve[a[1]].length - 1]}`;

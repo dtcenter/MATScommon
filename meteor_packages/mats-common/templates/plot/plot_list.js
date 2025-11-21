@@ -207,9 +207,28 @@ Template.plotList.events({
     }
     p.curves = [];
     p.plotAction = plotAction;
-    curves.forEach(function (curve) {
+    for (let cidx = 0; cidx < curves.length; cidx += 1) {
+      const curve = curves[cidx];
+      const curveParams = Object.keys(curve);
+      if (action === "plot" && curveParams.length > 0) {
+        const visibleParams = [];
+        curveParams.forEach(function (curveParam) {
+          if (
+            curveParam.toUpperCase() === "LABEL" ||
+            (document.getElementById(
+              `${curveParam.toUpperCase()}-curve-${cidx}-Button`
+            ) &&
+              document.getElementById(
+                `${curveParam.toUpperCase()}-curve-${cidx}-Button`
+              ).style.display === "block")
+          ) {
+            visibleParams.push(curveParam);
+          }
+        });
+        curve.visibleParams = visibleParams;
+      }
       p.curves.push(curve);
-    });
+    }
     matsCollections.PlotParams.find({})
       .fetch()
       .forEach(function (plotParam) {
