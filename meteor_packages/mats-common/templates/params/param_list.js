@@ -16,15 +16,15 @@ import { Template } from "meteor/templating";
 /* eslint-disable no-console */
 
 function shadeRGBColor(color, percent) {
-  const f = color.split(",");
-  const t = percent < 0 ? 0 : 255;
-  const p = percent < 0 ? percent * -1 : percent;
-  const R = parseInt(f[0].slice(4), 10);
-  const G = parseInt(f[1], 10);
-  const B = parseInt(f[2], 10);
-  return `rgb(${Math.round((t - R) * p) + R},${Math.round((t - G) * p) + G},${
-    Math.round((t - B) * p) + B
-  })`;
+  const rgbComponents = color.split(",");
+  const maxBlackOrMaxWhite = percent < 0 ? 0 : 255;
+  const scalingFactor = percent < 0 ? percent * -1 : percent;
+  const red = parseInt(rgbComponents[0].slice(4), 10);
+  const green = parseInt(rgbComponents[1], 10);
+  const blue = parseInt(rgbComponents[2], 10);
+  return `rgb(${Math.round((maxBlackOrMaxWhite - red) * scalingFactor) + red},${
+    Math.round((maxBlackOrMaxWhite - green) * scalingFactor) + green
+  },${Math.round((maxBlackOrMaxWhite - blue) * scalingFactor) + blue})`;
 }
 
 Template.paramList.helpers({
