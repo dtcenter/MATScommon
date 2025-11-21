@@ -177,6 +177,9 @@ const setInputForParamName = function (paramName, value) {
   // SHOULD DEAL WITH CHECKBOXES HERE
   if (param.type === matsTypes.InputTypes.radioGroup) {
     $(`#${id}-${value}`).prop("checked", true);
+  } else if (elem.type === "select-multiple") {
+    $(`#${id}`).val(value);
+    setValueTextForParamName(paramName, value);
   } else if (elem && elem.value !== value) {
     elem.value = value;
     setValueTextForParamName(paramName, value);
