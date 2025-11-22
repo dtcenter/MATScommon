@@ -177,7 +177,7 @@ const setInputForParamName = function (paramName, value) {
   // SHOULD DEAL WITH CHECKBOXES HERE
   if (param.type === matsTypes.InputTypes.radioGroup) {
     $(`#${id}-${value}`).prop("checked", true);
-  } else if (elem.type === "select-multiple") {
+  } else if (elem && elem.type === "select-multiple") {
     $(`#${id}`).val(value);
     setValueTextForParamName(paramName, value);
   } else if (elem && elem.value !== value) {
@@ -460,8 +460,7 @@ const isControlButtonVisible = function (paramName) {
 
 const setInputValueForParamAndTriggerChange = function (paramName, value) {
   const elem = getInputElementForParamName(paramName);
-  elem.value = value;
-  setValueTextForParamName(paramName, elem.value);
+  setInputForParamName(paramName, value);
   $(elem).trigger("change");
 };
 
