@@ -349,7 +349,7 @@ const generateSeriesCurveOptions = async function (
 
   // if threshold, determine x-axis units
   if (appParams.plotType === matsTypes.PlotTypes.threshold) {
-    const { database } = curve;
+    const database = curve.database ? curve.database : curve.variable;
     const { thresholdUnits } = await matsCollections.Settings.findOneAsync({});
     if (thresholdUnits === undefined || Object.keys(thresholdUnits).length === 0) {
       curveOptions.thresholdAxisUnits = "";
