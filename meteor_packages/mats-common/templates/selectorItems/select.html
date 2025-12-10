@@ -1,6 +1,6 @@
 <template name="select">
-  {{#if isMultiple}}
   <div>
+    {{#if isMultiple}}
     <div class="btn-group btn-group-sm">
       <button
         type="button"
@@ -27,36 +27,17 @@
     <div class="bg-white" style="font-size: smaller">
       Use ctrl + click (PC) or cmnd + click (Mac) to select multiple values.
     </div>
-    <div>
-      <select
-        class="data-input form-select bg-white fs-6 {{name}}"
-        name="{{name}}"
-        id="{{name}}-{{type}}"
-        size="10"
-        aria-label="{{name}} options"
-        {{multiple}}
-      >
-        <option initial>initial</option>
-      </select>
-    </div>
+    {{/if}}
   </div>
-  {{else}}
-  <div class="usa-form-group m-0 width-mobile-lg">
-    <label class="usa-label fs-6 pt-1 width-mobile-lg" for="{{name}}-{{type}}"
-      >Type into the textbox directly below this message to filter {{name}}
-      options</label
+  <div>
+    <select
+      class="data-input form-select bg-white fs-6 {{name}}"
+      name="{{name}}"
+      id="{{name}}-{{type}}"
+      aria-label="{{name}} options"
+      {{multiple}}
     >
-    <div class="usa-combo-box width-mobile-lg">
-      <select
-        class="data-input usa-select {{name}}"
-        name="{{name}}"
-        id="{{name}}-{{type}}"
-        aria-label="{{name}} options"
-        {{multiple}}
-      >
-        <option value="initial">initial</option>
-      </select>
-    </div>
+      <option initial>initial</option>
+    </select>
   </div>
-  {{/if}}
 </template>
