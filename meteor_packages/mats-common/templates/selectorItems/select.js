@@ -9,6 +9,8 @@ import {
   matsSelectUtils,
 } from "meteor/randyp:mats-common";
 import { Template } from "meteor/templating";
+// eslint-disable-next-line import/no-unresolved
+import UseBootstrapSelect from "use-bootstrap-select";
 
 /* global Session, $, setError */
 
@@ -38,11 +40,11 @@ Template.select.onRendered(function () {
     e.message = `Error in select.js rendered function checking to hide or disable other elements: ${e.message}`;
     setError(e);
   }
-
-  /*
-  Some parts of the USWDS combo boxes are broken with Blaze, so this 
-  hacky nonsense lets them work for our purposes.
-  */
+  // initialize comboboxes
+  // eslint-disable-next-line no-unused-vars
+  const selector = new UseBootstrapSelect(
+    matsParamUtils.getInputElementForParamName(this.data.name)
+  );
 });
 
 Template.select.helpers({
