@@ -167,12 +167,6 @@ Template.plotList.events({
   },
 
   // catch a click on a diff plotFormat radio button.
-  "click .data-input"() {
-    const formats = Object.keys(matsTypes.PlotFormats);
-    if ($.inArray(this.toString(), formats) !== -1) {
-      matsCurveUtils.checkDiffs();
-    }
-  },
   "click .restore-from-private"() {
     document.getElementById("restore_from_public").value = "";
   },

@@ -254,14 +254,7 @@ Template.item.events({
     return null;
   },
   "click .data-input"() {
-    Session.set("elementChanged", Date.now());
-    if (this.displayPriority !== undefined) {
-      Session.set("displayPriority", this.displayPriority + 1);
-    }
-    const formats = Object.keys(matsTypes.PlotFormats);
-    if ($.inArray(this, formats) !== -1) {
-      Session.set("diffStatus", this);
-    }
+    matsSelectUtils.generalDataInputClickEvent();
   },
   "change .data-input"(event) {
     Session.set("elementChanged", Date.now());

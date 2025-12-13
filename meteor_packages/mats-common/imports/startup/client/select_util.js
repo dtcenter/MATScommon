@@ -6,6 +6,7 @@ import {
   matsCollections,
   matsParamUtils,
   matsPlotUtils,
+  matsCurveUtils,
   matsTypes,
 } from "meteor/randyp:mats-common";
 
@@ -641,10 +642,23 @@ const refresh = function (event, paramName) {
   refreshDependents(event, param);
 }; // refresh function
 
+const generalDataInputClickEvent = function () {
+  Session.set("elementChanged", Date.now());
+  if (this.displayPriority !== undefined) {
+    Session.set("displayPriority", this.displayPriority + 1);
+  }
+  const formats = Object.keys(matsTypes.PlotFormats);
+  if ($.inArray(this.toString(), formats) !== -1) {
+    Session.set("diffStatus", this);
+    matsCurveUtils.checkDiffs();
+  }
+};
+
 // eslint-disable-next-line no-undef
 export default matsSelectUtils = {
   refresh,
   refreshDependents,
   checkDisableOther,
   checkHideOther,
+  generalDataInputClickEvent,
 };

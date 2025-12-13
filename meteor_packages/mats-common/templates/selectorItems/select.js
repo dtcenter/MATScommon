@@ -50,6 +50,10 @@ Template.select.onRendered(function () {
         // event that responds when custom "refresh" events are issued for individual selectors
         matsSelectUtils.refresh(event, this.name);
       });
+      elem.addEventListener("click", function () {
+        // event that responds when the item is clicked
+        matsSelectUtils.generalDataInputClickEvent();
+      });
       elem.addEventListener("change", function (event) {
         // event that responds when the <select> underlying a selector changes
         Session.set("elementChanged", Date.now());
@@ -78,6 +82,7 @@ Template.select.onRendered(function () {
             // update difference curves if necessary
             matsCurveUtils.checkDiffs();
           }
+          // $("#save").trigger("click");
           document.getElementById(`element-${paramName}`).style.display = "none"; // be sure to hide the element div
           Session.set("lastUpdate", Date.now());
         }
