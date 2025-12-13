@@ -92,6 +92,9 @@ Template.dateRange.onRendered(function () {
   $(function () {
     $(`#${idref}`).daterangepicker(dateRangeOptions(idref, startInit, stopInit));
     matsParamUtils.setValueTextForParamName(name, dstr);
+    if (elem && elem.style && elem.style.display === "block") {
+      elem.style.display = "none";
+    }
   });
 
   $(`#${idref}`).on("apply.daterangepicker", function (ev, picker) {
