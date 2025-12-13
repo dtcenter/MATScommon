@@ -13,52 +13,12 @@ import { Template } from "meteor/templating";
 import UseBootstrapSelect from "use-bootstrap-select";
 
 /* global Session, $, setError */
+global.selectorHandlers = {};
 
 /*
     Much of the work for select widgets happens in mats-common->imports->client->select_util.js. Especially the refresh
     routine which sets all the options. Don't forget to look there for much of the handling.
  */
-Template.select.onRendered(function () {
-  const elem = matsParamUtils.getInputElementForParamName(this.data.name);
-  try {
-    elem.options = [];
-    if (elem) {
-      elem.addEventListener("refresh", function (event) {
-        // if the sellector changes we need to update both it and any dependents
-        matsSelectUtils.refresh(event, this.name);
-      });
-    }
-  } catch (e) {
-    e.message = `Error in select.js rendered: ${e.message}`;
-    setError(e);
-  }
-  try {
-    // do initial refresh of all selectors and dependents
-    matsSelectUtils.checkHideOther(this.data, true); // calls checkDisable
-    matsSelectUtils.refresh(null, this.data.name);
-  } catch (e) {
-    e.message = `Error in select.js rendered function checking to hide or disable other elements: ${e.message}`;
-    setError(e);
-  }
-  // initialize comboboxes
-  // eslint-disable-next-line no-unused-vars
-  const selector = new UseBootstrapSelect(
-    matsParamUtils.getInputElementForParamName(this.data.name)
-  );
-});
-
-Template.select.helpers({
-  multiple() {
-    if (this.multiple === true) {
-      return "multiple";
-    }
-    return null;
-  },
-  isMultiple() {
-    return this.multiple === true;
-  },
-});
-
 const setValue = function (pName) {
   const elem = matsParamUtils.getInputElementForParamName(pName);
   const { selectedOptions } = elem;
@@ -81,39 +41,87 @@ const setValue = function (pName) {
   }
 };
 
-Template.select.events({
-  "change .data-input"(event) {
-    Session.set("elementChanged", Date.now());
-    const paramName = event.target.name;
-    if (paramName) {
-      // These need to be done in the right order!
-      // always check to see if an "other" needs to be hidden or disabled before refreshing
-      matsSelectUtils.checkHideOther(this, false);
-      // if we're editing a curve with this change, update the curve
-      const curveItem = document.getElementById(`curveItem-${Session.get("editMode")}`);
-      if (curveItem) {
-        curveItem.scrollIntoView(false);
-      }
-      // update value text on the selctor button
-      setValue(paramName);
-      if (this.multiple) {
-        // prevents the selector from closing on multiple selectors
-        return true;
-      }
-      matsSelectUtils.refreshDependents(event, this);
-      if (this.name === "plotFormat") {
-        // update difference curves if necessary
-        matsCurveUtils.checkDiffs();
-      }
-      document.getElementById(`element-${paramName}`).style.display = "none"; // be sure to hide the element div
-      Session.set("lastUpdate", Date.now());
+Template.select.onRendered(function () {
+  const elem = matsParamUtils.getInputElementForParamName(this.data.name);
+  try {
+    elem.options = [];
+    if (elem) {
+      elem.addEventListener("refresh", function (event) {
+        // event that responds when custom "refresh" events are issued for individual selectors
+        matsSelectUtils.refresh(event, this.name);
+      });
+      elem.addEventListener("change", function (event) {
+        // event that responds when the <select> underlying a selector changes
+        Session.set("elementChanged", Date.now());
+        const paramName = event.target.name;
+        if (paramName) {
+          // These need to be done in the right order!
+          const param = matsParamUtils.getParameterForName(paramName);
+          // Always check to see if a dependent selector
+          // needs to be hidden or disabled before refreshing
+          matsSelectUtils.checkHideOther(param, false);
+          // if we're editing a curve with this change, update the curve
+          const curveItem = document.getElementById(
+            `curveItem-${Session.get("editMode")}`
+          );
+          if (curveItem) {
+            curveItem.scrollIntoView(false);
+          }
+          // update value text on the selctor button
+          setValue(paramName);
+          if (param.multiple) {
+            // prevents the selector from closing on multiple selectors
+            return true;
+          }
+          matsSelectUtils.refreshDependents(event, param);
+          if (param.name === "plotFormat") {
+            // update difference curves if necessary
+            matsCurveUtils.checkDiffs();
+          }
+          document.getElementById(`element-${paramName}`).style.display = "none"; // be sure to hide the element div
+          Session.set("lastUpdate", Date.now());
+        }
+        return false;
+      });
     }
-    return false;
+  } catch (e) {
+    e.message = `Error in select.js rendered: ${e.message}`;
+    setError(e);
+  }
+  try {
+    // do initial refresh of all selectors and dependents
+    matsSelectUtils.checkHideOther(this.data, true); // calls checkDisable
+    matsSelectUtils.refresh(null, this.data.name);
+  } catch (e) {
+    e.message = `Error in select.js rendered function checking to hide or disable other elements: ${e.message}`;
+    setError(e);
+  }
+  // initialize comboboxes
+  const selector = new UseBootstrapSelect(elem);
+  const selectorKey = matsParamUtils.getInputIdForParam(
+    matsParamUtils.getParameterForName(this.data.name)
+  );
+  // make the combobox handles globally available so that the whole client can use them.
+  global.selectorHandlers[selectorKey] = selector;
+});
+
+Template.select.helpers({
+  multiple() {
+    if (this.multiple === true) {
+      return "multiple";
+    }
+    return null;
   },
+  isMultiple() {
+    return this.multiple === true;
+  },
+});
+
+Template.select.events({
   "click .doneSelecting"() {
     Session.set("elementChanged", Date.now());
     const controlElem = matsParamUtils.getControlElementForParamName(this.name);
-    $(controlElem).trigger("click").trigger("change"); // close the selector and fire an event to apply changes
+    $(controlElem).trigger("click"); // close the selector and fire an event to apply changes
     if (
       this.name === "sites" &&
       matsParamUtils.getInputElementForParamName("sitesMap")
@@ -141,12 +149,12 @@ Template.select.events({
       values.push(elem.options[i].text);
     }
     // assign all of the values to the selector
-    $(`#${this.name}-${this.type}`).val(values).trigger("change");
+    global.selectorHandlers[`${this.name}-${this.type}`].setValue(values);
     return false;
   },
   "click .clearSelections"() {
-    // make selected values null
-    $(`#${this.name}-${this.type}`).val(null).trigger("change");
+    global.selectorHandlers[`${this.name}-${this.type}`].clearValue();
+    global.selectorHandlers[`${this.name}-${this.type}`].show();
     return false;
   },
   "change, blur .item"(event) {

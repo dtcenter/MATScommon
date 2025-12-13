@@ -22,6 +22,7 @@ const refreshDependents = function (event, param) {
         const name = dependentNames[i];
         const targetParam = matsParamUtils.getParameterForName(name);
         const targetElem = matsParamUtils.getInputElementForParamName(targetParam.name);
+        const targetID = matsParamUtils.getInputIdForParam(targetParam);
         try {
           if (
             !(
@@ -52,6 +53,9 @@ const refreshDependents = function (event, param) {
             if (_.indexOf(previouslySelected, targetOptions[i2].text) !== -1) {
               targetOptions[i2].selected = select;
             }
+          }
+          if (global.selectorHandlers[targetID]) {
+            global.selectorHandlers[targetID].update();
           }
         }
       }
@@ -517,6 +521,13 @@ const refresh = function (event, paramName) {
         optionsAsString += "</optgroup>";
       }
       $(`select[name="${name}"]`).empty().append(optionsAsString);
+      const selectorID = matsParamUtils.getInputIdForParam(
+        matsParamUtils.getParameterForName(name)
+      );
+      if (global.selectorHandlers[selectorID]) {
+        global.selectorHandlers[selectorID].update();
+      }
+
       // reset the selected index if it had been set prior (the list may have changed so the index may have changed)
       let selectedOptionIndex;
       let selectedOptionOverlap = [];
@@ -614,6 +625,10 @@ const refresh = function (event, paramName) {
             elem.options[elem.selectedIndex].text
           );
         }
+      }
+      const targetID = matsParamUtils.getInputIdForParam(param);
+      if (global.selectorHandlers[targetID]) {
+        global.selectorHandlers[targetID].update();
       }
     } catch (e) {
       e.message = `INFO: Error in select.js refresh: resetting selected options: ${e.message}`;

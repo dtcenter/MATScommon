@@ -169,8 +169,12 @@ const setInputForParamName = function (paramName, value) {
   // SHOULD DEAL WITH CHECKBOXES HERE
   if (param.type === matsTypes.InputTypes.radioGroup) {
     $(`#${id}-${value}`).prop("checked", true);
-  } else if (elem && elem.type === "select-multiple") {
-    $(`#${id}`).val(value);
+  } else if (
+    elem &&
+    global.selectorHandlers[id] &&
+    global.selectorHandlers[id].getValue() !== value
+  ) {
+    global.selectorHandlers[id].setValue(value);
     setValueTextForParamName(paramName, value);
   } else if (elem && elem.value !== value) {
     elem.value = value;
@@ -237,7 +241,7 @@ const collapseParams = function () {
   const params = matsCollections.CurveParamsInfo.findOne({}).curve_params;
   let param;
   for (let pidx = 0; pidx < params.length; pidx += 1) {
-    param = matsCollections[params[pidx]].find({});
+    param = matsCollections[params[pidx]].findOne({ name: params[pidx] });
     if (param.type !== matsTypes.InputTypes.selectMap) {
       const selector = `element-${param.name}`;
       if (document.getElementById(selector)) {
