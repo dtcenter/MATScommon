@@ -34,7 +34,7 @@ Template.map.onRendered(function () {
       if (!targetElement) {
         return;
       }
-      targetId = `#${targetElement.id}`;
+      targetId = targetElement.id;
 
       markers = item.data.optionsMap; // from app startup
       thisMarkers = []; // markers valid for this data source
@@ -45,7 +45,7 @@ Template.map.onRendered(function () {
           thesePeerOptions.push(targetElement.options[i].text);
         }
       }
-      selectedValues = $(targetId).val() ? $(targetId).val() : [];
+      selectedValues = $(`#${targetId}`).val() ? $(`#${targetId}`).val() : [];
 
       divElement = `${item.data.name}-${item.data.type}`;
       divId = `#${divElement}`;
