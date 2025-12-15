@@ -24,6 +24,14 @@
         Done
       </button>
     </div>
+    {{/if}} {{#if isSites}}
+    <div class="bg-white" style="font-size: smaller">
+      Use ctrl + click (PC) or cmnd + click (Mac) to select multiple values.
+    </div>
+    {{else}}
+    <div class="bg-white" style="font-size: smaller">
+      Begin typing to filter options.
+    </div>
     {{/if}}
   </div>
   <div>
@@ -33,6 +41,7 @@
       data-max-height="20rem"
       name="{{name}}"
       id="{{name}}-{{type}}"
+      size="15"
       aria-label="{{name}} options"
       {{multiple}}
     >

@@ -176,6 +176,9 @@ const setInputForParamName = function (paramName, value) {
   ) {
     global.selectorHandlers[id].setValue(value);
     setValueTextForParamName(paramName, value);
+  } else if (elem && elem.type === "select-multiple") {
+    $(`#${id}`).val(value);
+    setValueTextForParamName(paramName, value);
   } else if (elem && elem.value !== value) {
     elem.value = value;
     setValueTextForParamName(paramName, value);

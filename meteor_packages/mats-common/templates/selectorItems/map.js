@@ -34,7 +34,7 @@ Template.map.onRendered(function () {
       if (!targetElement) {
         return;
       }
-      targetId = targetElement.id;
+      targetId = `#${targetElement.id}`;
 
       markers = item.data.optionsMap; // from app startup
       thisMarkers = []; // markers valid for this data source
@@ -45,7 +45,7 @@ Template.map.onRendered(function () {
           thesePeerOptions.push(targetElement.options[i].text);
         }
       }
-      selectedValues = $(`#${targetId}`).val() ? $(`#${targetId}`).val() : [];
+      selectedValues = $(targetId).val() ? $(targetId).val() : [];
 
       divElement = `${item.data.name}-${item.data.type}`;
       divId = `#${divElement}`;
@@ -158,7 +158,7 @@ Template.map.onRendered(function () {
       // update the marker color on the plot and the values in the site selector
       const update = { marker: { color: dataset.marker.color, opacity: 1 } };
       Plotly.restyle($(divId)[0], update, eventdata.points[0].curveNumber);
-      global.selectorHandlers[targetId].setValue(selectedValues);
+      $(targetId).val(selectedValues).trigger("change");
       matsParamUtils.collapseParam(peerName);
     });
 
@@ -186,7 +186,7 @@ Template.map.onRendered(function () {
         // update the marker color on the plot and the values in the site selector
         const update = { marker: { color: dataset.marker.color, opacity: 1 } };
         Plotly.restyle($(divId)[0], update, eventdata.points[0].curveNumber);
-        global.selectorHandlers[targetId].setValue(selectedValues);
+        $(targetId).val(selectedValues).trigger("change");
         matsParamUtils.collapseParam(peerName);
 
         // As per the comment block above, we're done here, so make sure plotly's area select is disabled.
@@ -200,7 +200,7 @@ Template.map.onRendered(function () {
     $(".selectSites").on("click", function (event) {
       event.preventDefault();
       // fill the selected values array with all available options and change the marker to its highlight color
-      global.selectorHandlers[targetId].setValue(peerOptions);
+      $(targetId).val(peerOptions).trigger("change");
       matsParamUtils.collapseParam(peerName);
       for (let sidx = 0; sidx < thisMarkers.length; sidx += 1) {
         dataset.marker.color[sidx] = thisMarkers[sidx].options.highLightColor;
@@ -213,7 +213,7 @@ Template.map.onRendered(function () {
     $(".deselectSites").on("click", function (event) {
       event.preventDefault();
       // empty the selected values array and return the marker to its original color
-      global.selectorHandlers[targetId].clearValue();
+      $(targetId).val([]).trigger("change");
       matsParamUtils.collapseParam(peerName);
       for (let sidx = 0; sidx < thisMarkers.length; sidx += 1) {
         dataset.marker.color[sidx] = thisMarkers[sidx].options.color;

@@ -102,12 +102,14 @@ Template.select.onRendered(function () {
     setError(e);
   }
   // initialize comboboxes
-  const selector = new UseBootstrapSelect(elem);
-  const selectorKey = matsParamUtils.getInputIdForParam(
-    matsParamUtils.getParameterForName(this.data.name)
-  );
-  // make the combobox handles globally available so that the whole client can use them.
-  global.selectorHandlers[selectorKey] = selector;
+  if (this.data.name !== "sites") {
+    const selector = new UseBootstrapSelect(elem);
+    const selectorKey = matsParamUtils.getInputIdForParam(
+      matsParamUtils.getParameterForName(this.data.name)
+    );
+    // make the combobox handles globally available so that the whole client can use them.
+    global.selectorHandlers[selectorKey] = selector;
+  }
 });
 
 Template.select.helpers({
@@ -126,15 +128,17 @@ Template.select.events({
   "click .doneSelecting"() {
     Session.set("elementChanged", Date.now());
     const controlElem = matsParamUtils.getControlElementForParamName(this.name);
-    $(controlElem).trigger("click"); // close the selector and fire an event to apply changes
     if (
       this.name === "sites" &&
       matsParamUtils.getInputElementForParamName("sitesMap")
     ) {
+      $(controlElem).trigger("click").trigger("change"); // close the selector and fire an event to apply changes
       // let the map selector know that it needs to reflect changes in the sites selector.
       matsParamUtils
         .getInputElementForParamName("sitesMap")
         .dispatchEvent(new CustomEvent("refresh"));
+    } else {
+      $(controlElem).trigger("click"); // close the selector
     }
     const editMode = Session.get("editMode");
     const curveItem =
@@ -154,12 +158,21 @@ Template.select.events({
       values.push(elem.options[i].text);
     }
     // assign all of the values to the selector
-    global.selectorHandlers[`${this.name}-${this.type}`].setValue(values);
+    if (global.selectorHandlers[`${this.name}-${this.type}`]) {
+      global.selectorHandlers[`${this.name}-${this.type}`].setValue(values);
+    } else {
+      $(`#${this.name}-${this.type}`).val(values).trigger("change");
+    }
     return false;
   },
   "click .clearSelections"() {
-    global.selectorHandlers[`${this.name}-${this.type}`].clearValue();
-    global.selectorHandlers[`${this.name}-${this.type}`].show();
+    if (global.selectorHandlers[`${this.name}-${this.type}`]) {
+      global.selectorHandlers[`${this.name}-${this.type}`].clearValue();
+      global.selectorHandlers[`${this.name}-${this.type}`].show();
+    } else {
+      // make selected values null
+      $(`#${this.name}-${this.type}`).val(null).trigger("change");
+    }
     return false;
   },
   "change, blur .item"(event) {
