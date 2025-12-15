@@ -222,6 +222,7 @@ const checkHideOther = function (param, firstRender) {
               otherInputElement.options &&
               otherInputElement.selectedIndex >= 0
             ) {
+              // this will only give us the first selected option but that's fine here
               otherInputElement.options[
                 otherInputElement.selectedIndex
               ].scrollIntoView();
