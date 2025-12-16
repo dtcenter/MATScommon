@@ -934,6 +934,10 @@ const generateContourCurveOptions = async function (
         size: statistic !== "Bias (Model - Obs)" ? defaultSize : symmetricSize,
         showlabels: false,
       },
+      // utter plotly nonsense is that the contours.start and contours.end are IGNORED
+      // unless they're within the bounds of a defined zmin and zmax
+      zmin: statistic !== "Bias (Model - Obs)" ? defaultStart : symmetricStart,
+      zmax: statistic !== "Bias (Model - Obs)" ? defaultEnd : symmetricEnd,
       colorscale, // bias uses the diff colormap
       reversescale: false,
       colorbar: {

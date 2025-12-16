@@ -1429,6 +1429,10 @@ const getDataForDiffContour = async function (
   diffDataset.contours.start = -1 * maxZ + (2 * maxZ) / 16;
   diffDataset.contours.end = maxZ - (2 * maxZ) / 16;
   diffDataset.contours.size = (2 * maxZ) / 16;
+  // utter plotly nonsense is that the contours.start and contours.end are IGNORED
+  // unless they're within the bounds of a defined zmin and zmax
+  diffDataset.zmin = diffDataset.contours.start;
+  diffDataset.zmax = diffDataset.contours.end;
 
   return [diffDataset];
 };
