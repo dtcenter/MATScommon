@@ -184,48 +184,58 @@ const checkHideOther = function (param, firstRender) {
           );
           let selectorControlElem;
           if (
-            (firstRender &&
-              param.default.toString() ===
-                param.hideOtherFor[controlledSelectors[i]].toString()) ||
-            (param.hideOtherFor[controlledSelectors[i]] ===
-              matsTypes.InputTypes.unused &&
-              selectedText === "") ||
-            $.inArray(selectedText, param.hideOtherFor[controlledSelectors[i]]) !== -1
+            // only hide things if the hiding is being ordered by a visible parameter
+            matsParamUtils.isParamVisible(param.name) ||
+            param.name === "plot-type"
           ) {
-            selectorControlElem = document.getElementById(
-              `${controlledSelectors[i]}-item`
-            );
-            if (selectorControlElem && selectorControlElem.style) {
-              selectorControlElem.style.display = "none";
-              selectorControlElem.purposelyHidden = true;
-            }
-          } else if (
-            !(
-              (selectedText === matsTypes.InputTypes.unused || selectedText === "") &&
-              param.hideOtherFor[controlledSelectors[i]].indexOf(
-                matsTypes.InputTypes.unused
-              ) === -1
-            )
-          ) {
-            // don't change anything if the parent parameter is unused in this curve and that situation isn't specified in hideOtherFor.
-            selectorControlElem = document.getElementById(
-              `${controlledSelectors[i]}-item`
-            );
-            if (selectorControlElem && selectorControlElem.style) {
-              if (param.controlButtonVisibility !== "none" && !doNotShow) {
-                selectorControlElem.style.display = "block";
-                selectorControlElem.purposelyHidden = false;
-              }
-            }
             if (
-              otherInputElement &&
-              otherInputElement.options &&
-              otherInputElement.selectedIndex >= 0
+              // first render and the default is the value we're supposed to hide the other for
+              (firstRender &&
+                param.default.toString() ===
+                  param.hideOtherFor[controlledSelectors[i]].toString()) ||
+              // want to hide when the selector is unused and indeed no selections have been made
+              (param.hideOtherFor[controlledSelectors[i]] ===
+                matsTypes.InputTypes.unused &&
+                selectedText === "") ||
+              // multiselect and the value we want to hide for has indeed been selected
+              $.inArray(selectedText, param.hideOtherFor[controlledSelectors[i]]) !== -1
             ) {
-              // this will only give us the first selected option but that's fine here
-              otherInputElement.options[
-                otherInputElement.selectedIndex
-              ].scrollIntoView();
+              selectorControlElem = document.getElementById(
+                `${controlledSelectors[i]}-item`
+              );
+              if (selectorControlElem && selectorControlElem.style) {
+                selectorControlElem.style.display = "none";
+                selectorControlElem.purposelyHidden = true;
+              }
+            } else if (
+              // the parent parameter is unused in this curve and that situation isn't specified in hideOtherFor
+              !(
+                (selectedText === matsTypes.InputTypes.unused || selectedText === "") &&
+                param.hideOtherFor[controlledSelectors[i]].indexOf(
+                  matsTypes.InputTypes.unused
+                ) === -1
+              )
+            ) {
+              // don't change anything if the parent parameter is unused in this curve and that situation isn't specified in hideOtherFor.
+              selectorControlElem = document.getElementById(
+                `${controlledSelectors[i]}-item`
+              );
+              if (selectorControlElem && selectorControlElem.style) {
+                if (param.controlButtonVisibility !== "none" && !doNotShow) {
+                  selectorControlElem.style.display = "block";
+                  selectorControlElem.purposelyHidden = false;
+                }
+              }
+              if (
+                otherInputElement &&
+                otherInputElement.options &&
+                otherInputElement.selectedIndex >= 0
+              ) {
+                // this will only give us the first selected option but that's fine here
+                otherInputElement.options[
+                  otherInputElement.selectedIndex
+                ].scrollIntoView();
+              }
             }
           }
         }
