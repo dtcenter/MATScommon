@@ -23,10 +23,60 @@ Template.topNav.helpers({
     return `${windowLocation}/packages/randyp_mats-common/public/img/us_flag_small.png`;
   },
   transparentMATS() {
+    if (
+      matsCollections.Settings.findOne({}) !== undefined &&
+      matsCollections.Settings.findOne({}).appType !== undefined
+    ) {
+      const { appType } = matsCollections.Settings.findOne({});
+      const { agency } = matsCollections.Settings.findOne({});
+      return appType === matsTypes.AppTypes.metexpress &&
+        agency !== "Global Systems Laboratory"
+        ? `${windowLocation}/packages/randyp_mats-common/public/img/metexpress_transparent.png`
+        : `${windowLocation}/packages/randyp_mats-common/public/img/mats_transparent.png`;
+    }
     return `${windowLocation}/packages/randyp_mats-common/public/img/mats_transparent.png`;
   },
   transparentNOAA() {
+    if (
+      matsCollections.Settings.findOne({}) !== undefined &&
+      matsCollections.Settings.findOne({}).appType !== undefined
+    ) {
+      const { appType } = matsCollections.Settings.findOne({});
+      const { agency } = matsCollections.Settings.findOne({});
+      return appType === matsTypes.AppTypes.metexpress &&
+        agency !== "Global Systems Laboratory"
+        ? `${windowLocation}/packages/randyp_mats-common/public/img/dtc_transparent.png`
+        : `${windowLocation}/packages/randyp_mats-common/public/img/noaa_gsl_transparent.png`;
+    }
     return `${windowLocation}/packages/randyp_mats-common/public/img/noaa_gsl_transparent.png`;
+  },
+  matsLogoSize() {
+    if (
+      matsCollections.Settings.findOne({}) !== undefined &&
+      matsCollections.Settings.findOne({}).appType !== undefined
+    ) {
+      const { appType } = matsCollections.Settings.findOne({});
+      const { agency } = matsCollections.Settings.findOne({});
+      return appType === matsTypes.AppTypes.metexpress &&
+        agency !== "Global Systems Laboratory"
+        ? `metexpress-logo-size`
+        : `mats-logo-size`;
+    }
+    return `mats-logo-size`;
+  },
+  noaaLogoSize() {
+    if (
+      matsCollections.Settings.findOne({}) !== undefined &&
+      matsCollections.Settings.findOne({}).appType !== undefined
+    ) {
+      const { appType } = matsCollections.Settings.findOne({});
+      const { agency } = matsCollections.Settings.findOne({});
+      return appType === matsTypes.AppTypes.metexpress &&
+        agency !== "Global Systems Laboratory"
+        ? `dtc-logo-size`
+        : `noaa-logo-size`;
+    }
+    return `noaa-logo-size`;
   },
   emailText() {
     if (

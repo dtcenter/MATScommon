@@ -283,8 +283,10 @@ Package.onUse(function (api) {
   api.addAssets("public/img/lock-fill.svg", "client");
   api.addAssets("public/img/us_flag_small.png", "client");
   api.addAssets("public/img/mats_transparent.png", "client");
+  api.addAssets("public/img/metexpress_transparent.png", "client");
   api.addAssets("public/img/noaa_transparent.png", "client");
   api.addAssets("public/img/noaa_gsl_transparent.png", "client");
+  api.addAssets("public/img/dtc_transparent.png", "client");
   api.addAssets("public/img/spinner.gif", "client");
   api.addAssets("public/img/underConstruction.jpg", "client");
 
