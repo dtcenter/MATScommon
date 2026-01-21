@@ -22,8 +22,11 @@ Template.topNav.helpers({
   flagLogo() {
     return `${windowLocation}/packages/randyp_mats-common/public/img/us_flag_small.png`;
   },
-  transparentGif() {
-    return `${windowLocation}/packages/randyp_mats-common/public/img/noaa_transparent.png`;
+  transparentMATS() {
+    return `${windowLocation}/packages/randyp_mats-common/public/img/mats_transparent.png`;
+  },
+  transparentNOAA() {
+    return `${windowLocation}/packages/randyp_mats-common/public/img/noaa_gsl_transparent.png`;
   },
   emailText() {
     if (
