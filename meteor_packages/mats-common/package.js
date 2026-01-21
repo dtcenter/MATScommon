@@ -277,23 +277,19 @@ Package.onUse(function (api) {
   api.addFiles("templates/version/version.html", "client");
   api.addFiles("templates/version/version.js", "client");
 
-  // static assets
-  api.addAssets("public/img/arrow-down.gif", "client");
-  api.addAssets("public/img/arrow-left.gif", "client");
-  api.addAssets("public/img/arrow-right.gif", "client");
-  api.addAssets("public/img/arrow-up.gif", "client");
-  api.addAssets("public/img/us_flag_small.png", "client");
+  // static assets -- images
   api.addAssets("public/img/icon-dot-gov.svg", "client");
   api.addAssets("public/img/icon-https.svg", "client");
   api.addAssets("public/img/lock-fill.svg", "client");
   api.addAssets("public/img/noaa_transparent.png", "client");
   api.addAssets("public/img/spinner.gif", "client");
-  api.addAssets("public/img/building_spinner.gif", "client");
-  api.addAssets("public/img/drawing_spinner.gif", "client");
-  api.addAssets("public/img/texturetastic_gray.png", "client");
-  api.addAssets("public/img/subtle_grunge_@2X.png", "client");
   api.addAssets("public/img/underConstruction.jpg", "client");
+  api.addAssets("public/img/us_flag_small.png", "client");
+
+  // static assets -- release notes
   api.addAssets("public/MATSReleaseNotes.html", "server");
+
+  // static assets -- python
   api.addAssets("public/python/mysql_query_util.py", "server");
   api.addAssets("public/python/couchbase_query_util.py", "server");
   api.addAssets("public/python/python_ctc_error.py", "server");
@@ -301,6 +297,8 @@ Package.onUse(function (api) {
   api.addAssets("public/python/calc_stats.py", "server");
   api.addAssets("public/python/calc_ens_stats.py", "server");
   api.addAssets("public/python/mode_stats.py", "server");
+
+  // static assets -- fonts
   api.addAssets("public/fonts/PublicSans-Black.ttf", "client");
   api.addAssets("public/fonts/PublicSans-BlackItalic.ttf", "client");
   api.addAssets("public/fonts/PublicSans-Bold.ttf", "client");
@@ -319,6 +317,8 @@ Package.onUse(function (api) {
   api.addAssets("public/fonts/PublicSans-SemiBoldItalic.ttf", "client");
   api.addAssets("public/fonts/PublicSans-Thin.ttf", "client");
   api.addAssets("public/fonts/PublicSans-ThinItalic.ttf", "client");
+
+  // static assets -- middleware
   api.addAssets(
     "imports/startup/server/matsMiddle/sqlTemplates/tmpl_distinct_fcstValidEpoch_obs.sql",
     "server"
