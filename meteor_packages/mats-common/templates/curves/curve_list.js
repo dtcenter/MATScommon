@@ -187,7 +187,6 @@ Template.curveList.events({
   "click .remove-all"() {
     if (Session.get("confirmRemoveAll")) {
       matsCurveUtils.clearAllUsed();
-      matsParamUtils.setAllParamsToDefault();
       Session.set("editMode", "");
       Session.set("paramWellColor", "#ffffff"); // default grey
       Session.set("lastUpdate", Date.now());

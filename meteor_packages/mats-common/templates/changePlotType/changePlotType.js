@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import { matsParamUtils, matsCurveUtils } from "meteor/randyp:mats-common";
+import { matsCurveUtils } from "meteor/randyp:mats-common";
 import { Template } from "meteor/templating";
 
 /* global Session, $ */
@@ -12,7 +12,6 @@ Template.changePlotType.events({
   "click .confirm-remove-all"(event) {
     event.preventDefault();
     matsCurveUtils.clearAllUsed();
-    matsParamUtils.setAllParamsToDefault();
     Session.set("editMode", "");
     Session.set("paramWellColor", "#f5f5f5"); // default grey
     Session.set("lastUpdate", Date.now());

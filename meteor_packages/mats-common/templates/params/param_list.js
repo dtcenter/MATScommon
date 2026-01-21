@@ -95,15 +95,7 @@ Template.paramList.events({
   "click .reset"(event) {
     event.preventDefault();
     Session.set("paramWellColor", "#ffffff");
-    matsMethods.refreshMetaData
-      // eslint-disable-next-line no-unused-vars
-      .callAsync({})
-      .then(function () {
-        matsParamUtils.setAllParamsToDefault();
-      })
-      .catch(function (error) {
-        setError(new Error(error.message));
-      });
+    matsParamUtils.setAllParamsToDefault();
   },
   "click .expand"() {
     matsParamUtils.expandParams();

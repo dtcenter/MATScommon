@@ -29,13 +29,8 @@ Template.customHome.helpers({
     );
   },
   resetDefaults() {
-    matsMethods.refreshMetaData
-      .callAsync({})
-      .then(function () {
-        matsParamUtils.setAllParamsToDefault();
-      })
-      .catch(function (error) {
-        setError(new Error(error.message));
-      });
+    matsMethods.refreshMetaData.callAsync({}).catch(function (error) {
+      setError(new Error(error.message));
+    });
   },
 });
