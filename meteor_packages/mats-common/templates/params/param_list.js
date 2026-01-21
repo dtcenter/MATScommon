@@ -8,7 +8,6 @@ import {
   matsCurveUtils,
   matsPlotUtils,
   matsParamUtils,
-  matsMethods,
 } from "meteor/randyp:mats-common";
 import { Template } from "meteor/templating";
 

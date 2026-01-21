@@ -2,11 +2,7 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import {
-  matsCollections,
-  matsParamUtils,
-  matsMethods,
-} from "meteor/randyp:mats-common";
+import { matsCollections, matsMethods } from "meteor/randyp:mats-common";
 import { Template } from "meteor/templating";
 
 /* global setError */
