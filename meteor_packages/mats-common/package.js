@@ -50,7 +50,7 @@ Package.onUse(function (api) {
     "vanillajs-datepicker": "1.3.4",
 
     // make things pretty
-    "use-bootstrap-select": "2.2.1",
+    "@uswds/uswds": "3.13.0",
     "lighten-darken-color": "1.0.0",
     "rgb-hex": "4.1.0",
     "hex-rgb": "5.0.0",

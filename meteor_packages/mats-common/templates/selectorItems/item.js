@@ -243,12 +243,7 @@ Template.item.events({
       if (elem !== null) {
         elem.style.display = "block";
         if (this.type === matsTypes.InputTypes.select) {
-          // need to foricibly open the selector for the select
-          if (global.selectorHandlers[`${this.name}-${this.type}`]) {
-            global.selectorHandlers[`${this.name}-${this.type}`].show();
-          } else {
-            $(`#${this.name}-${this.type}`).trigger("click");
-          }
+          $(`#${this.name}-${this.type}`).trigger("click"); // need to foricibly open the selector for the select
         }
         if (this.type === matsTypes.InputTypes.selectMap) {
           $("#mapModal").modal("show");

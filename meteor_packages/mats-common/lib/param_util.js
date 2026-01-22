@@ -96,6 +96,14 @@ const getInputIdForParam = function (param) {
 // get the document element that corresponds to the param name
 const getInputElementForParamName = function (paramName) {
   const param = getParameterForName(paramName);
+  if (param.type === matsTypes.InputTypes.select && !param.multiple) {
+    const classElem = document.getElementsByClassName(
+      `data-input usa-select ${param.name} usa-sr-only usa-combo-box__select`
+    )[0];
+    if (classElem) {
+      return classElem;
+    }
+  }
   const id = getInputIdForParam(param);
   if (id === undefined) {
     return undefined;
@@ -169,13 +177,6 @@ const setInputForParamName = function (paramName, value) {
   // SHOULD DEAL WITH CHECKBOXES HERE
   if (param.type === matsTypes.InputTypes.radioGroup) {
     $(`#${id}-${value}`).prop("checked", true);
-  } else if (
-    elem &&
-    global.selectorHandlers[id] &&
-    global.selectorHandlers[id].getValue() !== value
-  ) {
-    global.selectorHandlers[id].setValue(value);
-    setValueTextForParamName(paramName, value);
   } else if (elem && elem.type === "select-multiple") {
     $(`#${id}`).val(value);
     setValueTextForParamName(paramName, value);
