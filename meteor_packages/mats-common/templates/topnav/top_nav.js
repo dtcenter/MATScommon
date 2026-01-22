@@ -28,9 +28,7 @@ Template.topNav.helpers({
       matsCollections.Settings.findOne({}).appType !== undefined
     ) {
       const { appType } = matsCollections.Settings.findOne({});
-      const { agency } = matsCollections.Settings.findOne({});
-      return appType === matsTypes.AppTypes.metexpress &&
-        agency !== "Global Systems Laboratory"
+      return appType === matsTypes.AppTypes.metexpress
         ? `${windowLocation}/packages/randyp_mats-common/public/img/metexpress_transparent.png`
         : `${windowLocation}/packages/randyp_mats-common/public/img/mats_transparent.png`;
     }
@@ -56,9 +54,7 @@ Template.topNav.helpers({
       matsCollections.Settings.findOne({}).appType !== undefined
     ) {
       const { appType } = matsCollections.Settings.findOne({});
-      const { agency } = matsCollections.Settings.findOne({});
-      return appType === matsTypes.AppTypes.metexpress &&
-        agency !== "Global Systems Laboratory"
+      return appType === matsTypes.AppTypes.metexpress
         ? `metexpress-logo-size`
         : `mats-logo-size`;
     }
