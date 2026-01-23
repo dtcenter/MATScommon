@@ -84,6 +84,8 @@ Template.graph.helpers({
           "colorbar.title.text": dataset[0].colorbar.title.text,
           autocontour: dataset[0].autocontour,
           ncontours: dataset[0].ncontours,
+          zmin: dataset[0].zmin,
+          zmax: dataset[0].zmax,
           "contours.start": dataset[0].contours.start,
           "contours.end": dataset[0].contours.end,
           "contours.size": dataset[0].contours.size,
@@ -3082,6 +3084,7 @@ Template.graph.events({
         if (elem.value !== undefined && elem.value !== "") {
           update.autocontour = false;
           update["contours.start"] = elem.value;
+          update.zmin = elem.value;
         }
       });
     $("input[id=colorbarMax]")
@@ -3091,6 +3094,7 @@ Template.graph.events({
         if (elem.value !== undefined && elem.value !== "") {
           update.autocontour = false;
           update["contours.end"] = elem.value;
+          update.zmax = elem.value;
         }
       });
     $("input[id=colorbarNumber]")
