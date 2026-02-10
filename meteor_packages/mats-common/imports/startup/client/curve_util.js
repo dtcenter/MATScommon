@@ -1037,6 +1037,10 @@ const showReliabilityFace = function () {
     "bin-parameter": "Valid Date",
     plotFormat: matsTypes.PlotFormats.none,
   };
+  // reliability diagrams need to have the region be in predefined mode
+  if (matsParamUtils.getParameterForName("region-type") !== undefined) {
+    selectorsToReset["region-type"] = "Predefined region";
+  }
   setSelectorVisibility(plotType, faceOptions, selectorsToReset);
   return selectorsToReset;
 };
@@ -1096,6 +1100,10 @@ const showROCFace = function () {
     "bin-parameter": "Valid Date",
     plotFormat: matsTypes.PlotFormats.none,
   };
+  // ROCs need to have the region be in predefined mode
+  if (matsParamUtils.getParameterForName("region-type") !== undefined) {
+    selectorsToReset["region-type"] = "Predefined region";
+  }
   setSelectorVisibility(plotType, faceOptions, selectorsToReset);
   return selectorsToReset;
 };
@@ -1289,6 +1297,10 @@ const showMapFace = function () {
   if (matsParamUtils.getParameterForName("region-type") !== undefined) {
     selectorsToReset["region-type"] = "Select stations";
   }
+  // reset the range controls to default
+  if (matsParamUtils.getParameterForName("map-range-controls") !== undefined) {
+    selectorsToReset["map-range-controls"] = "Default range";
+  }
   // visibility15 can handle truth selection on maps
   if (appName !== undefined && appName === "visibility15") {
     faceOptions.truth = "block";
@@ -1351,6 +1363,7 @@ const showHistogramFace = function () {
   const selectorsToReset = {
     "dieoff-type": "Dieoff",
     "bin-parameter": "Valid Date",
+    "histogram-bin-controls": "Default bins",
   };
   // CTC histograms need to have the region be predefined mode.
   // They are identified by the presence of a threshold selector
@@ -1420,6 +1433,10 @@ const showEnsembleHistogramFace = function () {
     "dieoff-type": "Dieoff",
     "bin-parameter": "Valid Date",
   };
+  // ensemble histograms need to have the region be in predefined mode
+  if (matsParamUtils.getParameterForName("region-type") !== undefined) {
+    selectorsToReset["region-type"] = "Predefined region";
+  }
   setSelectorVisibility(plotType, faceOptions, selectorsToReset);
   return selectorsToReset;
 };
@@ -1552,7 +1569,7 @@ const showSimpleScatterFace = function () {
     faceOptions.statistic = "block";
     faceOptions.variable = "block";
   }
-  // performance diagrams need to have the region be in predefined mode
+  // simple scatters need to have the region be in predefined mode
   if (matsParamUtils.getParameterForName("region-type") !== undefined) {
     selectorsToReset["region-type"] = "Predefined region";
   }
