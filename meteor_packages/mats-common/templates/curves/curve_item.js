@@ -99,39 +99,36 @@ Template.curveItem.helpers({
   },
 });
 
-const correlateEditPanelToCurveItems = function (
-  params,
-  currentParams,
-  doCheckHideOther
-) {
+const correlateEditPanelToCurveItems = function (params, currentParams) {
   for (let p = 0; p < params.length; p += 1) {
-    const plotParam = params[p];
+    const curveParam = params[p];
     // do any plot date parameters
-    if (plotParam.type === matsTypes.InputTypes.dateRange) {
-      if (currentParams[plotParam.name] !== undefined) {
-        const dateArr = currentParams[plotParam.name].split(" - ");
+    if (curveParam.type === matsTypes.InputTypes.dateRange) {
+      if (currentParams[curveParam.name] !== undefined) {
+        const dateArr = currentParams[curveParam.name].split(" - ");
         const from = dateArr[0];
         const to = dateArr[1];
-        const idref = `#${plotParam.name}-${plotParam.type}`;
+        const idref = `#${curveParam.name}-${curveParam.type}`;
         $(idref)
           .data("daterangepicker")
           .setStartDate(moment.utc(from, "MM-DD-YYYY HH:mm"));
         $(idref).data("daterangepicker").setEndDate(moment.utc(to, "MM-DD-YYYY HH:mm"));
         matsParamUtils.setValueTextForParamName(
-          plotParam.name,
-          currentParams[plotParam.name]
+          curveParam.name,
+          currentParams[curveParam.name]
         );
       }
-    } else {
+    } else if (
+      // ignore parameters not currently visible
+      matsParamUtils.isParamVisible(curveParam.name) ||
+      curveParam.name === "plot-type"
+    ) {
       const val =
-        currentParams[plotParam.name] === null ||
-        currentParams[plotParam.name] === undefined
+        currentParams[curveParam.name] === null ||
+        currentParams[curveParam.name] === undefined
           ? matsTypes.InputTypes.unused
-          : currentParams[plotParam.name];
-      matsParamUtils.setInputForParamName(plotParam.name, val);
-    }
-    if (currentParams[plotParam.name] !== undefined && doCheckHideOther) {
-      matsSelectUtils.checkHideOther(plotParam, false);
+          : currentParams[curveParam.name];
+      matsParamUtils.setInputValueForParamAndTriggerChange(curveParam.name, val);
     }
   }
 };
@@ -210,32 +207,25 @@ Template.curveItem.events({
     }).curve_params;
     const params = [];
     const superiors = [];
-    const hidden = [];
     // get all of the curve param collections in one place
     for (let pidx = 0; pidx < paramNames.length; pidx += 1) {
       const param = matsCollections[paramNames[pidx]].findOne({});
       // superiors
       if (param.dependentNames !== undefined) {
         superiors.push(param);
-      }
-      // hidden
-      if (param.hideOtherFor !== undefined || param.disableOtherFor !== undefined) {
-        hidden.push(param);
-      }
-      // everything else
-      if (superiors.indexOf(param) === -1 && hidden.indexOf(param) === -1) {
+      } else {
         params.push(param);
       }
     }
     for (let p = 0; p < superiors.length; p += 1) {
-      const plotParam = superiors[p];
+      const curveParam = superiors[p];
       // do any curve date parameters
-      if (plotParam.type === matsTypes.InputTypes.dateRange) {
-        if (currentParams[plotParam.name] !== undefined) {
-          const dateArr = currentParams[plotParam.name].split(" - ");
+      if (curveParam.type === matsTypes.InputTypes.dateRange) {
+        if (currentParams[curveParam.name] !== undefined) {
+          const dateArr = currentParams[curveParam.name].split(" - ");
           const from = dateArr[0];
           const to = dateArr[1];
-          const idref = `#${plotParam.name}-${plotParam.type}`;
+          const idref = `#${curveParam.name}-${curveParam.type}`;
           $(idref)
             .data("daterangepicker")
             .setStartDate(moment.utc(from, "MM-DD-YYYY HH:mm"));
@@ -243,26 +233,27 @@ Template.curveItem.events({
             .data("daterangepicker")
             .setEndDate(moment.utc(to, "MM-DD-YYYY HH:mm"));
           matsParamUtils.setValueTextForParamName(
-            plotParam.name,
-            currentParams[plotParam.name]
+            curveParam.name,
+            currentParams[curveParam.name]
           );
         }
-      } else {
+      } else if (
+        // ignore parameters not currently visible
+        matsParamUtils.isParamVisible(curveParam.name) ||
+        curveParam.name === "plot-type"
+      ) {
         const val =
-          currentParams[plotParam.name] === null ||
-          currentParams[plotParam.name] === undefined
+          currentParams[curveParam.name] === null ||
+          currentParams[curveParam.name] === undefined
             ? matsTypes.InputTypes.unused
-            : currentParams[plotParam.name];
-        matsParamUtils.setInputForParamName(plotParam.name, val);
+            : currentParams[curveParam.name];
+        matsParamUtils.setInputValueForParamAndTriggerChange(curveParam.name, val);
         // refresh its dependents
-        matsSelectUtils.refreshDependents(null, plotParam);
+        matsSelectUtils.refreshDependents(null, curveParam);
       }
     }
-    // now reset the form parameters for anything with hide/disable controls
-    correlateEditPanelToCurveItems(hidden, currentParams, true);
-
     // now reset the form parameters for everything else
-    correlateEditPanelToCurveItems(params, currentParams, false);
+    correlateEditPanelToCurveItems(params, currentParams);
 
     matsParamUtils.collapseParams();
   },
