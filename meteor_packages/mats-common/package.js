@@ -6,7 +6,7 @@
 
 Package.describe({
   name: "randyp:mats-common",
-  version: "6.2.2",
+  version: "6.2.5",
   // Brief, one-line summary of the package.
   summary: "MATScommon files provides common functionality for MATS/METexpress apps",
   // URL to the Git repository containing the source code for this package.
@@ -17,17 +17,17 @@ Package.describe({
 });
 
 Package.onUse(function (api) {
-  api.versionsFrom("3.3.2");
+  api.versionsFrom("3.4");
   Npm.depends({
     // ******* npm packages
 
     // core functionality packages
-    "fs-extra": "11.3.2",
+    "fs-extra": "11.3.3",
 
     // things to do with querying
     "python-shell": "5.0.0",
     couchbase: "4.6.0",
-    mysql2: "3.15.3",
+    mysql2: "3.17.0",
     url: "0.11.4",
 
     // things to do with downsizing and caching data
@@ -37,8 +37,8 @@ Package.onUse(function (api) {
     "object-sizeof": "2.6.5",
 
     // data tables for scorecard
-    "datatables.net-bs": "2.3.5",
-    "datatables.net-dt": "2.3.5",
+    "datatables.net-bs": "2.3.7",
+    "datatables.net-dt": "2.3.7",
 
     // saving to png or csv files
     html2canvas: "1.4.1",
