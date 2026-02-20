@@ -26,8 +26,8 @@ Package.onUse(function (api) {
 
     // things to do with querying
     "python-shell": "5.0.0",
-    couchbase: "4.6.0",
-    mysql2: "3.17.0",
+    couchbase: "4.6.1",
+    mysql2: "3.17.4",
     url: "0.11.4",
 
     // things to do with downsizing and caching data
