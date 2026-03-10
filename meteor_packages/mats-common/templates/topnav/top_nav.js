@@ -136,6 +136,14 @@ Template.topNav.helpers({
     }
     return "https://github.com/NOAA-GSL/MATS";
   },
+  documentationText() {
+    return "Documentation";
+  },
+  documentationLink() {
+    return Meteor.settings.public.documentation === undefined
+      ? "#"
+      : Meteor.settings.public.documentation;
+  },
   isMetexpress() {
     if (
       matsCollections.Settings.findOne({}) !== undefined &&

@@ -67,83 +67,85 @@
       </div>
     </nav>
     <nav
-      class="navbar navbar-expand-sm bg-noaa-blue text-white"
+      class="navbar navbar-expand-sm bg-noaa-blue text-white pb-0"
       data-bs-theme="dark"
       aria-label="MATS navigation bar"
     >
-      <div class="container-fluid">
-        <a class="navbar-brand w-100 h-100 m-0" href="#">
-          <div class="row w-100 h-100 mx-0">
-            <div class="col-lg-3 col-12 text-lg-start text-center">
+      <div class="container-fluid px-0">
+        <nav class="navbar-brand w-100 h-100 m-0 pb-0">
+          <div class="row w-100 h-100 mx-2">
+            <div class="col-md-3 col-6 text-md-start text-end">
               <a class="navbar-brand m-0" href="{{productLink}}">
                 <img
-                  class="{{matsLogoSize}}"
+                  class="{{matsLogoSize}} mt-1"
                   src="{{transparentMATS}}"
                   alt="MATS Logo"
-                />&nbsp;&nbsp;
+                />
+              </a>
+            </div>
+            <div class="col-md-6 col-0 d-none d-md-block text-center">
+              <div class="row">
+                <div class="col-12">
+                  <a class="white-link-text fs-6" href="{{agencyLink}}" target="_blank">
+                    {{agencyText}}
+                    <span class="sr-only">Opens in new window</span>
+                  </a>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-12">
+                  <a href="{{productLink}}" class="white-link-text fs-4">
+                    {{productText}}
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3 col-6 text-md-end text-start">
+              <a class="navbar-brand m-0" href="{{productLink}}">
                 <img
-                  class="{{noaaLogoSize}}"
+                  class="{{noaaLogoSize}} mt-1"
                   src="{{transparentNOAA}}"
                   alt="NOAA Logo"
                 />
               </a>
             </div>
-            <div class="col-lg-6 col-0 d-none d-lg-block text-center">
-              <div class="row">
-                <a class="white-link-text fs-6" href="{{agencyLink}}" target="_blank">
-                  {{agencyText}}
-                  <span class="sr-only">Opens in new window</span>
-                </a>
-              </div>
-              <div class="row">
-                <a href="{{productLink}}" class="white-link-text fs-4"
-                  >{{productText}}</a
-                >
-              </div>
-            </div>
-            <div class="col-lg-3 col-0 d-none d-lg-block text-end mt-3">
-              <a class="white-link-text fs-6" href="{{githubLink}}" target="_blank"
-                >{{githubText}}<span class="sr-only">Opens in new window</span></a
-              >&nbsp;&nbsp;
+          </div>
+          <div class="row bg-info bg-opacity-50 w-100 h-100 mt-3 mx-0 pt-1 pb-2">
+            <span class="col-lg-2 col-0 text-center"></span>
+            <span class="col-lg-2 col-sm-3 col-7 text-center">
+              <a class="white-link-text fs-6" href="{{documentationLink}}" target="_blank">
+                {{documentationText}}
+                <span class="sr-only">Opens in new window</span>
+              </a>
+            </span>
+            <span class="col-lg-2 col-sm-3 col-5 text-center">
+              <a class="white-link-text fs-6" href="{{githubLink}}" target="_blank">
+                {{githubText}}
+                <span class="sr-only">Opens in new window</span>
+              </a>
+            </span>
+            <span class="col-lg-2 col-sm-3 col-7 text-center">
               <a
                 href=""
                 id="aboutButton"
                 class="about white-link-text fs-6"
                 data-bs-toggle="modal"
-                data-bs-target="#aboutModal"
-                >About</a
-              >&nbsp;&nbsp;
+                data-bs-target="#aboutModal">
+                Release Notes
+              </a>
+            </span>
+            <span class="col-lg-2 col-sm-3 col-5 text-center">
               <a
                 class="white-link-text fs-6"
                 href="mailto:mats.gsl@noaa.gov?Subject=Feedback from {{emailText}}"
-                target="_blank"
-                >Contact Us<span class="sr-only">Opens in new window</span></a
-              >
-            </div>
+                target="_blank">
+                Contact Us
+                <span class="sr-only">Opens in new window</span>
+              </a>
+            </span>
+            <span class="col-md-2 col-0"></span>
           </div>
-          <hr class="d-lg-none bg-primary border-3 border-top border-primary mb-2" />
-          <div class="row w-100 h-100 d-lg-none text-center">
-            <div class="col-12">
-              <a class="white-link-text fs-6" href="{{githubLink}}" target="_blank"
-                >{{githubText}}<span class="sr-only">Opens in new window</span></a
-              >&nbsp;&nbsp;
-              <a
-                href=""
-                id="aboutButton"
-                class="about white-link-text fs-6"
-                data-bs-toggle="modal"
-                data-bs-target="#aboutModal"
-                >About</a
-              >&nbsp;&nbsp;
-              <a
-                class="white-link-text fs-6"
-                href="mailto:mats.gsl@noaa.gov?Subject=Feedback from {{emailText}}"
-                target="_blank"
-                >Contact Us<span class="sr-only">Opens in new window</span></a
-              >
-            </div>
-          </div>
-        </a>
+        </nav>
       </div>
     </nav>
     <div
