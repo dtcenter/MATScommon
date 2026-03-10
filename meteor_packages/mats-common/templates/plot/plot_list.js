@@ -346,7 +346,6 @@ Template.plotList.events({
         document.getElementById("spinner").style.display = "none";
         return false;
       case "restore":
-        matsCurveUtils.clearAllUsed();
         if (
           (document.getElementById("restore_from_private").value === "" ||
             document.getElementById("restore_from_private").value === undefined) &&
