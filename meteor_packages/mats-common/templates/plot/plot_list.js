@@ -220,9 +220,11 @@ Template.plotList.events({
           }
         });
         curve.visibleParams = visibleParams;
+        curves[cidx] = curve;
       }
       p.curves.push(curve);
     }
+    Session.set("Curves", curves);
     matsCollections.PlotParams.find({})
       .fetch()
       .forEach(function (plotParam) {

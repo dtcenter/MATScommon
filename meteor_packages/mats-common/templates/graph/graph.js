@@ -555,7 +555,9 @@ Template.graph.helpers({
       ? " (in log10)"
       : "";
   },
-  curveText() {
+  async curveText() {
+    Session.get("PlotResultsUpDated");
+    let text;
     if (this.diffFrom === undefined) {
       let plotType = Session.get("plotType");
       if (plotType === undefined) {
@@ -568,9 +570,10 @@ Template.graph.helpers({
         plotType = Session.get("plotType");
       }
       if (plotType === matsTypes.PlotTypes.profile) {
-        return matsPlotUtils.getCurveTextWrapping(plotType, this).then();
+        text = await matsPlotUtils.getCurveTextWrapping(plotType, this);
       }
-      return matsPlotUtils.getCurveText(plotType, this).then();
+      text = await matsPlotUtils.getCurveText(plotType, this);
+      return text;
     }
     return `${this.label}:  Difference`;
   },
