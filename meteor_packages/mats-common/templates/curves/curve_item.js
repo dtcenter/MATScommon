@@ -26,7 +26,7 @@ Template.curveItem.helpers({
     const confirmRemoveCurve = Session.get("confirmRemoveCurve");
     return confirmRemoveCurve ? confirmRemoveCurve.label : null;
   },
-  text() {
+  async text() {
     if (this.diffFrom === undefined) {
       let plotType = Session.get("plotType");
       if (plotType === undefined) {
@@ -41,7 +41,8 @@ Template.curveItem.helpers({
       if (this.region) {
         [this.regionName] = this.region.split(" ");
       }
-      return matsPlotUtils.getCurveText(plotType, this).then();
+      const text = await matsPlotUtils.getCurveText(plotType, this);
+      return text;
     }
     return `${this.label}:  Difference`;
   },
