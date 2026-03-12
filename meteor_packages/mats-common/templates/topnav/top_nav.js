@@ -60,6 +60,16 @@ Template.topNav.helpers({
     }
     return `mats-logo-size`;
   },
+  matsLogoMargin() {
+    if (
+      matsCollections.Settings.findOne({}) !== undefined &&
+      matsCollections.Settings.findOne({}).appType !== undefined
+    ) {
+      const { appType } = matsCollections.Settings.findOne({});
+      return appType === matsTypes.AppTypes.metexpress ? `3` : `1`;
+    }
+    return `1`;
+  },
   noaaLogoSize() {
     if (
       matsCollections.Settings.findOne({}) !== undefined &&
@@ -135,6 +145,14 @@ Template.topNav.helpers({
         : "https://github.com/NOAA-GSL/MATS";
     }
     return "https://github.com/NOAA-GSL/MATS";
+  },
+  documentationText() {
+    return "Documentation";
+  },
+  documentationLink() {
+    return Meteor.settings.public.documentation === undefined
+      ? "#"
+      : Meteor.settings.public.documentation;
   },
   isMetexpress() {
     if (

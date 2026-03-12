@@ -14,7 +14,7 @@ import moment from "moment";
 // eslint-disable-next-line import/no-unresolved
 import hexRgb from "hex-rgb";
 
-/* global $, Session, _ */
+/* global $, Session */
 
 const getBaseURL = function () {
   const urlComponents = document.location.href.split("/");
@@ -176,7 +176,7 @@ const enableActionButtons = function () {
 };
 
 const restoreSettings = function (p) {
-  Session.set("Curves", p.data.curves);
+  matsCurveUtils.clearAllUsed();
   // reset the plotType - have to do this first because the event will remove all the possibly existing curves
   // get the plot-type elements checked state
   let plotTypeSaved = false;
@@ -186,63 +186,8 @@ const restoreSettings = function (p) {
     if (p.data.plotTypes && p.data.plotTypes[ptElem.value] === true) {
       plotTypeSaved = true;
       ptElem.checked = true;
-      // We have to set up the display without using click events because that would cause
-      // the restored curves to be removed
-      switch (ptElem.value) {
-        case matsTypes.PlotTypes.profile:
-          matsCurveUtils.showProfileFace();
-          break;
-        case matsTypes.PlotTypes.dieoff:
-          matsCurveUtils.showDieoffFace();
-          break;
-        case matsTypes.PlotTypes.threshold:
-          matsCurveUtils.showThresholdFace();
-          break;
-        case matsTypes.PlotTypes.validtime:
-          matsCurveUtils.showValidTimeFace();
-          break;
-        case matsTypes.PlotTypes.gridscale:
-          matsCurveUtils.showGridScaleFace();
-          break;
-        case matsTypes.PlotTypes.dailyModelCycle:
-          matsCurveUtils.showDailyModelCycleFace();
-          break;
-        case matsTypes.PlotTypes.yearToYear:
-          matsCurveUtils.showYearToYearFace();
-          break;
-        case matsTypes.PlotTypes.reliability:
-          matsCurveUtils.showReliabilityFace();
-          break;
-        case matsTypes.PlotTypes.roc:
-          matsCurveUtils.showROCFace();
-          break;
-        case matsTypes.PlotTypes.performanceDiagram:
-          matsCurveUtils.showPerformanceDiagramFace();
-          break;
-        case matsTypes.PlotTypes.gridscaleProb:
-          matsCurveUtils.showGridScaleProbFace();
-          break;
-        case matsTypes.PlotTypes.map:
-          matsCurveUtils.showMapFace();
-          break;
-        case matsTypes.PlotTypes.histogram:
-          matsCurveUtils.showHistogramFace();
-          break;
-        case matsTypes.PlotTypes.ensembleHistogram:
-          matsCurveUtils.showEnsembleHistogramFace();
-          break;
-        case matsTypes.PlotTypes.contour:
-        case matsTypes.PlotTypes.contourDiff:
-          matsCurveUtils.showContourFace();
-          break;
-        case matsTypes.PlotTypes.simpleScatter:
-          matsCurveUtils.showSimpleScatterFace();
-          break;
-        case matsTypes.PlotTypes.timeSeries:
-        default:
-          matsCurveUtils.showTimeseriesFace();
-          break;
-      }
+      document.getElementById("plotTypes-selector").value = ptElem.value;
+      $("#plotTypes-selector").trigger("change");
     } else {
       ptElem.checked = false;
     }
@@ -252,95 +197,6 @@ const restoreSettings = function (p) {
     document.getElementById("plotTypes-selector").value =
       matsCollections.PlotGraphFunctions.findOne({ checked: true }).plotType;
   }
-
-  // now set the PlotParams
-  let params = matsCollections.PlotParams.find({}).fetch();
-  params.forEach(function (plotParam) {
-    const val =
-      p.data.paramData.plotParams[plotParam.name] === null ||
-      p.data.paramData.plotParams[plotParam.name] === undefined
-        ? matsTypes.InputTypes.unused
-        : p.data.paramData.plotParams[plotParam.name];
-    matsParamUtils.setInputForParamName(plotParam.name, val);
-  });
-
-  const paramNames = matsCollections.CurveParamsInfo.findOne({
-    curve_params: { $exists: true },
-  }).curve_params;
-  params = [];
-  const superiors = [];
-  const dependents = [];
-  // get all of the curve param collections in one place
-  for (let pidx = 0; pidx < paramNames.length; pidx += 1) {
-    const param = matsCollections[paramNames[pidx]].findOne({});
-    // superiors
-    if (param.dependentNames !== undefined) {
-      superiors.push(param);
-      // dependents
-    } else if (param.superiorNames !== undefined) {
-      dependents.push(param);
-      // everything else
-    } else {
-      params.push(param);
-    }
-  }
-
-  // reset the form parameters for the superiors first
-  superiors.forEach(function (plotParam) {
-    if (plotParam.type === matsTypes.InputTypes.dateRange) {
-      if (p.data.paramData.curveParams[plotParam.name] === undefined) {
-        return; // just like continue
-      }
-      const dateArr = p.data.paramData.curveParams[plotParam.name].split(" - ");
-      const from = dateArr[0];
-      const to = dateArr[1];
-      const idref = `#${plotParam.name}-${plotParam.type}`;
-      $(idref)
-        .data("daterangepicker")
-        .setStartDate(moment.utc(from, "MM-DD-YYYY HH:mm"));
-      $(idref).data("daterangepicker").setEndDate(moment.utc(to, "MM-DD-YYYY HH:mm"));
-      matsParamUtils.setValueTextForParamName(
-        plotParam.name,
-        p.data.paramData.curveParams[plotParam.name]
-      );
-    } else {
-      const val =
-        p.data.paramData.curveParams[plotParam.name] === null ||
-        p.data.paramData.curveParams[plotParam.name] === undefined
-          ? matsTypes.InputTypes.unused
-          : p.data.paramData.curveParams[plotParam.name];
-      matsParamUtils.setInputForParamName(plotParam.name, val);
-    }
-  });
-
-  // now reset the form parameters for the dependents
-  params = _.union(dependents, params);
-  params.forEach(function (plotParam) {
-    if (plotParam.type === matsTypes.InputTypes.dateRange) {
-      if (p.data.paramData.curveParams[plotParam.name] === undefined) {
-        return; // just like continue
-      }
-      const dateArr = p.data.paramData.curveParams[plotParam.name].split(" - ");
-      const from = dateArr[0];
-      const to = dateArr[1];
-      const idref = `#${plotParam.name}-${plotParam.type}`;
-      $(idref)
-        .data("daterangepicker")
-        .setStartDate(moment.utc(from, "MM-DD-YYYY HH:mm"));
-      $(idref).data("daterangepicker").setEndDate(moment.utc(to, "MM-DD-YYYY HH:mm"));
-      matsParamUtils.setValueTextForParamName(
-        plotParam.name,
-        p.data.paramData.curveParams[plotParam.name]
-      );
-    } else {
-      const val =
-        p.data.paramData.curveParams[plotParam.name] === null ||
-        p.data.paramData.curveParams[plotParam.name] === undefined
-          ? matsTypes.InputTypes.unused
-          : p.data.paramData.curveParams[plotParam.name];
-      matsParamUtils.setInputForParamName(plotParam.name, val);
-    }
-  });
 
   // reset the dates
   if (p.data.dates !== undefined) {
@@ -356,8 +212,8 @@ const restoreSettings = function (p) {
     matsParamUtils.setValueTextForParamName("dates", p.data.dates);
   }
 
-  // reset the plotFormat
   // reset the plotParams
+  Session.set("Curves", p.data.curves);
   Session.set("PlotParams", p);
   // set the used defaults so that subsequent adds get a core default
   matsCurveUtils.setUsedColorsAndLabels();

@@ -220,9 +220,11 @@ Template.plotList.events({
           }
         });
         curve.visibleParams = visibleParams;
+        curves[cidx] = curve;
       }
       p.curves.push(curve);
     }
+    Session.set("Curves", curves);
     matsCollections.PlotParams.find({})
       .fetch()
       .forEach(function (plotParam) {
@@ -346,7 +348,6 @@ Template.plotList.events({
         document.getElementById("spinner").style.display = "none";
         return false;
       case "restore":
-        matsCurveUtils.clearAllUsed();
         if (
           (document.getElementById("restore_from_private").value === "" ||
             document.getElementById("restore_from_private").value === undefined) &&
