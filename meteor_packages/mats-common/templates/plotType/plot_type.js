@@ -537,6 +537,8 @@ Template.plotType.events({
           "y-statistic",
           "x-variable",
           "y-variable",
+          "x-obs-variable",
+          "y-obs-variable",
           "threshold",
           "scale",
           "level",

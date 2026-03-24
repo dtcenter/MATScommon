@@ -265,6 +265,8 @@ export const curveParamsByApp = {
     "y-statistic",
     "variable",
     "y-variable",
+    "obs-variable",
+    "y-obs-variable",
     "threshold",
     "interp-method",
     "scale",
