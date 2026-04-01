@@ -406,7 +406,7 @@ const checkDiffs = function () {
   const curves = Session.get("Curves");
   const plotFormat = matsPlotUtils.getPlotFormat();
   if (curves.length > 1) {
-    if (plotFormat !== matsTypes.PlotFormats.none) {
+    if (plotFormat && plotFormat !== matsTypes.PlotFormats.none) {
       removeDiffs();
       addDiffs();
     } else {
