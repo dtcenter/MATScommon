@@ -197,7 +197,7 @@ Template.curveList.events({
   },
   "click .confirm-remove-all"() {
     Session.set("confirmRemoveAll", Date.now());
-    $("#remove-all").trigger("click");
+    document.getElementById("remove-all").click();
   },
   "click .submitScorecard"(event) {
     document.getElementById("spinner").style.display = "block";

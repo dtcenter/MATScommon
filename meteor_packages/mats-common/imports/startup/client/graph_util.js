@@ -464,7 +464,7 @@ const setScorecardDisplayView = function () {
   document.getElementById("spinner").style.display = "none";
   document.getElementById("scorecardStatus").style.display = "block";
   document.getElementById("plotType").style.display = "none";
-  $("#refresh-scorecard").trigger("click");
+  document.getElementById("refresh-scorecard").click();
   // Enable navigation prompt
   window.onbeforeunload = function () {
     return true;

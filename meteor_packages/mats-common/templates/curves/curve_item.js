@@ -173,7 +173,7 @@ Template.curveItem.events({
       color: confirmCurve.color,
       confirm: true,
     });
-    $("#curve-list-remove").trigger("click");
+    document.getElementById("curve-list-remove").click();
   },
   "click .edit-curve"(event) {
     const srcEditButton = event.currentTarget;

@@ -146,7 +146,7 @@ Template.select.events({
         : document.getElementById(`curveItem-${editMode}`);
     if (curveItem && this.type !== matsTypes.InputTypes.dateRange) {
       // if we're editing a curve, propagate changes to that curve
-      $("#save").trigger("click");
+      document.getElementById("save").click();
     }
     return false;
   },
@@ -204,7 +204,7 @@ Template.select.events({
         ? undefined
         : document.getElementById(`curveItem-${editMode}`);
     if (curveItem && this.type !== matsTypes.InputTypes.dateRange) {
-      $("#save").trigger("click");
+      document.getElementById("save").click();
     }
     if (event.target.multiple) {
       Session.set("editMode", editMode);

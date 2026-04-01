@@ -122,7 +122,7 @@ Template.dateRange.onRendered(function () {
         ? undefined
         : document.getElementById(`curveItem-${Session.get("editMode")}`);
     if (curveItem) {
-      $("#save").trigger("click");
+      document.getElementById("save").click();
     }
     return null;
   });

@@ -243,7 +243,7 @@ Template.item.events({
       if (elem !== null) {
         elem.style.display = "block";
         if (this.type === matsTypes.InputTypes.select) {
-          $(`#${this.name}-${this.type}`).trigger("click"); // need to foricibly open the selector for the select
+          document.getElementById(`${this.name}-${this.type}`).click(); // need to foricibly open the selector for the select
         }
         if (this.type === matsTypes.InputTypes.selectMap) {
           $("#mapModal").modal("show");
@@ -278,7 +278,7 @@ Template.item.events({
         ? undefined
         : document.getElementById(`curveItem-${Session.get("editMode")}`);
     if (curveItem && this.type !== matsTypes.InputTypes.dateRange) {
-      $("#save").trigger("click");
+      document.getElementById("save").click();
     }
     return null;
   },
