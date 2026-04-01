@@ -4,7 +4,7 @@
 
 import { matsTypes, matsCurveUtils } from "meteor/randyp:mats-common";
 
-/* global $, Session */
+/* global Session */
 /* eslint-disable no-console */
 
 // set the label for the hide show buttons (NO DATA) for the initial time here
