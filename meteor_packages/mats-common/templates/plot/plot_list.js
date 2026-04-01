@@ -74,7 +74,7 @@ const addCurve = async () => {
 };
 
 const plotGraph = async () => {
-  $("#plotMatched").trigger("click");
+  document.getElementById("plotMatched").click();
 };
 
 const addCurvesAndPlot = async (parsedSettings, commonParamKeys, commonParams) => {
@@ -510,7 +510,7 @@ Template.plotList.events({
   },
 });
 
-Template.plotList.onRendered(function () {
+Template.plotList.onRendered(async function () {
   if (Session.get("scorecardTimeseriesKey")) {
     // we are plotting a timeseries, make sure MATS is set to that plot type
     Session.set("plotType", matsTypes.PlotTypes.timeSeries);
@@ -522,9 +522,9 @@ Template.plotList.onRendered(function () {
     matsParamUtils.setAllParamsToDefault();
 
     // get the params from the scorecard settings
-    matsMethods.getScorecardSettings
+    await matsMethods.getScorecardSettings
       .callAsync({ settingsKey: Session.get("scorecardTimeseriesKey") })
-      .then(function (ret) {
+      .then(async function (ret) {
         const settingsJSON = ret.scorecardSettings;
         const parsedSettings = JSON.parse(settingsJSON);
         const commonParams = parsedSettings.commonCurveParams;
