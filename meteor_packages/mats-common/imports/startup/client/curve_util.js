@@ -148,9 +148,9 @@ const resetGraphResult = function () {
   Session.set("graphDataLoaded", new Date());
 };
 
-const setCurveParamDisplayText = function (paramName, newText) {
+const setCurveParamDisplayText = async function (paramName, newText) {
   if (document.getElementById(`${paramName}-item`)) {
-    matsMethods.setCurveParamDisplayText
+    await matsMethods.setCurveParamDisplayText
       .callAsync({
         paramName,
         newText,

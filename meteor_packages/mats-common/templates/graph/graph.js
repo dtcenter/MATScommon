@@ -1421,11 +1421,11 @@ Template.graph.events({
       ctbgElems[i].style.display = "block";
     }
   },
-  "click .preview"() {
+  async "click .preview"() {
     // capture the layout
     const { layout } = $("#placeholder")[0];
     const key = Session.get("plotResultKey");
-    matsMethods.saveLayout
+    await matsMethods.saveLayout
       .callAsync({
         resultKey: key,
         layout,

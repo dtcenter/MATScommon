@@ -154,10 +154,10 @@ Template.plotList.events({
     document.getElementById("save_as").value = "";
     document.getElementById("save_to").value = "";
   },
-  "click .delete-selected"() {
+  async "click .delete-selected"() {
     const deleteThis = document.getElementById("save_to").value;
     if (deleteThis !== undefined && deleteThis !== "") {
-      matsMethods.deleteSettings
+      await matsMethods.deleteSettings
         .callAsync({ name: deleteThis })
         .then()
         .catch(function (error) {
@@ -173,7 +173,7 @@ Template.plotList.events({
   "click .restore-from-public"() {
     document.getElementById("restore_from_private").value = "";
   },
-  "click .submit-params"(event) {
+  async "click .submit-params"(event) {
     const plotAction = Session.get("plotParameter");
     Session.set("spinner_img", "spinner.gif");
     document.getElementById("spinner").style.display = "block";
@@ -332,7 +332,7 @@ Template.plotList.events({
         p = Session.get("PlotParams");
         paramData = matsParamUtils.getElementValues();
         p.paramData = paramData;
-        matsMethods.saveSettings
+        await matsMethods.saveSettings
           .callAsync({ saveAs, p, permission })
           .then()
           .catch(function (error) {

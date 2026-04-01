@@ -82,7 +82,7 @@ Template.configure.helpers({
 });
 
 Template.configure.events({
-  "submit .configure-settings-form"(event) {
+  async "submit .configure-settings-form"(event) {
     // Prevent default browser form submit
     event.preventDefault();
     // Get value from form element
@@ -124,7 +124,7 @@ Template.configure.events({
         }
       }
     }
-    matsMethods.applySettingsData
+    await matsMethods.applySettingsData
       .callAsync({ settings: data })
       .then()
       .catch(function (error) {
