@@ -6,7 +6,7 @@
 
 Package.describe({
   name: "randyp:mats-common",
-  version: "6.2.7",
+  version: "6.2.8",
   // Brief, one-line summary of the package.
   summary: "MATScommon files provides common functionality for MATS/METexpress apps",
   // URL to the Git repository containing the source code for this package.
@@ -26,8 +26,8 @@ Package.onUse(function (api) {
 
     // things to do with querying
     "python-shell": "5.0.0",
-    couchbase: "4.6.1",
-    mysql2: "3.20.0",
+    couchbase: "4.7.0",
+    mysql2: "3.22.0",
     url: "0.11.4",
 
     // things to do with downsizing and caching data
