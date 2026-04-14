@@ -22,7 +22,11 @@
       </div>
       {{/if}}
       <div class="row mx-1">
-        <div id="paramWell" class="col-xl-8 col-lg-9 col-md-11 col-12 clearfix well rounded rounded-4 mt-2 p-3" style="background-color: {{paramWellColor}} !important;">
+        <div
+          id="paramWell"
+          class="col-xl-8 col-lg-9 col-md-11 col-12 clearfix well rounded rounded-4 mt-2 p-3"
+          style="background-color: {{paramWellColor}} !important;"
+        >
           {{#each CurveParamGroups}} {{> curveParamGroup}} {{/each}}
         </div>
       </div>
