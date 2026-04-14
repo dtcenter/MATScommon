@@ -4,7 +4,7 @@
 
 import { matsTypes, matsCurveUtils } from "meteor/randyp:mats-common";
 
-/* global Session */
+/* global Session, $ */
 /* eslint-disable no-console */
 
 // set the label for the hide show buttons (NO DATA) for the initial time here
@@ -464,7 +464,7 @@ const setScorecardDisplayView = function () {
   document.getElementById("spinner").style.display = "none";
   document.getElementById("scorecardStatus").style.display = "block";
   document.getElementById("plotType").style.display = "none";
-  document.getElementById("refresh-scorecard").click();
+  $("#refresh-scorecard").trigger("click");
   // Enable navigation prompt
   window.onbeforeunload = function () {
     return true;
