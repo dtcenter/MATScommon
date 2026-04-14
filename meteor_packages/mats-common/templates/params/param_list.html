@@ -6,11 +6,8 @@
       aria-label="form to set the curve parameters"
       novalidate
     >
-      <div id="paramWell" class="clearfix well p-3">
-        {{#each CurveParamGroups}} {{> curveParamGroup}} {{/each}}
-      </div>
       {{#if isEdit}}
-      <div class="row clearfix well bg-white btn-toolbar btn-group btn-lg p-2">
+      <div class="btn-group mx-1 mt-5 mb-2">
         <button type="submit" name="save" id="save" class="btn btn-success">
           <i class="fa-regular fa-floppy-disk"></i>&nbsp;&nbsp;Save Changes
         </button>
@@ -23,8 +20,14 @@
           <i class="fa-solid fa-xmark"></i>&nbsp;&nbsp;Cancel
         </button>
       </div>
-      {{else}}
-      <div class="btn-group mx-1 mt-4">
+      {{/if}}
+      <div class="row mx-1">
+        <div id="paramWell" class="col-xl-8 col-lg-9 col-md-11 col-12 clearfix well rounded rounded-4 mt-2 p-3" style="background-color: {{paramWellColor}} !important;">
+          {{#each CurveParamGroups}} {{> curveParamGroup}} {{/each}}
+        </div>
+      </div>
+      {{#unless isEdit}}
+      <div class="btn-group mx-1 my-2">
         <button type="submit" name="add" id="add" class="btn btn-success">
           <i class="fa-solid fa-plus"></i>&nbsp;&nbsp;{{addButtonText}}
         </button>
@@ -51,7 +54,7 @@
           <i class="fa-solid fa-rotate"></i>&nbsp;&nbsp;Reset to Defaults
         </button>
       </div>
-      {{/if}}
+      {{/unless}}
     </form>
   </div>
 </template>

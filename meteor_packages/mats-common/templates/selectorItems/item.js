@@ -174,7 +174,7 @@ Template.item.helpers({
     ) {
       return "none;";
     }
-    return "block; margin-top: 1.5em;";
+    return "block; margin-top: 0.75em; margin-bottom: 0.75em;";
   },
   controlButtonCovered() {
     if (this.controlButtonCovered) {
@@ -277,7 +277,11 @@ Template.item.events({
       Session.get("editMode") === undefined && Session.get("editMode") === ""
         ? undefined
         : document.getElementById(`curveItem-${Session.get("editMode")}`);
-    if (curveItem && this.type !== matsTypes.InputTypes.dateRange) {
+    if (
+      curveItem &&
+      this.type !== matsTypes.InputTypes.dateRange &&
+      !event.target.multiple
+    ) {
       $("#save").trigger("click");
     }
     return null;

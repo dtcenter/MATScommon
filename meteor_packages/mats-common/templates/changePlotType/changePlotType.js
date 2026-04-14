@@ -13,7 +13,7 @@ Template.changePlotType.events({
     event.preventDefault();
     matsCurveUtils.clearAllUsed();
     Session.set("editMode", "");
-    Session.set("paramWellColor", "#f5f5f5"); // default grey
+    Session.set("paramWellColor", "#ffffff");
     Session.set("lastUpdate", Date.now());
 
     Session.set("confirmPlotChange", Date.now());

@@ -141,7 +141,7 @@ Template.select.events({
     }
     const editMode = Session.get("editMode");
     const curveItem =
-      editMode === undefined && editMode === ""
+      editMode === undefined || editMode === ""
         ? undefined
         : document.getElementById(`curveItem-${editMode}`);
     if (curveItem && this.type !== matsTypes.InputTypes.dateRange) {
@@ -200,10 +200,14 @@ Template.select.events({
     // afterwards just propagate changes to curves being edited, if any.
     const editMode = Session.get("editMode");
     const curveItem =
-      editMode === undefined && editMode === ""
+      editMode === undefined || editMode === ""
         ? undefined
         : document.getElementById(`curveItem-${editMode}`);
-    if (curveItem && this.type !== matsTypes.InputTypes.dateRange) {
+    if (
+      curveItem &&
+      this.type !== matsTypes.InputTypes.dateRange &&
+      !event.target.multiple
+    ) {
       $("#save").trigger("click");
     }
     if (event.target.multiple) {

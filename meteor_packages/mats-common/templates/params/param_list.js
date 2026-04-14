@@ -62,7 +62,7 @@ Template.paramList.helpers({
         return "#ffffff";
       }
       const { color } = curveBeingEdited[0];
-      const lighterShadeOfColor = shadeRGBColor(color, 0.2);
+      const lighterShadeOfColor = shadeRGBColor(color, 0.75);
       Session.set("paramWellColor", lighterShadeOfColor);
     }
 
