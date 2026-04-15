@@ -177,6 +177,7 @@ Template.curveList.helpers({
       if (
         param !== undefined &&
         param.dependentNames === undefined &&
+        !param.multiple &&
         curveOptions[coidx] !== "sitesMap"
       ) {
         returnOptions.push({
@@ -226,7 +227,12 @@ const valueInThisCurvesOptions = function (curve, basisParam, basisParamValue) {
     }
     options = options[superiorValue];
   }
-  if (options.indexOf(basisParamValue) !== -1) {
+  if (
+    (Array.isArray(options) && options.indexOf(basisParamValue) !== -1) ||
+    (typeof options === "object" &&
+      !Array.isArray(options) &&
+      Object.keys(options).indexOf(basisParamValue) !== -1)
+  ) {
     return true;
   }
   return false;
