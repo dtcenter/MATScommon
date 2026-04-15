@@ -71,7 +71,7 @@
       id="editAllCurvesBar"
       class="row col-lg-10 col-md-11 col-12 bg-warning-subtle border border-warning border-2 rounded-2 my-2 px-3 py-1 g-0"
     >
-      <div class="col-10 d-flex align-items-center text-start">
+      <div class="col-sm-10 col-12 d-flex align-items-center text-sm-start text-center py-2">
         <div class="regularPublicSans fs-6">Apply the</div>
         &nbsp;&nbsp;
         <select
@@ -96,12 +96,13 @@
         >&nbsp;&nbsp;
         <div class="regularPublicSans fs-6">to all curves (where valid)?</div>
       </div>
-      <div class="col-2 text-end">
+      <div class="col-sm-2 col-12 align-items-center text-sm-end text-center py-2">
         <button id="apply-field" class="apply-field btn btn-info text-end">
           <i class="fa-solid fa-check d-none d-md-inline"></i
           ><span class="d-none d-md-inline">&nbsp;&nbsp;</span>Apply
         </button>
       </div>
+      <div class="col-12 align-items-center text-center pt-2 border-top border-warning" style="font-size:small;">Note: not currently supported for multiselects or for parameters that control other parameters.</div>
     </div>
     {{/if}}
     <div class="clearfix btn-toolbar mt-4 gap-2 well">
