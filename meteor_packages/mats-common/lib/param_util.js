@@ -549,6 +549,19 @@ const getPlotParamNames = function () {
   return paramNames;
 };
 
+const makeTitleCase = function (item) {
+  let tcItem = item.split(" ");
+  for (let i = 0; i < tcItem.length; i += 1) {
+    tcItem[i] = tcItem[i].charAt(0).toUpperCase() + tcItem[i].slice(1);
+    tcItem[i] = tcItem[i] === "Utc" ? "UTC" : tcItem[i];
+  }
+  tcItem = tcItem.join(" ").split("-");
+  for (let i = 0; i < tcItem.length; i += 1) {
+    tcItem[i] = tcItem[i].charAt(0).toUpperCase() + tcItem[i].slice(1);
+  }
+  return tcItem.join(" ");
+};
+
 const addImportedCurve = function () {
   const curves = Session.get("Curves");
   const p = {};
@@ -604,6 +617,7 @@ export default matsParamUtils = {
   getOptionsForParam,
   getOptionsMapForParam,
   visibilityControllerForParam,
+  makeTitleCase,
   getAppName,
   getDefaultDateRange,
   getMinMaxDates,

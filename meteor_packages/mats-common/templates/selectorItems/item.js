@@ -39,16 +39,7 @@ Template.item.helpers({
     } else {
       tcname = this.name;
     }
-    tcname = tcname.split(" ");
-    for (let i = 0; i < tcname.length; i += 1) {
-      tcname[i] = tcname[i].charAt(0).toUpperCase() + tcname[i].slice(1);
-      tcname[i] = tcname[i] === "Utc" ? "UTC" : tcname[i];
-    }
-    tcname = tcname.join(" ").split("-");
-    for (let i = 0; i < tcname.length; i += 1) {
-      tcname[i] = tcname[i].charAt(0).toUpperCase() + tcname[i].slice(1);
-    }
-    return tcname.join(" ");
+    return matsParamUtils.makeTitleCase(tcname);
   },
   fa() {
     // font awesome helper

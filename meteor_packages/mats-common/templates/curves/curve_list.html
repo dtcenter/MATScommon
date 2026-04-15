@@ -80,7 +80,7 @@
           aria-label="Select a field"
         >
           {{#each curveOptions}}
-          <option value="{{this}}">{{this}}</option>
+          <option value="{{this.original}}">{{this.titlecase}}</option>
           {{/each}}</select
         >&nbsp;&nbsp;
         <div class="regularPublicSans fs-6">value in</div>
@@ -94,10 +94,10 @@
           <option value="{{this.label}}">{{this.label}}</option>
           {{/each}}</select
         >&nbsp;&nbsp;
-        <div class="regularPublicSans fs-6">to all curves?</div>
+        <div class="regularPublicSans fs-6">to all curves (where valid)?</div>
       </div>
       <div class="col-2 text-end">
-        <button id="apply-field" class="remove-all btn btn-info text-end">
+        <button id="apply-field" class="apply-field btn btn-info text-end">
           <i class="fa-solid fa-check d-none d-md-inline"></i
           ><span class="d-none d-md-inline">&nbsp;&nbsp;</span>Apply
         </button>

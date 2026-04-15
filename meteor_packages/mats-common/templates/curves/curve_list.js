@@ -7,6 +7,7 @@ import {
   matsCollections,
   matsCurveUtils,
   matsPlotUtils,
+  matsParamUtils,
 } from "meteor/randyp:mats-common";
 import { Template } from "meteor/templating";
 
@@ -169,7 +170,22 @@ Template.curveList.helpers({
   curveOptions() {
     const curveOptions = matsCollections.CurveParamsInfo.findOne({}).curve_params;
     curveOptions.shift();
-    return curveOptions;
+    const returnOptions = [];
+    for (let coidx = 0; coidx < curveOptions.length; coidx += 1) {
+      const param = matsCollections[curveOptions[coidx]].findOne({});
+      // don't allow changes to superiors for now
+      if (
+        param !== undefined &&
+        param.dependentNames === undefined &&
+        curveOptions[coidx] !== "sitesMap"
+      ) {
+        returnOptions.push({
+          original: curveOptions[coidx],
+          titlecase: matsParamUtils.makeTitleCase(curveOptions[coidx]),
+        });
+      }
+    }
+    return returnOptions;
   },
 });
 
@@ -190,7 +206,55 @@ Template.curveList.helpers({
     is what sets up the graph page.
     */
 
+const valueInThisCurvesOptions = function (curve, basisParam, basisParamValue) {
+  const param = matsCollections[basisParam].findOne({});
+  const paramSuperiors = param.superiorNames ? param.superiorNames : [];
+
+  if (paramSuperiors.length === 0) {
+    // this param has no superiors, so just see if the requested value is in the options
+    if (param.options.indexOf(basisParamValue) !== -1) {
+      return true;
+    }
+    return false;
+  }
+  let options = param.optionsMap;
+  for (let sidx = 0; sidx < paramSuperiors.length; sidx += 1) {
+    const superiorValue = curve[paramSuperiors[sidx]];
+    const validSuperiorValues = Object.keys(options);
+    if (validSuperiorValues.indexOf(superiorValue) === -1) {
+      return false;
+    }
+    options = options[superiorValue];
+  }
+  if (options.indexOf(basisParamValue) !== -1) {
+    return true;
+  }
+  return false;
+};
+
 Template.curveList.events({
+  "click #apply-field"() {
+    const basisCurveLabel = document.getElementById("curveLabelSelector").value;
+    const basisParam = document.getElementById("fieldListSelector").value;
+
+    const curves = Session.get("Curves");
+    const basisCurve = curves.find((c) => c.label === basisCurveLabel);
+    const basisParamValue = basisCurve[basisParam];
+
+    if (basisParamValue && basisParamValue !== "") {
+      for (let cidx = 0; cidx < curves.length; cidx += 1) {
+        if (
+          curves[cidx] &&
+          curves[cidx][basisParam] &&
+          valueInThisCurvesOptions(curves[cidx], basisParam, basisParamValue)
+        ) {
+          curves[cidx][basisParam] = basisParamValue;
+        }
+      }
+    }
+
+    Session.set("Curves", curves);
+  },
   "click .remove-all"() {
     if (Session.get("confirmRemoveAll")) {
       matsCurveUtils.clearAllUsed();
