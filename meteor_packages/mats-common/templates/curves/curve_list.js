@@ -177,6 +177,7 @@ Template.curveList.helpers({
       if (
         param !== undefined &&
         !param.multiple &&
+        curveOptions[coidx] !== "plot-type" &&
         curveOptions[coidx] !== "sitesMap"
       ) {
         returnOptions.push({
