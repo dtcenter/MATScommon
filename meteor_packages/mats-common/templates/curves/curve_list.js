@@ -176,7 +176,6 @@ Template.curveList.helpers({
       // don't allow changes to superiors for now
       if (
         param !== undefined &&
-        param.dependentNames === undefined &&
         !param.multiple &&
         curveOptions[coidx] !== "sitesMap"
       ) {
