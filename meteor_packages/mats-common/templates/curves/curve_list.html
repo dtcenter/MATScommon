@@ -47,8 +47,8 @@
 
   <div
     id="curveList"
-    class="well clearfix col-lg-12 my-2 mx-2"
-    style="display:{{displayCurves}}; width: 90%;"
+    class="well clearfix col-lg-11 col-12 my-2 mx-2"
+    style="display:{{displayCurves}};"
   >
     {{#each curves}} {{> curveItem this}} {{/each}} {{#if isScorecard}}
     <div class="clearfix btn-toolbar gap-2 well">
@@ -66,8 +66,47 @@
       </button>
       <button type="button" class="btn spacebutton" id="cl-spacer"></button>
     </div>
-    {{else}}
-    <div class="clearfix btn-toolbar gap-2 well">
+    {{else}} {{#if atLeastTwoCurves}}
+    <div
+      id="editAllCurvesBar"
+      class="row col-lg-10 col-md-11 col-12 bg-warning-subtle border border-warning border-2 rounded-2 my-2 px-3 py-1 g-0"
+    >
+      <div class="col-10 d-flex align-items-center text-start">
+        <div class="regularPublicSans fs-6">Apply the</div>
+        &nbsp;&nbsp;
+        <select
+          id="fieldListSelector"
+          class="form-select bg-white w-auto"
+          aria-label="Select a field"
+        >
+          <option value="region">region</option>
+          <option value="statistic">statistic</option>
+          <option value="variable">variable</option>
+          <option value="truth">truth</option></select
+        >&nbsp;&nbsp;
+        <div class="regularPublicSans fs-6">value in</div>
+        &nbsp;&nbsp;
+        <select
+          id="curveListSelector"
+          class="form-select bg-white w-auto"
+          aria-label="Select a curve"
+        >
+          <option value="Curve0">Curve0</option>
+          <option value="Curve1">Curve1</option>
+          <option value="Curve2">Curve2</option>
+          <option value="Curve3">Curve3</option></select
+        >&nbsp;&nbsp;
+        <div class="regularPublicSans fs-6">to all curves?</div>
+      </div>
+      <div class="col-2 text-end">
+        <button id="apply-field" class="remove-all btn btn-info text-end">
+          <i class="fa-solid fa-check d-none d-md-inline"></i
+          ><span class="d-none d-md-inline">&nbsp;&nbsp;</span>Apply
+        </button>
+      </div>
+    </div>
+    {{/if}}
+    <div class="clearfix btn-toolbar mt-4 gap-2 well">
       <button id="remove-all" class="remove-all btn btn-danger">
         <i class="fa-solid fa-xmark"></i>&nbsp;&nbsp;Remove All
       </button>

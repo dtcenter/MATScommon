@@ -163,6 +163,9 @@ Template.curveList.helpers({
   isScorecard() {
     return matsCollections.Settings.findOne({}).scorecard;
   },
+  atLeastTwoCurves() {
+    return Session.get("Curves").length >= 2;
+  },
 });
 
 /*
