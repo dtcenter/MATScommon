@@ -173,7 +173,7 @@ Template.curveList.helpers({
     const returnOptions = [];
     for (let coidx = 0; coidx < curveOptions.length; coidx += 1) {
       const param = matsCollections[curveOptions[coidx]].findOne({});
-      // don't allow changes to superiors for now
+      // plot-type and sitesMap are support selectors and shouldn't be editable here
       if (
         param !== undefined &&
         !param.multiple &&
@@ -220,6 +220,9 @@ const valueInThisCurvesOptions = function (curve, basisParam, basisParamValue) {
   }
   let options = param.optionsMap;
   for (let sidx = 0; sidx < paramSuperiors.length; sidx += 1) {
+    // this param does have superiors, so we need to loop
+    // through them and make sure that our requested value
+    // is valid in their dependents' options
     const superiorValue = curve[paramSuperiors[sidx]];
     const validSuperiorValues = Object.keys(options);
     if (validSuperiorValues.indexOf(superiorValue) === -1) {
@@ -228,11 +231,14 @@ const valueInThisCurvesOptions = function (curve, basisParam, basisParamValue) {
     options = options[superiorValue];
   }
   if (
+    // the requested value is in the options array
     (Array.isArray(options) && options.indexOf(basisParamValue) !== -1) ||
+    // or it's a key in the options object
     (typeof options === "object" &&
       !Array.isArray(options) &&
       Object.keys(options).indexOf(basisParamValue) !== -1)
   ) {
+    // valid!
     return true;
   }
   return false;
