@@ -79,22 +79,20 @@
           class="form-select bg-white w-auto"
           aria-label="Select a field"
         >
-          <option value="region">region</option>
-          <option value="statistic">statistic</option>
-          <option value="variable">variable</option>
-          <option value="truth">truth</option></select
+          {{#each curveOptions}}
+          <option value="{{this}}">{{this}}</option>
+          {{/each}}</select
         >&nbsp;&nbsp;
         <div class="regularPublicSans fs-6">value in</div>
         &nbsp;&nbsp;
         <select
-          id="curveListSelector"
+          id="curveLabelSelector"
           class="form-select bg-white w-auto"
           aria-label="Select a curve"
         >
-          <option value="Curve0">Curve0</option>
-          <option value="Curve1">Curve1</option>
-          <option value="Curve2">Curve2</option>
-          <option value="Curve3">Curve3</option></select
+          {{#each curves}}
+          <option value="{{this.label}}">{{this.label}}</option>
+          {{/each}}</select
         >&nbsp;&nbsp;
         <div class="regularPublicSans fs-6">to all curves?</div>
       </div>

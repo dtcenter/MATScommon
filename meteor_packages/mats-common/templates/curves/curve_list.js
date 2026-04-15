@@ -166,6 +166,11 @@ Template.curveList.helpers({
   atLeastTwoCurves() {
     return Session.get("Curves").length >= 2;
   },
+  curveOptions() {
+    const curveOptions = matsCollections.CurveParamsInfo.findOne({}).curve_params;
+    curveOptions.shift();
+    return curveOptions;
+  },
 });
 
 /*
