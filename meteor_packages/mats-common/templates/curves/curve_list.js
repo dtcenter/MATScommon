@@ -165,7 +165,11 @@ Template.curveList.helpers({
     return matsCollections.Settings.findOne({}).scorecard;
   },
   atLeastTwoCurves() {
-    return Session.get("Curves").length >= 2;
+    // no edit all toolbar for METexpress just yet
+    const isMetexpress =
+      matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
+    const isScorecard = matsCollections.Settings.findOne({}).scorecard;
+    return Session.get("Curves").length >= 2 && !isMetexpress && !isScorecard;
   },
   curveOptions() {
     const curveOptions = matsCollections.CurveParamsInfo.findOne({}).curve_params;
