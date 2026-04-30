@@ -613,7 +613,6 @@ const consolidateContour = function (d, dTemp, statType, xAxisParam, yAxisParam)
 // which statistics are excluded from scorecards?
 const excludeStatFromScorecard = function (stat) {
   const statsToExclude = [
-    // "Bias (forecast/actual)",
     "Nlow (Number of obs < threshold (hits + misses))",
     "Nhigh (Number of obs > threshold (hits + misses))",
     "All observed yes",
@@ -629,7 +628,6 @@ const excludeStatFromScorecard = function (stat) {
     "N",
     "Model average",
     "Obs average",
-    // "Std deviation",
     "MAE (station plots only)",
   ];
   return statsToExclude.indexOf(stat) !== -1;
