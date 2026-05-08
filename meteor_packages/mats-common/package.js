@@ -17,7 +17,7 @@ Package.describe({
 });
 
 Package.onUse(function (api) {
-  api.versionsFrom("3.4");
+  api.versionsFrom("3.4.1");
   Npm.depends({
     // ******* npm packages
 
