@@ -29,8 +29,8 @@ Template.about.helpers({
       version = settings.appVersion;
       commit = settings.commit;
     }
-    const versionStr = `<div class="mt-3">Version: ${version}</div>`;
-    return `${versionStr}<div> Last commit: ${commit}</div>`;
+    const versionStr = `<div>Version: ${version}</div>`;
+    return `${versionStr}<div class="mt-3 fs-6"> Last commit: ${commit}</div>`;
   },
   releaseNotes() {
     Session.get("notesUpdated");
