@@ -540,6 +540,8 @@ Template.plotType.events({
           "x-obs-variable",
           "y-obs-variable",
           "threshold",
+          "x-threshold",
+          "y-threshold",
           "scale",
           "level",
           "forecast-length",
