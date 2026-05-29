@@ -178,6 +178,7 @@ class MatsMiddleMap {
 
       let stationNamesObs = "";
       for (let i = 0; i < stationNamesSlice.length; i += 1) {
+        // if we're querying for elevation, retrieve it from the map we passed in instead of the database
         let wantedValue = "";
         if (this.varName === "Elevation") {
           const station = stationNamesSlice[i];
@@ -185,14 +186,26 @@ class MatsMiddleMap {
         } else {
           wantedValue = `obs.data.${stationNamesSlice[i]}.\`${this.varName}\``;
         }
+
+        // if we're filtering by elevation, retrieve it from the map we passed in instead of the database
+        let filterObsValue = "";
+        if (this.filterInfo.filterObsBy) {
+          if (this.filterInfo.filterObsBy === "Elevation") {
+            const station = stationNamesSlice[i];
+            filterObsValue = this.elevMap[station];
+          } else {
+            filterObsValue = `obs.data.${stationNamesSlice[i]}.\`${this.filterInfo.filterObsBy}\``;
+          }
+        }
+
         if (i === 0) {
           if (this.filterInfo.filterObsBy) {
-            stationNamesObs = `CASE WHEN obs.data.${stationNamesSlice[i]}.\`${this.filterInfo.filterObsBy}\` >= ${this.filterInfo.filterObsMin} AND obs.data.${stationNamesSlice[i]}.\`${this.filterInfo.filterObsBy}\` <= ${this.filterInfo.filterObsMax} THEN ${wantedValue} ELSE "NULL" END ${stationNamesSlice[i]}`;
+            stationNamesObs = `CASE WHEN ${filterObsValue} >= ${this.filterInfo.filterObsMin} AND ${filterObsValue} <= ${this.filterInfo.filterObsMax} THEN ${wantedValue} ELSE "NULL" END ${stationNamesSlice[i]}`;
           } else {
             stationNamesObs = `${wantedValue} ${stationNamesSlice[i]}`;
           }
         } else if (this.filterInfo.filterObsBy) {
-          stationNamesObs += `, CASE WHEN obs.data.${stationNamesSlice[i]}.\`${this.filterInfo.filterObsBy}\` >= ${this.filterInfo.filterObsMin} AND obs.data.${stationNamesSlice[i]}.\`${this.filterInfo.filterObsBy}\` <= ${this.filterInfo.filterObsMax} THEN ${wantedValue} ELSE "NULL" END ${stationNamesSlice[i]}`;
+          stationNamesObs += `, CASE WHEN ${filterObsValue} >= ${this.filterInfo.filterObsMin} AND ${filterObsValue} <= ${this.filterInfo.filterObsMax} THEN ${wantedValue} ELSE "NULL" END ${stationNamesSlice[i]}`;
         } else {
           stationNamesObs += `, ${wantedValue} ${stationNamesSlice[i]}`;
         }
