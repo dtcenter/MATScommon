@@ -1741,19 +1741,33 @@ const parseQueryDataMapScalar = function (
       colorModerate = "rgb(125,125,125)";
       colorHigh = "rgb(53,151,143)";
       colorHighest = "rgb(1,102,95)";
-    } else if (variable.toLowerCase().includes("temp")) {
+    } else {
+      //   if (
+      //   variable.toLowerCase().includes("temp") ||
+      //   variable.toLowerCase().includes("elevation") ||
+      //   variable.toLowerCase().includes("pressure")
+      // )
       colorLowest = "rgb(24,28,247)";
       colorLow = "rgb(67,147,195)";
       colorModerate = "rgb(125,125,125)";
       colorHigh = "rgb(255,120,86)";
       colorHighest = "rgb(216,21,47)";
-    } else {
-      colorLowest = "rgb(0,134,0)";
-      colorLow = "rgb(80,255,80)";
-      colorModerate = "rgb(125,125,125)";
-      colorHigh = "rgb(255,80,255)";
-      colorHighest = "rgb(134,0,134)";
+      // } else {
+      //   colorLowest = "rgb(0,134,0)";
+      //   colorLow = "rgb(80,255,80)";
+      //   colorModerate = "rgb(125,125,125)";
+      //   colorHigh = "rgb(255,80,255)";
+      //   colorHighest = "rgb(134,0,134)";
     }
+  } else if (
+    variable.toLowerCase().includes("elevation") &&
+    statistic.toLowerCase().includes("average")
+  ) {
+    colorLowest = "rgb(5, 144, 0)";
+    colorLow = "rgb(126, 188, 1)";
+    colorModerate = "rgb(185, 157, 1)";
+    colorHigh = "rgb(143, 93, 1)";
+    colorHighest = "rgb(125,125,125)";
   } else {
     colorLowest = "rgb(125,125,125)";
     colorLow = "rgb(196,179,139)";
