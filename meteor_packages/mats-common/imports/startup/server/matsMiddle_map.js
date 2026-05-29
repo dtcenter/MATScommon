@@ -45,6 +45,8 @@ class MatsMiddleMap {
 
   filterInfo = {};
 
+  elevMap = {};
+
   writeOutput = false;
 
   mmCommon = null;
@@ -68,7 +70,8 @@ class MatsMiddleMap {
     fromSecs,
     toSecs,
     validTimes,
-    filterInfo
+    filterInfo,
+    elevMap
   ) => {
     let rv = "";
     try {
@@ -82,7 +85,8 @@ class MatsMiddleMap {
         fromSecs,
         toSecs,
         validTimes,
-        filterInfo
+        filterInfo,
+        elevMap
       );
     } catch (err) {
       console.log(`MatsMiddleMap.processStationQuery ERROR: ${err.message}`);
@@ -101,7 +105,8 @@ class MatsMiddleMap {
     fromSecs,
     toSecs,
     validTimes,
-    filterInfo
+    filterInfo,
+    elevMap
   ) => {
     try {
       this.statType = statType;
@@ -118,6 +123,8 @@ class MatsMiddleMap {
         });
       }
       this.filterInfo = filterInfo;
+
+      this.elevMap = elevMap;
 
       this.conn = await this.cbPool.getConnection();
 
@@ -171,16 +178,36 @@ class MatsMiddleMap {
 
       let stationNamesObs = "";
       for (let i = 0; i < stationNamesSlice.length; i += 1) {
+        // if we're querying for elevation, retrieve it from the map we passed in instead of the database
+        let wantedValue = "";
+        if (this.varName === "Elevation") {
+          const station = stationNamesSlice[i];
+          wantedValue = this.elevMap[station];
+        } else {
+          wantedValue = `obs.data.${stationNamesSlice[i]}.\`${this.varName}\``;
+        }
+
+        // if we're filtering by elevation, retrieve it from the map we passed in instead of the database
+        let filterObsValue = "";
+        if (this.filterInfo.filterObsBy) {
+          if (this.filterInfo.filterObsBy === "Elevation") {
+            const station = stationNamesSlice[i];
+            filterObsValue = this.elevMap[station];
+          } else {
+            filterObsValue = `obs.data.${stationNamesSlice[i]}.\`${this.filterInfo.filterObsBy}\``;
+          }
+        }
+
         if (i === 0) {
           if (this.filterInfo.filterObsBy) {
-            stationNamesObs = `CASE WHEN obs.data.${stationNamesSlice[i]}.\`${this.filterInfo.filterObsBy}\` >= ${this.filterInfo.filterObsMin} AND obs.data.${stationNamesSlice[i]}.\`${this.filterInfo.filterObsBy}\` <= ${this.filterInfo.filterObsMax} THEN obs.data.${stationNamesSlice[i]}.\`${this.varName}\` ELSE "NULL" END ${stationNamesSlice[i]}`;
+            stationNamesObs = `CASE WHEN ${filterObsValue} >= ${this.filterInfo.filterObsMin} AND ${filterObsValue} <= ${this.filterInfo.filterObsMax} THEN ${wantedValue} ELSE "NULL" END ${stationNamesSlice[i]}`;
           } else {
-            stationNamesObs = `obs.data.${stationNamesSlice[i]}.\`${this.varName}\` ${stationNamesSlice[i]}`;
+            stationNamesObs = `${wantedValue} ${stationNamesSlice[i]}`;
           }
         } else if (this.filterInfo.filterObsBy) {
-          stationNamesObs += `, CASE WHEN obs.data.${stationNamesSlice[i]}.\`${this.filterInfo.filterObsBy}\` >= ${this.filterInfo.filterObsMin} AND obs.data.${stationNamesSlice[i]}.\`${this.filterInfo.filterObsBy}\` <= ${this.filterInfo.filterObsMax} THEN obs.data.${stationNamesSlice[i]}.\`${this.varName}\` ELSE "NULL" END ${stationNamesSlice[i]}`;
+          stationNamesObs += `, CASE WHEN ${filterObsValue} >= ${this.filterInfo.filterObsMin} AND ${filterObsValue} <= ${this.filterInfo.filterObsMax} THEN ${wantedValue} ELSE "NULL" END ${stationNamesSlice[i]}`;
         } else {
-          stationNamesObs += `, obs.data.${stationNamesSlice[i]}.\`${this.varName}\` ${stationNamesSlice[i]}`;
+          stationNamesObs += `, ${wantedValue} ${stationNamesSlice[i]}`;
         }
       }
       let tmplWithStationNamesObs = this.cbPool.trfmSQLRemoveClause(
@@ -359,8 +386,8 @@ class MatsMiddleMap {
             const varValM = stnModel[fve];
 
             if (
-              varValO &&
-              varValM &&
+              (varValO || varValO === 0) &&
+              (varValM || varValM === 0) &&
               (!this.validTimes ||
                 this.validTimes.length === 0 ||
                 (this.validTimes &&
@@ -429,8 +456,8 @@ class MatsMiddleMap {
             const varValM = stnModel[fve];
 
             if (
-              varValO &&
-              varValM &&
+              (varValO || varValO === 0) &&
+              (varValM || varValM === 0) &&
               (!this.validTimes ||
                 this.validTimes.length === 0 ||
                 (this.validTimes &&
@@ -439,15 +466,12 @@ class MatsMiddleMap {
             ) {
               sumsStats.n0 += 1;
               sumsStats.nTimes += 1;
-
-              if (varValO && varValM) {
-                sumsStats.square_diff_sum += (varValO - varValM) ** 2;
-                sumsStats.N_sum += 1;
-                sumsStats.obs_model_diff_sum += varValO - varValM;
-                sumsStats.model_sum += varValM;
-                sumsStats.obs_sum += varValO;
-                sumsStats.abs_sum += Math.abs(varValO - varValM);
-              }
+              sumsStats.square_diff_sum += (varValO - varValM) ** 2;
+              sumsStats.N_sum += 1;
+              sumsStats.obs_model_diff_sum += varValO - varValM;
+              sumsStats.model_sum += varValM;
+              sumsStats.obs_sum += varValO;
+              sumsStats.abs_sum += Math.abs(varValO - varValM);
             }
           }
           if (sumsStats.n0 > 0) {

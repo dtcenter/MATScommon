@@ -44,6 +44,8 @@ class MatsMiddleValidTime {
 
   filterInfo = {};
 
+  elevMap = {};
+
   writeOutput = false;
 
   mmCommon = null;
@@ -66,7 +68,8 @@ class MatsMiddleValidTime {
     threshold,
     fromSecs,
     toSecs,
-    filterInfo
+    filterInfo,
+    elevMap
   ) => {
     let rv = [];
     try {
@@ -79,7 +82,8 @@ class MatsMiddleValidTime {
         threshold,
         fromSecs,
         toSecs,
-        filterInfo
+        filterInfo,
+        elevMap
       );
     } catch (err) {
       console.log(`MatsMiddleValidTime.processStationQuery ERROR: ${err.message}`);
@@ -97,7 +101,8 @@ class MatsMiddleValidTime {
     threshold,
     fromSecs,
     toSecs,
-    filterInfo
+    filterInfo,
+    elevMap
   ) => {
     try {
       this.statType = statType;
@@ -109,6 +114,8 @@ class MatsMiddleValidTime {
       this.fromSecs = fromSecs;
       this.toSecs = toSecs;
       this.filterInfo = filterInfo;
+
+      this.elevMap = elevMap;
 
       this.conn = await this.cbPool.getConnection();
 
@@ -162,16 +169,36 @@ class MatsMiddleValidTime {
 
       let stationNamesObs = "";
       for (let i = 0; i < this.stationNames.length; i += 1) {
+        // if we're querying for elevation, retrieve it from the map we passed in instead of the database
+        let wantedValue = "";
+        if (this.varName === "Elevation") {
+          const station = this.stationNames[i];
+          wantedValue = this.elevMap[station];
+        } else {
+          wantedValue = `obs.data.${this.stationNames[i]}.\`${this.varName}\``;
+        }
+
+        // if we're filtering by elevation, retrieve it from the map we passed in instead of the database
+        let filterObsValue = "";
+        if (this.filterInfo.filterObsBy) {
+          if (this.filterInfo.filterObsBy === "Elevation") {
+            const station = this.stationNames[i];
+            filterObsValue = this.elevMap[station];
+          } else {
+            filterObsValue = `obs.data.${this.stationNames[i]}.\`${this.filterInfo.filterObsBy}\``;
+          }
+        }
+
         if (i === 0) {
           if (this.filterInfo.filterObsBy) {
-            stationNamesObs = `CASE WHEN obs.data.${this.stationNames[i]}.\`${this.filterInfo.filterObsBy}\` >= ${this.filterInfo.filterObsMin} AND obs.data.${this.stationNames[i]}.\`${this.filterInfo.filterObsBy}\` <= ${this.filterInfo.filterObsMax} THEN obs.data.${this.stationNames[i]}.\`${this.varName}\` ELSE "NULL" END ${this.stationNames[i]}`;
+            stationNamesObs = `CASE WHEN ${filterObsValue} >= ${this.filterInfo.filterObsMin} AND ${filterObsValue} <= ${this.filterInfo.filterObsMax} THEN ${wantedValue} ELSE "NULL" END ${this.stationNames[i]}`;
           } else {
-            stationNamesObs = `obs.data.${this.stationNames[i]}.\`${this.varName}\` ${this.stationNames[i]}`;
+            stationNamesObs = `${wantedValue} ${this.stationNames[i]}`;
           }
         } else if (this.filterInfo.filterObsBy) {
-          stationNamesObs += `, CASE WHEN obs.data.${this.stationNames[i]}.\`${this.filterInfo.filterObsBy}\` >= ${this.filterInfo.filterObsMin} AND obs.data.${this.stationNames[i]}.\`${this.filterInfo.filterObsBy}\` <= ${this.filterInfo.filterObsMax} THEN obs.data.${this.stationNames[i]}.\`${this.varName}\` ELSE "NULL" END ${this.stationNames[i]}`;
+          stationNamesObs += `, CASE WHEN ${filterObsValue} >= ${this.filterInfo.filterObsMin} AND ${filterObsValue} <= ${this.filterInfo.filterObsMax} THEN ${wantedValue} ELSE "NULL" END ${this.stationNames[i]}`;
         } else {
-          stationNamesObs += `, obs.data.${this.stationNames[i]}.\`${this.varName}\` ${this.stationNames[i]}`;
+          stationNamesObs += `, ${wantedValue} ${this.stationNames[i]}`;
         }
       }
       let tmplWithStationNamesObs = this.cbPool.trfmSQLRemoveClause(
