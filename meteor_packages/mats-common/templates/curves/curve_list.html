@@ -153,13 +153,19 @@
           name="noGapsCheck"
         />&nbsp;<label for="noGapsCheck"><b>Hide Gaps</b></label></span
       >
-      <div id="metarMismatch" style="display:{{metarMismatchHidden}}">
+      <div
+        id="metarMismatch"
+        style="display: {{metarMismatchHidden}}; margin-top: -1em;"
+      >
         <span class="text-danger fs-6"
           ><br />CAUTION: Your curves do not all have the same truth dataset. Is this
           intentional?</span
         >
       </div>
-      <div id="thresholdMismatch" style="display:{{thresholdMismatchHidden}}">
+      <div
+        id="thresholdMismatch"
+        style="display: {{thresholdMismatchHidden}}; margin-top: -1em;"
+      >
         <span class="text-danger fs-6"
           ><br />INFO: You've requested a scalar statistic, which, unlike skill scores,
           do not use thresholds in their calculations. Therefore, your selection for
