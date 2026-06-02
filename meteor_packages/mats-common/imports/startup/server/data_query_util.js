@@ -2106,7 +2106,7 @@ const parseQueryDataMapCTC = function (
           lowLimit = 0;
           highLimit = 100;
           break;
-        case "Bias (forecast/actual)":
+        case "Bias (Forecast / Actual)":
           lowLimit = 0;
           highLimit = 2;
           break;

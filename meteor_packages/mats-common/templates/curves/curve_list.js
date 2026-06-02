@@ -126,6 +126,32 @@ Template.curveList.helpers({
     }
     return "none";
   },
+  thresholdMismatchHidden() {
+    const { appName } = matsCollections.Settings.findOne({});
+    const curves = Session.get("Curves");
+    if (curves === undefined || curves.length === 0 || appName !== "cb-metar") {
+      return "none";
+    }
+    const scalarStats = [
+      "RMSE",
+      "Bias (Model - Obs)",
+      "N",
+      "Model average",
+      "Obs average",
+      "Std deviation",
+      "MAE (temp and dewpoint only)",
+    ];
+    const thresholdedVariables = ["Ceiling (ft)", "Visibility (mi)"];
+    for (let i = 0; i < curves.length; i += 1) {
+      if (
+        scalarStats.indexOf(curves[i].statistic) !== -1 &&
+        thresholdedVariables.indexOf(curves[i].variable) !== -1
+      ) {
+        return "block";
+      }
+    }
+    return "none";
+  },
   editMode() {
     if (Session.get("editMode") === "") {
       return "";

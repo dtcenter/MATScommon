@@ -401,7 +401,7 @@ const calculateStatCTC = function (hit, fa, miss, cn, n, statistic) {
     case "FAR (False Alarm Ratio)":
       queryVal = (fa / (fa + hit)) * 100;
       break;
-    case "Bias (forecast/actual)":
+    case "Bias (Forecast / Actual)":
       queryVal = (hit + fa) / (hit + miss);
       break;
     case "CSI (Critical Success Index)":
