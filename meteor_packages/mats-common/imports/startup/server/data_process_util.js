@@ -2459,6 +2459,10 @@ const processDataSimpleScatter = async function (
   ) {
     // remove sub values and times to save space
     const data = returnDataset[curveIndex];
+    data.subHitX = [];
+    data.subFaX = [];
+    data.subMissX = [];
+    data.subCnX = [];
     data.subSquareDiffSumX = [];
     data.subNSumX = [];
     data.subObsModelDiffSumX = [];
@@ -2468,6 +2472,10 @@ const processDataSimpleScatter = async function (
     data.subValsX = [];
     data.subSecsX = [];
     data.subLevsX = [];
+    data.subHitY = [];
+    data.subFaY = [];
+    data.subMissY = [];
+    data.subCnY = [];
     data.subSquareDiffSumY = [];
     data.subNSumY = [];
     data.subObsModelDiffSumY = [];

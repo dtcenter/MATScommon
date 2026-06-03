@@ -1352,6 +1352,8 @@ const parseQueryDataSimpleScatter = function (
   rows,
   d,
   appParams,
+  statTypeX,
+  statTypeY,
   statisticXStr,
   statisticYStr
 ) {
@@ -1360,12 +1362,20 @@ const parseQueryDataSimpleScatter = function (
             x: [],
             y: [],
             binVals: [],
+            subHitX: [],
+            subFaX: [],
+            subMissX: [],
+            subCnX: [],
             subSquareDiffSumX: [],
             subNSumX: [],
             subObsModelDiffSumX: [],
             subModelSumX: [],
             subObsSumX: [],
             subAbsSumX: [],
+            subHitY: [],
+            subFaY: [],
+            subMissY: [],
+            subCnY: [],
             subValsX: [],
             subSquareDiffSumY: [],
             subNSumY: [],
@@ -1395,12 +1405,20 @@ const parseQueryDataSimpleScatter = function (
   const xStats = [];
   const yStats = [];
   const binVals = [];
+  const subHitX = [];
+  const subFaX = [];
+  const subMissX = [];
+  const subCnX = [];
   const subSquareDiffSumX = [];
   const subNSumX = [];
   const subObsModelDiffSumX = [];
   const subModelSumX = [];
   const subObsSumX = [];
   const subAbsSumX = [];
+  const subHitY = [];
+  const subFaY = [];
+  const subMissY = [];
+  const subCnY = [];
   const subSquareDiffSumY = [];
   const subNSumY = [];
   const subObsModelDiffSumY = [];
@@ -1415,24 +1433,15 @@ const parseQueryDataSimpleScatter = function (
     const binVal = Number(rows[rowIndex].binVal);
     let xStat;
     let yStat;
-    if (
-      rows[rowIndex].square_diff_sumX !== undefined &&
-      rows[rowIndex].square_diff_sumY !== undefined
-    ) {
-      // this is a scalar partial sums plot
+    if (statTypeX === "scalar" && rows[rowIndex].square_diff_sumX !== undefined) {
+      // this is a scalar partial sums x-statistic
       const squareDiffSumX = Number(rows[rowIndex].square_diff_sumX);
       const NSumX = Number(rows[rowIndex].N_sumX);
       const obsModelDiffSumX = Number(rows[rowIndex].obs_model_diff_sumX);
       const modelSumX = Number(rows[rowIndex].model_sumX);
       const obsSumX = Number(rows[rowIndex].obs_sumX);
       const absSumX = Number(rows[rowIndex].abs_sumX);
-      const squareDiffSumY = Number(rows[rowIndex].square_diff_sumY);
-      const NSumY = Number(rows[rowIndex].N_sumY);
-      const obsModelDiffSumY = Number(rows[rowIndex].obs_model_diff_sumY);
-      const modelSumY = Number(rows[rowIndex].model_sumY);
-      const obsSumY = Number(rows[rowIndex].obs_sumY);
-      const absSumY = Number(rows[rowIndex].abs_sumY);
-      if (NSumX > 0 && NSumY > 0) {
+      if (NSumX > 0) {
         xStat = matsDataUtils.calculateStatScalar(
           squareDiffSumX,
           NSumX,
@@ -1443,6 +1452,40 @@ const parseQueryDataSimpleScatter = function (
           statisticXStr
         );
         xStat = matsMethods.isThisANaN(Number(xStat)) ? null : xStat;
+      } else {
+        xStat = null;
+      }
+    } else if (statTypeX === "ctc" && rows[rowIndex].hitX !== undefined) {
+      // this is a CTC-based x-statistic
+      const hitX = Number(rows[rowIndex].hitX);
+      const faX = Number(rows[rowIndex].faX);
+      const missX = Number(rows[rowIndex].missX);
+      const cnX = Number(rows[rowIndex].cnX);
+      if (hitX + faX + missX + cnX > 0) {
+        xStat = matsDataUtils.calculateStatCTC(
+          hitX,
+          faX,
+          missX,
+          cnX,
+          hitX + faX + missX + cnX,
+          statisticXStr
+        );
+        xStat = matsMethods.isThisANaN(Number(xStat)) ? null : xStat;
+      } else {
+        xStat = null;
+      }
+    } else {
+      xStat = null;
+    }
+    if (statTypeY === "scalar" && rows[rowIndex].square_diff_sumY !== undefined) {
+      // this is a scalar partial sums y-statistic
+      const squareDiffSumY = Number(rows[rowIndex].square_diff_sumY);
+      const NSumY = Number(rows[rowIndex].N_sumY);
+      const obsModelDiffSumY = Number(rows[rowIndex].obs_model_diff_sumY);
+      const modelSumY = Number(rows[rowIndex].model_sumY);
+      const obsSumY = Number(rows[rowIndex].obs_sumY);
+      const absSumY = Number(rows[rowIndex].abs_sumY);
+      if (NSumY > 0) {
         yStat = matsDataUtils.calculateStatScalar(
           squareDiffSumY,
           NSumY,
@@ -1454,14 +1497,39 @@ const parseQueryDataSimpleScatter = function (
         );
         yStat = matsMethods.isThisANaN(Number(yStat)) ? null : yStat;
       } else {
-        xStat = null;
         yStat = null;
       }
+    } else if (statTypeY === "ctc" && rows[rowIndex].hitY !== undefined) {
+      // this is a CTC-based y-statistic
+      const hitY = Number(rows[rowIndex].hitY);
+      const faY = Number(rows[rowIndex].faY);
+      const missY = Number(rows[rowIndex].missY);
+      const cnY = Number(rows[rowIndex].cnY);
+      if (hitY + faY + missY + cnY > 0) {
+        yStat = matsDataUtils.calculateStatCTC(
+          hitY,
+          faY,
+          missY,
+          cnY,
+          hitY + faY + missY + cnY,
+          statisticYStr
+        );
+        yStat = matsMethods.isThisANaN(Number(yStat)) ? null : yStat;
+      } else {
+        yStat = null;
+      }
+    } else {
+      yStat = null;
     }
+
     n0.push(rows[rowIndex].n0); // number of values that go into a point on the graph
     nTimes.push(rows[rowIndex].nTimes); // number of times that go into a point on the graph
     binVals.push(binVal);
 
+    let thisSubHitX = [];
+    let thisSubFaX = [];
+    let thisSubMissX = [];
+    let thisSubCnX = [];
     let thisSubSquareDiffSumX = [];
     let thisSubNSumX = [];
     let thisSubObsModelDiffSumX = [];
@@ -1469,6 +1537,10 @@ const parseQueryDataSimpleScatter = function (
     let thisSubObsSumX = [];
     let thisSubAbsSumX = [];
     let thisSubValuesX = [];
+    let thisSubHitY = [];
+    let thisSubFaY = [];
+    let thisSubMissY = [];
+    let thisSubCnY = [];
     let thisSubSquareDiffSumY = [];
     let thisSubNSumY = [];
     let thisSubObsModelDiffSumY = [];
@@ -1497,113 +1569,239 @@ const parseQueryDataSimpleScatter = function (
             } else {
               thisSubLevs.push(currSubData[1]);
             }
-            thisSubSquareDiffSumX.push(Number(currSubData[2]));
-            thisSubNSumX.push(Number(currSubData[3]));
-            thisSubObsModelDiffSumX.push(Number(currSubData[4]));
-            thisSubModelSumX.push(Number(currSubData[5]));
-            thisSubObsSumX.push(Number(currSubData[6]));
-            thisSubAbsSumX.push(Number(currSubData[7]));
-            thisSubValuesX.push(
-              matsDataUtils.calculateStatScalar(
-                Number(currSubData[2]),
-                Number(currSubData[3]),
-                Number(currSubData[4]),
-                Number(currSubData[5]),
-                Number(currSubData[6]),
-                Number(currSubData[7]),
-                statisticXStr
-              )
-            );
-            thisSubSquareDiffSumY.push(Number(currSubData[8]));
-            thisSubNSumY.push(Number(currSubData[9]));
-            thisSubObsModelDiffSumY.push(Number(currSubData[10]));
-            thisSubModelSumY.push(Number(currSubData[11]));
-            thisSubObsSumY.push(Number(currSubData[12]));
-            thisSubAbsSumY.push(Number(currSubData[13]));
-            thisSubValuesY.push(
-              matsDataUtils.calculateStatScalar(
-                Number(currSubData[8]),
-                Number(currSubData[9]),
-                Number(currSubData[10]),
-                Number(currSubData[11]),
-                Number(currSubData[12]),
-                Number(currSubData[13]),
-                statisticYStr
-              )
-            );
+            if (statTypeX === "scalar") {
+              // x-statistic is scalar, and we have levels, so start the indexing at 2
+              thisSubSquareDiffSumX.push(Number(currSubData[2]));
+              thisSubNSumX.push(Number(currSubData[3]));
+              thisSubObsModelDiffSumX.push(Number(currSubData[4]));
+              thisSubModelSumX.push(Number(currSubData[5]));
+              thisSubObsSumX.push(Number(currSubData[6]));
+              thisSubAbsSumX.push(Number(currSubData[7]));
+              thisSubValuesX.push(
+                matsDataUtils.calculateStatScalar(
+                  Number(currSubData[2]),
+                  Number(currSubData[3]),
+                  Number(currSubData[4]),
+                  Number(currSubData[5]),
+                  Number(currSubData[6]),
+                  Number(currSubData[7]),
+                  statisticXStr
+                )
+              );
+            } else {
+              // x-statistic is CTC, and we have levels, so start the indexing at 2
+              thisSubHitX.push(Number(currSubData[2]));
+              thisSubFaX.push(Number(currSubData[3]));
+              thisSubMissX.push(Number(currSubData[4]));
+              thisSubCnX.push(Number(currSubData[5]));
+              thisSubValuesX.push(
+                matsDataUtils.calculateStatCTC(
+                  Number(currSubData[2]),
+                  Number(currSubData[3]),
+                  Number(currSubData[4]),
+                  Number(currSubData[5]),
+                  Number(currSubData[2]) +
+                    Number(currSubData[3]) +
+                    Number(currSubData[4]) +
+                    Number(currSubData[5]),
+                  statisticXStr
+                )
+              );
+            }
+            if (statTypeY === "scalar") {
+              // y-statistic is scalar, and we have levels, so start the indexing at 8 (these fields follow the x-fields)
+              thisSubSquareDiffSumY.push(Number(currSubData[8]));
+              thisSubNSumY.push(Number(currSubData[9]));
+              thisSubObsModelDiffSumY.push(Number(currSubData[10]));
+              thisSubModelSumY.push(Number(currSubData[11]));
+              thisSubObsSumY.push(Number(currSubData[12]));
+              thisSubAbsSumY.push(Number(currSubData[13]));
+              thisSubValuesY.push(
+                matsDataUtils.calculateStatScalar(
+                  Number(currSubData[8]),
+                  Number(currSubData[9]),
+                  Number(currSubData[10]),
+                  Number(currSubData[11]),
+                  Number(currSubData[12]),
+                  Number(currSubData[13]),
+                  statisticYStr
+                )
+              );
+            } else {
+              // y-statistic is CTC, and we have levels, so start the indexing at 6 (these fields follow the x-fields)
+              thisSubHitY.push(Number(currSubData[6]));
+              thisSubFaY.push(Number(currSubData[7]));
+              thisSubMissY.push(Number(currSubData[8]));
+              thisSubCnY.push(Number(currSubData[9]));
+              thisSubValuesY.push(
+                matsDataUtils.calculateStatCTC(
+                  Number(currSubData[6]),
+                  Number(currSubData[7]),
+                  Number(currSubData[8]),
+                  Number(currSubData[9]),
+                  Number(currSubData[6]) +
+                    Number(currSubData[7]) +
+                    Number(currSubData[8]) +
+                    Number(currSubData[9]),
+                  statisticYStr
+                )
+              );
+            }
           } else {
-            thisSubSquareDiffSumX.push(Number(currSubData[1]));
-            thisSubNSumX.push(Number(currSubData[2]));
-            thisSubObsModelDiffSumX.push(Number(currSubData[3]));
-            thisSubModelSumX.push(Number(currSubData[4]));
-            thisSubObsSumX.push(Number(currSubData[5]));
-            thisSubAbsSumX.push(Number(currSubData[6]));
-            thisSubValuesX.push(
-              matsDataUtils.calculateStatScalar(
-                Number(currSubData[1]),
-                Number(currSubData[2]),
-                Number(currSubData[3]),
-                Number(currSubData[4]),
-                Number(currSubData[5]),
-                Number(currSubData[6]),
-                statisticXStr
-              )
-            );
-            thisSubSquareDiffSumY.push(Number(currSubData[7]));
-            thisSubNSumY.push(Number(currSubData[8]));
-            thisSubObsModelDiffSumY.push(Number(currSubData[9]));
-            thisSubModelSumY.push(Number(currSubData[10]));
-            thisSubObsSumY.push(Number(currSubData[11]));
-            thisSubAbsSumY.push(Number(currSubData[12]));
-            thisSubValuesY.push(
-              matsDataUtils.calculateStatScalar(
-                Number(currSubData[7]),
-                Number(currSubData[8]),
-                Number(currSubData[9]),
-                Number(currSubData[10]),
-                Number(currSubData[11]),
-                Number(currSubData[12]),
-                statisticXStr
-              )
-            );
+            if (statTypeX === "scalar") {
+              // x-statistic is scalar, and we do not have levels, so start the indexing at 1
+              thisSubSquareDiffSumX.push(Number(currSubData[1]));
+              thisSubNSumX.push(Number(currSubData[2]));
+              thisSubObsModelDiffSumX.push(Number(currSubData[3]));
+              thisSubModelSumX.push(Number(currSubData[4]));
+              thisSubObsSumX.push(Number(currSubData[5]));
+              thisSubAbsSumX.push(Number(currSubData[6]));
+              thisSubValuesX.push(
+                matsDataUtils.calculateStatScalar(
+                  Number(currSubData[1]),
+                  Number(currSubData[2]),
+                  Number(currSubData[3]),
+                  Number(currSubData[4]),
+                  Number(currSubData[5]),
+                  Number(currSubData[6]),
+                  statisticXStr
+                )
+              );
+            } else {
+              // x-statistic is CTC, and we do not have levels, so start the indexing at 1
+              thisSubHitX.push(Number(currSubData[1]));
+              thisSubFaX.push(Number(currSubData[2]));
+              thisSubMissX.push(Number(currSubData[3]));
+              thisSubCnX.push(Number(currSubData[4]));
+              thisSubValuesX.push(
+                matsDataUtils.calculateStatCTC(
+                  Number(currSubData[1]),
+                  Number(currSubData[2]),
+                  Number(currSubData[3]),
+                  Number(currSubData[4]),
+                  Number(currSubData[1]) +
+                    Number(currSubData[2]) +
+                    Number(currSubData[3]) +
+                    Number(currSubData[4]),
+                  statisticXStr
+                )
+              );
+            }
+            if (statTypeY === "scalar") {
+              // y-statistic is scalar, and we do not have levels, so start the indexing at 7 (these fields follow the x-fields)
+              thisSubSquareDiffSumY.push(Number(currSubData[7]));
+              thisSubNSumY.push(Number(currSubData[8]));
+              thisSubObsModelDiffSumY.push(Number(currSubData[9]));
+              thisSubModelSumY.push(Number(currSubData[10]));
+              thisSubObsSumY.push(Number(currSubData[11]));
+              thisSubAbsSumY.push(Number(currSubData[12]));
+              thisSubValuesY.push(
+                matsDataUtils.calculateStatScalar(
+                  Number(currSubData[7]),
+                  Number(currSubData[8]),
+                  Number(currSubData[9]),
+                  Number(currSubData[10]),
+                  Number(currSubData[11]),
+                  Number(currSubData[12]),
+                  statisticYStr
+                )
+              );
+            } else {
+              // y-statistic is CTC, and we do not have levels, so start the indexing at 5 (these fields follow the x-fields)
+              thisSubHitY.push(Number(currSubData[5]));
+              thisSubFaY.push(Number(currSubData[6]));
+              thisSubMissY.push(Number(currSubData[7]));
+              thisSubCnY.push(Number(currSubData[8]));
+              thisSubValuesY.push(
+                matsDataUtils.calculateStatCTC(
+                  Number(currSubData[5]),
+                  Number(currSubData[6]),
+                  Number(currSubData[7]),
+                  Number(currSubData[8]),
+                  Number(currSubData[5]) +
+                    Number(currSubData[6]) +
+                    Number(currSubData[7]) +
+                    Number(currSubData[8]),
+                  statisticYStr
+                )
+              );
+            }
           }
         }
-        const squareDiffSumX = matsDataUtils.sum(thisSubSquareDiffSumX);
-        const NSumX = matsDataUtils.sum(thisSubNSumX);
-        const obsModelDiffSumX = matsDataUtils.sum(thisSubObsModelDiffSumX);
-        const modelSumX = matsDataUtils.sum(thisSubModelSumX);
-        const obsSumX = matsDataUtils.sum(thisSubObsSumX);
-        const absSumX = matsDataUtils.sum(thisSubAbsSumX);
-        xStat = matsDataUtils.calculateStatScalar(
-          squareDiffSumX,
-          NSumX,
-          obsModelDiffSumX,
-          modelSumX,
-          obsSumX,
-          absSumX,
-          statisticXStr
-        );
-        const squareDiffSumY = matsDataUtils.sum(thisSubSquareDiffSumY);
-        const NSumY = matsDataUtils.sum(thisSubNSumY);
-        const obsModelDiffSumY = matsDataUtils.sum(thisSubObsModelDiffSumY);
-        const modelSumY = matsDataUtils.sum(thisSubModelSumY);
-        const obsSumY = matsDataUtils.sum(thisSubObsSumY);
-        const absSumY = matsDataUtils.sum(thisSubAbsSumY);
-        yStat = matsDataUtils.calculateStatScalar(
-          squareDiffSumY,
-          NSumY,
-          obsModelDiffSumY,
-          modelSumY,
-          obsSumY,
-          absSumY,
-          statisticYStr
-        );
+        if (statTypeX === "scalar") {
+          // recalculate the scalar x-statistic from the sub-data to ensure consistency with the sub-data values
+          const squareDiffSumX = matsDataUtils.sum(thisSubSquareDiffSumX);
+          const NSumX = matsDataUtils.sum(thisSubNSumX);
+          const obsModelDiffSumX = matsDataUtils.sum(thisSubObsModelDiffSumX);
+          const modelSumX = matsDataUtils.sum(thisSubModelSumX);
+          const obsSumX = matsDataUtils.sum(thisSubObsSumX);
+          const absSumX = matsDataUtils.sum(thisSubAbsSumX);
+          xStat = matsDataUtils.calculateStatScalar(
+            squareDiffSumX,
+            NSumX,
+            obsModelDiffSumX,
+            modelSumX,
+            obsSumX,
+            absSumX,
+            statisticXStr
+          );
+        } else {
+          // recalculate the CTC x-statistic from the sub-data to ensure consistency with the sub-data values
+          const hitX = matsDataUtils.sum(thisSubHitX);
+          const faX = matsDataUtils.sum(thisSubFaX);
+          const missX = matsDataUtils.sum(thisSubMissX);
+          const cnX = matsDataUtils.sum(thisSubCnX);
+          xStat = matsDataUtils.calculateStatCTC(
+            hitX,
+            faX,
+            missX,
+            cnX,
+            hitX + faX + missX + cnX,
+            statisticXStr
+          );
+        }
+        if (statTypeY === "scalar") {
+          // recalculate the scalar y-statistic from the sub-data to ensure consistency with the sub-data values
+          const squareDiffSumY = matsDataUtils.sum(thisSubSquareDiffSumY);
+          const NSumY = matsDataUtils.sum(thisSubNSumY);
+          const obsModelDiffSumY = matsDataUtils.sum(thisSubObsModelDiffSumY);
+          const modelSumY = matsDataUtils.sum(thisSubModelSumY);
+          const obsSumY = matsDataUtils.sum(thisSubObsSumY);
+          const absSumY = matsDataUtils.sum(thisSubAbsSumY);
+          yStat = matsDataUtils.calculateStatScalar(
+            squareDiffSumY,
+            NSumY,
+            obsModelDiffSumY,
+            modelSumY,
+            obsSumY,
+            absSumY,
+            statisticYStr
+          );
+        } else {
+          // recalculate the CTC y-statistic from the sub-data to ensure consistency with the sub-data values
+          const hitY = matsDataUtils.sum(thisSubHitY);
+          const faY = matsDataUtils.sum(thisSubFaY);
+          const missY = matsDataUtils.sum(thisSubMissY);
+          const cnY = matsDataUtils.sum(thisSubCnY);
+          yStat = matsDataUtils.calculateStatCTC(
+            hitY,
+            faY,
+            missY,
+            cnY,
+            hitY + faY + missY + cnY,
+            statisticYStr
+          );
+        }
       } catch (e) {
         // this is an error produced by a bug in the query function, not an error returned by the mysql database
         e.message = `Error in parseQueryDataXYCurve. The expected fields don't seem to be present in the results cache: ${e.message}`;
         throw new Error(e.message);
       }
     } else {
+      thisSubHitX = NaN;
+      thisSubFaX = NaN;
+      thisSubMissX = NaN;
+      thisSubCnX = NaN;
       thisSubSquareDiffSumX = NaN;
       thisSubNSumX = NaN;
       thisSubObsModelDiffSumX = NaN;
@@ -1611,6 +1809,10 @@ const parseQueryDataSimpleScatter = function (
       thisSubObsSumX = NaN;
       thisSubAbsSumX = NaN;
       thisSubValuesX = NaN;
+      thisSubHitY = NaN;
+      thisSubFaY = NaN;
+      thisSubMissY = NaN;
+      thisSubCnY = NaN;
       thisSubSquareDiffSumY = NaN;
       thisSubNSumY = NaN;
       thisSubObsModelDiffSumY = NaN;
@@ -1626,6 +1828,10 @@ const parseQueryDataSimpleScatter = function (
 
     xStats.push(xStat);
     yStats.push(yStat);
+    subHitX.push(thisSubHitX);
+    subFaX.push(thisSubFaX);
+    subMissX.push(thisSubMissX);
+    subCnX.push(thisSubCnX);
     subSquareDiffSumX.push(thisSubSquareDiffSumX);
     subNSumX.push(thisSubNSumX);
     subObsModelDiffSumX.push(thisSubObsModelDiffSumX);
@@ -1633,6 +1839,10 @@ const parseQueryDataSimpleScatter = function (
     subObsSumX.push(thisSubObsSumX);
     subAbsSumX.push(thisSubAbsSumX);
     subValsX.push(thisSubValuesX);
+    subHitY.push(thisSubHitY);
+    subFaY.push(thisSubFaY);
+    subMissY.push(thisSubMissY);
+    subCnY.push(thisSubCnY);
     subSquareDiffSumY.push(thisSubSquareDiffSumY);
     subNSumY.push(thisSubNSumY);
     subObsModelDiffSumY.push(thisSubObsModelDiffSumY);
@@ -1649,6 +1859,10 @@ const parseQueryDataSimpleScatter = function (
   returnD.x = xStats;
   returnD.y = yStats;
   returnD.binVals = binVals;
+  returnD.subHitX = subHitX;
+  returnD.subFaX = subFaX;
+  returnD.subMissX = subMissX;
+  returnD.subCnX = subCnX;
   returnD.subSquareDiffSumX = subSquareDiffSumX;
   returnD.subNSumX = subNSumX;
   returnD.subObsModelDiffSumX = subObsModelDiffSumX;
@@ -1656,6 +1870,10 @@ const parseQueryDataSimpleScatter = function (
   returnD.subObsSumX = subObsSumX;
   returnD.subAbsSumX = subAbsSumX;
   returnD.subValsX = subValsX;
+  returnD.subHitY = subHitY;
+  returnD.subFaY = subFaY;
+  returnD.subMissY = subMissY;
+  returnD.subCnY = subCnY;
   returnD.subSquareDiffSumY = subSquareDiffSumY;
   returnD.subNSumY = subNSumY;
   returnD.subObsModelDiffSumY = subObsModelDiffSumY;
@@ -3484,6 +3702,8 @@ const queryDBSimpleScatter = async function (
   pool,
   statement,
   appParams,
+  statTypeX,
+  statTypeY,
   statisticXStr,
   statisticYStr
 ) {
@@ -3493,12 +3713,20 @@ const queryDBSimpleScatter = async function (
       x: [],
       y: [],
       binVals: [],
+      subHitX: [],
+      subFaX: [],
+      subMissX: [],
+      subCnX: [],
       subSquareDiffSumX: [],
       subNSumX: [],
       subObsModelDiffSumX: [],
       subModelSumX: [],
       subObsSumX: [],
       subAbsSumX: [],
+      subHitY: [],
+      subFaY: [],
+      subMissY: [],
+      subCnY: [],
       subSquareDiffSumY: [],
       subNSumY: [],
       subObsModelDiffSumY: [],
@@ -3546,6 +3774,8 @@ const queryDBSimpleScatter = async function (
         rows,
         d,
         appParams,
+        statTypeX,
+        statTypeY,
         statisticXStr,
         statisticYStr
       );
