@@ -1429,6 +1429,7 @@ const parseQueryDataSimpleScatter = function (
   const subValsY = [];
   const subSecs = [];
   const subLevs = [];
+
   for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
     const binVal = Number(rows[rowIndex].binVal);
     let xStat;
@@ -1588,6 +1589,45 @@ const parseQueryDataSimpleScatter = function (
                   statisticXStr
                 )
               );
+              if (statTypeY === "scalar") {
+                // y-statistic is scalar, and we have levels, so start the indexing at 8 (these fields follow the scalar x-fields)
+                thisSubSquareDiffSumY.push(Number(currSubData[8]));
+                thisSubNSumY.push(Number(currSubData[9]));
+                thisSubObsModelDiffSumY.push(Number(currSubData[10]));
+                thisSubModelSumY.push(Number(currSubData[11]));
+                thisSubObsSumY.push(Number(currSubData[12]));
+                thisSubAbsSumY.push(Number(currSubData[13]));
+                thisSubValuesY.push(
+                  matsDataUtils.calculateStatScalar(
+                    Number(currSubData[8]),
+                    Number(currSubData[9]),
+                    Number(currSubData[10]),
+                    Number(currSubData[11]),
+                    Number(currSubData[12]),
+                    Number(currSubData[13]),
+                    statisticYStr
+                  )
+                );
+              } else {
+                // y-statistic is CTC, and we have levels, so start the indexing at 8 (these fields follow the scalar x-fields)
+                thisSubHitY.push(Number(currSubData[8]));
+                thisSubFaY.push(Number(currSubData[9]));
+                thisSubMissY.push(Number(currSubData[10]));
+                thisSubCnY.push(Number(currSubData[11]));
+                thisSubValuesY.push(
+                  matsDataUtils.calculateStatCTC(
+                    Number(currSubData[8]),
+                    Number(currSubData[9]),
+                    Number(currSubData[10]),
+                    Number(currSubData[11]),
+                    Number(currSubData[8]) +
+                      Number(currSubData[9]) +
+                      Number(currSubData[10]) +
+                      Number(currSubData[11]),
+                    statisticYStr
+                  )
+                );
+              }
             } else {
               // x-statistic is CTC, and we have levels, so start the indexing at 2
               thisSubHitX.push(Number(currSubData[2]));
@@ -1607,88 +1647,67 @@ const parseQueryDataSimpleScatter = function (
                   statisticXStr
                 )
               );
-            }
-            if (statTypeY === "scalar") {
-              // y-statistic is scalar, and we have levels, so start the indexing at 8 (these fields follow the x-fields)
-              thisSubSquareDiffSumY.push(Number(currSubData[8]));
-              thisSubNSumY.push(Number(currSubData[9]));
-              thisSubObsModelDiffSumY.push(Number(currSubData[10]));
-              thisSubModelSumY.push(Number(currSubData[11]));
-              thisSubObsSumY.push(Number(currSubData[12]));
-              thisSubAbsSumY.push(Number(currSubData[13]));
-              thisSubValuesY.push(
-                matsDataUtils.calculateStatScalar(
-                  Number(currSubData[8]),
-                  Number(currSubData[9]),
-                  Number(currSubData[10]),
-                  Number(currSubData[11]),
-                  Number(currSubData[12]),
-                  Number(currSubData[13]),
-                  statisticYStr
-                )
-              );
-            } else {
-              // y-statistic is CTC, and we have levels, so start the indexing at 6 (these fields follow the x-fields)
-              thisSubHitY.push(Number(currSubData[6]));
-              thisSubFaY.push(Number(currSubData[7]));
-              thisSubMissY.push(Number(currSubData[8]));
-              thisSubCnY.push(Number(currSubData[9]));
-              thisSubValuesY.push(
-                matsDataUtils.calculateStatCTC(
-                  Number(currSubData[6]),
-                  Number(currSubData[7]),
-                  Number(currSubData[8]),
-                  Number(currSubData[9]),
-                  Number(currSubData[6]) +
-                    Number(currSubData[7]) +
-                    Number(currSubData[8]) +
+              if (statTypeY === "scalar") {
+                // y-statistic is scalar, and we have levels, so start the indexing at 6 (these fields follow the CTC x-fields)
+                thisSubSquareDiffSumY.push(Number(currSubData[6]));
+                thisSubNSumY.push(Number(currSubData[7]));
+                thisSubObsModelDiffSumY.push(Number(currSubData[8]));
+                thisSubModelSumY.push(Number(currSubData[9]));
+                thisSubObsSumY.push(Number(currSubData[10]));
+                thisSubAbsSumY.push(Number(currSubData[11]));
+                thisSubValuesY.push(
+                  matsDataUtils.calculateStatScalar(
+                    Number(currSubData[6]),
+                    Number(currSubData[7]),
+                    Number(currSubData[8]),
                     Number(currSubData[9]),
-                  statisticYStr
-                )
-              );
+                    Number(currSubData[10]),
+                    Number(currSubData[11]),
+                    statisticYStr
+                  )
+                );
+              } else {
+                // y-statistic is CTC, and we have levels, so start the indexing at 6 (these fields follow the CTC x-fields)
+                thisSubHitY.push(Number(currSubData[6]));
+                thisSubFaY.push(Number(currSubData[7]));
+                thisSubMissY.push(Number(currSubData[8]));
+                thisSubCnY.push(Number(currSubData[9]));
+                thisSubValuesY.push(
+                  matsDataUtils.calculateStatCTC(
+                    Number(currSubData[6]),
+                    Number(currSubData[7]),
+                    Number(currSubData[8]),
+                    Number(currSubData[9]),
+                    Number(currSubData[6]) +
+                      Number(currSubData[7]) +
+                      Number(currSubData[8]) +
+                      Number(currSubData[9]),
+                    statisticYStr
+                  )
+                );
+              }
             }
-          } else {
-            if (statTypeX === "scalar") {
-              // x-statistic is scalar, and we do not have levels, so start the indexing at 1
-              thisSubSquareDiffSumX.push(Number(currSubData[1]));
-              thisSubNSumX.push(Number(currSubData[2]));
-              thisSubObsModelDiffSumX.push(Number(currSubData[3]));
-              thisSubModelSumX.push(Number(currSubData[4]));
-              thisSubObsSumX.push(Number(currSubData[5]));
-              thisSubAbsSumX.push(Number(currSubData[6]));
-              thisSubValuesX.push(
-                matsDataUtils.calculateStatScalar(
-                  Number(currSubData[1]),
-                  Number(currSubData[2]),
-                  Number(currSubData[3]),
-                  Number(currSubData[4]),
-                  Number(currSubData[5]),
-                  Number(currSubData[6]),
-                  statisticXStr
-                )
-              );
-            } else {
-              // x-statistic is CTC, and we do not have levels, so start the indexing at 1
-              thisSubHitX.push(Number(currSubData[1]));
-              thisSubFaX.push(Number(currSubData[2]));
-              thisSubMissX.push(Number(currSubData[3]));
-              thisSubCnX.push(Number(currSubData[4]));
-              thisSubValuesX.push(
-                matsDataUtils.calculateStatCTC(
-                  Number(currSubData[1]),
-                  Number(currSubData[2]),
-                  Number(currSubData[3]),
-                  Number(currSubData[4]),
-                  Number(currSubData[1]) +
-                    Number(currSubData[2]) +
-                    Number(currSubData[3]) +
-                    Number(currSubData[4]),
-                  statisticXStr
-                )
-              );
-            }
+          } else if (statTypeX === "scalar") {
+            // x-statistic is scalar, and we do not have levels, so start the indexing at 1
+            thisSubSquareDiffSumX.push(Number(currSubData[1]));
+            thisSubNSumX.push(Number(currSubData[2]));
+            thisSubObsModelDiffSumX.push(Number(currSubData[3]));
+            thisSubModelSumX.push(Number(currSubData[4]));
+            thisSubObsSumX.push(Number(currSubData[5]));
+            thisSubAbsSumX.push(Number(currSubData[6]));
+            thisSubValuesX.push(
+              matsDataUtils.calculateStatScalar(
+                Number(currSubData[1]),
+                Number(currSubData[2]),
+                Number(currSubData[3]),
+                Number(currSubData[4]),
+                Number(currSubData[5]),
+                Number(currSubData[6]),
+                statisticXStr
+              )
+            );
             if (statTypeY === "scalar") {
-              // y-statistic is scalar, and we do not have levels, so start the indexing at 7 (these fields follow the x-fields)
+              // y-statistic is scalar, and we do not have levels, so start the indexing at 7 (these fields follow the scalarx-fields)
               thisSubSquareDiffSumY.push(Number(currSubData[7]));
               thisSubNSumY.push(Number(currSubData[8]));
               thisSubObsModelDiffSumY.push(Number(currSubData[9]));
@@ -1707,7 +1726,65 @@ const parseQueryDataSimpleScatter = function (
                 )
               );
             } else {
-              // y-statistic is CTC, and we do not have levels, so start the indexing at 5 (these fields follow the x-fields)
+              // y-statistic is CTC, and we do not have levels, so start the indexing at 7 (these fields follow the scalar x-fields)
+              thisSubHitY.push(Number(currSubData[7]));
+              thisSubFaY.push(Number(currSubData[8]));
+              thisSubMissY.push(Number(currSubData[9]));
+              thisSubCnY.push(Number(currSubData[10]));
+              thisSubValuesY.push(
+                matsDataUtils.calculateStatCTC(
+                  Number(currSubData[7]),
+                  Number(currSubData[8]),
+                  Number(currSubData[9]),
+                  Number(currSubData[10]),
+                  Number(currSubData[7]) +
+                    Number(currSubData[8]) +
+                    Number(currSubData[9]) +
+                    Number(currSubData[10]),
+                  statisticYStr
+                )
+              );
+            }
+          } else {
+            // x-statistic is CTC, and we do not have levels, so start the indexing at 1
+            thisSubHitX.push(Number(currSubData[1]));
+            thisSubFaX.push(Number(currSubData[2]));
+            thisSubMissX.push(Number(currSubData[3]));
+            thisSubCnX.push(Number(currSubData[4]));
+            thisSubValuesX.push(
+              matsDataUtils.calculateStatCTC(
+                Number(currSubData[1]),
+                Number(currSubData[2]),
+                Number(currSubData[3]),
+                Number(currSubData[4]),
+                Number(currSubData[1]) +
+                  Number(currSubData[2]) +
+                  Number(currSubData[3]) +
+                  Number(currSubData[4]),
+                statisticXStr
+              )
+            );
+            if (statTypeY === "scalar") {
+              // y-statistic is scalar, and we do not have levels, so start the indexing at 5 (these fields follow the CTC x-fields)
+              thisSubSquareDiffSumY.push(Number(currSubData[5]));
+              thisSubNSumY.push(Number(currSubData[6]));
+              thisSubObsModelDiffSumY.push(Number(currSubData[7]));
+              thisSubModelSumY.push(Number(currSubData[8]));
+              thisSubObsSumY.push(Number(currSubData[9]));
+              thisSubAbsSumY.push(Number(currSubData[10]));
+              thisSubValuesY.push(
+                matsDataUtils.calculateStatScalar(
+                  Number(currSubData[5]),
+                  Number(currSubData[6]),
+                  Number(currSubData[7]),
+                  Number(currSubData[8]),
+                  Number(currSubData[9]),
+                  Number(currSubData[10]),
+                  statisticYStr
+                )
+              );
+            } else {
+              // y-statistic is CTC, and we do not have levels, so start the indexing at 5 (these fields follow the CTC x-fields)
               thisSubHitY.push(Number(currSubData[5]));
               thisSubFaY.push(Number(currSubData[6]));
               thisSubMissY.push(Number(currSubData[7]));
