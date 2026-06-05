@@ -24,12 +24,20 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
   let subModelSum = [];
   let subObsSum = [];
   let subAbsSum = [];
+  let subHitX = [];
+  let subFaX = [];
+  let subMissX = [];
+  let subCnX = [];
   let subSquareDiffSumX = [];
   let subNSumX = [];
   let subObsModelDiffSumX = [];
   let subModelSumX = [];
   let subObsSumX = [];
   let subAbsSumX = [];
+  let subHitY = [];
+  let subFaY = [];
+  let subMissY = [];
+  let subCnY = [];
   let subSquareDiffSumY = [];
   let subNSumY = [];
   let subObsModelDiffSumY = [];
@@ -52,6 +60,10 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
   let newSubObsSum = [];
   let newSubAbsSum = [];
   let newSubValues = [];
+  let newSubHitX = [];
+  let newSubFaX = [];
+  let newSubMissX = [];
+  let newSubCnX = [];
   let newSubSquareDiffSumX = [];
   let newSubNSumX = [];
   let newSubObsModelDiffSumX = [];
@@ -59,6 +71,10 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
   let newSubObsSumX = [];
   let newSubAbsSumX = [];
   let newSubValuesX = [];
+  let newSubHitY = [];
+  let newSubFaY = [];
+  let newSubMissY = [];
+  let newSubCnY = [];
   let newSubSquareDiffSumY = [];
   let newSubNSumY = [];
   let newSubObsModelDiffSumY = [];
@@ -369,13 +385,27 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
           subMiss = data.subMiss[di];
           subCn = data.subCn[di];
         } else if (isScalar) {
-          if (isSimpleScatter) {
+          subSquareDiffSum = data.subSquareDiffSum[di];
+          subNSum = data.subNSum[di];
+          subObsModelDiffSum = data.subObsModelDiffSum[di];
+          subModelSum = data.subModelSum[di];
+          subObsSum = data.subObsSum[di];
+          subAbsSum = data.subAbsSum[di];
+        } else if (isSimpleScatter) {
+          if (curveInfoParams.statType[curveIndex][0] === "scalar") {
             subSquareDiffSumX = data.subSquareDiffSumX[di];
             subNSumX = data.subNSumX[di];
             subObsModelDiffSumX = data.subObsModelDiffSumX[di];
             subModelSumX = data.subModelSumX[di];
             subObsSumX = data.subObsSumX[di];
             subAbsSumX = data.subAbsSumX[di];
+          } else {
+            subHitX = data.subHitX[di];
+            subFaX = data.subFaX[di];
+            subMissX = data.subMissX[di];
+            subCnX = data.subCnX[di];
+          }
+          if (curveInfoParams.statType[curveIndex][1] === "scalar") {
             subSquareDiffSumY = data.subSquareDiffSumY[di];
             subNSumY = data.subNSumY[di];
             subObsModelDiffSumY = data.subObsModelDiffSumY[di];
@@ -383,12 +413,10 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
             subObsSumY = data.subObsSumY[di];
             subAbsSumY = data.subAbsSumY[di];
           } else {
-            subSquareDiffSum = data.subSquareDiffSum[di];
-            subNSum = data.subNSum[di];
-            subObsModelDiffSum = data.subObsModelDiffSum[di];
-            subModelSum = data.subModelSum[di];
-            subObsSum = data.subObsSum[di];
-            subAbsSum = data.subAbsSum[di];
+            subHitY = data.subHitY[di];
+            subFaY = data.subFaY[di];
+            subMissY = data.subMissY[di];
+            subCnY = data.subCnY[di];
           }
         } else if (isReliability) {
           subRelHit = data.subRelHit[di];
@@ -421,6 +449,10 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
           newSubObsSum = [];
           newSubAbsSum = [];
           newSubValues = [];
+          newSubHitX = [];
+          newSubFaX = [];
+          newSubMissX = [];
+          newSubCnX = [];
           newSubSquareDiffSumX = [];
           newSubNSumX = [];
           newSubObsModelDiffSumX = [];
@@ -428,6 +460,10 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
           newSubObsSumX = [];
           newSubAbsSumX = [];
           newSubValuesX = [];
+          newSubHitY = [];
+          newSubFaY = [];
+          newSubMissY = [];
+          newSubCnY = [];
           newSubSquareDiffSumY = [];
           newSubNSumY = [];
           newSubObsModelDiffSumY = [];
@@ -448,12 +484,20 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
             let newFa;
             let newMiss;
             let newCn;
+            let newHitX;
+            let newFaX;
+            let newMissX;
+            let newCnX;
             let newSquareDiffSumX;
             let newNSumX;
             let newObsModelDiffSumX;
             let newModelSumX;
             let newObsSumX;
             let newAbsSumX;
+            let newHitY;
+            let newFaY;
+            let newMissY;
+            let newCnY;
             let newSquareDiffSumY;
             let newNSumY;
             let newObsModelDiffSumY;
@@ -503,13 +547,27 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                 newMiss = subMiss[si];
                 newCn = subCn[si];
               } else if (isScalar) {
-                if (isSimpleScatter) {
+                newSquareDiffSum = subSquareDiffSum[si];
+                newNSum = subNSum[si];
+                newObsModelDiffSum = subObsModelDiffSum[si];
+                newModelSum = subModelSum[si];
+                newObsSum = subObsSum[si];
+                newAbsSum = subAbsSum[si];
+              } else if (isSimpleScatter) {
+                if (curveInfoParams.statType[curveIndex][0] === "scalar") {
                   newSquareDiffSumX = subSquareDiffSumX[si];
                   newNSumX = subNSumX[si];
                   newObsModelDiffSumX = subObsModelDiffSumX[si];
                   newModelSumX = subModelSumX[si];
                   newObsSumX = subObsSumX[si];
                   newAbsSumX = subAbsSumX[si];
+                } else {
+                  newHitX = subHitX[si];
+                  newFaX = subFaX[si];
+                  newMissX = subMissX[si];
+                  newCnX = subCnX[si];
+                }
+                if (curveInfoParams.statType[curveIndex][1] === "scalar") {
                   newSquareDiffSumY = subSquareDiffSumY[si];
                   newNSumY = subNSumY[si];
                   newObsModelDiffSumY = subObsModelDiffSumY[si];
@@ -517,12 +575,10 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                   newObsSumY = subObsSumY[si];
                   newAbsSumY = subAbsSumY[si];
                 } else {
-                  newSquareDiffSum = subSquareDiffSum[si];
-                  newNSum = subNSum[si];
-                  newObsModelDiffSum = subObsModelDiffSum[si];
-                  newModelSum = subModelSum[si];
-                  newObsSum = subObsSum[si];
-                  newAbsSum = subAbsSum[si];
+                  newHitY = subHitY[si];
+                  newFaY = subFaY[si];
+                  newMissY = subMissY[si];
+                  newCnY = subCnY[si];
                 }
               } else if (isReliability) {
                 newRelCount = subRelCount[si];
@@ -552,26 +608,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                   }
                 }
               } else if (isScalar) {
-                if (isSimpleScatter) {
-                  if (newSquareDiffSumX !== undefined) {
-                    newSubSquareDiffSumX.push(newSquareDiffSumX);
-                    newSubNSumX.push(newNSumX);
-                    newSubObsModelDiffSumX.push(newObsModelDiffSumX);
-                    newSubModelSumX.push(newModelSumX);
-                    newSubObsSumX.push(newObsSumX);
-                    newSubAbsSumX.push(newAbsSumX);
-                    newSubValuesX.push(newValX);
-                  }
-                  if (newSquareDiffSumY !== undefined) {
-                    newSubSquareDiffSumY.push(newSquareDiffSumY);
-                    newSubNSumY.push(newNSumY);
-                    newSubObsModelDiffSumY.push(newObsModelDiffSumY);
-                    newSubModelSumY.push(newModelSumY);
-                    newSubObsSumY.push(newObsSumY);
-                    newSubAbsSumY.push(newAbsSumY);
-                    newSubValuesY.push(newValY);
-                  }
-                } else if (newSquareDiffSum !== undefined) {
+                if (newSquareDiffSum !== undefined) {
                   newSubSquareDiffSum.push(newSquareDiffSum);
                   newSubNSum.push(newNSum);
                   newSubObsModelDiffSum.push(newObsModelDiffSum);
@@ -579,6 +616,51 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                   newSubObsSum.push(newObsSum);
                   newSubAbsSum.push(newAbsSum);
                   newSubValues.push(newVal);
+                }
+                newSubSecs.push(newSec);
+                if (hasLevels) {
+                  newSubLevs.push(newLev);
+                }
+              } else if (isSimpleScatter) {
+                if (
+                  curveInfoParams.statType[curveIndex][0] === "scalar" &&
+                  newSquareDiffSumX !== undefined
+                ) {
+                  newSubSquareDiffSumX.push(newSquareDiffSumX);
+                  newSubNSumX.push(newNSumX);
+                  newSubObsModelDiffSumX.push(newObsModelDiffSumX);
+                  newSubModelSumX.push(newModelSumX);
+                  newSubObsSumX.push(newObsSumX);
+                  newSubAbsSumX.push(newAbsSumX);
+                  newSubValuesX.push(newValX);
+                } else if (
+                  curveInfoParams.statType[curveIndex][0] === "ctc" &&
+                  newHitX !== undefined
+                ) {
+                  newSubHitX.push(newHitX);
+                  newSubFaX.push(newFaX);
+                  newSubMissX.push(newMissX);
+                  newSubCnX.push(newCnX);
+                }
+                if (
+                  curveInfoParams.statType[curveIndex][1] === "scalar" &&
+                  newSquareDiffSumY !== undefined
+                ) {
+                  newSubSquareDiffSumY.push(newSquareDiffSumY);
+                  newSubNSumY.push(newNSumY);
+                  newSubObsModelDiffSumY.push(newObsModelDiffSumY);
+                  newSubModelSumY.push(newModelSumY);
+                  newSubObsSumY.push(newObsSumY);
+                  newSubAbsSumY.push(newAbsSumY);
+                  newSubValuesY.push(newValY);
+                } else if (
+                  curveInfoParams.statType[curveIndex][1] === "ctc" &&
+                  newHitY !== undefined
+                ) {
+                  newSubHitY.push(newHitY);
+                  newSubFaY.push(newFaY);
+                  newSubMissY.push(newMissY);
+                  newSubCnY.push(newCnY);
                 }
                 newSubSecs.push(newSec);
                 if (hasLevels) {
@@ -629,13 +711,27 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
               data.subMiss[di] = newSubMiss;
               data.subCn[di] = newSubCn;
             } else if (isScalar) {
-              if (isSimpleScatter) {
+              data.subSquareDiffSum[di] = newSubSquareDiffSum;
+              data.subNSum[di] = newSubNSum;
+              data.subObsModelDiffSum[di] = newSubObsModelDiffSum;
+              data.subModelSum[di] = newSubModelSum;
+              data.subObsSum[di] = newSubObsSum;
+              data.subAbsSum[di] = newSubAbsSum;
+            } else if (isSimpleScatter) {
+              if (curveInfoParams.statType[curveIndex][0] === "scalar") {
                 data.subSquareDiffSumX[di] = newSubSquareDiffSumX;
                 data.subNSumX[di] = newSubNSumX;
                 data.subObsModelDiffSumX[di] = newSubObsModelDiffSumX;
                 data.subModelSumX[di] = newSubModelSumX;
                 data.subObsSumX[di] = newSubObsSumX;
                 data.subAbsSumX[di] = newSubAbsSumX;
+              } else {
+                data.subHitX[di] = newSubHitX;
+                data.subFaX[di] = newSubFaX;
+                data.subMissX[di] = newSubMissX;
+                data.subCnX[di] = newSubCnX;
+              }
+              if (curveInfoParams.statType[curveIndex][1] === "scalar") {
                 data.subSquareDiffSumY[di] = newSubSquareDiffSumY;
                 data.subNSumY[di] = newSubNSumY;
                 data.subObsModelDiffSumY[di] = newSubObsModelDiffSumY;
@@ -643,12 +739,10 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
                 data.subObsSumY[di] = newSubObsSumY;
                 data.subAbsSumY[di] = newSubAbsSumY;
               } else {
-                data.subSquareDiffSum[di] = newSubSquareDiffSum;
-                data.subNSum[di] = newSubNSum;
-                data.subObsModelDiffSum[di] = newSubObsModelDiffSum;
-                data.subModelSum[di] = newSubModelSum;
-                data.subObsSum[di] = newSubObsSum;
-                data.subAbsSum[di] = newSubAbsSum;
+                data.subHitY[di] = newSubHitY;
+                data.subFaY[di] = newSubFaY;
+                data.subMissY[di] = newSubMissY;
+                data.subCnY[di] = newSubCnY;
               }
             } else if (isReliability) {
               data.subRelCount[di] = newSubRelCount;
@@ -808,40 +902,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
       // need to recalculate the primary statistic with the newly matched partial sums.
       dataLength = data[independentVarName].length;
       for (di = 0; di < dataLength; di += 1) {
-        if (plotType === matsTypes.PlotTypes.simpleScatter) {
-          if (data.subSquareDiffSumX[di] instanceof Array) {
-            const squareDiffSumX = matsDataUtils.sum(data.subSquareDiffSumX[di]);
-            const NSumX = matsDataUtils.sum(data.subNSumX[di]);
-            const obsModelDiffSumX = matsDataUtils.sum(data.subObsModelDiffSumX[di]);
-            const modelSumX = matsDataUtils.sum(data.subModelSumX[di]);
-            const obsSumX = matsDataUtils.sum(data.subObsSumX[di]);
-            const absSumX = matsDataUtils.sum(data.subAbsSumX[di]);
-            data.x[di] = matsDataUtils.calculateStatScalar(
-              squareDiffSumX,
-              NSumX,
-              obsModelDiffSumX,
-              modelSumX,
-              obsSumX,
-              absSumX,
-              `${curveXStats[curveIndex]}_${curveXVars[curveIndex]}`
-            );
-            const squareDiffSumY = matsDataUtils.sum(data.subSquareDiffSumY[di]);
-            const NSumY = matsDataUtils.sum(data.subNSumY[di]);
-            const obsModelDiffSumY = matsDataUtils.sum(data.subObsModelDiffSumY[di]);
-            const modelSumY = matsDataUtils.sum(data.subModelSumY[di]);
-            const obsSumY = matsDataUtils.sum(data.subObsSumY[di]);
-            const absSumY = matsDataUtils.sum(data.subAbsSumY[di]);
-            data.y[di] = matsDataUtils.calculateStatScalar(
-              squareDiffSumY,
-              NSumY,
-              obsModelDiffSumY,
-              modelSumY,
-              obsSumY,
-              absSumY,
-              `${curveYStats[curveIndex]}_${curveYVars[curveIndex]}`
-            );
-          }
-        } else if (data.subSquareDiffSum[di] instanceof Array) {
+        if (data.subSquareDiffSum[di] instanceof Array) {
           const squareDiffSum = matsDataUtils.sum(data.subSquareDiffSum[di]);
           const NSum = matsDataUtils.sum(data.subNSum[di]);
           const obsModelDiffSum = matsDataUtils.sum(data.subObsModelDiffSum[di]);
@@ -856,6 +917,86 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
             obsSum,
             absSum,
             `${curveStats[curveIndex]}_${curveVars[curveIndex]}`
+          );
+        }
+      }
+    } else if (
+      isSimpleScatter &&
+      (curveDiffs[curveIndex] === undefined || curveDiffs[curveIndex] === null)
+    ) {
+      // need to recalculate the primary statistic with the newly matched sub-stats.
+      dataLength = data[independentVarName].length;
+      for (di = 0; di < dataLength; di += 1) {
+        if (
+          curveInfoParams.statType[curveIndex][0] === "scalar" &&
+          data.subSquareDiffSumX[di] instanceof Array
+        ) {
+          const squareDiffSumX = matsDataUtils.sum(data.subSquareDiffSumX[di]);
+          const NSumX = matsDataUtils.sum(data.subNSumX[di]);
+          const obsModelDiffSumX = matsDataUtils.sum(data.subObsModelDiffSumX[di]);
+          const modelSumX = matsDataUtils.sum(data.subModelSumX[di]);
+          const obsSumX = matsDataUtils.sum(data.subObsSumX[di]);
+          const absSumX = matsDataUtils.sum(data.subAbsSumX[di]);
+          data.x[di] = matsDataUtils.calculateStatScalar(
+            squareDiffSumX,
+            NSumX,
+            obsModelDiffSumX,
+            modelSumX,
+            obsSumX,
+            absSumX,
+            `${curveXStats[curveIndex]}_${curveXVars[curveIndex]}`
+          );
+        } else if (
+          curveInfoParams.statType[curveIndex][0] === "ctc" &&
+          data.subHitX[di] instanceof Array
+        ) {
+          const hitX = matsDataUtils.sum(data.subHitX[di]);
+          const faX = matsDataUtils.sum(data.subFaX[di]);
+          const missX = matsDataUtils.sum(data.subMissX[di]);
+          const cnX = matsDataUtils.sum(data.subCnX[di]);
+          data.x[di] = matsDataUtils.calculateStatCTC(
+            hitX,
+            faX,
+            missX,
+            cnX,
+            hitX + faX + missX + cnX,
+            curveXStats[curveIndex]
+          );
+        }
+        if (
+          curveInfoParams.statType[curveIndex][1] === "scalar" &&
+          data.subSquareDiffSumY[di] instanceof Array
+        ) {
+          const squareDiffSumY = matsDataUtils.sum(data.subSquareDiffSumY[di]);
+          const NSumY = matsDataUtils.sum(data.subNSumY[di]);
+          const obsModelDiffSumY = matsDataUtils.sum(data.subObsModelDiffSumY[di]);
+          const modelSumY = matsDataUtils.sum(data.subModelSumY[di]);
+          const obsSumY = matsDataUtils.sum(data.subObsSumY[di]);
+          const absSumY = matsDataUtils.sum(data.subAbsSumY[di]);
+          data.y[di] = matsDataUtils.calculateStatScalar(
+            squareDiffSumY,
+            NSumY,
+            obsModelDiffSumY,
+            modelSumY,
+            obsSumY,
+            absSumY,
+            `${curveYStats[curveIndex]}_${curveYVars[curveIndex]}`
+          );
+        } else if (
+          curveInfoParams.statType[curveIndex][1] === "ctc" &&
+          data.subHitY[di] instanceof Array
+        ) {
+          const hitY = matsDataUtils.sum(data.subHitY[di]);
+          const faY = matsDataUtils.sum(data.subFaY[di]);
+          const missY = matsDataUtils.sum(data.subMissY[di]);
+          const cnY = matsDataUtils.sum(data.subCnY[di]);
+          data.y[di] = matsDataUtils.calculateStatCTC(
+            hitY,
+            faY,
+            missY,
+            cnY,
+            hitY + faY + missY + cnY,
+            curveYStats[curveIndex]
           );
         }
       }
