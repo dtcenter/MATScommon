@@ -329,6 +329,12 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
               di,
               plotType,
               statVarName,
+              plotType === matsTypes.PlotTypes.simpleScatter
+                ? curveInfoParams.statType[curveIndex][0]
+                : null,
+              plotType === matsTypes.PlotTypes.simpleScatter
+                ? curveInfoParams.statType[curveIndex][1]
+                : null,
               isCTC,
               isScalar,
               hasLevels
@@ -338,7 +344,14 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
             data = matsDataUtils.nullPoint(
               data,
               di,
+              plotType,
               statVarName,
+              plotType === matsTypes.PlotTypes.simpleScatter
+                ? curveInfoParams.statType[curveIndex][0]
+                : null,
+              plotType === matsTypes.PlotTypes.simpleScatter
+                ? curveInfoParams.statType[curveIndex][1]
+                : null,
               isCTC,
               isScalar,
               hasLevels
@@ -596,7 +609,14 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
             data = matsDataUtils.nullPoint(
               data,
               di,
+              plotType,
               statVarName,
+              plotType === matsTypes.PlotTypes.simpleScatter
+                ? curveInfoParams.statType[curveIndex][0]
+                : null,
+              plotType === matsTypes.PlotTypes.simpleScatter
+                ? curveInfoParams.statType[curveIndex][1]
+                : null,
               isCTC,
               isScalar,
               hasLevels
@@ -651,7 +671,14 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
           data = matsDataUtils.nullPoint(
             data,
             di,
+            plotType,
             statVarName,
+            plotType === matsTypes.PlotTypes.simpleScatter
+              ? curveInfoParams.statType[curveIndex][0]
+              : null,
+            plotType === matsTypes.PlotTypes.simpleScatter
+              ? curveInfoParams.statType[curveIndex][1]
+              : null,
             isCTC,
             isScalar,
             hasLevels

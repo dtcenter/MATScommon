@@ -1885,6 +1885,8 @@ const removePoint = function (
   di,
   plotType,
   statVarName,
+  statTypeX,
+  statTypeY,
   isCTC,
   isScalar,
   hasLevels
@@ -1908,26 +1910,40 @@ const removePoint = function (
     returnData.subMiss.splice(di, 1);
     returnData.subCn.splice(di, 1);
   } else if (isScalar) {
-    if (returnData.subSquareDiffSumX !== undefined) {
+    returnData.subSquareDiffSum.splice(di, 1);
+    returnData.subNSum.splice(di, 1);
+    returnData.subObsModelDiffSum.splice(di, 1);
+    returnData.subModelSum.splice(di, 1);
+    returnData.subObsSum.splice(di, 1);
+    returnData.subAbsSum.splice(di, 1);
+  } else if (plotType === matsTypes.PlotTypes.simpleScatter) {
+    if (plotType === matsTypes.PlotTypes.simpleScatter && statTypeX === "scalar") {
       returnData.subSquareDiffSumX.splice(di, 1);
       returnData.subNSumX.splice(di, 1);
       returnData.subObsModelDiffSumX.splice(di, 1);
       returnData.subModelSumX.splice(di, 1);
       returnData.subObsSumX.splice(di, 1);
       returnData.subAbsSumX.splice(di, 1);
+    }
+    if (plotType === matsTypes.PlotTypes.simpleScatter && statTypeY === "scalar") {
       returnData.subSquareDiffSumY.splice(di, 1);
       returnData.subNSumY.splice(di, 1);
       returnData.subObsModelDiffSumY.splice(di, 1);
       returnData.subModelSumY.splice(di, 1);
       returnData.subObsSumY.splice(di, 1);
       returnData.subAbsSumY.splice(di, 1);
-    } else {
-      returnData.subSquareDiffSum.splice(di, 1);
-      returnData.subNSum.splice(di, 1);
-      returnData.subObsModelDiffSum.splice(di, 1);
-      returnData.subModelSum.splice(di, 1);
-      returnData.subObsSum.splice(di, 1);
-      returnData.subAbsSum.splice(di, 1);
+    }
+    if (plotType === matsTypes.PlotTypes.simpleScatter && statTypeX === "ctc") {
+      returnData.subHitX.splice(di, 1);
+      returnData.subFaX.splice(di, 1);
+      returnData.subMissX.splice(di, 1);
+      returnData.subCnX.splice(di, 1);
+    }
+    if (plotType === matsTypes.PlotTypes.simpleScatter && statTypeY === "ctc") {
+      returnData.subHitY.splice(di, 1);
+      returnData.subFaY.splice(di, 1);
+      returnData.subMissY.splice(di, 1);
+      returnData.subCnY.splice(di, 1);
     }
   } else if (returnData.subRelHit !== undefined) {
     returnData.subRelHit.splice(di, 1);
@@ -1957,6 +1973,8 @@ const addNullPoint = function (
   indVarName,
   newIndVar,
   statVarName,
+  statTypeX,
+  statTypeY,
   isCTC,
   isScalar,
   hasLevels
@@ -1978,26 +1996,40 @@ const addNullPoint = function (
     returnData.subMiss.splice(di, 0, []);
     returnData.subCn.splice(di, 0, []);
   } else if (isScalar) {
-    if (returnData.subSquareDiffSumX !== undefined) {
+    returnData.subSquareDiffSum.splice(di, 0, []);
+    returnData.subNSum.splice(di, 0, []);
+    returnData.subObsModelDiffSum.splice(di, 0, []);
+    returnData.subModelSum.splice(di, 0, []);
+    returnData.subObsSum.splice(di, 0, []);
+    returnData.subAbsSum.splice(di, 0, []);
+  } else if (plotType === matsTypes.PlotTypes.simpleScatter) {
+    if (statTypeX === "scalar") {
       returnData.subSquareDiffSumX.splice(di, 0, []);
       returnData.subNSumX.splice(di, 0, []);
       returnData.subObsModelDiffSumX.splice(di, 0, []);
       returnData.subModelSumX.splice(di, 0, []);
       returnData.subObsSumX.splice(di, 0, []);
       returnData.subAbsSumX.splice(di, 0, []);
+    }
+    if (plotType === matsTypes.PlotTypes.simpleScatter && statTypeY === "scalar") {
       returnData.subSquareDiffSumY.splice(di, 0, []);
       returnData.subNSumY.splice(di, 0, []);
       returnData.subObsModelDiffSumY.splice(di, 0, []);
       returnData.subModelSumY.splice(di, 0, []);
       returnData.subObsSumY.splice(di, 0, []);
       returnData.subAbsSumY.splice(di, 0, []);
-    } else {
-      returnData.subSquareDiffSum.splice(di, 0, []);
-      returnData.subNSum.splice(di, 0, []);
-      returnData.subObsModelDiffSum.splice(di, 0, []);
-      returnData.subModelSum.splice(di, 0, []);
-      returnData.subObsSum.splice(di, 0, []);
-      returnData.subAbsSum.splice(di, 0, []);
+    }
+    if (plotType === matsTypes.PlotTypes.simpleScatter && statTypeX === "ctc") {
+      returnData.subHitX.splice(di, 0, []);
+      returnData.subFaX.splice(di, 0, []);
+      returnData.subMissX.splice(di, 0, []);
+      returnData.subCnX.splice(di, 0, []);
+    }
+    if (plotType === matsTypes.PlotTypes.simpleScatter && statTypeY === "ctc") {
+      returnData.subHitY.splice(di, 0, []);
+      returnData.subFaY.splice(di, 0, []);
+      returnData.subMissY.splice(di, 0, []);
+      returnData.subCnY.splice(di, 0, []);
     }
   } else if (returnData.subRelHit !== undefined) {
     returnData.subRelHit.splice(di, 0, []);
@@ -2020,7 +2052,17 @@ const addNullPoint = function (
 };
 
 // utility to make null an existing point on a graph
-const nullPoint = function (data, di, statVarName, isCTC, isScalar, hasLevels) {
+const nullPoint = function (
+  data,
+  di,
+  plotType,
+  statVarName,
+  statTypeX,
+  statTypeY,
+  isCTC,
+  isScalar,
+  hasLevels
+) {
   const returnData = data;
   returnData[statVarName][di] = null;
   if (isCTC) {
@@ -2029,26 +2071,40 @@ const nullPoint = function (data, di, statVarName, isCTC, isScalar, hasLevels) {
     returnData.subMiss[di] = [];
     returnData.subCn[di] = [];
   } else if (isScalar) {
-    if (returnData.subSquareDiffSumX !== undefined) {
+    returnData.subSquareDiffSum[di] = [];
+    returnData.subNSum[di] = [];
+    returnData.subObsModelDiffSum[di] = [];
+    returnData.subModelSum[di] = [];
+    returnData.subObsSum[di] = [];
+    returnData.subAbsSum[di] = [];
+  } else if (plotType === matsTypes.PlotTypes.simpleScatter) {
+    if (statTypeX === "scalar") {
       returnData.subSquareDiffSumX[di] = [];
       returnData.subNSumX[di] = [];
       returnData.subObsModelDiffSumX[di] = [];
       returnData.subModelSumX[di] = [];
       returnData.subObsSumX[di] = [];
       returnData.subAbsSumX[di] = [];
+    }
+    if (plotType === matsTypes.PlotTypes.simpleScatter && statTypeY === "scalar") {
       returnData.subSquareDiffSumY[di] = [];
       returnData.subNSumY[di] = [];
       returnData.subObsModelDiffSumY[di] = [];
       returnData.subModelSumY[di] = [];
       returnData.subObsSumY[di] = [];
       returnData.subAbsSumY[di] = [];
-    } else {
-      returnData.subSquareDiffSum[di] = [];
-      returnData.subNSum[di] = [];
-      returnData.subObsModelDiffSum[di] = [];
-      returnData.subModelSum[di] = [];
-      returnData.subObsSum[di] = [];
-      returnData.subAbsSum[di] = [];
+    }
+    if (plotType === matsTypes.PlotTypes.simpleScatter && statTypeX === "ctc") {
+      returnData.subHitX[di] = [];
+      returnData.subFaX[di] = [];
+      returnData.subMissX[di] = [];
+      returnData.subCnX[di] = [];
+    }
+    if (plotType === matsTypes.PlotTypes.simpleScatter && statTypeY === "ctc") {
+      returnData.subHitY[di] = [];
+      returnData.subFaY[di] = [];
+      returnData.subMissY[di] = [];
+      returnData.subCnY[di] = [];
     }
   } else if (returnData.subRelHit !== undefined) {
     returnData.subRelHit[di] = [];

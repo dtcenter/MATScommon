@@ -918,6 +918,8 @@ const parseQueryDataXYCurve = function (
               "x",
               newTime,
               "y",
+              null,
+              null,
               isCTC,
               isScalar,
               hasLevels
@@ -931,6 +933,8 @@ const parseQueryDataXYCurve = function (
             "x",
             newTime,
             "y",
+            null,
+            null,
             isCTC,
             isScalar,
             hasLevels
