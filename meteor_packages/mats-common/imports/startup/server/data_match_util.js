@@ -103,31 +103,16 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
   const { plotType } = appParams;
   const { hasLevels } = appParams;
   const { curvesLength } = curveInfoParams;
-  const isCTC =
-    !Array.isArray(curveInfoParams.statType) &&
-    curveInfoParams.statType === "ctc" &&
-    plotType !== matsTypes.PlotTypes.histogram;
-  const isScalar =
-    !Array.isArray(curveInfoParams.statType) &&
-    curveInfoParams.statType === "scalar" &&
-    plotType !== matsTypes.PlotTypes.histogram;
   const isSimpleScatter = plotType === matsTypes.PlotTypes.simpleScatter;
   const isReliability = plotType === matsTypes.PlotTypes.reliability;
+  let isCTC;
+  let isScalar;
   let curveXStats;
   let curveXVars;
   let curveYStats;
   let curveYVars;
   let curveStats;
   let curveVars;
-  if (isSimpleScatter) {
-    curveXStats = curveInfoParams.curves.map((a) => a["x-statistic"]);
-    curveXVars = curveInfoParams.curves.map((a) => a["x-variable"]);
-    curveYStats = curveInfoParams.curves.map((a) => a["y-statistic"]);
-    curveYVars = curveInfoParams.curves.map((a) => a["y-variable"]);
-  } else {
-    curveStats = curveInfoParams.curves.map((a) => a.statistic);
-    curveVars = isScalar ? curveInfoParams.curves.map((a) => a.variable) : [];
-  }
   const curveDiffs = curveInfoParams.curves.map((a) => a.diffFrom);
   let removeNonMatchingIndVars;
   switch (plotType) {
@@ -327,6 +312,28 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
   // remove non-matching independentVars and subSecs
   for (curveIndex = 0; curveIndex < curvesLength; curveIndex += 1) {
     // loop over every curve
+    isCTC =
+      ((Array.isArray(curveInfoParams.statType) &&
+        curveInfoParams.statType[curveIndex] === "ctc") ||
+        (!Array.isArray(curveInfoParams.statType) &&
+          curveInfoParams.statType === "ctc")) &&
+      plotType !== matsTypes.PlotTypes.histogram;
+    isScalar =
+      ((Array.isArray(curveInfoParams.statType) &&
+        curveInfoParams.statType[curveIndex] === "scalar") ||
+        (!Array.isArray(curveInfoParams.statType) &&
+          curveInfoParams.statType === "scalar")) &&
+      plotType !== matsTypes.PlotTypes.histogram;
+
+    if (isSimpleScatter) {
+      curveXStats = curveInfoParams.curves.map((a) => a["x-statistic"]);
+      curveXVars = curveInfoParams.curves.map((a) => a["x-variable"]);
+      curveYStats = curveInfoParams.curves.map((a) => a["y-statistic"]);
+      curveYVars = curveInfoParams.curves.map((a) => a["y-variable"]);
+    } else {
+      curveStats = curveInfoParams.curves.map((a) => a.statistic);
+      curveVars = isScalar ? curveInfoParams.curves.map((a) => a.variable) : [];
+    }
     data = returnDataset[curveIndex];
     // need to loop backwards through the data array so that we can splice non-matching indices
     // while still having the remaining indices in the correct order

@@ -81,10 +81,10 @@ const getDataForDiffCurve = function (dataset, diffFrom, appParams, allStatTypes
 
   const { plotType } = appParams;
   const { hasLevels } = appParams;
-  const minuendIsCTC = allStatTypes[1] === "ctc";
-  const subtrahendIsCTC = allStatTypes[0] === "ctc";
-  const minuendIsScalar = allStatTypes[1] === "scalar";
-  const subtrahendIsScalar = allStatTypes[0] === "scalar";
+  const minuendIsCTC = allStatTypes[diffFrom[0]] === "ctc";
+  const subtrahendIsCTC = allStatTypes[diffFrom[1]] === "ctc";
+  const minuendIsScalar = allStatTypes[diffFrom[0]] === "scalar";
+  const subtrahendIsScalar = allStatTypes[diffFrom[1]] === "scalar";
 
   // determine whether data[0] or data[1] is the independent variable, and which is the stat value
   let independentVarName;
