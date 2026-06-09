@@ -75,10 +75,6 @@ Template.dateRange.onRendered(function () {
   const idref = `${name}-${this.data.type}`;
   const elem = document.getElementById(`element-${name}`);
   const { superiorNames } = this.data;
-  const defaultDateRange = matsParamUtils.getDefaultDateRange(name);
-  const startInit = defaultDateRange.startDate;
-  const stopInit = defaultDateRange.stopDate;
-  const { dstr } = defaultDateRange;
   const isMetexpress =
     matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
   const { appName } = matsCollections.Settings.findOne({});
@@ -88,14 +84,6 @@ Template.dateRange.onRendered(function () {
       name: "statistic",
     }).valuesMap;
   }
-
-  $(function () {
-    $(`#${idref}`).daterangepicker(dateRangeOptions(idref, startInit, stopInit));
-    matsParamUtils.setValueTextForParamName(name, dstr);
-    if (elem && elem.style && elem.style.display === "block") {
-      elem.style.display = "none";
-    }
-  });
 
   $(`#${idref}`).on("apply.daterangepicker", function (ev, picker) {
     if (picker.startDate.toString() === picker.endDate.toString()) {
