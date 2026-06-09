@@ -530,6 +530,7 @@ const parseQueryDataXYCurve = function (
         let currSubData;
         for (let sdIdx = 0; sdIdx < thisSubData.length; sdIdx += 1) {
           currSubData = thisSubData[sdIdx].split(";");
+          let levelOffset = 0;
           if (isCTC) {
             thisSubSecs.push(Number(currSubData[0]));
             if (hasLevels) {
@@ -538,36 +539,22 @@ const parseQueryDataXYCurve = function (
               } else {
                 thisSubLevs.push(currSubData[1]);
               }
-              thisSubHit.push(Number(currSubData[2]));
-              thisSubFa.push(Number(currSubData[3]));
-              thisSubMiss.push(Number(currSubData[4]));
-              thisSubCn.push(Number(currSubData[5]));
-              thisSubValues.push(
-                matsDataUtils.calculateStatCTC(
-                  Number(currSubData[2]),
-                  Number(currSubData[3]),
-                  Number(currSubData[4]),
-                  Number(currSubData[5]),
-                  currSubData.length,
-                  statisticStr
-                )
-              );
-            } else {
-              thisSubHit.push(Number(currSubData[1]));
-              thisSubFa.push(Number(currSubData[2]));
-              thisSubMiss.push(Number(currSubData[3]));
-              thisSubCn.push(Number(currSubData[4]));
-              thisSubValues.push(
-                matsDataUtils.calculateStatCTC(
-                  Number(currSubData[1]),
-                  Number(currSubData[2]),
-                  Number(currSubData[3]),
-                  Number(currSubData[4]),
-                  currSubData.length,
-                  statisticStr
-                )
-              );
+              levelOffset = 1;
             }
+            thisSubHit.push(Number(currSubData[1 + levelOffset]));
+            thisSubFa.push(Number(currSubData[2 + levelOffset]));
+            thisSubMiss.push(Number(currSubData[3 + levelOffset]));
+            thisSubCn.push(Number(currSubData[4 + levelOffset]));
+            thisSubValues.push(
+              matsDataUtils.calculateStatCTC(
+                Number(currSubData[1 + levelOffset]),
+                Number(currSubData[2 + levelOffset]),
+                Number(currSubData[3 + levelOffset]),
+                Number(currSubData[4 + levelOffset]),
+                currSubData.length,
+                statisticStr
+              )
+            );
           } else if (isScalar) {
             thisSubSecs.push(Number(currSubData[0]));
             if (hasLevels) {
@@ -576,42 +563,25 @@ const parseQueryDataXYCurve = function (
               } else {
                 thisSubLevs.push(currSubData[1]);
               }
-              thisSubSquareDiffSum.push(Number(currSubData[2]));
-              thisSubNSum.push(Number(currSubData[3]));
-              thisSubObsModelDiffSum.push(Number(currSubData[4]));
-              thisSubModelSum.push(Number(currSubData[5]));
-              thisSumObsSum.push(Number(currSubData[6]));
-              thisSumAbsSum.push(Number(currSubData[7]));
-              thisSubValues.push(
-                matsDataUtils.calculateStatScalar(
-                  Number(currSubData[2]),
-                  Number(currSubData[3]),
-                  Number(currSubData[4]),
-                  Number(currSubData[5]),
-                  Number(currSubData[6]),
-                  Number(currSubData[7]),
-                  statisticStr
-                )
-              );
-            } else {
-              thisSubSquareDiffSum.push(Number(currSubData[1]));
-              thisSubNSum.push(Number(currSubData[2]));
-              thisSubObsModelDiffSum.push(Number(currSubData[3]));
-              thisSubModelSum.push(Number(currSubData[4]));
-              thisSumObsSum.push(Number(currSubData[5]));
-              thisSumAbsSum.push(Number(currSubData[6]));
-              thisSubValues.push(
-                matsDataUtils.calculateStatScalar(
-                  Number(currSubData[1]),
-                  Number(currSubData[2]),
-                  Number(currSubData[3]),
-                  Number(currSubData[4]),
-                  Number(currSubData[5]),
-                  Number(currSubData[6]),
-                  statisticStr
-                )
-              );
+              levelOffset = 1;
             }
+            thisSubSquareDiffSum.push(Number(currSubData[1 + levelOffset]));
+            thisSubNSum.push(Number(currSubData[2 + levelOffset]));
+            thisSubObsModelDiffSum.push(Number(currSubData[3 + levelOffset]));
+            thisSubModelSum.push(Number(currSubData[4 + levelOffset]));
+            thisSumObsSum.push(Number(currSubData[5 + levelOffset]));
+            thisSumAbsSum.push(Number(currSubData[6 + levelOffset]));
+            thisSubValues.push(
+              matsDataUtils.calculateStatScalar(
+                Number(currSubData[1 + levelOffset]),
+                Number(currSubData[2 + levelOffset]),
+                Number(currSubData[3 + levelOffset]),
+                Number(currSubData[4 + levelOffset]),
+                Number(currSubData[5 + levelOffset]),
+                Number(currSubData[6 + levelOffset]),
+                statisticStr
+              )
+            );
           } else {
             thisSubSecs.push(Number(currSubData[0]));
             if (hasLevels) {
@@ -620,10 +590,9 @@ const parseQueryDataXYCurve = function (
               } else {
                 thisSubLevs.push(currSubData[1]);
               }
-              thisSubValues.push(Number(currSubData[2]));
-            } else {
-              thisSubValues.push(Number(currSubData[1]));
+              levelOffset = 1;
             }
+            thisSubValues.push(Number(currSubData[1 + levelOffset]));
           }
         }
         // Now that we have all the sub-values, we can get the standard deviation and remove the ones that exceed it
@@ -1089,6 +1058,7 @@ const parseQueryDataReliability = function (rows, d, appParams, kernel) {
           let currSubData;
           for (let sdIdx = 0; sdIdx < thisSubData.length; sdIdx += 1) {
             currSubData = thisSubData[sdIdx].split(";");
+            let levelOffset = 0;
             thisSubSecs.push(Number(currSubData[0]));
             if (hasLevels) {
               if (!matsMethods.isThisANaN(Number(currSubData[1]))) {
@@ -1096,16 +1066,12 @@ const parseQueryDataReliability = function (rows, d, appParams, kernel) {
               } else {
                 thisSubLevs.push(currSubData[1]);
               }
-              subRelCounts.push(Number(currSubData[2]));
-              thisSubRelHit.push(Number(currSubData[4]));
-              // this is a dummy to fit the expectations of common functions that xy line curves have a populated sub_values array. It isn't used for anything.
-              thisSubValues.push(0);
-            } else {
-              subRelCounts.push(Number(currSubData[1]));
-              thisSubRelHit.push(Number(currSubData[3]));
-              // this is a dummy to fit the expectations of common functions that xy line curves have a populated sub_values array. It isn't used for anything.
-              thisSubValues.push(0);
+              levelOffset = 1;
             }
+            subRelCounts.push(Number(currSubData[1 + levelOffset]));
+            thisSubRelHit.push(Number(currSubData[3 + levelOffset]));
+            // this is a dummy to fit the expectations of common functions that xy line curves have a populated sub_values array. It isn't used for anything.
+            thisSubValues.push(0);
           }
         } catch (e) {
           // this is an error produced by a bug in the query function, not an error returned by the mysql database
@@ -1259,6 +1225,7 @@ const parseQueryDataPerformanceDiagram = function (rows, d, appParams) {
         let currSubData;
         for (let sdIdx = 0; sdIdx < thisSubData.length; sdIdx += 1) {
           currSubData = thisSubData[sdIdx].split(";");
+          let levelOffset = 0;
           thisSubSecs.push(Number(currSubData[0]));
           if (hasLevels) {
             if (!matsMethods.isThisANaN(Number(currSubData[1]))) {
@@ -1266,20 +1233,14 @@ const parseQueryDataPerformanceDiagram = function (rows, d, appParams) {
             } else {
               thisSubLevs.push(currSubData[1]);
             }
-            thisSubHit.push(Number(currSubData[2]));
-            thisSubFa.push(Number(currSubData[3]));
-            thisSubMiss.push(Number(currSubData[4]));
-            thisSubCn.push(Number(currSubData[5]));
-            // this is a dummy to fit the expectations of common functions that xy line curves have a populated sub_values array. It isn't used for anything.
-            thisSubValues.push(0);
-          } else {
-            thisSubHit.push(Number(currSubData[1]));
-            thisSubFa.push(Number(currSubData[2]));
-            thisSubMiss.push(Number(currSubData[3]));
-            thisSubCn.push(Number(currSubData[4]));
-            // this is a dummy to fit the expectations of common functions that xy line curves have a populated sub_values array. It isn't used for anything.
-            thisSubValues.push(0);
+            levelOffset = 1;
           }
+          thisSubHit.push(Number(currSubData[1 + levelOffset]));
+          thisSubFa.push(Number(currSubData[2 + levelOffset]));
+          thisSubMiss.push(Number(currSubData[3 + levelOffset]));
+          thisSubCn.push(Number(currSubData[4 + levelOffset]));
+          // this is a dummy to fit the expectations of common functions that xy line curves have a populated sub_values array. It isn't used for anything.
+          thisSubValues.push(0);
         }
       } catch (e) {
         // this is an error produced by a bug in the query function, not an error returned by the mysql database
@@ -1567,6 +1528,7 @@ const parseQueryDataSimpleScatter = function (
         let currSubData;
         for (let sdIdx = 0; sdIdx < thisSubData.length; sdIdx += 1) {
           currSubData = thisSubData[sdIdx].split(";");
+          let levelOffset = 0;
           thisSubSecs.push(Number(currSubData[0]));
           if (hasLevels) {
             if (!matsMethods.isThisANaN(Number(currSubData[1]))) {
@@ -1574,235 +1536,120 @@ const parseQueryDataSimpleScatter = function (
             } else {
               thisSubLevs.push(currSubData[1]);
             }
-            if (statTypeX === "scalar") {
-              // x-statistic is scalar, and we have levels, so start the indexing at 2
-              thisSubSquareDiffSumX.push(Number(currSubData[2]));
-              thisSubNSumX.push(Number(currSubData[3]));
-              thisSubObsModelDiffSumX.push(Number(currSubData[4]));
-              thisSubModelSumX.push(Number(currSubData[5]));
-              thisSubObsSumX.push(Number(currSubData[6]));
-              thisSubAbsSumX.push(Number(currSubData[7]));
-              thisSubValuesX.push(
-                matsDataUtils.calculateStatScalar(
-                  Number(currSubData[2]),
-                  Number(currSubData[3]),
-                  Number(currSubData[4]),
-                  Number(currSubData[5]),
-                  Number(currSubData[6]),
-                  Number(currSubData[7]),
-                  statisticXStr
-                )
-              );
-              if (statTypeY === "scalar") {
-                // y-statistic is scalar, and we have levels, so start the indexing at 8 (these fields follow the scalar x-fields)
-                thisSubSquareDiffSumY.push(Number(currSubData[8]));
-                thisSubNSumY.push(Number(currSubData[9]));
-                thisSubObsModelDiffSumY.push(Number(currSubData[10]));
-                thisSubModelSumY.push(Number(currSubData[11]));
-                thisSubObsSumY.push(Number(currSubData[12]));
-                thisSubAbsSumY.push(Number(currSubData[13]));
-                thisSubValuesY.push(
-                  matsDataUtils.calculateStatScalar(
-                    Number(currSubData[8]),
-                    Number(currSubData[9]),
-                    Number(currSubData[10]),
-                    Number(currSubData[11]),
-                    Number(currSubData[12]),
-                    Number(currSubData[13]),
-                    statisticYStr
-                  )
-                );
-              } else {
-                // y-statistic is CTC, and we have levels, so start the indexing at 8 (these fields follow the scalar x-fields)
-                thisSubHitY.push(Number(currSubData[8]));
-                thisSubFaY.push(Number(currSubData[9]));
-                thisSubMissY.push(Number(currSubData[10]));
-                thisSubCnY.push(Number(currSubData[11]));
-                thisSubValuesY.push(
-                  matsDataUtils.calculateStatCTC(
-                    Number(currSubData[8]),
-                    Number(currSubData[9]),
-                    Number(currSubData[10]),
-                    Number(currSubData[11]),
-                    Number(currSubData[8]) +
-                      Number(currSubData[9]) +
-                      Number(currSubData[10]) +
-                      Number(currSubData[11]),
-                    statisticYStr
-                  )
-                );
-              }
-            } else {
-              // x-statistic is CTC, and we have levels, so start the indexing at 2
-              thisSubHitX.push(Number(currSubData[2]));
-              thisSubFaX.push(Number(currSubData[3]));
-              thisSubMissX.push(Number(currSubData[4]));
-              thisSubCnX.push(Number(currSubData[5]));
-              thisSubValuesX.push(
-                matsDataUtils.calculateStatCTC(
-                  Number(currSubData[2]),
-                  Number(currSubData[3]),
-                  Number(currSubData[4]),
-                  Number(currSubData[5]),
-                  Number(currSubData[2]) +
-                    Number(currSubData[3]) +
-                    Number(currSubData[4]) +
-                    Number(currSubData[5]),
-                  statisticXStr
-                )
-              );
-              if (statTypeY === "scalar") {
-                // y-statistic is scalar, and we have levels, so start the indexing at 6 (these fields follow the CTC x-fields)
-                thisSubSquareDiffSumY.push(Number(currSubData[6]));
-                thisSubNSumY.push(Number(currSubData[7]));
-                thisSubObsModelDiffSumY.push(Number(currSubData[8]));
-                thisSubModelSumY.push(Number(currSubData[9]));
-                thisSubObsSumY.push(Number(currSubData[10]));
-                thisSubAbsSumY.push(Number(currSubData[11]));
-                thisSubValuesY.push(
-                  matsDataUtils.calculateStatScalar(
-                    Number(currSubData[6]),
-                    Number(currSubData[7]),
-                    Number(currSubData[8]),
-                    Number(currSubData[9]),
-                    Number(currSubData[10]),
-                    Number(currSubData[11]),
-                    statisticYStr
-                  )
-                );
-              } else {
-                // y-statistic is CTC, and we have levels, so start the indexing at 6 (these fields follow the CTC x-fields)
-                thisSubHitY.push(Number(currSubData[6]));
-                thisSubFaY.push(Number(currSubData[7]));
-                thisSubMissY.push(Number(currSubData[8]));
-                thisSubCnY.push(Number(currSubData[9]));
-                thisSubValuesY.push(
-                  matsDataUtils.calculateStatCTC(
-                    Number(currSubData[6]),
-                    Number(currSubData[7]),
-                    Number(currSubData[8]),
-                    Number(currSubData[9]),
-                    Number(currSubData[6]) +
-                      Number(currSubData[7]) +
-                      Number(currSubData[8]) +
-                      Number(currSubData[9]),
-                    statisticYStr
-                  )
-                );
-              }
-            }
-          } else if (statTypeX === "scalar") {
-            // x-statistic is scalar, and we do not have levels, so start the indexing at 1
-            thisSubSquareDiffSumX.push(Number(currSubData[1]));
-            thisSubNSumX.push(Number(currSubData[2]));
-            thisSubObsModelDiffSumX.push(Number(currSubData[3]));
-            thisSubModelSumX.push(Number(currSubData[4]));
-            thisSubObsSumX.push(Number(currSubData[5]));
-            thisSubAbsSumX.push(Number(currSubData[6]));
+            levelOffset = 1;
+          }
+          if (statTypeX === "scalar") {
+            // x-statistic is scalar, so start the indexing at 1
+            thisSubSquareDiffSumX.push(Number(currSubData[1 + levelOffset]));
+            thisSubNSumX.push(Number(currSubData[2 + levelOffset]));
+            thisSubObsModelDiffSumX.push(Number(currSubData[3 + levelOffset]));
+            thisSubModelSumX.push(Number(currSubData[4 + levelOffset]));
+            thisSubObsSumX.push(Number(currSubData[5 + levelOffset]));
+            thisSubAbsSumX.push(Number(currSubData[6 + levelOffset]));
             thisSubValuesX.push(
               matsDataUtils.calculateStatScalar(
-                Number(currSubData[1]),
-                Number(currSubData[2]),
-                Number(currSubData[3]),
-                Number(currSubData[4]),
-                Number(currSubData[5]),
-                Number(currSubData[6]),
+                Number(currSubData[1 + levelOffset]),
+                Number(currSubData[2 + levelOffset]),
+                Number(currSubData[3 + levelOffset]),
+                Number(currSubData[4 + levelOffset]),
+                Number(currSubData[5 + levelOffset]),
+                Number(currSubData[6 + levelOffset]),
                 statisticXStr
               )
             );
             if (statTypeY === "scalar") {
-              // y-statistic is scalar, and we do not have levels, so start the indexing at 7 (these fields follow the scalarx-fields)
-              thisSubSquareDiffSumY.push(Number(currSubData[7]));
-              thisSubNSumY.push(Number(currSubData[8]));
-              thisSubObsModelDiffSumY.push(Number(currSubData[9]));
-              thisSubModelSumY.push(Number(currSubData[10]));
-              thisSubObsSumY.push(Number(currSubData[11]));
-              thisSubAbsSumY.push(Number(currSubData[12]));
+              // y-statistic is scalar, so start the indexing at 7 (these fields follow the scalarx-fields)
+              thisSubSquareDiffSumY.push(Number(currSubData[7 + levelOffset]));
+              thisSubNSumY.push(Number(currSubData[8 + levelOffset]));
+              thisSubObsModelDiffSumY.push(Number(currSubData[9 + levelOffset]));
+              thisSubModelSumY.push(Number(currSubData[10 + levelOffset]));
+              thisSubObsSumY.push(Number(currSubData[11 + levelOffset]));
+              thisSubAbsSumY.push(Number(currSubData[12 + levelOffset]));
               thisSubValuesY.push(
                 matsDataUtils.calculateStatScalar(
-                  Number(currSubData[7]),
-                  Number(currSubData[8]),
-                  Number(currSubData[9]),
-                  Number(currSubData[10]),
-                  Number(currSubData[11]),
-                  Number(currSubData[12]),
+                  Number(currSubData[7 + levelOffset]),
+                  Number(currSubData[8 + levelOffset]),
+                  Number(currSubData[9 + levelOffset]),
+                  Number(currSubData[10 + levelOffset]),
+                  Number(currSubData[11 + levelOffset]),
+                  Number(currSubData[12 + levelOffset]),
                   statisticYStr
                 )
               );
             } else {
-              // y-statistic is CTC, and we do not have levels, so start the indexing at 7 (these fields follow the scalar x-fields)
-              thisSubHitY.push(Number(currSubData[7]));
-              thisSubFaY.push(Number(currSubData[8]));
-              thisSubMissY.push(Number(currSubData[9]));
-              thisSubCnY.push(Number(currSubData[10]));
+              // y-statistic is CTC, so start the indexing at 7 (these fields follow the scalar x-fields)
+              thisSubHitY.push(Number(currSubData[7 + levelOffset]));
+              thisSubFaY.push(Number(currSubData[8 + levelOffset]));
+              thisSubMissY.push(Number(currSubData[9 + levelOffset]));
+              thisSubCnY.push(Number(currSubData[10 + levelOffset]));
               thisSubValuesY.push(
                 matsDataUtils.calculateStatCTC(
-                  Number(currSubData[7]),
-                  Number(currSubData[8]),
-                  Number(currSubData[9]),
-                  Number(currSubData[10]),
-                  Number(currSubData[7]) +
-                    Number(currSubData[8]) +
-                    Number(currSubData[9]) +
-                    Number(currSubData[10]),
+                  Number(currSubData[7 + levelOffset]),
+                  Number(currSubData[8 + levelOffset]),
+                  Number(currSubData[9 + levelOffset]),
+                  Number(currSubData[10 + levelOffset]),
+                  Number(currSubData[7 + levelOffset]) +
+                    Number(currSubData[8 + levelOffset]) +
+                    Number(currSubData[9 + levelOffset]) +
+                    Number(currSubData[10 + levelOffset]),
                   statisticYStr
                 )
               );
             }
           } else {
-            // x-statistic is CTC, and we do not have levels, so start the indexing at 1
-            thisSubHitX.push(Number(currSubData[1]));
-            thisSubFaX.push(Number(currSubData[2]));
-            thisSubMissX.push(Number(currSubData[3]));
-            thisSubCnX.push(Number(currSubData[4]));
+            // x-statistic is CTC, so start the indexing at 1
+            thisSubHitX.push(Number(currSubData[1 + levelOffset]));
+            thisSubFaX.push(Number(currSubData[2 + levelOffset]));
+            thisSubMissX.push(Number(currSubData[3 + levelOffset]));
+            thisSubCnX.push(Number(currSubData[4 + levelOffset]));
             thisSubValuesX.push(
               matsDataUtils.calculateStatCTC(
-                Number(currSubData[1]),
-                Number(currSubData[2]),
-                Number(currSubData[3]),
-                Number(currSubData[4]),
-                Number(currSubData[1]) +
-                  Number(currSubData[2]) +
-                  Number(currSubData[3]) +
-                  Number(currSubData[4]),
+                Number(currSubData[1 + levelOffset]),
+                Number(currSubData[2 + levelOffset]),
+                Number(currSubData[3 + levelOffset]),
+                Number(currSubData[4 + levelOffset]),
+                Number(currSubData[1 + levelOffset]) +
+                  Number(currSubData[2 + levelOffset]) +
+                  Number(currSubData[3 + levelOffset]) +
+                  Number(currSubData[4 + levelOffset]),
                 statisticXStr
               )
             );
             if (statTypeY === "scalar") {
-              // y-statistic is scalar, and we do not have levels, so start the indexing at 5 (these fields follow the CTC x-fields)
-              thisSubSquareDiffSumY.push(Number(currSubData[5]));
-              thisSubNSumY.push(Number(currSubData[6]));
-              thisSubObsModelDiffSumY.push(Number(currSubData[7]));
-              thisSubModelSumY.push(Number(currSubData[8]));
-              thisSubObsSumY.push(Number(currSubData[9]));
-              thisSubAbsSumY.push(Number(currSubData[10]));
+              // y-statistic is scalar, so start the indexing at 5 (these fields follow the CTC x-fields)
+              thisSubSquareDiffSumY.push(Number(currSubData[5 + levelOffset]));
+              thisSubNSumY.push(Number(currSubData[6 + levelOffset]));
+              thisSubObsModelDiffSumY.push(Number(currSubData[7 + levelOffset]));
+              thisSubModelSumY.push(Number(currSubData[8 + levelOffset]));
+              thisSubObsSumY.push(Number(currSubData[9 + levelOffset]));
+              thisSubAbsSumY.push(Number(currSubData[10 + levelOffset]));
               thisSubValuesY.push(
                 matsDataUtils.calculateStatScalar(
-                  Number(currSubData[5]),
-                  Number(currSubData[6]),
-                  Number(currSubData[7]),
-                  Number(currSubData[8]),
-                  Number(currSubData[9]),
-                  Number(currSubData[10]),
+                  Number(currSubData[5 + levelOffset]),
+                  Number(currSubData[6 + levelOffset]),
+                  Number(currSubData[7 + levelOffset]),
+                  Number(currSubData[8 + levelOffset]),
+                  Number(currSubData[9 + levelOffset]),
+                  Number(currSubData[10 + levelOffset]),
                   statisticYStr
                 )
               );
             } else {
-              // y-statistic is CTC, and we do not have levels, so start the indexing at 5 (these fields follow the CTC x-fields)
-              thisSubHitY.push(Number(currSubData[5]));
-              thisSubFaY.push(Number(currSubData[6]));
-              thisSubMissY.push(Number(currSubData[7]));
-              thisSubCnY.push(Number(currSubData[8]));
+              // y-statistic is CTC, so start the indexing at 5 (these fields follow the CTC x-fields)
+              thisSubHitY.push(Number(currSubData[5 + levelOffset]));
+              thisSubFaY.push(Number(currSubData[6 + levelOffset]));
+              thisSubMissY.push(Number(currSubData[7 + levelOffset]));
+              thisSubCnY.push(Number(currSubData[8 + levelOffset]));
               thisSubValuesY.push(
                 matsDataUtils.calculateStatCTC(
-                  Number(currSubData[5]),
-                  Number(currSubData[6]),
-                  Number(currSubData[7]),
-                  Number(currSubData[8]),
-                  Number(currSubData[5]) +
-                    Number(currSubData[6]) +
-                    Number(currSubData[7]) +
-                    Number(currSubData[8]),
+                  Number(currSubData[5 + levelOffset]),
+                  Number(currSubData[6 + levelOffset]),
+                  Number(currSubData[7 + levelOffset]),
+                  Number(currSubData[8 + levelOffset]),
+                  Number(currSubData[5 + levelOffset]) +
+                    Number(currSubData[6 + levelOffset]) +
+                    Number(currSubData[7 + levelOffset]) +
+                    Number(currSubData[8 + levelOffset]),
                   statisticYStr
                 )
               );
@@ -2127,6 +1974,7 @@ const parseQueryDataMapScalar = function (
         let currSubData;
         for (let sdIdx = 0; sdIdx < thisSubData.length; sdIdx += 1) {
           currSubData = thisSubData[sdIdx].split(";");
+          let levelOffset = 0;
           thisSubSecs.push(Number(currSubData[0]));
           if (hasLevels) {
             if (!matsMethods.isThisANaN(Number(currSubData[1]))) {
@@ -2134,42 +1982,25 @@ const parseQueryDataMapScalar = function (
             } else {
               thisSubLevs.push(currSubData[1]);
             }
-            thisSubSquareDiffSum.push(Number(currSubData[2]));
-            thisSubNSum.push(Number(currSubData[3]));
-            thisSubObsModelDiffSum.push(Number(currSubData[4]));
-            thisSubModelSum.push(Number(currSubData[5]));
-            thisSubObsSum.push(Number(currSubData[6]));
-            thisSubAbsSum.push(Number(currSubData[7]));
-            thisSubValues.push(
-              matsDataUtils.calculateStatScalar(
-                Number(currSubData[2]),
-                Number(currSubData[3]),
-                Number(currSubData[4]),
-                Number(currSubData[5]),
-                Number(currSubData[6]),
-                Number(currSubData[7]),
-                `${statistic}_${variable}`
-              )
-            );
-          } else {
-            thisSubSquareDiffSum.push(Number(currSubData[1]));
-            thisSubNSum.push(Number(currSubData[2]));
-            thisSubObsModelDiffSum.push(Number(currSubData[3]));
-            thisSubModelSum.push(Number(currSubData[4]));
-            thisSubObsSum.push(Number(currSubData[5]));
-            thisSubAbsSum.push(Number(currSubData[6]));
-            thisSubValues.push(
-              matsDataUtils.calculateStatScalar(
-                Number(currSubData[1]),
-                Number(currSubData[2]),
-                Number(currSubData[3]),
-                Number(currSubData[4]),
-                Number(currSubData[5]),
-                Number(currSubData[6]),
-                `${statistic}_${variable}`
-              )
-            );
+            levelOffset = 1;
           }
+          thisSubSquareDiffSum.push(Number(currSubData[1 + levelOffset]));
+          thisSubNSum.push(Number(currSubData[2 + levelOffset]));
+          thisSubObsModelDiffSum.push(Number(currSubData[3 + levelOffset]));
+          thisSubModelSum.push(Number(currSubData[4 + levelOffset]));
+          thisSubObsSum.push(Number(currSubData[5 + levelOffset]));
+          thisSubAbsSum.push(Number(currSubData[6 + levelOffset]));
+          thisSubValues.push(
+            matsDataUtils.calculateStatScalar(
+              Number(currSubData[1 + levelOffset]),
+              Number(currSubData[2 + levelOffset]),
+              Number(currSubData[3 + levelOffset]),
+              Number(currSubData[4 + levelOffset]),
+              Number(currSubData[5 + levelOffset]),
+              Number(currSubData[6 + levelOffset]),
+              `${statistic}_${variable}`
+            )
+          );
         }
         // Now that we have all the sub-values, we can get the standard deviation and remove the ones that exceed it
         if (outlierQCParam !== "all") {
@@ -2453,6 +2284,7 @@ const parseQueryDataMapCTC = function (
         let currSubData;
         for (let sdIdx = 0; sdIdx < thisSubData.length; sdIdx += 1) {
           currSubData = thisSubData[sdIdx].split(";");
+          let levelOffset = 0;
           thisSubSecs.push(Number(currSubData[0]));
           if (hasLevels) {
             if (!matsMethods.isThisANaN(Number(currSubData[1]))) {
@@ -2460,36 +2292,22 @@ const parseQueryDataMapCTC = function (
             } else {
               thisSubLevs.push(currSubData[1]);
             }
-            thisSubHit.push(Number(currSubData[2]));
-            thisSubFa.push(Number(currSubData[3]));
-            thisSubMiss.push(Number(currSubData[4]));
-            thisSubCn.push(Number(currSubData[5]));
-            thisSubValues.push(
-              matsDataUtils.calculateStatCTC(
-                Number(currSubData[2]),
-                Number(currSubData[3]),
-                Number(currSubData[4]),
-                Number(currSubData[5]),
-                currSubData.length,
-                statistic
-              )
-            );
-          } else {
-            thisSubHit.push(Number(currSubData[1]));
-            thisSubFa.push(Number(currSubData[2]));
-            thisSubMiss.push(Number(currSubData[3]));
-            thisSubCn.push(Number(currSubData[4]));
-            thisSubValues.push(
-              matsDataUtils.calculateStatCTC(
-                Number(currSubData[1]),
-                Number(currSubData[2]),
-                Number(currSubData[3]),
-                Number(currSubData[4]),
-                currSubData.length,
-                statistic
-              )
-            );
+            levelOffset = 1;
           }
+          thisSubHit.push(Number(currSubData[1 + levelOffset]));
+          thisSubFa.push(Number(currSubData[2 + levelOffset]));
+          thisSubMiss.push(Number(currSubData[3 + levelOffset]));
+          thisSubCn.push(Number(currSubData[4 + levelOffset]));
+          thisSubValues.push(
+            matsDataUtils.calculateStatCTC(
+              Number(currSubData[1 + levelOffset]),
+              Number(currSubData[2 + levelOffset]),
+              Number(currSubData[3 + levelOffset]),
+              Number(currSubData[4 + levelOffset]),
+              currSubData.length,
+              statistic
+            )
+          );
         }
         // Now that we have all the sub-values, we can get the standard deviation and remove the ones that exceed it
         if (outlierQCParam !== "all") {
@@ -2760,6 +2578,7 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
         let currSubData;
         for (let sdIdx = 0; sdIdx < thisSubData.length; sdIdx += 1) {
           currSubData = thisSubData[sdIdx].split(";");
+          let levelOffset = 0;
           if (isCTC) {
             thisSubSecs.push(Number(currSubData[0]));
             if (hasLevels) {
@@ -2768,28 +2587,18 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
               } else {
                 thisSubLevs.push(currSubData[1]);
               }
-              thisSubStats.push(
-                matsDataUtils.calculateStatCTC(
-                  Number(currSubData[2]),
-                  Number(currSubData[3]),
-                  Number(currSubData[4]),
-                  Number(currSubData[5]),
-                  1,
-                  statisticStr
-                )
-              );
-            } else {
-              thisSubStats.push(
-                matsDataUtils.calculateStatCTC(
-                  Number(currSubData[1]),
-                  Number(currSubData[2]),
-                  Number(currSubData[3]),
-                  Number(currSubData[4]),
-                  1,
-                  statisticStr
-                )
-              );
+              levelOffset = 1;
             }
+            thisSubStats.push(
+              matsDataUtils.calculateStatCTC(
+                Number(currSubData[1 + levelOffset]),
+                Number(currSubData[2 + levelOffset]),
+                Number(currSubData[3 + levelOffset]),
+                Number(currSubData[4 + levelOffset]),
+                1,
+                statisticStr
+              )
+            );
           } else if (isScalar) {
             thisSubSecs.push(Number(currSubData[0]));
             if (hasLevels) {
@@ -2798,30 +2607,19 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
               } else {
                 thisSubLevs.push(currSubData[1]);
               }
-              thisSubStats.push(
-                matsDataUtils.calculateStatScalar(
-                  Number(currSubData[2]),
-                  Number(currSubData[3]),
-                  Number(currSubData[4]),
-                  Number(currSubData[5]),
-                  Number(currSubData[6]),
-                  Number(currSubData[7]),
-                  statisticStr
-                )
-              );
-            } else {
-              thisSubStats.push(
-                matsDataUtils.calculateStatScalar(
-                  Number(currSubData[1]),
-                  Number(currSubData[2]),
-                  Number(currSubData[3]),
-                  Number(currSubData[4]),
-                  Number(currSubData[5]),
-                  Number(currSubData[6]),
-                  statisticStr
-                )
-              );
+              levelOffset = 1;
             }
+            thisSubStats.push(
+              matsDataUtils.calculateStatScalar(
+                Number(currSubData[1 + levelOffset]),
+                Number(currSubData[2 + levelOffset]),
+                Number(currSubData[3 + levelOffset]),
+                Number(currSubData[4 + levelOffset]),
+                Number(currSubData[5 + levelOffset]),
+                Number(currSubData[6 + levelOffset]),
+                statisticStr
+              )
+            );
           } else {
             thisSubSecs.push(Number(currSubData[0]));
             if (hasLevels) {
@@ -2830,10 +2628,9 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
               } else {
                 thisSubLevs.push(currSubData[1]);
               }
-              thisSubStats.push(Number(currSubData[2]));
-            } else {
-              thisSubStats.push(Number(currSubData[1]));
+              levelOffset = 1;
             }
+            thisSubStats.push(Number(currSubData[1 + levelOffset]));
           }
         }
         curveSubStatsRaw.push(thisSubStats);
@@ -3060,6 +2857,7 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
         let currSubData;
         for (let sdIdx = 0; sdIdx < thisSubData.length; sdIdx += 1) {
           currSubData = thisSubData[sdIdx].split(";");
+          let levelOffset = 0;
           if (isCTC) {
             thisSubSecs.push(Number(currSubData[0]));
             if (hasLevels) {
@@ -3068,16 +2866,12 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
               } else {
                 thisSubLevs.push(currSubData[1]);
               }
-              thisSubHit.push(Number(currSubData[2]));
-              thisSubFa.push(Number(currSubData[3]));
-              thisSubMiss.push(Number(currSubData[4]));
-              thisSubCn.push(Number(currSubData[5]));
-            } else {
-              thisSubHit.push(Number(currSubData[1]));
-              thisSubFa.push(Number(currSubData[2]));
-              thisSubMiss.push(Number(currSubData[3]));
-              thisSubCn.push(Number(currSubData[4]));
+              levelOffset = 1;
             }
+            thisSubHit.push(Number(currSubData[1 + levelOffset]));
+            thisSubFa.push(Number(currSubData[2 + levelOffset]));
+            thisSubMiss.push(Number(currSubData[3 + levelOffset]));
+            thisSubCn.push(Number(currSubData[4 + levelOffset]));
           } else if (isScalar) {
             thisSubSecs.push(Number(currSubData[0]));
             if (hasLevels) {
@@ -3086,20 +2880,14 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
               } else {
                 thisSubLevs.push(currSubData[1]);
               }
-              thisSubSquareDiffSum.push(Number(currSubData[2]));
-              thisSubNSum.push(Number(currSubData[3]));
-              thisSubObsModelDiffSum.push(Number(currSubData[4]));
-              thisSubModelSum.push(Number(currSubData[5]));
-              thisSubObsSum.push(Number(currSubData[6]));
-              thisSubAbsSum.push(Number(currSubData[7]));
-            } else {
-              thisSubSquareDiffSum.push(Number(currSubData[1]));
-              thisSubNSum.push(Number(currSubData[2]));
-              thisSubObsModelDiffSum.push(Number(currSubData[3]));
-              thisSubModelSum.push(Number(currSubData[4]));
-              thisSubObsSum.push(Number(currSubData[5]));
-              thisSubAbsSum.push(Number(currSubData[6]));
+              levelOffset = 1;
             }
+            thisSubSquareDiffSum.push(Number(currSubData[1 + levelOffset]));
+            thisSubNSum.push(Number(currSubData[2 + levelOffset]));
+            thisSubObsModelDiffSum.push(Number(currSubData[3 + levelOffset]));
+            thisSubModelSum.push(Number(currSubData[4 + levelOffset]));
+            thisSubObsSum.push(Number(currSubData[5 + levelOffset]));
+            thisSubAbsSum.push(Number(currSubData[6 + levelOffset]));
           } else {
             thisSubSecs.push(Number(currSubData[0]));
             if (hasLevels) {
@@ -3108,10 +2896,9 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
               } else {
                 thisSubLevs.push(currSubData[1]);
               }
-              thisSubValues.push(Number(currSubData[2]));
-            } else {
-              thisSubValues.push(Number(currSubData[1]));
+              levelOffset = 1;
             }
+            thisSubValues.push(Number(currSubData[1 + levelOffset]));
           }
         }
       } catch (e) {
