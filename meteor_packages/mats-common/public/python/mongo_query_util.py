@@ -24,7 +24,7 @@ class NpEncoder(json.JSONEncoder):
             return float(obj)
 
 
-class CBQueryUtil:
+class MongoQueryUtil:
     """class that contains all of the tools necessary for querying the db and calculating statistics from the
     returned data."""
     error = []  # one of the four fields to return at the end -- records any error message
@@ -443,7 +443,7 @@ class CBQueryUtil:
 
 
 if __name__ == '__main__':
-    cbqutil = CBQueryUtil()
+    cbqutil = MongoQueryUtil()
     options = cbqutil.get_options(sys.argv)
     cbqutil.set_up_output_fields(len(options["query_array"]))
     cbqutil.do_query(options)
