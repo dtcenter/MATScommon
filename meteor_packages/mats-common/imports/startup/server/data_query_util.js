@@ -206,6 +206,70 @@ const parsePythonShellQueryResults = function (results, queryArray) {
   return { d, n0, nTimes, error };
 };
 
+// utility for querying the Mongo DB via Python
+const queryMongoPython = async function (pool, queryArray) {
+  if (Meteor.isServer) {
+    // send the query statement to the python query function
+    const pyOptions = {
+      mode: "text",
+      pythonPath: Meteor.settings.private.PYTHON_PATH,
+      pythonOptions: ["-u"], // get print results in real-time
+      scriptPath:
+        process.env.NODE_ENV === "development"
+          ? `${process.env.PWD}/.meteor/local/build/programs/server/assets/packages/randyp_mats-common/public/python/`
+          : `${process.env.PWD}/programs/server/assets/packages/randyp_mats-common/public/python/`,
+      args: [
+        "-h",
+        pool.host,
+        "-u",
+        pool.user,
+        "-p",
+        pool.pwd,
+        "-b",
+        pool.bucketName,
+        "-s",
+        pool.scope,
+        "-c",
+        pool.collection,
+        "-q",
+        JSON.stringify(queryArray),
+      ],
+    };
+
+    let d = [];
+    let error = "";
+    let n0 = [];
+    let nTimes = [];
+
+    const pyShell = require("python-shell");
+    const results = await pyShell.PythonShell.run("mongo_query_util.py", pyOptions)
+      .then()
+      .catch((err) => {
+        error = err.message;
+        return {
+          data: d,
+          error,
+          n0,
+          nTimes,
+        };
+      });
+    if (results === undefined || results === "undefined") {
+      error =
+        "Error thrown by couchbase_query_util.py. Please write down exactly how you produced this error, and submit a ticket at mats.gsl@noaa.gov.";
+    } else {
+      // get the data back from the query
+      ({ d, n0, nTimes, error } = parsePythonShellQueryResults(results, queryArray));
+    }
+    return {
+      data: d,
+      error,
+      n0,
+      nTimes,
+    };
+  }
+  return null;
+};
+
 // utility for querying the Coushbase DB via Python
 const queryCBPython = async function (pool, queryArray) {
   if (Meteor.isServer) {
@@ -4137,6 +4201,7 @@ const queryDBContour = async function (pool, statement, appParams, statisticStr)
 export default matsDataQueryUtils = {
   queryMySQL,
   getStationsInCouchbaseRegion,
+  queryMongoPython,
   queryCBPython,
   queryDBPython,
   queryDBTimeSeries,

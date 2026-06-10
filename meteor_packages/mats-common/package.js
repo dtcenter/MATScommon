@@ -296,6 +296,7 @@ Package.onUse(function (api) {
   // static assets -- python
   api.addAssets("public/python/mysql_query_util.py", "server");
   api.addAssets("public/python/couchbase_query_util.py", "server");
+  api.addAssets("public/python/mongo_query_util.py", "server");
   api.addAssets("public/python/python_ctc_error.py", "server");
   api.addAssets("public/python/parse_query_data.py", "server");
   api.addAssets("public/python/calc_stats.py", "server");
