@@ -9,6 +9,13 @@ import { FlowRouter } from "meteor/ostrio:flow-router-extra";
 
 // Routes
 
+FlowRouter.route("/int-mats", {
+  name: "homeBypassIntMats",
+  action() {
+    window.location.href = "https://gsl.noaa.gov/int-mats/";
+  },
+});
+
 FlowRouter.route("/", {
   name: "main",
   action() {
