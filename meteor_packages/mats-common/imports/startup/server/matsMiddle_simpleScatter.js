@@ -26,9 +26,15 @@ class MatsMiddleSimpleScatter {
 
   stats = [];
 
-  statType = null;
+  binClause = null;
 
-  varName = null;
+  statTypeX = null;
+
+  statTypeY = null;
+
+  varNameX = null;
+
+  varNameY = null;
 
   stationNames = null;
 
@@ -36,9 +42,9 @@ class MatsMiddleSimpleScatter {
 
   fcstLen = null;
 
-  threshold = null;
+  thresholdX = null;
 
-  average = null;
+  thresholdY = null;
 
   fromSecs = null;
 
@@ -64,13 +70,16 @@ class MatsMiddleSimpleScatter {
   /* eslint-disable class-methods-use-this */
 
   processStationQuery = async (
-    statType,
-    varName,
+    binClause,
+    statTypeX,
+    statTypeY,
+    varNameX,
+    varNameY,
     stationNames,
     model,
     fcstLen,
-    threshold,
-    average,
+    thresholdX,
+    thresholdY,
     fromSecs,
     toSecs,
     validTimes,
@@ -80,13 +89,16 @@ class MatsMiddleSimpleScatter {
     let rv = [];
     try {
       rv = await this.processStationQueryInt(
-        statType,
-        varName,
+        binClause,
+        statTypeX,
+        statTypeY,
+        varNameX,
+        varNameY,
         stationNames,
         model,
         fcstLen,
-        threshold,
-        average,
+        thresholdX,
+        thresholdY,
         fromSecs,
         toSecs,
         validTimes,
@@ -94,20 +106,23 @@ class MatsMiddleSimpleScatter {
         elevMap
       );
     } catch (err) {
-      console.log(`MatsMiddleTimeSeries.processStationQuery ERROR: ${err.message}`);
-      rv = `MatsMiddleTimeSeries.processStationQuery ERROR: ${err.message}`;
+      console.log(`MatsMiddleSimpleScatter.processStationQuery ERROR: ${err.message}`);
+      rv = `MatsMiddleSimpleScatter.processStationQuery ERROR: ${err.message}`;
     }
     return rv;
   };
 
   processStationQueryInt = async (
-    statType,
-    varName,
+    binClause,
+    statTypeX,
+    statTypeY,
+    varNameX,
+    varNameY,
     stationNames,
     model,
     fcstLen,
-    threshold,
-    average,
+    thresholdX,
+    thresholdY,
     fromSecs,
     toSecs,
     validTimes,
@@ -115,13 +130,16 @@ class MatsMiddleSimpleScatter {
     elevMap
   ) => {
     try {
-      this.statType = statType;
-      this.varName = varName;
+      this.binClause = binClause;
+      this.statTypeX = statTypeX;
+      this.statTypeY = statTypeY;
+      this.varNameX = varNameX;
+      this.varNameY = varNameY;
       this.stationNames = stationNames;
       this.model = model;
       this.fcstLen = fcstLen;
-      this.threshold = threshold;
-      this.average = average.replace(/m0./g, "");
+      this.thresholdX = thresholdX;
+      this.thresholdY = thresholdY;
       this.fromSecs = fromSecs;
       this.toSecs = toSecs;
       if (validTimes.length !== 0 && validTimes !== matsTypes.InputTypes.unused) {
