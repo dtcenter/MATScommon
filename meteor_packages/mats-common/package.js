@@ -156,6 +156,7 @@ Package.onUse(function (api) {
   api.addFiles("imports/startup/server/matsMiddle_validTime.js");
   api.addFiles("imports/startup/server/matsMiddle_dailyModelCycle.js");
   api.addFiles("imports/startup/server/matsMiddle_map.js");
+  api.addFiles("imports/startup/server/matsMiddle_simpleScatter.js");
 
   // files outside of imports
   // client
