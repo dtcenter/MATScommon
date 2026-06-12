@@ -14,6 +14,8 @@ class MatsMiddleSimpleScatter {
 
   fcstValidEpochArray = [];
 
+  fcstLengthArray = [];
+
   indVarArray = [];
 
   cbPool = null;
@@ -26,7 +28,7 @@ class MatsMiddleSimpleScatter {
 
   stats = [];
 
-  binClause = null;
+  binParam = null;
 
   statTypeX = null;
 
@@ -70,7 +72,7 @@ class MatsMiddleSimpleScatter {
   /* eslint-disable class-methods-use-this */
 
   processStationQuery = async (
-    binClause,
+    binParam,
     statTypeX,
     statTypeY,
     varNameX,
@@ -89,7 +91,7 @@ class MatsMiddleSimpleScatter {
     let rv = [];
     try {
       rv = await this.processStationQueryInt(
-        binClause,
+        binParam,
         statTypeX,
         statTypeY,
         varNameX,
@@ -113,7 +115,7 @@ class MatsMiddleSimpleScatter {
   };
 
   processStationQueryInt = async (
-    binClause,
+    binParam,
     statTypeX,
     statTypeY,
     varNameX,
@@ -130,7 +132,7 @@ class MatsMiddleSimpleScatter {
     elevMap
   ) => {
     try {
-      this.binClause = binClause;
+      this.binParam = binParam;
       this.statTypeX = statTypeX;
       this.statTypeY = statTypeY;
       this.varNameX = varNameX;
@@ -158,21 +160,42 @@ class MatsMiddleSimpleScatter {
         toSecs
       );
 
+      this.fcstLengthArray = await this.mmCommon.getFcstLenArray(
+        this.model,
+        this.fcstValidEpochArray[0],
+        this.fcstValidEpochArray[this.fcstValidEpochArray.length - 1]
+      );
+      this.fcstLengthArray = this.fcstLengthArray.filter((fl) => Number(fl) % 3 === 0);
+      this.fcstLengthArray.sort((a, b) => Number(a) - Number(b));
+
       // create distinct indVar array
-      for (let iofve = 0; iofve < this.fcstValidEpochArray.length; iofve += 1) {
-        const ofve = this.fcstValidEpochArray[iofve];
-        let indVar;
-        if (this.average === "m0.fcstValidEpoch") {
-          indVar = ofve;
-        } else {
-          const avgConst = Number(this.average.substring(5, this.average.indexOf("*")));
-          indVar = Math.ceil(avgConst * Math.floor((ofve + avgConst / 2) / avgConst));
+      if (this.binParam === "Fcst lead time") {
+        this.indVarArray = this.fcstLengthArray;
+      } else {
+        for (let iofve = 0; iofve < this.fcstValidEpochArray.length; iofve += 1) {
+          const ofve = this.fcstValidEpochArray[iofve];
+          let indVar;
+          switch (this.binParam) {
+            case "Init UTC hour":
+              indVar = ((ofve - this.fcstLen) % (24 * 3600)) / 3600;
+              break;
+            case "Valid UTC hour":
+              indVar = (ofve % (24 * 3600)) / 3600;
+              break;
+            case "Init Date":
+              indVar = ofve - this.fcstLen;
+              break;
+            case "Valid Date":
+            default:
+              indVar = ofve;
+              break;
+          }
+          if (!this.indVarArray.includes(indVar)) {
+            this.indVarArray.push(indVar);
+          }
         }
-        if (!this.indVarArray.includes(indVar)) {
-          this.indVarArray.push(indVar);
-        }
+        this.indVarArray.sort((a, b) => Number(a) - Number(b));
       }
-      this.indVarArray.sort((a, b) => Number(a) - Number(b));
 
       await this.createObsData();
       await this.createModelData();
@@ -194,9 +217,11 @@ class MatsMiddleSimpleScatter {
 
       return this.stats;
     } catch (err) {
-      console.log(`MatsMiddleTimeSeries.processStationQueryInt ERROR: ${err.message}`);
+      console.log(
+        `MatsMiddleSimpleScatter.processStationQueryInt ERROR: ${err.message}`
+      );
       throw new Error(
-        `MatsMiddleTimeSeries.processStationQueryInt ERROR: ${err.message}`
+        `MatsMiddleSimpleScatter.processStationQueryInt ERROR: ${err.message}`
       );
     }
   };
@@ -241,9 +266,9 @@ class MatsMiddleSimpleScatter {
           stationNamesObs += `, ${wantedValue} ${this.stationNames[i]}`;
         }
       }
-      let tmplWithStationNamesObs = tmplGetNStationsMfveObs.replace(
-        /{{vxAVERAGE}}/g,
-        this.average
+      let tmplWithStationNamesObs = this.cbPool.trfmSQLRemoveClause(
+        tmplGetNStationsMfveObs,
+        "{{vxAVERAGE}}"
       );
       tmplWithStationNamesObs = tmplWithStationNamesObs.replace(
         /{{stationNamesList}}/g,
@@ -265,7 +290,10 @@ class MatsMiddleSimpleScatter {
         prSlice.then((qr) => {
           for (let jmfve = 0; jmfve < qr.rows.length; jmfve += 1) {
             const fveDataSingleEpoch = qr.rows[jmfve];
-            const indVarKey = fveDataSingleEpoch.avtime.toString();
+            const indVarKey = (
+              (fveDataSingleEpoch.fve % (24 * 3600)) /
+              3600
+            ).toString();
             if (!this.fveObs[indVarKey]) {
               this.fveObs[indVarKey] = {};
             }
@@ -291,8 +319,8 @@ class MatsMiddleSimpleScatter {
         throw new Error(`${err.message}`);
       });
     } catch (err) {
-      console.log(`MatsMiddleTimeSeries.createObsData ERROR: ${err.message}`);
-      throw new Error(`MatsMiddleTimeSeries.createObsData ERROR: ${err.message}`);
+      console.log(`MatsMiddleValidTime.createObsData ERROR: ${err.message}`);
+      throw new Error(`MatsMiddleValidTime.createObsData ERROR: ${err.message}`);
     }
   };
 
@@ -301,9 +329,9 @@ class MatsMiddleSimpleScatter {
       let tmplGetNStationsMfveModel = await Assets.getTextAsync(
         "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_model.sql"
       );
-      tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
-        /{{vxAVERAGE}}/g,
-        this.average
+      tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
+        tmplGetNStationsMfveModel,
+        "{{vxAVERAGE}}"
       );
       tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
         /{{vxMODEL}}/g,
@@ -358,7 +386,10 @@ class MatsMiddleSimpleScatter {
         prSlice.then((qr) => {
           for (let jmfve = 0; jmfve < qr.rows.length; jmfve += 1) {
             const fveDataSingleEpoch = qr.rows[jmfve];
-            const indVarKey = fveDataSingleEpoch.avtime.toString();
+            const indVarKey = (
+              (fveDataSingleEpoch.fve % (24 * 3600)) /
+              3600
+            ).toString();
             if (!this.fveModels[indVarKey]) {
               this.fveModels[indVarKey] = {};
             }
@@ -389,8 +420,8 @@ class MatsMiddleSimpleScatter {
         this.generateSums();
       }
     } catch (err) {
-      console.log(`MatsMiddleTimeSeries.createModelData ERROR: ${err.message}`);
-      throw new Error(`MatsMiddleTimeSeries.createModelData ERROR: ${err.message}`);
+      console.log(`MatsMiddleValidTime.createModelData ERROR: ${err.message}`);
+      throw new Error(`MatsMiddleValidTime.createModelData ERROR: ${err.message}`);
     }
   };
 
@@ -409,7 +440,7 @@ class MatsMiddleSimpleScatter {
         let ctcStats = {};
 
         const indVar = indVarsWithData[idx];
-        ctcStats.avtime = Number(indVar);
+        ctcStats.hr_of_day = Number(indVar);
         ctcStats.hit = 0;
         ctcStats.miss = 0;
         ctcStats.fa = 0;
@@ -430,15 +461,7 @@ class MatsMiddleSimpleScatter {
           const obsSingleFve = this.fveObs[indVar][fve];
           const modelSingleFve = indVarSingle[fve];
 
-          if (
-            obsSingleFve &&
-            modelSingleFve &&
-            (!this.validTimes ||
-              this.validTimes.length === 0 ||
-              (this.validTimes &&
-                this.validTimes.length > 0 &&
-                this.validTimes.includes((fve % (24 * 3600)) / 3600)))
-          ) {
+          if (obsSingleFve && modelSingleFve) {
             ctcStats = this.mmCommon.computeCtcForStations(
               fve,
               threshold,
@@ -458,8 +481,8 @@ class MatsMiddleSimpleScatter {
         }
       }
     } catch (err) {
-      console.log(`MatsMiddleTimeSeries.generateCtc ERROR: ${err.message}`);
-      throw new Error(`MatsMiddleTimeSeries.generateCtc ERROR: ${err.message}`);
+      console.log(`MatsMiddleValidTime.generateCtc ERROR: ${err.message}`);
+      throw new Error(`MatsMiddleValidTime.generateCtc ERROR: ${err.message}`);
     }
   };
 
@@ -477,7 +500,7 @@ class MatsMiddleSimpleScatter {
         let sumsStats = {};
 
         const indVar = indVarsWithData[idx];
-        sumsStats.avtime = Number(indVar);
+        sumsStats.hr_of_day = Number(indVar);
         sumsStats.square_diff_sum = 0;
         sumsStats.N_sum = 0;
         sumsStats.obs_model_diff_sum = 0;
@@ -500,15 +523,7 @@ class MatsMiddleSimpleScatter {
           const obsSingleFve = this.fveObs[indVar][fve];
           const modelSingleFve = indVarSingle[fve];
 
-          if (
-            obsSingleFve &&
-            modelSingleFve &&
-            (!this.validTimes ||
-              this.validTimes.length === 0 ||
-              (this.validTimes &&
-                this.validTimes.length > 0 &&
-                this.validTimes.includes((fve % (24 * 3600)) / 3600)))
-          ) {
+          if (obsSingleFve && modelSingleFve) {
             sumsStats = this.mmCommon.computeSumsForStations(
               fve,
               sumsStats,
@@ -527,8 +542,8 @@ class MatsMiddleSimpleScatter {
         }
       }
     } catch (err) {
-      console.log(`MatsMiddleTimeSeries.generateSums ERROR: ${err.message}`);
-      throw new Error(`MatsMiddleTimeSeries.generateSums ERROR: ${err.message}`);
+      console.log(`MatsMiddleValidTime.generateSums ERROR: ${err.message}`);
+      throw new Error(`MatsMiddleValidTime.generateSums ERROR: ${err.message}`);
     }
   };
 }
