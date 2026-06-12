@@ -9,6 +9,25 @@ import { FlowRouter } from "meteor/ostrio:flow-router-extra";
 
 // Routes
 
+// make sure calls to /int-mats actually go to the top-level MATS directory, and are served the home page
+// the URL is still decided in settings.json, in case we move from gsl.noaa.gov in the future
+FlowRouter.route("/int-mats", {
+  name: "homeBypassIntMats",
+  action() {
+    window.location.href = Meteor.settings.public.home;
+  },
+});
+
+// make sure calls to /mats actually go to the top-level MATS directory, and are served the home page
+// the URL is still decided in settings.json, in case we move from gsl.noaa.gov in the future
+FlowRouter.route("/mats", {
+  name: "homeBypassMats",
+  action() {
+    window.location.href = Meteor.settings.public.home;
+  },
+});
+
+// should happen after the above, so render the home template
 FlowRouter.route("/", {
   name: "main",
   action() {
@@ -25,6 +44,7 @@ FlowRouter.route("/", {
   },
 });
 
+// pop-up that doesn't need anything rendered, but serves a CSV download
 FlowRouter.route("/CSV/:graphFunction/:key/:matching/:appName", {
   name: "csv",
   action() {
@@ -32,6 +52,7 @@ FlowRouter.route("/CSV/:graphFunction/:key/:matching/:appName", {
   },
 });
 
+// pop-up that doesn't need anything rendered, but serves a JSON download
 FlowRouter.route("/JSON/:graphFunction/:key/:matching/:appName", {
   name: "json",
   action() {
@@ -39,6 +60,7 @@ FlowRouter.route("/JSON/:graphFunction/:key/:matching/:appName", {
   },
 });
 
+// pop-up that needs a stand-alone graph rendered
 FlowRouter.route("/preview/:graphFunction/:key/:matching/:appName", {
   name: "preview",
   action(params) {
@@ -46,6 +68,7 @@ FlowRouter.route("/preview/:graphFunction/:key/:matching/:appName", {
   },
 });
 
+// pop-up that needs a scorecard rendered
 FlowRouter.route("/scorecardDisplay/:userName/:name/:submitted/:processedAt", {
   name: "scorecardDisplay",
   action(params) {
@@ -53,6 +76,8 @@ FlowRouter.route("/scorecardDisplay/:userName/:name/:submitted/:processedAt", {
   },
 });
 
+// new MATS window that will display timeseries data for a given scorecard key
+// needs to start by rendering the home page
 FlowRouter.route("/scorecardTimeseries/:key", {
   name: "scorecardTimeseries",
   action(params) {
