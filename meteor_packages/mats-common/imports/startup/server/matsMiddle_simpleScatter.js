@@ -235,12 +235,19 @@ class MatsMiddleSimpleScatter {
       let stationNamesObs = "";
       for (let i = 0; i < this.stationNames.length; i += 1) {
         // if we're querying for elevation, retrieve it from the map we passed in instead of the database
-        let wantedValue = "";
-        if (this.varName === "Elevation") {
+        let wantedValueX = "";
+        let wantedValueY = "";
+        if (this.varNameX === "Elevation") {
           const station = this.stationNames[i];
-          wantedValue = this.elevMap[station];
+          wantedValueX = this.elevMap[station];
         } else {
-          wantedValue = `obs.data.${this.stationNames[i]}.\`${this.varName}\``;
+          wantedValueX = `obs.data.${this.stationNames[i]}.\`${this.varNameX}\``;
+        }
+        if (this.varNameY === "Elevation") {
+          const station = this.stationNames[i];
+          wantedValueY = this.elevMap[station];
+        } else {
+          wantedValueY = `obs.data.${this.stationNames[i]}.\`${this.varNameY}\``;
         }
 
         // if we're filtering by elevation, retrieve it from the map we passed in instead of the database
@@ -256,14 +263,14 @@ class MatsMiddleSimpleScatter {
 
         if (i === 0) {
           if (this.filterInfo.filterObsBy) {
-            stationNamesObs = `CASE WHEN ${filterObsValue} >= ${this.filterInfo.filterObsMin} AND ${filterObsValue} <= ${this.filterInfo.filterObsMax} THEN ${wantedValue} ELSE "NULL" END ${this.stationNames[i]}`;
+            stationNamesObs = `CASE WHEN ${filterObsValue} >= ${this.filterInfo.filterObsMin} AND ${filterObsValue} <= ${this.filterInfo.filterObsMax} THEN ${wantedValueX} ELSE "NULL" END ${this.stationNames[i]}_X, CASE WHEN ${filterObsValue} >= ${this.filterInfo.filterObsMin} AND ${filterObsValue} <= ${this.filterInfo.filterObsMax} THEN ${wantedValueY} ELSE "NULL" END ${this.stationNames[i]}_Y`;
           } else {
-            stationNamesObs = `${wantedValue} ${this.stationNames[i]}`;
+            stationNamesObs = `${wantedValueX} ${this.stationNames[i]}_X, ${wantedValueY} ${this.stationNames[i]}_Y`;
           }
         } else if (this.filterInfo.filterObsBy) {
-          stationNamesObs += `, CASE WHEN ${filterObsValue} >= ${this.filterInfo.filterObsMin} AND ${filterObsValue} <= ${this.filterInfo.filterObsMax} THEN ${wantedValue} ELSE "NULL" END ${this.stationNames[i]}`;
+          stationNamesObs += `, CASE WHEN ${filterObsValue} >= ${this.filterInfo.filterObsMin} AND ${filterObsValue} <= ${this.filterInfo.filterObsMax} THEN ${wantedValueX} ELSE "NULL" END ${this.stationNames[i]}_X, CASE WHEN ${filterObsValue} >= ${this.filterInfo.filterObsMin} AND ${filterObsValue} <= ${this.filterInfo.filterObsMax} THEN ${wantedValueY} ELSE "NULL" END ${this.stationNames[i]}_Y`;
         } else {
-          stationNamesObs += `, ${wantedValue} ${this.stationNames[i]}`;
+          stationNamesObs += `, ${wantedValueX} ${this.stationNames[i]}_X, ${wantedValueY} ${this.stationNames[i]}_Y`;
         }
       }
       let tmplWithStationNamesObs = this.cbPool.trfmSQLRemoveClause(
@@ -290,22 +297,41 @@ class MatsMiddleSimpleScatter {
         prSlice.then((qr) => {
           for (let jmfve = 0; jmfve < qr.rows.length; jmfve += 1) {
             const fveDataSingleEpoch = qr.rows[jmfve];
-            const indVarKey = (
-              (fveDataSingleEpoch.fve % (24 * 3600)) /
-              3600
-            ).toString();
+            let indVarKey;
+            switch (this.binParam) {
+              case "Fcst lead time":
+                indVarKey = "0"; // obs don't have a lead time
+                break;
+              case "Init UTC hour":
+              case "Valid UTC hour":
+                indVarKey = ((fveDataSingleEpoch.fve % (24 * 3600)) / 3600).toString();
+                break;
+              case "Init Date":
+              case "Valid Date":
+              default:
+                indVarKey = fveDataSingleEpoch.fve.toString();
+                break;
+            }
             if (!this.fveObs[indVarKey]) {
               this.fveObs[indVarKey] = {};
             }
             const dataSingleEpoch = {};
             const stationsSingleEpoch = {};
             for (let i = 0; i < this.stationNames.length; i += 1) {
-              if (fveDataSingleEpoch[this.stationNames[i]]) {
-                const varValStation =
-                  fveDataSingleEpoch[this.stationNames[i]] === "NULL"
+              if (
+                fveDataSingleEpoch[`${this.stationNames[i]}_X`] &&
+                fveDataSingleEpoch[`${this.stationNames[i]}_Y`]
+              ) {
+                const varValStationX =
+                  fveDataSingleEpoch[`${this.stationNames[i]}_X`] === "NULL"
                     ? null
-                    : fveDataSingleEpoch[this.stationNames[i]];
-                stationsSingleEpoch[this.stationNames[i]] = varValStation;
+                    : fveDataSingleEpoch[`${this.stationNames[i]}_X`];
+                stationsSingleEpoch[`${this.stationNames[i]}_X`] = varValStationX;
+                const varValStationY =
+                  fveDataSingleEpoch[`${this.stationNames[i]}_Y`] === "NULL"
+                    ? null
+                    : fveDataSingleEpoch[`${this.stationNames[i]}_Y`];
+                stationsSingleEpoch[`${this.stationNames[i]}_Y`] = varValStationY;
               }
             }
             dataSingleEpoch.stations = stationsSingleEpoch;
@@ -337,31 +363,39 @@ class MatsMiddleSimpleScatter {
         /{{vxMODEL}}/g,
         `"${this.model}"`
       );
-      tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
-        tmplGetNStationsMfveModel,
-        "fcstLen fcst_lead"
-      );
-      tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
-        /{{vxFCST_LEN}}/g,
-        this.fcstLen
-      );
-      tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
-        tmplGetNStationsMfveModel,
-        "{{vxFCST_LEN_ARRAY}}"
-      );
+
+      if (this.binParam === "Fcst lead time") {
+        tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
+          tmplGetNStationsMfveModel,
+          "{{vxFCST_LEN}}"
+        );
+      } else {
+        tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
+          tmplGetNStationsMfveModel,
+          "fcstLen fcst_lead"
+        );
+        tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
+          /{{vxFCST_LEN}}/g,
+          this.fcstLen
+        );
+        tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
+          tmplGetNStationsMfveModel,
+          "{{vxFCST_LEN_ARRAY}}"
+        );
+      }
 
       let stationNamesModels = "";
       for (let i = 0; i < this.stationNames.length; i += 1) {
         if (i === 0) {
           if (this.filterInfo.filterModelBy) {
-            stationNamesModels = `CASE WHEN models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.${this.stationNames[i]}.\`${this.varName}\` ELSE "NULL" END ${this.stationNames[i]}`;
+            stationNamesModels = `CASE WHEN models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.${this.stationNames[i]}.\`${this.varNameX}\` ELSE "NULL" END ${this.stationNames[i]}_X, CASE WHEN models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.${this.stationNames[i]}.\`${this.varNameY}\` ELSE "NULL" END ${this.stationNames[i]}_Y`;
           } else {
-            stationNamesModels = `models.data.${this.stationNames[i]}.\`${this.varName}\` ${this.stationNames[i]}`;
+            stationNamesModels = `models.data.${this.stationNames[i]}.\`${this.varNameX}\` ${this.stationNames[i]}_X, models.data.${this.stationNames[i]}.\`${this.varNameY}\` ${this.stationNames[i]}_Y`;
           }
         } else if (this.filterInfo.filterModelBy) {
-          stationNamesModels += `, CASE WHEN models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.${this.stationNames[i]}.\`${this.varName}\` ELSE "NULL" END ${this.stationNames[i]}`;
+          stationNamesModels += `, CASE WHEN models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.${this.stationNames[i]}.\`${this.varNameX}\` ELSE "NULL" END ${this.stationNames[i]}_X, CASE WHEN models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.${this.stationNames[i]}.\`${this.varNameY}\` ELSE "NULL" END ${this.stationNames[i]}_Y`;
         } else {
-          stationNamesModels += `, models.data.${this.stationNames[i]}.\`${this.varName}\` ${this.stationNames[i]}`;
+          stationNamesModels += `, models.data.${this.stationNames[i]}.\`${this.varNameX}\` ${this.stationNames[i]}_X, models.data.${this.stationNames[i]}.\`${this.varNameY}\` ${this.stationNames[i]}_Y`;
         }
       }
 
@@ -386,22 +420,48 @@ class MatsMiddleSimpleScatter {
         prSlice.then((qr) => {
           for (let jmfve = 0; jmfve < qr.rows.length; jmfve += 1) {
             const fveDataSingleEpoch = qr.rows[jmfve];
-            const indVarKey = (
-              (fveDataSingleEpoch.fve % (24 * 3600)) /
-              3600
-            ).toString();
+            let indVarKey;
+            switch (this.binParam) {
+              case "Fcst lead time":
+                indVarKey = fveDataSingleEpoch.fcst_lead.toString();
+                break;
+              case "Init UTC hour":
+                indVarKey = (
+                  ((fveDataSingleEpoch.fve - this.fcstLen) % (24 * 3600)) /
+                  3600
+                ).toString();
+                break;
+              case "Valid UTC hour":
+                indVarKey = ((fveDataSingleEpoch.fve % (24 * 3600)) / 3600).toString();
+                break;
+              case "Init Date":
+                indVarKey = fveDataSingleEpoch.fve.toString();
+                break;
+              case "Valid Date":
+              default:
+                indVarKey = (fveDataSingleEpoch.fve - this.fcstLen).toString();
+                break;
+            }
             if (!this.fveModels[indVarKey]) {
               this.fveModels[indVarKey] = {};
             }
             const dataSingleEpoch = {};
             const stationsSingleEpoch = {};
             for (let i = 0; i < this.stationNames.length; i += 1) {
-              if (fveDataSingleEpoch[this.stationNames[i]]) {
-                const varValStation =
-                  fveDataSingleEpoch[this.stationNames[i]] === "NULL"
+              if (
+                fveDataSingleEpoch[`${this.stationNames[i]}_X`] &&
+                fveDataSingleEpoch[`${this.stationNames[i]}_Y`]
+              ) {
+                const varValStationX =
+                  fveDataSingleEpoch[`${this.stationNames[i]}_X`] === "NULL"
                     ? null
-                    : fveDataSingleEpoch[this.stationNames[i]];
-                stationsSingleEpoch[this.stationNames[i]] = varValStation;
+                    : fveDataSingleEpoch[`${this.stationNames[i]}_X`];
+                stationsSingleEpoch[`${this.stationNames[i]}_X`] = varValStationX;
+                const varValStationY =
+                  fveDataSingleEpoch[`${this.stationNames[i]}_Y`] === "NULL"
+                    ? null
+                    : fveDataSingleEpoch[`${this.stationNames[i]}_Y`];
+                stationsSingleEpoch[`${this.stationNames[i]}_Y`] = varValStationY;
               }
             }
             dataSingleEpoch.stations = stationsSingleEpoch;
@@ -420,8 +480,8 @@ class MatsMiddleSimpleScatter {
         this.generateSums();
       }
     } catch (err) {
-      console.log(`MatsMiddleValidTime.createModelData ERROR: ${err.message}`);
-      throw new Error(`MatsMiddleValidTime.createModelData ERROR: ${err.message}`);
+      console.log(`MatsMiddleSimpleScatter.createModelData ERROR: ${err.message}`);
+      throw new Error(`MatsMiddleSimpleScatter.createModelData ERROR: ${err.message}`);
     }
   };
 
