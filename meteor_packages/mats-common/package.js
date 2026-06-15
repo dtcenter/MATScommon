@@ -27,7 +27,7 @@ Package.onUse(function (api) {
     // things to do with querying
     "python-shell": "5.0.0",
     couchbase: "4.7.0",
-    mysql2: "3.22.4",
+    mysql2: "3.22.5",
     url: "0.11.4",
 
     // things to do with downsizing and caching data
@@ -42,7 +42,7 @@ Package.onUse(function (api) {
 
     // saving to png or csv files
     html2canvas: "1.4.1",
-    "csv-stringify": "6.7.0",
+    "csv-stringify": "6.8.0",
 
     // dates
     moment: "2.30.1",
