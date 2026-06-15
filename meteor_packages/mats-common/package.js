@@ -6,7 +6,7 @@
 
 Package.describe({
   name: "randyp:mats-common",
-  version: "6.2.10",
+  version: "6.3.0",
   // Brief, one-line summary of the package.
   summary: "MATScommon files provides common functionality for MATS/METexpress apps",
   // URL to the Git repository containing the source code for this package.
@@ -23,6 +23,7 @@ Package.onUse(function (api) {
 
     // core functionality packages
     "fs-extra": "11.3.5",
+    "simpl-schema": "3.4.7",
 
     // things to do with querying
     "python-shell": "5.0.0",
@@ -81,7 +82,6 @@ Package.onUse(function (api) {
   // They are 3rd party, but specifically designed
   // for meteor so there aren't any npm equivalents.
   api.use("mdg:validated-method");
-  api.use("aldeed:simple-schema");
 
   // modules
   api.export("matsCollections", ["client", "server"]);

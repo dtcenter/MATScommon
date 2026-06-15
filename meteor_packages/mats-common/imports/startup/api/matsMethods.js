@@ -9,7 +9,6 @@
 
 import { Meteor } from "meteor/meteor";
 import { ValidatedMethod } from "meteor/mdg:validated-method";
-import SimpleSchema from "meteor/aldeed:simple-schema";
 import {
   matsCache,
   matsCollections,
@@ -20,6 +19,7 @@ import {
 } from "meteor/randyp:mats-common";
 // eslint-disable-next-line import/no-unresolved
 import moment from "moment";
+import SimpleSchema from "simpl-schema";
 import { Mongo } from "meteor/mongo";
 import { curveParamsByApp } from "../both/mats-curve-params";
 import { setupRouter } from "./routeRegistration";
