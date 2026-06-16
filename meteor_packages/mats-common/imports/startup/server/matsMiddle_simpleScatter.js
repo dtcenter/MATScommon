@@ -474,10 +474,15 @@ class MatsMiddleSimpleScatter {
         throw new Error(`${err.message}`);
       });
 
-      if (this.statType === "ctc") {
-        this.generateCtc();
+      if (this.statTypeX === "ctc") {
+        this.generateCtc("X");
       } else {
-        this.generateSums();
+        this.generateSums("X");
+      }
+      if (this.statTypeY === "ctc") {
+        this.generateCtc("Y");
+      } else {
+        this.generateSums("Y");
       }
     } catch (err) {
       console.log(`MatsMiddleSimpleScatter.createModelData ERROR: ${err.message}`);
@@ -485,9 +490,9 @@ class MatsMiddleSimpleScatter {
     }
   };
 
-  generateCtc = () => {
+  generateCtc = (axis) => {
     try {
-      const threshold = Number(this.threshold);
+      const threshold = Number(this[`threshold${axis}`]);
       const indVarsWithData = _.intersection(
         Object.keys(this.fveObs),
         Object.keys(this.fveModels)
@@ -546,7 +551,7 @@ class MatsMiddleSimpleScatter {
     }
   };
 
-  generateSums = () => {
+  generateSums = (axis) => {
     try {
       const indVarsWithData = _.intersection(
         Object.keys(this.fveObs),
