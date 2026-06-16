@@ -345,8 +345,8 @@ class MatsMiddleSimpleScatter {
         throw new Error(`${err.message}`);
       });
     } catch (err) {
-      console.log(`MatsMiddleValidTime.createObsData ERROR: ${err.message}`);
-      throw new Error(`MatsMiddleValidTime.createObsData ERROR: ${err.message}`);
+      console.log(`MatsMiddleSimpleScatter.createObsData ERROR: ${err.message}`);
+      throw new Error(`MatsMiddleSimpleScatter.createObsData ERROR: ${err.message}`);
     }
   };
 
@@ -427,7 +427,7 @@ class MatsMiddleSimpleScatter {
                 break;
               case "Init UTC hour":
                 indVarKey = (
-                  ((fveDataSingleEpoch.fve - this.fcstLen) % (24 * 3600)) /
+                  ((fveDataSingleEpoch.fve - this.fcstLen * 3600) % (24 * 3600)) /
                   3600
                 ).toString();
                 break;
@@ -435,11 +435,11 @@ class MatsMiddleSimpleScatter {
                 indVarKey = ((fveDataSingleEpoch.fve % (24 * 3600)) / 3600).toString();
                 break;
               case "Init Date":
-                indVarKey = fveDataSingleEpoch.fve.toString();
+                indVarKey = (fveDataSingleEpoch.fve - this.fcstLen * 3600).toString();
                 break;
               case "Valid Date":
               default:
-                indVarKey = (fveDataSingleEpoch.fve - this.fcstLen).toString();
+                indVarKey = fveDataSingleEpoch.fve.toString();
                 break;
             }
             if (!this.fveModels[indVarKey]) {
@@ -474,15 +474,26 @@ class MatsMiddleSimpleScatter {
         throw new Error(`${err.message}`);
       });
 
-      if (this.statTypeX === "ctc") {
-        this.generateCtc("X");
-      } else {
-        this.generateSums("X");
-      }
-      if (this.statTypeY === "ctc") {
-        this.generateCtc("Y");
-      } else {
-        this.generateSums("Y");
+      const indVarsWithData = _.intersection(
+        Object.keys(this.fveObs),
+        Object.keys(this.fveModels)
+      );
+      indVarsWithData.sort(function (a, b) {
+        return Number(a) - Number(b);
+      });
+
+      for (let idx = 0; idx < indVarsWithData.length; idx += 1) {
+        const indVar = indVarsWithData[idx];
+        if (this.statTypeX === "ctc") {
+          this.generateCtc("X", indVar);
+        } else {
+          this.generateSums("X", indVar);
+        }
+        if (this.statTypeY === "ctc") {
+          this.generateCtc("Y", indVar);
+        } else {
+          this.generateSums("Y", indVar);
+        }
       }
     } catch (err) {
       console.log(`MatsMiddleSimpleScatter.createModelData ERROR: ${err.message}`);
@@ -490,125 +501,131 @@ class MatsMiddleSimpleScatter {
     }
   };
 
-  generateCtc = (axis) => {
+  generateCtc = (axis, indVar) => {
     try {
       const threshold = Number(this[`threshold${axis}`]);
-      const indVarsWithData = _.intersection(
-        Object.keys(this.fveObs),
-        Object.keys(this.fveModels)
-      );
-      indVarsWithData.sort(function (a, b) {
-        return Number(a) - Number(b);
-      });
+      let ctcStats = {};
+      ctcStats.binVal = Number(indVar);
+      ctcStats[`hit${axis}`] = 0;
+      ctcStats[`miss${axis}`] = 0;
+      ctcStats[`fa${axis}`] = 0;
+      ctcStats[`cn${axis}`] = 0;
+      ctcStats.n0 = 0;
+      ctcStats.sub_data = [];
 
-      for (let idx = 0; idx < indVarsWithData.length; idx += 1) {
-        let ctcStats = {};
+      // get all the fve for this indVar
+      const indVarSingle = this.fveModels[indVar];
+      const fveArray = Object.keys(indVarSingle);
+      fveArray.sort();
 
-        const indVar = indVarsWithData[idx];
-        ctcStats.hr_of_day = Number(indVar);
-        ctcStats.hit = 0;
-        ctcStats.miss = 0;
-        ctcStats.fa = 0;
-        ctcStats.cn = 0;
-        ctcStats.n0 = 0;
-        ctcStats.sub_data = [];
+      [ctcStats.min_secs] = fveArray;
+      ctcStats.max_secs = fveArray[fveArray.length - 1];
+      ctcStats.nTimes = fveArray.length;
+      for (let imfve = 0; imfve < fveArray.length; imfve += 1) {
+        const fve = fveArray[imfve];
+        const obsSingleFve = this.fveObs[indVar][fve];
+        const modelSingleFve = indVarSingle[fve];
 
-        // get all the fve for this indVar
-        const indVarSingle = this.fveModels[indVar];
-        const fveArray = Object.keys(indVarSingle);
-        fveArray.sort();
-
-        [ctcStats.min_secs] = fveArray;
-        ctcStats.max_secs = fveArray[fveArray.length - 1];
-        ctcStats.nTimes = fveArray.length;
-        for (let imfve = 0; imfve < fveArray.length; imfve += 1) {
-          const fve = fveArray[imfve];
-          const obsSingleFve = this.fveObs[indVar][fve];
-          const modelSingleFve = indVarSingle[fve];
-
-          if (obsSingleFve && modelSingleFve) {
-            ctcStats = this.mmCommon.computeCtcForStations(
-              fve,
-              threshold,
-              ctcStats,
-              this.stationNames,
-              obsSingleFve,
-              modelSingleFve
-            );
-          }
-        }
-
-        try {
-          const statsSummedByIndVar = this.mmCommon.sumUpCtc(ctcStats);
-          this.stats.push(statsSummedByIndVar);
-        } catch (ex) {
-          throw new Error(ex);
+        if (obsSingleFve && modelSingleFve) {
+          ctcStats = this.mmCommon.computeCtcForStations(
+            fve,
+            threshold,
+            ctcStats,
+            this.stationNames,
+            obsSingleFve,
+            modelSingleFve,
+            axis
+          );
         }
       }
+
+      try {
+        const statsSummedByIndVar = this.mmCommon.sumUpCtc(ctcStats);
+        if (axis === "X") {
+          this.stats.push(statsSummedByIndVar);
+        } else {
+          this.stats[this.stats.length - 1].hitY = statsSummedByIndVar.hitY;
+          this.stats[this.stats.length - 1].missY = statsSummedByIndVar.missY;
+          this.stats[this.stats.length - 1].faY = statsSummedByIndVar.faY;
+          this.stats[this.stats.length - 1].cnY = statsSummedByIndVar.cnY;
+          const subDataSansFVE = statsSummedByIndVar.sub_data[0]
+            .split(";")
+            .slice(1)
+            .join(";");
+          this.stats[this.stats.length - 1].sub_data[0] += `;${subDataSansFVE}`;
+        }
+      } catch (ex) {
+        throw new Error(ex);
+      }
     } catch (err) {
-      console.log(`MatsMiddleValidTime.generateCtc ERROR: ${err.message}`);
-      throw new Error(`MatsMiddleValidTime.generateCtc ERROR: ${err.message}`);
+      console.log(`MatsMiddleSimpleScatter.generateCtc ERROR: ${err.message}`);
+      throw new Error(`MatsMiddleSimpleScatter.generateCtc ERROR: ${err.message}`);
     }
   };
 
-  generateSums = (axis) => {
+  generateSums = (axis, indVar) => {
     try {
-      const indVarsWithData = _.intersection(
-        Object.keys(this.fveObs),
-        Object.keys(this.fveModels)
-      );
-      indVarsWithData.sort(function (a, b) {
-        return Number(a) - Number(b);
-      });
+      let sumsStats = {};
+      sumsStats.binVal = Number(indVar);
+      sumsStats[`square_diff_sum${axis}`] = 0;
+      sumsStats[`N_sum${axis}`] = 0;
+      sumsStats[`obs_model_diff_sum${axis}`] = 0;
+      sumsStats[`model_sum${axis}`] = 0;
+      sumsStats[`obs_sum${axis}`] = 0;
+      sumsStats[`abs_sum${axis}`] = 0;
+      sumsStats.n0 = 0;
+      sumsStats.sub_data = [];
 
-      for (let idx = 0; idx < indVarsWithData.length; idx += 1) {
-        let sumsStats = {};
+      // get all the fve for this indVar
+      const indVarSingle = this.fveModels[indVar];
+      const fveArray = Object.keys(indVarSingle);
+      fveArray.sort();
 
-        const indVar = indVarsWithData[idx];
-        sumsStats.hr_of_day = Number(indVar);
-        sumsStats.square_diff_sum = 0;
-        sumsStats.N_sum = 0;
-        sumsStats.obs_model_diff_sum = 0;
-        sumsStats.model_sum = 0;
-        sumsStats.obs_sum = 0;
-        sumsStats.abs_sum = 0;
-        sumsStats.n0 = 0;
-        sumsStats.sub_data = [];
+      [sumsStats.min_secs] = fveArray;
+      sumsStats.max_secs = fveArray[fveArray.length - 1];
+      sumsStats.nTimes = fveArray.length;
+      for (let imfve = 0; imfve < fveArray.length; imfve += 1) {
+        const fve = fveArray[imfve];
+        const obsSingleFve = this.fveObs[indVar][fve];
+        const modelSingleFve = indVarSingle[fve];
 
-        // get all the fve for this indVar
-        const indVarSingle = this.fveModels[indVar];
-        const fveArray = Object.keys(indVarSingle);
-        fveArray.sort();
-
-        [sumsStats.min_secs] = fveArray;
-        sumsStats.max_secs = fveArray[fveArray.length - 1];
-        sumsStats.nTimes = fveArray.length;
-        for (let imfve = 0; imfve < fveArray.length; imfve += 1) {
-          const fve = fveArray[imfve];
-          const obsSingleFve = this.fveObs[indVar][fve];
-          const modelSingleFve = indVarSingle[fve];
-
-          if (obsSingleFve && modelSingleFve) {
-            sumsStats = this.mmCommon.computeSumsForStations(
-              fve,
-              sumsStats,
-              this.stationNames,
-              obsSingleFve,
-              modelSingleFve
-            );
-          }
-        }
-
-        try {
-          const statsSummedByIndVar = this.mmCommon.sumUpSums(sumsStats);
-          this.stats.push(statsSummedByIndVar);
-        } catch (ex) {
-          throw new Error(ex);
+        if (obsSingleFve && modelSingleFve) {
+          sumsStats = this.mmCommon.computeSumsForStations(
+            fve,
+            sumsStats,
+            this.stationNames,
+            obsSingleFve,
+            modelSingleFve,
+            axis
+          );
         }
       }
+
+      try {
+        const statsSummedByIndVar = this.mmCommon.sumUpSums(sumsStats);
+        if (axis === "X") {
+          this.stats.push(statsSummedByIndVar);
+        } else {
+          this.stats[this.stats.length - 1].square_diff_sumY =
+            statsSummedByIndVar.square_diff_sumY;
+          this.stats[this.stats.length - 1].N_sumY = statsSummedByIndVar.N_sumY;
+          this.stats[this.stats.length - 1].obs_model_diff_sumY =
+            statsSummedByIndVar.obs_model_diff_sumY;
+          this.stats[this.stats.length - 1].model_sumY = statsSummedByIndVar.model_sumY;
+          this.stats[this.stats.length - 1].obs_sumY = statsSummedByIndVar.obs_sumY;
+          this.stats[this.stats.length - 1].abs_sumY = statsSummedByIndVar.abs_sumY;
+          const subDataSansFVE = statsSummedByIndVar.sub_data[0]
+            .split(";")
+            .slice(1)
+            .join(";");
+          this.stats[this.stats.length - 1].sub_data[0] += `;${subDataSansFVE}`;
+        }
+      } catch (ex) {
+        throw new Error(ex);
+      }
     } catch (err) {
-      console.log(`MatsMiddleValidTime.generateSums ERROR: ${err.message}`);
-      throw new Error(`MatsMiddleValidTime.generateSums ERROR: ${err.message}`);
+      console.log(`MatsMiddleSimpleScatter.generateSums ERROR: ${err.message}`);
+      throw new Error(`MatsMiddleSimpleScatter.generateSums ERROR: ${err.message}`);
     }
   };
 }

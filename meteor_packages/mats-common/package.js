@@ -108,7 +108,7 @@ Package.onUse(function (api) {
   api.export("matsMiddleValidTime", ["server"]);
   api.export("matsMiddleDailyModelCycle", ["server"]);
   api.export("matsMiddleMap", ["server"]);
-
+  api.export("matsMiddleSimpleScatter", ["server"]);
   // add imports
   // both
   api.addFiles("imports/startup/both/index.js");

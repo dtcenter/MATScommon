@@ -1590,6 +1590,7 @@ const showContourFace = function () {
 // method to display the appropriate selectors for a simple scatter plot
 const showSimpleScatterFace = function () {
   const plotType = matsTypes.PlotTypes.simpleScatter;
+
   const isMetexpress =
     matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
 
@@ -1599,6 +1600,7 @@ const showSimpleScatterFace = function () {
   document.getElementById("qcParamGroup-lite-item").classList.add("d-none");
 
   // set selector visibility
+  const { appName } = matsCollections.Settings.findOne({});
   const faceOptions = {
     "curve-dates": "block",
     dates: "none",
@@ -1637,7 +1639,6 @@ const showSimpleScatterFace = function () {
     truth: "block",
     year: "block",
     storm: "block",
-    "region-type": "none",
     "x-axis-parameter": "none",
     "y-axis-parameter": "none",
     "bin-parameter": "block",
@@ -1661,8 +1662,11 @@ const showSimpleScatterFace = function () {
     faceOptions["x-threshold"] = "block";
     faceOptions["y-threshold"] = "block";
   }
-  // simple scatters need to have the region be in predefined mode
-  if (matsParamUtils.getParameterForName("region-type") !== undefined) {
+  // simple scatters need to have the region be in predefined mode, except for cb-metar
+  if (appName !== undefined && appName === "cb-metar") {
+    faceOptions["region-type"] = "block";
+  } else if (matsParamUtils.getParameterForName("region-type") !== undefined) {
+    faceOptions["region-type"] = "none";
     selectorsToReset["region-type"] = "Predefined region";
   }
   setSelectorVisibility(plotType, faceOptions, selectorsToReset);

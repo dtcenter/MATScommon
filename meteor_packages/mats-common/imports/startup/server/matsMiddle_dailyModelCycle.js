@@ -398,7 +398,8 @@ class MatsMiddleDailyModelCycle {
               ctcStats,
               this.stationNames,
               obsSingleFve,
-              modelSingleFve
+              modelSingleFve,
+              ""
             );
           }
         }
@@ -459,7 +460,8 @@ class MatsMiddleDailyModelCycle {
               sumsStats,
               this.stationNames,
               obsSingleFve,
-              modelSingleFve
+              modelSingleFve,
+              ""
             );
           }
         }

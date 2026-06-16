@@ -427,7 +427,8 @@ class MatsMiddleTimeSeries {
               ctcStats,
               this.stationNames,
               obsSingleFve,
-              modelSingleFve
+              modelSingleFve,
+              ""
             );
           }
         }
@@ -496,7 +497,8 @@ class MatsMiddleTimeSeries {
               sumsStats,
               this.stationNames,
               obsSingleFve,
-              modelSingleFve
+              modelSingleFve,
+              ""
             );
           }
         }

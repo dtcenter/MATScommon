@@ -403,7 +403,8 @@ class MatsMiddleValidTime {
               ctcStats,
               this.stationNames,
               obsSingleFve,
-              modelSingleFve
+              modelSingleFve,
+              ""
             );
           }
         }
@@ -464,7 +465,8 @@ class MatsMiddleValidTime {
               sumsStats,
               this.stationNames,
               obsSingleFve,
-              modelSingleFve
+              modelSingleFve,
+              ""
             );
           }
         }

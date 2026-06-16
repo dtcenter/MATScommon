@@ -162,12 +162,14 @@ class MatsMiddleCommon {
     ctc,
     stationNames,
     obsSingleFve,
-    modelSingleFve
+    modelSingleFve,
+    axis
   ) {
     try {
       const thisCtc = ctc;
       for (let i = 0; i < stationNames.length; i += 1) {
-        const station = stationNames[i];
+        const station =
+          axis.length === 0 ? stationNames[i] : `${stationNames[i]}_${axis}`;
         const varValO = obsSingleFve.stations[station];
         const varValM = modelSingleFve.stations[station];
 
@@ -175,28 +177,28 @@ class MatsMiddleCommon {
           thisCtc.n0 += 1;
           let sub = `${fve};`;
           if (varValO < threshold && varValM < threshold) {
-            thisCtc.hit += 1;
+            thisCtc[`hit${axis}`] += 1;
             sub += "1;";
           } else {
             sub += "0;";
           }
 
           if (varValO >= threshold && varValM < threshold) {
-            thisCtc.fa += 1;
+            thisCtc[`fa${axis}`] += 1;
             sub += "1;";
           } else {
             sub += "0;";
           }
 
           if (varValO < threshold && varValM >= threshold) {
-            thisCtc.miss += 1;
+            thisCtc[`miss${axis}`] += 1;
             sub += "1;";
           } else {
             sub += "0;";
           }
 
           if (varValO >= threshold && varValM >= threshold) {
-            thisCtc.cn += 1;
+            thisCtc[`cn${axis}`] += 1;
             sub += "1";
           } else {
             sub += "0";
@@ -211,11 +213,12 @@ class MatsMiddleCommon {
     }
   }
 
-  computeSumsForStations(fve, sums, stationNames, obsSingleFve, modelSingleFve) {
+  computeSumsForStations(fve, sums, stationNames, obsSingleFve, modelSingleFve, axis) {
     try {
       const thisSums = sums;
       for (let i = 0; i < stationNames.length; i += 1) {
-        const station = stationNames[i];
+        const station =
+          axis.length === 0 ? stationNames[i] : `${stationNames[i]}_${axis}`;
         const varValO = obsSingleFve.stations[station];
         const varValM = modelSingleFve.stations[station];
 
@@ -228,12 +231,12 @@ class MatsMiddleCommon {
           const absSum = Math.abs(varValO - varValM);
 
           thisSums.n0 += 1;
-          thisSums.square_diff_sum += squareDiffSum;
-          thisSums.N_sum += nSum;
-          thisSums.obs_model_diff_sum += obsModelDiffSum;
-          thisSums.model_sum += modelSum;
-          thisSums.obs_sum += obsSum;
-          thisSums.abs_sum += absSum;
+          thisSums[`square_diff_sum${axis}`] += squareDiffSum;
+          thisSums[`N_sum${axis}`] += nSum;
+          thisSums[`obs_model_diff_sum${axis}`] += obsModelDiffSum;
+          thisSums[`model_sum${axis}`] += modelSum;
+          thisSums[`obs_sum${axis}`] += obsSum;
+          thisSums[`abs_sum${axis}`] += absSum;
 
           const sub = `${fve};${squareDiffSum};${nSum};${obsModelDiffSum};${modelSum};${obsSum};${absSum};`;
           thisSums.sub_data.push(sub);
