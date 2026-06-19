@@ -144,8 +144,12 @@ Template.curveList.helpers({
     const thresholdedVariables = ["Ceiling (ft)", "Visibility (mi)"];
     for (let i = 0; i < curves.length; i += 1) {
       if (
-        scalarStats.indexOf(curves[i].statistic) !== -1 &&
-        thresholdedVariables.indexOf(curves[i].variable) !== -1
+        (scalarStats.indexOf(curves[i].statistic) !== -1 &&
+          thresholdedVariables.indexOf(curves[i].variable) !== -1) ||
+        (scalarStats.indexOf(curves[i]["x-statistic"]) !== -1 &&
+          thresholdedVariables.indexOf(curves[i]["x-variable"]) !== -1) ||
+        (scalarStats.indexOf(curves[i]["y-statistic"]) !== -1 &&
+          thresholdedVariables.indexOf(curves[i]["y-variable"]) !== -1)
       ) {
         return "block";
       }
