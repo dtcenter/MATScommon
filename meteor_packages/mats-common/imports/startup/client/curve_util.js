@@ -509,6 +509,7 @@ const showTimeseriesFace = function () {
   }
 
   // set selector visibility
+  const { appName } = matsCollections.Settings.findOne({});
   let faceOptions = {
     "curve-dates": "none",
     dates: "block",
@@ -558,6 +559,10 @@ const showTimeseriesFace = function () {
     "dieoff-type": "Dieoff",
     "bin-parameter": "Valid Date",
   };
+  if (appName !== undefined && appName === "cb-metar") {
+    selectorsToReset["x-statistic"] = "RMSE";
+    selectorsToReset["y-statistic"] = "RMSE";
+  }
   faceOptions = checkIfDisplayAllQCParams(faceOptions);
   setSelectorVisibility(plotType, faceOptions, selectorsToReset);
   return selectorsToReset;
@@ -574,6 +579,7 @@ const showProfileFace = function () {
   document.getElementById("qcParamGroup-lite-item").classList.add("d-none");
 
   // set selector visibility
+  const { appName } = matsCollections.Settings.findOne({});
   let faceOptions = {
     "curve-dates": "block",
     dates: "none",
@@ -623,6 +629,10 @@ const showProfileFace = function () {
     "dieoff-type": "Dieoff",
     "bin-parameter": "Valid Date",
   };
+  if (appName !== undefined && appName === "cb-metar") {
+    selectorsToReset["x-statistic"] = "RMSE";
+    selectorsToReset["y-statistic"] = "RMSE";
+  }
   faceOptions = checkIfDisplayAllQCParams(faceOptions);
   setSelectorVisibility(plotType, faceOptions, selectorsToReset);
   return selectorsToReset;
@@ -639,6 +649,7 @@ const showDieoffFace = function () {
   document.getElementById("qcParamGroup-lite-item").classList.add("d-none");
 
   // set selector visibility
+  const { appName } = matsCollections.Settings.findOne({});
   let faceOptions = {
     "curve-dates": "block",
     dates: "none",
@@ -688,6 +699,10 @@ const showDieoffFace = function () {
     "dieoff-type": "Dieoff",
     "bin-parameter": "Valid Date",
   };
+  if (appName !== undefined && appName === "cb-metar") {
+    selectorsToReset["x-statistic"] = "RMSE";
+    selectorsToReset["y-statistic"] = "RMSE";
+  }
   faceOptions = checkIfDisplayAllQCParams(faceOptions);
   setSelectorVisibility(plotType, faceOptions, selectorsToReset);
   return selectorsToReset;
@@ -704,6 +719,7 @@ const showThresholdFace = function () {
   document.getElementById("qcParamGroup-lite-item").classList.add("d-none");
 
   // set selector visibility
+  const { appName } = matsCollections.Settings.findOne({});
   let faceOptions = {
     "curve-dates": "block",
     dates: "none",
@@ -753,6 +769,10 @@ const showThresholdFace = function () {
     "dieoff-type": "Dieoff",
     "bin-parameter": "Valid Date",
   };
+  if (appName !== undefined && appName === "cb-metar") {
+    selectorsToReset["x-statistic"] = "RMSE";
+    selectorsToReset["y-statistic"] = "RMSE";
+  }
   // thresholds need to have the region be in predefined mode
   if (matsParamUtils.getParameterForName("region-type") !== undefined) {
     selectorsToReset["region-type"] = "Predefined region";
@@ -773,6 +793,7 @@ const showValidTimeFace = function () {
   document.getElementById("qcParamGroup-lite-item").classList.add("d-none");
 
   // set selector visibility
+  const { appName } = matsCollections.Settings.findOne({});
   let faceOptions = {
     "curve-dates": "block",
     dates: "none",
@@ -822,6 +843,10 @@ const showValidTimeFace = function () {
     "dieoff-type": "Dieoff",
     "bin-parameter": "Valid Date",
   };
+  if (appName !== undefined && appName === "cb-metar") {
+    selectorsToReset["x-statistic"] = "RMSE";
+    selectorsToReset["y-statistic"] = "RMSE";
+  }
   faceOptions = checkIfDisplayAllQCParams(faceOptions);
   setSelectorVisibility(plotType, faceOptions, selectorsToReset);
   return selectorsToReset;
@@ -838,6 +863,7 @@ const showGridScaleFace = function () {
   document.getElementById("qcParamGroup-lite-item").classList.add("d-none");
 
   // set selector visibility
+  const { appName } = matsCollections.Settings.findOne({});
   let faceOptions = {
     "curve-dates": "block",
     dates: "none",
@@ -887,6 +913,10 @@ const showGridScaleFace = function () {
     "dieoff-type": "Dieoff",
     "bin-parameter": "Valid Date",
   };
+  if (appName !== undefined && appName === "cb-metar") {
+    selectorsToReset["x-statistic"] = "RMSE";
+    selectorsToReset["y-statistic"] = "RMSE";
+  }
   faceOptions = checkIfDisplayAllQCParams(faceOptions);
   setSelectorVisibility(plotType, faceOptions, selectorsToReset);
   return selectorsToReset;
@@ -903,6 +933,7 @@ const showDailyModelCycleFace = function () {
   document.getElementById("qcParamGroup-lite-item").classList.add("d-none");
 
   // set selector visibility
+  const { appName } = matsCollections.Settings.findOne({});
   let faceOptions = {
     "curve-dates": "none",
     dates: "block",
@@ -952,6 +983,10 @@ const showDailyModelCycleFace = function () {
     "dieoff-type": "Dieoff for a specified UTC cycle init hour",
     "bin-parameter": "Valid Date",
   };
+  if (appName !== undefined && appName === "cb-metar") {
+    selectorsToReset["x-statistic"] = "RMSE";
+    selectorsToReset["y-statistic"] = "RMSE";
+  }
   faceOptions = checkIfDisplayAllQCParams(faceOptions);
   setSelectorVisibility(plotType, faceOptions, selectorsToReset);
   return selectorsToReset;
@@ -968,6 +1003,7 @@ const showYearToYearFace = function () {
   document.getElementById("qcParamGroup-lite-item").classList.add("d-none");
 
   // set selector visibility
+  const { appName } = matsCollections.Settings.findOne({});
   let faceOptions = {
     "curve-dates": "none",
     dates: "block",
@@ -1017,6 +1053,10 @@ const showYearToYearFace = function () {
     "dieoff-type": "Dieoff",
     "bin-parameter": "Valid Date",
   };
+  if (appName !== undefined && appName === "cb-metar") {
+    selectorsToReset["x-statistic"] = "RMSE";
+    selectorsToReset["y-statistic"] = "RMSE";
+  }
   faceOptions = checkIfDisplayAllQCParams(faceOptions);
   setSelectorVisibility(plotType, faceOptions, selectorsToReset);
   return selectorsToReset;
@@ -1032,6 +1072,7 @@ const showReliabilityFace = function () {
   document.getElementById("qcParamGroup-lite-item").classList.add("d-none");
 
   // set selector visibility
+  const { appName } = matsCollections.Settings.findOne({});
   const faceOptions = {
     "curve-dates": "none",
     dates: "block",
@@ -1082,6 +1123,10 @@ const showReliabilityFace = function () {
     "bin-parameter": "Valid Date",
     plotFormat: matsTypes.PlotFormats.none,
   };
+  if (appName !== undefined && appName === "cb-metar") {
+    selectorsToReset["x-statistic"] = "RMSE";
+    selectorsToReset["y-statistic"] = "RMSE";
+  }
   // reliability diagrams need to have the region be in predefined mode
   if (matsParamUtils.getParameterForName("region-type") !== undefined) {
     selectorsToReset["region-type"] = "Predefined region";
@@ -1100,6 +1145,7 @@ const showROCFace = function () {
   document.getElementById("qcParamGroup-lite-item").classList.add("d-none");
 
   // set selector visibility
+  const { appName } = matsCollections.Settings.findOne({});
   const faceOptions = {
     "curve-dates": "block",
     dates: "none",
@@ -1150,6 +1196,10 @@ const showROCFace = function () {
     "bin-parameter": "Valid Date",
     plotFormat: matsTypes.PlotFormats.none,
   };
+  if (appName !== undefined && appName === "cb-metar") {
+    selectorsToReset["x-statistic"] = "RMSE";
+    selectorsToReset["y-statistic"] = "RMSE";
+  }
   // ROCs need to have the region be in predefined mode
   if (matsParamUtils.getParameterForName("region-type") !== undefined) {
     selectorsToReset["region-type"] = "Predefined region";
@@ -1170,6 +1220,7 @@ const showPerformanceDiagramFace = function () {
   // set selector visibility
   const isMetexpress =
     matsCollections.Settings.findOne({}).appType === matsTypes.AppTypes.metexpress;
+  const { appName } = matsCollections.Settings.findOne({});
   const faceOptions = {
     "curve-dates": "block",
     dates: "none",
@@ -1220,6 +1271,10 @@ const showPerformanceDiagramFace = function () {
     "bin-parameter": "Valid Date",
     plotFormat: matsTypes.PlotFormats.none,
   };
+  if (appName !== undefined && appName === "cb-metar") {
+    selectorsToReset["x-statistic"] = "RMSE";
+    selectorsToReset["y-statistic"] = "RMSE";
+  }
   // in metexpress, users don't get to choose how to bin data
   if (isMetexpress) {
     faceOptions["bin-parameter"] = "none";
@@ -1242,6 +1297,7 @@ const showGridScaleProbFace = function () {
   document.getElementById("qcParamGroup-lite-item").classList.add("d-none");
 
   // set selector visibility
+  const { appName } = matsCollections.Settings.findOne({});
   let faceOptions = {
     "curve-dates": "block",
     dates: "none",
@@ -1291,6 +1347,10 @@ const showGridScaleProbFace = function () {
     "dieoff-type": "Dieoff",
     "bin-parameter": "Valid Date",
   };
+  if (appName !== undefined && appName === "cb-metar") {
+    selectorsToReset["x-statistic"] = "RMSE";
+    selectorsToReset["y-statistic"] = "RMSE";
+  }
   faceOptions = checkIfDisplayAllQCParams(faceOptions);
   setSelectorVisibility(plotType, faceOptions, selectorsToReset);
   return selectorsToReset;
@@ -1358,6 +1418,10 @@ const showMapFace = function () {
     "bin-parameter": "Valid Date",
     plotFormat: matsTypes.PlotFormats.none,
   };
+  if (appName !== undefined && appName === "cb-metar") {
+    selectorsToReset["x-statistic"] = "RMSE";
+    selectorsToReset["y-statistic"] = "RMSE";
+  }
   // maps need to have the region be station-select mode
   if (matsParamUtils.getParameterForName("region-type") !== undefined) {
     selectorsToReset["region-type"] = "Select stations";
@@ -1385,6 +1449,7 @@ const showHistogramFace = function () {
   document.getElementById("qcParamGroup-lite-item").classList.add("d-none");
 
   // set selector visibility
+  const { appName } = matsCollections.Settings.findOne({});
   const faceOptions = {
     "curve-dates": "block",
     dates: "none",
@@ -1435,6 +1500,10 @@ const showHistogramFace = function () {
     "bin-parameter": "Valid Date",
     "histogram-bin-controls": "Default bins",
   };
+  if (appName !== undefined && appName === "cb-metar") {
+    selectorsToReset["x-statistic"] = "RMSE";
+    selectorsToReset["y-statistic"] = "RMSE";
+  }
   // CTC histograms need to have the region be predefined mode.
   // They are identified by the presence of a threshold selector
   // (threshold only makes sense as a parameter for CTC stats).
@@ -1459,6 +1528,7 @@ const showEnsembleHistogramFace = function () {
   document.getElementById("qcParamGroup-lite-item").classList.add("d-none");
 
   // set selector visibility
+  const { appName } = matsCollections.Settings.findOne({});
   const faceOptions = {
     "curve-dates": "block",
     dates: "none",
@@ -1508,6 +1578,10 @@ const showEnsembleHistogramFace = function () {
     "dieoff-type": "Dieoff",
     "bin-parameter": "Valid Date",
   };
+  if (appName !== undefined && appName === "cb-metar") {
+    selectorsToReset["x-statistic"] = "RMSE";
+    selectorsToReset["y-statistic"] = "RMSE";
+  }
   // ensemble histograms need to have the region be in predefined mode
   if (matsParamUtils.getParameterForName("region-type") !== undefined) {
     selectorsToReset["region-type"] = "Predefined region";
@@ -1529,6 +1603,7 @@ const showContourFace = function () {
   document.getElementById("qcParamGroup-lite-item").classList.add("d-none");
 
   // set selector visibility
+  const { appName } = matsCollections.Settings.findOne({});
   const faceOptions = {
     "curve-dates": "none",
     dates: "block",
@@ -1579,6 +1654,10 @@ const showContourFace = function () {
     "bin-parameter": "Valid Date",
     plotFormat: matsTypes.PlotFormats.none,
   };
+  if (appName !== undefined && appName === "cb-metar") {
+    selectorsToReset["x-statistic"] = "RMSE";
+    selectorsToReset["y-statistic"] = "RMSE";
+  }
   // contours need to have the region be in predefined mode
   if (matsParamUtils.getParameterForName("region-type") !== undefined) {
     selectorsToReset["region-type"] = "Predefined region";
@@ -1665,6 +1744,8 @@ const showSimpleScatterFace = function () {
   // simple scatters need to have the region be in predefined mode, except for cb-metar
   if (appName !== undefined && appName === "cb-metar") {
     faceOptions["region-type"] = "block";
+    selectorsToReset["x-statistic"] = "CSI (Critical Success Index)";
+    selectorsToReset["y-statistic"] = "CSI (Critical Success Index)";
   } else if (matsParamUtils.getParameterForName("region-type") !== undefined) {
     faceOptions["region-type"] = "none";
     selectorsToReset["region-type"] = "Predefined region";

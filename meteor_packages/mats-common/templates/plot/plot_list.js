@@ -516,10 +516,11 @@ Template.plotList.onRendered(async function () {
     Session.set("plotType", matsTypes.PlotTypes.timeSeries);
     document.getElementById("plotTypes-selector").value =
       matsTypes.PlotTypes.timeSeries;
-    matsCurveUtils.showTimeseriesFace();
 
     // make sure everything is at default
     matsParamUtils.setAllParamsToDefault();
+
+    matsCurveUtils.showTimeseriesFace();
 
     // get the params from the scorecard settings
     await matsMethods.getScorecardSettings
@@ -546,6 +547,9 @@ Template.plotList.onRendered(async function () {
         }
       });
   } else {
+    // make sure everything is at default
+    matsParamUtils.setAllParamsToDefault();
+
     // need to display correct selectors on page load if default plot type is not timeseries
     const plotType = matsPlotUtils.getPlotType();
     Session.set("plotType", plotType); // need to make sure plotType is in the Session this early
@@ -604,8 +608,5 @@ Template.plotList.onRendered(async function () {
         matsCurveUtils.showTimeseriesFace();
         break;
     }
-
-    // make sure everything is at default
-    matsParamUtils.setAllParamsToDefault();
   }
 });
