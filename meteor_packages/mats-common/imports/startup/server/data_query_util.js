@@ -256,10 +256,17 @@ const queryCBPython = async function (pool, queryArray) {
     if (results === undefined || results === "undefined") {
       error =
         "Error thrown by couchbase_query_util.py. Please write down exactly how you produced this error, and submit a ticket at mats.gsl@noaa.gov.";
-    } else {
-      // get the data back from the query
-      ({ d, n0, nTimes, error } = parsePythonShellQueryResults(results, queryArray));
     }
+    if (error !== undefined && error !== "") {
+      return {
+        data: d,
+        error,
+        n0,
+        nTimes,
+      };
+    }
+    // get the data back from the query
+    ({ d, n0, nTimes, error } = parsePythonShellQueryResults(results, queryArray));
     return {
       data: d,
       error,
@@ -324,10 +331,17 @@ const queryDBPython = async function (pool, queryArray) {
     if (results === undefined || results === "undefined") {
       error =
         "Error thrown by mysql_query_util.py. Please write down exactly how you produced this error, and submit a ticket at mats.gsl@noaa.gov.";
-    } else {
-      // get the data back from the query
-      ({ d, n0, nTimes, error } = parsePythonShellQueryResults(results, queryArray));
     }
+    if (error !== undefined && error !== "") {
+      return {
+        data: d,
+        error,
+        n0,
+        nTimes,
+      };
+    }
+    // get the data back from the query
+    ({ d, n0, nTimes, error } = parsePythonShellQueryResults(results, queryArray));
     return {
       data: d,
       error,

@@ -137,8 +137,6 @@ def parse_query_data_xy_curve(idx, query_data, stat_line_type, statistic, app_pa
         time_interval = int(query_data[1]['avtime']) - int(query_data[0]['avtime']) if len(query_data) > 1 else 3600
         if len(vts) > 0:
             # selecting valid_times makes the cadence irregular
-            vts = vts.replace("'", "")
-            vts = vts.split(',')
             vts = [(int(vt)) * 3600 * 1000 for vt in vts]
             # make sure no vts are negative
             vts = list(map((lambda vt: vt if vt >= 0 else vt + 24 * 3600 * 1000), vts))
