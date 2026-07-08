@@ -32,7 +32,7 @@ Package.onUse(function (api) {
     url: "0.11.4",
 
     // things to do with downsizing and caching data
-    "node-file-cache": "1.0.2",
+    "file-system-cache": "3.0.0",
     "downsample-lttb": "0.0.1",
     "object-hash": "3.0.0",
     "object-sizeof": "2.6.5",

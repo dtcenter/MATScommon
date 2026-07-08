@@ -79,17 +79,13 @@ const setPlotResultData = function () {
 
   if (Session.get("textRefreshNeeded") === true) {
     showSpinner();
-    matsMethods.getPlotResult.call(
-      {
+    matsMethods.getPlotResult
+      .callAsync({
         resultKey: Session.get("plotResultKey"),
         pageIndex,
         newPageIndex,
-      },
-      function (error, result) {
-        if (error !== undefined) {
-          setError(new Error(`matsMethods.getPlotResult failed : error: ${error}`));
-          Session.set("textRefreshNeeded", false);
-        }
+      })
+      .then((result) => {
         if (!result) {
           plotResultData = undefined;
           Session.set("textRefreshNeeded", false);
@@ -103,8 +99,10 @@ const setPlotResultData = function () {
         console.log("size of plotResultData is ", sizeof(plotResultData));
         Session.set("textRefreshNeeded", false);
         hideSpinner();
-      }
-    );
+      })
+      .catch(function (error) {
+        setError(error);
+      });
   }
 };
 

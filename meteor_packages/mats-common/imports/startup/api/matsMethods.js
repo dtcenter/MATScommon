@@ -197,7 +197,7 @@ const saveResultData = async function (result) {
           delete storedResult.data[ci].x_epoch; // we only needed this as an index for downsampling
         }
       }
-      matsCache.storeResult(key, {
+      await matsCache.storeResult(key, {
         key,
         result: storedResult,
       }); // lifespan is handled by lowDb (internally) in matscache
@@ -502,7 +502,7 @@ const getGraphData = new ValidatedMethod({
     plotType: {
       type: String,
     },
-    expireKey: {
+    removeKey: {
       type: Boolean,
     },
   }).validator(),
@@ -516,10 +516,10 @@ const getGraphData = new ValidatedMethod({
       try {
         const hash = require("object-hash");
         const key = hash(params.plotParams);
-        if (process.env.NODE_ENV === "development" || params.expireKey) {
-          matsCache.expireKey(key);
+        if (process.env.NODE_ENV === "development" || params.removeKey) {
+          await matsCache.removeKey(key);
         }
-        const results = matsCache.getResult(key);
+        const results = await matsCache.getResult(key);
         if (results === undefined) {
           // results aren't in the cache - need to process data routine
           const graphData = await global[dataFunction](params.plotParams);
@@ -554,7 +554,7 @@ const getGraphData = new ValidatedMethod({
         } else {
           ret = results; // {key:someKey, result:resultObject}
           // refresh expire time. The only way to perform a refresh on matsCache is to re-save the result.
-          matsCache.storeResult(results.key, results);
+          await matsCache.storeResult(results.key, results);
         }
         return ret;
       } catch (dataFunctionError) {
@@ -596,7 +596,7 @@ const getGraphDataByKey = new ValidatedMethod({
         if (dsResults !== undefined) {
           ret = dsResults;
         } else {
-          ret = matsCache.getResult(key); // {key:someKey, result:resultObject}
+          ret = await matsCache.getResult(key); // {key:someKey, result:resultObject}
         }
         const sizeof = require("object-sizeof");
         console.log("getGraphDataByKey results size is ", sizeof(dsResults));
@@ -715,14 +715,14 @@ const getPlotResult = new ValidatedMethod({
       type: Number,
     },
   }).validator(),
-  run(params) {
+  async run(params) {
     if (Meteor.isServer) {
       const rKey = params.resultKey;
       const pi = params.pageIndex;
       const npi = params.newPageIndex;
       let ret = {};
       try {
-        ret = getFlattenedResultData(rKey, pi, npi);
+        ret = await getFlattenedResultData(rKey, pi, npi);
       } catch (e) {
         console.log(e);
       }
@@ -1213,7 +1213,7 @@ const resetApp = async function (appRef) {
     for (let ai = 0; ai < global.appSpecificResetRoutines.length; ai += 1) {
       await global.appSpecificResetRoutines[ai]();
     }
-    matsCache.clear();
+    await matsCache.clear();
   }
 };
 

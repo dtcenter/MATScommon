@@ -29,7 +29,7 @@ import { Template } from "meteor/templating";
     uses a switch on 'action' which is the event.currentTarget.name "save|restore|plot" which are
     the names of type="submit" buttons in the form, like name="plot" or name="save".
     In the type="submit" and name-"plot" case of the switch this call...
-    matsMethods.getGraphData.callAsync({plotParams: p, plotType: pt, expireKey: expireKey}, function (error, ret) .....
+    matsMethods.getGraphData.callAsync({plotParams: p, plotType: pt, removeKey: removeKey}, function (error, ret) .....
     is what invokes the data method in the backend, and the success handler of that call
     is what sets up the graph page.
 */
@@ -292,7 +292,7 @@ Template.plotList.events({
     let pt;
     let pgf;
     let graphFunction;
-    let expireKey;
+    let removeKey;
     let x;
     let y;
     let m;
@@ -390,12 +390,12 @@ Template.plotList.events({
 
         graphFunction = pgf.graphFunction;
         console.log("prior to getGraphData call time:", new Date());
-        // the following line converts a null expireKey to false.
-        expireKey = Session.get("expireKey") === true;
+        // the following line converts a null removeKey to false.
+        removeKey = Session.get("removeKey") === true;
         matsMethods.getGraphData
-          .callAsync({ plotParams: p, plotType: pt, expireKey })
+          .callAsync({ plotParams: p, plotType: pt, removeKey })
           .then(function (ret) {
-            Session.set("expireKey", false);
+            Session.set("removeKey", false);
             matsCurveUtils.setGraphResult(ret.result);
             const plotType = Session.get("plotType");
             if (plotType === matsTypes.PlotTypes.contourDiff) {
@@ -423,7 +423,7 @@ Template.plotList.events({
             // Session.set ('PlotResultsUpDated', new Date());
             Session.set("spinner_img", "spinner.gif");
             matsCurveUtils.hideSpinner();
-            Session.set("expireKey", false);
+            Session.set("removeKey", false);
             return false;
           });
         break;
@@ -443,8 +443,8 @@ Template.plotList.events({
         }
         graphFunction = pgf.graphFunction;
         console.log("prior to getGraphData call time:", new Date());
-        // the following line converts a null expireKey to false.
-        expireKey = Session.get("expireKey") === true;
+        // the following line converts a null removeKey to false.
+        removeKey = Session.get("removeKey") === true;
         // add user and name to the plotparams
         if (Meteor.user() === null) {
           p.userName = "anonymous";
@@ -480,10 +480,10 @@ Template.plotList.events({
           "scorecard-name"
         ] = `${p["name-this-scorecard"]} -- ${p.userName} -- submitted: ${submitTime}`;
         matsMethods.getGraphData
-          .callAsync({ plotParams: p, plotType: pt, expireKey })
+          .callAsync({ plotParams: p, plotType: pt, removeKey })
           .then(function (ret) {
             Session.set("ret", ret);
-            Session.set("expireKey", false);
+            Session.set("removeKey", false);
             Session.set("graphFunction", graphFunction);
             console.log(
               "after successful getGraphData call time:",
@@ -499,7 +499,7 @@ Template.plotList.events({
           .catch(function (error) {
             Session.set("spinner_img", "spinner.gif");
             matsCurveUtils.hideSpinner();
-            Session.set("expireKey", false);
+            Session.set("removeKey", false);
             setError(error);
           });
         break;
