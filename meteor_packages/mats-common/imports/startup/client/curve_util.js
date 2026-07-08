@@ -101,7 +101,8 @@ const setPlotResultData = function () {
         hideSpinner();
       })
       .catch(function (error) {
-        setError(error);
+        setError(new Error(`matsMethods.getPlotResult failed : error: ${error}`));
+        Session.set("textRefreshNeeded", false);
       });
   }
 };
