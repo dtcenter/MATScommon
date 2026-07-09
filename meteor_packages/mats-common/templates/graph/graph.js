@@ -1913,7 +1913,7 @@ Template.graph.events({
   },
   "click .reCacheButton"() {
     Session.get("plotType");
-    Session.set("expireKey", true);
+    Session.set("removeKey", true);
     document.getElementById("plot-curves").click();
   },
   "click .curveVisibility"(event) {

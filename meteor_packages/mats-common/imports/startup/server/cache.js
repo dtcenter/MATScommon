@@ -9,30 +9,33 @@ import { Meteor } from "meteor/meteor";
 let getResult;
 let storeResult;
 let clear;
-let expireKey;
+let removeKey;
 
 if (Meteor.isServer) {
-  const Results = require("node-file-cache").create({
-    file: "fileCache",
-    life: 8 * 3600,
+  // eslint-disable-next-line import/no-unresolved
+  import Cache from "file-system-cache";
+
+  const Results = Cache({
+    basePath: "./.cache", // (optional) Path where cache files are stored (default).
+    ttl: 8 * 3600, // (optional) A time-to-live (in secs) on how long an item remains cached.
   });
-  getResult = function (key) {
+  getResult = async function (key) {
     // console.log('asked to get result from cache for key:', key);
-    const result = Results.get(key);
+    const result = await Results.get(key);
     return result === null ? undefined : result;
   };
-  storeResult = function (key, result) {
+  storeResult = async function (key, result) {
     // console.log('asked to set result in cache for app: ',process.env.PWD, ' key:', key);
-    Results.set(key, result);
+    await Results.set(key, result);
     // console.log('set result in cache for app: ', process.env.PWD, 'key:', key);
   };
-  clear = function () {
+  clear = async function () {
     // console.log('asked to clear result cache');
-    Results.clear();
+    await Results.clear();
   };
-  expireKey = function (key) {
+  removeKey = async function (key) {
     // console.log('asked to clear result cache for key ', key);
-    Results.expire(key);
+    await Results.remove(key);
   };
 }
 
@@ -41,5 +44,5 @@ export default matsCache = {
   getResult,
   storeResult,
   clear,
-  expireKey,
+  removeKey,
 };

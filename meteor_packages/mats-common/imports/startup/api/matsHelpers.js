@@ -124,7 +124,7 @@ export const checkMetaDataRefresh = async function () {
 // private method for getting pagenated data
 // a newPageIndex of -1000 means get all the data (used for export)
 // a newPageIndex of -2000 means get just the last page
-export const getPagenatedData = function (rky, p, np) {
+export const getPagenatedData = async function (rky, p, np) {
   if (Meteor.isServer) {
     const key = rky;
     const myPageIndex = p;
@@ -132,7 +132,7 @@ export const getPagenatedData = function (rky, p, np) {
     let rawReturn;
 
     try {
-      const result = matsCache.getResult(key);
+      const result = await matsCache.getResult(key);
       rawReturn = result === undefined ? undefined : result.result; // getResult structure is {key:something, result:resultObject}
     } catch (e) {
       console.log("getPagenatedData: Error - ", e);
@@ -211,14 +211,14 @@ export const getPagenatedData = function (rky, p, np) {
 };
 
 // private method for getting pagenated results and flattening them in order to be appropriate for text display.
-export const getFlattenedResultData = function (rk, p, np) {
+export const getFlattenedResultData = async function (rk, p, np) {
   if (Meteor.isServer) {
     try {
       const r = rk;
       const thisP = p;
       const thisNP = np;
       // get the pagenated data
-      const result = getPagenatedData(r, thisP, thisNP);
+      const result = await getPagenatedData(r, thisP, thisNP);
       // find the type
       const { plotTypes } = result.basis.plotParams;
       const plotType = _.invert(plotTypes).true;

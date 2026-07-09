@@ -34,7 +34,7 @@ export const getHealth = async function ({ res }) {
 };
 
 // handler for CSV route
-export const getCSV = function ({ req, res }) {
+export const getCSV = async function ({ req, res }) {
   if (Meteor.isServer) {
     // Make sure req exists and has params
     if (!req || !req.params) {
@@ -48,7 +48,7 @@ export const getCSV = function ({ req, res }) {
     const stringify = require("csv-stringify");
     let csv = "";
     try {
-      const result = getFlattenedResultData(params.key, 0, -1000);
+      const result = await getFlattenedResultData(params.key, 0, -1000);
       const statArray = Object.values(result.stats);
       const dataArray = Object.values(result.data);
 
@@ -82,7 +82,7 @@ export const getCSV = function ({ req, res }) {
 };
 
 // handler for JSON route
-export const getJSON = function ({ req, res }) {
+export const getJSON = async function ({ req, res }) {
   if (Meteor.isServer) {
     // Make sure req exists and has params
     if (!req || !req.params) {
@@ -94,7 +94,7 @@ export const getJSON = function ({ req, res }) {
     const { params } = req;
     let flatJSON = "";
     try {
-      const result = getPagenatedData(params.key, 0, -1000);
+      const result = await getPagenatedData(params.key, 0, -1000);
       flatJSON = JSON.stringify(result.basis);
     } catch (e) {
       console.log("error retrieving data: ", e);
@@ -109,9 +109,9 @@ export const getJSON = function ({ req, res }) {
 };
 
 // Cache management middleware
-export const clearCache = function ({ res }) {
+export const clearCache = async function ({ res }) {
   if (Meteor.isServer) {
-    matsCache.clear();
+    await matsCache.clear();
     res.end("<body><h1>clearCache Done!</h1></body>");
   }
 };
