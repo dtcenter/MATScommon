@@ -204,6 +204,8 @@ export const curveParamsByApp = {
     "region",
     "statistic",
     "variable",
+    "threshold",
+    "truth",
     "forecast-length",
     "dieoff-type",
     "valid-time",
