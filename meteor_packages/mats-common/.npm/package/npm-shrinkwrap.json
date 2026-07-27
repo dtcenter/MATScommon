@@ -27,9 +27,9 @@
       "integrity": "sha512-pbCDiVMnne1lYUIaYNN5wrwQXDtHaYtg7YEFPeW+hws6U47WeFvISGUWekPGKWOP1ygrs0ef0o1VJMk1exos5A=="
     },
     "@types/node": {
-      "version": "26.1.1",
-      "resolved": "https://registry.npmjs.org/@types/node/-/node-26.1.1.tgz",
-      "integrity": "sha512-nxAkRSVkN1Y0JC1W8ky/fTfkGsMmcrRsbx+3XoZE+rMOX71kLYTV7fLXpqud1GpbpP5TuffXFqfX7fH2GgZREw=="
+      "version": "26.1.2",
+      "resolved": "https://registry.npmjs.org/@types/node/-/node-26.1.2.tgz",
+      "integrity": "sha512-Vu4a5UFA9rIIFJ7rB/Vaafh9lrCQszopTCx6KjFboXTGQbPNasehVR5TEiithSDGyd1DEiUByggTZsg8jukeIg=="
     },
     "@types/trusted-types": {
       "version": "2.0.7",
@@ -127,19 +127,19 @@
       "integrity": "sha512-tZ6X6TKQyQgCo5OptXcyAbfN1pwmoxEqELPQ7KFazNErx7kiVsDK8o+VYRXhfMl4N9vvOOLXuioquR2MeP847A=="
     },
     "datatables.net": {
-      "version": "2.3.8",
-      "resolved": "https://registry.npmjs.org/datatables.net/-/datatables.net-2.3.8.tgz",
-      "integrity": "sha512-uhViowhlDlheAuo5a8TrkQqADsjrtGeOyvrigvr4t0+K3MyAWqClORXWAYIcN9VLX6iIX0C8O9gwJNd01hITRg=="
+      "version": "3.0.0",
+      "resolved": "https://registry.npmjs.org/datatables.net/-/datatables.net-3.0.0.tgz",
+      "integrity": "sha512-6p19AYaAZEghnlTI3fLNrGFrJ8aioC47E0BQmLT3YnNcL1cZHfIlc2EsN5OL0bljIZRDIXJYoaIr7nB2AZQy1Q=="
     },
     "datatables.net-bs": {
-      "version": "2.3.8",
-      "resolved": "https://registry.npmjs.org/datatables.net-bs/-/datatables.net-bs-2.3.8.tgz",
-      "integrity": "sha512-lM8sriL2WNDPimRi/Yh5tD+u1mWcaUa8EOo34dyDWaIBcOwWy78tdSnIjVobngyFYer3AieR83QEEyih+IR+Aw=="
+      "version": "3.0.0",
+      "resolved": "https://registry.npmjs.org/datatables.net-bs/-/datatables.net-bs-3.0.0.tgz",
+      "integrity": "sha512-aWKaM+zs04nqT9OK++UhU25loF5uzlgAJsqVbejYT+0kOaTR5+WW6kiz0epX3CvhZ9/g6ZJJvSAsd4rarV7gLw=="
     },
     "datatables.net-dt": {
-      "version": "2.3.8",
-      "resolved": "https://registry.npmjs.org/datatables.net-dt/-/datatables.net-dt-2.3.8.tgz",
-      "integrity": "sha512-GD4on0YvNlUS/l+mrXeA1OC2JDzF2/GGbehVv4AacwtiFaoTwqxZseiR0cED6w59u/lgpVrZRC2RwuubUX996Q=="
+      "version": "3.0.0",
+      "resolved": "https://registry.npmjs.org/datatables.net-dt/-/datatables.net-dt-3.0.0.tgz",
+      "integrity": "sha512-zWsEU7rSTnbKwTNH5W2OeVbDP9/HnwS6QyXePzoeZ0Dk9mzQUoAa2hGy35EVmLRwurD+Xqm2RoApOdeDDRnozQ=="
     },
     "daterangepicker": {
       "version": "3.1.0",
@@ -212,9 +212,9 @@
       "integrity": "sha512-0DGtxRpTdrg0LCCZ4TjAiLs+2CQYlcWx4V5BP95qgUpQGMgAXQ58PfB2mb5KT7BPryhCJ9KD4JW+feMweHlXFw=="
     },
     "fs-extra": {
-      "version": "11.3.6",
-      "resolved": "https://registry.npmjs.org/fs-extra/-/fs-extra-11.3.6.tgz",
-      "integrity": "sha512-w8ZNZr2mKIc7qeNaQ9AVPT1+iFaI+Avd4xudVOvdDJ8VytREi1Ft5Ih7hd9jjehod8vAM5GMsfQ/TpPf4EyoEA=="
+      "version": "11.4.0",
+      "resolved": "https://registry.npmjs.org/fs-extra/-/fs-extra-11.4.0.tgz",
+      "integrity": "sha512-EQsFzMUJkCKGr1ePqlYADkIUmHW1s3ZXr5Yqy6wbGrfUCphpl2maM/kyOIRA2HpP3AaFQTZXD4ldjek+nccddA=="
     },
     "function-bind": {
       "version": "1.1.2",
@@ -392,9 +392,9 @@
       "integrity": "sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA=="
     },
     "mysql2": {
-      "version": "3.22.6",
-      "resolved": "https://registry.npmjs.org/mysql2/-/mysql2-3.22.6.tgz",
-      "integrity": "sha512-fPKmeDGUzvFP7bMD5SASlJ5zIgvCC4hbanTmhbUlEmhyrY1hR4Hi3xLOWgTd3luYjLVifx6uGvMNJ2m/LlqEpg=="
+      "version": "3.23.2",
+      "resolved": "https://registry.npmjs.org/mysql2/-/mysql2-3.23.2.tgz",
+      "integrity": "sha512-fxh3HpQ8vJtu/Mmnd4Xsur19jGjHGzRLMxptiDtOkbX7EVBgnafGSGDx1WGGVmJLClVh2LeeBMMo24IFv8wCyQ=="
     },
     "named-placeholders": {
       "version": "1.1.6",
@@ -507,9 +507,9 @@
       "integrity": "sha512-1/ZteXH9wSGWTWYFVtFtfvOF4C30sUp8AP+wjZGgHVqvihiE95NrHSRPbAbKBXqG5wGzAhBV5kEBRAbJXSqNpA=="
     },
     "sql-escaper": {
-      "version": "1.4.0",
-      "resolved": "https://registry.npmjs.org/sql-escaper/-/sql-escaper-1.4.0.tgz",
-      "integrity": "sha512-Ti/Zx9J3aITMYUMFhCKbkplQjyi7Kk2SyYXp+rzrkyKZetIy19XbQtVZ+0ZR5aVm/178tIJ6+aVvBqXkH+Xs7w=="
+      "version": "1.5.1",
+      "resolved": "https://registry.npmjs.org/sql-escaper/-/sql-escaper-1.5.1.tgz",
+      "integrity": "sha512-4toX5E1fQbBrpfXidaHnF0669nkAdETeIPTs2SUjxxD7RRIs9ICG4gtpmfc68JCEKehsdwLFqBu9VlQqZ1P1gg=="
     },
     "string-width": {
       "version": "4.2.3",
@@ -527,9 +527,9 @@
       "integrity": "sha512-4gB8na07fecVVkOI6Rs4e7T6NOTki5EmL7TUduTs6bu3EdnSycntVJ4re8kgZA+wx9IueI2Y11bfbgwtzuE0KQ=="
     },
     "tar": {
-      "version": "7.5.19",
-      "resolved": "https://registry.npmjs.org/tar/-/tar-7.5.19.tgz",
-      "integrity": "sha512-4LeEWl96twnS2Q7Bz4MGqgazLqO+hJN63GZxXoIqh1T3VweYD997gbU1ItNsQafqqXTXd5WFyFdReLtwvRBNiw=="
+      "version": "7.5.22",
+      "resolved": "https://registry.npmjs.org/tar/-/tar-7.5.22.tgz",
+      "integrity": "sha512-MFO/QzvtAOmJbkhOaCTvbGcFN9L9b+JunIsDwaKljSOdcLMea3NJ1k9Usz/rjdfSXTq4dfzfeS7W4p4YOAAHeA=="
     },
     "text-segmentation": {
       "version": "1.0.3",
