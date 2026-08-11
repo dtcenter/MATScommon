@@ -113,8 +113,14 @@ Template.paramList.events({
   // save changes
   "submit form"(event) {
     event.preventDefault();
-    if (!matsParamUtils.getValueForParamName("label")) {
+    const currentLabel = matsParamUtils.getValueForParamName("label");
+    if (!currentLabel) {
       setError("Label cannot be blank");
+      return false;
+    }
+    const regex = /[^a-zA-Z0-9]/;
+    if (regex.test(currentLabel)) {
+      setError("Label can only contain alphanumeric characters, with no spaces.");
       return false;
     }
     const isMap = matsPlotUtils.getPlotType() === matsTypes.PlotTypes.map;
