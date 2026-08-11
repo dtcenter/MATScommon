@@ -223,6 +223,7 @@ export async function getMapByAppAndModel(selector, mapType) {
         result = newResult;
       } else if (
         matsCollections.database === undefined &&
+        matsCollections["obs-type"] === undefined &&
         !(
           matsCollections.variable !== undefined &&
           matsCollections.threshold !== undefined
@@ -320,6 +321,7 @@ export async function getDateMapByAppAndModel() {
     }
     if (
       matsCollections.database === undefined &&
+      matsCollections["obs-type"] === undefined &&
       !(
         matsCollections.variable !== undefined &&
         matsCollections.threshold !== undefined
