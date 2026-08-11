@@ -65,6 +65,19 @@ export async function getListOfApps() {
       })
     ).options;
     if (!Array.isArray(apps)) apps = Object.keys(apps);
+  } else if (
+    matsCollections["obs-type"] !== undefined &&
+    (await matsCollections["obs-type"].findOneAsync({
+      name: "obs-type",
+    })) !== undefined
+  ) {
+    // get list of apps (variables in apps that also have thresholds)
+    apps = (
+      await matsCollections["obs-type"].findOneAsync({
+        name: "obs-type",
+      })
+    ).options;
+    if (!Array.isArray(apps)) apps = Object.keys(apps);
   } else {
     apps = [(await matsCollections.Settings.findOneAsync()).Title];
   }
