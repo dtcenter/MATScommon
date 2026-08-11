@@ -71,7 +71,7 @@ export async function getListOfApps() {
       name: "obs-type",
     })) !== undefined
   ) {
-    // get list of apps (variables in apps that also have thresholds)
+    // get list of apps (obs-type in apps)
     apps = (
       await matsCollections["obs-type"].findOneAsync({
         name: "obs-type",
