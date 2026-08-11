@@ -123,6 +123,31 @@ export async function getListOfAppDBs() {
       )
         result[apps[aidx]] = result[apps[aidx]].sumsDB;
     }
+  } else if (
+    matsCollections["obs-type"] !== undefined &&
+    (await matsCollections["obs-type"].findOneAsync({
+      name: "obs-type",
+    })) !== undefined
+  ) {
+    // get list of apps (obs-type in apps)
+    apps = (
+      await matsCollections["obs-type"].findOneAsync({
+        name: "obs-type",
+      })
+    ).options;
+    if (!Array.isArray(apps)) apps = Object.keys(apps);
+    for (aidx = 0; aidx < apps.length; aidx += 1) {
+      result[apps[aidx]] = (
+        await matsCollections["obs-type"].findOneAsync({
+          name: "obs-type",
+        })
+      ).optionsMap[apps[aidx]];
+      if (
+        typeof result[apps[aidx]] !== "string" &&
+        !(result[apps[aidx]] instanceof String)
+      )
+        result[apps[aidx]] = result[apps[aidx]].sumsDB;
+    }
   } else {
     result[(await matsCollections.Settings.findOneAsync()).Title] = (
       await matsCollections.Databases.findOneAsync({
