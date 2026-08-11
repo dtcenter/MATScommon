@@ -11,7 +11,7 @@ import {
 } from "meteor/randyp:mats-common";
 import { Template } from "meteor/templating";
 
-/* global Session, $ */
+/* global Session, $, setError */
 /* eslint-disable no-console */
 
 Template.curveList.helpers({
@@ -314,6 +314,16 @@ Template.curveList.events({
     $("#remove-all").trigger("click");
   },
   "click .submitScorecard"(event) {
+    const currentScName = matsParamUtils.getValueForParamName("name-this-scorecard");
+    if (!currentScName) {
+      setError("Scorecard name cannot be blank");
+      return false;
+    }
+    const regex = /[^a-zA-Z0-9 -]/;
+    if (regex.test(currentScName)) {
+      setError("Scorecard name can only contain alphanumeric characters or hyphens.");
+      return false;
+    }
     document.getElementById("spinner").style.display = "block";
     matsPlotUtils.disableActionButtons();
     event.preventDefault();
