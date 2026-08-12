@@ -43,6 +43,8 @@ const setApplication = async (app) => {
     document.getElementById("threshold-item")
   ) {
     matsParamUtils.setValueTextForParamName("variable", app);
+  } else if (document.getElementById("obs-type-item")) {
+    matsParamUtils.setValueTextForParamName("obs-type", app);
   }
 };
 
