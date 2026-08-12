@@ -301,6 +301,22 @@ export async function getDateMapByAppAndModel() {
         })
       ).dates;
     } else if (
+      matsCollections["obs-type"] !== undefined &&
+      (await matsCollections["obs-type"].findOneAsync({
+        name: "obs-type",
+      })) !== undefined &&
+      (
+        await matsCollections["obs-type"].findOneAsync({
+          name: "obs-type",
+        })
+      ).dates !== undefined
+    ) {
+      result = (
+        await matsCollections["obs-type"].findOneAsync({
+          name: "obs-type",
+        })
+      ).dates;
+    } else if (
       matsCollections["data-source"] !== undefined &&
       (await matsCollections["data-source"].findOneAsync({
         name: "data-source",
