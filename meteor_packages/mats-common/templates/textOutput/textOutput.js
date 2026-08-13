@@ -1025,9 +1025,10 @@ Template.textOutput.events({
     const graphFunction = Session.get("graphFunction");
     const plotResultKey = Session.get("plotResultKey");
     const plotParameter = Session.get("plotParameter");
+    const appURL = `${window.location.href}`.replace(/\/+$/, "");
     // open a new window with
     window.open(
-      `${window.location.href}/CSV/${graphFunction}/${plotResultKey}/${plotParameter}/${appName}`
+      `${appURL}/CSV/${graphFunction}/${plotResultKey}/${plotParameter}/${appName}`
     );
   },
 });
