@@ -321,12 +321,12 @@ const generateSeriesCurveOptions = async function (
       marker: {
         symbol: "circle",
         color: curve.color,
-        size: 8,
+        size: 9,
       },
       line: {
         dash: "solid",
         color: curve.color,
-        width: 4,
+        width: 6,
       },
       visible: true,
       showlegend: true,
@@ -427,12 +427,12 @@ const generateProfileCurveOptions = async function (
       marker: {
         symbol: "circle",
         color: curve.color,
-        size: 8,
+        size: 9,
       },
       line: {
         dash: "solid",
         color: curve.color,
-        width: 4,
+        width: 6,
       },
       visible: true,
       showlegend: true,
@@ -974,7 +974,7 @@ const getContourSignificanceLayer = function (dataset) {
     marker: {
       symbol: "circle",
       color: "black",
-      size: 8,
+      size: 9,
     },
     hoverinfo: "skip",
     visible: true,
@@ -1073,7 +1073,7 @@ const generateScatterCurveOptions = async function (
       marker: {
         symbol: "circle",
         color: curve.color,
-        size: 8,
+        size: 9,
       },
       visible: true,
       showlegend: true,
