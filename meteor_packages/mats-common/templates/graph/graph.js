@@ -1520,15 +1520,6 @@ Template.graph.events({
       event.currentTarget.options[event.currentTarget.selectedIndex].value;
     document.getElementById("sendAddress").value = address;
   },
-  "click .share"() {
-    // show address modal
-    if (!Meteor.user()) {
-      setError(new Error("You must be logged in to use the 'share' feature"));
-      return false;
-    }
-    $("#sendModal").modal("show");
-    return null;
-  },
   "click .basis"() {
     const appName = Meteor.settings.public.app;
     const graphFunction = Session.get("graphFunction");

@@ -111,10 +111,7 @@ Template.plotList.helpers({
     return Session.get("Curves");
   },
   privateDisabled() {
-    if (!Meteor.user()) {
-      return "disabled";
-    }
-    return "";
+    return "disabled";
   },
   privateRestoreNames() {
     const names = [];
@@ -448,11 +445,7 @@ Template.plotList.events({
         // the following line converts a null removeKey to false.
         removeKey = Session.get("removeKey") === true;
         // add user and name to the plotparams
-        if (Meteor.user() === null) {
-          p.userName = "anonymous";
-        } else {
-          p.userName = Meteor.user().emails[0].address;
-        }
+        p.userName = "anonymous";
         x = new Date();
         y = x.getUTCFullYear().toString();
         m = (x.getUTCMonth() + 1).toString();
