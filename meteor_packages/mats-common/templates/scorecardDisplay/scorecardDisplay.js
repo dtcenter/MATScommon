@@ -26,7 +26,7 @@ const getTableCellId = function (
   stat,
   variable,
   threshold,
-  level,
+  level
 ) {
   // un-pad the possibly padded fcstlen
   const fcstlenStr = `${Number(fcstlen)}`;
@@ -71,7 +71,7 @@ const getAllVariables = function (blockName) {
     const rStats = Object.keys(myScorecard.scorecard.results.blocks[blockName].data[r]);
     rStats.forEach(function (s) {
       const rVars = Object.keys(
-        myScorecard.scorecard.results.blocks[blockName].data[r][s],
+        myScorecard.scorecard.results.blocks[blockName].data[r][s]
       );
       rVars.forEach(function (v) {
         myVars.add(v);
@@ -92,11 +92,11 @@ const getAllThresholds = function (blockName) {
     const rStats = Object.keys(myScorecard.scorecard.results.blocks[blockName].data[r]);
     rStats.forEach(function (s) {
       const rVars = Object.keys(
-        myScorecard.scorecard.results.blocks[blockName].data[r][s],
+        myScorecard.scorecard.results.blocks[blockName].data[r][s]
       );
       rVars.forEach(function (v) {
         const rThreshs = Object.keys(
-          myScorecard.scorecard.results.blocks[blockName].data[r][s][v],
+          myScorecard.scorecard.results.blocks[blockName].data[r][s][v]
         );
         rThreshs.forEach(function (t) {
           myThreshs.add(t);
@@ -126,15 +126,15 @@ const getAllLevels = function (blockName) {
     const rStats = Object.keys(myScorecard.scorecard.results.blocks[blockName].data[r]);
     rStats.forEach(function (s) {
       const rVars = Object.keys(
-        myScorecard.scorecard.results.blocks[blockName].data[r][s],
+        myScorecard.scorecard.results.blocks[blockName].data[r][s]
       );
       rVars.forEach(function (v) {
         const rThreshs = Object.keys(
-          myScorecard.scorecard.results.blocks[blockName].data[r][s][v],
+          myScorecard.scorecard.results.blocks[blockName].data[r][s][v]
         );
         rThreshs.forEach(function (t) {
           const rLevs = Object.keys(
-            myScorecard.scorecard.results.blocks[blockName].data[r][s][v][t],
+            myScorecard.scorecard.results.blocks[blockName].data[r][s][v][t]
           );
           rLevs.forEach(function (l) {
             if (Number.isNaN(Number(l))) {
@@ -162,7 +162,7 @@ const refreshScorecard = function (userName, name, submitted, processedAt) {
       "scorecard.submitted": Number(submitted),
       "scorecard.processedAt": Number(processedAt),
     },
-    { fields: { scorecard: 1 } },
+    { fields: { scorecard: 1 } }
   );
   Session.set("myScorecard", myScorecard);
 };
@@ -215,7 +215,7 @@ Template.scorecardDisplay.onRendered(function () {
     this.data.userName,
     this.data.name,
     this.data.submitted,
-    this.data.processedAt,
+    this.data.processedAt
   );
 });
 
@@ -224,7 +224,7 @@ Template.scorecardDisplay.onCreated(function () {
     this.data.userName,
     this.data.name,
     this.data.submitted,
-    this.data.processedAt,
+    this.data.processedAt
   );
 });
 
@@ -253,7 +253,7 @@ Template.scorecardDisplay.helpers({
     const blockConstantFields =
       myScorecard.scorecard.results.blocks[blockName].blockParameters;
     const actuallyAddedFields = myScorecard.scorecard.plotParams.curves.find(
-      (r) => r.label === blockName,
+      (r) => r.label === blockName
     );
     let CFString = "";
     for (let fidx = 0; fidx < blockConstantFields.length; fidx += 1) {
@@ -362,7 +362,7 @@ Template.scorecardDisplay.helpers({
       stat,
       variable,
       threshold,
-      level,
+      level
     );
     const outerTableCellElement = document.getElementById(outerTableCellId);
     if (
@@ -380,7 +380,7 @@ Template.scorecardDisplay.helpers({
     variable,
     threshold,
     level,
-    fcstlen,
+    fcstlen
   ) {
     const myScorecard = Session.get("myScorecard");
     if (myScorecard === undefined) {
@@ -405,22 +405,22 @@ Template.scorecardDisplay.helpers({
       case -2:
         return LightenDarkenColor(
           myScorecard.scorecard.significanceColors["major-truth-color"],
-          180,
+          180
         );
       case -1:
         return LightenDarkenColor(
           myScorecard.scorecard.significanceColors["minor-truth-color"],
-          220,
+          220
         );
       case 2:
         return LightenDarkenColor(
           myScorecard.scorecard.significanceColors["major-source-color"],
-          180,
+          180
         );
       case 1:
         return LightenDarkenColor(
           myScorecard.scorecard.significanceColors["minor-source-color"],
-          220,
+          220
         );
       case 0:
         return "lightgrey";
@@ -456,7 +456,7 @@ Template.scorecardDisplay.helpers({
         `StatisticType:${String(
           myScorecard.scorecard.results.blocks[blockName].data[region][stat][variable][
             threshold
-          ][level][fcstlenStr].StatisticType,
+          ][level][fcstlenStr].StatisticType
         )}\n` +
         `Pvalue:${myScorecard.scorecard.results.blocks[blockName].data[region][stat][variable][threshold][level][fcstlenStr].Pvalue}\n` +
         `GoodnessPolarity:${gp}`;
@@ -464,7 +464,7 @@ Template.scorecardDisplay.helpers({
       tooltip = String(
         myScorecard.scorecard.results.blocks[blockName].data[region][stat][variable][
           threshold
-        ][level][fcstlenStr],
+        ][level][fcstlenStr]
       );
     }
     return tooltip;
@@ -595,7 +595,7 @@ Template.scorecardDisplay.events({
     }
     const block = event.currentTarget.dataset.scorecardblock;
     const blockData = myScorecard.scorecard.plotParams.curves.find(
-      (r) => r.label === block,
+      (r) => r.label === block
     );
     const { application } = blockData;
     // When comparing models, you want forecast minus truth.
@@ -664,10 +664,10 @@ Template.scorecardDisplay.events({
         } else {
           event.view.window.open(
             `${baseURL}/${appSource}/scorecardTimeseries/${key}`,
-            "_blank",
+            "_blank"
           );
         }
-      },
+      }
     );
   },
 });

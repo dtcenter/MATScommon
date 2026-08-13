@@ -107,7 +107,7 @@ Package.onUse(function (api) {
 
   // MongoDB support for Meteor
   api.use("mongo");
-  
+
   // Fetch API support for Meteor
   api.use("fetch");
 
@@ -363,22 +363,22 @@ Package.onUse(function (api) {
   // static assets -- middleware
   api.addAssets(
     "imports/startup/server/matsMiddle/sqlTemplates/tmpl_distinct_fcstValidEpoch_obs.sql",
-    "server",
+    "server"
   );
   api.addAssets(
     "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_distinct_fcstLen.sql",
-    "server",
+    "server"
   );
   api.addAssets(
     "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_model.sql",
-    "server",
+    "server"
   );
   api.addAssets(
     "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_obs.sql",
-    "server",
+    "server"
   );
   api.addAssets(
     "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_stations_for_region.sql",
-    "server",
+    "server"
   );
 });

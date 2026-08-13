@@ -284,7 +284,7 @@ Template.graph.helpers({
             returnDataset[i].label.includes(matsTypes.ReservedWords.noSkill) ||
             (thisPlotType === matsTypes.PlotTypes.map &&
               Object.values(matsTypes.ReservedWords).indexOf(
-                returnDataset[i].reserved,
+                returnDataset[i].reserved
               ) >= 0) ||
             i === curveToShowHide
           )
@@ -1481,7 +1481,7 @@ Template.graph.events({
       `${appURL}/preview/${graphFunction}/${key}/${plotParameter}/${appName}`,
       "_blank",
       "status=no,titlebar=no,toolbar=no,scrollbars=no,menubar=no,resizable=yes",
-      `height=${h},width=${w}`,
+      `height=${h},width=${w}`
     );
     setTimeout(function () {
       wind.resizeTo(w, h);
@@ -1538,7 +1538,7 @@ Template.graph.events({
     window.open(
       `${appURL}/JSON/${graphFunction}/${plotResultKey}/${plotParameter}/${appName}`,
       "_blank",
-      "resizable=yes",
+      "resizable=yes"
     );
   },
   "click .axisLimitButton"() {
@@ -2319,7 +2319,7 @@ Template.graph.events({
               // annotation color needs to be darkened for proper section 508 contrast compliance
               const darkerAnnotationColor = LightenDarkenColor.LightenDarkenColor(
                 rgbHex(lineTypeResetOpts[lidx]["line.color"]),
-                -75,
+                -75
               )
                 .toString()
                 .padStart(6, "0");
@@ -2495,8 +2495,9 @@ Template.graph.events({
             if (!axesCollapsed || index === 0) {
               // if we've collapsed the axes we only want to process the first one
               if (!matsMethods.isThisANaN(elem.value)) {
-                newOpts[`xaxis${index === 0 ? "" : index + 1}.tickformat`] =
-                  `.${elem.value.toString()}r`;
+                newOpts[
+                  `xaxis${index === 0 ? "" : index + 1}.tickformat`
+                ] = `.${elem.value.toString()}r`;
               }
             }
           }
@@ -2509,7 +2510,7 @@ Template.graph.events({
               // if we've collapsed the axes we only want to process the first one
               if (!matsMethods.isThisANaN(elem.value)) {
                 newOpts[`xaxis${index === 0 ? "" : index + 1}.dtick`] = Number(
-                  elem.value,
+                  elem.value
                 );
               }
             }
@@ -2626,8 +2627,9 @@ Template.graph.events({
             if (!axesCollapsed || index === 0) {
               // if we've collapsed the axes we only want to process the first one
               if (!matsMethods.isThisANaN(elem.value)) {
-                newOpts[`yaxis${index === 0 ? "" : index + 1}.tickformat`] =
-                  `.${elem.value.toString()}r`;
+                newOpts[
+                  `yaxis${index === 0 ? "" : index + 1}.tickformat`
+                ] = `.${elem.value.toString()}r`;
               }
             }
           }
@@ -2640,7 +2642,7 @@ Template.graph.events({
               // if we've collapsed the axes we only want to process the first one
               if (!matsMethods.isThisANaN(elem.value)) {
                 newOpts[`yaxis${index === 0 ? "" : index + 1}.dtick`] = Number(
-                  elem.value,
+                  elem.value
                 );
               }
             }
@@ -2705,7 +2707,7 @@ Template.graph.events({
           // annotation color needs to be darkened for proper section 508 contrast compliance
           const darkerAnnotationColor = LightenDarkenColor.LightenDarkenColor(
             elem.value,
-            -75,
+            -75
           )
             .toString()
             .padStart(6, "0");
