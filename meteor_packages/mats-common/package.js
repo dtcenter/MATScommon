@@ -6,7 +6,7 @@
 
 Package.describe({
   name: "randyp:mats-common",
-  version: "6.3.2",
+  version: "6.3.3",
   // Brief, one-line summary of the package.
   summary: "MATScommon files provides common functionality for MATS/METexpress apps",
   // URL to the Git repository containing the source code for this package.
@@ -28,7 +28,6 @@ Package.onUse(function (api) {
     // things to do with querying
     "python-shell": "5.0.0",
     couchbase: "4.7.1",
-    mysql2: "3.23.2",
     url: "0.11.4",
 
     // things to do with downsizing and caching data
@@ -38,15 +37,14 @@ Package.onUse(function (api) {
     "object-sizeof": "2.6.5",
 
     // data tables for scorecard
-    "datatables.net-bs": "3.0.0",
-    "datatables.net-dt": "3.0.0",
+    "datatables.net-bs": "3.0.1",
+    "datatables.net-dt": "3.0.1",
 
     // saving to png or csv files
     html2canvas: "1.4.1",
-    "csv-stringify": "6.8.1",
+    "csv-stringify": "6.8.3",
 
     // dates
-    moment: "2.30.1",
     daterangepicker: "3.1.0",
     "vanillajs-datepicker": "1.3.4",
 
@@ -61,27 +59,65 @@ Package.onUse(function (api) {
 
   // ******* meteor packages
 
-  // core meteor packages
+  // Lets the Meteor app serve content to a web browser
   api.use("webapp");
+
+  // Server-side component of the `meteor shell` command
+  api.use("shell-server");
+
+  // Mobile experience support for Meteor
+  api.use("mobile-experience");
+
+  // Session management for client-side state
   api.use("session");
   api.imply("session");
-  api.use("reactive-var");
+
+  // Templating for client-side UI components
   api.use(["templating"], "client");
+
+  // Blaze HTML templates for client-side UI components
+  api.use("blaze-html-templates");
+
+  // jQuery 3.0.0 is required for some Blaze template functionality
+  api.use("jquery@3.0.0");
+
+  // Layout management for Blaze templates
+  // Version is frozen because update has incompatibilities
+  api.use("pwix:blaze-layout@=2.3.3");
+
+  // Spacebars is the Meteor templating language
+  api.use("spacebars");
+
+  // CSS minifier run for production mode
+  api.use("standard-minifier-css");
+  // JS minifier run for production mode
+  api.use("standard-minifier-js");
+
+  // ECMAScript 5 compatibility for older browsers
+  api.use("es5-shim");
+  api.imply("es5-shim");
+
+  // Enable ECMAScript2015+ syntax in app code
   api.use("ecmascript");
   api.imply("ecmascript");
-  api.use("logging");
-  api.use("reload");
-  api.use("random");
-  api.use("ejson");
-  api.use("spacebars");
-  api.use("check");
+
+  // Enable TypeScript syntax in .ts and .tsx modules
+  api.use("typescript");
+  api.imply("typescript");
+
+  // MongoDB support for Meteor
+  api.use("mongo");
+  
+  // Fetch API support for Meteor
   api.use("fetch");
-  api.use("accounts-password");
+
+  // Utility library for computing intersections, unions, etc.
+  api.use("underscore");
 
   // Needed for client-server interactions.
   // They are 3rd party, but specifically designed
   // for meteor so there aren't any npm equivalents.
-  api.use("mdg:validated-method");
+  api.use("mdg:validated-method@1.3.0");
 
   // modules
   api.export("matsCollections", ["client", "server"]);
@@ -327,22 +363,22 @@ Package.onUse(function (api) {
   // static assets -- middleware
   api.addAssets(
     "imports/startup/server/matsMiddle/sqlTemplates/tmpl_distinct_fcstValidEpoch_obs.sql",
-    "server"
+    "server",
   );
   api.addAssets(
     "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_distinct_fcstLen.sql",
-    "server"
+    "server",
   );
   api.addAssets(
     "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_model.sql",
-    "server"
+    "server",
   );
   api.addAssets(
     "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_obs.sql",
-    "server"
+    "server",
   );
   api.addAssets(
     "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_stations_for_region.sql",
-    "server"
+    "server",
   );
 });
