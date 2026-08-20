@@ -326,7 +326,7 @@ const generateSeriesCurveOptions = async function (
       line: {
         dash: "solid",
         color: curve.color,
-        width: 6,
+        width: 3,
       },
       visible: true,
       showlegend: true,
@@ -432,7 +432,7 @@ const generateProfileCurveOptions = async function (
       line: {
         dash: "solid",
         color: curve.color,
-        width: 6,
+        width: 3,
       },
       visible: true,
       showlegend: true,
