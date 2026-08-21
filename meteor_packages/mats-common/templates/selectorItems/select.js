@@ -106,11 +106,6 @@ Template.select.events({
       // always check to see if an "other" needs to be hidden or disabled before refreshing
       matsSelectUtils.checkHideOther(this, false);
       // if we're editing a curve with this change, update the curve
-      const curveItem = document.getElementById(`curveItem-${Session.get("editMode")}`);
-      if (curveItem) {
-        curveItem.scrollIntoView(false);
-      }
-      // update value text on the selctor button
       setValue(paramName);
       if (this.multiple) {
         // prevents the selector from closing on multiple selectors
