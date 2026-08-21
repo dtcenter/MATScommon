@@ -237,11 +237,7 @@ const restoreSettings = function (p) {
     ];
     for (let scfIdx = 0; scfIdx < scFields.length; scfIdx += 1) {
       const scField = scFields[scfIdx];
-      if (
-        p.data[scField] !== undefined &&
-        p.data[scField] !== "" &&
-        p.data[scField] !== matsTypes.InputTypes.unused
-      ) {
+      if (p.data[scField] !== undefined && p.data[scField] !== "") {
         matsParamUtils.setValueTextForParamName(scField, p.data[scField]);
       }
     }
