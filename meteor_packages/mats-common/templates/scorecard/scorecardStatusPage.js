@@ -190,9 +190,6 @@ Template.scorecardStatusPage.events({
         matsCurveUtils.resetPlotResultData();
         const p = { data: {} };
         p.data = plotParams.plotParams;
-        p.data.paramData = {};
-        p.data.paramData.curveParams = plotParams.plotParams.curves;
-        p.data.paramData.plotParams = plotParams.plotParams;
         matsPlotUtils.restoreSettings(p);
       })
       .catch(function (error) {
