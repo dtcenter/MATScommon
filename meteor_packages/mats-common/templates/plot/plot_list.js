@@ -2,7 +2,6 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import { Meteor } from "meteor/meteor";
 import {
   matsTypes,
   matsCollections,
@@ -120,7 +119,7 @@ Template.plotList.helpers({
       { fields: { name: 1, owner: 1, permission: 1 } }
     ).fetch();
     for (let i = 0; i < l.length; i += 1) {
-      if (l[i].owner === Meteor.userId() && l[i].permission === "private") {
+      if (l[i].permission === "private") {
         names.push(l[i].name);
       }
     }
@@ -138,9 +137,6 @@ Template.plotList.helpers({
       }
     }
     return names;
-  },
-  isOwner() {
-    return this.owner === Meteor.userId();
   },
 });
 

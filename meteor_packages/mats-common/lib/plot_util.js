@@ -212,6 +212,41 @@ const restoreSettings = function (p) {
     matsParamUtils.setValueTextForParamName("dates", p.data.dates);
   }
 
+  // deal with scorecard fields if this is a scorecard restore
+  if (p.data["scorecard-name"] !== undefined) {
+    const scFields = [
+      "name-this-scorecard",
+      "scorecard-percent-stdv",
+      "major-source-color",
+      "major-threshold-by-percent",
+      "major-threshold-by-stdv",
+      "major-truth-color",
+      "minor-source-color",
+      "minor-threshold-by-percent",
+      "minor-threshold-by-stdv",
+      "minor-truth-color",
+      "scorecard-schedule-mode",
+      "relative-date-range-type",
+      "relative-date-range-value",
+      "scorecard-recurrence-interval",
+      "scorecard-ends-on",
+      "these-days-of-the-month",
+      "these-days-of-the-week",
+      "these-hours-of-the-day",
+      "these-months",
+    ];
+    for (let scfIdx = 0; scfIdx < scFields.length; scfIdx += 1) {
+      const scField = scFields[scfIdx];
+      if (
+        p.data[scField] !== undefined &&
+        p.data[scField] !== "" &&
+        p.data[scField] !== matsTypes.InputTypes.unused
+      ) {
+        matsParamUtils.setValueTextForParamName(scField, p.data[scField]);
+      }
+    }
+  }
+
   // reset the plotParams
   Session.set("Curves", p.data.curves);
   Session.set("PlotParams", p);

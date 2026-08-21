@@ -1324,10 +1324,10 @@ const saveSettings = new ValidatedMethod({
         created: moment().format("MM/DD/YYYY HH:mm:ss"),
         name: params.saveAs,
         data: params.p,
-        owner: !Meteor.userId() ? "anonymous" : Meteor.userId(),
+        owner: user,
         permission: params.permission,
         savedAt: new Date(),
-        savedBy: !(await Meteor.userAsync()) ? "anonymous" : user,
+        savedBy: user,
       }
     );
   },
