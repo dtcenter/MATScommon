@@ -186,8 +186,6 @@ def calculate_stat(statistic, stat_line_type, agg_method, outlier_qc_param, nump
     data_length = numpy_data.shape[0]
     total_index = np.where(column_headers == 'total')[0]
     sub_stats = np.empty([data_length])
-    if stat_line_type == "ecnt":
-        column_headers[0] = stat_switch[statistic][2]
     try:
         for idx in range(data_length):
             if stat_line_type == "precalculated":
@@ -488,7 +486,10 @@ def get_stat(row, statistic, stat_line_type, app_params):
                 if has_levels:
                     sub_levs.append(sub_datum[3])
             numpy_data = np.column_stack([sub_values, sub_total])
-            column_headers = np.asarray(['precalc', 'total'])
+            if stat_line_type == "ecnt":
+                column_headers = np.asarray([_ecnt_stat_switch()[statistic][2], 'total'])
+            else:
+                column_headers = np.asarray(['precalc', 'total'])
 
         sub_values, sub_secs, sub_levs, numpy_data, stat, stat_error = calculate_stat(statistic, stat_line_type, 
                 agg_method, outlier_qc_param, numpy_data, column_headers, sub_secs, sub_levs)
