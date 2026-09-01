@@ -24,8 +24,8 @@ Template.customHome.helpers({
         undefined
     );
   },
-  resetDefaults() {
-    matsMethods.refreshMetaData.callAsync({}).catch(function (error) {
+  async resetDefaults() {
+    await matsMethods.refreshMetaData.callAsync({}).catch(function (error) {
       setError(new Error(error.message));
     });
   },

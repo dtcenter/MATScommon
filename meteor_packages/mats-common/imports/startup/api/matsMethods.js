@@ -878,7 +878,6 @@ const refreshMetaData = new ValidatedMethod({
   async run() {
     if (Meteor.isServer) {
       try {
-        // console.log("GUI asked to refresh metadata");
         await checkMetaDataRefresh();
       } catch (e) {
         console.log(e);

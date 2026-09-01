@@ -46,8 +46,8 @@ class CBUtilities {
             queryTimeout: 3600000,
           },
         });
-        const bucket = cluster.bucket(this.bucketName);
-        const collection = bucket.scope(this.scope).collection(this.collection);
+        const bucket = await cluster.bucket(this.bucketName);
+        const collection = await bucket.scope(this.scope).collection(this.collection);
         this.conn = { cluster, bucket, collection };
       }
       return this.conn;
@@ -60,7 +60,7 @@ class CBUtilities {
   closeConnection = async () => {
     try {
       if (this.conn) {
-        this.conn.cluster.close();
+        await this.conn.cluster.close();
       }
     } catch (err) {
       console.log(`CBUtilities.closeConnection ERROR: ${err.message}`);
@@ -135,7 +135,7 @@ class CBUtilities {
     const index = "station_geo";
     try {
       const conn = await this.getConnection();
-      const geoBoundingBoxQuery = couchbase.SearchQuery.geoBoundingBox(
+      const geoBoundingBoxQuery = await couchbase.SearchQuery.geoBoundingBox(
         topLeftLon,
         topLeftLat,
         bottomRightLon,
