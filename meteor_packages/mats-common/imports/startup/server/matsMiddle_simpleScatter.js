@@ -34,9 +34,9 @@ class MatsMiddleSimpleScatter {
 
   statTypeY = null;
 
-  varNameX = null;
+  varNamesX = null;
 
-  varNameY = null;
+  varNamesY = null;
 
   stationNames = null;
 
@@ -75,8 +75,8 @@ class MatsMiddleSimpleScatter {
     binParam,
     statTypeX,
     statTypeY,
-    varNameX,
-    varNameY,
+    varNamesX,
+    varNamesY,
     stationNames,
     model,
     fcstLen,
@@ -94,8 +94,8 @@ class MatsMiddleSimpleScatter {
         binParam,
         statTypeX,
         statTypeY,
-        varNameX,
-        varNameY,
+        varNamesX,
+        varNamesY,
         stationNames,
         model,
         fcstLen,
@@ -118,8 +118,8 @@ class MatsMiddleSimpleScatter {
     binParam,
     statTypeX,
     statTypeY,
-    varNameX,
-    varNameY,
+    varNamesX,
+    varNamesY,
     stationNames,
     model,
     fcstLen,
@@ -135,8 +135,8 @@ class MatsMiddleSimpleScatter {
       this.binParam = binParam;
       this.statTypeX = statTypeX;
       this.statTypeY = statTypeY;
-      this.varNameX = varNameX;
-      this.varNameY = varNameY;
+      this.varNamesX = varNamesX;
+      this.varNamesY = varNamesY;
       this.stationNames = stationNames;
       this.model = model;
       this.fcstLen = fcstLen;
@@ -237,17 +237,17 @@ class MatsMiddleSimpleScatter {
         // if we're querying for elevation, retrieve it from the map we passed in instead of the database
         let wantedValueX = "";
         let wantedValueY = "";
-        if (this.varNameX === "Elevation") {
+        if (this.varNamesX[0] === "Elevation") {
           const station = this.stationNames[i];
           wantedValueX = this.elevMap[station];
         } else {
-          wantedValueX = `obs.data.${this.stationNames[i]}.\`${this.varNameX}\``;
+          wantedValueX = `obs.data.${this.stationNames[i]}.\`${this.varNamesX[1]}\``;
         }
-        if (this.varNameY === "Elevation") {
+        if (this.varNamesY[0] === "Elevation") {
           const station = this.stationNames[i];
           wantedValueY = this.elevMap[station];
         } else {
-          wantedValueY = `obs.data.${this.stationNames[i]}.\`${this.varNameY}\``;
+          wantedValueY = `obs.data.${this.stationNames[i]}.\`${this.varNamesY[1]}\``;
         }
 
         // if we're filtering by elevation, retrieve it from the map we passed in instead of the database
@@ -388,14 +388,14 @@ class MatsMiddleSimpleScatter {
       for (let i = 0; i < this.stationNames.length; i += 1) {
         if (i === 0) {
           if (this.filterInfo.filterModelBy) {
-            stationNamesModels = `CASE WHEN models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.${this.stationNames[i]}.\`${this.varNameX}\` ELSE "NULL" END ${this.stationNames[i]}_X, CASE WHEN models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.${this.stationNames[i]}.\`${this.varNameY}\` ELSE "NULL" END ${this.stationNames[i]}_Y`;
+            stationNamesModels = `CASE WHEN models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.${this.stationNames[i]}.\`${this.varNamesX[0]}\` ELSE "NULL" END ${this.stationNames[i]}_X, CASE WHEN models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.${this.stationNames[i]}.\`${this.varNamesY[0]}\` ELSE "NULL" END ${this.stationNames[i]}_Y`;
           } else {
-            stationNamesModels = `models.data.${this.stationNames[i]}.\`${this.varNameX}\` ${this.stationNames[i]}_X, models.data.${this.stationNames[i]}.\`${this.varNameY}\` ${this.stationNames[i]}_Y`;
+            stationNamesModels = `models.data.${this.stationNames[i]}.\`${this.varNameX}\` ${this.stationNames[i]}_X, models.data.${this.stationNames[i]}.\`${this.varNamesY[0]}\` ${this.stationNames[i]}_Y`;
           }
         } else if (this.filterInfo.filterModelBy) {
-          stationNamesModels += `, CASE WHEN models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.${this.stationNames[i]}.\`${this.varNameX}\` ELSE "NULL" END ${this.stationNames[i]}_X, CASE WHEN models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.${this.stationNames[i]}.\`${this.varNameY}\` ELSE "NULL" END ${this.stationNames[i]}_Y`;
+          stationNamesModels += `, CASE WHEN models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.${this.stationNames[i]}.\`${this.varNamesX[0]}\` ELSE "NULL" END ${this.stationNames[i]}_X, CASE WHEN models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.${this.stationNames[i]}.\`${this.varNameY}\` ELSE "NULL" END ${this.stationNames[i]}_Y`;
         } else {
-          stationNamesModels += `, models.data.${this.stationNames[i]}.\`${this.varNameX}\` ${this.stationNames[i]}_X, models.data.${this.stationNames[i]}.\`${this.varNameY}\` ${this.stationNames[i]}_Y`;
+          stationNamesModels += `, models.data.${this.stationNames[i]}.\`${this.varNameX}\` ${this.stationNames[i]}_X, models.data.${this.stationNames[i]}.\`${this.varNamesY[0]}\` ${this.stationNames[i]}_Y`;
         }
       }
 

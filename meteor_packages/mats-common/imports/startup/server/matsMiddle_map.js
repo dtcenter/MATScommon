@@ -27,7 +27,7 @@ class MatsMiddleMap {
 
   statType = null;
 
-  varName = null;
+  varNames = null;
 
   stationNames = null;
 
@@ -62,7 +62,7 @@ class MatsMiddleMap {
 
   processStationQuery = async (
     statType,
-    varName,
+    varNames,
     stationNames,
     model,
     fcstLen,
@@ -77,7 +77,7 @@ class MatsMiddleMap {
     try {
       rv = await this.processStationQueryInt(
         statType,
-        varName,
+        varNames,
         stationNames,
         model,
         fcstLen,
@@ -97,7 +97,7 @@ class MatsMiddleMap {
 
   processStationQueryInt = async (
     statType,
-    varName,
+    varNames,
     stationNames,
     model,
     fcstLen,
@@ -110,7 +110,7 @@ class MatsMiddleMap {
   ) => {
     try {
       this.statType = statType;
-      this.varName = varName;
+      this.varNames = varNames;
       this.stationNames = stationNames;
       this.model = model;
       this.fcstLen = fcstLen;
@@ -180,11 +180,11 @@ class MatsMiddleMap {
       for (let i = 0; i < stationNamesSlice.length; i += 1) {
         // if we're querying for elevation, retrieve it from the map we passed in instead of the database
         let wantedValue = "";
-        if (this.varName === "Elevation") {
+        if (this.varNames[0] === "Elevation") {
           const station = stationNamesSlice[i];
           wantedValue = this.elevMap[station];
         } else {
-          wantedValue = `obs.data.${stationNamesSlice[i]}.\`${this.varName}\``;
+          wantedValue = `obs.data.${stationNamesSlice[i]}.\`${this.varNames[1]}\``;
         }
 
         // if we're filtering by elevation, retrieve it from the map we passed in instead of the database
@@ -292,14 +292,14 @@ class MatsMiddleMap {
       for (let i = 0; i < stationNamesSlice.length; i += 1) {
         if (i === 0) {
           if (this.filterInfo.filterModelBy) {
-            stationNamesModels = `CASE WHEN models.data.${stationNamesSlice[i]}.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.${stationNamesSlice[i]}.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.${stationNamesSlice[i]}.\`${this.varName}\` ELSE "NULL" END ${stationNamesSlice[i]}`;
+            stationNamesModels = `CASE WHEN models.data.${stationNamesSlice[i]}.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.${stationNamesSlice[i]}.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.${stationNamesSlice[i]}.\`${this.varNames[0]}\` ELSE "NULL" END ${stationNamesSlice[i]}`;
           } else {
-            stationNamesModels = `models.data.${stationNamesSlice[i]}.\`${this.varName}\` ${stationNamesSlice[i]}`;
+            stationNamesModels = `models.data.${stationNamesSlice[i]}.\`${this.varNames[0]}\` ${stationNamesSlice[i]}`;
           }
         } else if (this.filterInfo.filterModelBy) {
-          stationNamesModels += `, CASE WHEN models.data.${stationNamesSlice[i]}.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.${stationNamesSlice[i]}.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.${stationNamesSlice[i]}.\`${this.varName}\` ELSE "NULL" END ${stationNamesSlice[i]}`;
+          stationNamesModels += `, CASE WHEN models.data.${stationNamesSlice[i]}.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.${stationNamesSlice[i]}.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.${stationNamesSlice[i]}.\`${this.varNames[0]}\` ELSE "NULL" END ${stationNamesSlice[i]}`;
         } else {
-          stationNamesModels += `, models.data.${stationNamesSlice[i]}.\`${this.varName}\` ${stationNamesSlice[i]}`;
+          stationNamesModels += `, models.data.${stationNamesSlice[i]}.\`${this.varNames[0]}\` ${stationNamesSlice[i]}`;
         }
       }
 
