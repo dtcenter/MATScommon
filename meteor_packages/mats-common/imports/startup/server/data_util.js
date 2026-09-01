@@ -749,6 +749,7 @@ const readableAdeckModels = function () {
     GFSO: "GFSO: GFS",
     GFSI: "GFSI: GFS",
     GFS2: "GFS2: GFS",
+    AGFS: "AI-GFS",
     AVXO: "AVXO: GFS 10-day Tracker",
     AVXI: "AVXI: GFS 10-day Tracker",
     AVX2: "AVX2: GFS 10-day Tracker",
