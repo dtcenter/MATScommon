@@ -70,6 +70,7 @@ Template.curveParamGroup.helpers({
             switch (plotType) {
               case matsTypes.PlotTypes.histogram:
               case matsTypes.PlotTypes.ensembleHistogram:
+              case matsTypes.PlotTypes.reliability:
               case matsTypes.PlotTypes.roc:
               case matsTypes.PlotTypes.performanceDiagram:
               case matsTypes.PlotTypes.gridscaleProb:
@@ -88,7 +89,6 @@ Template.curveParamGroup.helpers({
               case matsTypes.PlotTypes.contour:
               case matsTypes.PlotTypes.contourDiff:
                 return "Aggregation:";
-              case matsTypes.PlotTypes.reliability:
               default:
                 return "";
             }

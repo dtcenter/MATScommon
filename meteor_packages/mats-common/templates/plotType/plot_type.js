@@ -397,7 +397,7 @@ Template.plotType.events({
           "region-type",
           "region",
         ];
-        dateSelector = "dates";
+        dateSelector = "curve-dates";
         break;
       case matsTypes.PlotTypes.roc:
         selectorsToInitialize = [

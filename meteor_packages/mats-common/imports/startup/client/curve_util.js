@@ -1073,8 +1073,8 @@ const showReliabilityFace = function () {
   // set selector visibility
   const { appName } = matsCollections.Settings.findOne({});
   const faceOptions = {
-    "curve-dates": "none",
-    dates: "block",
+    "curve-dates": "block",
+    dates: "none",
     statistic: "none",
     "x-statistic": "none",
     "y-statistic": "none",
