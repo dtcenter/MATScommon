@@ -79,6 +79,7 @@ class CBQueryUtil:
                 "minDateTextOutput": [],
                 "maxDateTextOutput": [],
                 "threshold_all": [],
+                "threshold_orig": [],
                 "oy_all": [],
                 "on_all": [],
                 "nForecast": [],

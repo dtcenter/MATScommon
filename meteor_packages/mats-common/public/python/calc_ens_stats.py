@@ -35,7 +35,7 @@ def get_ens_stat(plot_type, forecast_total, observed_total, on_all, oy_all, thre
 
     if plot_type == 'Reliability':
         # determine the hit rate for each probability bin
-        for i in range(0, len(threshold_all)):
+        for i in range(len(threshold_all)):
             try:
                 hr = float(oy_all[i]) / (float(oy_all[i]) + float(on_all[i]))
             except ZeroDivisionError:
@@ -43,8 +43,6 @@ def get_ens_stat(plot_type, forecast_total, observed_total, on_all, oy_all, thre
             hit_rate.append(hr)
         # calculate the sample climatology
         sample_climo = float(observed_total) / float(forecast_total)
-        x_var = 'threshold_all'
-        y_var = 'hit_rate'
 
     elif plot_type == 'ROC' or plot_type == "PerformanceDiagram":
         # determine the probability of detection (hit rate) and probability of false detection (false alarm ratio) for each probability bin

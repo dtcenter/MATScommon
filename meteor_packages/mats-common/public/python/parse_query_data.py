@@ -563,6 +563,7 @@ def parse_query_data_ensemble(idx, query_data, app_params, return_obj):
     plot_type = app_params["plotType"]
     has_levels = app_params["hasLevels"]
     threshold_all = []
+    threshold_orig = []
     oy_all = []
     on_all = []
     total_times = []
@@ -581,6 +582,7 @@ def parse_query_data_ensemble(idx, query_data, app_params, return_obj):
 
         if data_exists:
             threshold_all.append(row['threshold'])
+            threshold_orig.append(row['threshold'])
             sub_data = str(row['sub_data']).split(',')
             # these are the sub-fields specific to scalar stats
             sub_oy = []
@@ -616,6 +618,7 @@ def parse_query_data_ensemble(idx, query_data, app_params, return_obj):
     return_obj['data'][idx]['y'] = ens_stats[ens_stats["y_var"]]
     return_obj['data'][idx]['sample_climo'] = ens_stats["sample_climo"]
     return_obj['data'][idx]['threshold_all'] = ens_stats["threshold_all"]
+    return_obj['data'][idx]['threshold_orig'] = threshold_orig
     return_obj['data'][idx]['oy_all'] = ens_stats["oy_all"]
     return_obj['data'][idx]['on_all'] = ens_stats["on_all"]
     return_obj['data'][idx]['n'] = ens_stats["total_values"]
@@ -888,7 +891,7 @@ def do_matching(options, return_obj):
         sub_secs_name = "subSecsX"
         sub_levs_name = "subLevsX"
     elif plot_type in ["Reliability", "ROC", "PerformanceDiagram"]:
-        independent_var_name = 'threshold_all'
+        independent_var_name = 'threshold_orig'
         stat_var_name = 'x'
         sub_secs_name = "subSecs"
         sub_levs_name = "subLevs"
@@ -985,7 +988,7 @@ def do_matching(options, return_obj):
             if has_levels:
                 sub_levs_raw[curve_index] = []
                 sub_levs[curve_index] = []
-            for di in range(0, len(data[independent_var_name])):
+            for di in range(len(data[independent_var_name])):
                 sub_secs_raw[curve_index].append(data[sub_secs_name][di])
                 if has_levels:
                     sub_levs_raw[curve_index].append(data[sub_levs_name][di])
@@ -1253,7 +1256,7 @@ def do_matching(options, return_obj):
                     data["ymax"] = data["y"][di]
 
         if plot_type in ["Reliability", "ROC", "PerformanceDiagram"]:
-            ens_stats = get_ens_stat(plot_type, forecast_total, observed_total, on_all, oy_all, data["threshold_all"], total_times, total_values)
+            ens_stats = get_ens_stat(plot_type, forecast_total, observed_total, on_all, oy_all, data["threshold_orig"], total_times, total_values)
             data['x'] = ens_stats[ens_stats["x_var"]]
             data['y'] = ens_stats[ens_stats["y_var"]]
             data['sample_climo'] = ens_stats["sample_climo"]

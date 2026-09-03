@@ -75,6 +75,7 @@ class QueryUtil:
                 "minDateTextOutput": [],
                 "maxDateTextOutput": [],
                 "threshold_all": [],
+                "threshold_orig": [],
                 "oy_all": [],
                 "on_all": [],
                 "nForecast": [],
@@ -299,8 +300,8 @@ class QueryUtil:
         """function for validating options and passing them to the query function"""
         self.validate_options(options)
         cnx = pymysql.Connect(host=options["host"], port=options["port"], user=options["user"],
-                              passwd=options["password"],
-                              db=options["database"], charset='utf8',
+                              password=options["password"],
+                              database=options["database"], charset='utf8',
                               cursorclass=pymysql.cursors.DictCursor)
         with closing(cnx.cursor()) as cursor:
             cursor.execute('set group_concat_max_len = 4294967295')
