@@ -3,16 +3,18 @@ import sys
 import math
 import re
 from calc_stats import get_stat, calculate_stat
-from calc_ens_stats import get_ens_stat
+from calc_ens_stats import get_ens_bin_stat, get_ens_stat
 
 
 def _null_point(data, di, plot_type, stat_var_name, has_levels):
     """utility to make null a point on a graph"""
     di = int(di)
     data[stat_var_name][di] = 'null'
-    if plot_type == "PerformanceDiagram" or plot_type == "ROC":
+    if plot_type in ["Reliability", "ROC", "PerformanceDiagram"]:
         data["oy_all"][di] = 'NaN'
         data["on_all"][di] = 'NaN'
+        data["subOy"][di] = 'NaN'
+        data["sunOn"][di] = 'NaN'
     if len(data['error_' + stat_var_name]) > 0:
         data['error_' + stat_var_name][di] = 'null'
     if plot_type == "SimpleScatter":
@@ -42,9 +44,11 @@ def _add_null_point(data, di, plot_type, ind_var_name, new_ind_var, stat_var_nam
     di = int(di)
     data[ind_var_name].insert(di, new_ind_var)
     data[stat_var_name].insert(di, 'null')
-    if plot_type == "PerformanceDiagram" or plot_type == "ROC":
+    if plot_type in ["Reliability", "ROC", "PerformanceDiagram"]:
         data["oy_all"].insert(di, [])
         data["on_all"].insert(di, [])
+        data["subOy"].insert(di, [])
+        data["sunOn"].insert(di, [])
     if len(data['error_' + stat_var_name]) > 0:
         data['error_' + stat_var_name].insert(di, 'null')
     if plot_type == "SimpleScatter":
@@ -74,9 +78,11 @@ def _remove_point(data, di, plot_type, stat_var_name, has_levels):
     di = int(di)
     del (data["x"][di])
     del (data["y"][di])
-    if plot_type == "PerformanceDiagram" or plot_type == "ROC":
+    if plot_type in ["Reliability", "ROC", "PerformanceDiagram"]:
         del (data["oy_all"][di])
         del (data["on_all"][di])
+        del (data["subOy"][di])
+        del (data["sunOn"][di])
     if len(data['error_' + stat_var_name]) > 0:
         del (data['error_' + stat_var_name][di])
     if plot_type == "SimpleScatter":
@@ -555,6 +561,7 @@ def parse_query_data_ensemble(idx, query_data, app_params, return_obj):
     """function for parsing the data returned by an ensemble query"""
     # initialize local variables
     plot_type = app_params["plotType"]
+    has_levels = app_params["hasLevels"]
     threshold_all = []
     oy_all = []
     on_all = []
@@ -562,48 +569,42 @@ def parse_query_data_ensemble(idx, query_data, app_params, return_obj):
     total_values = []
     observed_total = 0
     forecast_total = 0
+    sub_oy_all = []
+    sub_on_all = []
+    sub_vals_all = []
+    sub_secs_all = []
+    sub_levs_all = []
 
     # loop through the query results and store the returned values
     for row in query_data:
-        data_exists = row['bin_number'] != "null" and row['bin_number'] != "NULL" and row['oy_i'] != "null" and row[
-            'oy_i'] != "NULL"
+        data_exists = row['oy_i'] != "null" and row['oy_i'] != "NULL"
 
         if data_exists:
-            bin_number = int(row['bin_number'])
-            threshold = row['threshold']
-            oy = int(row['oy_i'])
-            on = int(row['on_i'])
-            number_times = int(row['nTimes'])
-            if hasattr(row, 'n0'):
-                number_values = int(row['n0'])
-            else:
-                number_values = int(row['nTimes'])
+            threshold_all.append(row['threshold'])
+            sub_data = str(row['sub_data']).split(',')
+            # these are the sub-fields specific to scalar stats
+            sub_oy = []
+            sub_on = []
+            sub_total = []
+            sub_secs = []
+            sub_levs = []
+            for sub_datum in sub_data:
+                sub_datum = sub_datum.split(';')
+                sub_oy.append(float(sub_datum[0]) if abs(float(sub_datum[0])) != 9999. else np.nan)
+                sub_on.append(float(sub_datum[1]) if abs(float(sub_datum[1])) != 9999. else np.nan)
+                sub_total.append(int(sub_datum[2]) if abs(int(sub_datum[2])) != 9999 else np.nan)
+                sub_secs.append(int(sub_datum[3]) if abs(int(sub_datum[3])) != 9999 else np.nan)
+                if has_levels:
+                    sub_levs.append(sub_datum[4])
 
-            # we must add up all of the observed and not-observed values for each probability bin
-            observed_total = observed_total + oy
-            forecast_total = forecast_total + oy + on
+            sub_oy_all.append(sub_oy)
+            sub_on_all.append(sub_on)
+            sub_vals_all.append(sub_total)
+            sub_secs_all.append(sub_secs)
+            sub_levs_all.append(sub_levs)
 
-            if len(oy_all) < bin_number:
-                oy_all.append(oy)
-            else:
-                oy_all[bin_number - 1] = oy_all[bin_number - 1] + oy
-            if len(on_all) < bin_number:
-                on_all.append(on)
-            else:
-                on_all[bin_number - 1] = on_all[bin_number - 1] + on
-            if len(total_times) < bin_number:
-                total_times.append(on)
-            else:
-                total_times[bin_number - 1] = total_times[bin_number - 1] + number_times
-            if len(total_values) < bin_number:
-                total_values.append(on)
-            else:
-                total_values[bin_number - 1] = total_values[bin_number - 1] + number_values
-            if len(threshold_all) < bin_number:
-                threshold_all.append(threshold)
-            else:
-                continue
-
+            observed_total, forecast_total = get_ens_bin_stat(oy_all, on_all, total_times, total_values, observed_total, forecast_total, sub_oy, sub_on, sub_total, sub_secs)
+    
     # this function deals with pct and pct_thresh tables
     ens_stats = get_ens_stat(plot_type, forecast_total, observed_total, on_all, oy_all, threshold_all,
                                     total_times, total_values)
@@ -617,8 +618,13 @@ def parse_query_data_ensemble(idx, query_data, app_params, return_obj):
     return_obj['data'][idx]['threshold_all'] = ens_stats["threshold_all"]
     return_obj['data'][idx]['oy_all'] = ens_stats["oy_all"]
     return_obj['data'][idx]['on_all'] = ens_stats["on_all"]
-    return_obj['data'][idx]['n'] = total_values
+    return_obj['data'][idx]['n'] = ens_stats["total_values"]
     return_obj['data'][idx]['auc'] = ens_stats["auc"]
+    return_obj['data'][idx]['subOy'] = sub_oy_all
+    return_obj['data'][idx]['subOn'] = sub_on_all
+    return_obj['data'][idx]['subVals'] = sub_vals_all
+    return_obj['data'][idx]['subSecs'] = sub_secs_all
+    return_obj['data'][idx]['subLevs'] = sub_levs_all
     return_obj['data'][idx]['xmax'] = 1.0
     return_obj['data'][idx]['xmin'] = 0.0
     return_obj['data'][idx]['ymax'] = 1.0
@@ -861,14 +867,13 @@ def do_matching(options, return_obj):
     has_levels = options["query_array"][0]["appParams"]["hasLevels"]
     curves_length = len(return_obj['data'])
 
-    if plot_type in ["EnsembleHistogram"]:
+    if plot_type in ["EnsembleHistogram", "Reliability", "ROC", "PerformanceDiagram"]:
         remove_non_matching_ind_vars = False
     elif plot_type in ["TimeSeries", "Profile", "Dieoff", "Threshold", "ValidTime", "GridScale", "DailyModelCycle",
                         "YearToYear", "SimpleScatter", "Contour", "ContourDiff"]:
         remove_non_matching_ind_vars = True
     else:
         # Either matching is not supported for this pot type, or it's a histogram and we do the matching later
-        # ["Reliability", "ROC", "PerformanceDiagram", "Histogram", "Map"]
         return return_obj
 
     # matching in this function is based on a curve's independent variable. For a timeseries, the independentVar
@@ -882,6 +887,11 @@ def do_matching(options, return_obj):
         stat_var_name = 'x'
         sub_secs_name = "subSecsX"
         sub_levs_name = "subLevsX"
+    elif plot_type in ["Reliability", "ROC", "PerformanceDiagram"]:
+        independent_var_name = 'threshold_all'
+        stat_var_name = 'x'
+        sub_secs_name = "subSecs"
+        sub_levs_name = "subLevs"
     elif plot_type != "Profile":
         independent_var_name = 'x'
         stat_var_name = 'y'
@@ -929,18 +939,18 @@ def do_matching(options, return_obj):
     if remove_non_matching_ind_vars:
         if has_levels:
             # loop over each common non-null independentVar value
-            for fi in range(0, len(matching_independent_vars)):
+            for fi in range(len(matching_independent_vars)):
                 curr_independent_var = matching_independent_vars[fi]
                 sub_intersections_object[curr_independent_var] = []
                 curr_sub_intersections = []
-                for si in range(0, len(sub_secs[0][curr_independent_var])):
+                for si in range(len(sub_secs[0][curr_independent_var])):
                     # fill current intersection array with sec-lev pairs from the first curve
                     curr_sub_intersections.append(
                         [sub_secs[0][curr_independent_var][si], sub_levs[0][curr_independent_var][si]])
                 # loop over every curve after the first
                 for curve_index in range(1, curves_length):
                     temp_sub_intersections = []
-                    for si in range(0, len(sub_secs[curve_index][curr_independent_var])):
+                    for si in range(len(sub_secs[curve_index][curr_independent_var])):
                         # create an individual sec-lev pair for each index in the subSecs and subLevs arrays
                         temp_pair = [sub_secs[curve_index][curr_independent_var][si],
                                         sub_levs[curve_index][curr_independent_var][si]]
@@ -954,7 +964,7 @@ def do_matching(options, return_obj):
                 sub_intersections_object[curr_independent_var] = curr_sub_intersections
         else:
             # loop over each common non - null independentVar value
-            for fi in range(0, len(matching_independent_vars)):
+            for fi in range(len(matching_independent_vars)):
                 curr_independent_var = matching_independent_vars[fi]
                 # fill current subSecs intersection array with subSecs from the first curve
                 curr_sub_sec_intersection = sub_secs[0][curr_independent_var]
@@ -968,7 +978,7 @@ def do_matching(options, return_obj):
                 sub_sec_intersection_object[curr_independent_var] = curr_sub_sec_intersection
     else:
         # pull all subSecs and subLevs out of their bins, and back into one main array
-        for curve_index in range(0, curves_length):
+        for curve_index in range(curves_length):
             data = return_obj['data'][curve_index]
             sub_secs_raw[curve_index] = []
             sub_secs[curve_index] = []
@@ -985,13 +995,13 @@ def do_matching(options, return_obj):
 
         if has_levels:
             # determine which seconds and levels are present in all curves
-            for si in range(0, len(sub_secs[0])):
+            for si in range(len(sub_secs[0])):
                 # fill current intersection array with sec-lev pairs from the first curve
                 sub_intersections_array.append([sub_secs[0][si], sub_levs[0][si]])
             # loop over every curve after the first
             for curve_index in range(1, curves_length):
                 temp_sub_intersections = []
-                for si in range(0, len(sub_secs[curve_index])):
+                for si in range(len(sub_secs[curve_index])):
                     # create an individual sec-lev pair for each index in the subSecs and subLevs arrays
                     temp_pair = [sub_secs[curve_index][si], sub_levs[curve_index][si]]
                     # see if the individual sec-lev pair matches a pair from the current intersection array
@@ -1011,24 +1021,40 @@ def do_matching(options, return_obj):
                     set.intersection(set(sub_sec_intersection_array), set(sub_secs[curve_index])))
 
     # remove non-matching independentVars and subSecs
-    for curve_index in range(0, curves_length):
+    for curve_index in range(curves_length):
         data = return_obj['data'][curve_index]
         # need to loop backwards through the data array so that we can splice non-matching indices
         # while still having the remaining indices in the correct order
         data_length = len(data[independent_var_name])
         for di in range(data_length - 1, -1, -1):
-            if remove_non_matching_ind_vars:
-                if data[independent_var_name][di] not in matching_independent_vars:
-                    # if this is not a common non-null independentVar value, we'll have to remove some data
-                    if data[independent_var_name][di] not in matching_independent_has_point:
-                        # if at least one curve doesn't even have a null here, much less a matching value (because of the cadence), just drop this independentVar
-                        _remove_point(data, di, plot_type, stat_var_name, has_levels)
-                    else:
-                        # if all of the curves have either data or nulls at this independentVar, and there is at least one null, ensure all of the curves are null
-                        _null_point(data, di, plot_type, stat_var_name, has_levels)
-                    # then move on to the next independentVar. There's no need to mess with the subSecs or subLevs
-                    continue
-            if plot_type != "SimpleScatter":
+            if remove_non_matching_ind_vars and data[independent_var_name][di] not in matching_independent_vars:
+                # if this is not a common non-null independentVar value, we'll have to remove some data
+                if data[independent_var_name][di] not in matching_independent_has_point:
+                    # if at least one curve doesn't even have a null here, much less a matching value (because of the cadence), just drop this independentVar
+                    _remove_point(data, di, plot_type, stat_var_name, has_levels)
+                else:
+                    # if all of the curves have either data or nulls at this independentVar, and there is at least one null, ensure all of the curves are null
+                    _null_point(data, di, plot_type, stat_var_name, has_levels)
+                # then move on to the next independentVar. There's no need to mess with the subSecs or subLevs
+                continue
+            if plot_type in ["Reliability", "ROC", "PerformanceDiagram"]:
+                sub_data = data["subOy"][di]  # reusing this variable so I don't have to initialize additional ones
+                sub_data_x = []
+                sub_data_y = []
+                sub_headers = data["subOn"][di]  # reusing this variable so I don't have to initialize additional ones
+                sub_headers_x = []
+                sub_headers_y = []
+                sub_values = data["subVals"][di]
+                sub_values_x = []
+                sub_values_y = []
+                sub_secs = data["subSecs"][di]
+                sub_secs_x = []
+                sub_secs_y = []
+                if has_levels:
+                    sub_levs = data["subLevs"][di]
+                    sub_levs_x = []
+                    sub_levs_y = []
+            elif plot_type != "SimpleScatter":
                 sub_data = data["subData"][di]
                 sub_data_x = []
                 sub_data_y = []
@@ -1068,6 +1094,7 @@ def do_matching(options, return_obj):
                     and len(sub_levs_x) > 0) or (len(sub_secs_y) > 0 and len(sub_levs_y) > 0))):
 
                 curr_independent_var = data[independent_var_name][di]
+                new_sub_headers = []
                 new_sub_data = []
                 new_sub_data_x = []
                 new_sub_data_y = []
@@ -1082,7 +1109,7 @@ def do_matching(options, return_obj):
                 new_sub_levs_y = []
 
                 # loop over all subSecs for this independentVar
-                for si in range(0, len(sub_secs)):
+                for si in range(len(sub_secs)):
                     if has_levels:
                         # create sec-lev pair for each sub value
                         temp_pair = [sub_secs[si], sub_levs[si]]
@@ -1098,9 +1125,11 @@ def do_matching(options, return_obj):
                         new_sub_secs.append(sub_secs[si])
                         if has_levels:
                             new_sub_levs.append(sub_levs[si])
+                        if plot_type in ["Reliability", "ROC", "PerformanceDiagram"]:
+                            new_sub_headers.append(sub_headers[si])
 
                 # if we have x-related sub_secs, loop over those
-                for si in range(0, len(sub_secs_x)):
+                for si in range(len(sub_secs_x)):
                     if has_levels:
                         # create sec-lev pair for each x-sub value
                         temp_pair_x = [sub_secs_x[si], sub_levs_x[si]]
@@ -1113,7 +1142,7 @@ def do_matching(options, return_obj):
                             new_sub_levs_x.append(sub_levs_x[si])
 
                 # if we have y-related sub_secs, loop over those
-                for si in range(0, len(sub_secs_y)):
+                for si in range(len(sub_secs_y)):
                     if has_levels:
                         # create sec-lev pair for each y-sub value
                         temp_pair_y = [sub_secs_y[si], sub_levs_y[si]]
@@ -1130,7 +1159,14 @@ def do_matching(options, return_obj):
                     _null_point(data, di, plot_type, stat_var_name, has_levels)
                 else:
                     # store the filtered data
-                    if plot_type != "SimpleScatter":
+                    if plot_type in ["Reliability", "ROC", "PerformanceDiagram"]:
+                        data["subOy"][di] = new_sub_data
+                        data["subOn"][di] = new_sub_headers
+                        data["subVals"][di] = new_sub_values
+                        data["subSecs"][di] = new_sub_secs
+                        if has_levels:
+                            data["subLevs"][di] = new_sub_levs
+                    elif plot_type != "SimpleScatter":
                         data["subData"][di] = new_sub_data
                         data["subHeaders"][di] = sub_headers
                         data["subVals"][di] = new_sub_values
@@ -1153,8 +1189,16 @@ def do_matching(options, return_obj):
                 # no sub-values to begin with, so null the point
                 _null_point(data, di, plot_type, stat_var_name, has_levels)
 
+        if plot_type in ["Reliability", "ROC", "PerformanceDiagram"]:
+            oy_all = []
+            on_all = []
+            total_times = []
+            total_values = []
+            observed_total = 0
+            forecast_total = 0
+
         data_length = len(data[independent_var_name])
-        for di in range(0, data_length):
+        for di in range(data_length):
             if data[stat_var_name][di] != 'null':
                 statistic = options["query_array"][curve_index]["statistic"]
                 stat_line_type = options["query_array"][curve_index]["statLineType"]
@@ -1183,6 +1227,8 @@ def do_matching(options, return_obj):
                     data["y"][di] = stat_y
                     if stat_error != '':
                         return_obj['error'][curve_index] = stat_error
+                elif plot_type in ["Reliability", "ROC", "PerformanceDiagram"]:
+                    observed_total, forecast_total = get_ens_bin_stat(oy_all, on_all, total_times, total_values, observed_total, forecast_total, data["subOy"][di], data["subOn"][di], data["subVals"][di], data["subSecs"][di])
                 else:
                     if has_levels:
                         sub_lev_arg = np.asarray(data["subLevs"][di])
@@ -1205,6 +1251,17 @@ def do_matching(options, return_obj):
                     data["ymin"] = data["y"][di]
                 if _is_number(data["y"][di]) and data["y"][di] > data["ymax"]:
                     data["ymax"] = data["y"][di]
+
+        if plot_type in ["Reliability", "ROC", "PerformanceDiagram"]:
+            ens_stats = get_ens_stat(plot_type, forecast_total, observed_total, on_all, oy_all, data["threshold_all"], total_times, total_values)
+            data['x'] = ens_stats[ens_stats["x_var"]]
+            data['y'] = ens_stats[ens_stats["y_var"]]
+            data['sample_climo'] = ens_stats["sample_climo"]
+            data['threshold_all'] = ens_stats["threshold_all"]
+            data['oy_all'] = ens_stats["oy_all"]
+            data['on_all'] = ens_stats["on_all"]
+            data['n'] = ens_stats["total_values"]
+            data['auc'] = ens_stats["auc"]
 
         return_obj['data'][curve_index] = data
     

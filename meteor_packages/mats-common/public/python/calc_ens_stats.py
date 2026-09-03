@@ -1,3 +1,26 @@
+import numpy as np
+
+
+def get_ens_bin_stat(oy_all, on_all, total_times, total_values, observed_total, forecast_total, sub_oy, sub_on, sub_total, sub_secs):
+    """function for processing the sub-values from the query and getting the per bin ensemble statistics"""
+    oy = np.nansum(np.array(sub_oy))
+    on = np.nansum(np.array(sub_on))
+    numpy_secs = np.array(sub_secs)
+    number_times = len(np.unique(numpy_secs[~np.isnan(numpy_secs)]))
+    number_values = np.nansum(np.array(sub_total))
+
+    # we must add up all of the observed and not-observed values for each probability bin
+    observed_total = observed_total + oy
+    forecast_total = forecast_total + oy + on
+
+    oy_all.append(oy)
+    on_all.append(on)
+    total_times.append(number_times)
+    total_values.append(number_values)
+
+    return observed_total,forecast_total
+
+
 def get_ens_stat(plot_type, forecast_total, observed_total, on_all, oy_all, threshold_all, total_times,
                  total_values):
     """function for processing the sub-values from the query and getting the overall ensemble statistics"""
@@ -25,7 +48,7 @@ def get_ens_stat(plot_type, forecast_total, observed_total, on_all, oy_all, thre
 
     elif plot_type == 'ROC' or plot_type == "PerformanceDiagram":
         # determine the probability of detection (hit rate) and probability of false detection (false alarm ratio) for each probability bin
-        for i in range(0, len(threshold_all)):
+        for i in range(len(threshold_all)):
             hit = 0
             miss = 0
             fa = 0

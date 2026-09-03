@@ -813,6 +813,8 @@ const readableAdeckModels = function () {
     EMN2: "EMN2: ECMWF EPS Ensemble Mean (NCEP Tracker)",
     EMN3: "EMN3: ECMWF EPS Ensemble Mean (NCEP Tracker)",
     EMN4: "EMN4: ECMWF EPS Ensemble Mean (NCEP Tracker)",
+    GDMI: "GDMI: Google DeepMind (Early Version)",
+    GDMN: "GDMN: Google DeepMind (Late Version)",
     JGSM: "JGSM: Japanese Global Spectral Model",
     JGSI: "JGSI: Japanese Global Spectral Model",
     JGS2: "JGS2: Japanese Global Spectral Model",

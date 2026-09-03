@@ -38,25 +38,9 @@ Template.curveList.helpers({
     if (mode === undefined || mode === "") {
       switch (plotType) {
         case matsTypes.PlotTypes.map:
-        case matsTypes.PlotTypes.reliability:
-        case matsTypes.PlotTypes.roc:
-        case matsTypes.PlotTypes.performanceDiagram:
         case matsTypes.PlotTypes.contour:
         case matsTypes.PlotTypes.scorecard:
-          // allow matching for non-metexpress Reliabilities, ROCs, and performance diagrams
-          if (
-            (matsCollections.Settings.findOne({}) !== undefined &&
-              matsCollections.Settings.findOne({}).appType !== undefined &&
-              matsCollections.Settings.findOne({}).appType ===
-                matsTypes.AppTypes.metexpress) ||
-            (plotType !== matsTypes.PlotTypes.performanceDiagram &&
-              plotType !== matsTypes.PlotTypes.roc &&
-              plotType !== matsTypes.PlotTypes.reliability)
-          ) {
-            return "none";
-          }
-          return "block";
-
+          return "none";
         case matsTypes.PlotTypes.timeSeries:
         case matsTypes.PlotTypes.profile:
         case matsTypes.PlotTypes.dieoff:
@@ -65,6 +49,9 @@ Template.curveList.helpers({
         case matsTypes.PlotTypes.gridscale:
         case matsTypes.PlotTypes.dailyModelCycle:
         case matsTypes.PlotTypes.yearToYear:
+        case matsTypes.PlotTypes.reliability:
+        case matsTypes.PlotTypes.roc:
+        case matsTypes.PlotTypes.performanceDiagram:
         case matsTypes.PlotTypes.gridscaleProb:
         case matsTypes.PlotTypes.histogram:
         case matsTypes.PlotTypes.ensembleHistogram:

@@ -64,6 +64,8 @@ class CBQueryUtil:
                 "subFa": [],
                 "subMiss": [],
                 "subCn": [],
+                "subOy": [],
+                "subOn": [],
                 "stats": [],
                 "text": [],
                 "xTextOutput": [],

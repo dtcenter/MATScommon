@@ -60,6 +60,8 @@ class QueryUtil:
                 "subFa": [],
                 "subMiss": [],
                 "subCn": [],
+                "subOy": [],
+                "subOn": [],
                 "stats": [],
                 "text": [],
                 "xTextOutput": [],
