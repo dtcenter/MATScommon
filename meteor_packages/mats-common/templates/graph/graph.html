@@ -14,7 +14,7 @@
             data-placement="top"
             title="Return to main page"
           >
-            <i class="fa-solid fa-arrow-left-long"></i>&nbsp;&nbsp;<strong>Back</strong>
+            <i class="fa-solid fa-arrow-left-long"></i>&nbsp;&nbsp;Back
           </button>
           <button
             id="backToPreviewSpacer"
@@ -30,7 +30,7 @@
             data-placement="top"
             title="Open graph in preview window"
           >
-            <i class="fa-solid fa-print"></i>&nbsp;&nbsp;<strong>Preview</strong>
+            <i class="fa-solid fa-print"></i>&nbsp;&nbsp;Preview
           </button>
           <button
             id="basisButton"
@@ -39,7 +39,7 @@
             data-placement="top"
             title="View data details"
           >
-            <i class="fa-solid fa-info"></i>&nbsp;&nbsp;<strong>Data Lineage</strong>
+            <i class="fa-solid fa-info"></i>&nbsp;&nbsp;Data Lineage
           </button>
           <button
             id="exportButton"
@@ -48,7 +48,7 @@
             data-placement="top"
             title="Export current text data to csv file"
           >
-            <i class="fa-solid fa-download"></i>&nbsp;&nbsp;<strong>Export</strong>
+            <i class="fa-solid fa-download"></i>&nbsp;&nbsp;Export
           </button>
           <button
             id="plotButton"
@@ -58,7 +58,7 @@
             data-placement="top"
             title="Display plot"
           >
-            <i class="fa-solid fa-chart-line"></i>&nbsp;&nbsp;<strong>Plot</strong>
+            <i class="fa-solid fa-chart-line"></i>&nbsp;&nbsp;Plot
           </button>
           <button
             id="textButton"
@@ -68,7 +68,7 @@
             data-placement="top"
             title="Display text"
           >
-            <i class="fa-regular fa-file-lines"></i>&nbsp;&nbsp;<strong>Text</strong>
+            <i class="fa-regular fa-file-lines"></i>&nbsp;&nbsp;Text
           </button>
         </span>
         {{#if isTextPage}}
@@ -86,9 +86,7 @@
             data-placement="top"
             title="First page"
           >
-            <i class="fa-solid fa-backward-fast"></i>&nbsp;&nbsp;<strong
-              >First Page</strong
-            >
+            <i class="fa-solid fa-backward-fast"></i>&nbsp;&nbsp;First Page
           </button>
           <button
             id="previousTenPageButton"
@@ -97,9 +95,7 @@
             data-placement="top"
             title="Previous 10 pages"
           >
-            <i class="fa-solid fa-backward-step"></i>&nbsp;&nbsp;<strong
-              >Back 10 Pages</strong
-            >
+            <i class="fa-solid fa-backward-step"></i>&nbsp;&nbsp;Back 10 Pages
           </button>
           <button
             id="previousPageButton"
@@ -108,9 +104,7 @@
             data-placement="top"
             title="Previous page"
           >
-            <i class="fa-solid fa-chevron-left"></i>&nbsp;&nbsp;<strong
-              >Prev Page</strong
-            >
+            <i class="fa-solid fa-chevron-left"></i>&nbsp;&nbsp;Prev Page
           </button>
           <button
             id="nextPageButton"
@@ -119,9 +113,7 @@
             data-placement="top"
             title="Next page"
           >
-            <i class="fa-solid fa-chevron-right"></i>&nbsp;&nbsp;<strong
-              >Next Page</strong
-            >
+            <i class="fa-solid fa-chevron-right"></i>&nbsp;&nbsp;Next Page
           </button>
           <button
             id="nextTenPageButton"
@@ -130,9 +122,7 @@
             data-placement="top"
             title="Next 10 pages"
           >
-            <i class="fa-solid fa-forward-step"></i>&nbsp;&nbsp;<strong
-              >Forward 10 Pages</strong
-            >
+            <i class="fa-solid fa-forward-step"></i>&nbsp;&nbsp;Forward 10 Pages
           </button>
           <button
             id="lastPageButton"
@@ -141,9 +131,7 @@
             data-placement="top"
             title="Last page"
           >
-            <i class="fa-solid fa-forward-fast"></i>&nbsp;&nbsp;<strong
-              >Last Page</strong
-            >
+            <i class="fa-solid fa-forward-fast"></i>&nbsp;&nbsp;Last Page
           </button>
         </span>
         {{/if}}{{#if isGraphPage}}
@@ -162,9 +150,7 @@
             data-placement="top"
             title="Edit axes"
           >
-            <i class="fa-solid fa-arrows-up-down-left-right"></i>&nbsp;&nbsp;<strong
-              >Axes</strong
-            >
+            <i class="fa-solid fa-arrows-up-down-left-right"></i>&nbsp;&nbsp;Axes
           </button>
           {{/if}} {{#if isProfile}}
           <button
@@ -174,9 +160,7 @@
             data-placement="top"
             title="Toggle linear/log Y axis"
           >
-            <i class="fa-solid fa-arrow-up-short-wide"></i>&nbsp;&nbsp;<strong
-              >Y Linear/Log</strong
-            >
+            <i class="fa-solid fa-arrow-up-short-wide"></i>&nbsp;&nbsp;Y Linear/Log
           </button>
           {{/if}} {{#if isThreshold}}
           <button
@@ -186,9 +170,7 @@
             data-placement="top"
             title="Toggle equi-spaced X axis"
           >
-            <i class="fa-solid fa-arrows-to-circle"></i>&nbsp;&nbsp;<strong
-              >Equi-space X</strong
-            >
+            <i class="fa-solid fa-arrows-to-circle"></i>&nbsp;&nbsp;Equi-space X
           </button>
           {{/if}} {{#if isMultiAxisLinePlot}} {{#if isProfile}}
           <button
@@ -198,9 +180,7 @@
             data-placement="top"
             title="Combine x-axes"
           >
-            <i class="fa-solid fa-arrows-left-right"></i>&nbsp;&nbsp;<strong
-              >Merge X Axes</strong
-            >
+            <i class="fa-solid fa-arrows-left-right"></i>&nbsp;&nbsp;Merge X Axes
           </button>
           {{/if}} {{#if isSimpleScatter}}
           <button
@@ -210,9 +190,7 @@
             data-placement="top"
             title="Combine axes"
           >
-            <i class="fa-solid fa-maximize"></i>&nbsp;&nbsp;<strong
-              >Merge X/Y Axes</strong
-            >
+            <i class="fa-solid fa-maximize"></i>&nbsp;&nbsp;Merge X/Y Axes
           </button>
           {{else}} {{#unless isProfile}}
           <button
@@ -222,9 +200,7 @@
             data-placement="top"
             title="Combine y-axes"
           >
-            <i class="fa-solid fa-arrows-up-down"></i>&nbsp;&nbsp;<strong
-              >Merge Y Axes</strong
-            >
+            <i class="fa-solid fa-arrows-up-down"></i>&nbsp;&nbsp;Merge Y Axes
           </button>
           {{/unless}} {{/if}} {{/if}} {{#if isContour}}
           <button
@@ -234,7 +210,7 @@
             data-placement="top"
             title="Edit colorbar"
           >
-            <i class="fa-solid fa-palette"></i>&nbsp;&nbsp;<strong>Colorbar</strong>
+            <i class="fa-solid fa-palette"></i>&nbsp;&nbsp;Colorbar
           </button>
           {{else}} {{#if isNotMap}}
           <button
@@ -244,9 +220,7 @@
             data-placement="top"
             title="Edit curve styles"
           >
-            <i class="fa-solid fa-xmarks-lines"></i>&nbsp;&nbsp;<strong
-              >Curve Styles</strong
-            >
+            <i class="fa-solid fa-xmarks-lines"></i>&nbsp;&nbsp;Curve Styles
           </button>
           <button
             id="showHideButton"
@@ -255,7 +229,7 @@
             data-placement="top"
             title="Show/hide elements"
           >
-            <i class="fa-solid fa-eye-slash"></i>&nbsp;&nbsp;<strong>Show/Hide</strong>
+            <i class="fa-solid fa-eye-slash"></i>&nbsp;&nbsp;Show/Hide
           </button>
           {{/if}} {{/if}} {{#if isNotMap}}
           <button
@@ -265,7 +239,7 @@
             data-placement="top"
             title="Edit legend text"
           >
-            <i class="fa-solid fa-pencil"></i>&nbsp;&nbsp;<strong>Edit Legend</strong>
+            <i class="fa-solid fa-pencil"></i>&nbsp;&nbsp;Edit Legend
           </button>
           {{#if isLineOrScatterPlot}}
           <button
@@ -275,9 +249,7 @@
             data-placement="top"
             title="Filter graph points"
           >
-            <i class="fa-regular fa-square-check"></i>&nbsp;&nbsp;<strong
-              >Filter Points</strong
-            >
+            <i class="fa-regular fa-square-check"></i>&nbsp;&nbsp;Filter Points
           </button>
           {{/if}} {{/if}}
         </span>
@@ -298,9 +270,7 @@
             data-placement="top"
             title="Re-query data within current zoom range"
           >
-            <i class="fa-solid fa-magnifying-glass-chart"></i>&nbsp;&nbsp;<strong
-              >Re-sample</strong
-            >
+            <i class="fa-solid fa-magnifying-glass-chart"></i>&nbsp;&nbsp;Re-sample
           </button>
           <button
             id="reCacheButton"
@@ -309,7 +279,7 @@
             data-placement="top"
             title="Replot graph without using cache"
           >
-            <i class="fa-solid fa-chart-line"></i>&nbsp;&nbsp;<strong>Re-cache</strong>
+            <i class="fa-solid fa-chart-line"></i>&nbsp;&nbsp;Re-cache
           </button>
         </span>
         {{/if}}
