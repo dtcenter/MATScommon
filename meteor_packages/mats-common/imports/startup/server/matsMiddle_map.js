@@ -4,7 +4,7 @@
 
 /* global Assets */
 
-import { matsTypes, matsMiddleCommon } from "meteor/randyp:mats-common";
+import { matsTypes, matsMiddleUtils } from "meteor/randyp:mats-common";
 
 class MatsMiddleMap {
   logToFile = false;
@@ -53,7 +53,7 @@ class MatsMiddleMap {
 
   constructor(cbPool) {
     this.cbPool = cbPool;
-    this.mmCommon = new matsMiddleCommon.MatsMiddleCommon(cbPool);
+    this.mmCommon = new matsMiddleUtils.MatsMiddleUtils(cbPool);
   }
 
   /* eslint-disable global-require */

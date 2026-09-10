@@ -1,6 +1,6 @@
 /* global Assets */
 
-class MatsMiddleCommon {
+class MatsMiddleUtils {
   cbPool = null;
 
   conn = null;
@@ -38,8 +38,8 @@ class MatsMiddleCommon {
 
       return fcstValidEpochArray;
     } catch (err) {
-      console.log(`MatsMiddleCommon.getFcstValidEpochArray ERROR: ${err.message}`);
-      throw new Error(`MatsMiddleCommon.getFcstValidEpochArray ERROR: ${err.message}`);
+      console.log(`MatsMiddleUtils.getFcstValidEpochArray ERROR: ${err.message}`);
+      throw new Error(`MatsMiddleUtils.getFcstValidEpochArray ERROR: ${err.message}`);
     }
   };
 
@@ -63,8 +63,8 @@ class MatsMiddleCommon {
 
       return fcstLenArray;
     } catch (err) {
-      console.log(`MatsMiddleCommon.getFcstLenArray ERROR: ${err.message}`);
-      throw new Error(`MatsMiddleCommon.getFcstLenArray ERROR: ${err.message}`);
+      console.log(`MatsMiddleUtils.getFcstLenArray ERROR: ${err.message}`);
+      throw new Error(`MatsMiddleUtils.getFcstLenArray ERROR: ${err.message}`);
     }
   };
 
@@ -105,8 +105,8 @@ class MatsMiddleCommon {
       }
       return rv;
     } catch (err) {
-      console.log(`MatsMiddleCommon.sumUpCtc ERROR: ${err.message}`);
-      throw new Error(`MatsMiddleCommon.sumUpCtc ERROR: ${err.message}`);
+      console.log(`MatsMiddleUtils.sumUpCtc ERROR: ${err.message}`);
+      throw new Error(`MatsMiddleUtils.sumUpCtc ERROR: ${err.message}`);
     }
   };
 
@@ -151,8 +151,8 @@ class MatsMiddleCommon {
       }
       return rv;
     } catch (err) {
-      console.log(`MatsMiddleCommon.sumUpSums ERROR: ${err.message}`);
-      throw new Error(`MatsMiddleCommon.sumUpSums ERROR: ${err.message}`);
+      console.log(`MatsMiddleUtils.sumUpSums ERROR: ${err.message}`);
+      throw new Error(`MatsMiddleUtils.sumUpSums ERROR: ${err.message}`);
     }
   };
 
@@ -208,8 +208,8 @@ class MatsMiddleCommon {
       }
       return thisCtc;
     } catch (err) {
-      console.log(`MatsMiddleCommon.computeCtcForStations ERROR: ${err.message}`);
-      throw new Error(`MatsMiddleCommon.computeCtcForStations ERROR: ${err.message}`);
+      console.log(`MatsMiddleUtils.computeCtcForStations ERROR: ${err.message}`);
+      throw new Error(`MatsMiddleUtils.computeCtcForStations ERROR: ${err.message}`);
     }
   }
 
@@ -244,13 +244,13 @@ class MatsMiddleCommon {
       }
       return thisSums;
     } catch (err) {
-      console.log(`MatsMiddleCommon.computeSumsForStations ERROR: ${err.message}`);
-      throw new Error(`MatsMiddleCommon.computeSumsForStations ERROR: ${err.message}`);
+      console.log(`MatsMiddleUtils.computeSumsForStations ERROR: ${err.message}`);
+      throw new Error(`MatsMiddleUtils.computeSumsForStations ERROR: ${err.message}`);
     }
   }
 }
 
 // eslint-disable-next-line no-undef
-export default matsMiddleCommon = {
-  MatsMiddleCommon,
+export default matsMiddleUtils = {
+  MatsMiddleUtils,
 };

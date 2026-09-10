@@ -4,7 +4,7 @@
 
 /* global Assets */
 
-import { matsMiddleCommon } from "meteor/randyp:mats-common";
+import { matsMiddleUtils } from "meteor/randyp:mats-common";
 import { _ } from "meteor/underscore";
 
 class MatsMiddleValidTime {
@@ -52,7 +52,7 @@ class MatsMiddleValidTime {
 
   constructor(cbPool) {
     this.cbPool = cbPool;
-    this.mmCommon = new matsMiddleCommon.MatsMiddleCommon(cbPool);
+    this.mmCommon = new matsMiddleUtils.MatsMiddleUtils(cbPool);
   }
 
   /* eslint-disable global-require */

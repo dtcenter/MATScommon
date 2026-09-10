@@ -4,7 +4,7 @@
 
 /* global Assets */
 
-import { matsTypes, matsMiddleCommon } from "meteor/randyp:mats-common";
+import { matsTypes, matsMiddleUtils } from "meteor/randyp:mats-common";
 import { _ } from "meteor/underscore";
 
 class MatsMiddleSimpleScatter {
@@ -64,7 +64,7 @@ class MatsMiddleSimpleScatter {
 
   constructor(cbPool) {
     this.cbPool = cbPool;
-    this.mmCommon = new matsMiddleCommon.MatsMiddleCommon(cbPool);
+    this.mmCommon = new matsMiddleUtils.MatsMiddleUtils(cbPool);
   }
 
   /* eslint-disable global-require */

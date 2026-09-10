@@ -138,9 +138,8 @@ Package.onUse(function (api) {
   api.export("matsDataProcessUtils", ["server"]);
   api.export("matsCache", ["server"]);
   api.export("versionInfo", ["server", "client"]);
-  api.export("matsMiddleCommon", ["server"]);
-  api.export("matsMiddleDieoff", ["server"]);
-  api.export("matsMiddleTimeSeries", ["server"]);
+  api.export("matsMiddleUtils", ["server"]);
+  api.export("matsMiddleXYCurve", ["server"]);
   api.export("matsMiddleValidTime", ["server"]);
   api.export("matsMiddleDailyModelCycle", ["server"]);
   api.export("matsMiddleMap", ["server"]);
@@ -188,8 +187,7 @@ Package.onUse(function (api) {
   api.addFiles("imports/startup/server/publications.js");
   api.addFiles("imports/startup/server/cache.js");
   api.addFiles("imports/startup/server/matsMiddle_util.js");
-  api.addFiles("imports/startup/server/matsMiddle_timeSeries.js");
-  api.addFiles("imports/startup/server/matsMiddle_dieoff.js");
+  api.addFiles("imports/startup/server/matsMiddle_xyCurve.js");
   api.addFiles("imports/startup/server/matsMiddle_validTime.js");
   api.addFiles("imports/startup/server/matsMiddle_dailyModelCycle.js");
   api.addFiles("imports/startup/server/matsMiddle_map.js");
