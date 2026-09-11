@@ -49,11 +49,11 @@ class MatsMiddleMap {
 
   writeOutput = false;
 
-  mmCommon = null;
+  mmUtils = null;
 
   constructor(cbPool) {
     this.cbPool = cbPool;
-    this.mmCommon = new matsMiddleUtils.MatsMiddleUtils(cbPool);
+    this.mmUtils = new matsMiddleUtils.MatsMiddleUtils(cbPool);
   }
 
   /* eslint-disable global-require */
@@ -128,7 +128,7 @@ class MatsMiddleMap {
 
       this.conn = await this.cbPool.getConnection();
 
-      this.fcstValidEpochArray = await this.mmCommon.getFcstValidEpochArray(
+      this.fcstValidEpochArray = await this.mmUtils.getFcstValidEpochArray(
         fromSecs,
         toSecs
       );
@@ -147,15 +147,15 @@ class MatsMiddleMap {
       this.fveModels = {};
 
       if (this.logToFile === true) {
-        this.mmCommon.writeToLocalFile(
+        this.mmUtils.writeToLocalFile(
           "/scratch/matsMiddle/output/fveObs.json",
           JSON.stringify(this.fveObs, null, 2)
         );
-        this.mmCommon.writeToLocalFile(
+        this.mmUtils.writeToLocalFile(
           "/scratch/matsMiddle/output/fveModels.json",
           JSON.stringify(this.fveModels, null, 2)
         );
-        this.mmCommon.writeToLocalFile(
+        this.mmUtils.writeToLocalFile(
           "/scratch/matsMiddle/output/stats.json",
           JSON.stringify(this.stats, null, 2)
         );
@@ -227,7 +227,7 @@ class MatsMiddleMap {
           JSON.stringify(fveArraySlice)
         );
         if (this.logToFile === true && iofve === 0) {
-          this.mmCommon.writeToLocalFile("/scratch/matsMiddle/output/obs.sql", sql);
+          this.mmUtils.writeToLocalFile("/scratch/matsMiddle/output/obs.sql", sql);
         }
         const prSlice = this.conn.cluster.query(sql);
         promises.push(prSlice);
@@ -316,7 +316,7 @@ class MatsMiddleMap {
           JSON.stringify(fveArraySlice)
         );
         if (this.logToFile === true && imfve === 0) {
-          this.mmCommon.writeToLocalFile("/scratch/matsMiddle/output/model.sql", sql);
+          this.mmUtils.writeToLocalFile("/scratch/matsMiddle/output/model.sql", sql);
         }
         const prSlice = this.conn.cluster.query(sql);
 

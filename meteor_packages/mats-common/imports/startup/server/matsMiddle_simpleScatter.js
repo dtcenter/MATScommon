@@ -60,11 +60,11 @@ class MatsMiddleSimpleScatter {
 
   writeOutput = false;
 
-  mmCommon = null;
+  mmUtils = null;
 
   constructor(cbPool) {
     this.cbPool = cbPool;
-    this.mmCommon = new matsMiddleUtils.MatsMiddleUtils(cbPool);
+    this.mmUtils = new matsMiddleUtils.MatsMiddleUtils(cbPool);
   }
 
   /* eslint-disable global-require */
@@ -155,12 +155,12 @@ class MatsMiddleSimpleScatter {
 
       this.conn = await this.cbPool.getConnection();
 
-      this.fcstValidEpochArray = await this.mmCommon.getFcstValidEpochArray(
+      this.fcstValidEpochArray = await this.mmUtils.getFcstValidEpochArray(
         fromSecs,
         toSecs
       );
 
-      this.fcstLengthArray = await this.mmCommon.getFcstLenArray(
+      this.fcstLengthArray = await this.mmUtils.getFcstLenArray(
         this.model,
         this.fcstValidEpochArray[0],
         this.fcstValidEpochArray[this.fcstValidEpochArray.length - 1]
@@ -201,15 +201,15 @@ class MatsMiddleSimpleScatter {
       await this.createModelData();
 
       if (this.logToFile === true) {
-        this.mmCommon.writeToLocalFile(
+        this.mmUtils.writeToLocalFile(
           "/scratch/matsMiddle/output/fveObs.json",
           JSON.stringify(this.fveObs, null, 2)
         );
-        this.mmCommon.writeToLocalFile(
+        this.mmUtils.writeToLocalFile(
           "/scratch/matsMiddle/output/fveModels.json",
           JSON.stringify(this.fveModels, null, 2)
         );
-        this.mmCommon.writeToLocalFile(
+        this.mmUtils.writeToLocalFile(
           "/scratch/matsMiddle/output/stats.json",
           JSON.stringify(this.stats, null, 2)
         );
@@ -290,7 +290,7 @@ class MatsMiddleSimpleScatter {
           JSON.stringify(fveArraySlice)
         );
         if (this.logToFile === true && iofve === 0) {
-          this.mmCommon.writeToLocalFile("/scratch/matsMiddle/output/obs.sql", sql);
+          this.mmUtils.writeToLocalFile("/scratch/matsMiddle/output/obs.sql", sql);
         }
         const prSlice = this.conn.cluster.query(sql);
         promises.push(prSlice);
@@ -416,7 +416,7 @@ class MatsMiddleSimpleScatter {
           JSON.stringify(fveArraySlice)
         );
         if (this.logToFile === true && imfve === 0) {
-          this.mmCommon.writeToLocalFile("/scratch/matsMiddle/output/model.sql", sql);
+          this.mmUtils.writeToLocalFile("/scratch/matsMiddle/output/model.sql", sql);
         }
         const prSlice = this.conn.cluster.query(sql);
 
@@ -531,7 +531,7 @@ class MatsMiddleSimpleScatter {
         const modelSingleFve = indVarSingle[fve];
 
         if (obsSingleFve && modelSingleFve) {
-          ctcStats = this.mmCommon.computeCtcForStations(
+          ctcStats = this.mmUtils.computeCtcForStations(
             fve,
             threshold,
             ctcStats,
@@ -544,7 +544,7 @@ class MatsMiddleSimpleScatter {
       }
 
       try {
-        const statsSummedByIndVar = this.mmCommon.sumUpCtc(ctcStats);
+        const statsSummedByIndVar = this.mmUtils.sumUpCtc(ctcStats);
         if (axis === "X") {
           this.stats.push(statsSummedByIndVar);
         } else {
@@ -594,7 +594,7 @@ class MatsMiddleSimpleScatter {
         const modelSingleFve = indVarSingle[fve];
 
         if (obsSingleFve && modelSingleFve) {
-          sumsStats = this.mmCommon.computeSumsForStations(
+          sumsStats = this.mmUtils.computeSumsForStations(
             fve,
             sumsStats,
             this.stationNames,
@@ -606,7 +606,7 @@ class MatsMiddleSimpleScatter {
       }
 
       try {
-        const statsSummedByIndVar = this.mmCommon.sumUpSums(sumsStats);
+        const statsSummedByIndVar = this.mmUtils.sumUpSums(sumsStats);
         if (axis === "X") {
           this.stats.push(statsSummedByIndVar);
         } else {

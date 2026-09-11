@@ -48,11 +48,11 @@ class MatsMiddleDailyModelCycle {
 
   writeOutput = false;
 
-  mmCommon = null;
+  mmUtils = null;
 
   constructor(cbPool) {
     this.cbPool = cbPool;
-    this.mmCommon = new matsMiddleUtils.MatsMiddleUtils(cbPool);
+    this.mmUtils = new matsMiddleUtils.MatsMiddleUtils(cbPool);
   }
 
   /* eslint-disable global-require */
@@ -121,7 +121,7 @@ class MatsMiddleDailyModelCycle {
 
       this.conn = await this.cbPool.getConnection();
 
-      this.fcstValidEpochArray = await this.mmCommon.getFcstValidEpochArray(
+      this.fcstValidEpochArray = await this.mmUtils.getFcstValidEpochArray(
         fromSecs,
         toSecs
       );
@@ -139,15 +139,15 @@ class MatsMiddleDailyModelCycle {
       await this.createModelData();
 
       if (this.logToFile === true) {
-        this.mmCommon.writeToLocalFile(
+        this.mmUtils.writeToLocalFile(
           "/scratch/matsMiddle/output/fveObs.json",
           JSON.stringify(this.fveObs, null, 2)
         );
-        this.mmCommon.writeToLocalFile(
+        this.mmUtils.writeToLocalFile(
           "/scratch/matsMiddle/output/fveModels.json",
           JSON.stringify(this.fveModels, null, 2)
         );
-        this.mmCommon.writeToLocalFile(
+        this.mmUtils.writeToLocalFile(
           "/scratch/matsMiddle/output/stats.json",
           JSON.stringify(this.stats, null, 2)
         );
@@ -221,7 +221,7 @@ class MatsMiddleDailyModelCycle {
           JSON.stringify(fveArraySlice)
         );
         if (this.logToFile === true && iofve === 0) {
-          this.mmCommon.writeToLocalFile("/scratch/matsMiddle/output/obs.sql", sql);
+          this.mmUtils.writeToLocalFile("/scratch/matsMiddle/output/obs.sql", sql);
         }
         const prSlice = this.conn.cluster.query(sql);
         promises.push(prSlice);
@@ -309,7 +309,7 @@ class MatsMiddleDailyModelCycle {
           JSON.stringify(fveArraySlice)
         );
         if (this.logToFile === true && imfve === 0) {
-          this.mmCommon.writeToLocalFile("/scratch/matsMiddle/output/model.sql", sql);
+          this.mmUtils.writeToLocalFile("/scratch/matsMiddle/output/model.sql", sql);
         }
         const prSlice = this.conn.cluster.query(sql);
 
@@ -392,7 +392,7 @@ class MatsMiddleDailyModelCycle {
           const modelSingleFve = indVarSingle[fve];
 
           if (obsSingleFve && modelSingleFve) {
-            ctcStats = this.mmCommon.computeCtcForStations(
+            ctcStats = this.mmUtils.computeCtcForStations(
               fve,
               threshold,
               ctcStats,
@@ -405,7 +405,7 @@ class MatsMiddleDailyModelCycle {
         }
 
         try {
-          const statsSummedByIndVar = this.mmCommon.sumUpCtc(ctcStats);
+          const statsSummedByIndVar = this.mmUtils.sumUpCtc(ctcStats);
           this.stats.push(statsSummedByIndVar);
         } catch (ex) {
           throw new Error(ex);
@@ -455,7 +455,7 @@ class MatsMiddleDailyModelCycle {
           const modelSingleFve = indVarSingle[fve];
 
           if (obsSingleFve && modelSingleFve) {
-            sumsStats = this.mmCommon.computeSumsForStations(
+            sumsStats = this.mmUtils.computeSumsForStations(
               fve,
               sumsStats,
               this.stationNames,
@@ -467,7 +467,7 @@ class MatsMiddleDailyModelCycle {
         }
 
         try {
-          const statsSummedByIndVar = this.mmCommon.sumUpSums(sumsStats);
+          const statsSummedByIndVar = this.mmUtils.sumUpSums(sumsStats);
           this.stats.push(statsSummedByIndVar);
         } catch (ex) {
           throw new Error(ex);

@@ -62,11 +62,11 @@ class MatsMiddleXYCurve {
 
   writeOutput = false;
 
-  mmCommon = null;
+  mmUtils = null;
 
   constructor(cbPool) {
     this.cbPool = cbPool;
-    this.mmCommon = new matsMiddleUtils.MatsMiddleUtils(cbPool);
+    this.mmUtils = new matsMiddleUtils.MatsMiddleUtils(cbPool);
   }
 
   /* eslint-disable global-require */
@@ -177,12 +177,12 @@ class MatsMiddleXYCurve {
 
       this.conn = await this.cbPool.getConnection();
 
-      this.fcstValidEpochArray = await this.mmCommon.getFcstValidEpochArray(
+      this.fcstValidEpochArray = await this.mmUtils.getFcstValidEpochArray(
         this.fromSecs,
         this.toSecs
       );
 
-      this.fcstLengthArray = await this.mmCommon.getFcstLenArray(
+      this.fcstLengthArray = await this.mmUtils.getFcstLenArray(
         this.model,
         this.fcstValidEpochArray[0],
         this.fcstValidEpochArray[this.fcstValidEpochArray.length - 1]
@@ -226,15 +226,15 @@ class MatsMiddleXYCurve {
       await this.createModelData();
 
       if (this.logToFile === true) {
-        this.mmCommon.writeToLocalFile(
+        this.mmUtils.writeToLocalFile(
           "/scratch/matsMiddle/output/fveObs.json",
           JSON.stringify(this.fveObs, null, 2)
         );
-        this.mmCommon.writeToLocalFile(
+        this.mmUtils.writeToLocalFile(
           "/scratch/matsMiddle/output/fveModels.json",
           JSON.stringify(this.fveModels, null, 2)
         );
-        this.mmCommon.writeToLocalFile(
+        this.mmUtils.writeToLocalFile(
           "/scratch/matsMiddle/output/stats.json",
           JSON.stringify(this.stats, null, 2)
         );
@@ -309,7 +309,7 @@ class MatsMiddleXYCurve {
         (this.utcCycleStart && this.utcCycleStart.length > 0) ||
         (this.singleCycle && this.singleCycle > 0)
       ) {
-        this.fcstValidEpochArrayObs = await this.mmCommon.getFcstValidEpochArray(
+        this.fcstValidEpochArrayObs = await this.mmUtils.getFcstValidEpochArray(
           this.fromSecs,
           this.toSecs + 3600 * this.fcstLengthArray[this.fcstLengthArray.length - 1]
         );
@@ -325,7 +325,7 @@ class MatsMiddleXYCurve {
           JSON.stringify(fveArraySlice)
         );
         if (this.logToFile === true && iofve === 0) {
-          this.mmCommon.writeToLocalFile("/scratch/matsMiddle/output/obs.sql", sql);
+          this.mmUtils.writeToLocalFile("/scratch/matsMiddle/output/obs.sql", sql);
         }
         const prSlice = this.conn.cluster.query(sql);
         promises.push(prSlice);
@@ -509,7 +509,7 @@ class MatsMiddleXYCurve {
           JSON.stringify(fveArraySlice)
         );
         if (this.logToFile === true && imfve === 0) {
-          this.mmCommon.writeToLocalFile("/scratch/matsMiddle/output/model.sql", sql);
+          this.mmUtils.writeToLocalFile("/scratch/matsMiddle/output/model.sql", sql);
         }
         const prSlice = this.conn.cluster.query(sql);
 
@@ -627,7 +627,7 @@ class MatsMiddleXYCurve {
           const modelSingleFve = indVarSingle[fve];
 
           if (obsSingleFve && modelSingleFve) {
-            ctcStats = this.mmCommon.computeCtcForStations(
+            ctcStats = this.mmUtils.computeCtcForStations(
               fve,
               threshold,
               ctcStats,
@@ -640,7 +640,7 @@ class MatsMiddleXYCurve {
         }
 
         try {
-          const statsSummedByIndVar = this.mmCommon.sumUpCtc(ctcStats);
+          const statsSummedByIndVar = this.mmUtils.sumUpCtc(ctcStats);
           this.stats.push(statsSummedByIndVar);
         } catch (ex) {
           throw new Error(ex);
@@ -711,7 +711,7 @@ class MatsMiddleXYCurve {
           const modelSingleFve = indVarSingle[fve];
 
           if (obsSingleFve && modelSingleFve) {
-            sumsStats = this.mmCommon.computeSumsForStations(
+            sumsStats = this.mmUtils.computeSumsForStations(
               fve,
               sumsStats,
               this.stationNames,
@@ -723,7 +723,7 @@ class MatsMiddleXYCurve {
         }
 
         try {
-          const statsSummedByIndVar = this.mmCommon.sumUpSums(sumsStats);
+          const statsSummedByIndVar = this.mmUtils.sumUpSums(sumsStats);
           this.stats.push(statsSummedByIndVar);
         } catch (ex) {
           throw new Error(ex);
