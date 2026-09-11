@@ -12,6 +12,8 @@ class MatsMiddleXYCurve {
 
   logMemUsage = false;
 
+  fcstValidEpochArrayObs = [];
+
   fcstValidEpochArray = [];
 
   fcstLengthArray = [];
@@ -176,8 +178,8 @@ class MatsMiddleXYCurve {
       this.conn = await this.cbPool.getConnection();
 
       this.fcstValidEpochArray = await this.mmCommon.getFcstValidEpochArray(
-        fromSecs,
-        toSecs
+        this.fromSecs,
+        this.toSecs
       );
 
       this.fcstLengthArray = await this.mmCommon.getFcstLenArray(
@@ -303,9 +305,21 @@ class MatsMiddleXYCurve {
         stationNamesObs
       );
 
+      if (
+        (this.utcCycleStart && this.utcCycleStart.length > 0) ||
+        (this.singleCycle && this.singleCycle > 0)
+      ) {
+        this.fcstValidEpochArrayObs = await this.mmCommon.getFcstValidEpochArray(
+          this.fromSecs,
+          this.toSecs + 3600 * this.fcstLengthArray[this.fcstLengthArray.length - 1]
+        );
+      } else {
+        this.fcstValidEpochArrayObs = this.fcstValidEpochArray;
+      }
+
       const promises = [];
-      for (let iofve = 0; iofve < this.fcstValidEpochArray.length; iofve += 100) {
-        const fveArraySlice = this.fcstValidEpochArray.slice(iofve, iofve + 100);
+      for (let iofve = 0; iofve < this.fcstValidEpochArrayObs.length; iofve += 100) {
+        const fveArraySlice = this.fcstValidEpochArrayObs.slice(iofve, iofve + 100);
         const sql = tmplWithStationNamesObs.replace(
           /{{fcstValidEpoch}}/g,
           JSON.stringify(fveArraySlice)
@@ -409,6 +423,62 @@ class MatsMiddleXYCurve {
           tmplGetNStationsMfveModel,
           "{{vxFCST_LEN_ARRAY}}"
         );
+      }
+      if (this.validTimes && this.validTimes.length > 0) {
+        // remove the UTC Cycle Start part of the query
+        tmplGetNStationsMfveModel = global.cbPool.trfmSQLRemoveClause(
+          tmplGetNStationsMfveModel,
+          "{{vxUTC_CYCLE_START}}"
+        );
+        // if we have valid times place them in the query
+        tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
+          /{{vxVALID_TIMES}}/g,
+          global.cbPool.trfmListToCSVString(this.validTimes, null, false)
+        );
+        // set the time variable
+        tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
+          /{{vxTIME_VAR}}/g,
+          "fcstValidEpoch"
+        );
+      } else if (this.utcCycleStart && this.utcCycleStart.length > 0) {
+        // remove the Valid Times part of the query
+        tmplGetNStationsMfveModel = global.cbPool.trfmSQLRemoveClause(
+          tmplGetNStationsMfveModel,
+          "{{vxVALID_TIMES}}"
+        );
+        // if we have UTC cycle start times place them in the query
+        tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
+          /{{vxUTC_CYCLE_START}}/g,
+          global.cbPool.trfmListToCSVString(this.utcCycleStart, null, false)
+        );
+        // set the time variable
+        tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
+          /{{vxTIME_VAR}}/g,
+          "fcstValidEpoch - fcstLen * 3600"
+        );
+      } else {
+        // remove both the UTC Cycle Start and Valid Times clauses from the query
+        tmplGetNStationsMfveModel = global.cbPool.trfmSQLRemoveClause(
+          tmplGetNStationsMfveModel,
+          "{{vxUTC_CYCLE_START}}"
+        );
+        tmplGetNStationsMfveModel = global.cbPool.trfmSQLRemoveClause(
+          tmplGetNStationsMfveModel,
+          "{{vxVALID_TIMES}}"
+        );
+        if (this.singleCycle && this.singleCycle > 0) {
+          // set the time variable for one init cycle
+          tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
+            /{{vxTIME_VAR}}/g,
+            "fcstValidEpoch - fcstLen * 3600"
+          );
+        } else {
+          // set the time variable for valid epochs
+          tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
+            /{{vxTIME_VAR}}/g,
+            "fcstValidEpoch"
+          );
+        }
       }
 
       let stationNamesModels = "";
@@ -556,24 +626,7 @@ class MatsMiddleXYCurve {
           }
           const modelSingleFve = indVarSingle[fve];
 
-          if (
-            obsSingleFve &&
-            modelSingleFve &&
-            (!this.validTimes ||
-              this.validTimes.length === 0 ||
-              (this.validTimes &&
-                this.validTimes.length > 0 &&
-                this.validTimes.includes((fve % (24 * 3600)) / 3600))) &&
-            (!this.utcCycleStart ||
-              this.utcCycleStart.length === 0 ||
-              (this.utcCycleStart &&
-                this.utcCycleStart.length > 0 &&
-                this.utcCycleStart.includes(
-                  ((fve - indVar * 3600) % (24 * 3600)) / 3600
-                ))) &&
-            (!this.singleCycle ||
-              (this.singleCycle && fve - indVar * 3600 === this.singleCycle))
-          ) {
+          if (obsSingleFve && modelSingleFve) {
             ctcStats = this.mmCommon.computeCtcForStations(
               fve,
               threshold,
@@ -657,24 +710,7 @@ class MatsMiddleXYCurve {
           }
           const modelSingleFve = indVarSingle[fve];
 
-          if (
-            obsSingleFve &&
-            modelSingleFve &&
-            (!this.validTimes ||
-              this.validTimes.length === 0 ||
-              (this.validTimes &&
-                this.validTimes.length > 0 &&
-                this.validTimes.includes((fve % (24 * 3600)) / 3600))) &&
-            (!this.utcCycleStart ||
-              this.utcCycleStart.length === 0 ||
-              (this.utcCycleStart &&
-                this.utcCycleStart.length > 0 &&
-                this.utcCycleStart.includes(
-                  ((fve - indVar * 3600) % (24 * 3600)) / 3600
-                ))) &&
-            (!this.singleCycle ||
-              (this.singleCycle && fve - indVar * 3600 === this.singleCycle))
-          ) {
+          if (obsSingleFve && modelSingleFve) {
             sumsStats = this.mmCommon.computeSumsForStations(
               fve,
               sumsStats,
