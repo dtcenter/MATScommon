@@ -139,7 +139,7 @@ class MatsMiddleXYCurve {
       this.varNames = varNames;
       this.stationNames = stationNames;
       this.model = model;
-      this.fcstLen = fcstLen;
+      this.fcstLen = Number(fcstLen);
       this.threshold = threshold;
       this.fromSecs = fromSecs;
       this.toSecs = toSecs;
@@ -187,7 +187,6 @@ class MatsMiddleXYCurve {
         this.fcstValidEpochArray[0],
         this.fcstValidEpochArray[this.fcstValidEpochArray.length - 1]
       );
-      this.fcstLengthArray = this.fcstLengthArray.filter((fl) => Number(fl) % 3 === 0);
       this.fcstLengthArray.sort((a, b) => Number(a) - Number(b));
 
       // create distinct indVar array
@@ -462,7 +461,7 @@ class MatsMiddleXYCurve {
           /{{vxUTC_CYCLE_START}}/g,
           global.cbPool.trfmListToCSVString(this.utcCycleStart, null, false)
         );
-        // set the time variable
+        // set the time variable for init times
         tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
           /{{vxTIME_VAR}}/g,
           "fcstValidEpoch - fcstLen * 3600"

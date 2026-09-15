@@ -12,6 +12,8 @@ class MatsMiddleSimpleScatter {
 
   logMemUsage = false;
 
+  fcstValidEpochArrayObs = [];
+
   fcstValidEpochArray = [];
 
   fcstLengthArray = [];
@@ -54,6 +56,8 @@ class MatsMiddleSimpleScatter {
 
   validTimes = [];
 
+  utcCycleStart = [];
+
   filterInfo = {};
 
   elevMap = {};
@@ -85,6 +89,7 @@ class MatsMiddleSimpleScatter {
     fromSecs,
     toSecs,
     validTimes,
+    utcCycleStart,
     filterInfo,
     elevMap
   ) => {
@@ -104,6 +109,7 @@ class MatsMiddleSimpleScatter {
         fromSecs,
         toSecs,
         validTimes,
+        utcCycleStart,
         filterInfo,
         elevMap
       );
@@ -128,6 +134,7 @@ class MatsMiddleSimpleScatter {
     fromSecs,
     toSecs,
     validTimes,
+    utcCycleStart,
     filterInfo,
     elevMap
   ) => {
@@ -139,16 +146,31 @@ class MatsMiddleSimpleScatter {
       this.varNamesY = varNamesY;
       this.stationNames = stationNames;
       this.model = model;
-      this.fcstLen = fcstLen;
+      this.fcstLen = Number(fcstLen);
       this.thresholdX = thresholdX;
       this.thresholdY = thresholdY;
       this.fromSecs = fromSecs;
       this.toSecs = toSecs;
-      if (validTimes.length !== 0 && validTimes !== matsTypes.InputTypes.unused) {
+      if (
+        validTimes &&
+        validTimes.length !== 0 &&
+        validTimes !== matsTypes.InputTypes.unused
+      ) {
         this.validTimes = validTimes.map(function (vt) {
           return Number(vt);
         });
       }
+
+      if (
+        utcCycleStart &&
+        utcCycleStart.length !== 0 &&
+        utcCycleStart !== matsTypes.InputTypes.unused
+      ) {
+        this.utcCycleStart = utcCycleStart.map(function (utc) {
+          return Number(utc);
+        });
+      }
+
       this.filterInfo = filterInfo;
 
       this.elevMap = elevMap;
@@ -156,8 +178,8 @@ class MatsMiddleSimpleScatter {
       this.conn = await this.cbPool.getConnection();
 
       this.fcstValidEpochArray = await this.mmUtils.getFcstValidEpochArray(
-        fromSecs,
-        toSecs
+        this.fromSecs,
+        this.toSecs
       );
 
       this.fcstLengthArray = await this.mmUtils.getFcstLenArray(
@@ -165,7 +187,6 @@ class MatsMiddleSimpleScatter {
         this.fcstValidEpochArray[0],
         this.fcstValidEpochArray[this.fcstValidEpochArray.length - 1]
       );
-      this.fcstLengthArray = this.fcstLengthArray.filter((fl) => Number(fl) % 3 === 0);
       this.fcstLengthArray.sort((a, b) => Number(a) - Number(b));
 
       // create distinct indVar array
@@ -177,13 +198,13 @@ class MatsMiddleSimpleScatter {
           let indVar;
           switch (this.binParam) {
             case "Init UTC hour":
-              indVar = ((ofve - this.fcstLen) % (24 * 3600)) / 3600;
+              indVar = ((ofve - this.fcstLen * 3600) % (24 * 3600)) / 3600;
               break;
             case "Valid UTC hour":
               indVar = (ofve % (24 * 3600)) / 3600;
               break;
             case "Init Date":
-              indVar = ofve - this.fcstLen;
+              indVar = ofve - this.fcstLen * 3600;
               break;
             case "Valid Date":
             default:
@@ -273,6 +294,7 @@ class MatsMiddleSimpleScatter {
           stationNamesObs += `, ${wantedValueX} ${this.stationNames[i]}_X, ${wantedValueY} ${this.stationNames[i]}_Y`;
         }
       }
+
       let tmplWithStationNamesObs = this.cbPool.trfmSQLRemoveClause(
         tmplGetNStationsMfveObs,
         "{{vxAVERAGE}}"
@@ -282,9 +304,18 @@ class MatsMiddleSimpleScatter {
         stationNamesObs
       );
 
+      if (this.binParam === "Init UTC hour" || this.binParam === "Init Date") {
+        this.fcstValidEpochArrayObs = await this.mmUtils.getFcstValidEpochArray(
+          this.fromSecs + 3600 * this.fcstLen,
+          this.toSecs + 3600 * this.fcstLen
+        );
+      } else {
+        this.fcstValidEpochArrayObs = this.fcstValidEpochArray;
+      }
+
       const promises = [];
-      for (let iofve = 0; iofve < this.fcstValidEpochArray.length; iofve += 100) {
-        const fveArraySlice = this.fcstValidEpochArray.slice(iofve, iofve + 100);
+      for (let iofve = 0; iofve < this.fcstValidEpochArrayObs.length; iofve += 100) {
+        const fveArraySlice = this.fcstValidEpochArrayObs.slice(iofve, iofve + 100);
         const sql = tmplWithStationNamesObs.replace(
           /{{fcstValidEpoch}}/g,
           JSON.stringify(fveArraySlice)
@@ -303,10 +334,17 @@ class MatsMiddleSimpleScatter {
                 indVarKey = "0"; // obs don't have a lead time
                 break;
               case "Init UTC hour":
+                indVarKey = (
+                  ((fveDataSingleEpoch.fve - this.fcstLen * 3600) % (24 * 3600)) /
+                  3600
+                ).toString();
+                break;
               case "Valid UTC hour":
                 indVarKey = ((fveDataSingleEpoch.fve % (24 * 3600)) / 3600).toString();
                 break;
               case "Init Date":
+                indVarKey = (fveDataSingleEpoch.fve - this.fcstLen * 3600).toString();
+                break;
               case "Valid Date":
               default:
                 indVarKey = fveDataSingleEpoch.fve.toString();
@@ -385,6 +423,52 @@ class MatsMiddleSimpleScatter {
         tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
           tmplGetNStationsMfveModel,
           "{{vxFCST_LEN_ARRAY}}"
+        );
+      }
+      if (this.validTimes && this.validTimes.length > 0) {
+        // remove the UTC Cycle Start part of the query
+        tmplGetNStationsMfveModel = global.cbPool.trfmSQLRemoveClause(
+          tmplGetNStationsMfveModel,
+          "{{vxUTC_CYCLE_START}}"
+        );
+        // if we have valid times place them in the query
+        tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
+          /{{vxVALID_TIMES}}/g,
+          global.cbPool.trfmListToCSVString(this.validTimes, null, false)
+        );
+      } else if (this.utcCycleStart && this.utcCycleStart.length > 0) {
+        // remove the Valid Times part of the query
+        tmplGetNStationsMfveModel = global.cbPool.trfmSQLRemoveClause(
+          tmplGetNStationsMfveModel,
+          "{{vxVALID_TIMES}}"
+        );
+        // if we have UTC cycle start times place them in the query
+        tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
+          /{{vxUTC_CYCLE_START}}/g,
+          global.cbPool.trfmListToCSVString(this.utcCycleStart, null, false)
+        );
+      } else {
+        // remove both the UTC Cycle Start and Valid Times clauses from the query
+        tmplGetNStationsMfveModel = global.cbPool.trfmSQLRemoveClause(
+          tmplGetNStationsMfveModel,
+          "{{vxUTC_CYCLE_START}}"
+        );
+        tmplGetNStationsMfveModel = global.cbPool.trfmSQLRemoveClause(
+          tmplGetNStationsMfveModel,
+          "{{vxVALID_TIMES}}"
+        );
+      }
+      if (this.binParam === "Init UTC hour" || this.binParam === "Init Date") {
+        // set the time variable for init times
+        tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
+          /{{vxTIME_VAR}}/g,
+          "fcstValidEpoch - fcstLen * 3600"
+        );
+      } else {
+        // set the time variable for valid epochs
+        tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
+          /{{vxTIME_VAR}}/g,
+          "fcstValidEpoch"
         );
       }
 
@@ -478,10 +562,15 @@ class MatsMiddleSimpleScatter {
         throw new Error(`${err.message}`);
       });
 
-      const indVarsWithData = _.intersection(
-        Object.keys(this.fveObs),
-        Object.keys(this.fveModels)
-      );
+      let indVarsWithData;
+      if (this.binParam === "Fcst lead time") {
+        indVarsWithData = Object.keys(this.fveModels);
+      } else {
+        indVarsWithData = _.intersection(
+          Object.keys(this.fveObs),
+          Object.keys(this.fveModels)
+        );
+      }
       indVarsWithData.sort(function (a, b) {
         return Number(a) - Number(b);
       });
@@ -527,7 +616,12 @@ class MatsMiddleSimpleScatter {
       ctcStats.nTimes = fveArray.length;
       for (let imfve = 0; imfve < fveArray.length; imfve += 1) {
         const fve = fveArray[imfve];
-        const obsSingleFve = this.fveObs[indVar][fve];
+        let obsSingleFve;
+        if (this.binParam === "Fcst lead time") {
+          obsSingleFve = this.fveObs["0"][fve];
+        } else {
+          obsSingleFve = this.fveObs[indVar][fve];
+        }
         const modelSingleFve = indVarSingle[fve];
 
         if (obsSingleFve && modelSingleFve) {
@@ -590,7 +684,12 @@ class MatsMiddleSimpleScatter {
       sumsStats.nTimes = fveArray.length;
       for (let imfve = 0; imfve < fveArray.length; imfve += 1) {
         const fve = fveArray[imfve];
-        const obsSingleFve = this.fveObs[indVar][fve];
+        let obsSingleFve;
+        if (this.binParam === "Fcst lead time") {
+          obsSingleFve = this.fveObs["0"][fve];
+        } else {
+          obsSingleFve = this.fveObs[indVar][fve];
+        }
         const modelSingleFve = indVarSingle[fve];
 
         if (obsSingleFve && modelSingleFve) {
