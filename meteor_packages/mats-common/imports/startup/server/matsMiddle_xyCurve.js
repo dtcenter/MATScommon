@@ -415,14 +415,25 @@ class MatsMiddleXYCurve {
           tmplGetNStationsMfveModel,
           "fcstLen fcst_lead"
         );
-        tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
-          /{{vxFCST_LEN}}/g,
-          this.fcstLen
-        );
-        tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
-          tmplGetNStationsMfveModel,
-          "{{vxFCST_LEN_ARRAY}}"
-        );
+        if (this.binParam === "Valid Date" && !this.fcstLen) {
+          tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
+            /fcstLen = {{vxFCST_LEN}}/g,
+            `fcstLen < 24 AND (models.fcstValidEpoch - models.fcstLen*3600)%(24*3600)/3600 IN [${this.utcCycleStart}]`
+          );
+          tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
+            tmplGetNStationsMfveModel,
+            "{{vxFCST_LEN_ARRAY}}"
+          );
+        } else {
+          tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
+            /{{vxFCST_LEN}}/g,
+            this.fcstLen
+          );
+          tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
+            tmplGetNStationsMfveModel,
+            "{{vxFCST_LEN_ARRAY}}"
+          );
+        }
       }
       if (this.validTimes && this.validTimes.length > 0) {
         // remove the UTC Cycle Start part of the query
