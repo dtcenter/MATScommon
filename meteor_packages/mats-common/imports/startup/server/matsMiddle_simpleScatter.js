@@ -258,13 +258,13 @@ class MatsMiddleSimpleScatter {
         // if we're querying for elevation, retrieve it from the map we passed in instead of the database
         let wantedValueX = "";
         let wantedValueY = "";
-        if (this.varNamesX[1] === "Elevation") {
+        if (this.varNamesX[0] === "Elevation") {
           const station = this.stationNames[i];
           wantedValueX = this.elevMap[station];
         } else {
           wantedValueX = `obs.data.${this.stationNames[i]}.\`${this.varNamesX[1]}\``;
         }
-        if (this.varNamesY[1] === "Elevation") {
+        if (this.varNamesY[0] === "Elevation") {
           const station = this.stationNames[i];
           wantedValueY = this.elevMap[station];
         } else {
@@ -304,7 +304,7 @@ class MatsMiddleSimpleScatter {
         stationNamesObs
       );
 
-      if (this.binParam === "Init UTC hour" || this.binParam === "Init Date") {
+      if (this.binParam === "Init Date") {
         this.fcstValidEpochArrayObs = await this.mmUtils.getFcstValidEpochArray(
           this.fromSecs + 3600 * this.fcstLen,
           this.toSecs + 3600 * this.fcstLen
@@ -458,7 +458,7 @@ class MatsMiddleSimpleScatter {
           "{{vxVALID_TIMES}}"
         );
       }
-      if (this.binParam === "Init UTC hour" || this.binParam === "Init Date") {
+      if (this.binParam === "Init Date") {
         // set the time variable for init times
         tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
           /{{vxTIME_VAR}}/g,
@@ -646,11 +646,13 @@ class MatsMiddleSimpleScatter {
           this.stats[this.stats.length - 1].missY = statsSummedByIndVar.missY;
           this.stats[this.stats.length - 1].faY = statsSummedByIndVar.faY;
           this.stats[this.stats.length - 1].cnY = statsSummedByIndVar.cnY;
-          const subDataSansFVE = statsSummedByIndVar.sub_data[0]
-            .split(";")
-            .slice(1)
-            .join(";");
-          this.stats[this.stats.length - 1].sub_data[0] += `;${subDataSansFVE}`;
+          for (let sdidx = 0; sdidx < statsSummedByIndVar.sub_data.length; sdidx += 1) {
+            const subDataSansFVE = statsSummedByIndVar.sub_data[sdidx]
+              .split(";")
+              .slice(1)
+              .join(";");
+            this.stats[this.stats.length - 1].sub_data[sdidx] += `;${subDataSansFVE}`;
+          }
         }
       } catch (ex) {
         throw new Error(ex);
@@ -717,11 +719,13 @@ class MatsMiddleSimpleScatter {
           this.stats[this.stats.length - 1].model_sumY = statsSummedByIndVar.model_sumY;
           this.stats[this.stats.length - 1].obs_sumY = statsSummedByIndVar.obs_sumY;
           this.stats[this.stats.length - 1].abs_sumY = statsSummedByIndVar.abs_sumY;
-          const subDataSansFVE = statsSummedByIndVar.sub_data[0]
-            .split(";")
-            .slice(1)
-            .join(";");
-          this.stats[this.stats.length - 1].sub_data[0] += `;${subDataSansFVE}`;
+          for (let sdidx = 0; sdidx < statsSummedByIndVar.sub_data.length; sdidx += 1) {
+            const subDataSansFVE = statsSummedByIndVar.sub_data[sdidx]
+              .split(";")
+              .slice(1)
+              .join(";");
+            this.stats[this.stats.length - 1].sub_data[sdidx] += `;${subDataSansFVE}`;
+          }
         }
       } catch (ex) {
         throw new Error(ex);
