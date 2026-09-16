@@ -117,7 +117,12 @@ class MatsMiddleMap {
       this.threshold = threshold;
       this.fromSecs = fromSecs;
       this.toSecs = toSecs;
-      if (validTimes.length !== 0 && validTimes !== matsTypes.InputTypes.unused) {
+
+      if (
+        validTimes &&
+        validTimes.length !== 0 &&
+        validTimes !== matsTypes.InputTypes.unused
+      ) {
         this.validTimes = validTimes.map(function (vt) {
           return Number(vt);
         });
@@ -129,8 +134,8 @@ class MatsMiddleMap {
       this.conn = await this.cbPool.getConnection();
 
       this.fcstValidEpochArray = await this.mmUtils.getFcstValidEpochArray(
-        fromSecs,
-        toSecs
+        this.fromSecs,
+        this.toSecs
       );
 
       // create distinct indVar array
@@ -287,6 +292,33 @@ class MatsMiddleMap {
         tmplGetNStationsMfveModel,
         "{{vxFCST_LEN_ARRAY}}"
       );
+      if (this.validTimes && this.validTimes.length > 0) {
+        // remove the UTC Cycle Start part of the query
+        tmplGetNStationsMfveModel = global.cbPool.trfmSQLRemoveClause(
+          tmplGetNStationsMfveModel,
+          "{{vxUTC_CYCLE_START}}"
+        );
+        // if we have valid times place them in the query
+        tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
+          /{{vxVALID_TIMES}}/g,
+          global.cbPool.trfmListToCSVString(this.validTimes, null, false)
+        );
+      } else {
+        // remove both the UTC Cycle Start and Valid Times clauses from the query
+        tmplGetNStationsMfveModel = global.cbPool.trfmSQLRemoveClause(
+          tmplGetNStationsMfveModel,
+          "{{vxUTC_CYCLE_START}}"
+        );
+        tmplGetNStationsMfveModel = global.cbPool.trfmSQLRemoveClause(
+          tmplGetNStationsMfveModel,
+          "{{vxVALID_TIMES}}"
+        );
+      }
+      // set the time variable for valid epochs
+      tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
+        /{{vxTIME_VAR}}/g,
+        "fcstValidEpoch"
+      );
 
       let stationNamesModels = "";
       for (let i = 0; i < stationNamesSlice.length; i += 1) {
@@ -385,15 +417,7 @@ class MatsMiddleMap {
             const varValO = stnObs[fve];
             const varValM = stnModel[fve];
 
-            if (
-              (varValO || varValO === 0) &&
-              (varValM || varValM === 0) &&
-              (!this.validTimes ||
-                this.validTimes.length === 0 ||
-                (this.validTimes &&
-                  this.validTimes.length > 0 &&
-                  this.validTimes.includes((fve % (24 * 3600)) / 3600)))
-            ) {
+            if ((varValO || varValO === 0) && (varValM || varValM === 0)) {
               ctcStats.n0 += 1;
               ctcStats.nTimes += 1;
 
@@ -455,15 +479,7 @@ class MatsMiddleMap {
             const varValO = stnObs[fve];
             const varValM = stnModel[fve];
 
-            if (
-              (varValO || varValO === 0) &&
-              (varValM || varValM === 0) &&
-              (!this.validTimes ||
-                this.validTimes.length === 0 ||
-                (this.validTimes &&
-                  this.validTimes.length > 0 &&
-                  this.validTimes.includes((fve % (24 * 3600)) / 3600)))
-            ) {
+            if ((varValO || varValO === 0) && (varValM || varValM === 0)) {
               sumsStats.n0 += 1;
               sumsStats.nTimes += 1;
               sumsStats.square_diff_sum += (varValO - varValM) ** 2;
