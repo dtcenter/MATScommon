@@ -1506,9 +1506,11 @@ const showHistogramFace = function () {
   // CTC histograms need to have the region be predefined mode.
   // They are identified by the presence of a threshold selector
   // (threshold only makes sense as a parameter for CTC stats).
+  // the METAR app can handle it, though.
   if (
     matsParamUtils.getParameterForName("region-type") !== undefined &&
-    matsParamUtils.getParameterForName("threshold") !== undefined
+    matsParamUtils.getParameterForName("threshold") !== undefined &&
+    appName !== "cb-metar"
   ) {
     faceOptions["region-type"] = "none";
     selectorsToReset["region-type"] = "Predefined region";
