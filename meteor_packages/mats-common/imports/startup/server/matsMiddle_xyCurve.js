@@ -256,7 +256,7 @@ class MatsMiddleXYCurve {
       for (let i = 0; i < this.stationNames.length; i += 1) {
         // if we're querying for elevation, retrieve it from the map we passed in instead of the database
         let wantedValue = "";
-        if (this.varNames[0] === "Elevation") {
+        if (this.varNames[1] === "Elevation") {
           const station = this.stationNames[i];
           wantedValue = this.elevMap[station];
         } else {

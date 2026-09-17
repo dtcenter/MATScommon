@@ -258,13 +258,13 @@ class MatsMiddleSimpleScatter {
         // if we're querying for elevation, retrieve it from the map we passed in instead of the database
         let wantedValueX = "";
         let wantedValueY = "";
-        if (this.varNamesX[0] === "Elevation") {
+        if (this.varNamesX[1] === "Elevation") {
           const station = this.stationNames[i];
           wantedValueX = this.elevMap[station];
         } else {
           wantedValueX = `obs.data.${this.stationNames[i]}.\`${this.varNamesX[1]}\``;
         }
-        if (this.varNamesY[0] === "Elevation") {
+        if (this.varNamesY[1] === "Elevation") {
           const station = this.stationNames[i];
           wantedValueY = this.elevMap[station];
         } else {

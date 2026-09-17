@@ -185,7 +185,7 @@ class MatsMiddleMap {
       for (let i = 0; i < stationNamesSlice.length; i += 1) {
         // if we're querying for elevation, retrieve it from the map we passed in instead of the database
         let wantedValue = "";
-        if (this.varNames[0] === "Elevation") {
+        if (this.varNames[1] === "Elevation") {
           const station = stationNamesSlice[i];
           wantedValue = this.elevMap[station];
         } else {
