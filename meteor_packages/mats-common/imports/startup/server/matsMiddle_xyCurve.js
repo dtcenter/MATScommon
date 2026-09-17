@@ -192,6 +192,8 @@ class MatsMiddleXYCurve {
       // create distinct indVar array
       if (this.binParam === "Fcst lead time") {
         this.indVarArray = this.fcstLengthArray;
+      } else if (this.binParam === "Threshold") {
+        this.indVarArray = [this.threshold];
       } else {
         for (let iofve = 0; iofve < this.fcstValidEpochArray.length; iofve += 1) {
           const ofve = this.fcstValidEpochArray[iofve];
@@ -335,6 +337,9 @@ class MatsMiddleXYCurve {
             switch (this.binParam) {
               case "Fcst lead time":
                 indVarKey = "0"; // obs don't have a lead time
+                break;
+              case "Threshold":
+                indVarKey = this.threshold.toString();
                 break;
               case "Valid UTC hour":
                 indVarKey = ((fveDataSingleEpoch.fve % (24 * 3600)) / 3600).toString();
@@ -532,6 +537,9 @@ class MatsMiddleXYCurve {
               case "Fcst lead time":
                 indVarKey = fveDataSingleEpoch.fcst_lead.toString();
                 break;
+              case "Threshold":
+                indVarKey = this.threshold.toString();
+                break;
               case "Valid UTC hour":
                 indVarKey = ((fveDataSingleEpoch.fve % (24 * 3600)) / 3600).toString();
                 break;
@@ -602,6 +610,9 @@ class MatsMiddleXYCurve {
         switch (this.binParam) {
           case "Fcst lead time":
             ctcStats.fcst_lead = Number(indVar);
+            break;
+          case "Threshold":
+            ctcStats.thresh = Number(indVar);
             break;
           case "Valid UTC hour":
             ctcStats.hr_of_day = Number(indVar);
@@ -684,6 +695,9 @@ class MatsMiddleXYCurve {
         switch (this.binParam) {
           case "Fcst lead time":
             sumsStats.fcst_lead = Number(indVar);
+            break;
+          case "Threshold":
+            sumsStats.thresh = Number(indVar);
             break;
           case "Valid UTC hour":
             sumsStats.hr_of_day = Number(indVar);

@@ -769,11 +769,11 @@ const showThresholdFace = function () {
     "bin-parameter": "Valid Date",
   };
   if (appName !== undefined && appName === "cb-metar") {
+    faceOptions["region-type"] = "block";
     selectorsToReset["x-statistic"] = "RMSE";
     selectorsToReset["y-statistic"] = "RMSE";
-  }
-  // thresholds need to have the region be in predefined mode
-  if (matsParamUtils.getParameterForName("region-type") !== undefined) {
+  } else if (matsParamUtils.getParameterForName("region-type") !== undefined) {
+    // thresholds not in the METAR app need to have the region be in predefined mode
     selectorsToReset["region-type"] = "Predefined region";
   }
   faceOptions = checkIfDisplayAllQCParams(faceOptions);
