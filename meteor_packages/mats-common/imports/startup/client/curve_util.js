@@ -1656,11 +1656,11 @@ const showContourFace = function () {
     plotFormat: matsTypes.PlotFormats.none,
   };
   if (appName !== undefined && appName === "cb-metar") {
+    faceOptions["region-type"] = "block";
     selectorsToReset["x-statistic"] = "RMSE";
     selectorsToReset["y-statistic"] = "RMSE";
-  }
-  // contours need to have the region be in predefined mode
-  if (matsParamUtils.getParameterForName("region-type") !== undefined) {
+  } else if (matsParamUtils.getParameterForName("region-type") !== undefined) {
+    // contours need to have the region be in predefined mode
     selectorsToReset["region-type"] = "Predefined region";
   }
   setSelectorVisibility(plotType, faceOptions, selectorsToReset);

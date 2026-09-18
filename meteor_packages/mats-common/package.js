@@ -142,6 +142,7 @@ Package.onUse(function (api) {
   api.export("matsMiddleXYCurve", ["server"]);
   api.export("matsMiddleMap", ["server"]);
   api.export("matsMiddleSimpleScatter", ["server"]);
+  api.export("matsMiddleContour", ["server"]);
 
   // add imports
   // both
@@ -184,10 +185,11 @@ Package.onUse(function (api) {
   api.addFiles("imports/startup/server/index.js");
   api.addFiles("imports/startup/server/publications.js");
   api.addFiles("imports/startup/server/cache.js");
-  api.addFiles("imports/startup/server/matsMiddle_util.js");
-  api.addFiles("imports/startup/server/matsMiddle_xyCurve.js");
-  api.addFiles("imports/startup/server/matsMiddle_map.js");
-  api.addFiles("imports/startup/server/matsMiddle_simpleScatter.js");
+  api.addFiles("imports/startup/server/matsMiddle/matsMiddle_util.js");
+  api.addFiles("imports/startup/server/matsMiddle/matsMiddle_xyCurve.js");
+  api.addFiles("imports/startup/server/matsMiddle/matsMiddle_map.js");
+  api.addFiles("imports/startup/server/matsMiddle/matsMiddle_simpleScatter.js");
+  api.addFiles("imports/startup/server/matsMiddle/matsMiddle_contour.js");
 
   // files outside of imports
   // client
