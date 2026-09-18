@@ -769,11 +769,11 @@ const showThresholdFace = function () {
     "bin-parameter": "Valid Date",
   };
   if (appName !== undefined && appName === "cb-metar") {
+    faceOptions["region-type"] = "block";
     selectorsToReset["x-statistic"] = "RMSE";
     selectorsToReset["y-statistic"] = "RMSE";
-  }
-  // thresholds need to have the region be in predefined mode
-  if (matsParamUtils.getParameterForName("region-type") !== undefined) {
+  } else if (matsParamUtils.getParameterForName("region-type") !== undefined) {
+    // thresholds not in the METAR app need to have the region be in predefined mode
     selectorsToReset["region-type"] = "Predefined region";
   }
   faceOptions = checkIfDisplayAllQCParams(faceOptions);
@@ -1271,16 +1271,16 @@ const showPerformanceDiagramFace = function () {
     plotFormat: matsTypes.PlotFormats.none,
   };
   if (appName !== undefined && appName === "cb-metar") {
+    faceOptions["region-type"] = "block";
     selectorsToReset["x-statistic"] = "RMSE";
     selectorsToReset["y-statistic"] = "RMSE";
+  } else if (matsParamUtils.getParameterForName("region-type") !== undefined) {
+    // performance diagrams need to have the region be in predefined mode
+    selectorsToReset["region-type"] = "Predefined region";
   }
   // in metexpress, users don't get to choose how to bin data
   if (isMetexpress) {
     faceOptions["bin-parameter"] = "none";
-  }
-  // performance diagrams need to have the region be in predefined mode
-  if (matsParamUtils.getParameterForName("region-type") !== undefined) {
-    selectorsToReset["region-type"] = "Predefined region";
   }
   setSelectorVisibility(plotType, faceOptions, selectorsToReset);
   return selectorsToReset;
@@ -1506,9 +1506,11 @@ const showHistogramFace = function () {
   // CTC histograms need to have the region be predefined mode.
   // They are identified by the presence of a threshold selector
   // (threshold only makes sense as a parameter for CTC stats).
+  // the METAR app can handle it, though.
   if (
     matsParamUtils.getParameterForName("region-type") !== undefined &&
-    matsParamUtils.getParameterForName("threshold") !== undefined
+    matsParamUtils.getParameterForName("threshold") !== undefined &&
+    appName !== "cb-metar"
   ) {
     faceOptions["region-type"] = "none";
     selectorsToReset["region-type"] = "Predefined region";
@@ -1654,11 +1656,11 @@ const showContourFace = function () {
     plotFormat: matsTypes.PlotFormats.none,
   };
   if (appName !== undefined && appName === "cb-metar") {
+    faceOptions["region-type"] = "block";
     selectorsToReset["x-statistic"] = "RMSE";
     selectorsToReset["y-statistic"] = "RMSE";
-  }
-  // contours need to have the region be in predefined mode
-  if (matsParamUtils.getParameterForName("region-type") !== undefined) {
+  } else if (matsParamUtils.getParameterForName("region-type") !== undefined) {
+    // contours need to have the region be in predefined mode
     selectorsToReset["region-type"] = "Predefined region";
   }
   setSelectorVisibility(plotType, faceOptions, selectorsToReset);

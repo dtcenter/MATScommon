@@ -138,13 +138,11 @@ Package.onUse(function (api) {
   api.export("matsDataProcessUtils", ["server"]);
   api.export("matsCache", ["server"]);
   api.export("versionInfo", ["server", "client"]);
-  api.export("matsMiddleCommon", ["server"]);
-  api.export("matsMiddleDieoff", ["server"]);
-  api.export("matsMiddleTimeSeries", ["server"]);
-  api.export("matsMiddleValidTime", ["server"]);
-  api.export("matsMiddleDailyModelCycle", ["server"]);
+  api.export("matsMiddleUtils", ["server"]);
+  api.export("matsMiddleXYCurve", ["server"]);
   api.export("matsMiddleMap", ["server"]);
   api.export("matsMiddleSimpleScatter", ["server"]);
+  api.export("matsMiddleContour", ["server"]);
 
   // add imports
   // both
@@ -187,13 +185,11 @@ Package.onUse(function (api) {
   api.addFiles("imports/startup/server/index.js");
   api.addFiles("imports/startup/server/publications.js");
   api.addFiles("imports/startup/server/cache.js");
-  api.addFiles("imports/startup/server/matsMiddle_common.js");
-  api.addFiles("imports/startup/server/matsMiddle_timeSeries.js");
-  api.addFiles("imports/startup/server/matsMiddle_dieoff.js");
-  api.addFiles("imports/startup/server/matsMiddle_validTime.js");
-  api.addFiles("imports/startup/server/matsMiddle_dailyModelCycle.js");
-  api.addFiles("imports/startup/server/matsMiddle_map.js");
-  api.addFiles("imports/startup/server/matsMiddle_simpleScatter.js");
+  api.addFiles("imports/startup/server/matsMiddle/matsMiddle_util.js");
+  api.addFiles("imports/startup/server/matsMiddle/matsMiddle_xyCurve.js");
+  api.addFiles("imports/startup/server/matsMiddle/matsMiddle_map.js");
+  api.addFiles("imports/startup/server/matsMiddle/matsMiddle_simpleScatter.js");
+  api.addFiles("imports/startup/server/matsMiddle/matsMiddle_contour.js");
 
   // files outside of imports
   // client

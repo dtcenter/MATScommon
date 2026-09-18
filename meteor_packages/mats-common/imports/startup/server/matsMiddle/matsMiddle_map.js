@@ -4,7 +4,7 @@
 
 /* global Assets */
 
-import { matsTypes, matsMiddleCommon } from "meteor/randyp:mats-common";
+import { matsTypes, matsMiddleUtils } from "meteor/randyp:mats-common";
 
 class MatsMiddleMap {
   logToFile = false;
@@ -49,11 +49,11 @@ class MatsMiddleMap {
 
   writeOutput = false;
 
-  mmCommon = null;
+  mmUtils = null;
 
   constructor(cbPool) {
     this.cbPool = cbPool;
-    this.mmCommon = new matsMiddleCommon.MatsMiddleCommon(cbPool);
+    this.mmUtils = new matsMiddleUtils.MatsMiddleUtils(cbPool);
   }
 
   /* eslint-disable global-require */
@@ -117,7 +117,12 @@ class MatsMiddleMap {
       this.threshold = threshold;
       this.fromSecs = fromSecs;
       this.toSecs = toSecs;
-      if (validTimes.length !== 0 && validTimes !== matsTypes.InputTypes.unused) {
+
+      if (
+        validTimes &&
+        validTimes.length !== 0 &&
+        validTimes !== matsTypes.InputTypes.unused
+      ) {
         this.validTimes = validTimes.map(function (vt) {
           return Number(vt);
         });
@@ -128,9 +133,9 @@ class MatsMiddleMap {
 
       this.conn = await this.cbPool.getConnection();
 
-      this.fcstValidEpochArray = await this.mmCommon.getFcstValidEpochArray(
-        fromSecs,
-        toSecs
+      this.fcstValidEpochArray = await this.mmUtils.getFcstValidEpochArray(
+        this.fromSecs,
+        this.toSecs
       );
 
       // create distinct indVar array
@@ -147,15 +152,15 @@ class MatsMiddleMap {
       this.fveModels = {};
 
       if (this.logToFile === true) {
-        this.mmCommon.writeToLocalFile(
+        this.mmUtils.writeToLocalFile(
           "/scratch/matsMiddle/output/fveObs.json",
           JSON.stringify(this.fveObs, null, 2)
         );
-        this.mmCommon.writeToLocalFile(
+        this.mmUtils.writeToLocalFile(
           "/scratch/matsMiddle/output/fveModels.json",
           JSON.stringify(this.fveModels, null, 2)
         );
-        this.mmCommon.writeToLocalFile(
+        this.mmUtils.writeToLocalFile(
           "/scratch/matsMiddle/output/stats.json",
           JSON.stringify(this.stats, null, 2)
         );
@@ -180,7 +185,7 @@ class MatsMiddleMap {
       for (let i = 0; i < stationNamesSlice.length; i += 1) {
         // if we're querying for elevation, retrieve it from the map we passed in instead of the database
         let wantedValue = "";
-        if (this.varNames[0] === "Elevation") {
+        if (this.varNames[1] === "Elevation") {
           const station = stationNamesSlice[i];
           wantedValue = this.elevMap[station];
         } else {
@@ -227,7 +232,7 @@ class MatsMiddleMap {
           JSON.stringify(fveArraySlice)
         );
         if (this.logToFile === true && iofve === 0) {
-          this.mmCommon.writeToLocalFile("/scratch/matsMiddle/output/obs.sql", sql);
+          this.mmUtils.writeToLocalFile("/scratch/matsMiddle/output/obs.sql", sql);
         }
         const prSlice = this.conn.cluster.query(sql);
         promises.push(prSlice);
@@ -287,6 +292,33 @@ class MatsMiddleMap {
         tmplGetNStationsMfveModel,
         "{{vxFCST_LEN_ARRAY}}"
       );
+      if (this.validTimes && this.validTimes.length > 0) {
+        // remove the UTC Cycle Start part of the query
+        tmplGetNStationsMfveModel = global.cbPool.trfmSQLRemoveClause(
+          tmplGetNStationsMfveModel,
+          "{{vxUTC_CYCLE_START}}"
+        );
+        // if we have valid times place them in the query
+        tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
+          /{{vxVALID_TIMES}}/g,
+          global.cbPool.trfmListToCSVString(this.validTimes, null, false)
+        );
+      } else {
+        // remove both the UTC Cycle Start and Valid Times clauses from the query
+        tmplGetNStationsMfveModel = global.cbPool.trfmSQLRemoveClause(
+          tmplGetNStationsMfveModel,
+          "{{vxUTC_CYCLE_START}}"
+        );
+        tmplGetNStationsMfveModel = global.cbPool.trfmSQLRemoveClause(
+          tmplGetNStationsMfveModel,
+          "{{vxVALID_TIMES}}"
+        );
+      }
+      // set the time variable for valid epochs
+      tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
+        /{{vxTIME_VAR}}/g,
+        "fcstValidEpoch"
+      );
 
       let stationNamesModels = "";
       for (let i = 0; i < stationNamesSlice.length; i += 1) {
@@ -316,7 +348,7 @@ class MatsMiddleMap {
           JSON.stringify(fveArraySlice)
         );
         if (this.logToFile === true && imfve === 0) {
-          this.mmCommon.writeToLocalFile("/scratch/matsMiddle/output/model.sql", sql);
+          this.mmUtils.writeToLocalFile("/scratch/matsMiddle/output/model.sql", sql);
         }
         const prSlice = this.conn.cluster.query(sql);
 
@@ -385,15 +417,7 @@ class MatsMiddleMap {
             const varValO = stnObs[fve];
             const varValM = stnModel[fve];
 
-            if (
-              (varValO || varValO === 0) &&
-              (varValM || varValM === 0) &&
-              (!this.validTimes ||
-                this.validTimes.length === 0 ||
-                (this.validTimes &&
-                  this.validTimes.length > 0 &&
-                  this.validTimes.includes((fve % (24 * 3600)) / 3600)))
-            ) {
+            if ((varValO || varValO === 0) && (varValM || varValM === 0)) {
               ctcStats.n0 += 1;
               ctcStats.nTimes += 1;
 
@@ -455,15 +479,7 @@ class MatsMiddleMap {
             const varValO = stnObs[fve];
             const varValM = stnModel[fve];
 
-            if (
-              (varValO || varValO === 0) &&
-              (varValM || varValM === 0) &&
-              (!this.validTimes ||
-                this.validTimes.length === 0 ||
-                (this.validTimes &&
-                  this.validTimes.length > 0 &&
-                  this.validTimes.includes((fve % (24 * 3600)) / 3600)))
-            ) {
+            if ((varValO || varValO === 0) && (varValM || varValM === 0)) {
               sumsStats.n0 += 1;
               sumsStats.nTimes += 1;
               sumsStats.square_diff_sum += (varValO - varValM) ** 2;
