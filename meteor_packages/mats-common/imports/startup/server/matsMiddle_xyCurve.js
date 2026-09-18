@@ -575,8 +575,7 @@ class MatsMiddleXYCurve {
         console.log(`${err.message}`);
         throw new Error(`${err.message}`);
       });
-
-      if (this.statType === "ctc") {
+      if (this.statType === "ctc" || this.statType === "Performance Diagram") {
         this.generateCtc();
       } else {
         this.generateSums();
@@ -662,6 +661,18 @@ class MatsMiddleXYCurve {
 
         try {
           const statsSummedByIndVar = this.mmUtils.sumUpCtc(ctcStats);
+          if (this.statType === "Performance Diagram") {
+            statsSummedByIndVar.pod =
+              statsSummedByIndVar.hit /
+              (statsSummedByIndVar.hit + statsSummedByIndVar.miss);
+            statsSummedByIndVar.far =
+              statsSummedByIndVar.fa /
+              (statsSummedByIndVar.fa + statsSummedByIndVar.hit);
+            statsSummedByIndVar.oy_all =
+              statsSummedByIndVar.hit + statsSummedByIndVar.miss;
+            statsSummedByIndVar.on_all =
+              statsSummedByIndVar.fa + statsSummedByIndVar.cn;
+          }
           this.stats.push(statsSummedByIndVar);
         } catch (ex) {
           throw new Error(ex);

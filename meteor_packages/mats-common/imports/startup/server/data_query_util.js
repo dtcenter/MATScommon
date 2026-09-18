@@ -3505,7 +3505,7 @@ const queryDBReliability = async function (pool, statement, appParams, kernel) {
 };
 
 // this method queries the database for performance diagrams
-const queryDBPerformanceDiagram = async function (pool, statement, appParams) {
+const queryDBPerformanceDiagram = async function (pool, statementOrMwRows, appParams) {
   if (Meteor.isServer) {
     let d = {
       // d will contain the curve data
@@ -3541,15 +3541,18 @@ const queryDBPerformanceDiagram = async function (pool, statement, appParams) {
     let parsedData;
 
     let rows;
-    if (
+    if (Array.isArray(statementOrMwRows)) {
+      // couchbase and the querying was already done by the middleware
+      rows = statementOrMwRows;
+    } else if (
       (await matsCollections.Settings.findOneAsync()).dbType ===
       matsTypes.DbTypes.couchbase
     ) {
       // couchbase and we still need to query
-      rows = await pool.queryCB(statement);
+      rows = await pool.queryCB(statementOrMwRows);
     } else {
       // mysql and need to query
-      rows = await queryMySQL(pool, statement);
+      rows = await queryMySQL(pool, statementOrMwRows);
     }
     if (rows === undefined || rows === null || rows.length === 0) {
       error = matsTypes.Messages.NO_DATA_FOUND;

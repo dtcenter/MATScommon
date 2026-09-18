@@ -1271,16 +1271,16 @@ const showPerformanceDiagramFace = function () {
     plotFormat: matsTypes.PlotFormats.none,
   };
   if (appName !== undefined && appName === "cb-metar") {
+    faceOptions["region-type"] = "block";
     selectorsToReset["x-statistic"] = "RMSE";
     selectorsToReset["y-statistic"] = "RMSE";
+  } else if (matsParamUtils.getParameterForName("region-type") !== undefined) {
+    // performance diagrams need to have the region be in predefined mode
+    selectorsToReset["region-type"] = "Predefined region";
   }
   // in metexpress, users don't get to choose how to bin data
   if (isMetexpress) {
     faceOptions["bin-parameter"] = "none";
-  }
-  // performance diagrams need to have the region be in predefined mode
-  if (matsParamUtils.getParameterForName("region-type") !== undefined) {
-    selectorsToReset["region-type"] = "Predefined region";
   }
   setSelectorVisibility(plotType, faceOptions, selectorsToReset);
   return selectorsToReset;
