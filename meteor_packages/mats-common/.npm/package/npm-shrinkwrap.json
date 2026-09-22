@@ -117,19 +117,19 @@
       "integrity": "sha512-gIeSCvq5F4VtXV3naV3VAewLhBkiZBz+PPhTOA8H3Y8h/ELa+R1ml0GZck/4/Nzo9ep2lvOluilJ6MJlbZsKMA=="
     },
     "datatables.net": {
-      "version": "3.0.3",
-      "resolved": "https://registry.npmjs.org/datatables.net/-/datatables.net-3.0.3.tgz",
-      "integrity": "sha512-XyxlOVnqMMfh/X+xpoX/3I4ZZATubiGNenDhmG++C1pLMYVDMDfvOCO/W3/RMyVOx4bh3WocEh+G8Id7Sk8vsg=="
+      "version": "3.0.4",
+      "resolved": "https://registry.npmjs.org/datatables.net/-/datatables.net-3.0.4.tgz",
+      "integrity": "sha512-jbT0Pc4Xq1i5kTYVhqg0vh11DsqWj3AkgVgdJLUqK7264Xi+QWLI4ekee8X50sRPKzJQxaXDHrxh5hnGO49BqQ=="
     },
     "datatables.net-bs": {
-      "version": "3.0.3",
-      "resolved": "https://registry.npmjs.org/datatables.net-bs/-/datatables.net-bs-3.0.3.tgz",
-      "integrity": "sha512-pbViOazxiC6UO8CEit7rmzIiVNUHACEpCZWcWLYNMk1NQE+1CbDXLaZjV5u/V/PghaDmratAje/Qc3HphsMg3w=="
+      "version": "3.0.4",
+      "resolved": "https://registry.npmjs.org/datatables.net-bs/-/datatables.net-bs-3.0.4.tgz",
+      "integrity": "sha512-XyqEHx85mCxO5Dgjqr2trEgBxTEwYjiN56j0gL8HD2Shdosx38MU3bv5HNt2HXfRx3X2k59vSTVLuJPjjsSO6Q=="
     },
     "datatables.net-dt": {
-      "version": "3.0.3",
-      "resolved": "https://registry.npmjs.org/datatables.net-dt/-/datatables.net-dt-3.0.3.tgz",
-      "integrity": "sha512-7bXd2O0LIuab0O+4Fa6HkbpdakO2if1F95oo/+QQ8gDNkPUyo803iS5eksCHsMyayXOIG9E3B/hukgKbkLfH/w=="
+      "version": "3.0.4",
+      "resolved": "https://registry.npmjs.org/datatables.net-dt/-/datatables.net-dt-3.0.4.tgz",
+      "integrity": "sha512-4ageAKiv2H+1iHvWuWGG3PiMxo+/k+iqeqUplwQLRming8o3R/PpA29lR0rO876jDDgOkY7/U87k7SAEt8WCMA=="
     },
     "daterangepicker": {
       "version": "3.1.0",
@@ -322,9 +322,9 @@
       "integrity": "sha512-KZxYo1BUkWD2TVFLr0MQoM8vUUigWD3LlD83a/75BqC+4qE0Hb1Vo5v1FgcfaNXvfXzr+5EhQ6ing/CaBijTlw=="
     },
     "moment": {
-      "version": "2.30.1",
-      "resolved": "https://registry.npmjs.org/moment/-/moment-2.30.1.tgz",
-      "integrity": "sha512-uEmtNhbDOrWPFS+hdjFCBfy9f2YoyzRpwcl+DqpC6taX21FzsTLQVbMV/W7PzNSX6x/bhC1zA3c2UQ5NzH6how=="
+      "version": "2.31.0",
+      "resolved": "https://registry.npmjs.org/moment/-/moment-2.31.0.tgz",
+      "integrity": "sha512-0acOTfMiWOheYS4eoWb80yYMb/JLvVv9SHbs2PehaDzfUG0Bw855SKyk0IKTnPGa5+U2bmi3W68l1+sGLX/pvw=="
     },
     "mongo-object": {
       "version": "3.0.4",
