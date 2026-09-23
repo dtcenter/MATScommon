@@ -377,11 +377,11 @@ class MongoQueryUtil:
         """makes sure all expected options were indeed passed in"""
         assert True, options.host is not None and options.user is not None and options.password is not None \
                 and options.bucket is not None and options.scope is not None and options.collection is not None \
-                and options.query_array is not None
+                and options.query_array is not None and options.mongo_result is not None
 
     def get_options(self, args):
         """process 'c' style options - using getopt - usage describes options"""
-        usage = ["(h)ost=", "(u)ser=", "(p)assword=", "(b)ucket=", "(s)cope=", "(c)ollection=", "(q)uery_array="]
+        usage = ["(h)ost=", "(u)ser=", "(p)assword=", "(b)ucket=", "(s)cope=", "(c)ollection=", "(q)uery_array=", "(m)mongo_result="]
         host = None
         user = None
         password = None
@@ -389,9 +389,10 @@ class MongoQueryUtil:
         scope = None
         collection = None
         query_array = None
+        # mongo_result = None
 
         try:
-            opts, args = getopt.getopt(args[1:], "h:u:p:b:s:c:q:", usage)
+            opts, args = getopt.getopt(args[1:], "h:u:p:b:s:c:q:m", usage)
         except getopt.GetoptError as err:
             # print help information and exit:
             print(str(err))  # will print something like "option -a not recognized"
@@ -420,7 +421,12 @@ class MongoQueryUtil:
         # make sure none were left out...
         assert True, host is not None and user is not None and password is not None \
                 and bucket is not None and scope is not None and collection is not None \
-                and query_array is not None
+                and query_array is not None 
+                # and mongo_result is not None
+        
+        # read mongo result from stdin being piped in
+        mongo_result = sys.stdin.read()
+
         options = {
             "host": host,
             "user": user,
@@ -428,7 +434,8 @@ class MongoQueryUtil:
             "bucket": bucket,
             "scope": scope,
             "collection": collection,
-            "query_array": query_array
+            "query_array": query_array,
+            "mongo_result": mongo_result
         }
         return options
 
@@ -446,12 +453,13 @@ if __name__ == '__main__':
     cbqutil = MongoQueryUtil()
     options = cbqutil.get_options(sys.argv)
     cbqutil.set_up_output_fields(len(options["query_array"]))
-    cbqutil.do_query(options)
-    if options["query_array"][0]["appParams"]["matching"]:
-        return_obj = do_matching(options, {"data": cbqutil.data, "error": cbqutil.error, "n0": cbqutil.n0, "nTimes": cbqutil.nTimes})
-        cbqutil.data = return_obj["data"]
-        cbqutil.error = return_obj["error"]
-        cbqutil.n0 = return_obj["n0"]
-        cbqutil.nTimes = return_obj["nTimes"]
-    cbqutil.construct_output_json(options["query_array"][0]["appParams"]["plotType"], options["query_array"])
-    print(cbqutil.output_JSON)
+    # cbqutil.do_query(options)
+    # if options["query_array"][0]["appParams"]["matching"]:
+    #     return_obj = do_matching(options, {"data": cbqutil.data, "error": cbqutil.error, "n0": cbqutil.n0, "nTimes": cbqutil.nTimes})
+    #     cbqutil.data = return_obj["data"]
+    #     cbqutil.error = return_obj["error"]
+    #     cbqutil.n0 = return_obj["n0"]
+    #     cbqutil.nTimes = return_obj["nTimes"]
+    # cbqutil.construct_output_json(options["query_array"][0]["appParams"]["plotType"], options["query_array"])
+    # print(cbqutil.output_JSON)
+    print(options["mongo_result"])

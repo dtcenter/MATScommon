@@ -8,6 +8,7 @@ from datetime import timedelta
 import numpy as np
 import math
 import json
+from pathlib import Path
 import copy
 from contextlib import closing
 from parse_query_data import parse_query_data_xy_curve, \
@@ -245,13 +246,17 @@ class CBQueryUtil:
             date_array = self.get_date_array(idx, cluster, options, line_type, database, date_variable, from_secs, to_secs, vts)
             doc_IDs = self.get_doc_IDs(doc_ID_template, versions, date_array, storms)
             statement = statement.replace("{{docIDTemplate}}", json.dumps(doc_IDs))
-            with open("/Users/gopa.padmanabhan/scratch/query_from_python.sql", "w", encoding="utf-8") as f:
-                f.write(statement)
 
             try:
                 result = cluster.query(statement, QueryOptions(metrics=True))
                 rows = result.rows()
-                file = open("/Users/gopa.padmanabhan/scratch/python_result_rows.json", "w")
+                file_path = Path.home() + "/scratch/python_db_output.json"
+                #with open(file_path, "w") as my_file:
+                #    print(rows, file=my_file)
+                #with open(file_path, "w", encoding="utf-8") as json_file:
+                #     json.dump(rows, json_file, indent=4)
+                #     json_file.write("rows")
+
             except CouchbaseException as e:
                 self.error[idx] = "Error executing query: " + str(e)
             else:
@@ -283,7 +288,6 @@ class CBQueryUtil:
                     ind_var = 'avtime'
 
                 for row in rows:
-                    file.write(str(row) + "\n\n")
                     if plot_type != "Dieoff":
                         parsed_row = {
                             "nTimes": 0,
@@ -367,7 +371,6 @@ class CBQueryUtil:
 
             idx = idx + 1
 
-        file.close()
         self.data = return_obj["data"]
         self.error = return_obj["error"]
         self.n0 = return_obj["n0"]
@@ -446,6 +449,8 @@ if __name__ == '__main__':
     cbqutil = CBQueryUtil()
     options = cbqutil.get_options(sys.argv)
     cbqutil.set_up_output_fields(len(options["query_array"]))
+    # print("couchbase_query_util.py ... Querying Couchbase with options: " + str(options))
+    
     cbqutil.do_query(options)
     if options["query_array"][0]["appParams"]["matching"]:
         return_obj = do_matching(options, {"data": cbqutil.data, "error": cbqutil.error, "n0": cbqutil.n0, "nTimes": cbqutil.nTimes})
