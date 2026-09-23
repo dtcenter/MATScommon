@@ -182,8 +182,9 @@ class MatsMiddleXYCurve {
         this.toSecs
       );
 
-      this.fcstLengthArray = await this.mmUtils.getFcstLenArray(
+      this.fcstLengthArray = await this.mmUtils.getFcstLenOrLevelArray(
         this.model,
+        "fcstLen",
         this.fcstValidEpochArray[0],
         this.fcstValidEpochArray[this.fcstValidEpochArray.length - 1]
       );

@@ -43,16 +43,19 @@ class MatsMiddleUtils {
     }
   };
 
-  getFcstLenArray = async (model, fromSecs, toSecs) => {
+  getFcstLenOrLevelArray = async (model, field, fromSecs, toSecs) => {
     try {
       this.conn = await this.cbPool.getConnection();
 
       let queryTemplate = await Assets.getTextAsync(
-        "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_distinct_fcstLen.sql"
+        "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_distinct_fcstLen_or_level.sql"
       );
       queryTemplate = queryTemplate.replace(/{{vxMODEL}}/g, `"${model}"`);
+      queryTemplate = queryTemplate.replace(/{{vxFIELD}}/g, field);
       queryTemplate = queryTemplate.replace(/{{vxFROM_SECS}}/g, fromSecs);
       queryTemplate = queryTemplate.replace(/{{vxTO_SECS}}/g, toSecs);
+
+      queryTemplate = global.cbPool.trfmSQLForDbTarget(queryTemplate);
 
       const qrDistinctFcstLen = await this.conn.cluster.query(queryTemplate);
 
@@ -63,8 +66,8 @@ class MatsMiddleUtils {
 
       return fcstLenArray;
     } catch (err) {
-      console.log(`MatsMiddleUtils.getFcstLenArray ERROR: ${err.message}`);
-      throw new Error(`MatsMiddleUtils.getFcstLenArray ERROR: ${err.message}`);
+      console.log(`MatsMiddleUtils.getFcstLenOrLevelArray ERROR: ${err.message}`);
+      throw new Error(`MatsMiddleUtils.getFcstLenOrLevelArray ERROR: ${err.message}`);
     }
   };
 
