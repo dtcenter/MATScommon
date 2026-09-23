@@ -157,9 +157,6 @@ class MatsMiddleMap {
         await this.createModelData(stationNamesSlice);
       }
 
-      this.fveObs = {};
-      this.fveModels = {};
-
       if (this.logToFile === true) {
         this.mmUtils.writeToLocalFile(
           "/scratch/matsMiddle/output/fveObs.json",
@@ -186,7 +183,7 @@ class MatsMiddleMap {
     try {
       this.fveObs = {};
 
-      const tmplGetNStationsMfveObs = await Assets.getTextAsync(
+      let tmplGetNStationsMfveObs = await Assets.getTextAsync(
         "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_obs.sql"
       );
 
@@ -225,38 +222,45 @@ class MatsMiddleMap {
         }
       }
 
-      let tmplWithStationNamesObs = this.cbPool.trfmSQLRemoveClause(
+      // remove average clause because this isn't a timeseries.
+      tmplGetNStationsMfveObs = this.cbPool.trfmSQLRemoveClause(
         tmplGetNStationsMfveObs,
         "{{vxAVERAGE}}"
       );
+
+      // remove level clause if levels are not relevant to the app that called this middleware.
       if (this.level === null) {
-        tmplWithStationNamesObs = this.cbPool.trfmSQLRemoveClause(
-          tmplWithStationNamesObs,
+        tmplGetNStationsMfveObs = this.cbPool.trfmSQLRemoveClause(
+          tmplGetNStationsMfveObs,
           "{{vxLEVEL}}"
         );
       } else {
-        tmplWithStationNamesObs = tmplWithStationNamesObs.replace(
+        tmplGetNStationsMfveObs = tmplGetNStationsMfveObs.replace(
           /{{vxLEVEL}}/g,
           this.level
         );
       }
-      tmplWithStationNamesObs = this.cbPool.trfmSQLRemoveClause(
-        tmplWithStationNamesObs,
+      // remove the level query value since we're not binning by level.
+      tmplGetNStationsMfveObs = this.cbPool.trfmSQLRemoveClause(
+        tmplGetNStationsMfveObs,
         "level avVal"
       );
-      tmplWithStationNamesObs = tmplWithStationNamesObs.replace(
+      // replace in the station names generated above into the SQL template
+      tmplGetNStationsMfveObs = tmplGetNStationsMfveObs.replace(
         /{{stationNamesList}}/g,
         stationNamesObs
       );
 
-      tmplWithStationNamesObs = global.cbPool.trfmSQLForDbTarget(
-        tmplWithStationNamesObs
+      // specify the target bucket, score, collection, etc. for the database query
+      tmplGetNStationsMfveObs = global.cbPool.trfmSQLForDbTarget(
+        tmplGetNStationsMfveObs
       );
 
       const promises = [];
       for (let iofve = 0; iofve < this.fcstValidEpochArray.length; iofve += 100) {
+        // query 100 dates at a time, in parallel
         const fveArraySlice = this.fcstValidEpochArray.slice(iofve, iofve + 100);
-        const sql = tmplWithStationNamesObs.replace(
+        const sql = tmplGetNStationsMfveObs.replace(
           /{{fcstValidEpoch}}/g,
           JSON.stringify(fveArraySlice)
         );
@@ -302,10 +306,34 @@ class MatsMiddleMap {
         "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_model.sql"
       );
 
+      let stationNamesModels = "";
+      for (let i = 0; i < stationNamesSlice.length; i += 1) {
+        if (i === 0) {
+          if (this.filterInfo.filterModelBy) {
+            stationNamesModels = `CASE WHEN models.data.${stationNamesSlice[i]}.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.${stationNamesSlice[i]}.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.${stationNamesSlice[i]}.\`${this.varNames[0]}\` ELSE "NULL" END ${stationNamesSlice[i]}`;
+          } else {
+            stationNamesModels = `models.data.${stationNamesSlice[i]}.\`${this.varNames[0]}\` ${stationNamesSlice[i]}`;
+          }
+        } else if (this.filterInfo.filterModelBy) {
+          stationNamesModels += `, CASE WHEN models.data.${stationNamesSlice[i]}.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.${stationNamesSlice[i]}.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.${stationNamesSlice[i]}.\`${this.varNames[0]}\` ELSE "NULL" END ${stationNamesSlice[i]}`;
+        } else {
+          stationNamesModels += `, models.data.${stationNamesSlice[i]}.\`${this.varNames[0]}\` ${stationNamesSlice[i]}`;
+        }
+      }
+
+      // set the model in the SQL template
+      tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
+        /{{vxMODEL}}/g,
+        `"${this.model}"`
+      );
+
+      // remove average clause because this isn't a timeseries.
       tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
         tmplGetNStationsMfveModel,
         "{{vxAVERAGE}}"
       );
+
+      // remove level clause if levels are not relevant to the app that called this middleware.
       if (this.level === null) {
         tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
           tmplGetNStationsMfveModel,
@@ -317,22 +345,24 @@ class MatsMiddleMap {
           this.level
         );
       }
-      tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
-        /{{vxMODEL}}/g,
-        `"${this.model}"`
-      );
+
+      // remove the level query value since we're not binning by level.
       tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
         tmplGetNStationsMfveModel,
         "level avVal"
       );
+
+      // remove the forecast lead query value since we're not binning by fcst lead.
       tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
         tmplGetNStationsMfveModel,
         "fcstLen fcst_lead"
       );
+      // we have one forecast lead that we want, set it in the query
       tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
         /{{vxFCST_LEN}}/g,
         this.fcstLen
       );
+
       if (this.validTimes && this.validTimes.length > 0) {
         // remove the UTC Cycle Start part of the query
         tmplGetNStationsMfveModel = global.cbPool.trfmSQLRemoveClause(
@@ -355,40 +385,29 @@ class MatsMiddleMap {
           "{{vxVALID_TIMES}}"
         );
       }
+
       // set the time variable for valid epochs
       tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
         /{{vxTIME_VAR}}/g,
         "fcstValidEpoch"
       );
 
-      tmplGetNStationsMfveModel = global.cbPool.trfmSQLForDbTarget(
-        tmplGetNStationsMfveModel
-      );
-
-      let stationNamesModels = "";
-      for (let i = 0; i < stationNamesSlice.length; i += 1) {
-        if (i === 0) {
-          if (this.filterInfo.filterModelBy) {
-            stationNamesModels = `CASE WHEN models.data.${stationNamesSlice[i]}.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.${stationNamesSlice[i]}.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.${stationNamesSlice[i]}.\`${this.varNames[0]}\` ELSE "NULL" END ${stationNamesSlice[i]}`;
-          } else {
-            stationNamesModels = `models.data.${stationNamesSlice[i]}.\`${this.varNames[0]}\` ${stationNamesSlice[i]}`;
-          }
-        } else if (this.filterInfo.filterModelBy) {
-          stationNamesModels += `, CASE WHEN models.data.${stationNamesSlice[i]}.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.${stationNamesSlice[i]}.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.${stationNamesSlice[i]}.\`${this.varNames[0]}\` ELSE "NULL" END ${stationNamesSlice[i]}`;
-        } else {
-          stationNamesModels += `, models.data.${stationNamesSlice[i]}.\`${this.varNames[0]}\` ${stationNamesSlice[i]}`;
-        }
-      }
-
-      const tmplWithStationNamesModels = tmplGetNStationsMfveModel.replace(
+      // replace in the station names generated above into the SQL template
+      tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
         /{{stationNamesList}}/g,
         stationNamesModels
       );
 
+      // specify the target bucket, score, collection, etc. for the database query
+      tmplGetNStationsMfveModel = global.cbPool.trfmSQLForDbTarget(
+        tmplGetNStationsMfveModel
+      );
+
       const promises = [];
       for (let imfve = 0; imfve < this.fcstValidEpochArray.length; imfve += 100) {
+        // query 100 dates at a time, in parallel
         const fveArraySlice = this.fcstValidEpochArray.slice(imfve, imfve + 100);
-        const sql = tmplWithStationNamesModels.replace(
+        const sql = tmplGetNStationsMfveModel.replace(
           /{{fcstValidEpoch}}/g,
           JSON.stringify(fveArraySlice)
         );
