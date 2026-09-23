@@ -2,7 +2,8 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import {
+import
+{
   matsDataUtils,
   matsTypes,
   matsCollections,
@@ -16,9 +17,12 @@ import { _ } from "meteor/underscore";
 /* eslint-disable no-console */
 
 // utility for querying the DB
-const queryMySQL = async function (pool, statement) {
-  if (Meteor.isServer) {
-    try {
+const queryMySQL = async function (pool, statement)
+{
+  if (Meteor.isServer)
+  {
+    try
+    {
       const appTimeOut = Meteor.settings.public.mysql_wait_timeout
         ? Meteor.settings.public.mysql_wait_timeout
         : 300;
@@ -26,7 +30,8 @@ const queryMySQL = async function (pool, statement) {
       await pool.execute(`set session wait_timeout = ${appTimeOut}`);
       const results = await pool.query(statement);
       return results[0];
-    } catch (err) {
+    } catch (err)
+    {
       return `matsDataQueryUtils.queryMySQL ERROR: ${err.message}`;
     }
   }
@@ -35,17 +40,20 @@ const queryMySQL = async function (pool, statement) {
 
 // utility to get the cadence for a particular model, so that the query function
 // knows where to include null points for missing data.
-const getModelCadence = async function (pool, dataSource, startDate, endDate) {
+const getModelCadence = async function (pool, dataSource, startDate, endDate)
+{
   let rows = [];
   let cycles;
-  try {
+  try
+  {
     // this query should only return data if the model cadence is irregular.
     // otherwise, the cadence will be calculated later by the query function.
     let cyclesRaw;
     if (
       (await matsCollections.Settings.findOneAsync()).dbType ===
       matsTypes.DbTypes.couchbase
-    ) {
+    )
+    {
       /*
             we have to call the couchbase utilities as async functions but this
             routine  'queryDBTimeSeries' cannot itslef be async because the graph page needs to wait
@@ -56,14 +64,15 @@ const getModelCadence = async function (pool, dataSource, startDate, endDate) {
       cyclesRaw = doc.primaryModelOrders[newModel]
         ? doc.primaryModelOrders[newModel].cycleSecnds
         : undefined;
-    } else {
+    } else
+    {
       // we will default to mysql so old apps won't break
       rows = await queryMySQL(
         pool,
         `select cycle_seconds ` +
-          `from mats_common.primary_model_orders ` +
-          `where model = ` +
-          `(select new_model as display_text from mats_common.standardized_model_list where old_model = '${dataSource}');`
+        `from mats_common.primary_model_orders ` +
+        `where model = ` +
+        `(select new_model as display_text from mats_common.standardized_model_list where old_model = '${dataSource}');`
       );
       cyclesRaw = rows[0].cycle_seconds ? JSON.parse(rows[0].cycle_seconds) : undefined;
     }
@@ -71,7 +80,8 @@ const getModelCadence = async function (pool, dataSource, startDate, endDate) {
     // there can be difference cadences for different time periods (each time period is a key in cycles_keys,
     // with the cadences for that period represented as values in cycles_raw), so this section identifies all
     // time periods relevant to the requested date range, and returns the union of their cadences.
-    if (cyclesKeys.length !== 0) {
+    if (cyclesKeys.length !== 0)
+    {
       let newTime;
       let chosenStartTime;
       let chosenEndTime;
@@ -79,33 +89,42 @@ const getModelCadence = async function (pool, dataSource, startDate, endDate) {
       let chosenEndIdx;
       let foundStart = false;
       let foundEnd = false;
-      for (let ti = cyclesKeys.length - 1; ti >= 0; ti -= 1) {
+      for (let ti = cyclesKeys.length - 1; ti >= 0; ti -= 1)
+      {
         newTime = cyclesKeys[ti];
-        if (startDate >= Number(newTime) && !foundStart) {
+        if (startDate >= Number(newTime) && !foundStart)
+        {
           chosenStartTime = newTime;
           chosenStartIdx = ti;
           foundStart = true;
         }
-        if (endDate >= Number(newTime) && !foundEnd) {
+        if (endDate >= Number(newTime) && !foundEnd)
+        {
           chosenEndTime = newTime;
           chosenEndIdx = ti;
           foundEnd = true;
         }
-        if (foundStart && foundEnd) {
+        if (foundStart && foundEnd)
+        {
           break;
         }
       }
-      if (chosenStartTime !== undefined && chosenEndTime !== undefined) {
-        if (Number(chosenStartTime) === Number(chosenEndTime)) {
+      if (chosenStartTime !== undefined && chosenEndTime !== undefined)
+      {
+        if (Number(chosenStartTime) === Number(chosenEndTime))
+        {
           cycles = cyclesRaw[chosenStartTime];
-        } else if (chosenEndIdx - chosenStartIdx === 1) {
+        } else if (chosenEndIdx - chosenStartIdx === 1)
+        {
           const startCycles = cyclesRaw[chosenStartTime];
           const endCycles = cyclesRaw[chosenEndTime];
           cycles = _.union(startCycles, endCycles);
-        } else {
+        } else
+        {
           let middleCycles = [];
           let currCycles;
-          for (let ti = chosenStartIdx + 1; ti < chosenEndIdx; ti += 1) {
+          for (let ti = chosenStartIdx + 1; ti < chosenEndIdx; ti += 1)
+          {
             currCycles = cyclesRaw[cyclesKeys[ti]];
             middleCycles = _.union(middleCycles, currCycles);
           }
@@ -113,28 +132,35 @@ const getModelCadence = async function (pool, dataSource, startDate, endDate) {
           const endCycles = cyclesRaw[chosenEndTime];
           cycles = _.union(startCycles, endCycles, middleCycles);
         }
-        cycles.sort(function (a, b) {
+        cycles.sort(function (a, b)
+        {
           return a - b;
         });
       }
     }
-  } catch (e) {
+  } catch (e)
+  {
     // ignore - just a safety check, don't want to exit if there isn't a cycles_per_model entry
     // if there isn't a cycles_per_model entry, it just means that the model has a regular cadence
   }
-  if (cycles !== null && cycles !== undefined && cycles.length > 0) {
-    for (let c = 0; c < cycles.length; c += 1) {
+  if (cycles !== null && cycles !== undefined && cycles.length > 0)
+  {
+    for (let c = 0; c < cycles.length; c += 1)
+    {
       cycles[c] *= 1000; // convert to milliseconds
     }
-  } else {
+  } else
+  {
     cycles = []; // regular cadence model--cycles will be calculated later by the query function
   }
   return cycles;
 };
 
 // get stations in a predefined region
-const getStationsInCouchbaseRegion = async function (pool, region) {
-  if (Meteor.isServer) {
+const getStationsInCouchbaseRegion = async function (pool, region)
+{
+  if (Meteor.isServer)
+  {
     let statement = await Assets.getTextAsync(
       "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_stations_for_region.sql"
     );
@@ -146,7 +172,8 @@ const getStationsInCouchbaseRegion = async function (pool, region) {
 };
 
 // utility to parse query results from python shell
-const parsePythonShellQueryResults = function (results, queryArray) {
+const parsePythonShellQueryResults = function (results, queryArray)
+{
   const parsedData = JSON.parse(results);
   const d = parsedData.data;
   const { n0 } = parsedData;
@@ -154,22 +181,29 @@ const parsePythonShellQueryResults = function (results, queryArray) {
   const { error } = parsedData;
 
   // check for nulls in output, since JSON only passes strings
-  for (let idx = 0; idx < d.length; idx += 1) {
-    for (let didx = 0; didx < d[idx].y.length; didx += 1) {
-      if (d[idx].y[didx] === "null") {
+  for (let idx = 0; idx < d.length; idx += 1)
+  {
+    for (let didx = 0; didx < d[idx].y.length; didx += 1)
+    {
+      if (d[idx].y[didx] === "null")
+      {
         d[idx].y[didx] = null;
-        if (d[idx].subVals.length > 0) {
+        if (d[idx].subVals.length > 0)
+        {
           d[idx].subData[didx] = NaN;
           d[idx].subHeaders[didx] = NaN;
           d[idx].subVals[didx] = NaN;
-          if (queryArray[idx].statLineType === "ctc") {
+          if (queryArray[idx].statLineType === "ctc")
+          {
             d[idx].subHit[didx] = NaN;
             d[idx].subFa[didx] = NaN;
             d[idx].subMiss[didx] = NaN;
             d[idx].subCn[didx] = NaN;
-          } else if (queryArray[idx].statLineType === "mode_pair") {
+          } else if (queryArray[idx].statLineType === "mode_pair")
+          {
             d[idx].subInterest[didx] = NaN;
-          } else if (queryArray[idx].statLineType === "mode_single") {
+          } else if (queryArray[idx].statLineType === "mode_single")
+          {
             d[idx].nForecast[didx] = 0;
             d[idx].nMatched[didx] = 0;
             d[idx].nSimple[didx] = 0;
@@ -178,20 +212,25 @@ const parsePythonShellQueryResults = function (results, queryArray) {
         }
         d[idx].subSecs[didx] = NaN;
         d[idx].subLevs[didx] = NaN;
-      } else if (d[idx].x[didx] === "null") {
+      } else if (d[idx].x[didx] === "null")
+      {
         d[idx].x[didx] = null;
-        if (d[idx].subVals.length > 0) {
+        if (d[idx].subVals.length > 0)
+        {
           d[idx].subData[didx] = NaN;
           d[idx].subHeaders[didx] = NaN;
           d[idx].subVals[didx] = NaN;
-          if (queryArray[idx].statLineType === "ctc") {
+          if (queryArray[idx].statLineType === "ctc")
+          {
             d[idx].subHit[didx] = NaN;
             d[idx].subFa[didx] = NaN;
             d[idx].subMiss[didx] = NaN;
             d[idx].subCn[didx] = NaN;
-          } else if (queryArray[idx].statLineType === "mode_pair") {
+          } else if (queryArray[idx].statLineType === "mode_pair")
+          {
             d[idx].subInterest[didx] = NaN;
-          } else if (queryArray[idx].statLineType === "mode_single") {
+          } else if (queryArray[idx].statLineType === "mode_single")
+          {
             d[idx].nForecast[didx] = 0;
             d[idx].nMatched[didx] = 0;
             d[idx].nSimple[didx] = 0;
@@ -207,8 +246,10 @@ const parsePythonShellQueryResults = function (results, queryArray) {
 };
 
 // utility for querying the Mongo DB via Python
-const queryMongoPython = async function (pool, queryArray) {
-  if (Meteor.isServer) {
+const queryMongoPython = async function (pool, queryArray, mongoResult)
+{
+  if (Meteor.isServer)
+  {
     // send the query statement to the python query function
     const pyOptions = {
       mode: "text",
@@ -233,6 +274,11 @@ const queryMongoPython = async function (pool, queryArray) {
         pool.collection,
         "-q",
         JSON.stringify(queryArray),
+        /*
+        "-m",
+        JSON.stringify(mongoResult),
+        */
+        // "test",
       ],
     };
 
@@ -241,11 +287,13 @@ const queryMongoPython = async function (pool, queryArray) {
     let n0 = [];
     let nTimes = [];
 
+    /*
     const pyShell = require("python-shell");
     const results = await pyShell.PythonShell.run("mongo_query_util.py", pyOptions)
       .then()
       .catch((err) => {
         error = err.message;
+        console.log("/scratch/python_error:" + err.message);
         return {
           data: d,
           error,
@@ -253,10 +301,36 @@ const queryMongoPython = async function (pool, queryArray) {
           nTimes,
         };
       });
-    if (results === undefined || results === "undefined") {
+    */
+
+    let results = "";
+    const { PythonShell } = require('python-shell');
+    const pyshell = new PythonShell('mongo_query_util.py', pyOptions);
+
+    // 1. Pipe/Send your data to the script
+    console.log('Sending to Python:', JSON.stringify(mongoResult).length);
+    pyshell.send(JSON.stringify(mongoResult));
+
+    // 2. Listen for the response from Python
+    pyshell.on('message', function (message)
+    {
+      console.log('Received from Python:', message.length);
+      results = message;
+    });
+
+    // 3. End the input stream so Python knows no more data is coming
+    pyshell.end(function (err)
+    {
+      if (err) throw err;
+      console.log('Finished stream pipeline.');
+    });
+
+    if (results === undefined || results === "undefined")
+    {
       error =
         "Error thrown by couchbase_query_util.py. Please write down exactly how you produced this error, and submit a ticket at mats.gsl@noaa.gov.";
-    } else {
+    } else
+    {
       // get the data back from the query
       ({ d, n0, nTimes, error } = parsePythonShellQueryResults(results, queryArray));
     }
@@ -271,8 +345,10 @@ const queryMongoPython = async function (pool, queryArray) {
 };
 
 // utility for querying the Coushbase DB via Python
-const queryCBPython = async function (pool, queryArray) {
-  if (Meteor.isServer) {
+const queryCBPython = async function (pool, queryArray)
+{
+  if (Meteor.isServer)
+  {
     // send the query statement to the python query function
     const pyOptions = {
       mode: "text",
@@ -306,9 +382,11 @@ const queryCBPython = async function (pool, queryArray) {
     let nTimes = [];
 
     const pyShell = require("python-shell");
+    console.log("running couchbase_query_util.py ....", JSON.stringify(pyOptions)); 
     const results = await pyShell.PythonShell.run("couchbase_query_util.py", pyOptions)
       .then()
-      .catch((err) => {
+      .catch((err) =>
+      {
         error = err.message;
         return {
           data: d,
@@ -317,10 +395,13 @@ const queryCBPython = async function (pool, queryArray) {
           nTimes,
         };
       });
-    if (results === undefined || results === "undefined") {
+    if (results === undefined || results === "undefined")
+    {
       error =
         "Error thrown by couchbase_query_util.py. Please write down exactly how you produced this error, and submit a ticket at mats.gsl@noaa.gov.";
-    } else {
+    } else
+    {
+      console.log("couchbase_query_util.py results:", results);
       // get the data back from the query
       ({ d, n0, nTimes, error } = parsePythonShellQueryResults(results, queryArray));
     }
@@ -335,8 +416,10 @@ const queryCBPython = async function (pool, queryArray) {
 };
 
 // utility for querying the MySQL DB via Python
-const queryDBPython = async function (pool, queryArray) {
-  if (Meteor.isServer) {
+const queryDBPython = async function (pool, queryArray)
+{
+  if (Meteor.isServer)
+  {
     // send the query statement to the python query function
     const mysqlConnection = await pool.getConnection();
     const pyOptions = {
@@ -376,7 +459,8 @@ const queryDBPython = async function (pool, queryArray) {
     const pyShell = require("python-shell");
     const results = await pyShell.PythonShell.run("mysql_query_util.py", pyOptions)
       .then()
-      .catch((err) => {
+      .catch((err) =>
+      {
         error = err.message;
         return {
           data: d,
@@ -385,10 +469,12 @@ const queryDBPython = async function (pool, queryArray) {
           nTimes,
         };
       });
-    if (results === undefined || results === "undefined") {
+    if (results === undefined || results === "undefined")
+    {
       error =
         "Error thrown by mysql_query_util.py. Please write down exactly how you produced this error, and submit a ticket at mats.gsl@noaa.gov.";
-    } else {
+    } else
+    {
       // get the data back from the query
       ({ d, n0, nTimes, error } = parsePythonShellQueryResults(results, queryArray));
     }
@@ -411,7 +497,8 @@ const parseQueryDataXYCurve = function (
   forecastOffset,
   cycles,
   regular
-) {
+)
+{
   /*
         var d = {   // d will contain the curve data
             x: [],
@@ -474,9 +561,11 @@ const parseQueryDataXYCurve = function (
   const subLevs = [];
   let timeInterval;
 
-  for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
+  for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1)
+  {
     let independentVar;
-    switch (plotType) {
+    switch (plotType)
+    {
       case matsTypes.PlotTypes.validtime:
         independentVar = Number(rows[rowIndex].hr_of_day);
         break;
@@ -508,7 +597,8 @@ const parseQueryDataXYCurve = function (
         independentVar = Number(rows[rowIndex].avtime);
     }
     let stat;
-    if (rows[rowIndex].stat === undefined && rows[rowIndex].hit !== undefined) {
+    if (rows[rowIndex].stat === undefined && rows[rowIndex].hit !== undefined)
+    {
       // this is a contingency table plot
       isCTC = true;
       const hit = Number(rows[rowIndex].hit);
@@ -516,16 +606,19 @@ const parseQueryDataXYCurve = function (
       const miss = Number(rows[rowIndex].miss);
       const cn = Number(rows[rowIndex].cn);
       const n = rows[rowIndex].sub_data.toString().split(",").length;
-      if (hit + fa + miss + cn > 0) {
+      if (hit + fa + miss + cn > 0)
+      {
         stat = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, n, statisticStr);
         stat = matsMethods.isThisANaN(Number(stat)) ? null : stat;
-      } else {
+      } else
+      {
         stat = null;
       }
     } else if (
       rows[rowIndex].stat === undefined &&
       rows[rowIndex].square_diff_sum !== undefined
-    ) {
+    )
+    {
       // this is a scalar partial sums plot
       isScalar = true;
       const squareDiffSum = Number(rows[rowIndex].square_diff_sum);
@@ -534,7 +627,8 @@ const parseQueryDataXYCurve = function (
       const modelSum = Number(rows[rowIndex].model_sum);
       const obsSum = Number(rows[rowIndex].obs_sum);
       const absSum = Number(rows[rowIndex].abs_sum);
-      if (NSum > 0) {
+      if (NSum > 0)
+      {
         stat = matsDataUtils.calculateStatScalar(
           squareDiffSum,
           NSum,
@@ -545,22 +639,27 @@ const parseQueryDataXYCurve = function (
           statisticStr
         );
         stat = matsMethods.isThisANaN(Number(stat)) ? null : stat;
-      } else {
+      } else
+      {
         stat = null;
       }
-    } else {
+    } else
+    {
       // not a contingency table plot or a scalar partial sums plot
       stat = rows[rowIndex].stat === "NULL" ? null : rows[rowIndex].stat;
     }
     n0.push(rows[rowIndex].n0); // number of values that go into a point on the graph
     nTimes.push(rows[rowIndex].nTimes); // number of times that go into a point on the graph
 
-    if (plotType === matsTypes.PlotTypes.timeSeries) {
+    if (plotType === matsTypes.PlotTypes.timeSeries)
+    {
       // Find the minimum time_interval to be sure we don't accidentally go past the next data point.
-      if (rowIndex < rows.length - 1) {
+      if (rowIndex < rows.length - 1)
+      {
         const timeDiff =
           Number(rows[rowIndex + 1].avtime) - Number(rows[rowIndex].avtime);
-        if (timeDiff < timeInterval) {
+        if (timeDiff < timeInterval)
+        {
           timeInterval = timeDiff;
         }
       }
@@ -587,19 +686,26 @@ const parseQueryDataXYCurve = function (
       stat !== null &&
       rows[rowIndex].sub_data !== undefined &&
       rows[rowIndex].sub_data !== null
-    ) {
+    )
+    {
       // parse the sub-data
-      try {
+      try
+      {
         const thisSubData = rows[rowIndex].sub_data.toString().split(",");
         let currSubData;
-        for (let sdIdx = 0; sdIdx < thisSubData.length; sdIdx += 1) {
+        for (let sdIdx = 0; sdIdx < thisSubData.length; sdIdx += 1)
+        {
           currSubData = thisSubData[sdIdx].split(";");
-          if (isCTC) {
+          if (isCTC)
+          {
             thisSubSecs.push(Number(currSubData[0]));
-            if (hasLevels) {
-              if (!matsMethods.isThisANaN(Number(currSubData[1]))) {
+            if (hasLevels)
+            {
+              if (!matsMethods.isThisANaN(Number(currSubData[1])))
+              {
                 thisSubLevs.push(Number(currSubData[1]));
-              } else {
+              } else
+              {
                 thisSubLevs.push(currSubData[1]);
               }
               thisSubHit.push(Number(currSubData[2]));
@@ -616,7 +722,8 @@ const parseQueryDataXYCurve = function (
                   statisticStr
                 )
               );
-            } else {
+            } else
+            {
               thisSubHit.push(Number(currSubData[1]));
               thisSubFa.push(Number(currSubData[2]));
               thisSubMiss.push(Number(currSubData[3]));
@@ -632,12 +739,16 @@ const parseQueryDataXYCurve = function (
                 )
               );
             }
-          } else if (isScalar) {
+          } else if (isScalar)
+          {
             thisSubSecs.push(Number(currSubData[0]));
-            if (hasLevels) {
-              if (!matsMethods.isThisANaN(Number(currSubData[1]))) {
+            if (hasLevels)
+            {
+              if (!matsMethods.isThisANaN(Number(currSubData[1])))
+              {
                 thisSubLevs.push(Number(currSubData[1]));
-              } else {
+              } else
+              {
                 thisSubLevs.push(currSubData[1]);
               }
               thisSubSquareDiffSum.push(Number(currSubData[2]));
@@ -657,7 +768,8 @@ const parseQueryDataXYCurve = function (
                   statisticStr
                 )
               );
-            } else {
+            } else
+            {
               thisSubSquareDiffSum.push(Number(currSubData[1]));
               thisSubNSum.push(Number(currSubData[2]));
               thisSubObsModelDiffSum.push(Number(currSubData[3]));
@@ -676,33 +788,43 @@ const parseQueryDataXYCurve = function (
                 )
               );
             }
-          } else {
+          } else
+          {
             thisSubSecs.push(Number(currSubData[0]));
-            if (hasLevels) {
-              if (!matsMethods.isThisANaN(Number(currSubData[1]))) {
+            if (hasLevels)
+            {
+              if (!matsMethods.isThisANaN(Number(currSubData[1])))
+              {
                 thisSubLevs.push(Number(currSubData[1]));
-              } else {
+              } else
+              {
                 thisSubLevs.push(currSubData[1]);
               }
               thisSubValues.push(Number(currSubData[2]));
-            } else {
+            } else
+            {
               thisSubValues.push(Number(currSubData[1]));
             }
           }
         }
         // Now that we have all the sub-values, we can get the standard deviation and remove the ones that exceed it
-        if (outlierQCParam !== "all") {
+        if (outlierQCParam !== "all")
+        {
           thisSubStdev = matsDataUtils.stdev(thisSubValues);
           thisSubMean = matsDataUtils.average(thisSubValues);
           sdLimit = outlierQCParam * thisSubStdev;
-          for (let svIdx = thisSubValues.length - 1; svIdx >= 0; svIdx -= 1) {
-            if (Math.abs(thisSubValues[svIdx] - thisSubMean) > sdLimit) {
-              if (isCTC) {
+          for (let svIdx = thisSubValues.length - 1; svIdx >= 0; svIdx -= 1)
+          {
+            if (Math.abs(thisSubValues[svIdx] - thisSubMean) > sdLimit)
+            {
+              if (isCTC)
+              {
                 thisSubHit.splice(svIdx, 1);
                 thisSubFa.splice(svIdx, 1);
                 thisSubMiss.splice(svIdx, 1);
                 thisSubCn.splice(svIdx, 1);
-              } else if (isScalar) {
+              } else if (isScalar)
+              {
                 thisSubSquareDiffSum.splice(svIdx, 1);
                 thisSubNSum.splice(svIdx, 1);
                 thisSubObsModelDiffSum.splice(svIdx, 1);
@@ -712,13 +834,15 @@ const parseQueryDataXYCurve = function (
               }
               thisSubValues.splice(svIdx, 1);
               thisSubSecs.splice(svIdx, 1);
-              if (hasLevels) {
+              if (hasLevels)
+              {
                 thisSubLevs.splice(svIdx, 1);
               }
             }
           }
         }
-        if (isCTC) {
+        if (isCTC)
+        {
           const hit = matsDataUtils.sum(thisSubHit);
           const fa = matsDataUtils.sum(thisSubFa);
           const miss = matsDataUtils.sum(thisSubMiss);
@@ -731,7 +855,8 @@ const parseQueryDataXYCurve = function (
             thisSubHit.length,
             statisticStr
           );
-        } else if (isScalar) {
+        } else if (isScalar)
+        {
           const squareDiffSum = matsDataUtils.sum(thisSubSquareDiffSum);
           const NSum = matsDataUtils.sum(thisSubNSum);
           const obsModelDiffSum = matsDataUtils.sum(thisSubObsModelDiffSum);
@@ -747,23 +872,29 @@ const parseQueryDataXYCurve = function (
             absSum,
             statisticStr
           );
-        } else if (statisticStr.toLowerCase().includes("count")) {
+        } else if (statisticStr.toLowerCase().includes("count"))
+        {
           stat = matsDataUtils.sum(thisSubValues);
-        } else {
+        } else
+        {
           stat = matsDataUtils.average(thisSubValues);
         }
-      } catch (e) {
+      } catch (e)
+      {
         // this is an error produced by a bug in the query function, not an error returned by the mysql database
         e.message = `Error in parseQueryDataXYCurve. The expected fields don't seem to be present in the results cache: ${e.message}`;
         throw new Error(e.message);
       }
-    } else {
-      if (isCTC) {
+    } else
+    {
+      if (isCTC)
+      {
         thisSubHit = NaN;
         thisSubFa = NaN;
         thisSubMiss = NaN;
         thisSubCn = NaN;
-      } else if (isScalar) {
+      } else if (isScalar)
+      {
         thisSubSquareDiffSum = NaN;
         thisSubNSum = NaN;
         thisSubObsModelDiffSum = NaN;
@@ -774,7 +905,8 @@ const parseQueryDataXYCurve = function (
       }
       thisSubValues = NaN;
       thisSubSecs = NaN;
-      if (hasLevels) {
+      if (hasLevels)
+      {
         thisSubLevs = NaN;
       }
     }
@@ -784,25 +916,28 @@ const parseQueryDataXYCurve = function (
       plotType === matsTypes.PlotTypes.dailyModelCycle &&
       rowIndex > 0 &&
       Number(independentVar) - Number(rows[rowIndex - 1].avtime * 1000) >
-        3600 * 24 * 1000 &&
+      3600 * 24 * 1000 &&
       !hideGaps
-    ) {
+    )
+    {
       const cyclesMissing =
         Math.ceil(
           (Number(independentVar) - Number(rows[rowIndex - 1].avtime * 1000)) /
-            (3600 * 24 * 1000)
+          (3600 * 24 * 1000)
         ) - 1;
       const offsetFromMidnight = Math.floor(
         (Number(independentVar) % (24 * 3600 * 1000)) / (3600 * 1000)
       );
-      for (let missingIdx = cyclesMissing; missingIdx > 0; missingIdx -= 1) {
+      for (let missingIdx = cyclesMissing; missingIdx > 0; missingIdx -= 1)
+      {
         curveIndependentVars.push(
           independentVar -
-            3600 * 24 * 1000 * missingIdx -
-            3600 * offsetFromMidnight * 1000
+          3600 * 24 * 1000 * missingIdx -
+          3600 * offsetFromMidnight * 1000
         );
         curveStats.push(null);
-        if (isCTC) {
+        if (isCTC)
+        {
           subHit.push(NaN);
           subFa.push(NaN);
           subMiss.push(NaN);
@@ -813,7 +948,8 @@ const parseQueryDataXYCurve = function (
           subModelSum.push([]);
           subObsSum.push([]);
           subAbsSum.push([]);
-        } else if (isScalar) {
+        } else if (isScalar)
+        {
           subHit.push([]);
           subFa.push([]);
           subMiss.push([]);
@@ -824,7 +960,8 @@ const parseQueryDataXYCurve = function (
           subModelSum.push(NaN);
           subObsSum.push(NaN);
           subAbsSum.push(NaN);
-        } else {
+        } else
+        {
           subHit.push([]);
           subFa.push([]);
           subMiss.push([]);
@@ -838,7 +975,8 @@ const parseQueryDataXYCurve = function (
         }
         subVals.push(NaN);
         subSecs.push(NaN);
-        if (hasLevels) {
+        if (hasLevels)
+        {
           subLevs.push(NaN);
         }
       }
@@ -857,7 +995,8 @@ const parseQueryDataXYCurve = function (
     subAbsSum.push(thisSumAbsSum);
     subVals.push(thisSubValues);
     subSecs.push(thisSubSecs);
-    if (hasLevels) {
+    if (hasLevels)
+    {
       subLevs.push(thisSubLevs);
     }
   }
@@ -870,18 +1009,23 @@ const parseQueryDataXYCurve = function (
   let depVarMax = -1 * Number.MAX_VALUE;
   let dIdx;
 
-  for (dIdx = 0; dIdx < curveIndependentVars.length; dIdx += 1) {
+  for (dIdx = 0; dIdx < curveIndependentVars.length; dIdx += 1)
+  {
     const thisNTimes = nTimes[dIdx];
     // Make sure that we don't have any points with a smaller completeness value than specified by the user.
-    if (curveStats[dIdx] === null || thisNTimes < completenessQCParam * nTimesMax) {
-      if (!hideGaps) {
-        if (plotType === matsTypes.PlotTypes.profile) {
+    if (curveStats[dIdx] === null || thisNTimes < completenessQCParam * nTimesMax)
+    {
+      if (!hideGaps)
+      {
+        if (plotType === matsTypes.PlotTypes.profile)
+        {
           // profile has the stat first, and then the independent var. The others have independent var and then stat.
           // this is in the pattern of x-plotted-variable, y-plotted-variable.
           returnD.x.push(null);
           returnD.y.push(curveIndependentVars[dIdx]);
           returnD.error_x.push(null); // placeholder
-        } else {
+        } else
+        {
           returnD.x.push(curveIndependentVars[dIdx]);
           returnD.y.push(null);
           returnD.error_y.push(null); // placeholder
@@ -898,20 +1042,24 @@ const parseQueryDataXYCurve = function (
         returnD.subAbsSum.push(NaN);
         returnD.subVals.push(NaN);
         returnD.subSecs.push(NaN);
-        if (hasLevels) {
+        if (hasLevels)
+        {
           returnD.subLevs.push(NaN);
         }
       }
-    } else {
+    } else
+    {
       // there's valid data at this point, so store it
       sum += curveStats[dIdx];
-      if (plotType === matsTypes.PlotTypes.profile) {
+      if (plotType === matsTypes.PlotTypes.profile)
+      {
         // profile has the stat first, and then the independent var. The others have independent var and then stat.
         // this is in the pattern of x-plotted-variable, y-plotted-variable.
         returnD.x.push(curveStats[dIdx]);
         returnD.y.push(curveIndependentVars[dIdx]);
         returnD.error_x.push(null); // placeholder
-      } else {
+      } else
+      {
         returnD.x.push(curveIndependentVars[dIdx]);
         returnD.y.push(curveStats[dIdx]);
         returnD.error_y.push(null); // placeholder
@@ -928,7 +1076,8 @@ const parseQueryDataXYCurve = function (
       returnD.subAbsSum.push(subAbsSum[dIdx]);
       returnD.subVals.push(subVals[dIdx]);
       returnD.subSecs.push(subSecs[dIdx]);
-      if (hasLevels) {
+      if (hasLevels)
+      {
         returnD.subLevs.push(subLevs[dIdx]);
       }
       indVarMin =
@@ -941,7 +1090,8 @@ const parseQueryDataXYCurve = function (
   }
 
   // add in any missing times in the time series
-  if (plotType === matsTypes.PlotTypes.timeSeries && !hideGaps) {
+  if (plotType === matsTypes.PlotTypes.timeSeries && !hideGaps)
+  {
     timeInterval *= 1000;
     const dayInMilliSeconds = 24 * 3600 * 1000;
     let lowerIndependentVar;
@@ -949,32 +1099,38 @@ const parseQueryDataXYCurve = function (
     let newTime;
     let thisCadence;
     let numberOfDaysBack;
-    for (dIdx = curveIndependentVars.length - 2; dIdx >= 0; dIdx -= 1) {
+    for (dIdx = curveIndependentVars.length - 2; dIdx >= 0; dIdx -= 1)
+    {
       lowerIndependentVar = curveIndependentVars[dIdx];
       upperIndependentVar = curveIndependentVars[dIdx + 1];
       const cyclesMissing =
         Math.ceil(
           (Number(upperIndependentVar) - Number(lowerIndependentVar)) / timeInterval
         ) - 1;
-      for (let missingIdx = cyclesMissing; missingIdx > 0; missingIdx -= 1) {
+      for (let missingIdx = cyclesMissing; missingIdx > 0; missingIdx -= 1)
+      {
         newTime = lowerIndependentVar + missingIdx * timeInterval;
-        if (!regular) {
+        if (!regular)
+        {
           // if it's not a regular model, we only want to add a null point if this is an init time that should have had a forecast.
           thisCadence = newTime % dayInMilliSeconds; // current hour of day (valid time)
-          if (Number(thisCadence) - Number(forecastOffset) * 3600 * 1000 < 0) {
+          if (Number(thisCadence) - Number(forecastOffset) * 3600 * 1000 < 0)
+          {
             // check to see if cycle time was on a previous day -- if so, need to wrap around 00Z to get current hour of day (cycle time)
             numberOfDaysBack = Math.ceil(
               (-1 * (Number(thisCadence) - Number(forecastOffset) * 3600 * 1000)) /
-                dayInMilliSeconds
+              dayInMilliSeconds
             );
             thisCadence =
               Number(thisCadence) -
               Number(forecastOffset) * 3600 * 1000 +
               numberOfDaysBack * dayInMilliSeconds; // current hour of day (cycle time)
-          } else {
+          } else
+          {
             thisCadence = Number(thisCadence) - Number(forecastOffset) * 3600 * 1000; // current hour of day (cycle time)
           }
-          if (cycles.indexOf(thisCadence) !== -1) {
+          if (cycles.indexOf(thisCadence) !== -1)
+          {
             returnD = matsDataUtils.addNullPoint(
               returnD,
               dIdx + 1,
@@ -987,7 +1143,8 @@ const parseQueryDataXYCurve = function (
               hasLevels
             );
           }
-        } else {
+        } else
+        {
           returnD = matsDataUtils.addNullPoint(
             returnD,
             dIdx + 1,
@@ -1004,12 +1161,14 @@ const parseQueryDataXYCurve = function (
     }
   }
 
-  if (plotType === matsTypes.PlotTypes.profile) {
+  if (plotType === matsTypes.PlotTypes.profile)
+  {
     returnD.xmin = depVarMin;
     returnD.xmax = depVarMax;
     returnD.ymin = indVarMin;
     returnD.ymax = indVarMax;
-  } else {
+  } else
+  {
     returnD.xmin = indVarMin;
     returnD.xmax = indVarMax;
     returnD.ymin = depVarMin;
@@ -1026,7 +1185,8 @@ const parseQueryDataXYCurve = function (
 };
 
 // this method parses the returned query data for performance diagrams
-const parseQueryDataReliability = function (rows, d, appParams, kernel) {
+const parseQueryDataReliability = function (rows, d, appParams, kernel)
+{
   /*
     let d = {
       // d will contain the curve data
@@ -1079,38 +1239,48 @@ const parseQueryDataReliability = function (rows, d, appParams, kernel) {
   const subVals = [];
   const subSecs = [];
   const subLevs = [];
-  for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
+  for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1)
+  {
     if (
       Number(rows[rowIndex].kernel) === 0 &&
       rows[rowIndex].rawfcstcount !== undefined &&
       rows[rowIndex].rawfcstcount !== "NULL"
-    ) {
+    )
+    {
       totalForecastCount += Number(rows[rowIndex].rawfcstcount);
       let subRawCounts = []; // actually raw counts but I'm re-using fields
       // parse the sub-data
-      if (rows[rowIndex].sub_data !== undefined && rows[rowIndex].sub_data !== null) {
-        try {
+      if (rows[rowIndex].sub_data !== undefined && rows[rowIndex].sub_data !== null)
+      {
+        try
+        {
           const subData = rows[rowIndex].sub_data.toString().split(",");
           let currSubData;
-          for (let sdIdx = 0; sdIdx < subData.length; sdIdx += 1) {
+          for (let sdIdx = 0; sdIdx < subData.length; sdIdx += 1)
+          {
             currSubData = subData[sdIdx].split(";");
-            if (hasLevels) {
+            if (hasLevels)
+            {
               subRawCounts.push(Number(currSubData[3]));
-            } else {
+            } else
+            {
               subRawCounts.push(Number(currSubData[2]));
             }
           }
-        } catch (e) {
+        } catch (e)
+        {
           // this is an error produced by a bug in the query function, not an error returned by the mysql database
           e.message = `Error in parseQueryDataReliability. The expected fields don't seem to be present in the results cache: ${e.message}`;
           throw new Error(e.message);
         }
-      } else {
+      } else
+      {
         subRawCounts = NaN;
       }
       subRelRawCount.push(subRawCounts);
     }
-    if (Number(rows[rowIndex].kernel) === Number(kernel)) {
+    if (Number(rows[rowIndex].kernel) === Number(kernel))
+    {
       const binVal = Number(rows[rowIndex].binValue);
       let hitCount;
       let fcstCount;
@@ -1118,13 +1288,15 @@ const parseQueryDataReliability = function (rows, d, appParams, kernel) {
       if (
         rows[rowIndex].fcstcount !== undefined &&
         rows[rowIndex].hitcount !== undefined
-      ) {
+      )
+      {
         hitCount =
           rows[rowIndex].hitcount === "NULL" ? null : Number(rows[rowIndex].hitcount);
         fcstCount =
           rows[rowIndex].fcstcount === "NULL" ? null : Number(rows[rowIndex].fcstcount);
         observedFreq = hitCount / fcstCount;
-      } else {
+      } else
+      {
         hitCount = null;
         fcstCount = null;
       }
@@ -1142,41 +1314,51 @@ const parseQueryDataReliability = function (rows, d, appParams, kernel) {
         hitCount !== null &&
         rows[rowIndex].sub_data !== undefined &&
         rows[rowIndex].sub_data !== null
-      ) {
+      )
+      {
         // parse the sub-data
-        try {
+        try
+        {
           const thisSubData = rows[rowIndex].sub_data.toString().split(",");
           let currSubData;
-          for (let sdIdx = 0; sdIdx < thisSubData.length; sdIdx += 1) {
+          for (let sdIdx = 0; sdIdx < thisSubData.length; sdIdx += 1)
+          {
             currSubData = thisSubData[sdIdx].split(";");
             thisSubSecs.push(Number(currSubData[0]));
-            if (hasLevels) {
-              if (!matsMethods.isThisANaN(Number(currSubData[1]))) {
+            if (hasLevels)
+            {
+              if (!matsMethods.isThisANaN(Number(currSubData[1])))
+              {
                 thisSubLevs.push(Number(currSubData[1]));
-              } else {
+              } else
+              {
                 thisSubLevs.push(currSubData[1]);
               }
               subRelCounts.push(Number(currSubData[2]));
               thisSubRelHit.push(Number(currSubData[4]));
               // this is a dummy to fit the expectations of common functions that xy line curves have a populated sub_values array. It isn't used for anything.
               thisSubValues.push(0);
-            } else {
+            } else
+            {
               subRelCounts.push(Number(currSubData[1]));
               thisSubRelHit.push(Number(currSubData[3]));
               // this is a dummy to fit the expectations of common functions that xy line curves have a populated sub_values array. It isn't used for anything.
               thisSubValues.push(0);
             }
           }
-        } catch (e) {
+        } catch (e)
+        {
           // this is an error produced by a bug in the query function, not an error returned by the mysql database
           e.message = `Error in parseQueryDataReliability. The expected fields don't seem to be present in the results cache: ${e.message}`;
           throw new Error(e.message);
         }
-      } else {
+      } else
+      {
         subRelCounts = NaN;
         thisSubRelHit = NaN;
         thisSubSecs = NaN;
-        if (hasLevels) {
+        if (hasLevels)
+        {
           thisSubLevs = NaN;
         }
       }
@@ -1184,7 +1366,8 @@ const parseQueryDataReliability = function (rows, d, appParams, kernel) {
       subRelHit.push(thisSubRelHit);
       subVals.push(thisSubValues);
       subSecs.push(thisSubSecs);
-      if (hasLevels) {
+      if (hasLevels)
+      {
         subLevs.push(thisSubLevs);
       }
     }
@@ -1214,7 +1397,8 @@ const parseQueryDataReliability = function (rows, d, appParams, kernel) {
   let yMin = Number.MAX_VALUE;
   let yMax = -1 * Number.MAX_VALUE;
 
-  for (let didx = 0; didx < binVals.length; didx += 1) {
+  for (let didx = 0; didx < binVals.length; didx += 1)
+  {
     xMin = returnD.x[didx] !== null && returnD.x[didx] < xMin ? returnD.x[didx] : xMin;
     xMax = returnD.x[didx] !== null && returnD.x[didx] > xMax ? returnD.x[didx] : xMax;
     yMin = returnD.y[didx] !== null && returnD.y[didx] < yMin ? returnD.y[didx] : yMin;
@@ -1231,7 +1415,8 @@ const parseQueryDataReliability = function (rows, d, appParams, kernel) {
 };
 
 // this method parses the returned query data for performance diagrams
-const parseQueryDataPerformanceDiagram = function (rows, d, appParams) {
+const parseQueryDataPerformanceDiagram = function (rows, d, appParams)
+{
   /*
         var d = {   // d will contain the curve data
             x: [],
@@ -1276,18 +1461,21 @@ const parseQueryDataPerformanceDiagram = function (rows, d, appParams) {
   const subVals = [];
   const subSecs = [];
   const subLevs = [];
-  for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
+  for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1)
+  {
     const binVal = Number(rows[rowIndex].binVal);
     let pod;
     let success;
     let oy;
     let on;
-    if (rows[rowIndex].pod !== undefined && rows[rowIndex].far !== undefined) {
+    if (rows[rowIndex].pod !== undefined && rows[rowIndex].far !== undefined)
+    {
       pod = rows[rowIndex].pod === "NULL" ? null : Number(rows[rowIndex].pod);
       success = rows[rowIndex].far === "NULL" ? null : 1 - Number(rows[rowIndex].far);
       oy = rows[rowIndex].oy === "NULL" ? null : Number(rows[rowIndex].oy_all);
       on = rows[rowIndex].on === "NULL" ? null : Number(rows[rowIndex].on_all);
-    } else {
+    } else
+    {
       pod = null;
       success = null;
       oy = null;
@@ -1312,18 +1500,24 @@ const parseQueryDataPerformanceDiagram = function (rows, d, appParams) {
       pod !== null &&
       rows[rowIndex].sub_data !== undefined &&
       rows[rowIndex].sub_data !== null
-    ) {
+    )
+    {
       // parse the sub-data
-      try {
+      try
+      {
         const thisSubData = rows[rowIndex].sub_data.toString().split(",");
         let currSubData;
-        for (let sdIdx = 0; sdIdx < thisSubData.length; sdIdx += 1) {
+        for (let sdIdx = 0; sdIdx < thisSubData.length; sdIdx += 1)
+        {
           currSubData = thisSubData[sdIdx].split(";");
           thisSubSecs.push(Number(currSubData[0]));
-          if (hasLevels) {
-            if (!matsMethods.isThisANaN(Number(currSubData[1]))) {
+          if (hasLevels)
+          {
+            if (!matsMethods.isThisANaN(Number(currSubData[1])))
+            {
               thisSubLevs.push(Number(currSubData[1]));
-            } else {
+            } else
+            {
               thisSubLevs.push(currSubData[1]);
             }
             thisSubHit.push(Number(currSubData[2]));
@@ -1332,7 +1526,8 @@ const parseQueryDataPerformanceDiagram = function (rows, d, appParams) {
             thisSubCn.push(Number(currSubData[5]));
             // this is a dummy to fit the expectations of common functions that xy line curves have a populated sub_values array. It isn't used for anything.
             thisSubValues.push(0);
-          } else {
+          } else
+          {
             thisSubHit.push(Number(currSubData[1]));
             thisSubFa.push(Number(currSubData[2]));
             thisSubMiss.push(Number(currSubData[3]));
@@ -1341,18 +1536,21 @@ const parseQueryDataPerformanceDiagram = function (rows, d, appParams) {
             thisSubValues.push(0);
           }
         }
-      } catch (e) {
+      } catch (e)
+      {
         // this is an error produced by a bug in the query function, not an error returned by the mysql database
         e.message = `Error in parseQueryDataPerformanceDiagram. The expected fields don't seem to be present in the results cache: ${e.message}`;
         throw new Error(e.message);
       }
-    } else {
+    } else
+    {
       thisSubHit = NaN;
       thisSubFa = NaN;
       thisSubMiss = NaN;
       thisSubCn = NaN;
       thisSubSecs = NaN;
-      if (hasLevels) {
+      if (hasLevels)
+      {
         thisSubLevs = NaN;
       }
     }
@@ -1362,7 +1560,8 @@ const parseQueryDataPerformanceDiagram = function (rows, d, appParams) {
     subCn.push(thisSubCn);
     subVals.push(thisSubValues);
     subSecs.push(thisSubSecs);
-    if (hasLevels) {
+    if (hasLevels)
+    {
       subLevs.push(thisSubLevs);
     }
   }
@@ -1386,7 +1585,8 @@ const parseQueryDataPerformanceDiagram = function (rows, d, appParams) {
   let podMin = Number.MAX_VALUE;
   let podMax = -1 * Number.MAX_VALUE;
 
-  for (let dIdx = 0; dIdx < binVals.length; dIdx += 1) {
+  for (let dIdx = 0; dIdx < binVals.length; dIdx += 1)
+  {
     successMin =
       successes[dIdx] !== null && successes[dIdx] < successMin
         ? successes[dIdx]
@@ -1418,7 +1618,8 @@ const parseQueryDataSimpleScatter = function (
   appParams,
   statisticXStr,
   statisticYStr
-) {
+)
+{
   /*
         var d = {   // d will contain the curve data
             x: [],
@@ -1475,14 +1676,16 @@ const parseQueryDataSimpleScatter = function (
   const subValsY = [];
   const subSecs = [];
   const subLevs = [];
-  for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
+  for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1)
+  {
     const binVal = Number(rows[rowIndex].binVal);
     let xStat;
     let yStat;
     if (
       rows[rowIndex].square_diff_sumX !== undefined &&
       rows[rowIndex].square_diff_sumY !== undefined
-    ) {
+    )
+    {
       // this is a scalar partial sums plot
       const squareDiffSumX = Number(rows[rowIndex].square_diff_sumX);
       const NSumX = Number(rows[rowIndex].N_sumX);
@@ -1496,7 +1699,8 @@ const parseQueryDataSimpleScatter = function (
       const modelSumY = Number(rows[rowIndex].model_sumY);
       const obsSumY = Number(rows[rowIndex].obs_sumY);
       const absSumY = Number(rows[rowIndex].abs_sumY);
-      if (NSumX > 0 && NSumY > 0) {
+      if (NSumX > 0 && NSumY > 0)
+      {
         xStat = matsDataUtils.calculateStatScalar(
           squareDiffSumX,
           NSumX,
@@ -1517,7 +1721,8 @@ const parseQueryDataSimpleScatter = function (
           statisticYStr
         );
         yStat = matsMethods.isThisANaN(Number(yStat)) ? null : yStat;
-      } else {
+      } else
+      {
         xStat = null;
         yStat = null;
       }
@@ -1547,18 +1752,24 @@ const parseQueryDataSimpleScatter = function (
       yStat !== null &&
       rows[rowIndex].sub_data !== undefined &&
       rows[rowIndex].sub_data !== null
-    ) {
+    )
+    {
       // parse the sub-data
-      try {
+      try
+      {
         const thisSubData = rows[rowIndex].sub_data.toString().split(",");
         let currSubData;
-        for (let sdIdx = 0; sdIdx < thisSubData.length; sdIdx += 1) {
+        for (let sdIdx = 0; sdIdx < thisSubData.length; sdIdx += 1)
+        {
           currSubData = thisSubData[sdIdx].split(";");
           thisSubSecs.push(Number(currSubData[0]));
-          if (hasLevels) {
-            if (!matsMethods.isThisANaN(Number(currSubData[1]))) {
+          if (hasLevels)
+          {
+            if (!matsMethods.isThisANaN(Number(currSubData[1])))
+            {
               thisSubLevs.push(Number(currSubData[1]));
-            } else {
+            } else
+            {
               thisSubLevs.push(currSubData[1]);
             }
             thisSubSquareDiffSumX.push(Number(currSubData[2]));
@@ -1595,7 +1806,8 @@ const parseQueryDataSimpleScatter = function (
                 statisticYStr
               )
             );
-          } else {
+          } else
+          {
             thisSubSquareDiffSumX.push(Number(currSubData[1]));
             thisSubNSumX.push(Number(currSubData[2]));
             thisSubObsModelDiffSumX.push(Number(currSubData[3]));
@@ -1662,12 +1874,14 @@ const parseQueryDataSimpleScatter = function (
           absSumY,
           statisticYStr
         );
-      } catch (e) {
+      } catch (e)
+      {
         // this is an error produced by a bug in the query function, not an error returned by the mysql database
         e.message = `Error in parseQueryDataXYCurve. The expected fields don't seem to be present in the results cache: ${e.message}`;
         throw new Error(e.message);
       }
-    } else {
+    } else
+    {
       thisSubSquareDiffSumX = NaN;
       thisSubNSumX = NaN;
       thisSubObsModelDiffSumX = NaN;
@@ -1683,7 +1897,8 @@ const parseQueryDataSimpleScatter = function (
       thisSubAbsSumY = NaN;
       thisSubValuesY = NaN;
       thisSubSecs = NaN;
-      if (hasLevels) {
+      if (hasLevels)
+      {
         thisSubLevs = NaN;
       }
     }
@@ -1705,7 +1920,8 @@ const parseQueryDataSimpleScatter = function (
     subAbsSumY.push(thisSubAbsSumY);
     subValsY.push(thisSubValuesY);
     subSecs.push(thisSubSecs);
-    if (hasLevels) {
+    if (hasLevels)
+    {
       subLevs.push(thisSubLevs);
     }
   }
@@ -1736,7 +1952,8 @@ const parseQueryDataSimpleScatter = function (
   let ymin = Number.MAX_VALUE;
   let ymax = -1 * Number.MAX_VALUE;
 
-  for (let dIdx = 0; dIdx < binVals.length; dIdx += 1) {
+  for (let dIdx = 0; dIdx < binVals.length; dIdx += 1)
+  {
     xmin = xStats[dIdx] !== null && xStats[dIdx] < xmin ? xStats[dIdx] : xmin;
     xmax = xStats[dIdx] !== null && xStats[dIdx] > xmax ? xStats[dIdx] : xmax;
     ymin = yStats[dIdx] !== null && yStats[dIdx] < ymin ? yStats[dIdx] : ymin;
@@ -1772,7 +1989,8 @@ const parseQueryDataMapScalar = function (
   appParams,
   plotParams,
   isCouchbase
-) {
+)
+{
   const returnD = d;
   const returnDLowest = dLowest;
   const returnDLow = dLow;
@@ -1792,33 +2010,38 @@ const parseQueryDataMapScalar = function (
   let colorModerate = "";
   let colorHigh = "";
   let colorHighest = "";
-  if (statistic.includes("Bias")) {
+  if (statistic.includes("Bias"))
+  {
     if (
       variable.toLowerCase().includes("rh") ||
       variable.toLowerCase().includes("relative humidity") ||
       variable.toLowerCase().includes("dewpoint") ||
       variable.toLowerCase().includes("dpt") ||
       variable.toLowerCase().includes("td")
-    ) {
+    )
+    {
       colorLowest = "rgb(140,81,00)";
       colorLow = "rgb(191,129,45)";
       colorModerate = "rgb(125,125,125)";
       colorHigh = "rgb(53,151,143)";
       colorHighest = "rgb(1,102,95)";
-    } else if (variable.toLowerCase().includes("temp")) {
+    } else if (variable.toLowerCase().includes("temp"))
+    {
       colorLowest = "rgb(24,28,247)";
       colorLow = "rgb(67,147,195)";
       colorModerate = "rgb(125,125,125)";
       colorHigh = "rgb(255,120,86)";
       colorHighest = "rgb(216,21,47)";
-    } else {
+    } else
+    {
       colorLowest = "rgb(0,134,0)";
       colorLow = "rgb(80,255,80)";
       colorModerate = "rgb(125,125,125)";
       colorHigh = "rgb(255,80,255)";
       colorHighest = "rgb(134,0,134)";
     }
-  } else {
+  } else
+  {
     colorLowest = "rgb(125,125,125)";
     colorLow = "rgb(196,179,139)";
     colorModerate = "rgb(243,164,96)";
@@ -1832,7 +2055,8 @@ const parseQueryDataMapScalar = function (
   returnDHighest.color = colorHighest;
 
   let queryVal;
-  for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
+  for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1)
+  {
     const site = rows[rowIndex].sta_id;
     const squareDiffSum = Number(rows[rowIndex].square_diff_sum);
     const NSum = Number(rows[rowIndex].N_sum);
@@ -1840,7 +2064,8 @@ const parseQueryDataMapScalar = function (
     const modelSum = Number(rows[rowIndex].model_sum);
     const obsSum = Number(rows[rowIndex].obs_sum);
     const absSum = Number(rows[rowIndex].abs_sum);
-    if (NSum > 0) {
+    if (NSum > 0)
+    {
       queryVal = matsDataUtils.calculateStatScalar(
         squareDiffSum,
         NSum,
@@ -1851,7 +2076,8 @@ const parseQueryDataMapScalar = function (
         `${statistic}_${variable}`
       );
       queryVal = matsMethods.isThisANaN(Number(queryVal)) ? null : queryVal;
-    } else {
+    } else
+    {
       queryVal = null;
     }
     // store sub values to test them for stdev.
@@ -1871,18 +2097,24 @@ const parseQueryDataMapScalar = function (
       queryVal !== null &&
       rows[rowIndex].sub_data !== undefined &&
       rows[rowIndex].sub_data !== null
-    ) {
+    )
+    {
       // parse the sub-data
-      try {
+      try
+      {
         const thisSubData = rows[rowIndex].sub_data.toString().split(",");
         let currSubData;
-        for (let sdIdx = 0; sdIdx < thisSubData.length; sdIdx += 1) {
+        for (let sdIdx = 0; sdIdx < thisSubData.length; sdIdx += 1)
+        {
           currSubData = thisSubData[sdIdx].split(";");
           thisSubSecs.push(Number(currSubData[0]));
-          if (hasLevels) {
-            if (!matsMethods.isThisANaN(Number(currSubData[1]))) {
+          if (hasLevels)
+          {
+            if (!matsMethods.isThisANaN(Number(currSubData[1])))
+            {
               thisSubLevs.push(Number(currSubData[1]));
-            } else {
+            } else
+            {
               thisSubLevs.push(currSubData[1]);
             }
             thisSubSquareDiffSum.push(Number(currSubData[2]));
@@ -1902,7 +2134,8 @@ const parseQueryDataMapScalar = function (
                 `${statistic}_${variable}`
               )
             );
-          } else {
+          } else
+          {
             thisSubSquareDiffSum.push(Number(currSubData[1]));
             thisSubNSum.push(Number(currSubData[2]));
             thisSubObsModelDiffSum.push(Number(currSubData[3]));
@@ -1923,12 +2156,15 @@ const parseQueryDataMapScalar = function (
           }
         }
         // Now that we have all the sub-values, we can get the standard deviation and remove the ones that exceed it
-        if (outlierQCParam !== "all") {
+        if (outlierQCParam !== "all")
+        {
           thisSubStdev = matsDataUtils.stdev(thisSubValues);
           thisSubMean = matsDataUtils.average(thisSubValues);
           sdLimit = outlierQCParam * thisSubStdev;
-          for (let svIdx = thisSubValues.length - 1; svIdx >= 0; svIdx -= 1) {
-            if (Math.abs(thisSubValues[svIdx] - thisSubMean) > sdLimit) {
+          for (let svIdx = thisSubValues.length - 1; svIdx >= 0; svIdx -= 1)
+          {
+            if (Math.abs(thisSubValues[svIdx] - thisSubMean) > sdLimit)
+            {
               thisSubSquareDiffSum.splice(svIdx, 1);
               thisSubNSum.splice(svIdx, 1);
               thisSubObsModelDiffSum.splice(svIdx, 1);
@@ -1937,7 +2173,8 @@ const parseQueryDataMapScalar = function (
               thisSubAbsSum.splice(svIdx, 1);
               thisSubValues.splice(svIdx, 1);
               thisSubSecs.splice(svIdx, 1);
-              if (hasLevels) {
+              if (hasLevels)
+              {
                 thisSubLevs.splice(svIdx, 1);
               }
             }
@@ -1959,7 +2196,8 @@ const parseQueryDataMapScalar = function (
           `${statistic}_${variable}`
         );
         queryVal = matsMethods.isThisANaN(Number(queryVal)) ? null : queryVal;
-      } catch (e) {
+      } catch (e)
+      {
         // this is an error produced by a bug in the query function, not an error returned by the mysql database
         e.message = `Error in parseQueryDataMapScalar. The expected fields don't seem to be present in the results cache: ${e.message}`;
         throw new Error(e.message);
@@ -1972,9 +2210,11 @@ const parseQueryDataMapScalar = function (
       });
 
       let thisSite;
-      if (isCouchbase) {
+      if (isCouchbase)
+      {
         thisSite = siteMap.find((obj) => obj.name === site);
-      } else {
+      } else
+      {
         thisSite = siteMap.find((obj) => obj.options.id === site);
       }
 
@@ -1995,13 +2235,16 @@ const parseQueryDataMapScalar = function (
   const allMean = matsDataUtils.average(filteredValues);
   const allStdev = matsDataUtils.stdev(filteredValues);
   let allSdLimit;
-  if (outlierQCParam !== "all") {
+  if (outlierQCParam !== "all")
+  {
     allSdLimit = outlierQCParam * allStdev;
   }
 
-  for (let didx = returnD.queryVal.length - 1; didx >= 0; didx -= 1) {
+  for (let didx = returnD.queryVal.length - 1; didx >= 0; didx -= 1)
+  {
     queryVal = returnD.queryVal[didx];
-    if (outlierQCParam !== "all" && Math.abs(queryVal - allMean) > allSdLimit) {
+    if (outlierQCParam !== "all" && Math.abs(queryVal - allMean) > allSdLimit)
+    {
       // this point is too far from the mean. Exclude it.
       returnD.queryVal.splice(didx, 1);
       returnD.stats.splice(didx, 1);
@@ -2015,64 +2258,76 @@ const parseQueryDataMapScalar = function (
 
   // get range of values for colorscale, eliminating the highest and lowest as outliers
   filteredValues = returnD.queryVal.filter((x) => x || x === 0);
-  filteredValues = filteredValues.sort(function (a, b) {
+  filteredValues = filteredValues.sort(function (a, b)
+  {
     return Number(a) - Number(b);
   });
   const limitType = plotParams["map-range-controls"];
-  if (limitType === undefined || limitType === "Default range") {
+  if (limitType === undefined || limitType === "Default range")
+  {
     highLimit = filteredValues[Math.floor(filteredValues.length * 0.98)];
     lowLimit = filteredValues[Math.floor(filteredValues.length * 0.02)];
-  } else {
+  } else
+  {
     highLimit = Number(plotParams["map-high-limit"]);
     lowLimit = Number(plotParams["map-low-limit"]);
   }
 
   const maxValue =
     Math.abs(highLimit) > Math.abs(lowLimit) ? Math.abs(highLimit) : Math.abs(lowLimit);
-  if (statistic === "Bias (Model - Obs)") {
+  if (statistic === "Bias (Model - Obs)")
+  {
     // bias colorscale needs to be symmetrical around 0
     highLimit = maxValue;
     lowLimit = -1 * maxValue;
   }
 
-  for (let didx = 0; didx < returnD.queryVal.length; didx += 1) {
+  for (let didx = 0; didx < returnD.queryVal.length; didx += 1)
+  {
     queryVal = returnD.queryVal[didx];
     let textMarker;
-    if (variable.includes("2m") || variable.includes("10m")) {
+    if (variable.includes("2m") || variable.includes("10m"))
+    {
       textMarker = queryVal === null ? "" : queryVal.toFixed(0);
-    } else {
+    } else
+    {
       textMarker = queryVal === null ? "" : queryVal.toFixed(1);
     }
     // sort the data by the color it will appear on the map
-    if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.2) {
+    if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.2)
+    {
       returnD.color[didx] = colorLowest;
       returnDLowest.siteName.push(returnD.siteName[didx]);
       returnDLowest.queryVal.push(queryVal);
       returnDLowest.text.push(textMarker);
       returnDLowest.lat.push(returnD.lat[didx]);
       returnDLowest.lon.push(returnD.lon[didx]);
-    } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.4) {
+    } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.4)
+    {
       returnD.color[didx] = colorLow;
       returnDLow.siteName.push(returnD.siteName[didx]);
       returnDLow.queryVal.push(queryVal);
       returnDLow.text.push(textMarker);
       returnDLow.lat.push(returnD.lat[didx]);
       returnDLow.lon.push(returnD.lon[didx]);
-    } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.6) {
+    } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.6)
+    {
       returnD.color[didx] = colorModerate;
       returnDModerate.siteName.push(returnD.siteName[didx]);
       returnDModerate.queryVal.push(queryVal);
       returnDModerate.text.push(textMarker);
       returnDModerate.lat.push(returnD.lat[didx]);
       returnDModerate.lon.push(returnD.lon[didx]);
-    } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.8) {
+    } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.8)
+    {
       returnD.color[didx] = colorHigh;
       returnDHigh.siteName.push(returnD.siteName[didx]);
       returnDHigh.queryVal.push(queryVal);
       returnDHigh.text.push(textMarker);
       returnDHigh.lat.push(returnD.lat[didx]);
       returnDHigh.lon.push(returnD.lon[didx]);
-    } else {
+    } else
+    {
       returnD.color[didx] = colorHighest;
       returnDHighest.siteName.push(returnD.siteName[didx]);
       returnDHighest.queryVal.push(queryVal);
@@ -2116,7 +2371,8 @@ const parseQueryDataMapCTC = function (
   statistic,
   appParams,
   isCouchbase
-) {
+)
+{
   const returnD = d;
   const returnDPurple = dPurple;
   const returnDPurpleBlue = dPurpleBlue;
@@ -2136,17 +2392,20 @@ const parseQueryDataMapCTC = function (
     appParams.outliers !== "all" ? Number(appParams.outliers) : appParams.outliers;
 
   let queryVal;
-  for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
+  for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1)
+  {
     const site = rows[rowIndex].sta_id;
     const hit = Number(rows[rowIndex].hit);
     const fa = Number(rows[rowIndex].fa);
     const miss = Number(rows[rowIndex].miss);
     const cn = Number(rows[rowIndex].cn);
     const n = rows[rowIndex].nTimes;
-    if (hit + fa + miss + cn > 0) {
+    if (hit + fa + miss + cn > 0)
+    {
       queryVal = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, n, statistic);
       queryVal = matsMethods.isThisANaN(Number(queryVal)) ? null : queryVal;
-      switch (statistic) {
+      switch (statistic)
+      {
         case "PODy (POD of value < threshold)":
         case "PODy (POD of value > threshold)":
         case "PODn (POD of value > threshold)":
@@ -2178,7 +2437,8 @@ const parseQueryDataMapCTC = function (
           highLimit = 100;
           break;
       }
-    } else {
+    } else
+    {
       queryVal = null;
     }
 
@@ -2197,18 +2457,24 @@ const parseQueryDataMapCTC = function (
       queryVal !== null &&
       rows[rowIndex].sub_data !== undefined &&
       rows[rowIndex].sub_data !== null
-    ) {
+    )
+    {
       // parse the sub-data
-      try {
+      try
+      {
         const thisSubData = rows[rowIndex].sub_data.toString().split(",");
         let currSubData;
-        for (let sdIdx = 0; sdIdx < thisSubData.length; sdIdx += 1) {
+        for (let sdIdx = 0; sdIdx < thisSubData.length; sdIdx += 1)
+        {
           currSubData = thisSubData[sdIdx].split(";");
           thisSubSecs.push(Number(currSubData[0]));
-          if (hasLevels) {
-            if (!matsMethods.isThisANaN(Number(currSubData[1]))) {
+          if (hasLevels)
+          {
+            if (!matsMethods.isThisANaN(Number(currSubData[1])))
+            {
               thisSubLevs.push(Number(currSubData[1]));
-            } else {
+            } else
+            {
               thisSubLevs.push(currSubData[1]);
             }
             thisSubHit.push(Number(currSubData[2]));
@@ -2225,7 +2491,8 @@ const parseQueryDataMapCTC = function (
                 statistic
               )
             );
-          } else {
+          } else
+          {
             thisSubHit.push(Number(currSubData[1]));
             thisSubFa.push(Number(currSubData[2]));
             thisSubMiss.push(Number(currSubData[3]));
@@ -2243,19 +2510,23 @@ const parseQueryDataMapCTC = function (
           }
         }
         // Now that we have all the sub-values, we can get the standard deviation and remove the ones that exceed it
-        if (outlierQCParam !== "all") {
+        if (outlierQCParam !== "all")
+        {
           thisSubStdev = matsDataUtils.stdev(thisSubValues);
           thisSubMean = matsDataUtils.average(thisSubValues);
           sdLimit = outlierQCParam * thisSubStdev;
-          for (let svIdx = thisSubValues.length - 1; svIdx >= 0; svIdx -= 1) {
-            if (Math.abs(thisSubValues[svIdx] - thisSubMean) > sdLimit) {
+          for (let svIdx = thisSubValues.length - 1; svIdx >= 0; svIdx -= 1)
+          {
+            if (Math.abs(thisSubValues[svIdx] - thisSubMean) > sdLimit)
+            {
               thisSubHit.splice(svIdx, 1);
               thisSubFa.splice(svIdx, 1);
               thisSubMiss.splice(svIdx, 1);
               thisSubCn.splice(svIdx, 1);
               thisSubValues.splice(svIdx, 1);
               thisSubSecs.splice(svIdx, 1);
-              if (hasLevels) {
+              if (hasLevels)
+              {
                 thisSubLevs.splice(svIdx, 1);
               }
             }
@@ -2274,7 +2545,8 @@ const parseQueryDataMapCTC = function (
           statistic
         );
         queryVal = matsMethods.isThisANaN(Number(queryVal)) ? null : queryVal;
-      } catch (e) {
+      } catch (e)
+      {
         // this is an error produced by a bug in the query function, not an error returned by the mysql database
         e.message = `Error in parseQueryDataMapCTC. The expected fields don't seem to be present in the results cache: ${e.message}`;
         throw new Error(e.message);
@@ -2291,9 +2563,11 @@ const parseQueryDataMapCTC = function (
       });
 
       let thisSite;
-      if (isCouchbase) {
+      if (isCouchbase)
+      {
         thisSite = siteMap.find((obj) => obj.name === site);
-      } else {
+      } else
+      {
         thisSite = siteMap.find((obj) => obj.options.id === site);
       }
 
@@ -2312,70 +2586,80 @@ const parseQueryDataMapCTC = function (
 
       // sort the data by the color it will appear on the map
       const textMarker = queryVal === null ? "" : queryVal.toFixed(0);
-      if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.1) {
+      if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.1)
+      {
         returnD.color.push("rgb(128,0,255)");
         returnDPurple.siteName.push(thisSite.origName);
         returnDPurple.queryVal.push(queryVal);
         returnDPurple.text.push(textMarker);
         returnDPurple.lat.push(thisSite.point[0]);
         returnDPurple.lon.push(thisSite.point[1]);
-      } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.2) {
+      } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.2)
+      {
         returnD.color.push("rgb(64,0,255)");
         returnDPurpleBlue.siteName.push(thisSite.origName);
         returnDPurpleBlue.queryVal.push(queryVal);
         returnDPurpleBlue.text.push(textMarker);
         returnDPurpleBlue.lat.push(thisSite.point[0]);
         returnDPurpleBlue.lon.push(thisSite.point[1]);
-      } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.3) {
+      } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.3)
+      {
         returnD.color.push("rgb(0,0,255)");
         returnDBlue.siteName.push(thisSite.origName);
         returnDBlue.queryVal.push(queryVal);
         returnDBlue.text.push(textMarker);
         returnDBlue.lat.push(thisSite.point[0]);
         returnDBlue.lon.push(thisSite.point[1]);
-      } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.4) {
+      } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.4)
+      {
         returnD.color.push("rgb(64,128,128)");
         returnDBlueGreen.siteName.push(thisSite.origName);
         returnDBlueGreen.queryVal.push(queryVal);
         returnDBlueGreen.text.push(textMarker);
         returnDBlueGreen.lat.push(thisSite.point[0]);
         returnDBlueGreen.lon.push(thisSite.point[1]);
-      } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.5) {
+      } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.5)
+      {
         returnD.color.push("rgb(128,255,0)");
         returnDGreen.siteName.push(thisSite.origName);
         returnDGreen.queryVal.push(queryVal);
         returnDGreen.text.push(textMarker);
         returnDGreen.lat.push(thisSite.point[0]);
         returnDGreen.lon.push(thisSite.point[1]);
-      } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.6) {
+      } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.6)
+      {
         returnD.color.push("rgb(160,224,0)");
         returnDGreenYellow.siteName.push(thisSite.origName);
         returnDGreenYellow.queryVal.push(queryVal);
         returnDGreenYellow.text.push(textMarker);
         returnDGreenYellow.lat.push(thisSite.point[0]);
         returnDGreenYellow.lon.push(thisSite.point[1]);
-      } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.7) {
+      } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.7)
+      {
         returnD.color.push("rgb(192,192,0)");
         returnDYellow.siteName.push(thisSite.origName);
         returnDYellow.queryVal.push(queryVal);
         returnDYellow.text.push(textMarker);
         returnDYellow.lat.push(thisSite.point[0]);
         returnDYellow.lon.push(thisSite.point[1]);
-      } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.8) {
+      } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.8)
+      {
         returnD.color.push("rgb(255,128,0)");
         returnDOrange.siteName.push(thisSite.origName);
         returnDOrange.queryVal.push(queryVal);
         returnDOrange.text.push(textMarker);
         returnDOrange.lat.push(thisSite.point[0]);
         returnDOrange.lon.push(thisSite.point[1]);
-      } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.9) {
+      } else if (queryVal <= lowLimit + (highLimit - lowLimit) * 0.9)
+      {
         returnD.color.push("rgb(255,64,0)");
         returnDOrangeRed.siteName.push(thisSite.origName);
         returnDOrangeRed.queryVal.push(queryVal);
         returnDOrangeRed.text.push(textMarker);
         returnDOrangeRed.lat.push(thisSite.point[0]);
         returnDOrangeRed.lon.push(thisSite.point[1]);
-      } else {
+      } else
+      {
         returnD.color.push("rgb(255,0,0)");
         returnDRed.siteName.push(thisSite.origName);
         returnDRed.queryVal.push(queryVal);
@@ -2407,7 +2691,8 @@ const parseQueryDataMapCTC = function (
 };
 
 // this method parses the returned query data for histograms
-const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
+const parseQueryDataHistogram = function (rows, d, appParams, statisticStr)
+{
   /*
         var d = {   // d will contain the curve data
             x: [],
@@ -2451,9 +2736,11 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
   const curveSubLevsRaw = [];
 
   // parse the data returned from the query
-  for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
+  for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1)
+  {
     let stat;
-    if (rows[rowIndex].stat === undefined && rows[rowIndex].hit !== undefined) {
+    if (rows[rowIndex].stat === undefined && rows[rowIndex].hit !== undefined)
+    {
       // this is a contingency table plot
       isCTC = true;
       const hit = Number(rows[rowIndex].hit);
@@ -2461,16 +2748,19 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
       const miss = Number(rows[rowIndex].miss);
       const cn = Number(rows[rowIndex].cn);
       const n = rows[rowIndex].sub_data.toString().split(",").length;
-      if (hit + fa + miss + cn > 0) {
+      if (hit + fa + miss + cn > 0)
+      {
         stat = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, n, statisticStr);
         stat = matsMethods.isThisANaN(Number(stat)) ? null : stat;
-      } else {
+      } else
+      {
         stat = null;
       }
     } else if (
       rows[rowIndex].stat === undefined &&
       rows[rowIndex].square_diff_sum !== undefined
-    ) {
+    )
+    {
       // this is a scalar partial sums plot
       isScalar = true;
       const squareDiffSum = Number(rows[rowIndex].square_diff_sum);
@@ -2479,7 +2769,8 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
       const modelSum = Number(rows[rowIndex].model_sum);
       const obsSum = Number(rows[rowIndex].obs_sum);
       const absSum = Number(rows[rowIndex].abs_sum);
-      if (NSum > 0) {
+      if (NSum > 0)
+      {
         stat = matsDataUtils.calculateStatScalar(
           squareDiffSum,
           NSum,
@@ -2490,10 +2781,12 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
           statisticStr
         );
         stat = matsMethods.isThisANaN(Number(stat)) ? null : stat;
-      } else {
+      } else
+      {
         stat = null;
       }
-    } else {
+    } else
+    {
       // not a contingency table plot or a scalar partial sums plot
       stat = rows[rowIndex].stat === "NULL" ? null : rows[rowIndex].stat;
     }
@@ -2504,19 +2797,26 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
       stat !== null &&
       rows[rowIndex].sub_data !== undefined &&
       rows[rowIndex].sub_data !== null
-    ) {
+    )
+    {
       // parse the sub-data
-      try {
+      try
+      {
         const thisSubData = rows[rowIndex].sub_data.toString().split(",");
         let currSubData;
-        for (let sdIdx = 0; sdIdx < thisSubData.length; sdIdx += 1) {
+        for (let sdIdx = 0; sdIdx < thisSubData.length; sdIdx += 1)
+        {
           currSubData = thisSubData[sdIdx].split(";");
-          if (isCTC) {
+          if (isCTC)
+          {
             thisSubSecs.push(Number(currSubData[0]));
-            if (hasLevels) {
-              if (!matsMethods.isThisANaN(Number(currSubData[1]))) {
+            if (hasLevels)
+            {
+              if (!matsMethods.isThisANaN(Number(currSubData[1])))
+              {
                 thisSubLevs.push(Number(currSubData[1]));
-              } else {
+              } else
+              {
                 thisSubLevs.push(currSubData[1]);
               }
               thisSubStats.push(
@@ -2529,7 +2829,8 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
                   statisticStr
                 )
               );
-            } else {
+            } else
+            {
               thisSubStats.push(
                 matsDataUtils.calculateStatCTC(
                   Number(currSubData[1]),
@@ -2541,12 +2842,16 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
                 )
               );
             }
-          } else if (isScalar) {
+          } else if (isScalar)
+          {
             thisSubSecs.push(Number(currSubData[0]));
-            if (hasLevels) {
-              if (!matsMethods.isThisANaN(Number(currSubData[1]))) {
+            if (hasLevels)
+            {
+              if (!matsMethods.isThisANaN(Number(currSubData[1])))
+              {
                 thisSubLevs.push(Number(currSubData[1]));
-              } else {
+              } else
+              {
                 thisSubLevs.push(currSubData[1]);
               }
               thisSubStats.push(
@@ -2560,7 +2865,8 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
                   statisticStr
                 )
               );
-            } else {
+            } else
+            {
               thisSubStats.push(
                 matsDataUtils.calculateStatScalar(
                   Number(currSubData[1]),
@@ -2573,16 +2879,21 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
                 )
               );
             }
-          } else {
+          } else
+          {
             thisSubSecs.push(Number(currSubData[0]));
-            if (hasLevels) {
-              if (!matsMethods.isThisANaN(Number(currSubData[1]))) {
+            if (hasLevels)
+            {
+              if (!matsMethods.isThisANaN(Number(currSubData[1])))
+              {
                 thisSubLevs.push(Number(currSubData[1]));
-              } else {
+              } else
+              {
                 thisSubLevs.push(currSubData[1]);
               }
               thisSubStats.push(Number(currSubData[2]));
-            } else {
+            } else
+            {
               thisSubStats.push(Number(currSubData[1]));
             }
           }
@@ -2590,7 +2901,8 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
         curveSubStatsRaw.push(thisSubStats);
         curveSubSecsRaw.push(thisSubSecs);
         curveSubLevsRaw.push(thisSubLevs);
-      } catch (e) {
+      } catch (e)
+      {
         // this is an error produced by a bug in the query function, not an error returned by the mysql database
         e.message = `Error in parseQueryDataHistogram. The expected fields don't seem to be present in the results cache: ${e.message}`;
         throw new Error(e.message);
@@ -2601,23 +2913,27 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
   // we don't have bins yet, so we want all of the data in one array
   const subVals =
     curveSubStatsRaw.length > 0
-      ? curveSubStatsRaw.reduce(function (a, b) {
-          return a.concat(b);
-        })
+      ? curveSubStatsRaw.reduce(function (a, b)
+      {
+        return a.concat(b);
+      })
       : [];
   const subSecs =
     curveSubSecsRaw.length > 0
-      ? curveSubSecsRaw.reduce(function (a, b) {
-          return a.concat(b);
-        })
+      ? curveSubSecsRaw.reduce(function (a, b)
+      {
+        return a.concat(b);
+      })
       : [];
   let subLevs;
-  if (hasLevels) {
+  if (hasLevels)
+  {
     subLevs =
       curveSubLevsRaw.length > 0
-        ? curveSubLevsRaw.reduce(function (a, b) {
-            return a.concat(b);
-          })
+        ? curveSubLevsRaw.reduce(function (a, b)
+        {
+          return a.concat(b);
+        })
         : [];
   }
 
@@ -2633,7 +2949,8 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
 };
 
 // this method parses the returned query data for contour plots
-const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
+const parseQueryDataContour = function (rows, d, appParams, statisticStr)
+{
   /*
         var d = {   // d will contain the curve data
             x: [],
@@ -2708,7 +3025,8 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
   const curveSubLevLookup = {};
 
   // get all the data out of the query array
-  for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
+  for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1)
+  {
     const rowXVal = Number(rows[rowIndex].xVal);
     const rowYVal = Number(rows[rowIndex].yVal);
     const statKey = `${rowXVal.toString()}_${rowYVal.toString()}`;
@@ -2728,21 +3046,24 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
     let obsSum = null;
     let absSum = null;
     let stdev = null;
-    if (rows[rowIndex].stat === undefined && rows[rowIndex].hit !== undefined) {
+    if (rows[rowIndex].stat === undefined && rows[rowIndex].hit !== undefined)
+    {
       // this is a contingency table plot
       isCTC = true;
       hit = Number(rows[rowIndex].hit);
       fa = Number(rows[rowIndex].fa);
       miss = Number(rows[rowIndex].miss);
       cn = Number(rows[rowIndex].cn);
-      if (hit + fa + miss + cn > 0) {
+      if (hit + fa + miss + cn > 0)
+      {
         stat = matsDataUtils.calculateStatCTC(hit, fa, miss, cn, n, statisticStr);
         stat = matsMethods.isThisANaN(Number(stat)) ? null : stat;
       }
     } else if (
       rows[rowIndex].stat === undefined &&
       rows[rowIndex].square_diff_sum !== undefined
-    ) {
+    )
+    {
       // this is a scalar partial sums plot
       isScalar = true;
       squareDiffSum = Number(rows[rowIndex].square_diff_sum);
@@ -2751,7 +3072,8 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
       modelSum = Number(rows[rowIndex].model_sum);
       obsSum = Number(rows[rowIndex].obs_sum);
       absSum = Number(rows[rowIndex].abs_sum);
-      if (NSum > 0) {
+      if (NSum > 0)
+      {
         stat = matsDataUtils.calculateStatScalar(
           squareDiffSum,
           NSum,
@@ -2773,14 +3095,16 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
           `Std deviation_${variable}`
         );
       }
-    } else {
+    } else
+    {
       // not a contingency table plot
       stat = rows[rowIndex].stat === "NULL" ? null : rows[rowIndex].stat;
       stdev = rows[rowIndex].stdev !== undefined ? rows[rowIndex].stdev : null;
     }
     let minDate = rows[rowIndex].min_secs;
     let maxDate = rows[rowIndex].max_secs;
-    if (stat === undefined || stat === null) {
+    if (stat === undefined || stat === null)
+    {
       stat = null;
       stdev = 0;
       n = 0;
@@ -2804,37 +3128,49 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
       stat !== null &&
       rows[rowIndex].sub_data !== undefined &&
       rows[rowIndex].sub_data !== null
-    ) {
+    )
+    {
       // parse the sub-data
-      try {
+      try
+      {
         const thisSubData = rows[rowIndex].sub_data.toString().split(",");
         let currSubData;
-        for (let sdIdx = 0; sdIdx < thisSubData.length; sdIdx += 1) {
+        for (let sdIdx = 0; sdIdx < thisSubData.length; sdIdx += 1)
+        {
           currSubData = thisSubData[sdIdx].split(";");
-          if (isCTC) {
+          if (isCTC)
+          {
             thisSubSecs.push(Number(currSubData[0]));
-            if (hasLevels) {
-              if (!matsMethods.isThisANaN(Number(currSubData[1]))) {
+            if (hasLevels)
+            {
+              if (!matsMethods.isThisANaN(Number(currSubData[1])))
+              {
                 thisSubLevs.push(Number(currSubData[1]));
-              } else {
+              } else
+              {
                 thisSubLevs.push(currSubData[1]);
               }
               thisSubHit.push(Number(currSubData[2]));
               thisSubFa.push(Number(currSubData[3]));
               thisSubMiss.push(Number(currSubData[4]));
               thisSubCn.push(Number(currSubData[5]));
-            } else {
+            } else
+            {
               thisSubHit.push(Number(currSubData[1]));
               thisSubFa.push(Number(currSubData[2]));
               thisSubMiss.push(Number(currSubData[3]));
               thisSubCn.push(Number(currSubData[4]));
             }
-          } else if (isScalar) {
+          } else if (isScalar)
+          {
             thisSubSecs.push(Number(currSubData[0]));
-            if (hasLevels) {
-              if (!matsMethods.isThisANaN(Number(currSubData[1]))) {
+            if (hasLevels)
+            {
+              if (!matsMethods.isThisANaN(Number(currSubData[1])))
+              {
                 thisSubLevs.push(Number(currSubData[1]));
-              } else {
+              } else
+              {
                 thisSubLevs.push(currSubData[1]);
               }
               thisSubSquareDiffSum.push(Number(currSubData[2]));
@@ -2843,7 +3179,8 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
               thisSubModelSum.push(Number(currSubData[5]));
               thisSubObsSum.push(Number(currSubData[6]));
               thisSubAbsSum.push(Number(currSubData[7]));
-            } else {
+            } else
+            {
               thisSubSquareDiffSum.push(Number(currSubData[1]));
               thisSubNSum.push(Number(currSubData[2]));
               thisSubObsModelDiffSum.push(Number(currSubData[3]));
@@ -2851,43 +3188,54 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
               thisSubObsSum.push(Number(currSubData[5]));
               thisSubAbsSum.push(Number(currSubData[6]));
             }
-          } else {
+          } else
+          {
             thisSubSecs.push(Number(currSubData[0]));
-            if (hasLevels) {
-              if (!matsMethods.isThisANaN(Number(currSubData[1]))) {
+            if (hasLevels)
+            {
+              if (!matsMethods.isThisANaN(Number(currSubData[1])))
+              {
                 thisSubLevs.push(Number(currSubData[1]));
-              } else {
+              } else
+              {
                 thisSubLevs.push(currSubData[1]);
               }
               thisSubValues.push(Number(currSubData[2]));
-            } else {
+            } else
+            {
               thisSubValues.push(Number(currSubData[1]));
             }
           }
         }
-      } catch (e) {
+      } catch (e)
+      {
         // this is an error produced by a bug in the query function, not an error returned by the mysql database
         e.message = `Error in parseQueryDataContour. The expected fields don't seem to be present in the results cache: ${e.message}`;
         throw new Error(e.message);
       }
-    } else {
-      if (isCTC) {
+    } else
+    {
+      if (isCTC)
+      {
         thisSubHit = NaN;
         thisSubFa = NaN;
         thisSubMiss = NaN;
         thisSubCn = NaN;
-      } else if (isScalar) {
+      } else if (isScalar)
+      {
         thisSubSquareDiffSum = NaN;
         thisSubNSum = NaN;
         thisSubObsModelDiffSum = NaN;
         thisSubModelSum = NaN;
         thisSubObsSum = NaN;
         thisSubAbsSum = NaN;
-      } else {
+      } else
+      {
         thisSubValues = NaN;
       }
       thisSubSecs = NaN;
-      if (hasLevels) {
+      if (hasLevels)
+      {
         thisSubLevs = NaN;
       }
     }
@@ -2911,32 +3259,38 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
     curveStatLookup[statKey] = stat;
     curveStdevLookup[statKey] = stdev;
     curveNLookup[statKey] = n;
-    if (isCTC) {
+    if (isCTC)
+    {
       curveSubHitLookup[statKey] = thisSubHit;
       curveSubFaLookup[statKey] = thisSubFa;
       curveSubMissLookup[statKey] = thisSubMiss;
       curveSubCnLookup[statKey] = thisSubCn;
-    } else if (isScalar) {
+    } else if (isScalar)
+    {
       curveSubSquareDiffSumLookup[statKey] = thisSubSquareDiffSum;
       curveSubNSumLookup[statKey] = thisSubNSum;
       curveSubObsModelDiffSumLookup[statKey] = thisSubObsModelDiffSum;
       curveSubModelSumLookup[statKey] = thisSubModelSum;
       curveSubObsSumLookup[statKey] = thisSubObsSum;
       curveSubAbsSumLookup[statKey] = thisSubAbsSum;
-    } else {
+    } else
+    {
       curveSubValLookup[statKey] = thisSubValues;
     }
     curveSubSecLookup[statKey] = thisSubSecs;
-    if (hasLevels) {
+    if (hasLevels)
+    {
       curveSubLevLookup[statKey] = thisSubLevs;
     }
   }
 
   // get the unique x and y values and sort the stats into the 2D z array accordingly
-  returnD.x = matsDataUtils.arrayUnique(returnD.xTextOutput).sort(function (a, b) {
+  returnD.x = matsDataUtils.arrayUnique(returnD.xTextOutput).sort(function (a, b)
+  {
     return a - b;
   });
-  returnD.y = matsDataUtils.arrayUnique(returnD.yTextOutput).sort(function (a, b) {
+  returnD.y = matsDataUtils.arrayUnique(returnD.yTextOutput).sort(function (a, b)
+  {
     return a - b;
   });
   let i;
@@ -2981,101 +3335,121 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
   let zmin = Number.MAX_VALUE;
   let zmax = -1 * Number.MAX_VALUE;
 
-  for (j = 0; j < returnD.y.length; j += 1) {
+  for (j = 0; j < returnD.y.length; j += 1)
+  {
     currY = returnD.y[j];
     currYStatArray = [];
     currYStdevArray = [];
     currYNArray = [];
-    if (isCTC) {
+    if (isCTC)
+    {
       currYSubHitArray = [];
       currYSubFaArray = [];
       currYSubMissArray = [];
       currYSubCnArray = [];
-    } else if (isScalar) {
+    } else if (isScalar)
+    {
       currYSubSquareDiffSumArray = [];
       currYSubNSumArray = [];
       currYSubObsModelDiffSumArray = [];
       currYSubModelSumArray = [];
       currYSubObsSumArray = [];
       currYSubAbsSumArray = [];
-    } else {
+    } else
+    {
       currYSubValArray = [];
     }
     currYSubSecArray = [];
-    if (hasLevels) {
+    if (hasLevels)
+    {
       currYSubLevArray = [];
     }
-    for (i = 0; i < returnD.x.length; i += 1) {
+    for (i = 0; i < returnD.x.length; i += 1)
+    {
       currX = returnD.x[i];
       currStatKey = `${currX.toString()}_${currY.toString()}`;
       currStat = curveStatLookup[currStatKey];
       currStdev = curveStdevLookup[currStatKey];
       currN = curveNLookup[currStatKey];
-      if (isCTC) {
+      if (isCTC)
+      {
         currSubHit = curveSubHitLookup[currStatKey];
         currSubFa = curveSubFaLookup[currStatKey];
         currSubMiss = curveSubMissLookup[currStatKey];
         currSubCn = curveSubCnLookup[currStatKey];
-      } else if (isScalar) {
+      } else if (isScalar)
+      {
         currSubSquareDiffSum = curveSubSquareDiffSumLookup[currStatKey];
         currSubNSum = curveSubNSumLookup[currStatKey];
         currSubObsModelDiffSum = curveSubObsModelDiffSumLookup[currStatKey];
         currSubModelSum = curveSubModelSumLookup[currStatKey];
         currSubObsSum = curveSubObsSumLookup[currStatKey];
         currSubAbsSum = curveSubAbsSumLookup[currStatKey];
-      } else {
+      } else
+      {
         currSubVal = curveSubValLookup[currStatKey];
       }
       currSubSec = curveSubSecLookup[currStatKey];
-      if (hasLevels) {
+      if (hasLevels)
+      {
         currSubLev = curveSubLevLookup[currStatKey];
       }
-      if (currStat === undefined) {
+      if (currStat === undefined)
+      {
         currYStatArray.push(null);
         currYStdevArray.push(null);
         currYNArray.push(0);
-        if (isCTC) {
+        if (isCTC)
+        {
           currYSubHitArray.push(null);
           currYSubFaArray.push(null);
           currYSubMissArray.push(null);
           currYSubCnArray.push(null);
-        } else if (isScalar) {
+        } else if (isScalar)
+        {
           currYSubSquareDiffSumArray.push(null);
           currYSubNSumArray.push(null);
           currYSubObsModelDiffSumArray.push(null);
           currYSubModelSumArray.push(null);
           currYSubObsSumArray.push(null);
           currYSubAbsSumArray.push(null);
-        } else {
+        } else
+        {
           currYSubValArray.push(null);
         }
         currYSubSecArray.push(null);
-        if (hasLevels) {
+        if (hasLevels)
+        {
           currYSubLevArray.push(null);
         }
-      } else {
+      } else
+      {
         sum += currStat;
         nPoints += 1;
         currYStatArray.push(currStat);
         currYStdevArray.push(currStdev);
         currYNArray.push(currN);
-        if (isCTC) {
+        if (isCTC)
+        {
           currYSubHitArray.push(currSubHit);
           currYSubFaArray.push(currSubFa);
           currYSubMissArray.push(currSubMiss);
           currYSubCnArray.push(currSubCn);
-        } else if (isScalar) {
+        } else if (isScalar)
+        {
           currYSubSquareDiffSumArray.push(currSubSquareDiffSum);
           currYSubNSumArray.push(currSubNSum);
           currYSubObsModelDiffSumArray.push(currSubObsModelDiffSum);
           currYSubModelSumArray.push(currSubModelSum);
           currYSubObsSumArray.push(currSubObsSum);
           currYSubAbsSumArray.push(currSubAbsSum);
-        } else {
+        } else
+        {
           currYSubValArray.push(currSubVal);
         }
         currYSubSecArray.push(currSubSec);
-        if (hasLevels) {
+        if (hasLevels)
+        {
           currYSubLevArray.push(currSubLev);
         }
         zmin = currStat < zmin ? currStat : zmin;
@@ -3085,23 +3459,27 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
     returnD.z.push(currYStatArray);
     returnD.stdev.push(currYStdevArray);
     returnD.n.push(currYNArray);
-    if (isCTC) {
+    if (isCTC)
+    {
       returnD.subHit.push(currYSubHitArray);
       returnD.subFa.push(currYSubFaArray);
       returnD.subMiss.push(currYSubMissArray);
       returnD.subCn.push(currYSubCnArray);
-    } else if (isScalar) {
+    } else if (isScalar)
+    {
       returnD.subSquareDiffSum.push(currYSubSquareDiffSumArray);
       returnD.subNSum.push(currYSubNSumArray);
       returnD.subObsModelDiffSum.push(currYSubObsModelDiffSumArray);
       returnD.subModelSum.push(currYSubModelSumArray);
       returnD.subObsSum.push(currYSubObsSumArray);
       returnD.subAbsSum.push(currYSubAbsSumArray);
-    } else {
+    } else
+    {
       returnD.subVals.push(currYSubValArray);
     }
     returnD.subSecs.push(currYSubSecArray);
-    if (hasLevels) {
+    if (hasLevels)
+    {
       returnD.subLevs.push(currYSubLevArray);
     }
   }
@@ -3140,38 +3518,49 @@ const queryDBTimeSeries = async function (
   validTimes,
   appParams,
   forceRegularCadence
-) {
-  if (Meteor.isServer) {
+)
+{
+  if (Meteor.isServer)
+  {
     // upper air is only verified at 00Z and 12Z, so you need to force irregular models to verify at that regular cadence
     let cycles = await getModelCadence(pool, dataSource, startDate, endDate); // if irregular model cadence, get cycle times. If regular, get empty array.
     let theseValidTimes = validTimes;
-    if (theseValidTimes.length > 0 && theseValidTimes !== matsTypes.InputTypes.unused) {
-      if (typeof theseValidTimes === "string" || theseValidTimes instanceof String) {
+    if (theseValidTimes.length > 0 && theseValidTimes !== matsTypes.InputTypes.unused)
+    {
+      if (typeof theseValidTimes === "string" || theseValidTimes instanceof String)
+      {
         theseValidTimes = theseValidTimes.split(",");
       }
       let vtCycles;
-      if (Array.isArray(forecastOffset)) {
+      if (Array.isArray(forecastOffset))
+      {
         // handle multiple forecast lead times
         vtCycles = new Set();
-        for (let fidx = 0; fidx < forecastOffset.length; fidx += 1) {
-          for (let vidx = 0; vidx < theseValidTimes.length; vidx += 1) {
+        for (let fidx = 0; fidx < forecastOffset.length; fidx += 1)
+        {
+          for (let vidx = 0; vidx < theseValidTimes.length; vidx += 1)
+          {
             vtCycles.add(
               (Number(theseValidTimes[vidx]) - Number(forecastOffset[fidx])) *
-                3600 *
-                1000
+              3600 *
+              1000
             );
           }
         }
         vtCycles = [...vtCycles];
-      } else {
-        vtCycles = theseValidTimes.map(function (x) {
+      } else
+      {
+        vtCycles = theseValidTimes.map(function (x)
+        {
           return (Number(x) - Number(forecastOffset)) * 3600 * 1000;
         }); // selecting validTimes makes the cadence irregular
       }
-      vtCycles = vtCycles.map(function (x) {
+      vtCycles = vtCycles.map(function (x)
+      {
         return x < 0 ? x + 24 * 3600 * 1000 : x;
       }); // make sure no cycles are negative
-      vtCycles = vtCycles.sort(function (a, b) {
+      vtCycles = vtCycles.sort(function (a, b)
+      {
         return Number(a) - Number(b);
       }); // sort 'em
       cycles = cycles.length > 0 ? _.intersection(cycles, vtCycles) : vtCycles; // if we already had cycles get the ones that correspond to valid times
@@ -3221,25 +3610,32 @@ const queryDBTimeSeries = async function (
     let parsedData;
 
     let rows;
-    if (Array.isArray(statementOrMwRows)) {
+    if (Array.isArray(statementOrMwRows))
+    {
       // couchbase and the querying was already done by the middleware
       rows = statementOrMwRows;
     } else if (
       (await matsCollections.Settings.findOneAsync()).dbType ===
       matsTypes.DbTypes.couchbase
-    ) {
+    )
+    {
       // couchbase and we still need to query
       rows = await pool.queryCB(statementOrMwRows);
-    } else {
+    } else
+    {
       // mysql and need to query
       rows = await queryMySQL(pool, statementOrMwRows);
     }
-    if (error.length === 0) {
-      if (rows === undefined || rows === null || rows.length === 0) {
+    if (error.length === 0)
+    {
+      if (rows === undefined || rows === null || rows.length === 0)
+      {
         error = matsTypes.Messages.NO_DATA_FOUND;
-      } else if (rows.includes("ERROR: ")) {
+      } else if (rows.includes("ERROR: "))
+      {
         error = rows;
-      } else {
+      } else
+      {
         parsedData = parseQueryDataXYCurve(
           rows,
           d,
@@ -3259,7 +3655,8 @@ const queryDBTimeSeries = async function (
       d.x.length > 0 &&
       d.y.length > 0 &&
       !(d.x.some((el) => el !== null) && d.y.some((el) => el !== null))
-    ) {
+    )
+    {
       error = matsTypes.Messages.NO_DATA_FOUND;
     }
     return {
@@ -3278,8 +3675,10 @@ const queryDBSpecialtyCurve = async function (
   statementOrMwRows,
   appParams,
   statisticStr
-) {
-  if (Meteor.isServer) {
+)
+{
+  if (Meteor.isServer)
+  {
     let d = {
       // d will contain the curve data
       x: [],
@@ -3321,26 +3720,34 @@ const queryDBSpecialtyCurve = async function (
     let parsedData;
 
     let rows;
-    if (Array.isArray(statementOrMwRows)) {
+    if (Array.isArray(statementOrMwRows))
+    {
       // couchbase and the querying was already done by the middleware
       rows = statementOrMwRows;
     } else if (
       (await matsCollections.Settings.findOneAsync()).dbType ===
       matsTypes.DbTypes.couchbase
-    ) {
+    )
+    {
       // couchbase and we still need to query
       rows = await pool.queryCB(statementOrMwRows);
-    } else {
+    } else
+    {
       // mysql and need to query
       rows = await queryMySQL(pool, statementOrMwRows);
     }
-    if (error.length === 0) {
-      if (rows === undefined || rows === null || rows.length === 0) {
+    if (error.length === 0)
+    {
+      if (rows === undefined || rows === null || rows.length === 0)
+      {
         error = matsTypes.Messages.NO_DATA_FOUND;
-      } else if (rows.includes("ERROR: ")) {
+      } else if (rows.includes("ERROR: "))
+      {
         error = rows;
-      } else {
-        if (appParams.plotType !== matsTypes.PlotTypes.histogram) {
+      } else
+      {
+        if (appParams.plotType !== matsTypes.PlotTypes.histogram)
+        {
           parsedData = parseQueryDataXYCurve(
             rows,
             d,
@@ -3350,7 +3757,8 @@ const queryDBSpecialtyCurve = async function (
             null,
             null
           );
-        } else {
+        } else
+        {
           parsedData = parseQueryDataHistogram(rows, d, appParams, statisticStr);
         }
         d = parsedData.d;
@@ -3359,15 +3767,18 @@ const queryDBSpecialtyCurve = async function (
       }
     }
     // if we have only null values, return a no data found
-    if (appParams.plotType !== matsTypes.PlotTypes.histogram) {
+    if (appParams.plotType !== matsTypes.PlotTypes.histogram)
+    {
       if (
         d.x.length > 0 &&
         d.y.length > 0 &&
         !(d.x.some((el) => el !== null) && d.y.some((el) => el !== null))
-      ) {
+      )
+      {
         error = matsTypes.Messages.NO_DATA_FOUND;
       }
-    } else if (d.subVals.length > 0 && !d.subVals.some((el) => el !== null)) {
+    } else if (d.subVals.length > 0 && !d.subVals.some((el) => el !== null))
+    {
       error = matsTypes.Messages.NO_DATA_FOUND;
     }
     return {
@@ -3381,8 +3792,10 @@ const queryDBSpecialtyCurve = async function (
 };
 
 // this method queries the database for performance diagrams
-const queryDBReliability = async function (pool, statement, appParams, kernel) {
-  if (Meteor.isServer) {
+const queryDBReliability = async function (pool, statement, appParams, kernel)
+{
+  if (Meteor.isServer)
+  {
     let d = {
       // d will contain the curve data
       x: [],
@@ -3423,18 +3836,23 @@ const queryDBReliability = async function (pool, statement, appParams, kernel) {
     if (
       (await matsCollections.Settings.findOneAsync()).dbType ===
       matsTypes.DbTypes.couchbase
-    ) {
+    )
+    {
       // couchbase and we still need to query
       rows = await pool.queryCB(statement);
-    } else {
+    } else
+    {
       // mysql and need to query
       rows = await queryMySQL(pool, statement);
     }
-    if (rows === undefined || rows === null || rows.length === 0) {
+    if (rows === undefined || rows === null || rows.length === 0)
+    {
       error = matsTypes.Messages.NO_DATA_FOUND;
-    } else if (rows.includes("ERROR: ")) {
+    } else if (rows.includes("ERROR: "))
+    {
       error = rows;
-    } else {
+    } else
+    {
       parsedData = parseQueryDataReliability(rows, d, appParams, kernel);
       d = parsedData.d;
     }
@@ -3443,7 +3861,8 @@ const queryDBReliability = async function (pool, statement, appParams, kernel) {
       d.x.length > 0 &&
       d.y.length > 0 &&
       !(d.x.some((el) => el !== null) && d.y.some((el) => el !== null))
-    ) {
+    )
+    {
       error = matsTypes.Messages.NO_DATA_FOUND;
     }
     return {
@@ -3455,8 +3874,10 @@ const queryDBReliability = async function (pool, statement, appParams, kernel) {
 };
 
 // this method queries the database for performance diagrams
-const queryDBPerformanceDiagram = async function (pool, statement, appParams) {
-  if (Meteor.isServer) {
+const queryDBPerformanceDiagram = async function (pool, statement, appParams)
+{
+  if (Meteor.isServer)
+  {
     let d = {
       // d will contain the curve data
       x: [],
@@ -3494,18 +3915,23 @@ const queryDBPerformanceDiagram = async function (pool, statement, appParams) {
     if (
       (await matsCollections.Settings.findOneAsync()).dbType ===
       matsTypes.DbTypes.couchbase
-    ) {
+    )
+    {
       // couchbase and we still need to query
       rows = await pool.queryCB(statement);
-    } else {
+    } else
+    {
       // mysql and need to query
       rows = await queryMySQL(pool, statement);
     }
-    if (rows === undefined || rows === null || rows.length === 0) {
+    if (rows === undefined || rows === null || rows.length === 0)
+    {
       error = matsTypes.Messages.NO_DATA_FOUND;
-    } else if (rows.includes("ERROR: ")) {
+    } else if (rows.includes("ERROR: "))
+    {
       error = rows;
-    } else {
+    } else
+    {
       parsedData = parseQueryDataPerformanceDiagram(rows, d, appParams);
       d = parsedData.d;
       n0 = parsedData.n0;
@@ -3516,7 +3942,8 @@ const queryDBPerformanceDiagram = async function (pool, statement, appParams) {
       d.x.length > 0 &&
       d.y.length > 0 &&
       !(d.x.some((el) => el !== null) && d.y.some((el) => el !== null))
-    ) {
+    )
+    {
       error = matsTypes.Messages.NO_DATA_FOUND;
     }
     return {
@@ -3536,8 +3963,10 @@ const queryDBSimpleScatter = async function (
   appParams,
   statisticXStr,
   statisticYStr
-) {
-  if (Meteor.isServer) {
+)
+{
+  if (Meteor.isServer)
+  {
     let d = {
       // d will contain the curve data
       x: [],
@@ -3580,18 +4009,23 @@ const queryDBSimpleScatter = async function (
     if (
       (await matsCollections.Settings.findOneAsync()).dbType ===
       matsTypes.DbTypes.couchbase
-    ) {
+    )
+    {
       // couchbase and we still need to query
       rows = await pool.queryCB(statement);
-    } else {
+    } else
+    {
       // mysql and need to query
       rows = await queryMySQL(pool, statement);
     }
-    if (rows === undefined || rows === null || rows.length === 0) {
+    if (rows === undefined || rows === null || rows.length === 0)
+    {
       error = matsTypes.Messages.NO_DATA_FOUND;
-    } else if (rows.includes("ERROR: ")) {
+    } else if (rows.includes("ERROR: "))
+    {
       error = rows;
-    } else {
+    } else
+    {
       parsedData = parseQueryDataSimpleScatter(
         rows,
         d,
@@ -3608,7 +4042,8 @@ const queryDBSimpleScatter = async function (
       d.x.length > 0 &&
       d.y.length > 0 &&
       !(d.x.some((el) => el !== null) && d.y.some((el) => el !== null))
-    ) {
+    )
+    {
       error = matsTypes.Messages.NO_DATA_FOUND;
     }
     return {
@@ -3632,8 +4067,10 @@ const queryDBMapScalar = async function (
   siteMap,
   appParams,
   plotParams
-) {
-  if (Meteor.isServer) {
+)
+{
+  if (Meteor.isServer)
+  {
     // d will contain the curve data
     let d = {
       siteName: [],
@@ -3696,26 +4133,33 @@ const queryDBMapScalar = async function (
     let isCouchbase = true;
 
     let rows = null;
-    if (Array.isArray(statementOrMwRows)) {
+    if (Array.isArray(statementOrMwRows))
+    {
       // couchbase and the querying was already done by the middleware
       rows = statementOrMwRows;
     } else if (
       (await matsCollections.Settings.findOneAsync()).dbType ===
       matsTypes.DbTypes.couchbase
-    ) {
+    )
+    {
       // couchbase and we still need to query
       rows = await pool.queryCB(statementOrMwRows);
-    } else {
+    } else
+    {
       // mysql and need to query
       isCouchbase = false;
       rows = await queryMySQL(pool, statementOrMwRows);
     }
-    if (error.length === 0) {
-      if (rows === undefined || rows === null || rows.length === 0) {
+    if (error.length === 0)
+    {
+      if (rows === undefined || rows === null || rows.length === 0)
+      {
         error = matsTypes.Messages.NO_DATA_FOUND;
-      } else if (rows.includes("ERROR: ")) {
+      } else if (rows.includes("ERROR: "))
+      {
         error = rows;
-      } else {
+      } else
+      {
         parsedData = parseQueryDataMapScalar(
           rows,
           d,
@@ -3763,8 +4207,10 @@ const runMultipleQueries = async function (
   querySites,
   error,
   allRows
-) {
-  if (querySites.length > 0) {
+)
+{
+  if (querySites.length > 0)
+  {
     const querySite = querySites[0];
     const thisStatement = statement
       .toString()
@@ -3772,10 +4218,12 @@ const runMultipleQueries = async function (
       .replace(/{{siteID}}/g, querySite.id);
 
     const rows = await queryMySQL(pool, thisStatement);
-    if (rows.includes("ERROR: ")) {
+    if (rows.includes("ERROR: "))
+    {
       // eslint-disable-next-line no-param-reassign
       error = rows;
-    } else {
+    } else
+    {
       allRows.push(rows[0]);
       await runMultipleQueries(
         pool,
@@ -3799,8 +4247,10 @@ const queryDBMapScalarLoop = async function (
   querySites,
   appParams,
   plotParams
-) {
-  if (Meteor.isServer) {
+)
+{
+  if (Meteor.isServer)
+  {
     // d will contain the curve data
     let d = {
       siteName: [],
@@ -3863,10 +4313,13 @@ const queryDBMapScalarLoop = async function (
 
     await runMultipleQueries(pool, statement, querySites, error, allRows);
 
-    if (error.length === 0) {
-      if (allRows.length === 0) {
+    if (error.length === 0)
+    {
+      if (allRows.length === 0)
+      {
         error = matsTypes.Messages.NO_DATA_FOUND;
-      } else {
+      } else
+      {
         parsedData = parseQueryDataMapScalar(
           allRows,
           d,
@@ -3916,8 +4369,10 @@ const queryDBMapCTC = async function (
   statistic,
   siteMap,
   appParams
-) {
-  if (Meteor.isServer) {
+)
+{
+  if (Meteor.isServer)
+  {
     // d will contain the curve data
     let d = {
       siteName: [],
@@ -4035,26 +4490,33 @@ const queryDBMapCTC = async function (
     let isCouchbase = true;
 
     let rows;
-    if (Array.isArray(statementOrMwRows)) {
+    if (Array.isArray(statementOrMwRows))
+    {
       // couchbase and the querying was already done by the middleware
       rows = statementOrMwRows;
     } else if (
       (await matsCollections.Settings.findOneAsync()).dbType ===
       matsTypes.DbTypes.couchbase
-    ) {
+    )
+    {
       // couchbase and we still need to query
       rows = await pool.queryCB(statementOrMwRows);
-    } else {
+    } else
+    {
       // mysql and need to query
       isCouchbase = false;
       rows = await queryMySQL(pool, statementOrMwRows);
     }
-    if (error.length === 0) {
-      if (rows === undefined || rows === null || rows.length === 0) {
+    if (error.length === 0)
+    {
+      if (rows === undefined || rows === null || rows.length === 0)
+      {
         error = matsTypes.Messages.NO_DATA_FOUND;
-      } else if (rows.includes("ERROR: ")) {
+      } else if (rows.includes("ERROR: "))
+      {
         error = rows;
-      } else {
+      } else
+      {
         parsedData = parseQueryDataMapCTC(
           rows,
           d,
@@ -4108,8 +4570,10 @@ const queryDBMapCTC = async function (
 };
 
 // this method queries the database for contour plots
-const queryDBContour = async function (pool, statement, appParams, statisticStr) {
-  if (Meteor.isServer) {
+const queryDBContour = async function (pool, statement, appParams, statisticStr)
+{
+  if (Meteor.isServer)
+  {
     let d = {
       // d will contain the curve data
       x: [],
@@ -4170,23 +4634,29 @@ const queryDBContour = async function (pool, statement, appParams, statisticStr)
     if (
       (await matsCollections.Settings.findOneAsync()).dbType ===
       matsTypes.DbTypes.couchbase
-    ) {
+    )
+    {
       // couchbase and we still need to query
       rows = await pool.queryCB(statement);
-    } else {
+    } else
+    {
       // mysql and need to query
       rows = await queryMySQL(pool, statement);
     }
-    if (rows === undefined || rows === null || rows.length === 0) {
+    if (rows === undefined || rows === null || rows.length === 0)
+    {
       error = matsTypes.Messages.NO_DATA_FOUND;
-    } else if (rows.includes("ERROR: ")) {
+    } else if (rows.includes("ERROR: "))
+    {
       error = rows;
-    } else {
+    } else
+    {
       parsedData = parseQueryDataContour(rows, d, appParams, statisticStr);
       d = parsedData.d;
     }
     // if we have only null values, return a no data found
-    if (d.z.length > 0 && !d.z.some((el) => el !== null)) {
+    if (d.z.length > 0 && !d.z.some((el) => el !== null))
+    {
       error = matsTypes.Messages.NO_DATA_FOUND;
     }
     return {
