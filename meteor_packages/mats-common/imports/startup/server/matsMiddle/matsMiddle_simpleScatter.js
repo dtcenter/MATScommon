@@ -332,6 +332,12 @@ class MatsMiddleSimpleScatter {
           this.level
         );
       }
+      if (this.binParam !== "Level") {
+        tmplWithStationNamesObs = this.cbPool.trfmSQLRemoveClause(
+          tmplWithStationNamesObs,
+          "level avVal"
+        );
+      }
       tmplWithStationNamesObs = tmplWithStationNamesObs.replace(
         /{{stationNamesList}}/g,
         stationNamesObs
@@ -453,14 +459,16 @@ class MatsMiddleSimpleScatter {
         `"${this.model}"`
       );
 
+      if (this.binParam !== "Level") {
+        tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
+          tmplGetNStationsMfveModel,
+          "level avVal"
+        );
+      }
       if (this.binParam === "Fcst lead time") {
         tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
           tmplGetNStationsMfveModel,
           "{{vxFCST_LEN}}"
-        );
-        tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
-          /{{vxFCST_LEN_ARRAY}}/g,
-          JSON.stringify(this.indVarArray)
         );
       } else {
         tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
@@ -470,10 +478,6 @@ class MatsMiddleSimpleScatter {
         tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
           /{{vxFCST_LEN}}/g,
           this.fcstLen
-        );
-        tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
-          tmplGetNStationsMfveModel,
-          "{{vxFCST_LEN_ARRAY}}"
         );
       }
       if (this.validTimes && this.validTimes.length > 0) {

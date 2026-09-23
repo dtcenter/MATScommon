@@ -1,6 +1,7 @@
 SELECT
     fcstValidEpoch fve,
     fcstLen fcst_lead,
+    level avVal,
     {{vxAVERAGE}} avtime,
     {{stationNamesList}}
 FROM
@@ -10,7 +11,6 @@ WHERE
     AND docType = "model"
     AND model = {{vxMODEL}}
     AND fcstLen = {{vxFCST_LEN}}
-    AND fcstLen IN {{vxFCST_LEN_ARRAY}}
     AND level = {{vxLEVEL}}
     AND version = "V01"
     AND fcstValidEpoch % (24 * 3600) / 3600 IN [{{vxVALID_TIMES}}]

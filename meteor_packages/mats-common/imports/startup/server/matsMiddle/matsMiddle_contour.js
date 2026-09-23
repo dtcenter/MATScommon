@@ -354,6 +354,12 @@ class MatsMiddleContour {
           this.level
         );
       }
+      if (this.xParam !== "Level" && this.yParam !== "Level") {
+        tmplWithStationNamesObs = this.cbPool.trfmSQLRemoveClause(
+          tmplWithStationNamesObs,
+          "level avVal"
+        );
+      }
       tmplWithStationNamesObs = tmplWithStationNamesObs.replace(
         /{{stationNamesList}}/g,
         stationNamesObs
@@ -505,6 +511,12 @@ class MatsMiddleContour {
         `"${this.model}"`
       );
 
+      if (this.xParam !== "Level" && this.yParam !== "Level") {
+        tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
+          tmplGetNStationsMfveModel,
+          "level avVal"
+        );
+      }
       if (this.xParam !== "Fcst lead time" && this.yParam !== "Fcst lead time") {
         tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
           tmplGetNStationsMfveModel,
@@ -514,18 +526,10 @@ class MatsMiddleContour {
           /{{vxFCST_LEN}}/g,
           this.fcstLen
         );
-        tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
-          tmplGetNStationsMfveModel,
-          "{{vxFCST_LEN_ARRAY}}"
-        );
       } else {
         tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
           tmplGetNStationsMfveModel,
           "{{vxFCST_LEN}}"
-        );
-        tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
-          /{{vxFCST_LEN_ARRAY}}/g,
-          JSON.stringify(this.fcstLengthArray)
         );
       }
       if (

@@ -240,6 +240,10 @@ class MatsMiddleMap {
           this.level
         );
       }
+      tmplWithStationNamesObs = this.cbPool.trfmSQLRemoveClause(
+        tmplWithStationNamesObs,
+        "level avVal"
+      );
       tmplWithStationNamesObs = tmplWithStationNamesObs.replace(
         /{{stationNamesList}}/g,
         stationNamesObs
@@ -319,15 +323,15 @@ class MatsMiddleMap {
       );
       tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
         tmplGetNStationsMfveModel,
+        "level avVal"
+      );
+      tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
+        tmplGetNStationsMfveModel,
         "fcstLen fcst_lead"
       );
       tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
         /{{vxFCST_LEN}}/g,
         this.fcstLen
-      );
-      tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
-        tmplGetNStationsMfveModel,
-        "{{vxFCST_LEN_ARRAY}}"
       );
       if (this.validTimes && this.validTimes.length > 0) {
         // remove the UTC Cycle Start part of the query

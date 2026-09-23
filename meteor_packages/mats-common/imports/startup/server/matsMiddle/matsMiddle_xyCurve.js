@@ -333,6 +333,12 @@ class MatsMiddleXYCurve {
           this.level
         );
       }
+      if (this.binParam !== "Level") {
+        tmplWithStationNamesObs = this.cbPool.trfmSQLRemoveClause(
+          tmplWithStationNamesObs,
+          "level avVal"
+        );
+      }
       tmplWithStationNamesObs = tmplWithStationNamesObs.replace(
         /{{stationNamesList}}/g,
         stationNamesObs
@@ -455,14 +461,16 @@ class MatsMiddleXYCurve {
         `"${this.model}"`
       );
 
+      if (this.binParam !== "Level") {
+        tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
+          tmplGetNStationsMfveModel,
+          "level avVal"
+        );
+      }
       if (this.binParam === "Fcst lead time") {
         tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
           tmplGetNStationsMfveModel,
           "{{vxFCST_LEN}}"
-        );
-        tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
-          /{{vxFCST_LEN_ARRAY}}/g,
-          JSON.stringify(this.indVarArray)
         );
       } else {
         tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
@@ -474,18 +482,10 @@ class MatsMiddleXYCurve {
             /fcstLen = {{vxFCST_LEN}}/g,
             `fcstLen < 24 AND (models.fcstValidEpoch - models.fcstLen*3600)%(24*3600)/3600 IN [${this.utcCycleStart}]`
           );
-          tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
-            tmplGetNStationsMfveModel,
-            "{{vxFCST_LEN_ARRAY}}"
-          );
         } else {
           tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
             /{{vxFCST_LEN}}/g,
             this.fcstLen
-          );
-          tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
-            tmplGetNStationsMfveModel,
-            "{{vxFCST_LEN_ARRAY}}"
           );
         }
       }
