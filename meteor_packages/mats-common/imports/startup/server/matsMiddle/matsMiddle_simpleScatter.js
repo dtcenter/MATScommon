@@ -18,6 +18,8 @@ class MatsMiddleSimpleScatter {
 
   fcstLengthArray = [];
 
+  levelArray = [];
+
   indVarArray = [];
 
   cbPool = null;
@@ -49,6 +51,8 @@ class MatsMiddleSimpleScatter {
   thresholdX = null;
 
   thresholdY = null;
+
+  level = null;
 
   fromSecs = null;
 
@@ -86,6 +90,7 @@ class MatsMiddleSimpleScatter {
     fcstLen,
     thresholdX,
     thresholdY,
+    level,
     fromSecs,
     toSecs,
     validTimes,
@@ -106,6 +111,7 @@ class MatsMiddleSimpleScatter {
         fcstLen,
         thresholdX,
         thresholdY,
+        level,
         fromSecs,
         toSecs,
         validTimes,
@@ -131,6 +137,7 @@ class MatsMiddleSimpleScatter {
     fcstLen,
     thresholdX,
     thresholdY,
+    level,
     fromSecs,
     toSecs,
     validTimes,
@@ -151,6 +158,11 @@ class MatsMiddleSimpleScatter {
       this.thresholdY = thresholdY;
       this.fromSecs = fromSecs;
       this.toSecs = toSecs;
+
+      if (level) {
+        this.level = Number(level);
+      }
+
       if (
         validTimes &&
         validTimes.length !== 0 &&
@@ -182,8 +194,9 @@ class MatsMiddleSimpleScatter {
         this.toSecs
       );
 
-      this.fcstLengthArray = await this.mmUtils.getFcstLenArray(
+      this.fcstLengthArray = await this.mmUtils.getFcstLenOrLevelArray(
         this.model,
+        "fcstLen",
         this.fcstValidEpochArray[0],
         this.fcstValidEpochArray[this.fcstValidEpochArray.length - 1]
       );
@@ -192,6 +205,15 @@ class MatsMiddleSimpleScatter {
       // create distinct indVar array
       if (this.binParam === "Fcst lead time") {
         this.indVarArray = this.fcstLengthArray;
+      } else if (this.binParam === "Level") {
+        this.levelArray = await this.mmUtils.getFcstLenOrLevelArray(
+          this.model,
+          "level",
+          this.fcstValidEpochArray[0],
+          this.fcstValidEpochArray[this.fcstValidEpochArray.length - 1]
+        );
+        this.levelArray.sort((a, b) => Number(a) - Number(b));
+        this.indVarArray = this.levelArray;
       } else {
         for (let iofve = 0; iofve < this.fcstValidEpochArray.length; iofve += 1) {
           const ofve = this.fcstValidEpochArray[iofve];
@@ -299,9 +321,24 @@ class MatsMiddleSimpleScatter {
         tmplGetNStationsMfveObs,
         "{{vxAVERAGE}}"
       );
+      if (this.level === null) {
+        tmplWithStationNamesObs = this.cbPool.trfmSQLRemoveClause(
+          tmplWithStationNamesObs,
+          "{{vxLEVEL}}"
+        );
+      } else {
+        tmplWithStationNamesObs = tmplWithStationNamesObs.replace(
+          /{{vxLEVEL}}/g,
+          this.level
+        );
+      }
       tmplWithStationNamesObs = tmplWithStationNamesObs.replace(
         /{{stationNamesList}}/g,
         stationNamesObs
+      );
+
+      tmplWithStationNamesObs = global.cbPool.trfmSQLForDbTarget(
+        tmplWithStationNamesObs
       );
 
       if (this.binParam === "Init Date") {
@@ -332,6 +369,9 @@ class MatsMiddleSimpleScatter {
             switch (this.binParam) {
               case "Fcst lead time":
                 indVarKey = "0"; // obs don't have a lead time
+                break;
+              case "Level":
+                indVarKey = fveDataSingleEpoch.avVal.toString();
                 break;
               case "Init UTC hour":
                 indVarKey = (
@@ -397,6 +437,17 @@ class MatsMiddleSimpleScatter {
         tmplGetNStationsMfveModel,
         "{{vxAVERAGE}}"
       );
+      if (this.level === null) {
+        tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
+          tmplGetNStationsMfveModel,
+          "{{vxLEVEL}}"
+        );
+      } else {
+        tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
+          /{{vxLEVEL}}/g,
+          this.level
+        );
+      }
       tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
         /{{vxMODEL}}/g,
         `"${this.model}"`
@@ -472,6 +523,10 @@ class MatsMiddleSimpleScatter {
         );
       }
 
+      tmplGetNStationsMfveModel = global.cbPool.trfmSQLForDbTarget(
+        tmplGetNStationsMfveModel
+      );
+
       let stationNamesModels = "";
       for (let i = 0; i < this.stationNames.length; i += 1) {
         if (i === 0) {
@@ -512,6 +567,9 @@ class MatsMiddleSimpleScatter {
             switch (this.binParam) {
               case "Fcst lead time":
                 indVarKey = fveDataSingleEpoch.fcst_lead.toString();
+                break;
+              case "Level":
+                indVarKey = fveDataSingleEpoch.avVal.toString();
                 break;
               case "Init UTC hour":
                 indVarKey = (

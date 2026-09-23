@@ -12,6 +12,6 @@ WHERE bb.type="MD"
     AND bb.name="{{vxREGION}}"
     AND s.type="MD"
     AND s.docType="station"
-    AND s.subset='METAR'
+    AND s.subset='{{vxCOLLECTION}}'
     AND s.version='V01'
 ORDER BY s.name

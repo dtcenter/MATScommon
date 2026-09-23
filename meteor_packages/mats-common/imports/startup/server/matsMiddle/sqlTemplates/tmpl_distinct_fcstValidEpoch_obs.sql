@@ -1,6 +1,6 @@
 SELECT DISTINCT fcstValidEpoch
 FROM
-    `vxdata`._default.METAR
+    {{vxDBTARGET}}
 WHERE
     type = "DD"
     AND docType = "obs"

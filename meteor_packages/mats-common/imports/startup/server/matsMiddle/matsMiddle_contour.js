@@ -18,6 +18,8 @@ class MatsMiddleContour {
 
   fcstLengthArray = [];
 
+  levelArray = [];
+
   xVarArray = [];
 
   yVarArray = [];
@@ -47,6 +49,8 @@ class MatsMiddleContour {
   fcstLen = null;
 
   threshold = null;
+
+  level = null;
 
   fromSecs = null;
 
@@ -82,6 +86,7 @@ class MatsMiddleContour {
     model,
     fcstLen,
     threshold,
+    level,
     fromSecs,
     toSecs,
     validTimes,
@@ -100,6 +105,7 @@ class MatsMiddleContour {
         model,
         fcstLen,
         threshold,
+        level,
         fromSecs,
         toSecs,
         validTimes,
@@ -123,6 +129,7 @@ class MatsMiddleContour {
     model,
     fcstLen,
     threshold,
+    level,
     fromSecs,
     toSecs,
     validTimes,
@@ -141,6 +148,10 @@ class MatsMiddleContour {
       this.threshold = threshold;
       this.fromSecs = fromSecs;
       this.toSecs = toSecs;
+
+      if (level) {
+        this.level = Number(level);
+      }
 
       if (
         validTimes &&
@@ -173,8 +184,9 @@ class MatsMiddleContour {
         this.toSecs
       );
 
-      this.fcstLengthArray = await this.mmUtils.getFcstLenArray(
+      this.fcstLengthArray = await this.mmUtils.getFcstLenOrLevelArray(
         this.model,
+        "fcstLen",
         this.fcstValidEpochArray[0],
         this.fcstValidEpochArray[this.fcstValidEpochArray.length - 1]
       );
@@ -183,6 +195,15 @@ class MatsMiddleContour {
       // create distinct xVar array
       if (this.xParam === "Fcst lead time") {
         this.xVarArray = this.fcstLengthArray;
+      } else if (this.xParam === "Level") {
+        this.levelArray = await this.mmUtils.getFcstLenOrLevelArray(
+          this.model,
+          "level",
+          this.fcstValidEpochArray[0],
+          this.fcstValidEpochArray[this.fcstValidEpochArray.length - 1]
+        );
+        this.levelArray.sort((a, b) => Number(a) - Number(b));
+        this.xVarArray = this.levelArray;
       } else if (this.xParam === "Threshold") {
         this.xVarArray = [this.threshold];
       } else {
@@ -214,6 +235,15 @@ class MatsMiddleContour {
       // create distinct yVar array
       if (this.yParam === "Fcst lead time") {
         this.yVarArray = this.fcstLengthArray;
+      } else if (this.yParam === "Level") {
+        this.levelArray = await this.mmUtils.getFcstLenOrLevelArray(
+          this.model,
+          "level",
+          this.fcstValidEpochArray[0],
+          this.fcstValidEpochArray[this.fcstValidEpochArray.length - 1]
+        );
+        this.levelArray.sort((a, b) => Number(a) - Number(b));
+        this.yVarArray = this.levelArray;
       } else if (this.yParam === "Threshold") {
         this.yVarArray = [this.threshold];
       } else {
@@ -313,9 +343,24 @@ class MatsMiddleContour {
         tmplGetNStationsMfveObs,
         "{{vxAVERAGE}}"
       );
+      if (this.level === null) {
+        tmplWithStationNamesObs = this.cbPool.trfmSQLRemoveClause(
+          tmplWithStationNamesObs,
+          "{{vxLEVEL}}"
+        );
+      } else {
+        tmplWithStationNamesObs = tmplWithStationNamesObs.replace(
+          /{{vxLEVEL}}/g,
+          this.level
+        );
+      }
       tmplWithStationNamesObs = tmplWithStationNamesObs.replace(
         /{{stationNamesList}}/g,
         stationNamesObs
+      );
+
+      tmplWithStationNamesObs = global.cbPool.trfmSQLForDbTarget(
+        tmplWithStationNamesObs
       );
 
       if (
@@ -350,6 +395,12 @@ class MatsMiddleContour {
               case "Fcst lead time":
                 xVarKey = "0"; // obs don't have a lead time
                 break;
+              case "Level":
+                xVarKey = fveDataSingleEpoch.avVal.toString();
+                break;
+              case "Threshold":
+                xVarKey = this.threshold.toString();
+                break;
               case "Init UTC hour":
                 xVarKey = (
                   ((fveDataSingleEpoch.fve - this.fcstLen * 3600) % (24 * 3600)) /
@@ -375,6 +426,12 @@ class MatsMiddleContour {
               case "Fcst lead time":
                 yVarKey = "0"; // obs don't have a lead time
                 break;
+              case "Level":
+                yVarKey = fveDataSingleEpoch.avVal.toString();
+                break;
+              case "Threshold":
+                yVarKey = this.threshold.toString();
+                break;
               case "Init UTC hour":
                 yVarKey = (
                   ((fveDataSingleEpoch.fve - this.fcstLen * 3600) % (24 * 3600)) /
@@ -395,7 +452,6 @@ class MatsMiddleContour {
             if (!this.fveObs[xVarKey][yVarKey]) {
               this.fveObs[xVarKey][yVarKey] = {};
             }
-
             const dataSingleEpoch = {};
             const stationsSingleEpoch = {};
             for (let i = 0; i < this.stationNames.length; i += 1) {
@@ -433,6 +489,17 @@ class MatsMiddleContour {
         tmplGetNStationsMfveModel,
         "{{vxAVERAGE}}"
       );
+      if (this.level === null) {
+        tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
+          tmplGetNStationsMfveModel,
+          "{{vxLEVEL}}"
+        );
+      } else {
+        tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
+          /{{vxLEVEL}}/g,
+          this.level
+        );
+      }
       tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
         /{{vxMODEL}}/g,
         `"${this.model}"`
@@ -521,6 +588,10 @@ class MatsMiddleContour {
         );
       }
 
+      tmplGetNStationsMfveModel = global.cbPool.trfmSQLForDbTarget(
+        tmplGetNStationsMfveModel
+      );
+
       let stationNamesModels = "";
       for (let i = 0; i < this.stationNames.length; i += 1) {
         if (i === 0) {
@@ -562,6 +633,12 @@ class MatsMiddleContour {
               case "Fcst lead time":
                 xVarKey = fveDataSingleEpoch.fcst_lead.toString();
                 break;
+              case "Level":
+                xVarKey = fveDataSingleEpoch.avVal.toString();
+                break;
+              case "Threshold":
+                xVarKey = this.threshold.toString();
+                break;
               case "Init UTC hour":
                 xVarKey = (
                   ((fveDataSingleEpoch.fve - this.fcstLen * 3600) % (24 * 3600)) /
@@ -587,6 +664,12 @@ class MatsMiddleContour {
               case "Fcst lead time":
                 yVarKey = fveDataSingleEpoch.fcst_lead.toString();
                 break;
+              case "Level":
+                yVarKey = fveDataSingleEpoch.avVal.toString();
+                break;
+              case "Threshold":
+                yVarKey = this.threshold.toString();
+                break;
               case "Init UTC hour":
                 yVarKey = (
                   ((fveDataSingleEpoch.fve - this.fcstLen * 3600) % (24 * 3600)) /
@@ -607,7 +690,6 @@ class MatsMiddleContour {
             if (!this.fveModels[xVarKey][yVarKey]) {
               this.fveModels[xVarKey][yVarKey] = {};
             }
-
             const dataSingleEpoch = {};
             const stationsSingleEpoch = {};
             for (let i = 0; i < this.stationNames.length; i += 1) {

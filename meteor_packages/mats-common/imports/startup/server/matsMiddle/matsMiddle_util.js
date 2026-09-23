@@ -29,6 +29,8 @@ class MatsMiddleUtils {
       queryTemplate = queryTemplate.replace(/{{vxFROM_SECS}}/g, fromSecs);
       queryTemplate = queryTemplate.replace(/{{vxTO_SECS}}/g, toSecs);
 
+      queryTemplate = global.cbPool.trfmSQLForDbTarget(queryTemplate);
+
       const qrFcstValidEpoch = await this.conn.cluster.query(queryTemplate);
 
       const fcstValidEpochArray = [];

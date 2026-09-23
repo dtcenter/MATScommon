@@ -37,6 +37,8 @@ class MatsMiddleMap {
 
   threshold = null;
 
+  level = null;
+
   fromSecs = null;
 
   toSecs = null;
@@ -67,6 +69,7 @@ class MatsMiddleMap {
     model,
     fcstLen,
     threshold,
+    level,
     fromSecs,
     toSecs,
     validTimes,
@@ -82,6 +85,7 @@ class MatsMiddleMap {
         model,
         fcstLen,
         threshold,
+        level,
         fromSecs,
         toSecs,
         validTimes,
@@ -102,6 +106,7 @@ class MatsMiddleMap {
     model,
     fcstLen,
     threshold,
+    level,
     fromSecs,
     toSecs,
     validTimes,
@@ -117,6 +122,10 @@ class MatsMiddleMap {
       this.threshold = threshold;
       this.fromSecs = fromSecs;
       this.toSecs = toSecs;
+
+      if (level) {
+        this.level = Number(level);
+      }
 
       if (
         validTimes &&
@@ -215,13 +224,29 @@ class MatsMiddleMap {
           stationNamesObs += `, ${wantedValue} ${stationNamesSlice[i]}`;
         }
       }
+
       let tmplWithStationNamesObs = this.cbPool.trfmSQLRemoveClause(
         tmplGetNStationsMfveObs,
         "{{vxAVERAGE}}"
       );
+      if (this.level === null) {
+        tmplWithStationNamesObs = this.cbPool.trfmSQLRemoveClause(
+          tmplWithStationNamesObs,
+          "{{vxLEVEL}}"
+        );
+      } else {
+        tmplWithStationNamesObs = tmplWithStationNamesObs.replace(
+          /{{vxLEVEL}}/g,
+          this.level
+        );
+      }
       tmplWithStationNamesObs = tmplWithStationNamesObs.replace(
         /{{stationNamesList}}/g,
         stationNamesObs
+      );
+
+      tmplWithStationNamesObs = global.cbPool.trfmSQLForDbTarget(
+        tmplWithStationNamesObs
       );
 
       const promises = [];
@@ -272,10 +297,22 @@ class MatsMiddleMap {
       let tmplGetNStationsMfveModel = await Assets.getTextAsync(
         "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_model.sql"
       );
+
       tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
         tmplGetNStationsMfveModel,
         "{{vxAVERAGE}}"
       );
+      if (this.level === null) {
+        tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
+          tmplGetNStationsMfveModel,
+          "{{vxLEVEL}}"
+        );
+      } else {
+        tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
+          /{{vxLEVEL}}/g,
+          this.level
+        );
+      }
       tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
         /{{vxMODEL}}/g,
         `"${this.model}"`
@@ -318,6 +355,10 @@ class MatsMiddleMap {
       tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
         /{{vxTIME_VAR}}/g,
         "fcstValidEpoch"
+      );
+
+      tmplGetNStationsMfveModel = global.cbPool.trfmSQLForDbTarget(
+        tmplGetNStationsMfveModel
       );
 
       let stationNamesModels = "";
