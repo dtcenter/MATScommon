@@ -558,7 +558,7 @@ const showTimeseriesFace = function () {
     "dieoff-type": "Dieoff",
     "bin-parameter": "Valid Date",
   };
-  if (appName !== undefined && appName === "cb-metar") {
+  if (appName !== undefined && (appName === "cb-metar" || appName === "cb-raob")) {
     selectorsToReset["x-statistic"] = "RMSE";
     selectorsToReset["y-statistic"] = "RMSE";
   }
@@ -628,7 +628,7 @@ const showProfileFace = function () {
     "dieoff-type": "Dieoff",
     "bin-parameter": "Valid Date",
   };
-  if (appName !== undefined && appName === "cb-metar") {
+  if (appName !== undefined && (appName === "cb-metar" || appName === "cb-raob")) {
     selectorsToReset["x-statistic"] = "RMSE";
     selectorsToReset["y-statistic"] = "RMSE";
   }
@@ -698,7 +698,7 @@ const showDieoffFace = function () {
     "dieoff-type": "Dieoff",
     "bin-parameter": "Valid Date",
   };
-  if (appName !== undefined && appName === "cb-metar") {
+  if (appName !== undefined && (appName === "cb-metar" || appName === "cb-raob")) {
     selectorsToReset["x-statistic"] = "RMSE";
     selectorsToReset["y-statistic"] = "RMSE";
   }
@@ -768,7 +768,7 @@ const showThresholdFace = function () {
     "dieoff-type": "Dieoff",
     "bin-parameter": "Valid Date",
   };
-  if (appName !== undefined && appName === "cb-metar") {
+  if (appName !== undefined && (appName === "cb-metar" || appName === "cb-raob")) {
     faceOptions["region-type"] = "block";
     selectorsToReset["x-statistic"] = "RMSE";
     selectorsToReset["y-statistic"] = "RMSE";
@@ -842,7 +842,7 @@ const showValidTimeFace = function () {
     "dieoff-type": "Dieoff",
     "bin-parameter": "Valid Date",
   };
-  if (appName !== undefined && appName === "cb-metar") {
+  if (appName !== undefined && (appName === "cb-metar" || appName === "cb-raob")) {
     selectorsToReset["x-statistic"] = "RMSE";
     selectorsToReset["y-statistic"] = "RMSE";
   }
@@ -912,7 +912,7 @@ const showGridScaleFace = function () {
     "dieoff-type": "Dieoff",
     "bin-parameter": "Valid Date",
   };
-  if (appName !== undefined && appName === "cb-metar") {
+  if (appName !== undefined && (appName === "cb-metar" || appName === "cb-raob")) {
     selectorsToReset["x-statistic"] = "RMSE";
     selectorsToReset["y-statistic"] = "RMSE";
   }
@@ -982,7 +982,7 @@ const showDailyModelCycleFace = function () {
     "dieoff-type": "Dieoff for a specified UTC cycle init hour",
     "bin-parameter": "Valid Date",
   };
-  if (appName !== undefined && appName === "cb-metar") {
+  if (appName !== undefined && (appName === "cb-metar" || appName === "cb-raob")) {
     selectorsToReset["x-statistic"] = "RMSE";
     selectorsToReset["y-statistic"] = "RMSE";
   }
@@ -1052,7 +1052,7 @@ const showYearToYearFace = function () {
     "dieoff-type": "Dieoff",
     "bin-parameter": "Valid Date",
   };
-  if (appName !== undefined && appName === "cb-metar") {
+  if (appName !== undefined && (appName === "cb-metar" || appName === "cb-raob")) {
     selectorsToReset["x-statistic"] = "RMSE";
     selectorsToReset["y-statistic"] = "RMSE";
   }
@@ -1122,7 +1122,7 @@ const showReliabilityFace = function () {
     "bin-parameter": "Valid Date",
     plotFormat: matsTypes.PlotFormats.none,
   };
-  if (appName !== undefined && appName === "cb-metar") {
+  if (appName !== undefined && (appName === "cb-metar" || appName === "cb-raob")) {
     selectorsToReset["x-statistic"] = "RMSE";
     selectorsToReset["y-statistic"] = "RMSE";
   }
@@ -1195,7 +1195,7 @@ const showROCFace = function () {
     "bin-parameter": "Valid Date",
     plotFormat: matsTypes.PlotFormats.none,
   };
-  if (appName !== undefined && appName === "cb-metar") {
+  if (appName !== undefined && (appName === "cb-metar" || appName === "cb-raob")) {
     selectorsToReset["x-statistic"] = "RMSE";
     selectorsToReset["y-statistic"] = "RMSE";
   }
@@ -1270,7 +1270,7 @@ const showPerformanceDiagramFace = function () {
     "bin-parameter": "Valid Date",
     plotFormat: matsTypes.PlotFormats.none,
   };
-  if (appName !== undefined && appName === "cb-metar") {
+  if (appName !== undefined && (appName === "cb-metar" || appName === "cb-raob")) {
     faceOptions["region-type"] = "block";
     selectorsToReset["x-statistic"] = "RMSE";
     selectorsToReset["y-statistic"] = "RMSE";
@@ -1346,7 +1346,7 @@ const showGridScaleProbFace = function () {
     "dieoff-type": "Dieoff",
     "bin-parameter": "Valid Date",
   };
-  if (appName !== undefined && appName === "cb-metar") {
+  if (appName !== undefined && (appName === "cb-metar" || appName === "cb-raob")) {
     selectorsToReset["x-statistic"] = "RMSE";
     selectorsToReset["y-statistic"] = "RMSE";
   }
@@ -1417,7 +1417,7 @@ const showMapFace = function () {
     "bin-parameter": "Valid Date",
     plotFormat: matsTypes.PlotFormats.none,
   };
-  if (appName !== undefined && appName === "cb-metar") {
+  if (appName !== undefined && (appName === "cb-metar" || appName === "cb-raob")) {
     selectorsToReset["x-statistic"] = "RMSE";
     selectorsToReset["y-statistic"] = "RMSE";
   }
@@ -1499,7 +1499,7 @@ const showHistogramFace = function () {
     "bin-parameter": "Valid Date",
     "histogram-bin-controls": "Default bins",
   };
-  if (appName !== undefined && appName === "cb-metar") {
+  if (appName !== undefined && (appName === "cb-metar" || appName === "cb-raob")) {
     selectorsToReset["x-statistic"] = "RMSE";
     selectorsToReset["y-statistic"] = "RMSE";
   }
@@ -1510,7 +1510,8 @@ const showHistogramFace = function () {
   if (
     matsParamUtils.getParameterForName("region-type") !== undefined &&
     matsParamUtils.getParameterForName("threshold") !== undefined &&
-    appName !== "cb-metar"
+    appName !== "cb-metar" &&
+    appName !== "cb-raob"
   ) {
     faceOptions["region-type"] = "none";
     selectorsToReset["region-type"] = "Predefined region";
@@ -1579,7 +1580,7 @@ const showEnsembleHistogramFace = function () {
     "dieoff-type": "Dieoff",
     "bin-parameter": "Valid Date",
   };
-  if (appName !== undefined && appName === "cb-metar") {
+  if (appName !== undefined && (appName === "cb-metar" || appName === "cb-raob")) {
     selectorsToReset["x-statistic"] = "RMSE";
     selectorsToReset["y-statistic"] = "RMSE";
   }
@@ -1655,7 +1656,7 @@ const showContourFace = function () {
     "bin-parameter": "Valid Date",
     plotFormat: matsTypes.PlotFormats.none,
   };
-  if (appName !== undefined && appName === "cb-metar") {
+  if (appName !== undefined && (appName === "cb-metar" || appName === "cb-raob")) {
     faceOptions["region-type"] = "block";
     selectorsToReset["x-statistic"] = "RMSE";
     selectorsToReset["y-statistic"] = "RMSE";
@@ -1743,7 +1744,7 @@ const showSimpleScatterFace = function () {
     faceOptions["y-threshold"] = "block";
   }
   // simple scatters need to have the region be in predefined mode, except for cb-metar
-  if (appName !== undefined && appName === "cb-metar") {
+  if (appName !== undefined && (appName === "cb-metar" || appName === "cb-raob")) {
     faceOptions["region-type"] = "block";
     selectorsToReset["x-statistic"] = "CSI (Critical Success Index)";
     selectorsToReset["y-statistic"] = "CSI (Critical Success Index)";
