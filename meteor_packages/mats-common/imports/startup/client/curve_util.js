@@ -1744,13 +1744,19 @@ const showSimpleScatterFace = function () {
     faceOptions["y-threshold"] = "block";
   }
   // simple scatters need to have the region be in predefined mode, except for cb-metar
-  if (appName !== undefined && (appName === "cb-metar" || appName === "cb-raob")) {
-    faceOptions["region-type"] = "block";
-    selectorsToReset["x-statistic"] = "CSI (Critical Success Index)";
-    selectorsToReset["y-statistic"] = "CSI (Critical Success Index)";
-  } else if (matsParamUtils.getParameterForName("region-type") !== undefined) {
-    faceOptions["region-type"] = "none";
-    selectorsToReset["region-type"] = "Predefined region";
+  if (appName !== undefined) {
+    if (appName === "cb-metar") {
+      faceOptions["region-type"] = "block";
+      selectorsToReset["x-statistic"] = "CSI (Critical Success Index)";
+      selectorsToReset["y-statistic"] = "CSI (Critical Success Index)";
+    } else if (appName === "cb-raob") {
+      faceOptions["region-type"] = "block";
+      selectorsToReset["x-statistic"] = "RMSE";
+      selectorsToReset["y-statistic"] = "RMSE";
+    } else if (matsParamUtils.getParameterForName("region-type") !== undefined) {
+      faceOptions["region-type"] = "none";
+      selectorsToReset["region-type"] = "Predefined region";
+    }
   }
   setSelectorVisibility(plotType, faceOptions, selectorsToReset);
   return selectorsToReset;
