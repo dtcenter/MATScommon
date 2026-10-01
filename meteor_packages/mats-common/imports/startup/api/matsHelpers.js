@@ -61,7 +61,7 @@ export const checkMetaDataRefresh = async function () {
               break;
             case matsTypes.DbTypes.couchbase:
               // the tName for couchbase is supposed to be the document id
-              doc = await global.cbPool.getCB(tName);
+              doc = await global[poolName].getCB(tName);
               updatedEpoch = doc.updated;
               break;
             default:
