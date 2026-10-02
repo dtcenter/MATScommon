@@ -284,13 +284,13 @@ class MatsMiddleSimpleScatter {
           const station = this.stationNames[i];
           wantedValueX = this.elevMap[station];
         } else {
-          wantedValueX = `obs.data.${this.stationNames[i]}.\`${this.varNamesX[1]}\``;
+          wantedValueX = `obs.data.\`${this.stationNames[i]}\`.\`${this.varNamesX[1]}\``;
         }
         if (this.varNamesY[1] === "Elevation") {
           const station = this.stationNames[i];
           wantedValueY = this.elevMap[station];
         } else {
-          wantedValueY = `obs.data.${this.stationNames[i]}.\`${this.varNamesY[1]}\``;
+          wantedValueY = `obs.data.\`${this.stationNames[i]}\`.\`${this.varNamesY[1]}\``;
         }
 
         // if we're filtering by elevation, retrieve it from the map we passed in instead of the database
@@ -300,20 +300,20 @@ class MatsMiddleSimpleScatter {
             const station = this.stationNames[i];
             filterObsValue = this.elevMap[station];
           } else {
-            filterObsValue = `obs.data.${this.stationNames[i]}.\`${this.filterInfo.filterObsBy}\``;
+            filterObsValue = `obs.data.\`${this.stationNames[i]}\`.\`${this.filterInfo.filterObsBy}\``;
           }
         }
 
         if (i === 0) {
           if (this.filterInfo.filterObsBy) {
-            stationNamesObs = `CASE WHEN ${filterObsValue} >= ${this.filterInfo.filterObsMin} AND ${filterObsValue} <= ${this.filterInfo.filterObsMax} THEN ${wantedValueX} ELSE "NULL" END ${this.stationNames[i]}_X, CASE WHEN ${filterObsValue} >= ${this.filterInfo.filterObsMin} AND ${filterObsValue} <= ${this.filterInfo.filterObsMax} THEN ${wantedValueY} ELSE "NULL" END ${this.stationNames[i]}_Y`;
+            stationNamesObs = `CASE WHEN ${filterObsValue} >= ${this.filterInfo.filterObsMin} AND ${filterObsValue} <= ${this.filterInfo.filterObsMax} THEN ${wantedValueX} ELSE "NULL" END \`${this.stationNames[i]}_X\`, CASE WHEN ${filterObsValue} >= ${this.filterInfo.filterObsMin} AND ${filterObsValue} <= ${this.filterInfo.filterObsMax} THEN ${wantedValueY} ELSE "NULL" END \`${this.stationNames[i]}_Y\``;
           } else {
-            stationNamesObs = `${wantedValueX} ${this.stationNames[i]}_X, ${wantedValueY} ${this.stationNames[i]}_Y`;
+            stationNamesObs = `${wantedValueX} \`${this.stationNames[i]}_X\`, ${wantedValueY} \`${this.stationNames[i]}_Y\``;
           }
         } else if (this.filterInfo.filterObsBy) {
-          stationNamesObs += `, CASE WHEN ${filterObsValue} >= ${this.filterInfo.filterObsMin} AND ${filterObsValue} <= ${this.filterInfo.filterObsMax} THEN ${wantedValueX} ELSE "NULL" END ${this.stationNames[i]}_X, CASE WHEN ${filterObsValue} >= ${this.filterInfo.filterObsMin} AND ${filterObsValue} <= ${this.filterInfo.filterObsMax} THEN ${wantedValueY} ELSE "NULL" END ${this.stationNames[i]}_Y`;
+          stationNamesObs += `, CASE WHEN ${filterObsValue} >= ${this.filterInfo.filterObsMin} AND ${filterObsValue} <= ${this.filterInfo.filterObsMax} THEN ${wantedValueX} ELSE "NULL" END \`${this.stationNames[i]}_X\`, CASE WHEN ${filterObsValue} >= ${this.filterInfo.filterObsMin} AND ${filterObsValue} <= ${this.filterInfo.filterObsMax} THEN ${wantedValueY} ELSE "NULL" END \`${this.stationNames[i]}_Y\``;
         } else {
-          stationNamesObs += `, ${wantedValueX} ${this.stationNames[i]}_X, ${wantedValueY} ${this.stationNames[i]}_Y`;
+          stationNamesObs += `, ${wantedValueX} \`${this.stationNames[i]}_X\`, ${wantedValueY} \`${this.stationNames[i]}_Y\``;
         }
       }
 
@@ -340,7 +340,7 @@ class MatsMiddleSimpleScatter {
       if (this.binParam !== "Level") {
         tmplGetNStationsMfveObs = this.cbPool.trfmSQLRemoveClause(
           tmplGetNStationsMfveObs,
-          "level avVal"
+          "`level` avVal"
         );
       }
 
@@ -454,14 +454,14 @@ class MatsMiddleSimpleScatter {
       for (let i = 0; i < this.stationNames.length; i += 1) {
         if (i === 0) {
           if (this.filterInfo.filterModelBy) {
-            stationNamesModels = `CASE WHEN models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.${this.stationNames[i]}.\`${this.varNamesX[0]}\` ELSE "NULL" END ${this.stationNames[i]}_X, CASE WHEN models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.${this.stationNames[i]}.\`${this.varNamesY[0]}\` ELSE "NULL" END ${this.stationNames[i]}_Y`;
+            stationNamesModels = `CASE WHEN models.data.\`${this.stationNames[i]}\`.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.\`${this.stationNames[i]}\`.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.\`${this.stationNames[i]}\`.\`${this.varNamesX[0]}\` ELSE "NULL" END \`${this.stationNames[i]}_X\`, CASE WHEN models.data.\`${this.stationNames[i]}\`.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.\`${this.stationNames[i]}\`.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.\`${this.stationNames[i]}\`.\`${this.varNamesY[0]}\` ELSE "NULL" END \`${this.stationNames[i]}_Y\``;
           } else {
-            stationNamesModels = `models.data.${this.stationNames[i]}.\`${this.varNamesX[0]}\` ${this.stationNames[i]}_X, models.data.${this.stationNames[i]}.\`${this.varNamesY[0]}\` ${this.stationNames[i]}_Y`;
+            stationNamesModels = `models.data.\`${this.stationNames[i]}\`.\`${this.varNamesX[0]}\` \`${this.stationNames[i]}_X\`, models.data.\`${this.stationNames[i]}\`.\`${this.varNamesY[0]}\` \`${this.stationNames[i]}_Y\``;
           }
         } else if (this.filterInfo.filterModelBy) {
-          stationNamesModels += `, CASE WHEN models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.${this.stationNames[i]}.\`${this.varNamesX[0]}\` ELSE "NULL" END ${this.stationNames[i]}_X, CASE WHEN models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.${this.stationNames[i]}.\`${this.varNamesY[0]}\` ELSE "NULL" END ${this.stationNames[i]}_Y`;
+          stationNamesModels += `, CASE WHEN models.data.\`${this.stationNames[i]}\`.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.\`${this.stationNames[i]}\`.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.\`${this.stationNames[i]}\`.\`${this.varNamesX[0]}\` ELSE "NULL" END \`${this.stationNames[i]}_X\`, CASE WHEN models.data.\`${this.stationNames[i]}\`.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.\`${this.stationNames[i]}\`.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.\`${this.stationNames[i]}\`.\`${this.varNamesY[0]}\` ELSE "NULL" END \`${this.stationNames[i]}_Y\``;
         } else {
-          stationNamesModels += `, models.data.${this.stationNames[i]}.\`${this.varNamesX[0]}\` ${this.stationNames[i]}_X, models.data.${this.stationNames[i]}.\`${this.varNamesY[0]}\` ${this.stationNames[i]}_Y`;
+          stationNamesModels += `, models.data.\`${this.stationNames[i]}\`.\`${this.varNamesX[0]}\` \`${this.stationNames[i]}_X\`, models.data.\`${this.stationNames[i]}\`.\`${this.varNamesY[0]}\` \`${this.stationNames[i]}_Y\``;
         }
       }
 
@@ -494,7 +494,7 @@ class MatsMiddleSimpleScatter {
       if (this.binParam !== "Level") {
         tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
           tmplGetNStationsMfveModel,
-          "level avVal"
+          "`level` avVal"
         );
       }
 

@@ -311,7 +311,7 @@ class MatsMiddleContour {
           const station = this.stationNames[i];
           wantedValue = this.elevMap[station];
         } else {
-          wantedValue = `obs.data.${this.stationNames[i]}.\`${this.varNames[1]}\``;
+          wantedValue = `obs.data.\`${this.stationNames[i]}\`.\`${this.varNames[1]}\``;
         }
 
         // if we're filtering by elevation, retrieve it from the map we passed in instead of the database
@@ -321,20 +321,20 @@ class MatsMiddleContour {
             const station = this.stationNames[i];
             filterObsValue = this.elevMap[station];
           } else {
-            filterObsValue = `obs.data.${this.stationNames[i]}.\`${this.filterInfo.filterObsBy}\``;
+            filterObsValue = `obs.data.\`${this.stationNames[i]}\`.\`${this.filterInfo.filterObsBy}\``;
           }
         }
 
         if (i === 0) {
           if (this.filterInfo.filterObsBy) {
-            stationNamesObs = `CASE WHEN ${filterObsValue} >= ${this.filterInfo.filterObsMin} AND ${filterObsValue} <= ${this.filterInfo.filterObsMax} THEN ${wantedValue} ELSE "NULL" END ${this.stationNames[i]}`;
+            stationNamesObs = `CASE WHEN ${filterObsValue} >= ${this.filterInfo.filterObsMin} AND ${filterObsValue} <= ${this.filterInfo.filterObsMax} THEN ${wantedValue} ELSE "NULL" END \`${this.stationNames[i]}\``;
           } else {
-            stationNamesObs = `${wantedValue} ${this.stationNames[i]}`;
+            stationNamesObs = `${wantedValue} \`${this.stationNames[i]}\``;
           }
         } else if (this.filterInfo.filterObsBy) {
-          stationNamesObs += `, CASE WHEN ${filterObsValue} >= ${this.filterInfo.filterObsMin} AND ${filterObsValue} <= ${this.filterInfo.filterObsMax} THEN ${wantedValue} ELSE "NULL" END ${this.stationNames[i]}`;
+          stationNamesObs += `, CASE WHEN ${filterObsValue} >= ${this.filterInfo.filterObsMin} AND ${filterObsValue} <= ${this.filterInfo.filterObsMax} THEN ${wantedValue} ELSE "NULL" END \`${this.stationNames[i]}\``;
         } else {
-          stationNamesObs += `, ${wantedValue} ${this.stationNames[i]}`;
+          stationNamesObs += `, ${wantedValue} \`${this.stationNames[i]}\``;
         }
       }
 
@@ -361,7 +361,7 @@ class MatsMiddleContour {
       if (this.xParam !== "Level" && this.yParam !== "Level") {
         tmplGetNStationsMfveObs = this.cbPool.trfmSQLRemoveClause(
           tmplGetNStationsMfveObs,
-          "level avVal"
+          "`level` avVal"
         );
       }
 
@@ -504,14 +504,14 @@ class MatsMiddleContour {
       for (let i = 0; i < this.stationNames.length; i += 1) {
         if (i === 0) {
           if (this.filterInfo.filterModelBy) {
-            stationNamesModels = `CASE WHEN models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.${this.stationNames[i]}.\`${this.varNames[0]}\` ELSE "NULL" END ${this.stationNames[i]}`;
+            stationNamesModels = `CASE WHEN models.data.\`${this.stationNames[i]}\`.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.\`${this.stationNames[i]}\`.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.\`${this.stationNames[i]}\`.\`${this.varNames[0]}\` ELSE "NULL" END \`${this.stationNames[i]}\``;
           } else {
-            stationNamesModels = `models.data.${this.stationNames[i]}.\`${this.varNames[0]}\` ${this.stationNames[i]}`;
+            stationNamesModels = `models.data.\`${this.stationNames[i]}\`.\`${this.varNames[0]}\` \`${this.stationNames[i]}\``;
           }
         } else if (this.filterInfo.filterModelBy) {
-          stationNamesModels += `, CASE WHEN models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.${this.stationNames[i]}.\`${this.varNames[0]}\` ELSE "NULL" END ${this.stationNames[i]}`;
+          stationNamesModels += `, CASE WHEN models.data.\`${this.stationNames[i]}\`.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.\`${this.stationNames[i]}\`.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.\`${this.stationNames[i]}\`.\`${this.varNames[0]}\` ELSE "NULL" END \`${this.stationNames[i]}\``;
         } else {
-          stationNamesModels += `, models.data.${this.stationNames[i]}.\`${this.varNames[0]}\` ${this.stationNames[i]}`;
+          stationNamesModels += `, models.data.\`${this.stationNames[i]}\`.\`${this.varNames[0]}\` \`${this.stationNames[i]}\``;
         }
       }
 
@@ -544,7 +544,7 @@ class MatsMiddleContour {
       if (this.xParam !== "Level" && this.yParam !== "Level") {
         tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
           tmplGetNStationsMfveModel,
-          "level avVal"
+          "`level` avVal"
         );
       }
 

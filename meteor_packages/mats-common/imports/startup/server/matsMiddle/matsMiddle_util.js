@@ -175,8 +175,8 @@ class MatsMiddleUtils {
       for (let i = 0; i < stationNames.length; i += 1) {
         const station =
           axis.length === 0 ? stationNames[i] : `${stationNames[i]}_${axis}`;
-        const varValO = obsSingleFve.stations[station];
-        const varValM = modelSingleFve.stations[station];
+        const varValO = Number(obsSingleFve.stations[station]);
+        const varValM = Number(modelSingleFve.stations[station]);
 
         if ((varValO || varValO === 0) && (varValM || varValM === 0)) {
           thisCtc.n0 += 1;
@@ -224,8 +224,8 @@ class MatsMiddleUtils {
       for (let i = 0; i < stationNames.length; i += 1) {
         const station =
           axis.length === 0 ? stationNames[i] : `${stationNames[i]}_${axis}`;
-        const varValO = obsSingleFve.stations[station];
-        const varValM = modelSingleFve.stations[station];
+        const varValO = Number(obsSingleFve.stations[station]);
+        const varValM = Number(modelSingleFve.stations[station]);
 
         if ((varValO || varValO === 0) && (varValM || varValM === 0)) {
           const squareDiffSum = (varValO - varValM) ** 2;

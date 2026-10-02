@@ -2066,14 +2066,22 @@ const parseQueryDataMapScalar = function (
       });
 
       let thisSite;
+      let tooltipSite;
       if (isCouchbase) {
-        thisSite = siteMap.find((obj) => obj.name === site);
+        if (matsMethods.isThisANaN(Number(site))) {
+          thisSite = siteMap.find((obj) => obj.name === site);
+          tooltipSite = thisSite.origName;
+        } else {
+          thisSite = siteMap.find((obj) => obj.origName === site);
+          tooltipSite = thisSite.name;
+        }
       } else {
         thisSite = siteMap.find((obj) => obj.options.id === site);
+        tooltipSite = thisSite.origName;
       }
 
       const tooltips =
-        `${thisSite.origName}<br>${variable} ${statistic}<br>` +
+        `${tooltipSite}<br>${variable} ${statistic}<br>` +
         `model: ${dataSource}<br>` +
         `stat: ${queryVal} ${varUnits}<br>` +
         `n: ${rows[rowIndex].n0}`;
@@ -2372,14 +2380,22 @@ const parseQueryDataMapCTC = function (
       });
 
       let thisSite;
+      let tooltipSite;
       if (isCouchbase) {
-        thisSite = siteMap.find((obj) => obj.name === site);
+        if (matsMethods.isThisANaN(Number(site))) {
+          thisSite = siteMap.find((obj) => obj.name === site);
+          tooltipSite = thisSite.origName;
+        } else {
+          thisSite = siteMap.find((obj) => obj.origName === site);
+          tooltipSite = thisSite.name;
+        }
       } else {
         thisSite = siteMap.find((obj) => obj.options.id === site);
+        tooltipSite = thisSite.origName;
       }
 
       const tooltips =
-        `${thisSite.origName}<br>` +
+        `${tooltipSite}<br>` +
         `model: ${dataSource}<br>${statistic}: ${queryVal}<br>` +
         `n: ${rows[rowIndex].nTimes}<br>` +
         `hits: ${rows[rowIndex].hit}<br>` +

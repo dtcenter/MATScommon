@@ -195,7 +195,7 @@ class MatsMiddleMap {
           const station = stationNamesSlice[i];
           wantedValue = this.elevMap[station];
         } else {
-          wantedValue = `obs.data.${stationNamesSlice[i]}.\`${this.varNames[1]}\``;
+          wantedValue = `obs.data.\`${stationNamesSlice[i]}\`.\`${this.varNames[1]}\``;
         }
 
         // if we're filtering by elevation, retrieve it from the map we passed in instead of the database
@@ -205,20 +205,20 @@ class MatsMiddleMap {
             const station = stationNamesSlice[i];
             filterObsValue = this.elevMap[station];
           } else {
-            filterObsValue = `obs.data.${stationNamesSlice[i]}.\`${this.filterInfo.filterObsBy}\``;
+            filterObsValue = `obs.data.\`${stationNamesSlice[i]}\`.\`${this.filterInfo.filterObsBy}\``;
           }
         }
 
         if (i === 0) {
           if (this.filterInfo.filterObsBy) {
-            stationNamesObs = `CASE WHEN ${filterObsValue} >= ${this.filterInfo.filterObsMin} AND ${filterObsValue} <= ${this.filterInfo.filterObsMax} THEN ${wantedValue} ELSE "NULL" END ${stationNamesSlice[i]}`;
+            stationNamesObs = `CASE WHEN ${filterObsValue} >= ${this.filterInfo.filterObsMin} AND ${filterObsValue} <= ${this.filterInfo.filterObsMax} THEN ${wantedValue} ELSE "NULL" END \`${stationNamesSlice[i]}\``;
           } else {
-            stationNamesObs = `${wantedValue} ${stationNamesSlice[i]}`;
+            stationNamesObs = `${wantedValue} \`${stationNamesSlice[i]}\``;
           }
         } else if (this.filterInfo.filterObsBy) {
-          stationNamesObs += `, CASE WHEN ${filterObsValue} >= ${this.filterInfo.filterObsMin} AND ${filterObsValue} <= ${this.filterInfo.filterObsMax} THEN ${wantedValue} ELSE "NULL" END ${stationNamesSlice[i]}`;
+          stationNamesObs += `, CASE WHEN ${filterObsValue} >= ${this.filterInfo.filterObsMin} AND ${filterObsValue} <= ${this.filterInfo.filterObsMax} THEN ${wantedValue} ELSE "NULL" END \`${stationNamesSlice[i]}\``;
         } else {
-          stationNamesObs += `, ${wantedValue} ${stationNamesSlice[i]}`;
+          stationNamesObs += `, ${wantedValue} \`${stationNamesSlice[i]}\``;
         }
       }
 
@@ -243,7 +243,7 @@ class MatsMiddleMap {
       // remove the level query value since we're not binning by level.
       tmplGetNStationsMfveObs = this.cbPool.trfmSQLRemoveClause(
         tmplGetNStationsMfveObs,
-        "level avVal"
+        "`level` avVal"
       );
       // replace in the station names generated above into the SQL template
       tmplGetNStationsMfveObs = tmplGetNStationsMfveObs.replace(
@@ -310,14 +310,14 @@ class MatsMiddleMap {
       for (let i = 0; i < stationNamesSlice.length; i += 1) {
         if (i === 0) {
           if (this.filterInfo.filterModelBy) {
-            stationNamesModels = `CASE WHEN models.data.${stationNamesSlice[i]}.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.${stationNamesSlice[i]}.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.${stationNamesSlice[i]}.\`${this.varNames[0]}\` ELSE "NULL" END ${stationNamesSlice[i]}`;
+            stationNamesModels = `CASE WHEN models.data.\`${stationNamesSlice[i]}\`.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.\`${stationNamesSlice[i]}\`.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.\`${stationNamesSlice[i]}\`.\`${this.varNames[0]}\` ELSE "NULL" END \`${stationNamesSlice[i]}\``;
           } else {
-            stationNamesModels = `models.data.${stationNamesSlice[i]}.\`${this.varNames[0]}\` ${stationNamesSlice[i]}`;
+            stationNamesModels = `models.data.\`${stationNamesSlice[i]}\`.\`${this.varNames[0]}\` \`${stationNamesSlice[i]}\``;
           }
         } else if (this.filterInfo.filterModelBy) {
-          stationNamesModels += `, CASE WHEN models.data.${stationNamesSlice[i]}.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.${stationNamesSlice[i]}.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.${stationNamesSlice[i]}.\`${this.varNames[0]}\` ELSE "NULL" END ${stationNamesSlice[i]}`;
+          stationNamesModels += `, CASE WHEN models.data.\`${stationNamesSlice[i]}\`.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.\`${stationNamesSlice[i]}\`.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.\`${stationNamesSlice[i]}\`.\`${this.varNames[0]}\` ELSE "NULL" END \`${stationNamesSlice[i]}\``;
         } else {
-          stationNamesModels += `, models.data.${stationNamesSlice[i]}.\`${this.varNames[0]}\` ${stationNamesSlice[i]}`;
+          stationNamesModels += `, models.data.\`${stationNamesSlice[i]}\`.\`${this.varNames[0]}\` \`${stationNamesSlice[i]}\``;
         }
       }
 
@@ -349,7 +349,7 @@ class MatsMiddleMap {
       // remove the level query value since we're not binning by level.
       tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
         tmplGetNStationsMfveModel,
-        "level avVal"
+        "`level` avVal"
       );
 
       // remove the forecast lead query value since we're not binning by fcst lead.
@@ -478,8 +478,8 @@ class MatsMiddleMap {
           for (let imfve = 0; imfve < this.fcstValidEpochArray.length; imfve += 1) {
             const fve = this.fcstValidEpochArray[imfve];
 
-            const varValO = stnObs[fve];
-            const varValM = stnModel[fve];
+            const varValO = Number(stnObs[fve]);
+            const varValM = Number(stnModel[fve]);
 
             if ((varValO || varValO === 0) && (varValM || varValM === 0)) {
               ctcStats.n0 += 1;
@@ -540,8 +540,8 @@ class MatsMiddleMap {
 
           for (let imfve = 0; imfve < this.fcstValidEpochArray.length; imfve += 1) {
             const fve = this.fcstValidEpochArray[imfve];
-            const varValO = stnObs[fve];
-            const varValM = stnModel[fve];
+            const varValO = Number(stnObs[fve]);
+            const varValM = Number(stnModel[fve]);
 
             if ((varValO || varValO === 0) && (varValM || varValM === 0)) {
               sumsStats.n0 += 1;

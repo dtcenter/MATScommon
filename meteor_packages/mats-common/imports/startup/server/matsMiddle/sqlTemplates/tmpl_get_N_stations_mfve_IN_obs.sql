@@ -1,6 +1,6 @@
 SELECT
     fcstValidEpoch fve,
-    level avVal,
+    `level` avVal,
     {{vxAVERAGE}} avtime,
     {{stationNamesList}}
 FROM
@@ -9,5 +9,5 @@ WHERE
     type = "DD"
     AND docType = "obs"
     AND version = "V01"
-    AND level = {{vxLEVEL}}
+    AND `level` = {{vxLEVEL}}
     AND fcstValidEpoch IN {{fcstValidEpoch}}
