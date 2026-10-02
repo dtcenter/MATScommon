@@ -37,6 +37,8 @@ class MatsMiddleMap {
 
   threshold = null;
 
+  level = null;
+
   fromSecs = null;
 
   toSecs = null;
@@ -67,6 +69,7 @@ class MatsMiddleMap {
     model,
     fcstLen,
     threshold,
+    level,
     fromSecs,
     toSecs,
     validTimes,
@@ -82,6 +85,7 @@ class MatsMiddleMap {
         model,
         fcstLen,
         threshold,
+        level,
         fromSecs,
         toSecs,
         validTimes,
@@ -102,6 +106,7 @@ class MatsMiddleMap {
     model,
     fcstLen,
     threshold,
+    level,
     fromSecs,
     toSecs,
     validTimes,
@@ -117,6 +122,10 @@ class MatsMiddleMap {
       this.threshold = threshold;
       this.fromSecs = fromSecs;
       this.toSecs = toSecs;
+
+      if (level) {
+        this.level = Number(level);
+      }
 
       if (
         validTimes &&
@@ -148,9 +157,6 @@ class MatsMiddleMap {
         await this.createModelData(stationNamesSlice);
       }
 
-      this.fveObs = {};
-      this.fveModels = {};
-
       if (this.logToFile === true) {
         this.mmUtils.writeToLocalFile(
           "/scratch/matsMiddle/output/fveObs.json",
@@ -177,7 +183,7 @@ class MatsMiddleMap {
     try {
       this.fveObs = {};
 
-      const tmplGetNStationsMfveObs = await Assets.getTextAsync(
+      let tmplGetNStationsMfveObs = await Assets.getTextAsync(
         "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_obs.sql"
       );
 
@@ -189,7 +195,7 @@ class MatsMiddleMap {
           const station = stationNamesSlice[i];
           wantedValue = this.elevMap[station];
         } else {
-          wantedValue = `obs.data.${stationNamesSlice[i]}.\`${this.varNames[1]}\``;
+          wantedValue = `obs.data.\`${stationNamesSlice[i]}\`.\`${this.varNames[1]}\``;
         }
 
         // if we're filtering by elevation, retrieve it from the map we passed in instead of the database
@@ -199,35 +205,62 @@ class MatsMiddleMap {
             const station = stationNamesSlice[i];
             filterObsValue = this.elevMap[station];
           } else {
-            filterObsValue = `obs.data.${stationNamesSlice[i]}.\`${this.filterInfo.filterObsBy}\``;
+            filterObsValue = `obs.data.\`${stationNamesSlice[i]}\`.\`${this.filterInfo.filterObsBy}\``;
           }
         }
 
         if (i === 0) {
           if (this.filterInfo.filterObsBy) {
-            stationNamesObs = `CASE WHEN ${filterObsValue} >= ${this.filterInfo.filterObsMin} AND ${filterObsValue} <= ${this.filterInfo.filterObsMax} THEN ${wantedValue} ELSE "NULL" END ${stationNamesSlice[i]}`;
+            stationNamesObs = `CASE WHEN ${filterObsValue} >= ${this.filterInfo.filterObsMin} AND ${filterObsValue} <= ${this.filterInfo.filterObsMax} THEN ${wantedValue} ELSE "NULL" END \`${stationNamesSlice[i]}\``;
           } else {
-            stationNamesObs = `${wantedValue} ${stationNamesSlice[i]}`;
+            stationNamesObs = `${wantedValue} \`${stationNamesSlice[i]}\``;
           }
         } else if (this.filterInfo.filterObsBy) {
-          stationNamesObs += `, CASE WHEN ${filterObsValue} >= ${this.filterInfo.filterObsMin} AND ${filterObsValue} <= ${this.filterInfo.filterObsMax} THEN ${wantedValue} ELSE "NULL" END ${stationNamesSlice[i]}`;
+          stationNamesObs += `, CASE WHEN ${filterObsValue} >= ${this.filterInfo.filterObsMin} AND ${filterObsValue} <= ${this.filterInfo.filterObsMax} THEN ${wantedValue} ELSE "NULL" END \`${stationNamesSlice[i]}\``;
         } else {
-          stationNamesObs += `, ${wantedValue} ${stationNamesSlice[i]}`;
+          stationNamesObs += `, ${wantedValue} \`${stationNamesSlice[i]}\``;
         }
       }
-      let tmplWithStationNamesObs = this.cbPool.trfmSQLRemoveClause(
+
+      // remove average clause because this isn't a timeseries.
+      tmplGetNStationsMfveObs = this.cbPool.trfmSQLRemoveClause(
         tmplGetNStationsMfveObs,
         "{{vxAVERAGE}}"
       );
-      tmplWithStationNamesObs = tmplWithStationNamesObs.replace(
+
+      // remove level clause if levels are not relevant to the app that called this middleware.
+      if (this.level === null) {
+        tmplGetNStationsMfveObs = this.cbPool.trfmSQLRemoveClause(
+          tmplGetNStationsMfveObs,
+          "{{vxLEVEL}}"
+        );
+      } else {
+        tmplGetNStationsMfveObs = tmplGetNStationsMfveObs.replace(
+          /{{vxLEVEL}}/g,
+          this.level
+        );
+      }
+      // remove the level query value since we're not binning by level.
+      tmplGetNStationsMfveObs = this.cbPool.trfmSQLRemoveClause(
+        tmplGetNStationsMfveObs,
+        "`level` avVal"
+      );
+      // replace in the station names generated above into the SQL template
+      tmplGetNStationsMfveObs = tmplGetNStationsMfveObs.replace(
         /{{stationNamesList}}/g,
         stationNamesObs
       );
 
+      // specify the target bucket, score, collection, etc. for the database query
+      tmplGetNStationsMfveObs = global.cbPool.trfmSQLForDbTarget(
+        tmplGetNStationsMfveObs
+      );
+
       const promises = [];
       for (let iofve = 0; iofve < this.fcstValidEpochArray.length; iofve += 100) {
+        // query 100 dates at a time, in parallel
         const fveArraySlice = this.fcstValidEpochArray.slice(iofve, iofve + 100);
-        const sql = tmplWithStationNamesObs.replace(
+        const sql = tmplGetNStationsMfveObs.replace(
           /{{fcstValidEpoch}}/g,
           JSON.stringify(fveArraySlice)
         );
@@ -272,26 +305,64 @@ class MatsMiddleMap {
       let tmplGetNStationsMfveModel = await Assets.getTextAsync(
         "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_model.sql"
       );
-      tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
-        tmplGetNStationsMfveModel,
-        "{{vxAVERAGE}}"
-      );
+
+      let stationNamesModels = "";
+      for (let i = 0; i < stationNamesSlice.length; i += 1) {
+        if (i === 0) {
+          if (this.filterInfo.filterModelBy) {
+            stationNamesModels = `CASE WHEN models.data.\`${stationNamesSlice[i]}\`.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.\`${stationNamesSlice[i]}\`.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.\`${stationNamesSlice[i]}\`.\`${this.varNames[0]}\` ELSE "NULL" END \`${stationNamesSlice[i]}\``;
+          } else {
+            stationNamesModels = `models.data.\`${stationNamesSlice[i]}\`.\`${this.varNames[0]}\` \`${stationNamesSlice[i]}\``;
+          }
+        } else if (this.filterInfo.filterModelBy) {
+          stationNamesModels += `, CASE WHEN models.data.\`${stationNamesSlice[i]}\`.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.\`${stationNamesSlice[i]}\`.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.\`${stationNamesSlice[i]}\`.\`${this.varNames[0]}\` ELSE "NULL" END \`${stationNamesSlice[i]}\``;
+        } else {
+          stationNamesModels += `, models.data.\`${stationNamesSlice[i]}\`.\`${this.varNames[0]}\` \`${stationNamesSlice[i]}\``;
+        }
+      }
+
+      // set the model in the SQL template
       tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
         /{{vxMODEL}}/g,
         `"${this.model}"`
       );
+
+      // remove average clause because this isn't a timeseries.
+      tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
+        tmplGetNStationsMfveModel,
+        "{{vxAVERAGE}}"
+      );
+
+      // remove level clause if levels are not relevant to the app that called this middleware.
+      if (this.level === null) {
+        tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
+          tmplGetNStationsMfveModel,
+          "{{vxLEVEL}}"
+        );
+      } else {
+        tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
+          /{{vxLEVEL}}/g,
+          this.level
+        );
+      }
+
+      // remove the level query value since we're not binning by level.
+      tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
+        tmplGetNStationsMfveModel,
+        "`level` avVal"
+      );
+
+      // remove the forecast lead query value since we're not binning by fcst lead.
       tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
         tmplGetNStationsMfveModel,
         "fcstLen fcst_lead"
       );
+      // we have one forecast lead that we want, set it in the query
       tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
         /{{vxFCST_LEN}}/g,
         this.fcstLen
       );
-      tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
-        tmplGetNStationsMfveModel,
-        "{{vxFCST_LEN_ARRAY}}"
-      );
+
       if (this.validTimes && this.validTimes.length > 0) {
         // remove the UTC Cycle Start part of the query
         tmplGetNStationsMfveModel = global.cbPool.trfmSQLRemoveClause(
@@ -314,36 +385,29 @@ class MatsMiddleMap {
           "{{vxVALID_TIMES}}"
         );
       }
+
       // set the time variable for valid epochs
       tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
         /{{vxTIME_VAR}}/g,
         "fcstValidEpoch"
       );
 
-      let stationNamesModels = "";
-      for (let i = 0; i < stationNamesSlice.length; i += 1) {
-        if (i === 0) {
-          if (this.filterInfo.filterModelBy) {
-            stationNamesModels = `CASE WHEN models.data.${stationNamesSlice[i]}.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.${stationNamesSlice[i]}.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.${stationNamesSlice[i]}.\`${this.varNames[0]}\` ELSE "NULL" END ${stationNamesSlice[i]}`;
-          } else {
-            stationNamesModels = `models.data.${stationNamesSlice[i]}.\`${this.varNames[0]}\` ${stationNamesSlice[i]}`;
-          }
-        } else if (this.filterInfo.filterModelBy) {
-          stationNamesModels += `, CASE WHEN models.data.${stationNamesSlice[i]}.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.${stationNamesSlice[i]}.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.${stationNamesSlice[i]}.\`${this.varNames[0]}\` ELSE "NULL" END ${stationNamesSlice[i]}`;
-        } else {
-          stationNamesModels += `, models.data.${stationNamesSlice[i]}.\`${this.varNames[0]}\` ${stationNamesSlice[i]}`;
-        }
-      }
-
-      const tmplWithStationNamesModels = tmplGetNStationsMfveModel.replace(
+      // replace in the station names generated above into the SQL template
+      tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
         /{{stationNamesList}}/g,
         stationNamesModels
       );
 
+      // specify the target bucket, score, collection, etc. for the database query
+      tmplGetNStationsMfveModel = global.cbPool.trfmSQLForDbTarget(
+        tmplGetNStationsMfveModel
+      );
+
       const promises = [];
       for (let imfve = 0; imfve < this.fcstValidEpochArray.length; imfve += 100) {
+        // query 100 dates at a time, in parallel
         const fveArraySlice = this.fcstValidEpochArray.slice(imfve, imfve + 100);
-        const sql = tmplWithStationNamesModels.replace(
+        const sql = tmplGetNStationsMfveModel.replace(
           /{{fcstValidEpoch}}/g,
           JSON.stringify(fveArraySlice)
         );
@@ -414,8 +478,8 @@ class MatsMiddleMap {
           for (let imfve = 0; imfve < this.fcstValidEpochArray.length; imfve += 1) {
             const fve = this.fcstValidEpochArray[imfve];
 
-            const varValO = stnObs[fve];
-            const varValM = stnModel[fve];
+            const varValO = Number(stnObs[fve]);
+            const varValM = Number(stnModel[fve]);
 
             if ((varValO || varValO === 0) && (varValM || varValM === 0)) {
               ctcStats.n0 += 1;
@@ -476,8 +540,8 @@ class MatsMiddleMap {
 
           for (let imfve = 0; imfve < this.fcstValidEpochArray.length; imfve += 1) {
             const fve = this.fcstValidEpochArray[imfve];
-            const varValO = stnObs[fve];
-            const varValM = stnModel[fve];
+            const varValO = Number(stnObs[fve]);
+            const varValM = Number(stnModel[fve]);
 
             if ((varValO || varValO === 0) && (varValM || varValM === 0)) {
               sumsStats.n0 += 1;

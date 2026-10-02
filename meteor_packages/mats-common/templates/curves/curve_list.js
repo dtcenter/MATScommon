@@ -116,7 +116,11 @@ Template.curveList.helpers({
   thresholdMismatchHidden() {
     const { appName } = matsCollections.Settings.findOne({});
     const curves = Session.get("Curves");
-    if (curves === undefined || curves.length === 0 || appName !== "cb-metar") {
+    if (
+      curves === undefined ||
+      curves.length === 0 ||
+      (appName !== "cb-metar" && appName !== "cb-raob")
+    ) {
       return "none";
     }
     const scalarStats = [

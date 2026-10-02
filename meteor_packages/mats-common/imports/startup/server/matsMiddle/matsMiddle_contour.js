@@ -18,6 +18,8 @@ class MatsMiddleContour {
 
   fcstLengthArray = [];
 
+  levelArray = [];
+
   xVarArray = [];
 
   yVarArray = [];
@@ -47,6 +49,8 @@ class MatsMiddleContour {
   fcstLen = null;
 
   threshold = null;
+
+  level = null;
 
   fromSecs = null;
 
@@ -82,6 +86,7 @@ class MatsMiddleContour {
     model,
     fcstLen,
     threshold,
+    level,
     fromSecs,
     toSecs,
     validTimes,
@@ -100,6 +105,7 @@ class MatsMiddleContour {
         model,
         fcstLen,
         threshold,
+        level,
         fromSecs,
         toSecs,
         validTimes,
@@ -123,6 +129,7 @@ class MatsMiddleContour {
     model,
     fcstLen,
     threshold,
+    level,
     fromSecs,
     toSecs,
     validTimes,
@@ -141,6 +148,10 @@ class MatsMiddleContour {
       this.threshold = threshold;
       this.fromSecs = fromSecs;
       this.toSecs = toSecs;
+
+      if (level) {
+        this.level = Number(level);
+      }
 
       if (
         validTimes &&
@@ -173,8 +184,9 @@ class MatsMiddleContour {
         this.toSecs
       );
 
-      this.fcstLengthArray = await this.mmUtils.getFcstLenArray(
+      this.fcstLengthArray = await this.mmUtils.getFcstLenOrLevelArray(
         this.model,
+        "fcstLen",
         this.fcstValidEpochArray[0],
         this.fcstValidEpochArray[this.fcstValidEpochArray.length - 1]
       );
@@ -183,6 +195,15 @@ class MatsMiddleContour {
       // create distinct xVar array
       if (this.xParam === "Fcst lead time") {
         this.xVarArray = this.fcstLengthArray;
+      } else if (this.xParam === "Level") {
+        this.levelArray = await this.mmUtils.getFcstLenOrLevelArray(
+          this.model,
+          "level",
+          this.fcstValidEpochArray[0],
+          this.fcstValidEpochArray[this.fcstValidEpochArray.length - 1]
+        );
+        this.levelArray.sort((a, b) => Number(a) - Number(b));
+        this.xVarArray = this.levelArray;
       } else if (this.xParam === "Threshold") {
         this.xVarArray = [this.threshold];
       } else {
@@ -214,6 +235,15 @@ class MatsMiddleContour {
       // create distinct yVar array
       if (this.yParam === "Fcst lead time") {
         this.yVarArray = this.fcstLengthArray;
+      } else if (this.yParam === "Level") {
+        this.levelArray = await this.mmUtils.getFcstLenOrLevelArray(
+          this.model,
+          "level",
+          this.fcstValidEpochArray[0],
+          this.fcstValidEpochArray[this.fcstValidEpochArray.length - 1]
+        );
+        this.levelArray.sort((a, b) => Number(a) - Number(b));
+        this.yVarArray = this.levelArray;
       } else if (this.yParam === "Threshold") {
         this.yVarArray = [this.threshold];
       } else {
@@ -269,7 +299,7 @@ class MatsMiddleContour {
 
   createObsData = async () => {
     try {
-      const tmplGetNStationsMfveObs = await Assets.getTextAsync(
+      let tmplGetNStationsMfveObs = await Assets.getTextAsync(
         "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_obs.sql"
       );
 
@@ -281,7 +311,7 @@ class MatsMiddleContour {
           const station = this.stationNames[i];
           wantedValue = this.elevMap[station];
         } else {
-          wantedValue = `obs.data.${this.stationNames[i]}.\`${this.varNames[1]}\``;
+          wantedValue = `obs.data.\`${this.stationNames[i]}\`.\`${this.varNames[1]}\``;
         }
 
         // if we're filtering by elevation, retrieve it from the map we passed in instead of the database
@@ -291,33 +321,62 @@ class MatsMiddleContour {
             const station = this.stationNames[i];
             filterObsValue = this.elevMap[station];
           } else {
-            filterObsValue = `obs.data.${this.stationNames[i]}.\`${this.filterInfo.filterObsBy}\``;
+            filterObsValue = `obs.data.\`${this.stationNames[i]}\`.\`${this.filterInfo.filterObsBy}\``;
           }
         }
 
         if (i === 0) {
           if (this.filterInfo.filterObsBy) {
-            stationNamesObs = `CASE WHEN ${filterObsValue} >= ${this.filterInfo.filterObsMin} AND ${filterObsValue} <= ${this.filterInfo.filterObsMax} THEN ${wantedValue} ELSE "NULL" END ${this.stationNames[i]}`;
+            stationNamesObs = `CASE WHEN ${filterObsValue} >= ${this.filterInfo.filterObsMin} AND ${filterObsValue} <= ${this.filterInfo.filterObsMax} THEN ${wantedValue} ELSE "NULL" END \`${this.stationNames[i]}\``;
           } else {
-            stationNamesObs = `${wantedValue} ${this.stationNames[i]}`;
+            stationNamesObs = `${wantedValue} \`${this.stationNames[i]}\``;
           }
         } else if (this.filterInfo.filterObsBy) {
-          stationNamesObs += `, CASE WHEN ${filterObsValue} >= ${this.filterInfo.filterObsMin} AND ${filterObsValue} <= ${this.filterInfo.filterObsMax} THEN ${wantedValue} ELSE "NULL" END ${this.stationNames[i]}`;
+          stationNamesObs += `, CASE WHEN ${filterObsValue} >= ${this.filterInfo.filterObsMin} AND ${filterObsValue} <= ${this.filterInfo.filterObsMax} THEN ${wantedValue} ELSE "NULL" END \`${this.stationNames[i]}\``;
         } else {
-          stationNamesObs += `, ${wantedValue} ${this.stationNames[i]}`;
+          stationNamesObs += `, ${wantedValue} \`${this.stationNames[i]}\``;
         }
       }
 
-      let tmplWithStationNamesObs;
-      tmplWithStationNamesObs = this.cbPool.trfmSQLRemoveClause(
+      // remove average clause because this isn't a timeseries.
+      tmplGetNStationsMfveObs = this.cbPool.trfmSQLRemoveClause(
         tmplGetNStationsMfveObs,
         "{{vxAVERAGE}}"
       );
-      tmplWithStationNamesObs = tmplWithStationNamesObs.replace(
+
+      // remove level clause if levels are not relevant to the app that called this middleware.
+      if (this.level === null) {
+        tmplGetNStationsMfveObs = this.cbPool.trfmSQLRemoveClause(
+          tmplGetNStationsMfveObs,
+          "{{vxLEVEL}}"
+        );
+      } else {
+        tmplGetNStationsMfveObs = tmplGetNStationsMfveObs.replace(
+          /{{vxLEVEL}}/g,
+          this.level
+        );
+      }
+
+      // remove the level query value if we're not binning by level.
+      if (this.xParam !== "Level" && this.yParam !== "Level") {
+        tmplGetNStationsMfveObs = this.cbPool.trfmSQLRemoveClause(
+          tmplGetNStationsMfveObs,
+          "`level` avVal"
+        );
+      }
+
+      // replace in the station names generated above into the SQL template
+      tmplGetNStationsMfveObs = tmplGetNStationsMfveObs.replace(
         /{{stationNamesList}}/g,
         stationNamesObs
       );
 
+      // specify the target bucket, score, collection, etc. for the database query
+      tmplGetNStationsMfveObs = global.cbPool.trfmSQLForDbTarget(
+        tmplGetNStationsMfveObs
+      );
+
+      // get the appropriate date range
       if (
         (this.utcCycleStart && this.utcCycleStart.length > 0) ||
         (this.singleCycle && this.singleCycle > 0)
@@ -332,8 +391,9 @@ class MatsMiddleContour {
 
       const promises = [];
       for (let iofve = 0; iofve < this.fcstValidEpochArrayObs.length; iofve += 100) {
+        // query 100 dates at a time, in parallel
         const fveArraySlice = this.fcstValidEpochArrayObs.slice(iofve, iofve + 100);
-        const sql = tmplWithStationNamesObs.replace(
+        const sql = tmplGetNStationsMfveObs.replace(
           /{{fcstValidEpoch}}/g,
           JSON.stringify(fveArraySlice)
         );
@@ -349,6 +409,12 @@ class MatsMiddleContour {
             switch (this.xParam) {
               case "Fcst lead time":
                 xVarKey = "0"; // obs don't have a lead time
+                break;
+              case "Level":
+                xVarKey = fveDataSingleEpoch.avVal.toString();
+                break;
+              case "Threshold":
+                xVarKey = this.threshold.toString();
                 break;
               case "Init UTC hour":
                 xVarKey = (
@@ -375,6 +441,12 @@ class MatsMiddleContour {
               case "Fcst lead time":
                 yVarKey = "0"; // obs don't have a lead time
                 break;
+              case "Level":
+                yVarKey = fveDataSingleEpoch.avVal.toString();
+                break;
+              case "Threshold":
+                yVarKey = this.threshold.toString();
+                break;
               case "Init UTC hour":
                 yVarKey = (
                   ((fveDataSingleEpoch.fve - this.fcstLen * 3600) % (24 * 3600)) /
@@ -395,7 +467,6 @@ class MatsMiddleContour {
             if (!this.fveObs[xVarKey][yVarKey]) {
               this.fveObs[xVarKey][yVarKey] = {};
             }
-
             const dataSingleEpoch = {};
             const stationsSingleEpoch = {};
             for (let i = 0; i < this.stationNames.length; i += 1) {
@@ -429,38 +500,73 @@ class MatsMiddleContour {
         "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_N_stations_mfve_IN_model.sql"
       );
 
-      tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
-        tmplGetNStationsMfveModel,
-        "{{vxAVERAGE}}"
-      );
+      let stationNamesModels = "";
+      for (let i = 0; i < this.stationNames.length; i += 1) {
+        if (i === 0) {
+          if (this.filterInfo.filterModelBy) {
+            stationNamesModels = `CASE WHEN models.data.\`${this.stationNames[i]}\`.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.\`${this.stationNames[i]}\`.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.\`${this.stationNames[i]}\`.\`${this.varNames[0]}\` ELSE "NULL" END \`${this.stationNames[i]}\``;
+          } else {
+            stationNamesModels = `models.data.\`${this.stationNames[i]}\`.\`${this.varNames[0]}\` \`${this.stationNames[i]}\``;
+          }
+        } else if (this.filterInfo.filterModelBy) {
+          stationNamesModels += `, CASE WHEN models.data.\`${this.stationNames[i]}\`.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.\`${this.stationNames[i]}\`.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.\`${this.stationNames[i]}\`.\`${this.varNames[0]}\` ELSE "NULL" END \`${this.stationNames[i]}\``;
+        } else {
+          stationNamesModels += `, models.data.\`${this.stationNames[i]}\`.\`${this.varNames[0]}\` \`${this.stationNames[i]}\``;
+        }
+      }
+
+      // set the model in the SQL template
       tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
         /{{vxMODEL}}/g,
         `"${this.model}"`
       );
 
+      // remove average clause because this isn't a timeseries.
+      tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
+        tmplGetNStationsMfveModel,
+        "{{vxAVERAGE}}"
+      );
+
+      // remove level clause if levels are not relevant to the app that called this middleware.
+      if (this.level === null) {
+        tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
+          tmplGetNStationsMfveModel,
+          "{{vxLEVEL}}"
+        );
+      } else {
+        tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
+          /{{vxLEVEL}}/g,
+          this.level
+        );
+      }
+
+      // remove the level query value if we're not binning by level.
+      if (this.xParam !== "Level" && this.yParam !== "Level") {
+        tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
+          tmplGetNStationsMfveModel,
+          "`level` avVal"
+        );
+      }
+
+      // remove the forecast lead query value if we're not binning by fcst lead.
       if (this.xParam !== "Fcst lead time" && this.yParam !== "Fcst lead time") {
         tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
           tmplGetNStationsMfveModel,
           "fcstLen fcst_lead"
         );
+        // we have one forecast lead that we want, set it in the query
         tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
           /{{vxFCST_LEN}}/g,
           this.fcstLen
         );
-        tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
-          tmplGetNStationsMfveModel,
-          "{{vxFCST_LEN_ARRAY}}"
-        );
       } else {
+        // remove forecast lead clause if fcst leads are not relevant to the app that called this middleware.
         tmplGetNStationsMfveModel = this.cbPool.trfmSQLRemoveClause(
           tmplGetNStationsMfveModel,
           "{{vxFCST_LEN}}"
         );
-        tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
-          /{{vxFCST_LEN_ARRAY}}/g,
-          JSON.stringify(this.fcstLengthArray)
-        );
       }
+
       if (
         (this.xParam === "Init Date" || this.yParam === "Init Date") &&
         this.xParam !== "Valid Date" &&
@@ -521,30 +627,22 @@ class MatsMiddleContour {
         );
       }
 
-      let stationNamesModels = "";
-      for (let i = 0; i < this.stationNames.length; i += 1) {
-        if (i === 0) {
-          if (this.filterInfo.filterModelBy) {
-            stationNamesModels = `CASE WHEN models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.${this.stationNames[i]}.\`${this.varNames[0]}\` ELSE "NULL" END ${this.stationNames[i]}`;
-          } else {
-            stationNamesModels = `models.data.${this.stationNames[i]}.\`${this.varNames[0]}\` ${this.stationNames[i]}`;
-          }
-        } else if (this.filterInfo.filterModelBy) {
-          stationNamesModels += `, CASE WHEN models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` >= ${this.filterInfo.filterModelMin} AND models.data.${this.stationNames[i]}.\`${this.filterInfo.filterModelBy}\` <= ${this.filterInfo.filterModelMax} THEN models.data.${this.stationNames[i]}.\`${this.varNames[0]}\` ELSE "NULL" END ${this.stationNames[i]}`;
-        } else {
-          stationNamesModels += `, models.data.${this.stationNames[i]}.\`${this.varNames[0]}\` ${this.stationNames[i]}`;
-        }
-      }
-
-      const tmplWithStationNamesModels = tmplGetNStationsMfveModel.replace(
+      // replace in the station names generated above into the SQL template
+      tmplGetNStationsMfveModel = tmplGetNStationsMfveModel.replace(
         /{{stationNamesList}}/g,
         stationNamesModels
       );
 
+      // specify the target bucket, score, collection, etc. for the database query
+      tmplGetNStationsMfveModel = global.cbPool.trfmSQLForDbTarget(
+        tmplGetNStationsMfveModel
+      );
+
       const promises = [];
       for (let imfve = 0; imfve < this.fcstValidEpochArray.length; imfve += 100) {
+        // query 100 dates at a time, in parallel
         const fveArraySlice = this.fcstValidEpochArray.slice(imfve, imfve + 100);
-        const sql = tmplWithStationNamesModels.replace(
+        const sql = tmplGetNStationsMfveModel.replace(
           /{{fcstValidEpoch}}/g,
           JSON.stringify(fveArraySlice)
         );
@@ -561,6 +659,12 @@ class MatsMiddleContour {
             switch (this.xParam) {
               case "Fcst lead time":
                 xVarKey = fveDataSingleEpoch.fcst_lead.toString();
+                break;
+              case "Level":
+                xVarKey = fveDataSingleEpoch.avVal.toString();
+                break;
+              case "Threshold":
+                xVarKey = this.threshold.toString();
                 break;
               case "Init UTC hour":
                 xVarKey = (
@@ -587,6 +691,12 @@ class MatsMiddleContour {
               case "Fcst lead time":
                 yVarKey = fveDataSingleEpoch.fcst_lead.toString();
                 break;
+              case "Level":
+                yVarKey = fveDataSingleEpoch.avVal.toString();
+                break;
+              case "Threshold":
+                yVarKey = this.threshold.toString();
+                break;
               case "Init UTC hour":
                 yVarKey = (
                   ((fveDataSingleEpoch.fve - this.fcstLen * 3600) % (24 * 3600)) /
@@ -607,7 +717,6 @@ class MatsMiddleContour {
             if (!this.fveModels[xVarKey][yVarKey]) {
               this.fveModels[xVarKey][yVarKey] = {};
             }
-
             const dataSingleEpoch = {};
             const stationsSingleEpoch = {};
             for (let i = 0; i < this.stationNames.length; i += 1) {

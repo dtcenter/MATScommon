@@ -362,7 +362,7 @@ Package.onUse(function (api) {
     "server"
   );
   api.addAssets(
-    "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_distinct_fcstLen.sql",
+    "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_distinct_fcstLen_or_level.sql",
     "server"
   );
   api.addAssets(
