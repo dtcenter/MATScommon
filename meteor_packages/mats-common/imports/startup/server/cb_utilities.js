@@ -154,7 +154,7 @@ class CBUtilities {
 
   trfmSQLForDbTarget = (sqlstr) => {
     try {
-      let val = sqlstr.replace(/{{vxBUCKET}}/g, this.bucket);
+      let val = sqlstr.replace(/{{vxBUCKET}}/g, this.bucketName);
       val = val.replace(/{{vxSCOPE}}/g, this.scope);
       val = val.replace(/{{vxCOLLECTION}}/g, this.collection);
       val = val.replace(

@@ -1,6 +1,6 @@
-SELECT RAW s.name
+SELECT RAW s.{{vxNAME}}
 FROM {{vxDBTARGET}} s
-    JOIN {{vxDBTARGET}} bb ON 
+    JOIN {{vxBUCKET}}.{{vxSCOPE}}.COMMON bb ON 
     (s.geo[0].lat BETWEEN bb.geo.bottom_right.lat AND bb.geo.top_left.lat) AND 
     (CASE WHEN bb.geo.top_left.lon < bb.geo.bottom_right.lon THEN 
     s.geo[0].lon BETWEEN bb.geo.top_left.lon AND bb.geo.bottom_right.lon ELSE 
@@ -14,4 +14,4 @@ WHERE bb.type="MD"
     AND s.docType="station"
     AND s.subset='{{vxCOLLECTION}}'
     AND s.version='V01'
-ORDER BY s.name
+ORDER BY s.{{vxNAME}}
