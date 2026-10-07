@@ -469,6 +469,7 @@ const calculateStatScalar = function (
   )
     return null;
   let queryVal;
+  const { appName } = matsCollections.Settings.findOne({});
   const variable = statisticAndVariable.split("_")[1];
   const statistic = statisticAndVariable.split("_")[0];
   switch (statistic) {
@@ -502,7 +503,7 @@ const calculateStatScalar = function (
   // need to convert to correct units for surface data but not upperair
   if (statistic !== "N") {
     if (
-      variable.includes("2m") &&
+      (variable.includes("2m") || appName === "cb-raob") &&
       (variable.toLowerCase().includes("temperature") ||
         variable.toLowerCase().includes("dewpoint"))
     ) {
@@ -511,7 +512,7 @@ const calculateStatScalar = function (
       }
       queryVal /= 1.8;
     } else if (
-      variable.includes("10m") &&
+      (variable.includes("10m") || appName === "cb-raob") &&
       variable.toLowerCase().includes("wind") &&
       variable.toLowerCase().includes("speed")
     ) {
