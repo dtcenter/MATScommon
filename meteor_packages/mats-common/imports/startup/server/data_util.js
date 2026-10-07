@@ -469,7 +469,7 @@ const calculateStatScalar = function (
   )
     return null;
   let queryVal;
-  const { appName } = matsCollections.Settings.findOne({});
+  const { appName } = matsCollections.Settings.findOneAsync({});
   const variable = statisticAndVariable.split("_")[1];
   const statistic = statisticAndVariable.split("_")[0];
   switch (statistic) {
