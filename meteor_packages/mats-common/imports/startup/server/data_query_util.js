@@ -133,12 +133,13 @@ const getModelCadence = async function (pool, dataSource, startDate, endDate) {
 };
 
 // get stations in a predefined region
-const getStationsInCouchbaseRegion = async function (pool, region) {
+const getStationsInCouchbaseRegion = async function (pool, region, nameField) {
   if (Meteor.isServer) {
     let statement = await Assets.getTextAsync(
       "imports/startup/server/matsMiddle/sqlTemplates/tmpl_get_stations_for_region.sql"
     );
     statement = statement.replace(/{{vxREGION}}/g, region);
+    statement = statement.replace(/{{vxNAME}}/g, nameField);
     const sitesList = await pool.queryCB(pool.trfmSQLForDbTarget(statement));
     return sitesList;
   }
