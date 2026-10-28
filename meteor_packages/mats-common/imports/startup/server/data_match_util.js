@@ -6,7 +6,12 @@ import { matsDataUtils, matsTypes } from "meteor/randyp:mats-common";
 import { _ } from "meteor/underscore";
 
 // function for removing unmatched data from a dataset containing multiple curves
-const getMatchedDataSet = async function (dataset, curveInfoParams, appParams, binStats) {
+const getMatchedDataSet = async function (
+  dataset,
+  curveInfoParams,
+  appParams,
+  binStats
+) {
   const subSecsRaw = [];
   const subLevsRaw = [];
   let subValues = [];
