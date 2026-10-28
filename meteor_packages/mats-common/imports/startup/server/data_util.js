@@ -450,7 +450,7 @@ const calculateStatCTC = function (hit, fa, miss, cn, n, statistic) {
 };
 
 // calculates the statistic for scalar partial sums plots
-const calculateStatScalar = function (
+const calculateStatScalar = async function (
   squareDiffSum,
   NSum,
   obsModelDiffSum,
@@ -469,7 +469,7 @@ const calculateStatScalar = function (
   )
     return null;
   let queryVal;
-  const { appName } = matsCollections.Settings.findOneAsync({});
+  const { appName } = await matsCollections.Settings.findOneAsync({});
   const variable = statisticAndVariable.split("_")[1];
   const statistic = statisticAndVariable.split("_")[0];
   switch (statistic) {

@@ -39,7 +39,7 @@ const processDataXYCurve = async function (
 
   // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
   if (returnCurveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
-    returnDataset = matsDataMatchUtils.getMatchedDataSet(
+    returnDataset = await matsDataMatchUtils.getMatchedDataSet(
       returnDataset,
       returnCurveInfoParams,
       appParams,
@@ -585,7 +585,7 @@ const processDataProfile = async function (
 
   // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
   if (returnCurveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
-    returnDataset = matsDataMatchUtils.getMatchedDataSet(
+    returnDataset = await matsDataMatchUtils.getMatchedDataSet(
       returnDataset,
       returnCurveInfoParams,
       appParams,
@@ -1040,7 +1040,7 @@ const processDataReliability = async function (
 
   // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
   if (returnCurveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
-    returnDataset = matsDataMatchUtils.getMatchedDataSet(
+    returnDataset = await matsDataMatchUtils.getMatchedDataSet(
       returnDataset,
       returnCurveInfoParams,
       appParams,
@@ -1217,7 +1217,7 @@ const processDataROC = async function (
 
   // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
   if (returnCurveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
-    returnDataset = matsDataMatchUtils.getMatchedDataSet(
+    returnDataset = await matsDataMatchUtils.getMatchedDataSet(
       returnDataset,
       returnCurveInfoParams,
       appParams,
@@ -1360,7 +1360,7 @@ const processDataPerformanceDiagram = async function (
 
   // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
   if (returnCurveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
-    returnDataset = matsDataMatchUtils.getMatchedDataSet(
+    returnDataset = await matsDataMatchUtils.getMatchedDataSet(
       returnDataset,
       returnCurveInfoParams,
       appParams,
@@ -1609,7 +1609,7 @@ const processDataGridScaleProb = async function (
 
   // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
   if (returnCurveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
-    returnDataset = matsDataMatchUtils.getMatchedDataSet(
+    returnDataset = await matsDataMatchUtils.getMatchedDataSet(
       returnDataset,
       returnCurveInfoParams,
       appParams,
@@ -1722,7 +1722,7 @@ const processDataEnsembleHistogram = async function (
 
   // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
   if (returnCurveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
-    returnDataset = matsDataMatchUtils.getMatchedDataSet(
+    returnDataset = await matsDataMatchUtils.getMatchedDataSet(
       returnDataset,
       returnCurveInfoParams,
       appParams,
@@ -2080,7 +2080,7 @@ const processDataHistogram = async function (
       if (appParams.matching && !returnBookkeepingParams.alreadyMatched) {
         const originalCurvesLength = returnCurveInfoParams.curvesLength;
         returnCurveInfoParams.curvesLength = curvesLengthSoFar;
-        returnDataset = matsDataMatchUtils.getMatchedDataSet(
+        returnDataset = await matsDataMatchUtils.getMatchedDataSet(
           returnDataset,
           returnCurveInfoParams,
           appParams,
@@ -2139,7 +2139,7 @@ const processDataHistogram = async function (
     appParams.matching &&
     !returnBookkeepingParams.alreadyMatched
   ) {
-    returnDataset = matsDataMatchUtils.getMatchedDataSet(
+    returnDataset = await matsDataMatchUtils.getMatchedDataSet(
       returnDataset,
       returnCurveInfoParams,
       appParams,
@@ -2394,7 +2394,7 @@ const processDataSimpleScatter = async function (
 
   // if matching, pare down dataset to only matching data. METexpress takes care of matching in its python query code
   if (returnCurveInfoParams.curvesLength > 1 && appParams.matching && !isMetexpress) {
-    returnDataset = matsDataMatchUtils.getMatchedDataSet(
+    returnDataset = await matsDataMatchUtils.getMatchedDataSet(
       returnDataset,
       returnCurveInfoParams,
       appParams,

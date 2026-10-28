@@ -354,7 +354,7 @@ const queryDBPython = async function (pool, queryArray) {
 };
 
 // this method parses the returned query data for xy curves
-const parseQueryDataXYCurve = function (
+const parseQueryDataXYCurve = async function (
   rows,
   d,
   appParams,
@@ -486,7 +486,7 @@ const parseQueryDataXYCurve = function (
       const obsSum = Number(rows[rowIndex].obs_sum);
       const absSum = Number(rows[rowIndex].abs_sum);
       if (NSum > 0) {
-        stat = matsDataUtils.calculateStatScalar(
+        stat = await matsDataUtils.calculateStatScalar(
           squareDiffSum,
           NSum,
           obsModelDiffSum,
@@ -587,7 +587,7 @@ const parseQueryDataXYCurve = function (
             thisSumObsSum.push(Number(currSubData[5 + levelOffset]));
             thisSumAbsSum.push(Number(currSubData[6 + levelOffset]));
             thisSubValues.push(
-              matsDataUtils.calculateStatScalar(
+              await matsDataUtils.calculateStatScalar(
                 Number(currSubData[1 + levelOffset]),
                 Number(currSubData[2 + levelOffset]),
                 Number(currSubData[3 + levelOffset]),
@@ -658,7 +658,7 @@ const parseQueryDataXYCurve = function (
           const modelSum = matsDataUtils.sum(thisSubModelSum);
           const obsSum = matsDataUtils.sum(thisSumObsSum);
           const absSum = matsDataUtils.sum(thisSumAbsSum);
-          stat = matsDataUtils.calculateStatScalar(
+          stat = await matsDataUtils.calculateStatScalar(
             squareDiffSum,
             NSum,
             obsModelDiffSum,
@@ -1328,7 +1328,7 @@ const parseQueryDataPerformanceDiagram = function (rows, d, appParams) {
 };
 
 // this method parses the returned query data for simple scatter plots
-const parseQueryDataSimpleScatter = function (
+const parseQueryDataSimpleScatter = async function (
   rows,
   d,
   appParams,
@@ -1423,7 +1423,7 @@ const parseQueryDataSimpleScatter = function (
       const obsSumX = Number(rows[rowIndex].obs_sumX);
       const absSumX = Number(rows[rowIndex].abs_sumX);
       if (NSumX > 0) {
-        xStat = matsDataUtils.calculateStatScalar(
+        xStat = await matsDataUtils.calculateStatScalar(
           squareDiffSumX,
           NSumX,
           obsModelDiffSumX,
@@ -1467,7 +1467,7 @@ const parseQueryDataSimpleScatter = function (
       const obsSumY = Number(rows[rowIndex].obs_sumY);
       const absSumY = Number(rows[rowIndex].abs_sumY);
       if (NSumY > 0) {
-        yStat = matsDataUtils.calculateStatScalar(
+        yStat = await matsDataUtils.calculateStatScalar(
           squareDiffSumY,
           NSumY,
           obsModelDiffSumY,
@@ -1562,7 +1562,7 @@ const parseQueryDataSimpleScatter = function (
             thisSubObsSumX.push(Number(currSubData[5 + levelOffset]));
             thisSubAbsSumX.push(Number(currSubData[6 + levelOffset]));
             thisSubValuesX.push(
-              matsDataUtils.calculateStatScalar(
+              await matsDataUtils.calculateStatScalar(
                 Number(currSubData[1 + levelOffset]),
                 Number(currSubData[2 + levelOffset]),
                 Number(currSubData[3 + levelOffset]),
@@ -1581,7 +1581,7 @@ const parseQueryDataSimpleScatter = function (
               thisSubObsSumY.push(Number(currSubData[11 + levelOffset]));
               thisSubAbsSumY.push(Number(currSubData[12 + levelOffset]));
               thisSubValuesY.push(
-                matsDataUtils.calculateStatScalar(
+                await matsDataUtils.calculateStatScalar(
                   Number(currSubData[7 + levelOffset]),
                   Number(currSubData[8 + levelOffset]),
                   Number(currSubData[9 + levelOffset]),
@@ -1639,7 +1639,7 @@ const parseQueryDataSimpleScatter = function (
               thisSubObsSumY.push(Number(currSubData[9 + levelOffset]));
               thisSubAbsSumY.push(Number(currSubData[10 + levelOffset]));
               thisSubValuesY.push(
-                matsDataUtils.calculateStatScalar(
+                await matsDataUtils.calculateStatScalar(
                   Number(currSubData[5 + levelOffset]),
                   Number(currSubData[6 + levelOffset]),
                   Number(currSubData[7 + levelOffset]),
@@ -1679,7 +1679,7 @@ const parseQueryDataSimpleScatter = function (
           const modelSumX = matsDataUtils.sum(thisSubModelSumX);
           const obsSumX = matsDataUtils.sum(thisSubObsSumX);
           const absSumX = matsDataUtils.sum(thisSubAbsSumX);
-          xStat = matsDataUtils.calculateStatScalar(
+          xStat = await matsDataUtils.calculateStatScalar(
             squareDiffSumX,
             NSumX,
             obsModelDiffSumX,
@@ -1711,7 +1711,7 @@ const parseQueryDataSimpleScatter = function (
           const modelSumY = matsDataUtils.sum(thisSubModelSumY);
           const obsSumY = matsDataUtils.sum(thisSubObsSumY);
           const absSumY = matsDataUtils.sum(thisSubAbsSumY);
-          yStat = matsDataUtils.calculateStatScalar(
+          yStat = await matsDataUtils.calculateStatScalar(
             squareDiffSumY,
             NSumY,
             obsModelDiffSumY,
@@ -1853,7 +1853,7 @@ const parseQueryDataSimpleScatter = function (
 };
 
 // this method parses the returned query data for maps
-const parseQueryDataMapScalar = function (
+const parseQueryDataMapScalar = async function (
   rows,
   d,
   dLowest,
@@ -1952,7 +1952,7 @@ const parseQueryDataMapScalar = function (
     const obsSum = Number(rows[rowIndex].obs_sum);
     const absSum = Number(rows[rowIndex].abs_sum);
     if (NSum > 0) {
-      queryVal = matsDataUtils.calculateStatScalar(
+      queryVal = await matsDataUtils.calculateStatScalar(
         squareDiffSum,
         NSum,
         obsModelDiffSum,
@@ -2006,7 +2006,7 @@ const parseQueryDataMapScalar = function (
           thisSubObsSum.push(Number(currSubData[5 + levelOffset]));
           thisSubAbsSum.push(Number(currSubData[6 + levelOffset]));
           thisSubValues.push(
-            matsDataUtils.calculateStatScalar(
+            await matsDataUtils.calculateStatScalar(
               Number(currSubData[1 + levelOffset]),
               Number(currSubData[2 + levelOffset]),
               Number(currSubData[3 + levelOffset]),
@@ -2044,7 +2044,7 @@ const parseQueryDataMapScalar = function (
         const modelSumSum = matsDataUtils.sum(thisSubModelSum);
         const obsSumSum = matsDataUtils.sum(thisSubObsSum);
         const absSumSum = matsDataUtils.sum(thisSubAbsSum);
-        queryVal = matsDataUtils.calculateStatScalar(
+        queryVal = await matsDataUtils.calculateStatScalar(
           squareDiffSumSum,
           NSumSum,
           obsModelDiffSumSum,
@@ -2505,7 +2505,7 @@ const parseQueryDataMapCTC = function (
 };
 
 // this method parses the returned query data for histograms
-const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
+const parseQueryDataHistogram = async function (rows, d, appParams, statisticStr) {
   /*
         var d = {   // d will contain the curve data
             x: [],
@@ -2578,7 +2578,7 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
       const obsSum = Number(rows[rowIndex].obs_sum);
       const absSum = Number(rows[rowIndex].abs_sum);
       if (NSum > 0) {
-        stat = matsDataUtils.calculateStatScalar(
+        stat = await matsDataUtils.calculateStatScalar(
           squareDiffSum,
           NSum,
           obsModelDiffSum,
@@ -2641,7 +2641,7 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
               levelOffset = 1;
             }
             thisSubStats.push(
-              matsDataUtils.calculateStatScalar(
+              await matsDataUtils.calculateStatScalar(
                 Number(currSubData[1 + levelOffset]),
                 Number(currSubData[2 + levelOffset]),
                 Number(currSubData[3 + levelOffset]),
@@ -2710,7 +2710,7 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr) {
 };
 
 // this method parses the returned query data for contour plots
-const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
+const parseQueryDataContour = async function (rows, d, appParams, statisticStr) {
   /*
         var d = {   // d will contain the curve data
             x: [],
@@ -2829,7 +2829,7 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
       obsSum = Number(rows[rowIndex].obs_sum);
       absSum = Number(rows[rowIndex].abs_sum);
       if (NSum > 0) {
-        stat = matsDataUtils.calculateStatScalar(
+        stat = await matsDataUtils.calculateStatScalar(
           squareDiffSum,
           NSum,
           obsModelDiffSum,
@@ -2840,7 +2840,7 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr) {
         );
         stat = matsMethods.isThisANaN(Number(stat)) ? null : stat;
         const variable = statisticStr.split("_")[1];
-        stdev = matsDataUtils.calculateStatScalar(
+        stdev = await matsDataUtils.calculateStatScalar(
           squareDiffSum,
           NSum,
           obsModelDiffSum,
@@ -3307,7 +3307,7 @@ const queryDBTimeSeries = async function (
       } else if (rows.includes("ERROR: ")) {
         error = rows;
       } else {
-        parsedData = parseQueryDataXYCurve(
+        parsedData = await parseQueryDataXYCurve(
           rows,
           d,
           appParams,
@@ -3408,7 +3408,7 @@ const queryDBSpecialtyCurve = async function (
         error = rows;
       } else {
         if (appParams.plotType !== matsTypes.PlotTypes.histogram) {
-          parsedData = parseQueryDataXYCurve(
+          parsedData = await parseQueryDataXYCurve(
             rows,
             d,
             appParams,
@@ -3418,7 +3418,7 @@ const queryDBSpecialtyCurve = async function (
             null
           );
         } else {
-          parsedData = parseQueryDataHistogram(rows, d, appParams, statisticStr);
+          parsedData = await parseQueryDataHistogram(rows, d, appParams, statisticStr);
         }
         d = parsedData.d;
         n0 = parsedData.n0;
@@ -3675,7 +3675,7 @@ const queryDBSimpleScatter = async function (
     } else if (rows.includes("ERROR: ")) {
       error = rows;
     } else {
-      parsedData = parseQueryDataSimpleScatter(
+      parsedData = await parseQueryDataSimpleScatter(
         rows,
         d,
         appParams,
@@ -3801,7 +3801,7 @@ const queryDBMapScalar = async function (
       } else if (rows.includes("ERROR: ")) {
         error = rows;
       } else {
-        parsedData = parseQueryDataMapScalar(
+        parsedData = await parseQueryDataMapScalar(
           rows,
           d,
           dLowest,
@@ -3952,7 +3952,7 @@ const queryDBMapScalarLoop = async function (
       if (allRows.length === 0) {
         error = matsTypes.Messages.NO_DATA_FOUND;
       } else {
-        parsedData = parseQueryDataMapScalar(
+        parsedData = await parseQueryDataMapScalar(
           allRows,
           d,
           dLowest,
@@ -4275,7 +4275,7 @@ const queryDBContour = async function (
     } else if (rows.includes("ERROR: ")) {
       error = rows;
     } else {
-      parsedData = parseQueryDataContour(rows, d, appParams, statisticStr);
+      parsedData = await parseQueryDataContour(rows, d, appParams, statisticStr);
       d = parsedData.d;
     }
     // if we have only null values, return a no data found

@@ -1023,7 +1023,7 @@ const getDataForDiffContour = async function (
             const mObsSum = matsDataUtils.sum(newMinuendSubObsSumArray);
             const mAbsSum = matsDataUtils.sum(newMinuendSubAbsSumArray);
             minuendData.z[minuendYIndex][minuendXIndex] =
-              matsDataUtils.calculateStatScalar(
+              await matsDataUtils.calculateStatScalar(
                 mSquareDiffSum,
                 mNSum,
                 mObsModelDiffSum,
@@ -1039,7 +1039,7 @@ const getDataForDiffContour = async function (
               msvIdx += 1
             ) {
               newMinuendSubValsArray.push(
-                matsDataUtils.calculateStatScalar(
+                await matsDataUtils.calculateStatScalar(
                   newMinuendSubSquareDiffSumArray[msvIdx],
                   newMinuendSubNSumArray[msvIdx],
                   newMinuendSubObsModelDiffSumArray[msvIdx],
@@ -1113,7 +1113,7 @@ const getDataForDiffContour = async function (
             const sObsSum = matsDataUtils.sum(newSubtrahendSubObsSumArray);
             const sAbsSum = matsDataUtils.sum(newSubtrahendSubAbsSumArray);
             subtrahendData.z[subtrahendYIndex][subtrahendXIndex] =
-              matsDataUtils.calculateStatScalar(
+              await matsDataUtils.calculateStatScalar(
                 sSquareDiffSum,
                 sNSum,
                 sObsModelDiffSum,
@@ -1129,7 +1129,7 @@ const getDataForDiffContour = async function (
               ssvIdx += 1
             ) {
               newSubtrahendSubValsArray.push(
-                matsDataUtils.calculateStatScalar(
+                await matsDataUtils.calculateStatScalar(
                   newSubtrahendSubSquareDiffSumArray[ssvIdx],
                   newSubtrahendSubNSumArray[ssvIdx],
                   newSubtrahendSubObsModelDiffSumArray[ssvIdx],

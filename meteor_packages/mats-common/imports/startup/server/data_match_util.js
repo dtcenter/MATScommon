@@ -6,7 +6,7 @@ import { matsDataUtils, matsTypes } from "meteor/randyp:mats-common";
 import { _ } from "meteor/underscore";
 
 // function for removing unmatched data from a dataset containing multiple curves
-const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStats) {
+const getMatchedDataSet = async function (dataset, curveInfoParams, appParams, binStats) {
   const subSecsRaw = [];
   const subLevsRaw = [];
   let subValues = [];
@@ -916,7 +916,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
           const modelSum = matsDataUtils.sum(data.subModelSum[di]);
           const obsSum = matsDataUtils.sum(data.subObsSum[di]);
           const absSum = matsDataUtils.sum(data.subAbsSum[di]);
-          data[statVarName][di] = matsDataUtils.calculateStatScalar(
+          data[statVarName][di] = await matsDataUtils.calculateStatScalar(
             squareDiffSum,
             NSum,
             obsModelDiffSum,
@@ -944,7 +944,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
           const modelSumX = matsDataUtils.sum(data.subModelSumX[di]);
           const obsSumX = matsDataUtils.sum(data.subObsSumX[di]);
           const absSumX = matsDataUtils.sum(data.subAbsSumX[di]);
-          data.x[di] = matsDataUtils.calculateStatScalar(
+          data.x[di] = await matsDataUtils.calculateStatScalar(
             squareDiffSumX,
             NSumX,
             obsModelDiffSumX,
@@ -980,7 +980,7 @@ const getMatchedDataSet = function (dataset, curveInfoParams, appParams, binStat
           const modelSumY = matsDataUtils.sum(data.subModelSumY[di]);
           const obsSumY = matsDataUtils.sum(data.subObsSumY[di]);
           const absSumY = matsDataUtils.sum(data.subAbsSumY[di]);
-          data.y[di] = matsDataUtils.calculateStatScalar(
+          data.y[di] = await matsDataUtils.calculateStatScalar(
             squareDiffSumY,
             NSumY,
             obsModelDiffSumY,
