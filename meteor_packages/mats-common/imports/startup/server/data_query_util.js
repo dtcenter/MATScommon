@@ -354,12 +354,11 @@ const queryDBPython = async function (pool, queryArray) {
 };
 
 // this method parses the returned query data for xy curves
-const parseQueryDataXYCurve = function (
+const parseQueryDataXYCurve = async function (
   rows,
   d,
   appParams,
   statisticStr,
-  appName,
   forecastOffset,
   cycles,
   regular
@@ -487,15 +486,14 @@ const parseQueryDataXYCurve = function (
       const obsSum = Number(rows[rowIndex].obs_sum);
       const absSum = Number(rows[rowIndex].abs_sum);
       if (NSum > 0) {
-        stat = matsDataUtils.calculateStatScalar(
+        stat = await matsDataUtils.calculateStatScalar(
           squareDiffSum,
           NSum,
           obsModelDiffSum,
           modelSum,
           obsSum,
           absSum,
-          statisticStr,
-          appName
+          statisticStr
         );
         stat = matsMethods.isThisANaN(Number(stat)) ? null : stat;
       } else {
@@ -589,15 +587,14 @@ const parseQueryDataXYCurve = function (
             thisSumObsSum.push(Number(currSubData[5 + levelOffset]));
             thisSumAbsSum.push(Number(currSubData[6 + levelOffset]));
             thisSubValues.push(
-              matsDataUtils.calculateStatScalar(
+              await matsDataUtils.calculateStatScalar(
                 Number(currSubData[1 + levelOffset]),
                 Number(currSubData[2 + levelOffset]),
                 Number(currSubData[3 + levelOffset]),
                 Number(currSubData[4 + levelOffset]),
                 Number(currSubData[5 + levelOffset]),
                 Number(currSubData[6 + levelOffset]),
-                statisticStr,
-                appName
+                statisticStr
               )
             );
           } else {
@@ -661,15 +658,14 @@ const parseQueryDataXYCurve = function (
           const modelSum = matsDataUtils.sum(thisSubModelSum);
           const obsSum = matsDataUtils.sum(thisSumObsSum);
           const absSum = matsDataUtils.sum(thisSumAbsSum);
-          stat = matsDataUtils.calculateStatScalar(
+          stat = await matsDataUtils.calculateStatScalar(
             squareDiffSum,
             NSum,
             obsModelDiffSum,
             modelSum,
             obsSum,
             absSum,
-            statisticStr,
-            appName
+            statisticStr
           );
         } else if (statisticStr.toLowerCase().includes("count")) {
           stat = matsDataUtils.sum(thisSubValues);
@@ -1332,15 +1328,14 @@ const parseQueryDataPerformanceDiagram = function (rows, d, appParams) {
 };
 
 // this method parses the returned query data for simple scatter plots
-const parseQueryDataSimpleScatter = function (
+const parseQueryDataSimpleScatter = async function (
   rows,
   d,
   appParams,
   statTypeX,
   statTypeY,
   statisticXStr,
-  statisticYStr,
-  appName
+  statisticYStr
 ) {
   /*
         var d = {   // d will contain the curve data
@@ -1428,15 +1423,14 @@ const parseQueryDataSimpleScatter = function (
       const obsSumX = Number(rows[rowIndex].obs_sumX);
       const absSumX = Number(rows[rowIndex].abs_sumX);
       if (NSumX > 0) {
-        xStat = matsDataUtils.calculateStatScalar(
+        xStat = await matsDataUtils.calculateStatScalar(
           squareDiffSumX,
           NSumX,
           obsModelDiffSumX,
           modelSumX,
           obsSumX,
           absSumX,
-          statisticXStr,
-          appName
+          statisticXStr
         );
         xStat = matsMethods.isThisANaN(Number(xStat)) ? null : xStat;
       } else {
@@ -1473,15 +1467,14 @@ const parseQueryDataSimpleScatter = function (
       const obsSumY = Number(rows[rowIndex].obs_sumY);
       const absSumY = Number(rows[rowIndex].abs_sumY);
       if (NSumY > 0) {
-        yStat = matsDataUtils.calculateStatScalar(
+        yStat = await matsDataUtils.calculateStatScalar(
           squareDiffSumY,
           NSumY,
           obsModelDiffSumY,
           modelSumY,
           obsSumY,
           absSumY,
-          statisticYStr,
-          appName
+          statisticYStr
         );
         yStat = matsMethods.isThisANaN(Number(yStat)) ? null : yStat;
       } else {
@@ -1569,15 +1562,14 @@ const parseQueryDataSimpleScatter = function (
             thisSubObsSumX.push(Number(currSubData[5 + levelOffset]));
             thisSubAbsSumX.push(Number(currSubData[6 + levelOffset]));
             thisSubValuesX.push(
-              matsDataUtils.calculateStatScalar(
+              await matsDataUtils.calculateStatScalar(
                 Number(currSubData[1 + levelOffset]),
                 Number(currSubData[2 + levelOffset]),
                 Number(currSubData[3 + levelOffset]),
                 Number(currSubData[4 + levelOffset]),
                 Number(currSubData[5 + levelOffset]),
                 Number(currSubData[6 + levelOffset]),
-                statisticXStr,
-                appName
+                statisticXStr
               )
             );
             if (statTypeY === "scalar") {
@@ -1589,15 +1581,14 @@ const parseQueryDataSimpleScatter = function (
               thisSubObsSumY.push(Number(currSubData[11 + levelOffset]));
               thisSubAbsSumY.push(Number(currSubData[12 + levelOffset]));
               thisSubValuesY.push(
-                matsDataUtils.calculateStatScalar(
+                await matsDataUtils.calculateStatScalar(
                   Number(currSubData[7 + levelOffset]),
                   Number(currSubData[8 + levelOffset]),
                   Number(currSubData[9 + levelOffset]),
                   Number(currSubData[10 + levelOffset]),
                   Number(currSubData[11 + levelOffset]),
                   Number(currSubData[12 + levelOffset]),
-                  statisticYStr,
-                  appName
+                  statisticYStr
                 )
               );
             } else {
@@ -1648,15 +1639,14 @@ const parseQueryDataSimpleScatter = function (
               thisSubObsSumY.push(Number(currSubData[9 + levelOffset]));
               thisSubAbsSumY.push(Number(currSubData[10 + levelOffset]));
               thisSubValuesY.push(
-                matsDataUtils.calculateStatScalar(
+                await matsDataUtils.calculateStatScalar(
                   Number(currSubData[5 + levelOffset]),
                   Number(currSubData[6 + levelOffset]),
                   Number(currSubData[7 + levelOffset]),
                   Number(currSubData[8 + levelOffset]),
                   Number(currSubData[9 + levelOffset]),
                   Number(currSubData[10 + levelOffset]),
-                  statisticYStr,
-                  appName
+                  statisticYStr
                 )
               );
             } else {
@@ -1689,15 +1679,14 @@ const parseQueryDataSimpleScatter = function (
           const modelSumX = matsDataUtils.sum(thisSubModelSumX);
           const obsSumX = matsDataUtils.sum(thisSubObsSumX);
           const absSumX = matsDataUtils.sum(thisSubAbsSumX);
-          xStat = matsDataUtils.calculateStatScalar(
+          xStat = await matsDataUtils.calculateStatScalar(
             squareDiffSumX,
             NSumX,
             obsModelDiffSumX,
             modelSumX,
             obsSumX,
             absSumX,
-            statisticXStr,
-            appName
+            statisticXStr
           );
         } else {
           // recalculate the CTC x-statistic from the sub-data to ensure consistency with the sub-data values
@@ -1722,15 +1711,14 @@ const parseQueryDataSimpleScatter = function (
           const modelSumY = matsDataUtils.sum(thisSubModelSumY);
           const obsSumY = matsDataUtils.sum(thisSubObsSumY);
           const absSumY = matsDataUtils.sum(thisSubAbsSumY);
-          yStat = matsDataUtils.calculateStatScalar(
+          yStat = await matsDataUtils.calculateStatScalar(
             squareDiffSumY,
             NSumY,
             obsModelDiffSumY,
             modelSumY,
             obsSumY,
             absSumY,
-            statisticYStr,
-            appName
+            statisticYStr
           );
         } else {
           // recalculate the CTC y-statistic from the sub-data to ensure consistency with the sub-data values
@@ -1865,7 +1853,7 @@ const parseQueryDataSimpleScatter = function (
 };
 
 // this method parses the returned query data for maps
-const parseQueryDataMapScalar = function (
+const parseQueryDataMapScalar = async function (
   rows,
   d,
   dLowest,
@@ -1878,7 +1866,6 @@ const parseQueryDataMapScalar = function (
   statistic,
   variable,
   varUnits,
-  appName,
   appParams,
   plotParams,
   isCouchbase
@@ -1965,15 +1952,14 @@ const parseQueryDataMapScalar = function (
     const obsSum = Number(rows[rowIndex].obs_sum);
     const absSum = Number(rows[rowIndex].abs_sum);
     if (NSum > 0) {
-      queryVal = matsDataUtils.calculateStatScalar(
+      queryVal = await matsDataUtils.calculateStatScalar(
         squareDiffSum,
         NSum,
         obsModelDiffSum,
         modelSum,
         obsSum,
         absSum,
-        `${statistic}_${variable}`,
-        appName
+        `${statistic}_${variable}`
       );
       queryVal = matsMethods.isThisANaN(Number(queryVal)) ? null : queryVal;
     } else {
@@ -2020,15 +2006,14 @@ const parseQueryDataMapScalar = function (
           thisSubObsSum.push(Number(currSubData[5 + levelOffset]));
           thisSubAbsSum.push(Number(currSubData[6 + levelOffset]));
           thisSubValues.push(
-            matsDataUtils.calculateStatScalar(
+            await matsDataUtils.calculateStatScalar(
               Number(currSubData[1 + levelOffset]),
               Number(currSubData[2 + levelOffset]),
               Number(currSubData[3 + levelOffset]),
               Number(currSubData[4 + levelOffset]),
               Number(currSubData[5 + levelOffset]),
               Number(currSubData[6 + levelOffset]),
-              `${statistic}_${variable}`,
-              appName
+              `${statistic}_${variable}`
             )
           );
         }
@@ -2059,15 +2044,14 @@ const parseQueryDataMapScalar = function (
         const modelSumSum = matsDataUtils.sum(thisSubModelSum);
         const obsSumSum = matsDataUtils.sum(thisSubObsSum);
         const absSumSum = matsDataUtils.sum(thisSubAbsSum);
-        queryVal = matsDataUtils.calculateStatScalar(
+        queryVal = await matsDataUtils.calculateStatScalar(
           squareDiffSumSum,
           NSumSum,
           obsModelDiffSumSum,
           modelSumSum,
           obsSumSum,
           absSumSum,
-          `${statistic}_${variable}`,
-          appName
+          `${statistic}_${variable}`
         );
         queryVal = matsMethods.isThisANaN(Number(queryVal)) ? null : queryVal;
       } catch (e) {
@@ -2521,7 +2505,7 @@ const parseQueryDataMapCTC = function (
 };
 
 // this method parses the returned query data for histograms
-const parseQueryDataHistogram = function (rows, d, appParams, statisticStr, appName) {
+const parseQueryDataHistogram = async function (rows, d, appParams, statisticStr) {
   /*
         var d = {   // d will contain the curve data
             x: [],
@@ -2594,15 +2578,14 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr, appN
       const obsSum = Number(rows[rowIndex].obs_sum);
       const absSum = Number(rows[rowIndex].abs_sum);
       if (NSum > 0) {
-        stat = matsDataUtils.calculateStatScalar(
+        stat = await matsDataUtils.calculateStatScalar(
           squareDiffSum,
           NSum,
           obsModelDiffSum,
           modelSum,
           obsSum,
           absSum,
-          statisticStr,
-          appName
+          statisticStr
         );
         stat = matsMethods.isThisANaN(Number(stat)) ? null : stat;
       } else {
@@ -2658,15 +2641,14 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr, appN
               levelOffset = 1;
             }
             thisSubStats.push(
-              matsDataUtils.calculateStatScalar(
+              await matsDataUtils.calculateStatScalar(
                 Number(currSubData[1 + levelOffset]),
                 Number(currSubData[2 + levelOffset]),
                 Number(currSubData[3 + levelOffset]),
                 Number(currSubData[4 + levelOffset]),
                 Number(currSubData[5 + levelOffset]),
                 Number(currSubData[6 + levelOffset]),
-                statisticStr,
-                appName
+                statisticStr
               )
             );
           } else {
@@ -2728,7 +2710,7 @@ const parseQueryDataHistogram = function (rows, d, appParams, statisticStr, appN
 };
 
 // this method parses the returned query data for contour plots
-const parseQueryDataContour = function (rows, d, appParams, statisticStr, appName) {
+const parseQueryDataContour = async function (rows, d, appParams, statisticStr) {
   /*
         var d = {   // d will contain the curve data
             x: [],
@@ -2847,27 +2829,25 @@ const parseQueryDataContour = function (rows, d, appParams, statisticStr, appNam
       obsSum = Number(rows[rowIndex].obs_sum);
       absSum = Number(rows[rowIndex].abs_sum);
       if (NSum > 0) {
-        stat = matsDataUtils.calculateStatScalar(
+        stat = await matsDataUtils.calculateStatScalar(
           squareDiffSum,
           NSum,
           obsModelDiffSum,
           modelSum,
           obsSum,
           absSum,
-          statisticStr,
-          appName
+          statisticStr
         );
         stat = matsMethods.isThisANaN(Number(stat)) ? null : stat;
         const variable = statisticStr.split("_")[1];
-        stdev = matsDataUtils.calculateStatScalar(
+        stdev = await matsDataUtils.calculateStatScalar(
           squareDiffSum,
           NSum,
           obsModelDiffSum,
           modelSum,
           obsSum,
           absSum,
-          `Std deviation_${variable}`,
-          appName
+          `Std deviation_${variable}`
         );
       }
     } else {
@@ -3327,13 +3307,11 @@ const queryDBTimeSeries = async function (
       } else if (rows.includes("ERROR: ")) {
         error = rows;
       } else {
-        const { appName } = await matsCollections.Settings.findOneAsync({});
-        parsedData = parseQueryDataXYCurve(
+        parsedData = await parseQueryDataXYCurve(
           rows,
           d,
           appParams,
           statisticStr,
-          appName,
           forecastOffset,
           cycles,
           regular
@@ -3429,26 +3407,18 @@ const queryDBSpecialtyCurve = async function (
       } else if (rows.includes("ERROR: ")) {
         error = rows;
       } else {
-        const { appName } = await matsCollections.Settings.findOneAsync({});
         if (appParams.plotType !== matsTypes.PlotTypes.histogram) {
-          parsedData = parseQueryDataXYCurve(
+          parsedData = await parseQueryDataXYCurve(
             rows,
             d,
             appParams,
             statisticStr,
-            appName,
             null,
             null,
             null
           );
         } else {
-          parsedData = parseQueryDataHistogram(
-            rows,
-            d,
-            appParams,
-            statisticStr,
-            appName
-          );
+          parsedData = await parseQueryDataHistogram(rows, d, appParams, statisticStr);
         }
         d = parsedData.d;
         n0 = parsedData.n0;
@@ -3705,16 +3675,14 @@ const queryDBSimpleScatter = async function (
     } else if (rows.includes("ERROR: ")) {
       error = rows;
     } else {
-      const { appName } = await matsCollections.Settings.findOneAsync({});
-      parsedData = parseQueryDataSimpleScatter(
+      parsedData = await parseQueryDataSimpleScatter(
         rows,
         d,
         appParams,
         statTypeX,
         statTypeY,
         statisticXStr,
-        statisticYStr,
-        appName
+        statisticYStr
       );
       d = parsedData.d;
       n0 = parsedData.n0;
@@ -3833,8 +3801,7 @@ const queryDBMapScalar = async function (
       } else if (rows.includes("ERROR: ")) {
         error = rows;
       } else {
-        const { appName } = await matsCollections.Settings.findOneAsync({});
-        parsedData = parseQueryDataMapScalar(
+        parsedData = await parseQueryDataMapScalar(
           rows,
           d,
           dLowest,
@@ -3847,7 +3814,6 @@ const queryDBMapScalar = async function (
           statistic,
           variable,
           varUnits,
-          appName,
           appParams,
           plotParams,
           isCouchbase
@@ -3986,8 +3952,7 @@ const queryDBMapScalarLoop = async function (
       if (allRows.length === 0) {
         error = matsTypes.Messages.NO_DATA_FOUND;
       } else {
-        const { appName } = await matsCollections.Settings.findOneAsync({});
-        parsedData = parseQueryDataMapScalar(
+        parsedData = await parseQueryDataMapScalar(
           allRows,
           d,
           dLowest,
@@ -4000,7 +3965,6 @@ const queryDBMapScalarLoop = async function (
           statistic,
           variable,
           varUnits,
-          appName,
           appParams,
           plotParams,
           true
@@ -4311,8 +4275,7 @@ const queryDBContour = async function (
     } else if (rows.includes("ERROR: ")) {
       error = rows;
     } else {
-      const { appName } = await matsCollections.Settings.findOneAsync({});
-      parsedData = parseQueryDataContour(rows, d, appParams, statisticStr, appName);
+      parsedData = await parseQueryDataContour(rows, d, appParams, statisticStr);
       d = parsedData.d;
     }
     // if we have only null values, return a no data found

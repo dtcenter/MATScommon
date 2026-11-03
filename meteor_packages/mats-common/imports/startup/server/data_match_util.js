@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import { matsCollections, matsDataUtils, matsTypes } from "meteor/randyp:mats-common";
+import { matsDataUtils, matsTypes } from "meteor/randyp:mats-common";
 import { _ } from "meteor/underscore";
 
 // function for removing unmatched data from a dataset containing multiple curves
@@ -108,7 +108,6 @@ const getMatchedDataSet = async function (
   const { plotType } = appParams;
   const { hasLevels } = appParams;
   const { curvesLength } = curveInfoParams;
-  const { appName } = await matsCollections.Settings.findOneAsync({});
   const isSimpleScatter = plotType === matsTypes.PlotTypes.simpleScatter;
   const isReliability = plotType === matsTypes.PlotTypes.reliability;
   let isCTC;
@@ -922,15 +921,14 @@ const getMatchedDataSet = async function (
           const modelSum = matsDataUtils.sum(data.subModelSum[di]);
           const obsSum = matsDataUtils.sum(data.subObsSum[di]);
           const absSum = matsDataUtils.sum(data.subAbsSum[di]);
-          data[statVarName][di] = matsDataUtils.calculateStatScalar(
+          data[statVarName][di] = await matsDataUtils.calculateStatScalar(
             squareDiffSum,
             NSum,
             obsModelDiffSum,
             modelSum,
             obsSum,
             absSum,
-            `${curveStats[curveIndex]}_${curveVars[curveIndex]}`,
-            appName
+            `${curveStats[curveIndex]}_${curveVars[curveIndex]}`
           );
         }
       }
@@ -951,15 +949,14 @@ const getMatchedDataSet = async function (
           const modelSumX = matsDataUtils.sum(data.subModelSumX[di]);
           const obsSumX = matsDataUtils.sum(data.subObsSumX[di]);
           const absSumX = matsDataUtils.sum(data.subAbsSumX[di]);
-          data.x[di] = matsDataUtils.calculateStatScalar(
+          data.x[di] = await matsDataUtils.calculateStatScalar(
             squareDiffSumX,
             NSumX,
             obsModelDiffSumX,
             modelSumX,
             obsSumX,
             absSumX,
-            `${curveXStats[curveIndex]}_${curveXVars[curveIndex]}`,
-            appName
+            `${curveXStats[curveIndex]}_${curveXVars[curveIndex]}`
           );
         } else if (
           curveInfoParams.statType[curveIndex][0] === "ctc" &&
@@ -988,15 +985,14 @@ const getMatchedDataSet = async function (
           const modelSumY = matsDataUtils.sum(data.subModelSumY[di]);
           const obsSumY = matsDataUtils.sum(data.subObsSumY[di]);
           const absSumY = matsDataUtils.sum(data.subAbsSumY[di]);
-          data.y[di] = matsDataUtils.calculateStatScalar(
+          data.y[di] = await matsDataUtils.calculateStatScalar(
             squareDiffSumY,
             NSumY,
             obsModelDiffSumY,
             modelSumY,
             obsSumY,
             absSumY,
-            `${curveYStats[curveIndex]}_${curveYVars[curveIndex]}`,
-            appName
+            `${curveYStats[curveIndex]}_${curveYVars[curveIndex]}`
           );
         } else if (
           curveInfoParams.statType[curveIndex][1] === "ctc" &&

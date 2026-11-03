@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Colorado State University and Regents of the University of Colorado. All rights reserved.
  */
 
-import { matsCollections, matsTypes, matsDataUtils } from "meteor/randyp:mats-common";
+import { matsTypes, matsDataUtils } from "meteor/randyp:mats-common";
 import { _ } from "meteor/underscore";
 
 // returns the data for whichever curve has the larger interval in its independent variable
@@ -622,7 +622,6 @@ const getDataForDiffContour = async function (
   // initialize local variables
   const { hasLevels } = appParams;
   const isMatching = appParams.matching;
-  const { appName } = await matsCollections.Settings.findOneAsync({});
   const minuendData = dataset[1];
   const subtrahendData = dataset[0];
   const minuendIsCTC = allStatTypes[1] === "ctc";
@@ -1024,15 +1023,14 @@ const getDataForDiffContour = async function (
             const mObsSum = matsDataUtils.sum(newMinuendSubObsSumArray);
             const mAbsSum = matsDataUtils.sum(newMinuendSubAbsSumArray);
             minuendData.z[minuendYIndex][minuendXIndex] =
-              matsDataUtils.calculateStatScalar(
+              await matsDataUtils.calculateStatScalar(
                 mSquareDiffSum,
                 mNSum,
                 mObsModelDiffSum,
                 mModelSum,
                 mObsSum,
                 mAbsSum,
-                minuendStatistic,
-                appName
+                minuendStatistic
               );
             // need to populate subVals so stdev of them can be taken (Bill's method for determining significance)
             for (
@@ -1041,15 +1039,14 @@ const getDataForDiffContour = async function (
               msvIdx += 1
             ) {
               newMinuendSubValsArray.push(
-                matsDataUtils.calculateStatScalar(
+                await matsDataUtils.calculateStatScalar(
                   newMinuendSubSquareDiffSumArray[msvIdx],
                   newMinuendSubNSumArray[msvIdx],
                   newMinuendSubObsModelDiffSumArray[msvIdx],
                   newMinuendSubModelSumArray[msvIdx],
                   newMinuendSubObsSumArray[msvIdx],
                   newMinuendSubAbsSumArray[msvIdx],
-                  minuendStatistic,
-                  appName
+                  minuendStatistic
                 )
               );
             }
@@ -1116,15 +1113,14 @@ const getDataForDiffContour = async function (
             const sObsSum = matsDataUtils.sum(newSubtrahendSubObsSumArray);
             const sAbsSum = matsDataUtils.sum(newSubtrahendSubAbsSumArray);
             subtrahendData.z[subtrahendYIndex][subtrahendXIndex] =
-              matsDataUtils.calculateStatScalar(
+              await matsDataUtils.calculateStatScalar(
                 sSquareDiffSum,
                 sNSum,
                 sObsModelDiffSum,
                 sModelSum,
                 sObsSum,
                 sAbsSum,
-                subtrahendStatistic,
-                appName
+                subtrahendStatistic
               );
             // need to populate subVals so stdev of them can be taken (Bill's method for determining significance)
             for (
@@ -1133,15 +1129,14 @@ const getDataForDiffContour = async function (
               ssvIdx += 1
             ) {
               newSubtrahendSubValsArray.push(
-                matsDataUtils.calculateStatScalar(
+                await matsDataUtils.calculateStatScalar(
                   newSubtrahendSubSquareDiffSumArray[ssvIdx],
                   newSubtrahendSubNSumArray[ssvIdx],
                   newSubtrahendSubObsModelDiffSumArray[ssvIdx],
                   newSubtrahendSubModelSumArray[ssvIdx],
                   newSubtrahendSubObsSumArray[ssvIdx],
                   newSubtrahendSubAbsSumArray[ssvIdx],
-                  subtrahendStatistic,
-                  appName
+                  subtrahendStatistic
                 )
               );
             }
