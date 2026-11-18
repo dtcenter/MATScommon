@@ -327,9 +327,9 @@
       "integrity": "sha512-0acOTfMiWOheYS4eoWb80yYMb/JLvVv9SHbs2PehaDzfUG0Bw855SKyk0IKTnPGa5+U2bmi3W68l1+sGLX/pvw=="
     },
     "mongo-object": {
-      "version": "3.0.5",
-      "resolved": "https://registry.npmjs.org/mongo-object/-/mongo-object-3.0.5.tgz",
-      "integrity": "sha512-VinMOgUBthj4boNZ7XKUfvzuJyWiFOc/dnKMlrsnzxoSkWaR/DD454JANyzKE57ztBQ0jnrFvsqYb2RQhn6p6A=="
+      "version": "3.0.7",
+      "resolved": "https://registry.npmjs.org/mongo-object/-/mongo-object-3.0.7.tgz",
+      "integrity": "sha512-K+q3LOgdbMZ7/osGQf49RPZPa+8VSXdQ5Popr3gASZU8aoyneM0nkGmUTDkLxo0Yhiv1f66tdo4pb9NHVyMLsQ=="
     },
     "ms": {
       "version": "2.1.3",
