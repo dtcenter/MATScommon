@@ -207,6 +207,126 @@ const parsePythonShellQueryResults = function (results, queryArray) {
   return { d, n0, nTimes, error };
 };
 
+function waitForMessage(pyshell)
+{
+  return new Promise((resolve, reject) =>
+  {
+    pyshell.once('message', (message) =>
+    {
+      resolve(message);
+    });
+    pyshell.once('error', (err) =>
+    {
+      reject(err);
+    });
+  });
+}
+
+// utility for querying the Mongo DB via Python
+const queryMongoPython = async function (pool, queryArray, mongoResult)
+{
+  if (Meteor.isServer)
+  {
+    // send the query statement to the python query function
+    const pyOptions = {
+      mode: "text",
+      pythonPath: Meteor.settings.private.PYTHON_PATH,
+      pythonOptions: ["-u"], // get print results in real-time
+      scriptPath:
+        process.env.NODE_ENV === "development"
+          ? `${process.env.PWD}/.meteor/local/build/programs/server/assets/packages/randyp_mats-common/public/python/`
+          : `${process.env.PWD}/programs/server/assets/packages/randyp_mats-common/public/python/`,
+      args: [
+        "-h",
+        pool.host,
+        "-u",
+        pool.user,
+        "-p",
+        pool.pwd,
+        "-b",
+        pool.bucketName,
+        "-s",
+        pool.scope,
+        "-c",
+        pool.collection,
+        "-q",
+        JSON.stringify(queryArray),
+        /*
+        "-m",
+        JSON.stringify(mongoResult),
+        */
+        // "test",
+      ],
+    };
+
+    let d = [];
+    let error = "";
+    let n0 = [];
+    let nTimes = [];
+
+    /*
+    const pyShell = require("python-shell");
+    const results = await pyShell.PythonShell.run("mongo_query_util.py", pyOptions)
+      .then()
+      .catch((err) => {
+        error = err.message;
+        console.log("/scratch/python_error:" + err.message);
+        return {
+          data: d,
+          error,
+          n0,
+          nTimes,
+        };
+      });
+    */
+
+    let results = "";
+    const { PythonShell } = require('python-shell');
+    const pyshell = new PythonShell('mongo_query_util.py', pyOptions);
+
+    // 1. Pipe/Send your data to the script
+    console.log('Sending to Python:', JSON.stringify(mongoResult).length);
+    pyshell.send(JSON.stringify(mongoResult));
+
+    // 3. End the input stream so Python knows no more data is coming
+    pyshell.end(function (err)
+    {
+      if (err) throw err;
+      console.log('Finished stream pipeline.');
+    });
+
+    // 2. Listen for the response from Python
+    const message = await waitForMessage(pyshell);
+    console.log('Received from Python:', message.length);
+    results = message;
+
+    if (results === undefined || results === "undefined")
+    {
+      error =
+        "Error thrown by mongo_query_util.py. Please write down exactly how you produced this error, and submit a ticket at mats.gsl@noaa.gov.";
+    } else
+    {
+      import fs from "fs/promises";
+      import os from "os";
+      const homeDir = os.homedir();
+      fs.writeFile(homeDir + "/scratch/mongo_query_util_py_results_received_in_js.json", results);
+      console.log("mongo_query_util.py results written to ~/scratch/mongo_query_util_py_results_received_in_js.json");
+      // get the data back from the query
+      // console.log(results);
+      ({ d, n0, nTimes, error } = parsePythonShellQueryResults(results, queryArray));
+      // console.log(d);
+    }
+
+    return {
+      data: d,
+      error,
+      n0,
+      nTimes,
+    };
+  }
+  return null;
+};
+
 // utility for querying the Coushbase DB via Python
 const queryCBPython = async function (pool, queryArray) {
   if (Meteor.isServer) {
@@ -4294,6 +4414,7 @@ const queryDBContour = async function (
 export default matsDataQueryUtils = {
   queryMySQL,
   getStationsInCouchbaseRegion,
+  queryMongoPython,
   queryCBPython,
   queryDBPython,
   queryDBTimeSeries,
