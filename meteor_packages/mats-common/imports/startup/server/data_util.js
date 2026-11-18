@@ -450,14 +450,15 @@ const calculateStatCTC = function (hit, fa, miss, cn, n, statistic) {
 };
 
 // calculates the statistic for scalar partial sums plots
-const calculateStatScalar = async function (
+const calculateStatScalar = function (
   squareDiffSum,
   NSum,
   obsModelDiffSum,
   modelSum,
   obsSum,
   absSum,
-  statisticAndVariable
+  statisticAndVariable,
+  appName
 ) {
   if (
     matsMethods.isThisANaN(squareDiffSum) ||
@@ -469,7 +470,6 @@ const calculateStatScalar = async function (
   )
     return null;
   let queryVal;
-  const { appName } = await matsCollections.Settings.findOneAsync({});
   const variable = statisticAndVariable.split("_")[1];
   const statistic = statisticAndVariable.split("_")[0];
   switch (statistic) {
